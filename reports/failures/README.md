@@ -1,3 +1,3 @@
 # Failures
 
-No MockLLM accuracy failures in the latest local evaluate-accuracy run.
+No accuracy failures in the latest GPU/vLLM evaluate-accuracy run.

@@ -1,0 +1,18 @@
+{
+  "billing_window_note": "RunPod get-billing totals through 2026-08-13T14:00:00Z: totalAmount=31.021492425119504 (podGpu=30.869872053619474, podDisk=0.15162037150003016). gpu_hours=podGpu/2.89 listed H100 PCIe rate. Pod p7tdoz42gtf92g stopped+deleted ~14:14 UTC; the 14:00-15:00 bucket is not yet in the API. No estimate added for that unbilled tail. list-pods empty after delete.",
+  "captured_at_utc": "2026-08-13T14:14:50.880559+00:00",
+  "final_billed_through_utc": "2026-08-13T14:00:00Z",
+  "gpu_hours": 10.6816,
+  "gpu_spend_usd": 31.021492425119504,
+  "list_pods_empty": true,
+  "listed_h100_pcie_usd_per_hr": 2.89,
+  "phase": "post_delete",
+  "pod_deleted": true,
+  "pod_disk_amount_usd": 0.15162037150003016,
+  "pod_gpu_amount_usd": 30.869872053619474,
+  "pod_id": "p7tdoz42gtf92g",
+  "pod_started_at_utc": "2026-08-13T05:04:27.086Z",
+  "pod_uptime_s_at_pre_stop": 32965,
+  "source": "runpod MCP get-billing scope=all bucketSize=hour lastN=48",
+  "total_amount_usd": 31.021492425119504
+}

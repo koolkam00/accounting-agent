@@ -1,0 +1,25 @@
+{
+  "determinism_matrix": {
+    "batch_invariance": "EXECUTED_REDUCED_50x5_conc8",
+    "batch_invariance_conc32": "NOT_EXECUTED",
+    "cross_machine": "NOT_EXECUTED",
+    "local_pdf_sha256": "EXECUTED",
+    "negative_control": "NOT_EXECUTED",
+    "restart": "NOT_EXECUTED",
+    "same_request": "EXECUTED_REDUCED_50x5_conc1"
+  },
+  "gpu_hours": 10.6816,
+  "gpu_run": true,
+  "gpu_spend_usd": 31.021492425119504,
+  "pod_datacenter": "US-KS-2",
+  "pod_gpu": "NVIDIA H100 PCIe",
+  "pod_ids": [
+    "p7tdoz42gtf92g"
+  ],
+  "skipped": {
+    "conc32": true,
+    "full_9000": true,
+    "negative_control": true,
+    "pod_restart": true
+  }
+}

@@ -1,0 +1,652 @@
+{
+  "development": {
+    "accuracy": 1.0,
+    "correct": 30,
+    "false_ready_for_draft": 0,
+    "rows": [
+      {
+        "case_id": "case_001",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "exact_match"
+      },
+      {
+        "case_id": "case_002",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "exact_match"
+      },
+      {
+        "case_id": "case_003",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "exact_match"
+      },
+      {
+        "case_id": "case_004",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "exact_match"
+      },
+      {
+        "case_id": "case_005",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "exact_match"
+      },
+      {
+        "case_id": "case_006",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "exact_match"
+      },
+      {
+        "case_id": "case_007",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "exact_match"
+      },
+      {
+        "case_id": "case_008",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "exact_match"
+      },
+      {
+        "case_id": "case_009",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "exact_match"
+      },
+      {
+        "case_id": "case_010",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "exact_match"
+      },
+      {
+        "case_id": "case_011",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "exact_match"
+      },
+      {
+        "case_id": "case_012",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "exact_match"
+      },
+      {
+        "case_id": "case_013",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "exact_match"
+      },
+      {
+        "case_id": "case_014",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "exact_match"
+      },
+      {
+        "case_id": "case_015",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "exact_match"
+      },
+      {
+        "case_id": "case_016",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "price_within"
+      },
+      {
+        "case_id": "case_017",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "price_within"
+      },
+      {
+        "case_id": "case_018",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "price_within"
+      },
+      {
+        "case_id": "case_019",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "price_within"
+      },
+      {
+        "case_id": "case_020",
+        "error": null,
+        "expected_codes": [],
+        "expected_decision": "READY_FOR_DRAFT",
+        "got_codes": [],
+        "got_decision": "READY_FOR_DRAFT",
+        "pass": true,
+        "scenario": "price_within"
+      },
+      {
+        "case_id": "case_021",
+        "error": null,
+        "expected_codes": [
+          "PRICE_VARIANCE"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "PRICE_VARIANCE"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "price_over"
+      },
+      {
+        "case_id": "case_022",
+        "error": null,
+        "expected_codes": [
+          "PRICE_VARIANCE"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "PRICE_VARIANCE"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "price_over"
+      },
+      {
+        "case_id": "case_023",
+        "error": null,
+        "expected_codes": [
+          "PRICE_VARIANCE"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "PRICE_VARIANCE"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "price_over"
+      },
+      {
+        "case_id": "case_024",
+        "error": null,
+        "expected_codes": [
+          "PRICE_VARIANCE"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "PRICE_VARIANCE"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "price_over"
+      },
+      {
+        "case_id": "case_025",
+        "error": null,
+        "expected_codes": [
+          "PRICE_VARIANCE"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "PRICE_VARIANCE"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "price_over"
+      },
+      {
+        "case_id": "case_026",
+        "error": null,
+        "expected_codes": [
+          "QUANTITY_EXCEEDS_RECEIPT"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "QUANTITY_EXCEEDS_RECEIPT"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "qty_exceeds_receipt"
+      },
+      {
+        "case_id": "case_027",
+        "error": null,
+        "expected_codes": [
+          "QUANTITY_EXCEEDS_RECEIPT"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "QUANTITY_EXCEEDS_RECEIPT"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "qty_exceeds_receipt"
+      },
+      {
+        "case_id": "case_028",
+        "error": null,
+        "expected_codes": [
+          "QUANTITY_EXCEEDS_RECEIPT"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "QUANTITY_EXCEEDS_RECEIPT"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "qty_exceeds_receipt"
+      },
+      {
+        "case_id": "case_029",
+        "error": null,
+        "expected_codes": [
+          "QUANTITY_EXCEEDS_RECEIPT"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "QUANTITY_EXCEEDS_RECEIPT"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "qty_exceeds_receipt"
+      },
+      {
+        "case_id": "case_030",
+        "error": null,
+        "expected_codes": [
+          "QUANTITY_EXCEEDS_RECEIPT"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "QUANTITY_EXCEEDS_RECEIPT"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "qty_exceeds_receipt"
+      }
+    ],
+    "schema_valid": 30,
+    "split": "development",
+    "total": 30
+  },
+  "gpu": true,
+  "holdout": {
+    "accuracy": 1.0,
+    "correct": 20,
+    "false_ready_for_draft": 0,
+    "rows": [
+      {
+        "case_id": "case_031",
+        "error": null,
+        "expected_codes": [
+          "DUPLICATE_INVOICE"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "DUPLICATE_INVOICE"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "duplicate"
+      },
+      {
+        "case_id": "case_032",
+        "error": null,
+        "expected_codes": [
+          "DUPLICATE_INVOICE"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "DUPLICATE_INVOICE"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "duplicate"
+      },
+      {
+        "case_id": "case_033",
+        "error": null,
+        "expected_codes": [
+          "DUPLICATE_INVOICE"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "DUPLICATE_INVOICE"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "duplicate"
+      },
+      {
+        "case_id": "case_034",
+        "error": null,
+        "expected_codes": [
+          "DUPLICATE_INVOICE"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "DUPLICATE_INVOICE"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "duplicate"
+      },
+      {
+        "case_id": "case_035",
+        "error": null,
+        "expected_codes": [
+          "DUPLICATE_INVOICE"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "DUPLICATE_INVOICE"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "duplicate"
+      },
+      {
+        "case_id": "case_036",
+        "error": null,
+        "expected_codes": [
+          "PO_NOT_FOUND"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "PO_NOT_FOUND"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "missing_po"
+      },
+      {
+        "case_id": "case_037",
+        "error": null,
+        "expected_codes": [
+          "PO_NOT_FOUND"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "PO_NOT_FOUND"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "missing_po"
+      },
+      {
+        "case_id": "case_038",
+        "error": null,
+        "expected_codes": [
+          "PO_NOT_FOUND"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "PO_NOT_FOUND"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "missing_po"
+      },
+      {
+        "case_id": "case_039",
+        "error": null,
+        "expected_codes": [
+          "PO_NOT_FOUND"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "PO_NOT_FOUND"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "missing_po"
+      },
+      {
+        "case_id": "case_040",
+        "error": null,
+        "expected_codes": [
+          "PO_NOT_FOUND"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "PO_NOT_FOUND"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "missing_po"
+      },
+      {
+        "case_id": "case_041",
+        "error": null,
+        "expected_codes": [
+          "INVOICE_MATH_ERROR"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "INVOICE_MATH_ERROR"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "math_error"
+      },
+      {
+        "case_id": "case_042",
+        "error": null,
+        "expected_codes": [
+          "INVOICE_MATH_ERROR"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "INVOICE_MATH_ERROR"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "math_error"
+      },
+      {
+        "case_id": "case_043",
+        "error": null,
+        "expected_codes": [
+          "INVOICE_MATH_ERROR"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "INVOICE_MATH_ERROR"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "math_error"
+      },
+      {
+        "case_id": "case_044",
+        "error": null,
+        "expected_codes": [
+          "INVOICE_MATH_ERROR"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "INVOICE_MATH_ERROR"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "math_error"
+      },
+      {
+        "case_id": "case_045",
+        "error": null,
+        "expected_codes": [
+          "VENDOR_MISMATCH"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "VENDOR_MISMATCH"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "vendor_mismatch"
+      },
+      {
+        "case_id": "case_046",
+        "error": null,
+        "expected_codes": [
+          "VENDOR_MISMATCH"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "VENDOR_MISMATCH"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "vendor_mismatch"
+      },
+      {
+        "case_id": "case_047",
+        "error": null,
+        "expected_codes": [
+          "VENDOR_MISMATCH"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "VENDOR_MISMATCH"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "vendor_mismatch"
+      },
+      {
+        "case_id": "case_048",
+        "error": null,
+        "expected_codes": [
+          "MISSING_INVOICE_NUMBER",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "MISSING_INVOICE_NUMBER",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "missing_ambiguous"
+      },
+      {
+        "case_id": "case_049",
+        "error": null,
+        "expected_codes": [
+          "AMBIGUOUS_FIELD"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD",
+          "VENDOR_MISMATCH"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "missing_ambiguous"
+      },
+      {
+        "case_id": "case_050",
+        "error": null,
+        "expected_codes": [
+          "MISSING_INVOICE_NUMBER",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "expected_decision": "HUMAN_REVIEW",
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_INVOICE_NUMBER",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": true,
+        "scenario": "missing_ambiguous"
+      }
+    ],
+    "schema_valid": 20,
+    "split": "holdout",
+    "total": 20
+  },
+  "llm": "VLLMLLMClient",
+  "preseeded_from_expected": false
+}
