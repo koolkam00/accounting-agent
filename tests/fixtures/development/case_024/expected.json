@@ -15,8 +15,8 @@
         "quote": "INV-2026024"
       },
       "invoice_total": {
-        "page": 1,
-        "quote": "33.93"
+        "page": 2,
+        "quote": "$33.93"
       },
       "po_number": {
         "page": 1,
@@ -36,7 +36,7 @@
         "description": "Cleaning Solvent Gal",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1008|Cleaning Solvent Gal|1|22.44|22.44"
+          "quote": "1.000 SKU-1008 Cleaning Solvent Gal $22.44 $22.44"
         },
         "line_number": 1,
         "line_total": "22.44",
@@ -48,7 +48,7 @@
         "description": "Packing Tape Roll",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1004|Packing Tape Roll|3|3.83|11.49"
+          "quote": "3.000 SKU-1004 Packing Tape Roll $3.83 $11.49"
         },
         "line_number": 2,
         "line_total": "11.49",

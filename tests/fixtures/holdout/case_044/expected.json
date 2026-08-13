@@ -15,8 +15,8 @@
         "quote": "INV-2026044"
       },
       "invoice_total": {
-        "page": 1,
-        "quote": "96.95"
+        "page": 2,
+        "quote": "$96.95"
       },
       "po_number": {
         "page": 1,
@@ -36,7 +36,7 @@
         "description": "Safety Gloves Box",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1003|Safety Gloves Box|3|12.25|36.75"
+          "quote": "3.000 SKU-1003 Safety Gloves Box $12.25 $36.75"
         },
         "line_number": 1,
         "line_total": "36.75",
@@ -48,7 +48,7 @@
         "description": "Label Stock Pack",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1007|Label Stock Pack|3|18.40|55.20"
+          "quote": "3.000 SKU-1007 Label Stock Pack $18.40 $55.20"
         },
         "line_number": 2,
         "line_total": "55.20",

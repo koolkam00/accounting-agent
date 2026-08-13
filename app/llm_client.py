@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 from abc import ABC, abstractmethod
+from decimal import Decimal
 from pathlib import Path
 from typing import Any, Optional
 
@@ -184,26 +185,96 @@ class VLLMLLMClient(LLMClient):
 
 
 def parse_synthetic_invoice_text(text: str) -> ExtractedInvoice:
-    """Deterministic parser for our ReportLab synthetic invoices."""
+    """Deterministic parser for synthetic ReportLab invoices (labeled or messy layouts)."""
+
+    distractor_inv = "INV-000000"
+    distractor_po = "PO-9999"
+    vendors = [
+        "Northwind Office Supply LLC",
+        "Cedar Ridge Industrial Parts",
+        "Blue Harbor Packaging Co",
+        "Summit Ridge Labware Inc",
+        "Pinecrest Facilities Goods",
+    ]
+    sku_desc = {
+        "SKU-1001": "Copy Paper Case",
+        "SKU-1002": "Toner Cartridge Black",
+        "SKU-1003": "Safety Gloves Box",
+        "SKU-1004": "Packing Tape Roll",
+        "SKU-1005": "Widget Assembly A",
+        "SKU-1006": "Widget Assembly B",
+        "SKU-1007": "Label Stock Pack",
+        "SKU-1008": "Cleaning Solvent Gal",
+    }
 
     def grab(pattern: str, default: Optional[str] = None) -> Optional[str]:
         m = re.search(pattern, text, flags=re.IGNORECASE | re.MULTILINE)
         return m.group(1).strip() if m else default
 
-    vendor_name = grab(r"Vendor:\s*(.+)")
-    vendor_id = grab(r"Vendor ID:\s*(\S+)")
-    invoice_number = grab(r"Invoice Number:\s*(\S+)")
-    invoice_date = grab(r"Invoice Date:\s*(\S+)")
-    po_number = grab(r"PO Number:\s*(\S+)")
-    currency = grab(r"Currency:\s*(\S+)", "USD")
-    payment_terms = grab(r"Payment Terms:\s*(.+)")
-    subtotal = grab(r"Subtotal:\s*([0-9.]+)")
-    tax = grab(r"Tax:\s*([0-9.]+)")
-    freight = grab(r"Freight:\s*([0-9.]+)")
-    invoice_total = grab(r"Invoice Total:\s*([0-9.]+)")
+    def normalize_money(raw: str) -> str:
+        cleaned = re.sub(r"[$,]|USD\s*", "", raw, flags=re.IGNORECASE).strip()
+        return format(Decimal(cleaned).quantize(Decimal("0.01")), "f")
+
+    vendor_name = None
+    for name in vendors:
+        if name in text:
+            vendor_name = name
+            break
+    if vendor_name is None:
+        vendor_name = grab(
+            r"(?:Sold by|Issuer|Bill From|From|Remitter|Vendor):\s*(.+)"
+        )
+
+    vendor_id = grab(r"(?:Supplier #|Acct|Vendor code|Internal vendor|ID|Vendor ID:)\s*(V\d+)")
+    inv_candidates = [m.group(0) for m in re.finditer(r"INV-\d+", text) if m.group(0) != distractor_inv]
+    invoice_number = inv_candidates[0] if inv_candidates else grab(
+        r"(?:Bill No\.|Document|Inv #|Invoice|Ref|Invoice Number:)\s*(INV-\S+)"
+    )
+    po_candidates = [
+        m.group(0)
+        for m in re.finditer(r"PO-(?:MISSING-)?\d+", text)
+        if m.group(0) != distractor_po
+    ]
+    po_number = po_candidates[0] if po_candidates else grab(
+        r"(?:Customer #|Our order|PO Ref|Release|This release|PO Number:)\s*(PO-\S+)"
+    )
+
+    date_iso = grab(r"Invoice Date:\s*(\d{4}-\d{2}-\d{2})")
+    if date_iso is None:
+        m = re.search(r"\b(\d{4})-(\d{2})-(\d{2})\b", text)
+        if m:
+            date_iso = m.group(0)
+        else:
+            m = re.search(r"\b(\d{2})/(\d{2})/(\d{4})\b", text)
+            if m:
+                date_iso = f"{m.group(3)}-{m.group(1)}-{m.group(2)}"
+            else:
+                months = {
+                    "january": "01", "february": "02", "march": "03", "april": "04",
+                    "may": "05", "june": "06", "july": "07", "august": "08",
+                    "september": "09", "october": "10", "november": "11", "december": "12",
+                    "jan": "01", "feb": "02", "mar": "03", "apr": "04", "jun": "06",
+                    "jul": "07", "aug": "08", "sep": "09", "oct": "10", "nov": "11", "dec": "12",
+                }
+                m = re.search(
+                    r"\b([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})\b|\b(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})\b",
+                    text,
+                )
+                if m:
+                    if m.group(1):
+                        date_iso = f"{m.group(3)}-{months[m.group(1).lower()]}-{int(m.group(2)):02d}"
+                    else:
+                        date_iso = f"{m.group(6)}-{months[m.group(5).lower()]}-{int(m.group(4)):02d}"
+
+    payment_terms = "Net 30" if re.search(r"Net\s*30|NET30|Due in 30", text, re.I) else grab(
+        r"Payment Terms:\s*(.+)"
+    )
+    currency = "USD" if ("USD" in text or "$" in text or grab(r"Currency:\s*(\S+)")) else grab(
+        r"Currency:\s*(\S+)", "USD"
+    )
 
     line_items: list[InvoiceLineItem] = []
-    # LINE|<n>|<sku>|<desc>|<qty>|<price>|<total>
+    # Legacy machine rows
     for m in re.finditer(
         r"LINE\|(\d+)\|([^|]+)\|([^|]+)\|([0-9.]+)\|([0-9.]+)\|([0-9.]+)",
         text,
@@ -219,6 +290,64 @@ def parse_synthetic_invoice_text(text: str) -> ExtractedInvoice:
                 evidence=EvidenceSpan(quote=m.group(0), page=1),
             )
         )
+    if not line_items:
+        money_tok = r"(?:USD\s+)?\$?[0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})"
+        qty_tok = r"([0-9]+(?:\.[0-9]+)?(?:\s+ea)?)"
+        n = 0
+        for raw_line in text.splitlines():
+            sku_m = re.search(r"(SKU-\d+)", raw_line)
+            if not sku_m:
+                continue
+            sku = sku_m.group(1)
+            desc = sku_desc.get(sku)
+            if desc is None or desc not in raw_line:
+                continue
+            amounts = [normalize_money(x) for x in re.findall(money_tok, raw_line)]
+            qty = None
+            qm = re.search(rf"{qty_tok}", raw_line.replace(sku, " "))
+            if qm:
+                qty = qm.group(1).replace(" ea", "").strip()
+                if "." in qty:
+                    d = Decimal(qty)
+                    qty = str(int(d)) if d == d.to_integral() else format(d, "f")
+            if qty is None or len(amounts) < 2:
+                continue
+            n += 1
+            unit_price, line_total = amounts[0], amounts[-1]
+            if Decimal(line_total) < Decimal(unit_price) and len(amounts) >= 2:
+                unit_price, line_total = amounts[-1], amounts[0]
+            line_items.append(
+                InvoiceLineItem(
+                    line_number=n,
+                    sku=sku,
+                    description=desc,
+                    quantity=qty,
+                    unit_price=unit_price,
+                    line_total=line_total,
+                    evidence=EvidenceSpan(quote=raw_line.strip(), page=1),
+                )
+            )
+
+    total_m = re.search(
+        r"(?:Amount due|Invoice total|Balance due|Please pay|Total due|Invoice Total:)\s+(USD\s+)?\$?([0-9,]+\.[0-9]{2})",
+        text,
+        flags=re.IGNORECASE,
+    )
+    invoice_total = normalize_money(total_m.group(2)) if total_m else grab(r"Invoice Total:\s*([0-9.]+)")
+    sub_m = re.search(
+        r"(?:Merchandise|Goods|Net merchandise|Subtotal|Lines):\s*(USD\s+)?\$?([0-9,]+\.[0-9]{2})",
+        text,
+        flags=re.IGNORECASE,
+    )
+    subtotal = normalize_money(sub_m.group(2)) if sub_m else grab(r"Subtotal:\s*([0-9.]+)")
+    tax_m = re.search(r"\bTax\s+(USD\s+)?\$?([0-9,]+\.[0-9]{2})", text, flags=re.IGNORECASE)
+    tax = normalize_money(tax_m.group(2)) if tax_m else ("0.00" if re.search(r"tax exempt", text, re.I) else grab(r"Tax:\s*([0-9.]+)"))
+    freight_m = re.search(r"\bFreight\s+(USD\s+)?\$?([0-9,]+\.[0-9]{2})", text, flags=re.IGNORECASE)
+    freight = (
+        normalize_money(freight_m.group(2))
+        if freight_m
+        else ("0.00" if re.search(r"freight prepaid", text, re.I) else grab(r"Freight:\s*([0-9.]+)"))
+    )
 
     evidence: dict[str, EvidenceSpan] = {}
     for field, val in [
@@ -229,20 +358,22 @@ def parse_synthetic_invoice_text(text: str) -> ExtractedInvoice:
     ]:
         if val and val in text:
             evidence[field] = EvidenceSpan(quote=val, page=1)
+        elif field == "invoice_total" and total_m:
+            evidence[field] = EvidenceSpan(quote=total_m.group(0), page=1)
 
     ambiguities = []
-    if "AMBIGUOUS:" in text:
+    if "AMBIGUOUS:" in text or "Letterhead: Other Corp" in text:
         ambiguities.append(
-            {"field": "vendor_name", "reason": "Marked ambiguous in source", "candidates": []}
+            {"field": "vendor_name", "reason": "Multiple vendor headers detected", "candidates": []}
         )
 
     return ExtractedInvoice(
         vendor_name=vendor_name,
         vendor_id=vendor_id,
         invoice_number=invoice_number,
-        invoice_date=invoice_date,
+        invoice_date=date_iso,
         po_number=po_number,
-        currency=currency,
+        currency=currency or "USD",
         line_items=line_items,
         subtotal=subtotal,
         tax=tax,

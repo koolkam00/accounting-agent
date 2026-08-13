@@ -13,8 +13,8 @@
         "quote": "INV-2026004"
       },
       "invoice_total": {
-        "page": 1,
-        "quote": "266.00"
+        "page": 2,
+        "quote": "$266.00"
       },
       "po_number": {
         "page": 1,
@@ -34,7 +34,7 @@
         "description": "Cleaning Solvent Gal",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1008|Cleaning Solvent Gal|3|22.00|66.00"
+          "quote": "3.000 SKU-1008 Cleaning Solvent Gal $22.00 $66.00"
         },
         "line_number": 1,
         "line_total": "66.00",
@@ -46,7 +46,7 @@
         "description": "Widget Assembly A",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1005|Widget Assembly A|2|100.00|200.00"
+          "quote": "2.000 SKU-1005 Widget Assembly A $100.00 $200.00"
         },
         "line_number": 2,
         "line_total": "200.00",

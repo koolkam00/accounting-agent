@@ -16,7 +16,7 @@
       },
       "invoice_total": {
         "page": 1,
-        "quote": "192.00"
+        "quote": "$192.00"
       },
       "po_number": {
         "page": 1,
@@ -36,7 +36,7 @@
         "description": "Label Stock Pack",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1007|Label Stock Pack|5|18.40|92.00"
+          "quote": "5 Label Stock Pack SKU-1007 $18.40 $92.00"
         },
         "line_number": 1,
         "line_total": "92.00",
@@ -48,7 +48,7 @@
         "description": "Widget Assembly A",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1005|Widget Assembly A|1|100.00|100.00"
+          "quote": "1 Widget Assembly A SKU-1005 $100.00 $100.00"
         },
         "line_number": 2,
         "line_total": "100.00",

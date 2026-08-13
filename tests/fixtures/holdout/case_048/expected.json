@@ -13,7 +13,7 @@
     "evidence": {
       "invoice_total": {
         "page": 1,
-        "quote": "1257.50"
+        "quote": "USD 1257.50"
       },
       "po_number": {
         "page": 1,
@@ -33,7 +33,7 @@
         "description": "Packing Tape Roll",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1004|Packing Tape Roll|2|3.75|7.50"
+          "quote": "Packing Tape Roll 2 SKU-1004 USD 3.75 USD 7.50"
         },
         "line_number": 1,
         "line_total": "7.50",
@@ -45,7 +45,7 @@
         "description": "Widget Assembly B",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1006|Widget Assembly B|5|250.00|1250.00"
+          "quote": "Widget Assembly B 5 SKU-1006 USD 250.00 USD 1250.00"
         },
         "line_number": 2,
         "line_total": "1250.00",

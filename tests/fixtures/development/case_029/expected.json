@@ -15,8 +15,8 @@
         "quote": "INV-2026029"
       },
       "invoice_total": {
-        "page": 1,
-        "quote": "150.00"
+        "page": 2,
+        "quote": "$150.00"
       },
       "po_number": {
         "page": 1,
@@ -36,7 +36,7 @@
         "description": "Copy Paper Case",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1001|Copy Paper Case|5|10.00|50.00"
+          "quote": "5.000 SKU-1001 Copy Paper Case $10.00 $50.00"
         },
         "line_number": 1,
         "line_total": "50.00",
@@ -48,7 +48,7 @@
         "description": "Widget Assembly A",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1005|Widget Assembly A|1|100.00|100.00"
+          "quote": "1.000 SKU-1005 Widget Assembly A $100.00 $100.00"
         },
         "line_number": 2,
         "line_total": "100.00",

@@ -16,7 +16,7 @@
       },
       "invoice_total": {
         "page": 1,
-        "quote": "247.50"
+        "quote": "$247.50"
       },
       "po_number": {
         "page": 1,
@@ -36,7 +36,7 @@
         "description": "Toner Cartridge Black",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1002|Toner Cartridge Black|5|45.50|227.50"
+          "quote": "5 Toner Cartridge Black SKU-1002 $45.50 $227.50"
         },
         "line_number": 1,
         "line_total": "227.50",
@@ -48,7 +48,7 @@
         "description": "Copy Paper Case",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1001|Copy Paper Case|2|10.00|20.00"
+          "quote": "2 Copy Paper Case SKU-1001 $10.00 $20.00"
         },
         "line_number": 2,
         "line_total": "20.00",

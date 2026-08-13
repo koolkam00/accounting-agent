@@ -77,3 +77,67 @@ def test_all_layouts_invariant():
             layout(a, inv)
             layout(b, inv)
             assert _sha(a.read_bytes()) == _sha(b.read_bytes()), layout.__name__
+
+
+def test_layouts_have_no_machine_block(tmp_path):
+    inv = {
+        "vendor_name": "Northwind Office Supply LLC",
+        "vendor_id": "V001",
+        "invoice_number": "INV-TEST",
+        "invoice_date": "2026-01-15",
+        "po_number": "PO-1",
+        "currency": "USD",
+        "payment_terms": "Net 30",
+        "line_items": [
+            {
+                "line_number": 1,
+                "sku": "SKU-1001",
+                "description": "Copy Paper Case",
+                "quantity": "2",
+                "unit_price": "10.00",
+                "line_total": "20.00",
+            }
+        ],
+        "subtotal": "20.00",
+        "tax": "0.00",
+        "freight": "0.00",
+        "invoice_total": "20.00",
+        "ambiguous_marker": False,
+    }
+    from app.canonicalize import canonicalize_document
+    from app.pdf_text import extract_pdf_text
+
+    for layout in LAYOUTS:
+        path = tmp_path / f"{layout.__name__}.pdf"
+        layout(path, inv)
+        pages = extract_pdf_text(path).pages
+        text = canonicalize_document(path.read_bytes(), pages).canonical_text
+        assert "LINE|" not in text, layout.__name__
+        assert "Vendor:" not in text, layout.__name__
+        assert "Invoice Number:" not in text, layout.__name__
+        assert "PO Number:" not in text, layout.__name__
+        assert "Harbor Street Holdings LLC" in text, layout.__name__
+        assert "INV-000000" in text, layout.__name__
+        assert "PO-9999" in text, layout.__name__
+
+
+def test_fixture_evidence_quotes_in_canonical_text():
+    from app.canonicalize import canonicalize_document
+    from app.pdf_text import extract_pdf_text
+
+    root = REPO / "tests" / "fixtures"
+    missing = []
+    for split in ("development", "holdout"):
+        for case_dir in sorted((root / split).glob("case_*")):
+            expected = __import__("json").loads((case_dir / "expected.json").read_text())
+            pdf = (case_dir / "invoice.pdf").read_bytes()
+            pages = extract_pdf_text(pdf).pages
+            text = canonicalize_document(pdf, pages).canonical_text
+            assert "LINE|" not in text, case_dir.name
+            for key, span in expected["extraction"]["evidence"].items():
+                if span["quote"] not in text:
+                    missing.append((case_dir.name, key, span["quote"]))
+            for li in expected["extraction"]["line_items"]:
+                if li.get("evidence") and li["evidence"]["quote"] not in text:
+                    missing.append((case_dir.name, f"line {li['line_number']}", li["evidence"]["quote"]))
+    assert missing == []

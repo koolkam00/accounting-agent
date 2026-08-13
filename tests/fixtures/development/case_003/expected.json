@@ -14,7 +14,7 @@
       },
       "invoice_total": {
         "page": 1,
-        "quote": "38.75"
+        "quote": "USD 38.75"
       },
       "po_number": {
         "page": 1,
@@ -34,7 +34,7 @@
         "description": "Packing Tape Roll",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1004|Packing Tape Roll|5|3.75|18.75"
+          "quote": "Packing Tape Roll 5 SKU-1004 USD 3.75 USD 18.75"
         },
         "line_number": 1,
         "line_total": "18.75",
@@ -46,7 +46,7 @@
         "description": "Copy Paper Case",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1001|Copy Paper Case|2|10.00|20.00"
+          "quote": "Copy Paper Case 2 SKU-1001 USD 10.00 USD 20.00"
         },
         "line_number": 2,
         "line_total": "20.00",

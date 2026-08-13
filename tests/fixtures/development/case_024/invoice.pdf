@@ -2,7 +2,7 @@
 %“Œ‹ž ReportLab Generated PDF document (opensource)
 1 0 obj
 <<
-/F1 2 0 R /F2 3 0 R
+/F1 2 0 R /F2 3 0 R /F3 4 0 R
 >>
 endobj
 2 0 obj
@@ -17,7 +17,12 @@ endobj
 endobj
 4 0 obj
 <<
-/Contents 8 0 R /MediaBox [ 0 0 612 792 ] /Parent 7 0 R /Resources <<
+/BaseFont /Courier /Encoding /WinAnsiEncoding /Name /F3 /Subtype /Type1 /Type /Font
+>>
+endobj
+5 0 obj
+<<
+/Contents 10 0 R /MediaBox [ 0 0 612 792 ] /Parent 9 0 R /Resources <<
 /Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
 >> /Rotate 0 /Trans <<
 
@@ -25,50 +30,70 @@ endobj
   /Type /Page
 >>
 endobj
-5 0 obj
+6 0 obj
 <<
-/PageMode /UseNone /Pages 7 0 R /Type /Catalog
+/Contents 11 0 R /MediaBox [ 0 0 612 792 ] /Parent 9 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
 >>
 endobj
-6 0 obj
+7 0 obj
+<<
+/PageMode /UseNone /Pages 9 0 R /Type /Catalog
+>>
+endobj
+8 0 obj
 <<
 /Author (Accounting Agent Fixture Generator) /CreationDate (D:20000101000000+00'00') /Creator (accounting-agent/generate_cases.py) /Keywords () /ModDate (D:20000101000000+00'00') /Producer (ReportLab deterministic) 
   /Subject (Deterministic AP fixture) /Title (Synthetic Invoice) /Trapped /False
 >>
 endobj
-7 0 obj
+9 0 obj
 <<
-/Count 1 /Kids [ 4 0 R ] /Type /Pages
+/Count 2 /Kids [ 5 0 R 6 0 R ] /Type /Pages
 >>
 endobj
-8 0 obj
+10 0 obj
 <<
-/Filter [ /ASCII85Decode /FlateDecode ] /Length 481
+/Filter [ /ASCII85Decode /FlateDecode ] /Length 715
 >>
 stream
-GasbU>u/<k'Sc)P(%7u^0\`ahD3sg%('tOQ\1aW8F<>*)P[m#8Z44docn+G#c?Z#U["j7sO-XDi"8;k@,7;R92PAj`&7Z,;bAa\&-+^'G#V98)(c$e>]1$h8U_p%YU_ktjRaV4M*RJ<[E<6a4`_6#>(oUYpB8C`e=/M-9Q!L7i7Jj\V%Wfk3oi>KP=79&5i?c<Y>rdnn0T9RE\tr$MC$+E)g2hi,S-e*_>V$3?c2CrFr:ZNEig%s.hIP;JKNWt6@<q;H4-7!nEMPX[Ff<t%RT9a?VI+VTBnp$>@bh[]n$5V5_84+-+#J1??3SD;XHFPiAau7JM997i7]PcRpDJ=A@6k;$EM7"hG0uA89Yt<J5E5A,h1LZ.SM>cgl>0MTf!gg5Pe<C*i8nVdnl9+i7T!S0VI>qtV$;.4FnKqVh'u3A)7_Fq_eFS`DS9=!5?nbP>e,3pb>G.Rm8O!cGJ1f@k/HFjd/!mIh!7o~>endstream
+Gat$t9iKe#'YNU1llh.M.BXpHM4IiWV(g0@1bnXNMde30@S7SCJRO9ThrbNI.E.]ace)`1]5QTp'*k;%2p\i2:(hq:j5:!\#$_?FaW-q:5nN'g?tn)C0oY@@/5U(tNWtGk1aiAGeL87dEJL92hA)C`9I)u'i8'+#G:(l/Oo.OdeEs<;2XpK![%s_Jn:eI$[,e.uIL7eqlDupfVmCjjj/*8$7"6U(TtFM="7`tL\e1ra<k;ateZL<Za3nKtGHTL-MAj76l$l^fB4Z+uI9^#`*t'F89ZXuJp+U!^\]1-h:HaImeL>6,59O]8>3]@n8n7DYQldk5N]L)\$Z/&>/rOJ%9C3=sIai&d[6jbmb&OV%k"8l7-JoGO9dQD8f-Yi'`ORJM`3o04-5G\rc]#Q:0V?\fon^+$=l#Mu2GIpNFQGGNk8@#hj\)r:H/gGf\sD,Ie0Vk%Q)2%6g6>]\!SE]mPc[rg/-S"l5"&6^YQI(o8OI\gJ3.M#dYR.&a#8"Cc=<mriGVFZa(_;AD-n?C4h=MGgA\'j43EHSk-!.c'LNWmqCjFB7Q0C`baeA5XA?XJ9L_l@Fl3-B<aW%DlDh3JgW%#Z9DkoB2^U\VZq9k^2NrB"10K8J%B?7XZ#]Yg4b@$SSq]Q7;Kf6m5=TKniBF$T6D\l`@A:1K9:$;t(doO%S-LfuWB*/C>.,`KT(XO_^7b&>opfG!IKNee:pC~>endstream
+endobj
+11 0 obj
+<<
+/Filter [ /ASCII85Decode /FlateDecode ] /Length 631
+>>
+stream
+Gat%_9omaW&;KZN/)J/f!J6E/Bq"IL?)Y-Ynt@u$`5R]`N?PQbm;2%%?[l%R/(u0[aTlVDSTgYCB1UjNKsMYIgD]Mr)6t6)Ml]GVe.;=V?\SCTjF)35R,s\M.I$pe^Tn:lLMGZ84jRcf1^IlbC^>taMM>H2rdjq=+6a4*TU[@ZC#qH,0=2X8YSmbELS`q3c3%;>QmUV3k.apFW4Eo!<a!uUf98c]T01^c8gp_i,h21iMbTBl4Wc^8%us4t3fC,;/JB*tEi_^e'8M`Y0^`+#HOc!ESq\<WP9#m!&Iep@I&,4Cr#8(-`6LQ.APEtGC9jV#fEp;@bOu$0S)@&$>OQo8UU1R:;H_Y4+QT;<rXhCBkHR^TiFb21\?=[f<V7/(msF2F=(aFobTc/\Sr(9k(lcM'0JH8<\<*:(B7&[J;,]hklaj$KmE%4s$lLV1gd5_[&b:P@1tGe6->muGV7:Ms^II1*O%Cle]hbjX@o`,!a:5H>$aA3F`ZuH^00Ypsn[`d(%nN+0(PR0D,'Ra\?PsC/09C+NBAA8!8m8>L:nLeMiF.Hq\qE=u9tf9VMQP=IDcFi-+')cWH^N*t0Q>FJUj[9RfnEmjc!N=<9;C8fmQZ2JRtgA[$!0oFK/U1~>endstream
 endobj
 xref
-0 9
+0 12
 0000000000 65535 f 
 0000000061 00000 n 
-0000000102 00000 n 
-0000000209 00000 n 
-0000000321 00000 n 
-0000000514 00000 n 
-0000000582 00000 n 
-0000000900 00000 n 
-0000000959 00000 n 
+0000000112 00000 n 
+0000000219 00000 n 
+0000000331 00000 n 
+0000000436 00000 n 
+0000000630 00000 n 
+0000000824 00000 n 
+0000000892 00000 n 
+0000001210 00000 n 
+0000001275 00000 n 
+0000002081 00000 n 
 trailer
 <<
 /ID 
 [<7871ee0c4eeaf34fe66540f322891282><7871ee0c4eeaf34fe66540f322891282>]
 % ReportLab generated PDF document -- digest (opensource)
 
-/Info 6 0 R
-/Root 5 0 R
-/Size 9
+/Info 8 0 R
+/Root 7 0 R
+/Size 12
 >>
 startxref
-1530
+2803
 %%EOF

@@ -36,7 +36,7 @@
         "description": "Packing Tape Roll",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1004|Packing Tape Roll|2|3.75|7.50"
+          "quote": "SKU-1004 Packing Tape Roll 7.50 2 ea 3.75"
         },
         "line_number": 1,
         "line_total": "7.50",
@@ -48,7 +48,7 @@
         "description": "Copy Paper Case",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1001|Copy Paper Case|10|10.00|100.00"
+          "quote": "SKU-1001 Copy Paper Case 100.00 10 ea 10.00"
         },
         "line_number": 2,
         "line_total": "100.00",

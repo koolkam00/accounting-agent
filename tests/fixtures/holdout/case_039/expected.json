@@ -15,8 +15,8 @@
         "quote": "INV-2026039"
       },
       "invoice_total": {
-        "page": 1,
-        "quote": "536.75"
+        "page": 2,
+        "quote": "$536.75"
       },
       "po_number": {
         "page": 1,
@@ -36,7 +36,7 @@
         "description": "Widget Assembly B",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1006|Widget Assembly B|2|250.00|500.00"
+          "quote": "2.000 SKU-1006 Widget Assembly B $250.00 $500.00"
         },
         "line_number": 1,
         "line_total": "500.00",
@@ -48,7 +48,7 @@
         "description": "Safety Gloves Box",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1003|Safety Gloves Box|3|12.25|36.75"
+          "quote": "3.000 SKU-1003 Safety Gloves Box $12.25 $36.75"
         },
         "line_number": 2,
         "line_total": "36.75",

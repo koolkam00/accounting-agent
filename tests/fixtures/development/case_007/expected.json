@@ -34,7 +34,7 @@
         "description": "Safety Gloves Box",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1003|Safety Gloves Box|10|12.25|122.50"
+          "quote": "SKU-1003 Safety Gloves Box 122.50 10 ea 12.25"
         },
         "line_number": 1,
         "line_total": "122.50",
@@ -46,7 +46,7 @@
         "description": "Packing Tape Roll",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1004|Packing Tape Roll|10|3.75|37.50"
+          "quote": "SKU-1004 Packing Tape Roll 37.50 10 ea 3.75"
         },
         "line_number": 2,
         "line_total": "37.50",

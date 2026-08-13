@@ -39,7 +39,7 @@
         "description": "Cleaning Solvent Gal",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1008|Cleaning Solvent Gal|10|22.00|220.00"
+          "quote": "SKU-1008 Cleaning Solvent Gal 220.00 10 ea 22.00"
         },
         "line_number": 1,
         "line_total": "220.00",
@@ -51,7 +51,7 @@
         "description": "Packing Tape Roll",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1004|Packing Tape Roll|3|3.75|11.25"
+          "quote": "SKU-1004 Packing Tape Roll 11.25 3 ea 3.75"
         },
         "line_number": 2,
         "line_total": "11.25",

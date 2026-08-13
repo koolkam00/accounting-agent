@@ -11,12 +11,13 @@ from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 
 from reportlab.lib.pagesizes import letter
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
+
+from app.canonicalize import canonicalize_page_text  # noqa: E402
+from app.pdf_text import extract_pdf_text  # noqa: E402
 
 SEED = 20260812
 FIX_DEV = REPO / "tests" / "fixtures" / "development"
@@ -55,7 +56,195 @@ def qstr(d: Decimal) -> str:
     return format(d.quantize(Decimal("0.001"), rounding=ROUND_HALF_UP).normalize(), "f")
 
 
-# --- PDF layouts (5 variants), byte-reproducible ---
+# --- Harder text-layer invoices (no LINE| machine block; GPU sees pypdf text) ---
+
+DISTRACTOR_REMIT = "Harbor Street Holdings LLC"
+DISTRACTOR_SHIP = "Westfield Distribution Center"
+DISTRACTOR_INV = "INV-000000"
+DISTRACTOR_PO = "PO-9999"
+DISTRACTOR_AMOUNT = "8,888.00"
+AMBIGUOUS_OTHER = "Other Corp"
+
+_MONTHS = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+]
+_MONTHS_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+PROFILES: dict[str, dict] = {
+    "layout_classic": {
+        "money": "dollar",
+        "qty": "int",
+        "date": "us_slash",
+        "inv_label": "Bill No.",
+        "po_label": "Customer #",
+        "vendor_label": "Sold by",
+        "terms_text": "Due in 30 days (Net 30)",
+        "total_label": "Amount due",
+        "subtotal_label": "Merchandise",
+        "tax_mode": "exempt_words",
+        "freight_mode": "prepaid_words",
+        "vendor_id_label": "Supplier #",
+        "col_order": ("qty", "description", "sku", "unit_price", "line_total"),
+        "headers": ("Qty", "Item", "Code", "Price", "Ext"),
+        "multipage": False,
+        "reading_order": "normal",
+        "barcode": True,
+    },
+    "layout_boxed": {
+        "money": "plain",
+        "qty": "ea",
+        "date": "iso",
+        "inv_label": "Document",
+        "po_label": "Our order",
+        "vendor_label": "Issuer",
+        "terms_text": "Terms Net 30 from invoice date",
+        "total_label": "Invoice total",
+        "subtotal_label": "Goods",
+        "tax_mode": "labeled",
+        "freight_mode": "labeled",
+        "vendor_id_label": "Acct",
+        "col_order": ("sku", "description", "line_total", "qty", "unit_price"),
+        "headers": ("SKU", "Description", "Amount", "Qty", "Unit"),
+        "multipage": False,
+        "reading_order": "normal",
+        "barcode": True,
+    },
+    "layout_two_column": {
+        "money": "usd",
+        "qty": "int",
+        "date": "written",
+        "inv_label": "Inv #",
+        "po_label": "PO Ref",
+        "vendor_label": "Bill From",
+        "terms_text": "2/10 N30 — Net 30",
+        "total_label": "Balance due",
+        "subtotal_label": "Net merchandise",
+        "tax_mode": "exempt_words",
+        "freight_mode": "labeled",
+        "vendor_id_label": "Vendor code",
+        "col_order": ("description", "qty", "sku", "unit_price", "line_total"),
+        "headers": ("Description", "Qty", "SKU", "Unit", "Amount"),
+        "multipage": False,
+        "reading_order": "right_first",
+        "barcode": True,
+    },
+    "layout_modern": {
+        "money": "dollar",
+        "qty": "thousandths",
+        "date": "day_mon_year",
+        "inv_label": "Invoice",
+        "po_label": "Release",
+        "vendor_label": "From",
+        "terms_text": "Payment terms: Net 30",
+        "total_label": "Total due",
+        "subtotal_label": "Subtotal",
+        "tax_mode": "labeled",
+        "freight_mode": "prepaid_words",
+        "vendor_id_label": "Internal vendor",
+        "col_order": ("qty", "sku", "description", "unit_price", "line_total"),
+        "headers": ("Qty", "SKU", "Description", "Unit", "Amount"),
+        "multipage": True,
+        "reading_order": "normal",
+        "barcode": True,
+    },
+    "layout_compact": {
+        "money": "ungrouped_dollar",
+        "qty": "thousandths",
+        "date": "us_slash",
+        "inv_label": "Ref",
+        "po_label": "This release",
+        "vendor_label": "Remitter",
+        "terms_text": "NET30",
+        "total_label": "Please pay",
+        "subtotal_label": "Lines",
+        "tax_mode": "exempt_words",
+        "freight_mode": "prepaid_words",
+        "vendor_id_label": "ID",
+        "col_order": ("sku", "qty", "unit_price", "line_total", "description"),
+        "headers": ("SKU", "Qty", "Unit", "Ext", "Description"),
+        "multipage": False,
+        "reading_order": "normal",
+        "barcode": True,
+    },
+}
+
+
+def format_date(iso: str, style: str) -> str:
+    year_s, month_s, day_s = iso.split("-")
+    year, month, day = int(year_s), int(month_s), int(day_s)
+    if style == "us_slash":
+        return f"{month:02d}/{day:02d}/{year}"
+    if style == "written":
+        return f"{_MONTHS[month - 1]} {day}, {year}"
+    if style == "day_mon_year":
+        return f"{day} {_MONTHS_ABBR[month - 1]} {year}"
+    return iso
+
+
+def format_money(amount: str, style: str) -> str:
+    q = money(Decimal(amount))
+    plain = format(q, "f")
+    grouped = format(q, ",.2f")
+    if style == "dollar":
+        return f"${grouped}"
+    if style == "usd":
+        return f"USD {plain}"
+    if style == "ungrouped_dollar":
+        return f"${plain}"
+    return plain
+
+
+def format_qty(qty: str, style: str) -> str:
+    d = Decimal(qty)
+    if style == "thousandths":
+        return format(d.quantize(Decimal("0.001"), rounding=ROUND_HALF_UP), "f")
+    if style == "ea":
+        whole = str(int(d)) if d == d.to_integral() else format(d, "f")
+        return f"{whole} ea"
+    if d == d.to_integral():
+        return str(int(d))
+    return format(d, "f")
+
+
+def format_row(li: dict, profile: dict) -> str:
+    cells = {
+        "qty": format_qty(li["quantity"], profile["qty"]),
+        "description": li["description"],
+        "sku": li["sku"],
+        "unit_price": format_money(li["unit_price"], profile["money"]),
+        "line_total": format_money(li["line_total"], profile["money"]),
+    }
+    return " ".join(cells[k] for k in profile["col_order"])
+
+
+def header_row(profile: dict) -> str:
+    return " ".join(profile["headers"])
+
+
+def build_display(inv: dict, profile: dict) -> dict:
+    rows = [format_row(li, profile) for li in inv["line_items"]]
+    return {
+        "date": format_date(inv["invoice_date"], profile["date"]),
+        "invoice_total": format_money(inv["invoice_total"], profile["money"]),
+        "subtotal": format_money(inv["subtotal"], profile["money"]),
+        "tax": format_money(inv["tax"], profile["money"]),
+        "freight": format_money(inv["freight"], profile["money"]),
+        "rows": rows,
+        "header": header_row(profile),
+        "po": inv["po_number"],
+        "vendor": inv["vendor_name"],
+        "invoice_number": inv["invoice_number"],
+        "vendor_id": inv["vendor_id"],
+        "terms": profile["terms_text"],
+    }
+
+
+def _profile_and_display(layout_name: str, inv: dict) -> tuple[dict, dict]:
+    profile = inv.get("profile") or PROFILES[layout_name]
+    display = inv.get("display") or build_display(inv, profile)
+    return profile, display
+
 
 def _setup_canvas(path: Path) -> canvas.Canvas:
     # invariant=1 freezes CreationDate/ModDate/ID for byte-reproducible PDFs
@@ -68,95 +257,206 @@ def _setup_canvas(path: Path) -> canvas.Canvas:
     return c
 
 
-def _draw_machine_block(c: canvas.Canvas, inv: dict, y: float) -> float:
-    """Machine-readable block used by MockLLMClient parser — identical across layouts."""
+def _draw_distractors(c: canvas.Canvas, x: float, y: float) -> float:
     c.setFont("Helvetica", 8)
+    c.drawString(x, y, f"Remit to: {DISTRACTOR_REMIT}")
+    y -= 11
+    c.drawString(x, y, f"Ship from: {DISTRACTOR_SHIP}")
+    y -= 11
+    c.drawString(x, y, f"Scan code {DISTRACTOR_INV}   prior balance ${DISTRACTOR_AMOUNT}")
+    y -= 11
+    c.drawString(x, y, f"Blanket {DISTRACTOR_PO} — do not pay this reference")
+    y -= 11
+    c.drawString(x, y, "Amount enclosed: $0.00    Credit limit: $8,888.00")
+    return y - 14
+
+
+def _draw_vendor_block(c: canvas.Canvas, inv: dict, profile: dict, display: dict, x: float, y: float) -> float:
+    c.setFont("Helvetica", 9)
+    if inv.get("ambiguous_marker"):
+        c.drawString(x, y, f"Letterhead: {AMBIGUOUS_OTHER}")
+        y -= 12
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(x, y, f"{profile['vendor_label']}: {display['vendor']}")
+    y -= 14
+    c.setFont("Helvetica", 9)
+    if display["invoice_number"]:
+        c.drawString(x, y, f"{profile['inv_label']} {display['invoice_number']}")
+        y -= 12
+    c.drawString(x, y, f"Date {display['date']}")
+    y -= 12
+    c.drawString(x, y, f"{profile['po_label']} {display['po']}")
+    y -= 12
+    c.drawString(x, y, display["terms"])
+    y -= 12
+    c.drawString(x, y, f"{profile['vendor_id_label']} {display['vendor_id']}")
+    return y - 16
+
+
+def _draw_table(c: canvas.Canvas, display: dict, x: float, y: float, font: str = "Helvetica") -> float:
+    c.setFont(f"{font}-Bold" if font == "Helvetica" else "Courier-Bold", 8)
+    c.drawString(x, y, display["header"])
+    y -= 12
+    c.setFont(font, 8)
+    for row in display["rows"]:
+        c.drawString(x, y, row)
+        y -= 12
+    return y - 8
+
+
+def _draw_totals(c: canvas.Canvas, profile: dict, display: dict, x: float, y: float) -> float:
+    c.setFont("Helvetica", 9)
+    c.drawString(x, y, f"{profile['subtotal_label']}  {display['subtotal']}")
+    y -= 12
+    if profile["tax_mode"] == "labeled":
+        c.drawString(x, y, f"Tax  {display['tax']}")
+        y -= 12
+    else:
+        c.drawString(x, y, "Tax exempt — no sales tax charged")
+        y -= 12
+    if profile["freight_mode"] == "labeled":
+        c.drawString(x, y, f"Freight  {display['freight']}")
+        y -= 12
+    else:
+        c.drawString(x, y, "Freight prepaid and billed on a separate advice")
+        y -= 12
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(x, y, f"{profile['total_label']}  {display['invoice_total']}")
+    return y - 16
+
+
+def _draw_barcode_footer(c: canvas.Canvas, inv: dict, y: float = 48) -> None:
+    c.setFont("Courier", 8)
+    real = inv.get("invoice_number") or ""
+    extra = f"  also {real}" if real else ""
+    c.drawString(72, y, f"|| {DISTRACTOR_INV} ||{extra}")
+
+
+def _draw_terms_noise(c: canvas.Canvas, x: float, y: float) -> float:
+    c.setFont("Helvetica", 7)
     lines = [
-        f"Vendor: {inv['vendor_name']}",
-        f"Vendor ID: {inv['vendor_id']}",
-        f"Invoice Number: {inv['invoice_number']}",
-        f"Invoice Date: {inv['invoice_date']}",
-        f"PO Number: {inv['po_number']}",
-        f"Currency: {inv['currency']}",
-        f"Payment Terms: {inv['payment_terms']}",
+        "Claims must be made within 10 days of receipt. Title passes FOB origin.",
+        "Returned goods require an RMA. Restocking 15% after 30 days.",
+        "This is not a packing list. Counts on the bill of lading control.",
+        "Payment coupon below is for remittance only and may show a different amount.",
     ]
     for line in lines:
-        c.drawString(72, y, line)
-        y -= 11
-    y -= 6
-    for li in inv["line_items"]:
-        row = (
-            f"LINE|{li['line_number']}|{li['sku']}|{li['description']}|"
-            f"{li['quantity']}|{li['unit_price']}|{li['line_total']}"
-        )
-        c.drawString(72, y, row)
-        y -= 11
-    y -= 6
-    for label in ("Subtotal", "Tax", "Freight", "Invoice Total"):
-        key = label.lower().replace(" ", "_")
-        c.drawString(72, y, f"{label}: {inv[key]}")
-        y -= 11
-    if inv.get("ambiguous_marker"):
-        c.drawString(72, y, "AMBIGUOUS: vendor_name")
-        y -= 11
+        c.drawString(x, y, line)
+        y -= 10
     return y
 
 
 def layout_classic(path: Path, inv: dict) -> None:
+    profile, display = _profile_and_display("layout_classic", inv)
     c = _setup_canvas(path)
     c.setFont("Helvetica-Bold", 16)
-    c.drawString(72, 720, "INVOICE")
-    c.setFont("Helvetica", 10)
-    c.drawString(72, 700, inv["vendor_name"])
-    _draw_machine_block(c, inv, 670)
+    c.drawString(72, 740, "STATEMENT / INVOICE")
+    y = _draw_vendor_block(c, inv, profile, display, 72, 718)
+    y = _draw_distractors(c, 72, y)
+    y = _draw_table(c, display, 72, y)
+    y = _draw_totals(c, profile, display, 72, y)
+    _draw_terms_noise(c, 72, y)
+    _draw_barcode_footer(c, inv)
     c.showPage()
     c.save()
 
 
 def layout_boxed(path: Path, inv: dict) -> None:
+    profile, display = _profile_and_display("layout_boxed", inv)
     c = _setup_canvas(path)
-    c.rect(50, 500, 500, 250, stroke=1, fill=0)
+    c.rect(50, 420, 512, 340, stroke=1, fill=0)
     c.setFont("Helvetica-Bold", 14)
-    c.drawString(60, 730, "COMMERCIAL INVOICE")
-    c.setFont("Helvetica", 9)
-    c.drawRightString(540, 730, inv["invoice_number"])
-    _draw_machine_block(c, inv, 700)
+    c.drawString(60, 740, "COMMERCIAL INVOICE")
+    y = _draw_vendor_block(c, inv, profile, display, 60, 720)
+    y = _draw_table(c, display, 60, y)
+    y = _draw_totals(c, profile, display, 60, y)
+    y = _draw_distractors(c, 60, min(y, 400))
+    _draw_terms_noise(c, 60, y)
+    _draw_barcode_footer(c, inv)
     c.showPage()
     c.save()
 
 
 def layout_two_column(path: Path, inv: dict) -> None:
+    """Draw the right column first so pypdf plain-mode emits PO/distractors before vendor."""
+    profile, display = _profile_and_display("layout_two_column", inv)
     c = _setup_canvas(path)
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(72, 740, inv["vendor_name"])
     c.setFont("Helvetica", 9)
-    c.drawString(320, 740, f"Date {inv['invoice_date']}")
-    c.line(72, 730, 540, 730)
-    _draw_machine_block(c, inv, 710)
+    c.drawString(320, 740, f"{profile['po_label']} {display['po']}")
+    c.drawString(320, 726, f"Date {display['date']}")
+    c.drawString(320, 712, f"Pay this stub: ${DISTRACTOR_AMOUNT}")
+    c.drawString(320, 698, f"Remit: {DISTRACTOR_REMIT}")
+    c.drawString(320, 684, f"Blanket {DISTRACTOR_PO}")
+    c.setFont("Helvetica-Bold", 11)
+    if inv.get("ambiguous_marker"):
+        c.drawString(72, 740, f"Letterhead: {AMBIGUOUS_OTHER}")
+        c.drawString(72, 724, f"{profile['vendor_label']}: {display['vendor']}")
+        next_y = 708
+    else:
+        c.drawString(72, 740, f"{profile['vendor_label']}: {display['vendor']}")
+        next_y = 724
+    c.setFont("Helvetica", 9)
+    if display["invoice_number"]:
+        c.drawString(72, next_y, f"{profile['inv_label']} {display['invoice_number']}")
+        next_y -= 14
+    c.drawString(72, next_y, display["terms"])
+    next_y -= 14
+    c.drawString(72, next_y, f"{profile['vendor_id_label']} {display['vendor_id']}")
+    c.line(72, 660, 540, 660)
+    y = _draw_table(c, display, 72, 640)
+    y = _draw_totals(c, profile, display, 72, y)
+    y = _draw_distractors(c, 72, y)
+    _draw_terms_noise(c, 72, y)
+    _draw_barcode_footer(c, inv)
     c.showPage()
     c.save()
 
 
 def layout_modern(path: Path, inv: dict) -> None:
+    """Line items on page 1; totals and remittance coupon on page 2."""
+    profile, display = _profile_and_display("layout_modern", inv)
     c = _setup_canvas(path)
     c.setFillGray(0.9)
     c.rect(0, 700, 612, 92, stroke=0, fill=1)
     c.setFillGray(0)
     c.setFont("Helvetica-Bold", 18)
     c.drawString(72, 740, "Invoice")
-    c.setFont("Helvetica", 10)
-    c.drawString(72, 720, inv["vendor_name"])
-    _draw_machine_block(c, inv, 680)
+    c.setFont("Helvetica", 8)
+    c.drawString(400, 740, "Page 1 of 2 — continued")
+    y = _draw_vendor_block(c, inv, profile, display, 72, 718)
+    y = _draw_distractors(c, 72, y)
+    _draw_table(c, display, 72, y)
+    _draw_barcode_footer(c, inv)
+    c.showPage()
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(72, 740, "Page 2 of 2 — remittance advice")
+    c.setFont("Helvetica", 9)
+    c.drawString(72, 720, f"{profile['vendor_label']}: {display['vendor']}")
+    y = _draw_totals(c, profile, display, 72, 700)
+    c.setFont("Helvetica", 9)
+    c.drawString(72, y, "Detach and return with payment. Coupon amount is not the invoice total.")
+    y -= 14
+    c.drawString(72, y, f"Coupon amount: ${DISTRACTOR_AMOUNT}")
+    y -= 18
+    y = _draw_terms_noise(c, 72, y)
+    c.drawString(72, y, f"Scan code {DISTRACTOR_INV}")
     c.showPage()
     c.save()
 
 
 def layout_compact(path: Path, inv: dict) -> None:
+    profile, display = _profile_and_display("layout_compact", inv)
     c = _setup_canvas(path)
     c.setFont("Courier-Bold", 11)
-    c.drawString(72, 750, f"INV/{inv['invoice_number']}")
+    title = display["invoice_number"] or "UNNUMBERED"
+    c.drawString(72, 750, f"BILL/{title}")
     c.setFont("Courier", 8)
-    _draw_machine_block(c, inv, 730)
+    y = _draw_vendor_block(c, inv, profile, display, 72, 732)
+    y = _draw_table(c, display, 72, y, font="Courier")
+    y = _draw_totals(c, profile, display, 72, y)
+    y = _draw_distractors(c, 72, y)
+    _draw_terms_noise(c, 72, y)
+    _draw_barcode_footer(c, inv)
     c.showPage()
     c.save()
 
@@ -243,21 +543,42 @@ def make_receipt(receipt_id: str, po_id: str, lines: list, qty_scale: Decimal = 
     return {"receipt_id": receipt_id, "po_id": po_id, "lines": rlines}
 
 
+def _quote_page(pages: list[str], needle: str) -> int:
+    for i, page in enumerate(pages, start=1):
+        if needle in canonicalize_page_text(page):
+            return i
+    raise ValueError(f"evidence quote not found in PDF text: {needle!r}")
+
+
+def bind_evidence_pages(extraction: dict, pdf_path: Path) -> None:
+    pages = extract_pdf_text(pdf_path).pages
+    for span in extraction.get("evidence", {}).values():
+        span["page"] = _quote_page(pages, span["quote"])
+    for li in extraction.get("line_items", []):
+        ev = li.get("evidence")
+        if ev:
+            ev["page"] = _quote_page(pages, ev["quote"])
+
+
 def make_extraction(inv: dict, ambiguities=None, drop_fields=None) -> dict:
     drop_fields = drop_fields or []
+    profile = inv.get("profile") or PROFILES["layout_classic"]
+    display = inv.get("display") or build_display(inv, profile)
     evidence = {}
+    quote_map = {
+        "vendor_name": display["vendor"],
+        "invoice_number": display["invoice_number"],
+        "po_number": display["po"],
+        "invoice_total": display["invoice_total"],
+    }
     for field in ("vendor_name", "invoice_number", "po_number", "invoice_total"):
         if field in drop_fields:
             continue
-        val = inv.get(field)
+        val = quote_map.get(field) or inv.get(field)
         if val:
             evidence[field] = {"quote": str(val), "page": 1}
     line_items = []
-    for li in inv["line_items"]:
-        row = (
-            f"LINE|{li['line_number']}|{li['sku']}|{li['description']}|"
-            f"{li['quantity']}|{li['unit_price']}|{li['line_total']}"
-        )
+    for li, row in zip(inv["line_items"], display["rows"]):
         item = {
             "line_number": li["line_number"],
             "sku": li["sku"],
@@ -423,6 +744,9 @@ def build_case(idx: int, scenario: str, decision: str, rng: random.Random) -> di
         "invoice_total": invoice_total,
         "ambiguous_marker": bool(ambiguities),
     }
+    profile = PROFILES[layout.__name__]
+    inv["profile"] = profile
+    inv["display"] = build_display(inv, profile)
 
     # PO always uses the "true" vendor for the case (except missing_po still has a real PO elsewhere unused)
     po = make_po(po_id, vendor, lines, status=po_status)
@@ -465,6 +789,7 @@ def write_case(case: dict, root: Path) -> dict[str, str]:
     case_dir.mkdir(parents=True, exist_ok=True)
     pdf_path = case_dir / "invoice.pdf"
     case["layout"](pdf_path, case["inv"])
+    bind_evidence_pages(case["expected"]["extraction"], pdf_path)
     (case_dir / "po.json").write_text(json.dumps(case["po"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (case_dir / "receipt.json").write_text(
         json.dumps(case["receipt"], indent=2, sort_keys=True) + "\n", encoding="utf-8"

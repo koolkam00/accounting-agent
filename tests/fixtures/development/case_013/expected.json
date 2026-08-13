@@ -14,7 +14,7 @@
       },
       "invoice_total": {
         "page": 1,
-        "quote": "281.25"
+        "quote": "USD 281.25"
       },
       "po_number": {
         "page": 1,
@@ -34,7 +34,7 @@
         "description": "Safety Gloves Box",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1003|Safety Gloves Box|5|12.25|61.25"
+          "quote": "Safety Gloves Box 5 SKU-1003 USD 12.25 USD 61.25"
         },
         "line_number": 1,
         "line_total": "61.25",
@@ -46,7 +46,7 @@
         "description": "Cleaning Solvent Gal",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1008|Cleaning Solvent Gal|10|22.00|220.00"
+          "quote": "Cleaning Solvent Gal 10 SKU-1008 USD 22.00 USD 220.00"
         },
         "line_number": 2,
         "line_total": "220.00",

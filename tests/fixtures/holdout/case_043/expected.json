@@ -16,7 +16,7 @@
       },
       "invoice_total": {
         "page": 1,
-        "quote": "2550.50"
+        "quote": "USD 2550.50"
       },
       "po_number": {
         "page": 1,
@@ -36,7 +36,7 @@
         "description": "Widget Assembly B",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1006|Widget Assembly B|10|250.00|2500.00"
+          "quote": "Widget Assembly B 10 SKU-1006 USD 250.00 USD 2500.00"
         },
         "line_number": 1,
         "line_total": "2500.00",
@@ -48,7 +48,7 @@
         "description": "Toner Cartridge Black",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1002|Toner Cartridge Black|1|45.50|45.50"
+          "quote": "Toner Cartridge Black 1 SKU-1002 USD 45.50 USD 45.50"
         },
         "line_number": 2,
         "line_total": "45.50",

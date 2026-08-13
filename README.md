@@ -4,9 +4,11 @@ Prototype accounts-payable agent: a vendor invoice PDF goes in, a `READY_FOR_DRA
 
 The LLM only extracts JSON. Python does every match, Decimal calculation, and decision. That split is the product, not an implementation detail.
 
+**Full file-by-file walkthrough:** [`docs/how_it_works.md`](docs/how_it_works.md).
+
 ## What we measured (2026-08-13)
 
-Live **Qwen3-8B** extraction on pinned vLLM, then the Python control plane:
+Live **Qwen3-8B** extraction on pinned vLLM, then the Python control plane. That run used the **original labeled invoices** (`Vendor:`, `LINE|sku|…` machine block).
 
 | Check | Result |
 | --- | --- |
@@ -18,7 +20,11 @@ Live **Qwen3-8B** extraction on pinned vLLM, then the Python control plane:
 
 1,500 measured extracts + 3 warmup. Synthetic dataset only (seed `20260812`). Full writeup: [`reports/final_report.md`](reports/final_report.md). Per-case CSV: [`reports/results.csv`](reports/results.csv).
 
-### What this does **not** prove
+### Harder invoices (not yet re-measured on GPU)
+
+Fixtures were regenerated as **messy text-layer PDFs**: no `LINE|` block, inconsistent labels, remit-to / barcode distractors, two-column reading-order traps, multi-page totals, mixed money and date formats. The GPU never sees the page; it sees `pypdf` text. Local mock tests still pass because they preseed from `expected.json`. Live Qwen accuracy on this dataset has **not** been re-run.
+
+### What the GPU run does **not** prove
 
 We ran with `VLLM_BATCH_INVARIANT=1` and hashes matched. We did **not** rerun with the flag off.
 
@@ -34,7 +40,7 @@ INGEST → EXTRACT → VALIDATE → LOOKUP → MATCH → PROPOSE_JOURNAL → CRE
 
 Decisions are only `READY_FOR_DRAFT` or `HUMAN_REVIEW`. Policy lives in [`config/policy.yaml`](config/policy.yaml) (unit-price tolerance `max(0.5% of PO price, $0.01)`; any non-zero tax goes to review).
 
-Local ERP and the accounting sandbox are SQLite. No production QuickBooks/NetSuite.
+Local ERP and the accounting sandbox are SQLite. No production QuickBooks/NetSuite. Purchase orders and receipts in the repo are JSON **seeds** for that SQLite ERP, not how a real AP system stores them.
 
 ## Reproduce locally (no GPU)
 
@@ -52,6 +58,12 @@ make run-ui          # Streamlit demo
 ```
 
 Local tests use `MockLLMClient`. They do not call Qwen.
+
+Live GPU accuracy (after a pinned vLLM pod is up):
+
+```bash
+uv run python scripts/evaluate_accuracy.py --live
+```
 
 ## GPU pins (do not silently change)
 

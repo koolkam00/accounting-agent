@@ -34,7 +34,7 @@
         "description": "Label Stock Pack",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1007|Label Stock Pack|10|18.40|184.00"
+          "quote": "SKU-1007 Label Stock Pack 184.00 10 ea 18.40"
         },
         "line_number": 1,
         "line_total": "184.00",
@@ -46,7 +46,7 @@
         "description": "Cleaning Solvent Gal",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1008|Cleaning Solvent Gal|3|22.00|66.00"
+          "quote": "SKU-1008 Cleaning Solvent Gal 66.00 3 ea 22.00"
         },
         "line_number": 2,
         "line_total": "66.00",

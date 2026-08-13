@@ -36,7 +36,7 @@
         "description": "Safety Gloves Box",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1003|Safety Gloves Box|5|12.50|62.50"
+          "quote": "SKU-1003 Safety Gloves Box 62.50 5 ea 12.50"
         },
         "line_number": 1,
         "line_total": "62.50",
@@ -48,7 +48,7 @@
         "description": "Toner Cartridge Black",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1002|Toner Cartridge Black|5|46.41|232.05"
+          "quote": "SKU-1002 Toner Cartridge Black 232.05 5 ea 46.41"
         },
         "line_number": 2,
         "line_total": "232.05",

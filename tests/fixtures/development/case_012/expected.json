@@ -34,7 +34,7 @@
         "description": "Copy Paper Case",
         "evidence": {
           "page": 1,
-          "quote": "LINE|1|SKU-1001|Copy Paper Case|10|10.00|100.00"
+          "quote": "SKU-1001 Copy Paper Case 100.00 10 ea 10.00"
         },
         "line_number": 1,
         "line_total": "100.00",
@@ -46,7 +46,7 @@
         "description": "Widget Assembly B",
         "evidence": {
           "page": 1,
-          "quote": "LINE|2|SKU-1006|Widget Assembly B|1|250.00|250.00"
+          "quote": "SKU-1006 Widget Assembly B 250.00 1 ea 250.00"
         },
         "line_number": 2,
         "line_total": "250.00",
