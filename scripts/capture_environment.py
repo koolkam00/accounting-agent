@@ -74,6 +74,8 @@ def main() -> None:
         },
         "gpu_run": False,
         "gpu_spend_usd": 0,
+        "gpu_hours": 0,
+        "pod_ids": [],
         "determinism_matrix": {
             "same_request": "NOT_EXECUTED_GPU",
             "batch_invariance": "NOT_EXECUTED_GPU",
@@ -82,6 +84,13 @@ def main() -> None:
             "local_pdf_sha256": "EXECUTED",
         },
     }
+    overlay_path = REPO / "reports" / "gpu_runtime.json"
+    if overlay_path.exists():
+        overlay = json.loads(overlay_path.read_text(encoding="utf-8"))
+        # never copy secrets
+        overlay.pop("vllm_api_key", None)
+        overlay.pop("api_key", None)
+        data.update(overlay)
     out = REPO / "reports" / "environment.json"
     out.parent.mkdir(exist_ok=True)
     out.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")

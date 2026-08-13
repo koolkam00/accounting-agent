@@ -153,7 +153,7 @@ class VLLMLLMClient(LLMClient):
 
         s = get_settings()
         self.settings = s
-        self.client = OpenAI(base_url=s.vllm_base_url, api_key=s.vllm_api_key)
+        self.client = OpenAI(base_url=s.vllm_base_url, api_key=s.vllm_api_key, timeout=1200.0)
         self.prompt = s.prompt_path.read_text(encoding="utf-8")
 
     def extract_invoice(self, canonical_text: str, *, case_id: Optional[str] = None) -> ExtractedInvoice:

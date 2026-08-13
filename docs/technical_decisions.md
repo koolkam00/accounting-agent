@@ -50,11 +50,14 @@ Floating-point non-associativity makes reduction order matter. Kernels may be ru
 - GPU evaluate-determinism sections are explicitly `SKIP` until a pinned vLLM pod is run.
 - PDF generation uses ReportLab with fixed metadata / no timestamps for byte reproducibility.
 
-## Pending GPU verification
+## GPU verification (2026-08-13)
 
-- Confirm batch-invariant kernels on chosen RunPod GPU SKU.
-- Confirm xgrammar + `json_schema` response_format on image digest above.
-- Confirm Qwen3 non-thinking path with server default chat template kwargs.
-- Measure token-stable extraction across N repeated calls under concurrent load.
+Executed on pinned H100 + image above. See `reports/final_report.md`.
+
+- Batch-invariant kernels: hashes stable at conc 1/8/32 (MEDIUM, 50×10). **Negative control (`VLLM_BATCH_INVARIANT=0`) not run.**
+- xgrammar + `json_schema` + `disable_any_whitespace`: 50/50 schema-valid live extracts.
+- Qwen3 non-thinking path: client and server `enable_thinking=false`.
+- Cross-machine: SXM AP-IN-1 hashes matched prior PCIe US-KS-2 on all 50 cases.
+- Not run: pod restart, full 9,000-extract matrix.
 
 Full research notes: `/workspace/accounting-agent-refs-summary.md` (copied into repo context; not committed as runtime dependency).

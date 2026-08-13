@@ -16,6 +16,13 @@ htmlcov/
 .DS_Store
 reports/*.json
 !reports/.gitkeep
+!reports/accuracy_gpu.json
+!reports/accuracy_mock.json
+!reports/billing.json
+!reports/determinism.json
+!reports/environment.json
+!reports/gpu_runtime.json
+!reports/determinism_r0_pcie_usks2.json
 *.log
 .python-version
 .streamlit/secrets.toml
