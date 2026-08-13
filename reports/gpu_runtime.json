@@ -1,25 +1,56 @@
 {
+  "billing_billed_through_utc": "2026-08-13T16:00:00Z",
   "determinism_matrix": {
-    "batch_invariance": "EXECUTED_REDUCED_50x5_conc8",
-    "batch_invariance_conc32": "NOT_EXECUTED",
-    "cross_machine": "NOT_EXECUTED",
+    "batch_invariance": "EXECUTED_MEDIUM_50x10_conc8",
+    "batch_invariance_conc32": "EXECUTED_MEDIUM_50x10_conc32",
+    "cross_machine": "EXECUTED_HASHES_MATCHED_SXM_APIN1_vs_PCIE_USKS2",
     "local_pdf_sha256": "EXECUTED",
     "negative_control": "NOT_EXECUTED",
     "restart": "NOT_EXECUTED",
-    "same_request": "EXECUTED_REDUCED_50x5_conc1"
+    "same_request": "EXECUTED_MEDIUM_50x10_conc1"
   },
-  "gpu_hours": 10.6816,
+  "gpu_hours": 13.0179,
   "gpu_run": true,
-  "gpu_spend_usd": 31.021492425119504,
-  "pod_datacenter": "US-KS-2",
-  "pod_gpu": "NVIDIA H100 PCIe",
+  "gpu_spend_usd": 38.34293123660609,
+  "healthy": {
+    "models_listed_utc": "2026-08-13T14:35:42Z",
+    "pod_started_utc": "2026-08-13T14:29:08Z",
+    "served_model": "ap-extractor-v1",
+    "time_to_healthy_s": 394
+  },
+  "list_pods_empty": true,
+  "pod_datacenter": "AP-IN-1",
+  "pod_gpu": "NVIDIA H100 80GB HBM3",
   "pod_ids": [
-    "p7tdoz42gtf92g"
+    "p7tdoz42gtf92g",
+    "n56so1rkgs0ckh"
   ],
+  "prior_pod": {
+    "datacenter": "US-KS-2",
+    "gpu": "NVIDIA H100 PCIe",
+    "id": "p7tdoz42gtf92g",
+    "matrix": "REDUCED"
+  },
   "skipped": {
-    "conc32": true,
+    "accuracy_rerun": true,
     "full_9000": true,
     "negative_control": true,
     "pod_restart": true
+  },
+  "this_pod": {
+    "cloud": "SECURE",
+    "datacenter": "AP-IN-1",
+    "deleted": true,
+    "estimated_hours": 2.2528,
+    "estimated_spend_usd": 7.4116,
+    "gpu": "NVIDIA H100 80GB HBM3 (SXM)",
+    "healthy_at_utc": "2026-08-13T14:35:42Z",
+    "hourly_usd": 3.29,
+    "id": "n56so1rkgs0ckh",
+    "matrix": "MEDIUM",
+    "started_at_utc": "2026-08-13T14:29:08Z",
+    "stopped_at_utc": "2026-08-13T16:48:10Z",
+    "time_to_healthy_s": 394,
+    "uptime_s_from_runtime": 8110
   }
 }

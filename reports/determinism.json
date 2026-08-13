@@ -1,5 +1,41 @@
 {
-  "generated_at_utc": "2026-08-13T12:58:09.838465+00:00",
+  "cross_machine": {
+    "cases_compared": 50,
+    "cases_exact_hash_match": 50,
+    "mismatches": 0,
+    "note": "Compared unique ExtractedInvoice hashes per case. MEDIUM SXM/AP-IN-1 (conc 1/8/32, 10 reps) matched REDUCED PCIe/US-KS-2 (conc 1/8, 5 reps) on all 50 cases. Within this MEDIUM run, conc=1, conc=8, and conc=32 also produced the same single hash per case.",
+    "pass": true,
+    "prior_machine": {
+      "cases": 50,
+      "concurrencies": [
+        1,
+        8
+      ],
+      "datacenter": "US-KS-2",
+      "gpu": "NVIDIA H100 PCIe",
+      "matrix_label": "REDUCED",
+      "pod_id": "p7tdoz42gtf92g",
+      "reps": 5,
+      "restart_id": "r0"
+    },
+    "status": "EXECUTED",
+    "this_machine": {
+      "cases": 50,
+      "cloud": "SECURE",
+      "concurrencies": [
+        1,
+        8,
+        32
+      ],
+      "datacenter": "AP-IN-1",
+      "gpu": "NVIDIA H100 80GB HBM3 (SXM)",
+      "matrix_label": "MEDIUM",
+      "pod_id": "n56so1rkgs0ckh",
+      "reps": 10,
+      "restart_id": "r1"
+    }
+  },
+  "generated_at_utc": "2026-08-13T16:48:21.274833+00:00",
   "gpu": [
     {
       "cases_with_more_than_one_hash": 0,
@@ -158,17 +194,17 @@
           "53aaf620434c2081ffe9c889f472eeb3c15f18c83c9dd6dcf6519dd8a387805f"
         ]
       },
-      "latency_s_mean": 14.088755610363995,
-      "latency_s_p50": 15.103302680996421,
-      "matrix_label": "REDUCED",
+      "latency_s_mean": 12.688533471332091,
+      "latency_s_p50": 13.22231327999907,
+      "matrix_label": "MEDIUM",
       "n_cases": 50,
       "n_errors": 0,
-      "n_ok": 250,
-      "n_requests": 250,
+      "n_ok": 500,
+      "n_requests": 500,
       "name": "same_request_repeatability",
-      "reps": 5,
-      "restart_id": "r0",
-      "schema_valid": 250,
+      "reps": 10,
+      "restart_id": "r1",
+      "schema_valid": 500,
       "status": "EXECUTED",
       "unique_hashes_global": 50,
       "unique_hashes_per_case": {
@@ -381,18 +417,242 @@
           "53aaf620434c2081ffe9c889f472eeb3c15f18c83c9dd6dcf6519dd8a387805f"
         ]
       },
-      "latency_s_mean": 27.927508790687977,
-      "latency_s_p50": 29.70094078099646,
-      "matrix_label": "REDUCED",
+      "latency_s_mean": 18.440672552601782,
+      "latency_s_p50": 19.139533123001456,
+      "matrix_label": "MEDIUM",
       "n_cases": 50,
       "n_errors": 0,
-      "n_ok": 250,
-      "n_requests": 250,
+      "n_ok": 500,
+      "n_requests": 500,
       "name": "vllm_batch_invariant_token_stability_conc8",
       "note": "Server has VLLM_BATCH_INVARIANT=1. Request order shuffled to mix batch positions.",
-      "reps": 5,
-      "restart_id": "r0",
-      "schema_valid": 250,
+      "reps": 10,
+      "restart_id": "r1",
+      "schema_valid": 500,
+      "status": "EXECUTED",
+      "unique_hashes_global": 50,
+      "unique_hashes_per_case": {
+        "case_001": 1,
+        "case_002": 1,
+        "case_003": 1,
+        "case_004": 1,
+        "case_005": 1,
+        "case_006": 1,
+        "case_007": 1,
+        "case_008": 1,
+        "case_009": 1,
+        "case_010": 1,
+        "case_011": 1,
+        "case_012": 1,
+        "case_013": 1,
+        "case_014": 1,
+        "case_015": 1,
+        "case_016": 1,
+        "case_017": 1,
+        "case_018": 1,
+        "case_019": 1,
+        "case_020": 1,
+        "case_021": 1,
+        "case_022": 1,
+        "case_023": 1,
+        "case_024": 1,
+        "case_025": 1,
+        "case_026": 1,
+        "case_027": 1,
+        "case_028": 1,
+        "case_029": 1,
+        "case_030": 1,
+        "case_031": 1,
+        "case_032": 1,
+        "case_033": 1,
+        "case_034": 1,
+        "case_035": 1,
+        "case_036": 1,
+        "case_037": 1,
+        "case_038": 1,
+        "case_039": 1,
+        "case_040": 1,
+        "case_041": 1,
+        "case_042": 1,
+        "case_043": 1,
+        "case_044": 1,
+        "case_045": 1,
+        "case_046": 1,
+        "case_047": 1,
+        "case_048": 1,
+        "case_049": 1,
+        "case_050": 1
+      }
+    },
+    {
+      "cases_with_more_than_one_hash": 0,
+      "concurrency": 32,
+      "deterministic_per_case": true,
+      "dimension": "batch_invariance",
+      "hashes_by_case": {
+        "case_001": [
+          "59a8de8e1a811111a744e861ceb1ccaa998b5c8a73f52446ce01b6cf9238cd66"
+        ],
+        "case_002": [
+          "eb08aa500a7423e275607fb9b450e5d0674deb8325e51a96572cb3402994a585"
+        ],
+        "case_003": [
+          "5dcbe42ffb419dc22175761a85a673c6f478e67eb29691814327de61197540e6"
+        ],
+        "case_004": [
+          "0c89b3aee059f194d589acb023011611fb961482497913a6f216a0d7943ff898"
+        ],
+        "case_005": [
+          "a32cf77fff81295f825d773a69857c54717ade340e68f0c2c8699e17f31d7c9d"
+        ],
+        "case_006": [
+          "6773e33caaecd48d15585fa05c1b21ee0f4ff1115053bba7968d003280c8b5c6"
+        ],
+        "case_007": [
+          "94b7a920b05d93142819e87a22a384b606119d3e37b0a2b46b882b52e87d5ea1"
+        ],
+        "case_008": [
+          "8587ad2031de29d196d303a43b59bd27d8bea511334b7483569eebaa815e9837"
+        ],
+        "case_009": [
+          "fe0e9948f8c7eaa9c9f334c30252973ba9ddca90944653a12bc985bbe45ed70c"
+        ],
+        "case_010": [
+          "254ac6bb8c4b9693f62eb2a38b0bdfbc83dc5555adbdd6324bb03aca0247cfdd"
+        ],
+        "case_011": [
+          "48465248c2c7e9d3669f6ea542be47ff81d9afd3bcfcd910c841273a2914f4a4"
+        ],
+        "case_012": [
+          "386eb274cae68c8098fee14c7c1606458d6963401d82b2f1d94cad7f4c97c396"
+        ],
+        "case_013": [
+          "b99b235a0dcabe6d677f7cd8f69a9d06138e44bfd48e250b1bc4bf727eb1d64c"
+        ],
+        "case_014": [
+          "a5e57b9e5bf19b98ce2d093f5491ab4bf9f6a1e1f435adafae5f7203caede96e"
+        ],
+        "case_015": [
+          "1d6f6545f879e66a9e416c9a07ec79444c8e051a1f948ac46c1051d166592d1e"
+        ],
+        "case_016": [
+          "a0487457f361224087212cf4a073f3f133f72480541da2f135fc4949beaaa34c"
+        ],
+        "case_017": [
+          "1138b92c8f79178b2996eaf2d4dacf165203f8d3da489b65b3b8086fdc456228"
+        ],
+        "case_018": [
+          "ec9975964127f00df227b5d4447499d56d4caeacd3d1485a1857ae06bf80b2c0"
+        ],
+        "case_019": [
+          "22217fe41f179bfd7889d2af0ac6f476322705996afc8a523ba038404e573421"
+        ],
+        "case_020": [
+          "bcad6aa6a50b2e7878123520d768f0dc22e204eca36a60cd42930defe94bfcbc"
+        ],
+        "case_021": [
+          "c26dd6402c2cd24af236d660a60ae869de5a91e6029a4c8e6b6f015ad9b1aee3"
+        ],
+        "case_022": [
+          "e880da1b4f57ea6161a22cd32be5c7a2e2530f91c230346ef083e9e6c2d43d2f"
+        ],
+        "case_023": [
+          "190adfb4d9cca20db1e00a9e13188e7688fcb7c75d953b07ddb159423acbab73"
+        ],
+        "case_024": [
+          "8b4049ad6bbe891173817086c94bf60128412b8ef00431d2fa4a9fc1a15b0ce7"
+        ],
+        "case_025": [
+          "eb732e2f2db75860b3982e64c9f087f5660f0a54f368d8a822d03a967c611c98"
+        ],
+        "case_026": [
+          "64c3f526f99f32e65794ce2d79b009029a276de0aeac1b02497ae07a17a7215b"
+        ],
+        "case_027": [
+          "4a24d6458e439c26afc698a7dc4e99a83c9c973c858004ceff4bb3b61a6af5ea"
+        ],
+        "case_028": [
+          "ede00e547b42244ef261dbd6523d38ad8473274c70ab909b42cc60065b2eddb2"
+        ],
+        "case_029": [
+          "99a2d6247b22ec9c82137a202b197c003a290f77735443c34b1ec868140340ee"
+        ],
+        "case_030": [
+          "dd01ef5558920e980add4f8f8da7cfb87179d7dc84cb9352fea62cc30a06b8a9"
+        ],
+        "case_031": [
+          "f0ee7ca155ff7050ed6b33ed0415e0505866bfd9deaac40dcd4e2bf46d2a2947"
+        ],
+        "case_032": [
+          "dc046f1d1263ea7b1773e6e574c75f3a80f5274fb0013ee022a113d7462bbd9a"
+        ],
+        "case_033": [
+          "f0a73d2ff1b0f10892e5f55120847e961eba29da27c64781e9a5ddce40faf705"
+        ],
+        "case_034": [
+          "78b2f612e22f498d77ef6531c6ceccc06adc3b9297252f183e1a01eb64605432"
+        ],
+        "case_035": [
+          "a28bb7fc7253c0a8c9c553892a62e40641825a4991129f285b544e968f5cdf47"
+        ],
+        "case_036": [
+          "4603c784b44c882d302b33bedb9a909ad110a2cec95ff47d89fd4d021c3803d8"
+        ],
+        "case_037": [
+          "cf2fe553d49a1c88eae4e6970d9aae9e705f143d3958b1f510a05ac351a72b82"
+        ],
+        "case_038": [
+          "bddb456e236fa149d78b80a7469cfb10ef42f557d1269090dd6e32702ff7d443"
+        ],
+        "case_039": [
+          "6000c5370567d4c78fb2161fd79ab44b7b6710c945db8d3898ad8ebfa730d145"
+        ],
+        "case_040": [
+          "aec658114d70e230f09c9bea4d743f75eff9ff1c9b3059fed241a868de1dd295"
+        ],
+        "case_041": [
+          "999ff5263a3c49a13460af7d698dfb3c02cffd886bc815b6f0a6acb016667895"
+        ],
+        "case_042": [
+          "49b66c86cf9b99edb32217412fb7bbca21738c272445784e4eea3ca1b8323557"
+        ],
+        "case_043": [
+          "c463696bc5a5d16681fa1455be2d2756ab7c417dceba31435d13d7056b8f3380"
+        ],
+        "case_044": [
+          "3391ef46db31b459801675dcec25282b364061a574a39395b5295bae9e25da26"
+        ],
+        "case_045": [
+          "8ca0cd0eb7b2aaec5cf90837b1cdb80503ebf9ee24f00665eae81e7220fbaba1"
+        ],
+        "case_046": [
+          "8ddfb68ae70cfb817d1b66197ed1177b53ab05b7b77a95a79ad95738093ec368"
+        ],
+        "case_047": [
+          "d9613d1eef9bad1ea49f9cbc18ab490ad91c07bb701c73d8f36f6cfda06fb298"
+        ],
+        "case_048": [
+          "b51b873f8ee935592023c5ba9b7d6ee51822677462d0da6bee981a5803670b9d"
+        ],
+        "case_049": [
+          "86498b73f8f39a9f98cc0cd9b6d63f001469497857520ca74c4cf972dfcd36f6"
+        ],
+        "case_050": [
+          "53aaf620434c2081ffe9c889f472eeb3c15f18c83c9dd6dcf6519dd8a387805f"
+        ]
+      },
+      "latency_s_mean": 21.301794312597906,
+      "latency_s_p50": 22.376893664993986,
+      "matrix_label": "MEDIUM",
+      "n_cases": 50,
+      "n_errors": 0,
+      "n_ok": 500,
+      "n_requests": 500,
+      "name": "vllm_batch_invariant_token_stability_conc32",
+      "note": "Server has VLLM_BATCH_INVARIANT=1. Request order shuffled to mix batch positions.",
+      "reps": 10,
+      "restart_id": "r1",
+      "schema_valid": 500,
       "status": "EXECUTED",
       "unique_hashes_global": 50,
       "unique_hashes_per_case": {
@@ -451,26 +711,32 @@
     {
       "dimension": "negative_control",
       "name": "batch_invariance_disabled_negative_control",
-      "reason": "NOT RUN. Accuracy 50/50 and reduced determinism both passed, but negative control requires restart with VLLM_BATCH_INVARIANT=0. Prefer finishing and stopping the GPU over a second server configuration.",
+      "reason": "NOT RUN. Disabling VLLM_BATCH_INVARIANT requires a pod restart and a second server configuration. This run kept VLLM_BATCH_INVARIANT=1. Do not interpret batch-invariant uniqueness as a negative-control result.",
       "status": "NOT_EXECUTED"
     },
     {
       "dimension": "restart",
       "name": "pod_restart_invariance",
-      "reason": "NOT RUN. Reduced matrix (conc=1 and conc=8, 50 cases x 5 reps) was clean (0 cases with >1 hash). Same-pod restart skipped to stop GPU billing; restart would cost another ~4 min cold start. Only restart_id=r0 records exist.",
+      "reason": "NOT RUN. Pod restart was skipped to stay inside the ~3h MEDIUM window and remaining GPU budget. restart_id=r1 labels this process only; no stop/start of vLLM was performed. Do not treat PARTIAL as a restart result.",
       "status": "NOT_EXECUTED"
     },
     {
+      "cases_with_hash_change_across_machines": 0,
       "dimension": "cross_machine",
+      "n_cases": 50,
       "name": "cross_machine_invariance",
-      "reason": "Single RunPod H100 PCIe machine (US-KS-2); no second host rented.",
-      "status": "NOT_EXECUTED"
+      "note": "Hashes matched on all 50 cases vs prior PCIe/US-KS-2 reduced run. Prior run used 5 reps at conc 1 and 8; this run used 10 reps at conc 1, 8, and 32.",
+      "pass": true,
+      "prior_host": "NVIDIA H100 PCIe US-KS-2 p7tdoz42gtf92g r0 REDUCED",
+      "reason": "Hashes matched on all 50 cases vs prior PCIe/US-KS-2 reduced run. Prior run used 5 reps at conc 1 and 8; this run used 10 reps at conc 1, 8, and 32.",
+      "status": "EXECUTED",
+      "this_host": "NVIDIA H100 80GB HBM3 SXM AP-IN-1 n56so1rkgs0ckh r1 MEDIUM"
     },
     {
       "dimension": "structured_outputs",
-      "n_requests": 500,
+      "n_requests": 1500,
       "name": "vllm_json_schema_xgrammar_stability",
-      "schema_valid_total": 500,
+      "schema_valid_total": 1500,
       "status": "EXECUTED"
     },
     {
@@ -479,12 +745,6 @@
       "note": "Client and server set chat_template_kwargs.enable_thinking=false; hashed extraction JSON.",
       "status": "EXECUTED",
       "unique_hashes_global": 50
-    },
-    {
-      "dimension": "batch_invariance",
-      "name": "vllm_batch_invariant_token_stability_conc32",
-      "reason": "NOT RUN. Optional conc=32 skipped: evaluate_determinism.py always re-runs 250 sequential conc=1 jobs first (~60 min). Reduced conc=8 was already clean. Prefer finishing and stopping the GPU.",
-      "status": "NOT_EXECUTED"
     }
   ],
   "gpu_determinism_matrix_executed": true,
@@ -527,12 +787,12 @@
       ]
     }
   ],
-  "matrix_label": "REDUCED",
-  "n_records": 500,
-  "records_path": "reports/determinism_records_r0.jsonl",
-  "restart_id": "r0",
+  "matrix_label": "MEDIUM",
+  "n_records": 1500,
+  "records_path": "reports/determinism_records_r1.jsonl",
+  "restart_id": "r1",
   "skipped": {
-    "conc32": true,
+    "accuracy_rerun": true,
     "full_9000": true,
     "negative_control": true,
     "pod_restart": true
