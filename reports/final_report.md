@@ -1,12 +1,15 @@
 # Final Report — Accounting Agent (Local / Non-GPU Dispatch)
 
-Generated (UTC): 2026-08-13T01:52:05.458154+00:00
+Generated (UTC): 2026-08-13T01:55:32.309742+00:00
+Source commit: `a635ce3fa8d4614812b1ce0ca7b3cd09a18fd2bb`
 
 ## Scope
 
 - Implemented deterministic Python control plane for three-way match.
 - LLM extraction mocked locally via `MockLLMClient`.
-- **GPU / vLLM evaluation not run** in this dispatch (no GPU rented).
+- Streamlit UI available via `make run-ui` (`app/ui.py`).
+- **GPU / vLLM evaluation NOT executed** in this dispatch.
+- **GPU spend: $0**.
 
 ## Pins (for upcoming GPU phase)
 
@@ -24,19 +27,50 @@ Generated (UTC): 2026-08-13T01:52:05.458154+00:00
 
 - **development**: 30/30 (accuracy=1.0)
 - **holdout**: 20/20 (accuracy=1.0)
+- Per-case CSV: `reports/results.csv` (50 rows)
+- Failure artifacts: `reports/failures/` (0 files)
 
 ## Determinism
 
-- Local `local_pdf_canonical_stability`: pass=True
+### Local (executed)
 
-### GPU not yet run
+- `local_pdf_canonical_stability`: pass=True
 
-- SKIP `vllm_batch_invariant_token_stability`: GPU not rented in this dispatch; requires VLLM_BATCH_INVARIANT=1 on pinned image v0.27.1
-- SKIP `vllm_json_schema_xgrammar_stability`: GPU not rented; structured-outputs backend xgrammar pending live verification
-- SKIP `qwen3_nonthinking_extraction_repeatability`: GPU not rented; model revision b968826d9c46dd6066d109eabc6255188de91218 pending
+### GPU determinism matrix — NOT EXECUTED YET
+
+| Dimension | Status | Notes |
+|-----------|--------|-------|
+| Same-request repeatability | NOT EXECUTED | Needs pinned vLLM on H100 |
+| Batch invariance under load | NOT EXECUTED | Needs `VLLM_BATCH_INVARIANT=1` |
+| Restart invariance | NOT EXECUTED | Pod stop/start not run |
+| Cross-machine invariance | NOT EXECUTED | Single local host only |
+
+- SKIP `same_request_repeatability`: GPU determinism matrix NOT executed yet; zero GPU spend; awaiting RunPod quote approval; would repeat identical extraction requests N times
+- SKIP `vllm_batch_invariant_token_stability`: GPU determinism matrix NOT executed yet; zero GPU spend; awaiting RunPod quote approval; requires VLLM_BATCH_INVARIANT=1 on pinned image v0.27.1
+- SKIP `pod_restart_invariance`: GPU determinism matrix NOT executed yet; zero GPU spend; awaiting RunPod quote approval; would stop/start vLLM and compare tokens
+- SKIP `cross_machine_invariance`: GPU determinism matrix NOT executed yet; zero GPU spend; awaiting RunPod quote approval; single local host only in this dispatch
+- SKIP `vllm_json_schema_xgrammar_stability`: GPU determinism matrix NOT executed yet; zero GPU spend; awaiting RunPod quote approval; xgrammar + json_schema pending live verification
+- SKIP `qwen3_nonthinking_extraction_repeatability`: GPU determinism matrix NOT executed yet; zero GPU spend; awaiting RunPod quote approval; model revision b968826d9c46dd6066d109eabc6255188de91218 pending
+
+## Environment
+
+- Captured in `reports/environment.json` (source_commit=`a635ce3fa8d4614812b1ce0ca7b3cd09a18fd2bb`)
+- Platform: `Linux-6.12.94+-x86_64-with-glibc2.41`
+- GPU run flag: `False`
 
 ## Honest limitations
 
 - Token-level extraction determinism under load is **unverified** until the pinned vLLM image is exercised on suitable GPU hardware.
-- Streamlit UI is a minimal stub.
+- GPU determinism matrix (same-request / batch invariance / restart / cross-machine) is **explicitly not executed** — zero GPU spend.
+- Local path uses MockLLMClient; real Qwen3-8B extraction quality is pending GPU quote approval.
 - Fictional vendors only; not production ERP-integrated.
+
+## Artifacts
+
+- `reports/final_report.md` (this file)
+- `reports/results.csv`
+- `reports/environment.json`
+- `reports/accuracy_mock.json`
+- `reports/determinism.json`
+- `reports/failures/`
+- `reports/runpod_quote.md` (prepared; do not rent until approved)
