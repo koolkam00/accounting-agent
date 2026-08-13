@@ -1,7 +1,7 @@
 # Final Report — Accounting Agent (Local / Non-GPU Dispatch)
 
 Generated (UTC): 2026-08-13T01:55:48.798542+00:00
-Source commit: `7f816f47a59507bc1979382fcc8c7fd2cd682e53`
+Source commit: `fa9a6db0104a70dc008b49e5422ac8765afff65a`
 
 ## Scope
 
@@ -54,7 +54,7 @@ Source commit: `7f816f47a59507bc1979382fcc8c7fd2cd682e53`
 
 ## Environment
 
-- Captured in `reports/environment.json` (source_commit=`7f816f47a59507bc1979382fcc8c7fd2cd682e53`)
+- Captured in `reports/environment.json` (source_commit=`fa9a6db0104a70dc008b49e5422ac8765afff65a`)
 - Platform: `Linux-6.12.94+-x86_64-with-glibc2.41`
 - GPU run flag: `False`
 
