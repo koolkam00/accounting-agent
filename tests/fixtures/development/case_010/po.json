@@ -1,0 +1,25 @@
+{
+  "currency": "USD",
+  "lines": [
+    {
+      "description": "Safety Gloves Box",
+      "gl_account": "5200",
+      "line_number": 1,
+      "quantity": "3",
+      "sku": "SKU-1003",
+      "unit_price": "12.25"
+    },
+    {
+      "description": "Widget Assembly B",
+      "gl_account": "5400",
+      "line_number": 2,
+      "quantity": "3",
+      "sku": "SKU-1006",
+      "unit_price": "250.00"
+    }
+  ],
+  "po_id": "PO-1010",
+  "status": "OPEN",
+  "vendor_id": "V005",
+  "vendor_name": "Pinecrest Facilities Goods"
+}

@@ -1,0 +1,70 @@
+{
+  "already_processed": null,
+  "case_id": "case_030",
+  "decision": "HUMAN_REVIEW",
+  "duplicate_of": null,
+  "exception_codes": [
+    "QUANTITY_EXCEEDS_RECEIPT"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-2026030"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "25.90"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-1030"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Pinecrest Facilities Goods"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-06-16",
+    "invoice_number": "INV-2026030",
+    "invoice_total": "25.90",
+    "line_items": [
+      {
+        "description": "Packing Tape Roll",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1004|Packing Tape Roll|2|3.75|7.50"
+        },
+        "line_number": 1,
+        "line_total": "7.50",
+        "quantity": "2",
+        "sku": "SKU-1004",
+        "unit_price": "3.75"
+      },
+      {
+        "description": "Label Stock Pack",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1007|Label Stock Pack|1|18.40|18.40"
+        },
+        "line_number": 2,
+        "line_total": "18.40",
+        "quantity": "1",
+        "sku": "SKU-1007",
+        "unit_price": "18.40"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1030",
+    "subtotal": "25.90",
+    "tax": "0.00",
+    "vendor_id": "V005",
+    "vendor_name": "Pinecrest Facilities Goods"
+  },
+  "layout": "layout_compact",
+  "po_id": "PO-1030",
+  "scenario": "qty_exceeds_receipt"
+}

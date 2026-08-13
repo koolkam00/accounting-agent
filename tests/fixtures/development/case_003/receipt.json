@@ -1,0 +1,14 @@
+{
+  "lines": [
+    {
+      "quantity_received": "5",
+      "sku": "SKU-1004"
+    },
+    {
+      "quantity_received": "2",
+      "sku": "SKU-1001"
+    }
+  ],
+  "po_id": "PO-1003",
+  "receipt_id": "RCV-1003"
+}

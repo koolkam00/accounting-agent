@@ -1,0 +1,70 @@
+{
+  "already_processed": null,
+  "case_id": "case_022",
+  "decision": "HUMAN_REVIEW",
+  "duplicate_of": null,
+  "exception_codes": [
+    "PRICE_VARIANCE"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-2026022"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "294.55"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-1022"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Cedar Ridge Industrial Parts"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-10-03",
+    "invoice_number": "INV-2026022",
+    "invoice_total": "294.55",
+    "line_items": [
+      {
+        "description": "Safety Gloves Box",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1003|Safety Gloves Box|5|12.50|62.50"
+        },
+        "line_number": 1,
+        "line_total": "62.50",
+        "quantity": "5",
+        "sku": "SKU-1003",
+        "unit_price": "12.50"
+      },
+      {
+        "description": "Toner Cartridge Black",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1002|Toner Cartridge Black|5|46.41|232.05"
+        },
+        "line_number": 2,
+        "line_total": "232.05",
+        "quantity": "5",
+        "sku": "SKU-1002",
+        "unit_price": "46.41"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1022",
+    "subtotal": "294.55",
+    "tax": "0.00",
+    "vendor_id": "V002",
+    "vendor_name": "Cedar Ridge Industrial Parts"
+  },
+  "layout": "layout_boxed",
+  "po_id": "PO-1022",
+  "scenario": "price_over"
+}

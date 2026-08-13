@@ -1,0 +1,70 @@
+{
+  "already_processed": null,
+  "case_id": "case_023",
+  "decision": "HUMAN_REVIEW",
+  "duplicate_of": null,
+  "exception_codes": [
+    "PRICE_VARIANCE"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-2026023"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "445.23"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-1023"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Blue Harbor Packaging Co"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-11-08",
+    "invoice_number": "INV-2026023",
+    "invoice_total": "445.23",
+    "line_items": [
+      {
+        "description": "Widget Assembly A",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1005|Widget Assembly A|3|102.00|306.00"
+        },
+        "line_number": 1,
+        "line_total": "306.00",
+        "quantity": "3",
+        "sku": "SKU-1005",
+        "unit_price": "102.00"
+      },
+      {
+        "description": "Toner Cartridge Black",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1002|Toner Cartridge Black|3|46.41|139.23"
+        },
+        "line_number": 2,
+        "line_total": "139.23",
+        "quantity": "3",
+        "sku": "SKU-1002",
+        "unit_price": "46.41"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1023",
+    "subtotal": "445.23",
+    "tax": "0.00",
+    "vendor_id": "V003",
+    "vendor_name": "Blue Harbor Packaging Co"
+  },
+  "layout": "layout_two_column",
+  "po_id": "PO-1023",
+  "scenario": "price_over"
+}

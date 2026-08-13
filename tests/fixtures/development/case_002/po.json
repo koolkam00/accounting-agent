@@ -1,0 +1,25 @@
+{
+  "currency": "USD",
+  "lines": [
+    {
+      "description": "Label Stock Pack",
+      "gl_account": "5300",
+      "line_number": 1,
+      "quantity": "10",
+      "sku": "SKU-1007",
+      "unit_price": "18.40"
+    },
+    {
+      "description": "Cleaning Solvent Gal",
+      "gl_account": "5200",
+      "line_number": 2,
+      "quantity": "3",
+      "sku": "SKU-1008",
+      "unit_price": "22.00"
+    }
+  ],
+  "po_id": "PO-1002",
+  "status": "OPEN",
+  "vendor_id": "V002",
+  "vendor_name": "Cedar Ridge Industrial Parts"
+}

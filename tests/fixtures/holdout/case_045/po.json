@@ -1,0 +1,25 @@
+{
+  "currency": "USD",
+  "lines": [
+    {
+      "description": "Cleaning Solvent Gal",
+      "gl_account": "5200",
+      "line_number": 1,
+      "quantity": "3",
+      "sku": "SKU-1008",
+      "unit_price": "22.00"
+    },
+    {
+      "description": "Copy Paper Case",
+      "gl_account": "5000",
+      "line_number": 2,
+      "quantity": "10",
+      "sku": "SKU-1001",
+      "unit_price": "10.00"
+    }
+  ],
+  "po_id": "PO-1045",
+  "status": "OPEN",
+  "vendor_id": "V005",
+  "vendor_name": "Pinecrest Facilities Goods"
+}

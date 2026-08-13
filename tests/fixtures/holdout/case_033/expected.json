@@ -1,0 +1,73 @@
+{
+  "already_processed": {
+    "invoice_number": "INV-2026033",
+    "vendor_id": "V003"
+  },
+  "case_id": "case_033",
+  "decision": "HUMAN_REVIEW",
+  "duplicate_of": "INV-2026033",
+  "exception_codes": [
+    "DUPLICATE_INVOICE"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-2026033"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "152.25"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-1033"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Blue Harbor Packaging Co"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-09-04",
+    "invoice_number": "INV-2026033",
+    "invoice_total": "152.25",
+    "line_items": [
+      {
+        "description": "Toner Cartridge Black",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1002|Toner Cartridge Black|2|45.50|91.00"
+        },
+        "line_number": 1,
+        "line_total": "91.00",
+        "quantity": "2",
+        "sku": "SKU-1002",
+        "unit_price": "45.50"
+      },
+      {
+        "description": "Safety Gloves Box",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1003|Safety Gloves Box|5|12.25|61.25"
+        },
+        "line_number": 2,
+        "line_total": "61.25",
+        "quantity": "5",
+        "sku": "SKU-1003",
+        "unit_price": "12.25"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1033",
+    "subtotal": "152.25",
+    "tax": "0.00",
+    "vendor_id": "V003",
+    "vendor_name": "Blue Harbor Packaging Co"
+  },
+  "layout": "layout_two_column",
+  "po_id": "PO-1033",
+  "scenario": "duplicate"
+}

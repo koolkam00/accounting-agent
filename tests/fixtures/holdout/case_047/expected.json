@@ -1,0 +1,70 @@
+{
+  "already_processed": null,
+  "case_id": "case_047",
+  "decision": "HUMAN_REVIEW",
+  "duplicate_of": null,
+  "exception_codes": [
+    "VENDOR_MISMATCH"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-2026047"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "107.50"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-1047"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Blue Harbor Packaging Co"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-11-20",
+    "invoice_number": "INV-2026047",
+    "invoice_total": "107.50",
+    "line_items": [
+      {
+        "description": "Packing Tape Roll",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1004|Packing Tape Roll|2|3.75|7.50"
+        },
+        "line_number": 1,
+        "line_total": "7.50",
+        "quantity": "2",
+        "sku": "SKU-1004",
+        "unit_price": "3.75"
+      },
+      {
+        "description": "Copy Paper Case",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1001|Copy Paper Case|10|10.00|100.00"
+        },
+        "line_number": 2,
+        "line_total": "100.00",
+        "quantity": "10",
+        "sku": "SKU-1001",
+        "unit_price": "10.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1047",
+    "subtotal": "107.50",
+    "tax": "0.00",
+    "vendor_id": "V003",
+    "vendor_name": "Blue Harbor Packaging Co"
+  },
+  "layout": "layout_boxed",
+  "po_id": "PO-1047",
+  "scenario": "vendor_mismatch"
+}

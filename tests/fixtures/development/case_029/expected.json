@@ -1,0 +1,70 @@
+{
+  "already_processed": null,
+  "case_id": "case_029",
+  "decision": "HUMAN_REVIEW",
+  "duplicate_of": null,
+  "exception_codes": [
+    "QUANTITY_EXCEEDS_RECEIPT"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-2026029"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "150.00"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-1029"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Summit Ridge Labware Inc"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-05-11",
+    "invoice_number": "INV-2026029",
+    "invoice_total": "150.00",
+    "line_items": [
+      {
+        "description": "Copy Paper Case",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1001|Copy Paper Case|5|10.00|50.00"
+        },
+        "line_number": 1,
+        "line_total": "50.00",
+        "quantity": "5",
+        "sku": "SKU-1001",
+        "unit_price": "10.00"
+      },
+      {
+        "description": "Widget Assembly A",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1005|Widget Assembly A|1|100.00|100.00"
+        },
+        "line_number": 2,
+        "line_total": "100.00",
+        "quantity": "1",
+        "sku": "SKU-1005",
+        "unit_price": "100.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1029",
+    "subtotal": "150.00",
+    "tax": "0.00",
+    "vendor_id": "V004",
+    "vendor_name": "Summit Ridge Labware Inc"
+  },
+  "layout": "layout_modern",
+  "po_id": "PO-1029",
+  "scenario": "qty_exceeds_receipt"
+}

@@ -1,0 +1,8 @@
+currency: USD
+unit_price_percentage_tolerance: "0.005"
+minimum_unit_price_tolerance: "0.01"
+quantity_tolerance: "0"
+invoice_total_tolerance: "0.01"
+nonzero_tax_requires_review: true
+missing_field_action: HUMAN_REVIEW
+ambiguous_field_action: HUMAN_REVIEW

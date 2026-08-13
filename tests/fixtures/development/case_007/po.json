@@ -1,0 +1,25 @@
+{
+  "currency": "USD",
+  "lines": [
+    {
+      "description": "Safety Gloves Box",
+      "gl_account": "5200",
+      "line_number": 1,
+      "quantity": "10",
+      "sku": "SKU-1003",
+      "unit_price": "12.25"
+    },
+    {
+      "description": "Packing Tape Roll",
+      "gl_account": "5300",
+      "line_number": 2,
+      "quantity": "10",
+      "sku": "SKU-1004",
+      "unit_price": "3.75"
+    }
+  ],
+  "po_id": "PO-1007",
+  "status": "OPEN",
+  "vendor_id": "V002",
+  "vendor_name": "Cedar Ridge Industrial Parts"
+}

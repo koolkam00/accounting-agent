@@ -1,0 +1,60 @@
+# Technical Decisions
+
+Fetched/verified reference notes: 2026-08-12. Local (non-GPU) prototype uses Python 3.12 via `uv`. Real vLLM inference is deferred; local tests use `MockLLMClient`.
+
+## Language / tooling
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| Python | 3.12 (via `uv`) | Spec pin; `requires-python = ">=3.12,<3.13"` |
+| Package manager | `uv` + `uv.lock` | Reproducible local installs |
+| Money / qty | `decimal.Decimal` + normalized strings in schemas | Avoid float drift in AP matching |
+| Decision space | `READY_FOR_DRAFT` \| `HUMAN_REVIEW` only | Bounded control plane |
+
+## Model + serving pins (GPU phase — do not silently change)
+
+| Item | Pin |
+|------|-----|
+| Model | `Qwen/Qwen3-8B` |
+| Revision | `b968826d9c46dd6066d109eabc6255188de91218` |
+| Docker image | `vllm/vllm-openai:v0.27.1` |
+| Manifest digest | `sha256:0a51ea5b4ae2dc5d81890e5173f54203d2a3ae0cfffe51b8fd2afd4391bfd967` |
+| Batch invariance | `VLLM_BATCH_INVARIANT=1` |
+| Thinking | disabled: `chat_template_kwargs: {"enable_thinking": false}` and/or `--default-chat-template-kwargs '{"enable_thinking": false}'` |
+| Structured outputs backend | `--structured-outputs-config.backend xgrammar` (**not** `auto`) |
+| Client structured output | OpenAI `response_format` with `type: "json_schema"` (`guided_*` removed in vLLM 0.12+) |
+| Sampling | `temperature=0`, `top_p=1`, `seed=42`, `n=1` |
+
+Sources:
+- https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/
+- https://docs.vllm.ai/en/v0.26.0/features/batch_invariance/
+- https://docs.vllm.ai/en/latest/usage/reproducibility/
+- https://docs.vllm.ai/en/latest/features/structured_outputs/
+- https://huggingface.co/Qwen/Qwen3-8B
+- https://huggingface.co/api/models/Qwen/Qwen3-8B
+- Docker Hub tag `v0.27.1` for `vllm/vllm-openai`
+
+## Why temp=0 alone is insufficient
+
+Floating-point non-associativity makes reduction order matter. Kernels may be run-to-run deterministic yet **not batch-invariant**: changing batch size / concurrent load changes reduction strategy → different numerics → different tokens at temperature 0. Production path: `VLLM_BATCH_INVARIANT=1` (beta; hardware notes: Hopper/H100 9.0 safe; Ampere 8.x verify before relying).
+
+## Architecture split
+
+- **LLM**: extract structured invoice fields only (JSON schema).
+- **Python**: canonicalize, evidence validation, Decimal arithmetic, three-way match, journal proposal, idempotency, audit, draft/review decision.
+- Never auto-approve when `OCR_REQUIRED`.
+
+## Local testing
+
+- `MockLLMClient` returns fixture `expected.json` extraction (or deterministic parser for synthetic PDFs).
+- GPU evaluate-determinism sections are explicitly `SKIP` until a pinned vLLM pod is run.
+- PDF generation uses ReportLab with fixed metadata / no timestamps for byte reproducibility.
+
+## Pending GPU verification
+
+- Confirm batch-invariant kernels on chosen RunPod GPU SKU.
+- Confirm xgrammar + `json_schema` response_format on image digest above.
+- Confirm Qwen3 non-thinking path with server default chat template kwargs.
+- Measure token-stable extraction across N repeated calls under concurrent load.
+
+Full research notes: `/workspace/accounting-agent-refs-summary.md` (copied into repo context; not committed as runtime dependency).

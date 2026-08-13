@@ -1,0 +1,70 @@
+{
+  "already_processed": null,
+  "case_id": "case_041",
+  "decision": "HUMAN_REVIEW",
+  "duplicate_of": null,
+  "exception_codes": [
+    "INVOICE_MATH_ERROR"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-2026041"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "27.25"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-1041"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Northwind Office Supply LLC"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-05-17",
+    "invoice_number": "INV-2026041",
+    "invoice_total": "27.25",
+    "line_items": [
+      {
+        "description": "Safety Gloves Box",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1003|Safety Gloves Box|1|12.25|12.25"
+        },
+        "line_number": 1,
+        "line_total": "12.25",
+        "quantity": "1",
+        "sku": "SKU-1003",
+        "unit_price": "12.25"
+      },
+      {
+        "description": "Copy Paper Case",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1001|Copy Paper Case|1|10.00|10.00"
+        },
+        "line_number": 2,
+        "line_total": "10.00",
+        "quantity": "1",
+        "sku": "SKU-1001",
+        "unit_price": "10.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1041",
+    "subtotal": "22.25",
+    "tax": "0.00",
+    "vendor_id": "V001",
+    "vendor_name": "Northwind Office Supply LLC"
+  },
+  "layout": "layout_classic",
+  "po_id": "PO-1041",
+  "scenario": "math_error"
+}

@@ -1,0 +1,25 @@
+{
+  "currency": "USD",
+  "lines": [
+    {
+      "description": "Label Stock Pack",
+      "gl_account": "5300",
+      "line_number": 1,
+      "quantity": "1",
+      "sku": "SKU-1007",
+      "unit_price": "18.40"
+    },
+    {
+      "description": "Widget Assembly B",
+      "gl_account": "5400",
+      "line_number": 2,
+      "quantity": "3",
+      "sku": "SKU-1006",
+      "unit_price": "250.00"
+    }
+  ],
+  "po_id": "PO-1031",
+  "status": "OPEN",
+  "vendor_id": "V001",
+  "vendor_name": "Northwind Office Supply LLC"
+}

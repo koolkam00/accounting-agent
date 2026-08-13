@@ -1,0 +1,70 @@
+{
+  "already_processed": null,
+  "case_id": "case_028",
+  "decision": "HUMAN_REVIEW",
+  "duplicate_of": null,
+  "exception_codes": [
+    "QUANTITY_EXCEEDS_RECEIPT"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-2026028"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "277.50"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-1028"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Blue Harbor Packaging Co"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-04-06",
+    "invoice_number": "INV-2026028",
+    "invoice_total": "277.50",
+    "line_items": [
+      {
+        "description": "Toner Cartridge Black",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1002|Toner Cartridge Black|5|45.50|227.50"
+        },
+        "line_number": 1,
+        "line_total": "227.50",
+        "quantity": "5",
+        "sku": "SKU-1002",
+        "unit_price": "45.50"
+      },
+      {
+        "description": "Copy Paper Case",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1001|Copy Paper Case|5|10.00|50.00"
+        },
+        "line_number": 2,
+        "line_total": "50.00",
+        "quantity": "5",
+        "sku": "SKU-1001",
+        "unit_price": "10.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1028",
+    "subtotal": "277.50",
+    "tax": "0.00",
+    "vendor_id": "V003",
+    "vendor_name": "Blue Harbor Packaging Co"
+  },
+  "layout": "layout_two_column",
+  "po_id": "PO-1028",
+  "scenario": "qty_exceeds_receipt"
+}

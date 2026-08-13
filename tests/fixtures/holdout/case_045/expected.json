@@ -1,0 +1,70 @@
+{
+  "already_processed": null,
+  "case_id": "case_045",
+  "decision": "HUMAN_REVIEW",
+  "duplicate_of": null,
+  "exception_codes": [
+    "VENDOR_MISMATCH"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-2026045"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "166.00"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-1045"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Northwind Office Supply LLC"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-09-10",
+    "invoice_number": "INV-2026045",
+    "invoice_total": "166.00",
+    "line_items": [
+      {
+        "description": "Cleaning Solvent Gal",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1008|Cleaning Solvent Gal|3|22.00|66.00"
+        },
+        "line_number": 1,
+        "line_total": "66.00",
+        "quantity": "3",
+        "sku": "SKU-1008",
+        "unit_price": "22.00"
+      },
+      {
+        "description": "Copy Paper Case",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1001|Copy Paper Case|10|10.00|100.00"
+        },
+        "line_number": 2,
+        "line_total": "100.00",
+        "quantity": "10",
+        "sku": "SKU-1001",
+        "unit_price": "10.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1045",
+    "subtotal": "166.00",
+    "tax": "0.00",
+    "vendor_id": "V001",
+    "vendor_name": "Northwind Office Supply LLC"
+  },
+  "layout": "layout_compact",
+  "po_id": "PO-1045",
+  "scenario": "vendor_mismatch"
+}

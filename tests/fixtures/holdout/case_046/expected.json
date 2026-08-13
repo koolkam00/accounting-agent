@@ -1,0 +1,70 @@
+{
+  "already_processed": null,
+  "case_id": "case_046",
+  "decision": "HUMAN_REVIEW",
+  "duplicate_of": null,
+  "exception_codes": [
+    "VENDOR_MISMATCH"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-2026046"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "192.00"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-1046"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Cedar Ridge Industrial Parts"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-10-15",
+    "invoice_number": "INV-2026046",
+    "invoice_total": "192.00",
+    "line_items": [
+      {
+        "description": "Label Stock Pack",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1007|Label Stock Pack|5|18.40|92.00"
+        },
+        "line_number": 1,
+        "line_total": "92.00",
+        "quantity": "5",
+        "sku": "SKU-1007",
+        "unit_price": "18.40"
+      },
+      {
+        "description": "Widget Assembly A",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1005|Widget Assembly A|1|100.00|100.00"
+        },
+        "line_number": 2,
+        "line_total": "100.00",
+        "quantity": "1",
+        "sku": "SKU-1005",
+        "unit_price": "100.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1046",
+    "subtotal": "192.00",
+    "tax": "0.00",
+    "vendor_id": "V002",
+    "vendor_name": "Cedar Ridge Industrial Parts"
+  },
+  "layout": "layout_classic",
+  "po_id": "PO-1046",
+  "scenario": "vendor_mismatch"
+}

@@ -1,0 +1,73 @@
+{
+  "already_processed": {
+    "invoice_number": "INV-2026031",
+    "vendor_id": "V001"
+  },
+  "case_id": "case_031",
+  "decision": "HUMAN_REVIEW",
+  "duplicate_of": "INV-2026031",
+  "exception_codes": [
+    "DUPLICATE_INVOICE"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-2026031"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "768.40"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-1031"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Northwind Office Supply LLC"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-07-21",
+    "invoice_number": "INV-2026031",
+    "invoice_total": "768.40",
+    "line_items": [
+      {
+        "description": "Label Stock Pack",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1007|Label Stock Pack|1|18.40|18.40"
+        },
+        "line_number": 1,
+        "line_total": "18.40",
+        "quantity": "1",
+        "sku": "SKU-1007",
+        "unit_price": "18.40"
+      },
+      {
+        "description": "Widget Assembly B",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1006|Widget Assembly B|3|250.00|750.00"
+        },
+        "line_number": 2,
+        "line_total": "750.00",
+        "quantity": "3",
+        "sku": "SKU-1006",
+        "unit_price": "250.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1031",
+    "subtotal": "768.40",
+    "tax": "0.00",
+    "vendor_id": "V001",
+    "vendor_name": "Northwind Office Supply LLC"
+  },
+  "layout": "layout_classic",
+  "po_id": "PO-1031",
+  "scenario": "duplicate"
+}

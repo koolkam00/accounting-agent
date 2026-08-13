@@ -1,0 +1,68 @@
+{
+  "already_processed": null,
+  "case_id": "case_010",
+  "decision": "READY_FOR_DRAFT",
+  "duplicate_of": null,
+  "exception_codes": [],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-2026010"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "786.75"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-1010"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Pinecrest Facilities Goods"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-10-24",
+    "invoice_number": "INV-2026010",
+    "invoice_total": "786.75",
+    "line_items": [
+      {
+        "description": "Safety Gloves Box",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1003|Safety Gloves Box|3|12.25|36.75"
+        },
+        "line_number": 1,
+        "line_total": "36.75",
+        "quantity": "3",
+        "sku": "SKU-1003",
+        "unit_price": "12.25"
+      },
+      {
+        "description": "Widget Assembly B",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1006|Widget Assembly B|3|250.00|750.00"
+        },
+        "line_number": 2,
+        "line_total": "750.00",
+        "quantity": "3",
+        "sku": "SKU-1006",
+        "unit_price": "250.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1010",
+    "subtotal": "786.75",
+    "tax": "0.00",
+    "vendor_id": "V005",
+    "vendor_name": "Pinecrest Facilities Goods"
+  },
+  "layout": "layout_compact",
+  "po_id": "PO-1010",
+  "scenario": "exact_match"
+}
