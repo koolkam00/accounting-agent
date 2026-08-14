@@ -115,3 +115,19 @@ Do not create a pod until that cap is approved in chat.
 - Qwen3 dense path is unchanged and mutually exclusive: `extra_body.chat_template_kwargs.enable_thinking=false` only when `MODEL_NAME` looks like Qwen3 (not 3.5/3.6 GDN).
 - Eval: `evaluate_accuracy.py` / `evaluate_determinism.py` accept `--temperature --difficulty --reps --conc --live --label --negative-control`. Reports record temperature, difficulty, invariance, model, and extraction hashes.
 - Hard PDFs are ReportLab text-layer (strikethrough, extra fees, wrapped tables, multi-page, odd spacing). Image-only PDFs still set `OCR_REQUIRED` and skip the LLM.
+
+## Rerunning and reading determinism splits
+
+- To rerun the determinism matrix with enriched records:
+  - Example: `python scripts/evaluate_determinism.py --live --difficulty medium --reps 5 --conc 1 8 --label REDUCED`
+  - Open `reports/determinism_records_enriched_<restart>.jsonl` for per-repeat details:
+    - `extraction`: full canonical `ExtractedInvoice` JSON
+    - `canonical_text`: the INGEST text-layer actually sent to the model
+    - `decision`, `exception_codes`, `control_checks`: Python VALIDATE→LOOKUP→MATCH result on that extract
+  - The legacy `reports/determinism_records_<restart>.jsonl` remains unchanged for hash-only workflows.
+- Cosmetic vs material:
+  - **cosmetic**: all successful reps for a case agree on workflow decision and all matcher-used fields are identical (e.g., payment terms or evidence-only differences).
+  - **material**: decision differs OR any matcher-used field differs (e.g., quantity, unit price, line totals, PO/vendor, tax, invoice total).
+- Per-cell summaries now include:
+  - `n_stable`, `n_cosmetic_splits`, `n_material_splits`, `n_decision_flips`
+  - `field_pairwise_disagreement_rate` with header and line-level fields
