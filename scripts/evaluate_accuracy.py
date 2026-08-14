@@ -26,6 +26,8 @@ from app.database import init_db
 from app.llm_client import MockLLMClient, VLLMLLMClient
 from app.pipeline import Pipeline, run_case_dir
 from app.settings import get_settings
+from app.canonicalize import canonicalize_document
+from app.pdf_text import extract_pdf_text
 
 
 FIELD_KEYS = (
@@ -134,6 +136,9 @@ def eval_cases(name: str, cases: list[Path], db_url: str, *, live: bool, llm) ->
         error = None
         extraction_dump = None
         fields_ok = False
+        # Canonical PDF text actually sent to the model (INGEST text-layer output)
+        pdf_bytes_for_canon = (case_dir / "invoice.pdf").read_bytes()
+        canon_text = canonicalize_document(pdf_bytes_for_canon, extract_pdf_text(pdf_bytes_for_canon).pages).canonical_text
         try:
             if live:
                 pdf_bytes = (case_dir / "invoice.pdf").read_bytes()
@@ -172,6 +177,7 @@ def eval_cases(name: str, cases: list[Path], db_url: str, *, live: bool, llm) ->
                 "case_id": case_dir.name,
                 "scenario": expected.get("scenario"),
                 "difficulty": expected.get("difficulty"),
+                    "canonical_text": canon_text,
                 "expected_decision": expected["decision"],
                 "got_decision": got_decision,
                 "expected_codes": sorted(exp_codes),

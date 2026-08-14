@@ -5,6 +5,12 @@ Local PDF/canonical hashes always run.
 --live runs a GPU matrix against VLLM_BASE_URL (VLLMLLMClient).
 Hashes compare ExtractedInvoice JSON with timestamps/request ids stripped.
 
+In live mode:
+- Persist enriched per-repeat records including the extracted invoice JSON,
+  canonical PDF text sent to the model, and pipeline decision/exception/control-checks.
+- Compute cosmetic vs material split counts and field-level pairwise disagreement
+  rates so reviewers can explain hash splits.
+
 Default live matrix is REDUCED (documented) unless --full is passed.
 """
 
@@ -27,7 +33,9 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from app.canonicalize import canonicalize_document, sha256_bytes
+from app.determinism import aggregate_field_disagreements, classify_case_records
 from app.pdf_text import extract_pdf_text
+from app.schemas import ExtractedInvoice
 
 VOLATILE_KEYS = {
     "timestamp",
@@ -178,18 +186,53 @@ def gpu_matrix_not_executed() -> list[dict]:
     ]
 
 
-def one_extract(llm, canonical_text: str, case_id: str, temperature: float | None = None) -> dict:
+def one_extract(
+    llm,
+    canonical_text: str,
+    case_id: str,
+    temperature: float | None = None,
+    *,
+    erp=None,
+    pdf_bytes: bytes | None = None,
+    gold_extraction: dict | None = None,
+) -> dict:
     t0 = time.perf_counter()
     try:
         extracted = llm.extract_invoice(canonical_text, case_id=case_id, temperature=temperature)
         dump = extracted.model_dump(mode="json")
-        return {
+        rec: dict[str, Any] = {
             "ok": True,
             "hash": extraction_hash(dump),
             "latency_s": time.perf_counter() - t0,
             "error": None,
             "schema_valid": True,
+            "extraction": dump,
+            "canonical_text": canonical_text,
         }
+        # Run VALIDATE→LOOKUP→MATCH via Pipeline with pre-seeded extraction
+        if erp is not None and pdf_bytes is not None:
+            from app.pipeline import Pipeline
+
+            try:
+                seeded = ExtractedInvoice.model_validate(dump)
+                result = Pipeline(erp=erp, llm=llm).run(
+                    pdf_bytes, case_id=case_id, mode="evaluate", preseeded_extraction=seeded
+                )
+                rec["decision"] = result.decision.value
+                rec["exception_codes"] = result.exception_codes
+                rec["control_checks"] = [c.model_dump(mode="json") for c in result.control_checks]
+            except Exception as exc2:  # noqa: BLE001
+                rec["decision"] = "ERROR"
+                rec["exception_codes"] = [f"PIPELINE_ERROR:{type(exc2).__name__}"]
+                rec["control_checks"] = []
+                rec["pipeline_error"] = f"{type(exc2).__name__}: {exc2}"
+        else:
+            rec["decision"] = None
+            rec["exception_codes"] = []
+            rec["control_checks"] = []
+        if gold_extraction:
+            rec["vs_gold_exact_fields"] = _field_exact_match_like_accuracy(dump, gold_extraction)
+        return rec
     except Exception as exc:  # noqa: BLE001
         return {
             "ok": False,
@@ -200,12 +243,30 @@ def one_extract(llm, canonical_text: str, case_id: str, temperature: float | Non
         }
 
 
-def run_jobs(llm, jobs: list[dict], concurrency: int, temperature: float | None = None) -> list[dict]:
+def run_jobs(
+    llm,
+    jobs: list[dict],
+    concurrency: int,
+    temperature: float | None = None,
+    *,
+    erp=None,
+    pdf_by_case: dict[str, bytes] | None = None,
+    gold_by_case: dict[str, dict] | None = None,
+) -> list[dict]:
     """jobs: {case_id, canonical, rep, restart_id} shuffled by caller."""
     out: list[dict] = [None] * len(jobs)  # type: ignore[list-item]
     if concurrency <= 1:
         for i, job in enumerate(jobs):
-            r = one_extract(llm, job["canonical"], job["case_id"], temperature=temperature)
+            cid = job["case_id"]
+            r = one_extract(
+                llm,
+                job["canonical"],
+                cid,
+                temperature=temperature,
+                erp=erp,
+                pdf_bytes=pdf_by_case.get(cid) if pdf_by_case else None,
+                gold_extraction=gold_by_case.get(cid) if gold_by_case else None,
+            )
             out[i] = {**job, **r, "concurrency": concurrency}
             if (i + 1) % 10 == 0 or i == 0:
                 print(f"  conc={concurrency} {i+1}/{len(jobs)} ok={r['ok']} hash={r['hash']}")
@@ -213,7 +274,16 @@ def run_jobs(llm, jobs: list[dict], concurrency: int, temperature: float | None 
 
     def _work(idx_job):
         idx, job = idx_job
-        r = one_extract(llm, job["canonical"], job["case_id"], temperature=temperature)
+        cid = job["case_id"]
+        r = one_extract(
+            llm,
+            job["canonical"],
+            cid,
+            temperature=temperature,
+            erp=erp,
+            pdf_bytes=pdf_by_case.get(cid) if pdf_by_case else None,
+            gold_extraction=gold_by_case.get(cid) if gold_by_case else None,
+        )
         return idx, {**job, **r, "concurrency": concurrency}
 
     with ThreadPoolExecutor(max_workers=concurrency) as ex:
@@ -284,6 +354,8 @@ def warmup(llm, canonical_by_case: dict[str, str], n: int = 3, temperature: floa
 def live_matrix(args: argparse.Namespace) -> dict:
     from app.llm_client import VLLMLLMClient, is_gpt_oss, is_qwen3_dense
     from app.settings import get_settings
+    from app.database import init_db
+    from app.adapters.local_erp import LocalERPAdapter
 
     get_settings.cache_clear()
     settings = get_settings()
@@ -294,6 +366,13 @@ def live_matrix(args: argparse.Namespace) -> dict:
     if args.cases < len(all_cases):
         all_cases = all_cases[: args.cases]
     canonical_by_case = {p.name: load_canonical(p) for p in all_cases}
+    pdf_by_case = {p.name: (p / "invoice.pdf").read_bytes() for p in all_cases}
+    gold_by_case: dict[str, dict] = {}
+    for p in all_cases:
+        exp = json.loads((p / "expected.json").read_text(encoding="utf-8"))
+        gold = exp.get("extraction") or exp.get("extracted_invoice")
+        if gold:
+            gold_by_case[p.name] = gold
     print(
         f"loaded {len(canonical_by_case)} cases for GPU determinism "
         f"model={settings.model_name} temp={temp} difficulty={args.difficulty} invariance={inv}"
@@ -304,6 +383,11 @@ def live_matrix(args: argparse.Namespace) -> dict:
     gpu_sections: list[dict] = []
     all_records: list[dict] = []
     restart_id = args.restart_id
+    # Initialize LocalERP with fixtures for LOOKUP/MATCH
+    db_path = REPO / "reports" / f"determinism_eval_{args.difficulty or 'all'}.db"
+    sf = init_db(f"sqlite:///{db_path}")
+    erp = LocalERPAdapter(sf)
+    _load_fixtures_into_local_erp(erp, all_cases)
 
     # 1. same-request repeatability at concurrency 1
     jobs = []
@@ -312,7 +396,15 @@ def live_matrix(args: argparse.Namespace) -> dict:
             jobs.append({"case_id": cid, "canonical": text, "rep": rep, "restart_id": restart_id})
     rng.shuffle(jobs)
     print(f"same_request conc=1 jobs={len(jobs)} reps={args.reps}")
-    recs = run_jobs(llm, jobs, concurrency=1, temperature=temp)
+    recs = run_jobs(
+        llm,
+        jobs,
+        concurrency=1,
+        temperature=temp,
+        erp=erp,
+        pdf_by_case=pdf_by_case,
+        gold_by_case=gold_by_case,
+    )
     all_records.extend(recs)
     gpu_sections.append(
         summarize_records(
@@ -345,7 +437,15 @@ def live_matrix(args: argparse.Namespace) -> dict:
                 jobs.append({"case_id": cid, "canonical": text, "rep": rep, "restart_id": restart_id})
         rng.shuffle(jobs)
         print(f"batch_position conc={conc} jobs={len(jobs)}")
-        recs = run_jobs(llm, jobs, concurrency=conc, temperature=temp)
+        recs = run_jobs(
+            llm,
+            jobs,
+            concurrency=conc,
+            temperature=temp,
+            erp=erp,
+            pdf_by_case=pdf_by_case,
+            gold_by_case=gold_by_case,
+        )
         all_records.extend(recs)
         gpu_sections.append(
             summarize_records(
@@ -364,10 +464,7 @@ def live_matrix(args: argparse.Namespace) -> dict:
                     "model": settings.model_name,
                     "model_revision": settings.model_revision,
                     "reasoning_effort": settings.reasoning_effort,
-                    "note": (
-                        f"Server invariance={inv}. Request order shuffled to mix batch positions. "
-                        "Hashed ExtractedInvoice JSON only."
-                    ),
+                    "note": f"Server invariance={inv}. Request order shuffled to mix batch positions.",
                 },
             )
         )
@@ -463,6 +560,41 @@ def live_matrix(args: argparse.Namespace) -> dict:
             slim = {k: v for k, v in rec.items() if k != "canonical"}
             fh.write(json.dumps(slim, sort_keys=True) + "\n")
     print(f"wrote {records_path} n={len(all_records)}")
+    enriched_path = REPO / "reports" / f"determinism_records_enriched_{restart_id or 'r0'}.jsonl"
+    with enriched_path.open("w", encoding="utf-8") as fh:
+        for rec in all_records:
+            fh.write(json.dumps(rec, sort_keys=True) + "\n")
+    print(f"wrote {enriched_path} n={len(all_records)}")
+
+    # Classification and field-level disagreement rollup across all records
+    by_case: dict[str, list[dict]] = {}
+    for r in all_records:
+        by_case.setdefault(r["case_id"], []).append(r)
+    classifs = {cid: classify_case_records(cid, rs) for cid, rs in by_case.items()}
+    n_cosmetic = sum(1 for c in classifs.values() if c.classification == "cosmetic")
+    n_material = sum(1 for c in classifs.values() if c.classification == "material")
+    n_stable = sum(1 for c in classifs.values() if c.classification == "stable")
+    n_flips = sum(1 for c in classifs.values() if not c.decision_equal and c.unique_hashes > 0)
+    # Aggregate field disagreements on extracted invoices (ok records only)
+    extracts_by_case: dict[str, list[dict]] = {}
+    for cid, rs in by_case.items():
+        exs = [r["extraction"] for r in rs if r.get("ok") and r.get("extraction")]
+        if exs:
+            extracts_by_case[cid] = exs
+    field_rates = aggregate_field_disagreements(extracts_by_case)
+    gpu_sections.append(
+        {
+            "dimension": "classification",
+            "name": "cosmetic_vs_material_splits",
+            "status": "EXECUTED",
+            "n_cases": len(by_case),
+            "n_stable": n_stable,
+            "n_cosmetic_splits": n_cosmetic,
+            "n_material_splits": n_material,
+            "n_decision_flips": n_flips,
+            "field_pairwise_disagreement_rate": field_rates,
+        }
+    )
     return {
         "gpu": gpu_sections,
         "gpu_determinism_matrix_executed": True,
@@ -470,6 +602,7 @@ def live_matrix(args: argparse.Namespace) -> dict:
         "restart_id": restart_id,
         "n_records": len(all_records),
         "records_path": str(records_path.relative_to(REPO)),
+        "records_path_enriched": str(enriched_path.relative_to(REPO)),
         "temperature": temp,
         "difficulty": args.difficulty,
         "invariance": inv,
@@ -479,19 +612,153 @@ def live_matrix(args: argparse.Namespace) -> dict:
     }
 
 
+def _field_exact_match_like_accuracy(got: dict | None, gold: dict | None) -> bool:
+    """Exact field match function aligned with evaluate_accuracy.field_exact_match."""
+    if not got or not gold:
+        return False
+    field_keys = (
+        "vendor_name",
+        "vendor_id",
+        "invoice_number",
+        "invoice_date",
+        "po_number",
+        "currency",
+        "subtotal",
+        "tax",
+        "freight",
+        "invoice_total",
+        "payment_terms",
+    )
+    for k in field_keys:
+        if (got.get(k) or None) != (gold.get(k) or None):
+            return False
+    got_lines = got.get("line_items") or []
+    gold_lines = gold.get("line_items") or []
+    if len(got_lines) != len(gold_lines):
+        return False
+    line_keys = ("line_number", "sku", "description", "quantity", "unit_price", "line_total")
+    for a, b in zip(got_lines, gold_lines):
+        for k in line_keys:
+            if a.get(k) != b.get(k):
+                return False
+    return True
+
+
+def _load_fixtures_into_local_erp(erp, case_dirs: list[Path]) -> None:
+    """Populate the LocalERPAdapter database with fixture data for provided cases."""
+    from sqlalchemy.orm import Session
+    from app.database import (
+        VendorRow,
+        PurchaseOrderRow,
+        POLineRow,
+        ReceiptRow,
+        ReceiptLineRow,
+        DuplicateSeedRow,
+    )
+
+    vendors = [
+        {"vendor_id": "V001", "vendor_name": "Northwind Office Supply LLC", "active": True, "ap_account": "2000"},
+        {"vendor_id": "V002", "vendor_name": "Cedar Ridge Industrial Parts", "active": True, "ap_account": "2000"},
+        {"vendor_id": "V003", "vendor_name": "Blue Harbor Packaging Co", "active": True, "ap_account": "2000"},
+        {"vendor_id": "V004", "vendor_name": "Summit Ridge Labware Inc", "active": True, "ap_account": "2000"},
+        {"vendor_id": "V005", "vendor_name": "Pinecrest Facilities Goods", "active": True, "ap_account": "2000"},
+        {"vendor_id": "V006", "vendor_name": "Harbor Closed Supply LLC", "active": False, "ap_account": "2000"},
+    ]
+    with erp._sf() as session:  # type: ignore[attr-defined]
+        assert isinstance(session, Session)
+        for v in vendors:
+            if session.get(VendorRow, v["vendor_id"]) is None:
+                session.add(VendorRow(**v))
+        session.commit()
+        for case_dir in case_dirs:
+            po = json.loads((case_dir / "po.json").read_text(encoding="utf-8"))
+            receipt = json.loads((case_dir / "receipt.json").read_text(encoding="utf-8"))
+            expected = json.loads((case_dir / "expected.json").read_text(encoding="utf-8"))
+            if session.get(PurchaseOrderRow, po["po_id"]) is None:
+                session.add(
+                    PurchaseOrderRow(
+                        po_id=po["po_id"],
+                        vendor_id=po["vendor_id"],
+                        vendor_name=po["vendor_name"],
+                        currency=po["currency"],
+                        status=po["status"],
+                    )
+                )
+                session.flush()
+                for ln in sorted(po["lines"], key=lambda x: x["line_number"]):
+                    session.add(
+                        POLineRow(
+                            po_id=po["po_id"],
+                            line_number=ln["line_number"],
+                            sku=ln["sku"],
+                            description=ln["description"],
+                            quantity=ln["quantity"],
+                            unit_price=ln["unit_price"],
+                            gl_account=ln["gl_account"],
+                        )
+                    )
+            if session.get(ReceiptRow, receipt["receipt_id"]) is None:
+                session.add(ReceiptRow(receipt_id=receipt["receipt_id"], po_id=receipt["po_id"]))
+                session.flush()
+                for ln in receipt["lines"]:
+                    session.add(
+                        ReceiptLineRow(
+                            receipt_id=receipt["receipt_id"],
+                            sku=ln["sku"],
+                            quantity_received=ln["quantity_received"],
+                        )
+                    )
+            already = expected.get("already_processed")
+            if already:
+                exists = (
+                    session.query(DuplicateSeedRow)
+                    .filter_by(
+                        vendor_id=already["vendor_id"],
+                        invoice_number=already["invoice_number"],
+                    )
+                    .first()
+                )
+                if exists is None:
+                    session.add(
+                        DuplicateSeedRow(
+                            vendor_id=already["vendor_id"],
+                            invoice_number=already["invoice_number"],
+                        )
+                    )
+        session.commit()
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--live", action="store_true")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Evaluate extraction determinism.\n"
+            "Live mode writes two record files:\n"
+            "  reports/determinism_records_<restart>.jsonl (legacy hash/ok/latency/schema fields),\n"
+            "  reports/determinism_records_enriched_<restart>.jsonl (adds extraction JSON, canonical text, "
+            "pipeline decision/exception/control-checks, and vs-gold flags when available).\n"
+            "Summaries now include cosmetic vs material split counts and field-level pairwise disagreement rates."
+        )
+    )
+    parser.add_argument("--live", action="store_true", help="Run GPU live matrix (VLLMLLMClient)")
     parser.add_argument("--reps", type=int, default=5)
     parser.add_argument("--cases", type=int, default=50)
     parser.add_argument("--conc", type=int, nargs="*", default=[8])
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--restart-id", default="r0")
-    parser.add_argument("--label", default="REDUCED")
-    parser.add_argument("--negative-control", action="store_true")
+    parser.add_argument("--label", default="REDUCED", help="Label to include in summary files")
+    parser.add_argument(
+        "--negative-control",
+        action="store_true",
+        help="Record invariance=off (caller must have started vLLM with VLLM_BATCH_INVARIANT=0)",
+    )
     parser.add_argument("--temperature", type=float, default=None)
     parser.add_argument("--difficulty", choices=["easy", "medium", "hard"], default=None)
-    parser.add_argument("--merge-records", nargs="*", default=None)
+    parser.add_argument(
+        "--merge-records",
+        nargs="*",
+        default=None,
+        help="Merge jsonl records across restarts for restart-invariance comparison",
+    )
     args = parser.parse_args()
 
     report: dict[str, Any] = {
