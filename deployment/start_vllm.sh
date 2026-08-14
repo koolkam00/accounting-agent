@@ -1,29 +1,67 @@
 #!/usr/bin/env bash
-# Start pinned vLLM OpenAI server for deterministic invoice extraction.
-# Do not silently change image/model pins — see docs/technical_decisions.md
+# Start vLLM OpenAI server for invoice extraction.
+# Default model: openai/gpt-oss-120b (Harmony). Requires vLLM >= 0.10.0.
+# Do not reuse v0.27.1. Pin image digest at launch in reports/environment.json.
+#
+# Negative control (second server start):
+#   VLLM_BATCH_INVARIANT=0 ./deployment/start_vllm.sh
 set -euo pipefail
 
-MODEL_NAME="${MODEL_NAME:-Qwen/Qwen3-8B}"
-MODEL_REVISION="${MODEL_REVISION:-b968826d9c46dd6066d109eabc6255188de91218}"
-IMAGE="${VLLM_DOCKER_IMAGE:-vllm/vllm-openai:v0.27.1}"
-DIGEST="${VLLM_DOCKER_DIGEST:-sha256:0a51ea5b4ae2dc5d81890e5173f54203d2a3ae0cfffe51b8fd2afd4391bfd967}"
+MODEL_NAME="${MODEL_NAME:-openai/gpt-oss-120b}"
+MODEL_REVISION="${MODEL_REVISION:-}"
+IMAGE="${VLLM_DOCKER_IMAGE:-vllm/vllm-openai:latest}"
+DIGEST="${VLLM_DOCKER_DIGEST:-}"
 PORT="${VLLM_PORT:-8000}"
 MAX_MODEL_LEN="${MAX_MODEL_LEN:-8192}"
+MAX_NUM_BATCHED_TOKENS="${MAX_NUM_BATCHED_TOKENS:-1024}"
+GPU_MEM="${GPU_MEMORY_UTILIZATION:-0.95}"
+TP="${TENSOR_PARALLEL_SIZE:-1}"
+BATCH_INV="${VLLM_BATCH_INVARIANT:-1}"
 
-export VLLM_BATCH_INVARIANT=1
+export VLLM_BATCH_INVARIANT="${BATCH_INV}"
 
-echo "Pulling ${IMAGE}@${DIGEST}"
-docker pull "${IMAGE}@${DIGEST}"
+if [[ -n "${DIGEST}" ]]; then
+  IMAGE_REF="${IMAGE}@${DIGEST}"
+else
+  IMAGE_REF="${IMAGE}"
+  echo "WARNING: VLLM_DOCKER_DIGEST unset. Pin the digest at launch (vLLM >= 0.10.0)."
+fi
+
+echo "Pulling ${IMAGE_REF}  (VLLM_BATCH_INVARIANT=${BATCH_INV})"
+docker pull "${IMAGE_REF}"
+
+ARGS=(
+  --model "${MODEL_NAME}"
+  --structured-outputs-config.backend xgrammar
+  --max-model-len "${MAX_MODEL_LEN}"
+  --max-num-batched-tokens "${MAX_NUM_BATCHED_TOKENS}"
+  --gpu-memory-utilization "${GPU_MEM}"
+  --tensor-parallel-size "${TP}"
+  --dtype auto
+)
+
+if [[ -n "${MODEL_REVISION}" ]]; then
+  ARGS+=(--revision "${MODEL_REVISION}")
+fi
+
+# Qwen3 dense (not 3.5 / 3.6 GDN): disable thinking at the server too.
+case "${MODEL_NAME}" in
+  *Qwen3.5*|*Qwen3.6*|*GDN*) ;;
+  *Qwen3*|*qwen3*)
+    ARGS+=(--default-chat-template-kwargs '{"enable_thinking": false}')
+    ;;
+esac
+
+case "${MODEL_NAME}" in
+  *gpt-oss*|*gptoss*)
+    ARGS+=(--reasoning-parser openai_gptoss)
+    ;;
+esac
 
 docker run --rm --gpus all --ipc=host \
   -p "${PORT}:8000" \
-  -e VLLM_BATCH_INVARIANT=1 \
+  -e VLLM_BATCH_INVARIANT="${BATCH_INV}" \
   -e HF_HOME=/root/.cache/huggingface \
   -v "${HF_CACHE:-$HOME/.cache/huggingface}:/root/.cache/huggingface" \
-  "${IMAGE}@${DIGEST}" \
-  --model "${MODEL_NAME}" \
-  --revision "${MODEL_REVISION}" \
-  --default-chat-template-kwargs '{"enable_thinking": false}' \
-  --structured-outputs-config.backend xgrammar \
-  --max-model-len "${MAX_MODEL_LEN}" \
-  --dtype auto
+  "${IMAGE_REF}" \
+  "${ARGS[@]}"

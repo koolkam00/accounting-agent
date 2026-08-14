@@ -1,0 +1,75 @@
+{
+  "already_processed": {
+    "invoice_number": "INV-M-2026013",
+    "vendor_id": "V003"
+  },
+  "case_id": "case_013",
+  "decision": "HUMAN_REVIEW",
+  "difficulty": "medium",
+  "duplicate_of": "INV-M-2026013",
+  "exception_codes": [
+    "DUPLICATE_INVOICE"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-M-2026013"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "281.25"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-M-1013"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Blue Harbor Packaging Co"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-01-12",
+    "invoice_number": "INV-M-2026013",
+    "invoice_total": "281.25",
+    "line_items": [
+      {
+        "description": "Safety Gloves Box",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1003|Safety Gloves Box|5|12.25|61.25"
+        },
+        "line_number": 1,
+        "line_total": "61.25",
+        "quantity": "5",
+        "sku": "SKU-1003",
+        "unit_price": "12.25"
+      },
+      {
+        "description": "Cleaning Solvent Gal",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1008|Cleaning Solvent Gal|10|22.00|220.00"
+        },
+        "line_number": 2,
+        "line_total": "220.00",
+        "quantity": "10",
+        "sku": "SKU-1008",
+        "unit_price": "22.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-M-1013",
+    "subtotal": "281.25",
+    "tax": "0.00",
+    "vendor_id": "V003",
+    "vendor_name": "Blue Harbor Packaging Co"
+  },
+  "layout": "layout_two_column",
+  "po_id": "PO-M-1013",
+  "scenario": "duplicate",
+  "split": "holdout"
+}

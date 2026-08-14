@@ -1,0 +1,72 @@
+{
+  "already_processed": null,
+  "case_id": "case_016",
+  "decision": "HUMAN_REVIEW",
+  "difficulty": "hard",
+  "duplicate_of": null,
+  "exception_codes": [
+    "PO_NOT_FOUND"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-H-2026016"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "128.50"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-MISSING-16"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Northwind Office Supply LLC"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-04-27",
+    "invoice_number": "INV-H-2026016",
+    "invoice_total": "128.50",
+    "line_items": [
+      {
+        "description": "Toner Cartridge Black",
+        "evidence": {
+          "page": 1,
+          "quote": "SKU-1002"
+        },
+        "line_number": 1,
+        "line_total": "91.00",
+        "quantity": "2",
+        "sku": "SKU-1002",
+        "unit_price": "45.50"
+      },
+      {
+        "description": "Packing Tape Roll",
+        "evidence": {
+          "page": 1,
+          "quote": "SKU-1004"
+        },
+        "line_number": 2,
+        "line_total": "37.50",
+        "quantity": "10",
+        "sku": "SKU-1004",
+        "unit_price": "3.75"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-MISSING-16",
+    "subtotal": "128.50",
+    "tax": "0.00",
+    "vendor_id": "V001",
+    "vendor_name": "Northwind Office Supply LLC"
+  },
+  "layout": "odd_spacing",
+  "po_id": "PO-H-1016",
+  "scenario": "missing_po",
+  "split": "holdout"
+}

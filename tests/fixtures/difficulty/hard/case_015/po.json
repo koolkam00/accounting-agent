@@ -1,0 +1,25 @@
+{
+  "currency": "USD",
+  "lines": [
+    {
+      "description": "Toner Cartridge Black",
+      "gl_account": "5100",
+      "line_number": 1,
+      "quantity": "10",
+      "sku": "SKU-1002",
+      "unit_price": "45.50"
+    },
+    {
+      "description": "Copy Paper Case",
+      "gl_account": "5000",
+      "line_number": 2,
+      "quantity": "2",
+      "sku": "SKU-1001",
+      "unit_price": "10.00"
+    }
+  ],
+  "po_id": "PO-H-1015",
+  "status": "OPEN",
+  "vendor_id": "V005",
+  "vendor_name": "Pinecrest Facilities Goods"
+}

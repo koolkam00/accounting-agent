@@ -1,0 +1,69 @@
+{
+  "already_processed": null,
+  "case_id": "case_018",
+  "decision": "HUMAN_REVIEW",
+  "difficulty": "medium",
+  "duplicate_of": null,
+  "exception_codes": [
+    "MISSING_INVOICE_NUMBER",
+    "MISSING_REQUIRED_FIELD"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_total": {
+        "page": 1,
+        "quote": "311.25"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-M-1018"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Blue Harbor Packaging Co"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-06-10",
+    "invoice_number": null,
+    "invoice_total": "311.25",
+    "line_items": [
+      {
+        "description": "Packing Tape Roll",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1004|Packing Tape Roll|3|3.75|11.25"
+        },
+        "line_number": 1,
+        "line_total": "11.25",
+        "quantity": "3",
+        "sku": "SKU-1004",
+        "unit_price": "3.75"
+      },
+      {
+        "description": "Widget Assembly A",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1005|Widget Assembly A|3|100.00|300.00"
+        },
+        "line_number": 2,
+        "line_total": "300.00",
+        "quantity": "3",
+        "sku": "SKU-1005",
+        "unit_price": "100.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-M-1018",
+    "subtotal": "311.25",
+    "tax": "0.00",
+    "vendor_id": "V003",
+    "vendor_name": "Blue Harbor Packaging Co"
+  },
+  "layout": "layout_two_column",
+  "po_id": "PO-M-1018",
+  "scenario": "missing_ambiguous",
+  "split": "holdout"
+}

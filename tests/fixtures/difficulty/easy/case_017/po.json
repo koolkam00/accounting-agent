@@ -1,0 +1,25 @@
+{
+  "currency": "USD",
+  "lines": [
+    {
+      "description": "Cleaning Solvent Gal",
+      "gl_account": "5200",
+      "line_number": 1,
+      "quantity": "2",
+      "sku": "SKU-1008",
+      "unit_price": "22.00"
+    },
+    {
+      "description": "Widget Assembly B",
+      "gl_account": "5400",
+      "line_number": 2,
+      "quantity": "3",
+      "sku": "SKU-1006",
+      "unit_price": "250.00"
+    }
+  ],
+  "po_id": "PO-E-1017",
+  "status": "OPEN",
+  "vendor_id": "V002",
+  "vendor_name": "Cedar Ridge Industrial Parts"
+}

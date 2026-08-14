@@ -1,0 +1,72 @@
+{
+  "already_processed": null,
+  "case_id": "case_014",
+  "decision": "HUMAN_REVIEW",
+  "difficulty": "hard",
+  "duplicate_of": null,
+  "exception_codes": [
+    "PO_NOT_FOUND"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-H-2026014"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "261.25"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-MISSING-14"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Summit Ridge Labware Inc"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-02-17",
+    "invoice_number": "INV-H-2026014",
+    "invoice_total": "261.25",
+    "line_items": [
+      {
+        "description": "Packing Tape Roll",
+        "evidence": {
+          "page": 1,
+          "quote": "SKU-1004"
+        },
+        "line_number": 1,
+        "line_total": "11.25",
+        "quantity": "3",
+        "sku": "SKU-1004",
+        "unit_price": "3.75"
+      },
+      {
+        "description": "Widget Assembly B",
+        "evidence": {
+          "page": 1,
+          "quote": "SKU-1006"
+        },
+        "line_number": 2,
+        "line_total": "250.00",
+        "quantity": "1",
+        "sku": "SKU-1006",
+        "unit_price": "250.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-MISSING-14",
+    "subtotal": "261.25",
+    "tax": "0.00",
+    "vendor_id": "V004",
+    "vendor_name": "Summit Ridge Labware Inc"
+  },
+  "layout": "wrapped",
+  "po_id": "PO-H-1014",
+  "scenario": "missing_po",
+  "split": "holdout"
+}

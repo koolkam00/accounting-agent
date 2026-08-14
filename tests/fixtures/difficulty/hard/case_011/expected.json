@@ -1,0 +1,84 @@
+{
+  "already_processed": null,
+  "case_id": "case_011",
+  "decision": "HUMAN_REVIEW",
+  "difficulty": "hard",
+  "duplicate_of": null,
+  "exception_codes": [
+    "SKU_NOT_FOUND"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-H-2026011"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "2551.75"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-H-1011"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Northwind Office Supply LLC"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-11-02",
+    "invoice_number": "INV-H-2026011",
+    "invoice_total": "2551.75",
+    "line_items": [
+      {
+        "description": "Safety Gloves Box",
+        "evidence": {
+          "page": 1,
+          "quote": "SKU-1003"
+        },
+        "line_number": 1,
+        "line_total": "36.75",
+        "quantity": "3",
+        "sku": "SKU-1003",
+        "unit_price": "12.25"
+      },
+      {
+        "description": "Widget Assembly B",
+        "evidence": {
+          "page": 1,
+          "quote": "SKU-1006"
+        },
+        "line_number": 2,
+        "line_total": "2500.00",
+        "quantity": "10",
+        "sku": "SKU-1006",
+        "unit_price": "250.00"
+      },
+      {
+        "description": "Rush processing fee",
+        "evidence": {
+          "page": 1,
+          "quote": "FEE-RUSH"
+        },
+        "line_number": 3,
+        "line_total": "15.00",
+        "quantity": "1",
+        "sku": "FEE-RUSH",
+        "unit_price": "15.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-H-1011",
+    "subtotal": "2551.75",
+    "tax": "0.00",
+    "vendor_id": "V001",
+    "vendor_name": "Northwind Office Supply LLC"
+  },
+  "layout": "extra_fees",
+  "po_id": "PO-H-1011",
+  "scenario": "extra_fees",
+  "split": "holdout"
+}

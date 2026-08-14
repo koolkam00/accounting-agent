@@ -1,0 +1,72 @@
+{
+  "already_processed": null,
+  "case_id": "case_017",
+  "decision": "HUMAN_REVIEW",
+  "difficulty": "medium",
+  "duplicate_of": null,
+  "exception_codes": [
+    "VENDOR_MISMATCH"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-M-2026017"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "238.75"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-M-1017"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Blue Harbor Packaging Co"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-05-05",
+    "invoice_number": "INV-M-2026017",
+    "invoice_total": "238.75",
+    "line_items": [
+      {
+        "description": "Toner Cartridge Black",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1002|Toner Cartridge Black|5|45.50|227.50"
+        },
+        "line_number": 1,
+        "line_total": "227.50",
+        "quantity": "5",
+        "sku": "SKU-1002",
+        "unit_price": "45.50"
+      },
+      {
+        "description": "Packing Tape Roll",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1004|Packing Tape Roll|3|3.75|11.25"
+        },
+        "line_number": 2,
+        "line_total": "11.25",
+        "quantity": "3",
+        "sku": "SKU-1004",
+        "unit_price": "3.75"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-M-1017",
+    "subtotal": "238.75",
+    "tax": "0.00",
+    "vendor_id": "V003",
+    "vendor_name": "Blue Harbor Packaging Co"
+  },
+  "layout": "layout_boxed",
+  "po_id": "PO-M-1017",
+  "scenario": "vendor_mismatch",
+  "split": "holdout"
+}

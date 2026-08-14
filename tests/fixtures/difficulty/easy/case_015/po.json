@@ -1,0 +1,25 @@
+{
+  "currency": "USD",
+  "lines": [
+    {
+      "description": "Packing Tape Roll",
+      "gl_account": "5300",
+      "line_number": 1,
+      "quantity": "3",
+      "sku": "SKU-1004",
+      "unit_price": "3.75"
+    },
+    {
+      "description": "Cleaning Solvent Gal",
+      "gl_account": "5200",
+      "line_number": 2,
+      "quantity": "5",
+      "sku": "SKU-1008",
+      "unit_price": "22.00"
+    }
+  ],
+  "po_id": "PO-E-1015",
+  "status": "OPEN",
+  "vendor_id": "V005",
+  "vendor_name": "Pinecrest Facilities Goods"
+}

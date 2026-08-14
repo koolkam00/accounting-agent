@@ -100,9 +100,44 @@ INVOICE_JSON_SCHEMA: dict[str, Any] = {
 }
 
 
+def is_qwen3_dense(model_name: str) -> bool:
+    """True for Qwen3 dense checkpoints, not Qwen3.5 / 3.6 GDN."""
+    n = (model_name or "").lower()
+    if "qwen3.5" in n or "qwen3.6" in n or "gdn" in n:
+        return False
+    return "qwen3" in n
+
+
+def is_gpt_oss(model_name: str) -> bool:
+    n = (model_name or "").lower().replace("_", "-")
+    return "gpt-oss" in n or "gptoss" in n
+
+
+def build_chat_extra_body(model_name: str, reasoning_effort: str = "low") -> dict[str, Any]:
+    """Model-specific Chat Completions extra_body for current OpenAI+vLLM.
+
+    gpt-oss / Harmony: top-level ``reasoning_effort``. vLLM's Harmony path
+    ignores ``chat_template_kwargs.reasoning_effort`` (issues #23015, #41902).
+    Qwen3 dense: ``chat_template_kwargs.enable_thinking=false``.
+    The two are mutually exclusive for a given MODEL_NAME.
+    """
+    extra: dict[str, Any] = {}
+    if is_qwen3_dense(model_name):
+        extra["chat_template_kwargs"] = {"enable_thinking": False}
+    if is_gpt_oss(model_name):
+        extra["reasoning_effort"] = reasoning_effort
+    return extra
+
+
 class LLMClient(ABC):
     @abstractmethod
-    def extract_invoice(self, canonical_text: str, *, case_id: Optional[str] = None) -> ExtractedInvoice:
+    def extract_invoice(
+        self,
+        canonical_text: str,
+        *,
+        case_id: Optional[str] = None,
+        temperature: Optional[float] = None,
+    ) -> ExtractedInvoice:
         ...
 
 
@@ -128,7 +163,14 @@ class MockLLMClient(LLMClient):
             case_id = data.get("case_id") or case_dir.name
             self._expected_by_case[case_id] = data
 
-    def extract_invoice(self, canonical_text: str, *, case_id: Optional[str] = None) -> ExtractedInvoice:
+    def extract_invoice(
+        self,
+        canonical_text: str,
+        *,
+        case_id: Optional[str] = None,
+        temperature: Optional[float] = None,
+    ) -> ExtractedInvoice:
+        _ = temperature  # sampling is a live-client concern; mock is deterministic
         if case_id and case_id in self._expected_by_case:
             exp = self._expected_by_case[case_id]
             extraction = exp.get("extraction") or exp.get("extracted_invoice")
@@ -136,8 +178,18 @@ class MockLLMClient(LLMClient):
                 return ExtractedInvoice.model_validate(extraction)
         # Try locate fixture by scanning known roots
         if case_id and self.fixture_root:
-            for split in ("development", "holdout"):
-                path = self.fixture_root / split / case_id / "expected.json"
+            candidates = [
+                self.fixture_root / split / case_id / "expected.json"
+                for split in ("development", "holdout")
+            ]
+            candidates.extend(
+                self.fixture_root / "difficulty" / diff / case_id / "expected.json"
+                for diff in ("easy", "medium", "hard")
+            )
+            # fixture_root may already be a pack directory
+            candidates.append(self.fixture_root / case_id / "expected.json")
+            candidates.append(self.fixture_root / "expected.json")
+            for path in candidates:
                 if path.exists():
                     data = json.loads(path.read_text(encoding="utf-8"))
                     extraction = data.get("extraction") or data.get("extracted_invoice")
@@ -149,37 +201,53 @@ class MockLLMClient(LLMClient):
 class VLLMLLMClient(LLMClient):
     """OpenAI-compatible client targeting pinned vLLM server."""
 
-    def __init__(self) -> None:
+    def __init__(self, temperature: Optional[float] = None) -> None:
         from openai import OpenAI
 
         s = get_settings()
         self.settings = s
+        self._temperature_override = temperature
         self.client = OpenAI(base_url=s.vllm_base_url, api_key=s.vllm_api_key, timeout=1200.0)
         self.prompt = s.prompt_path.read_text(encoding="utf-8")
 
-    def extract_invoice(self, canonical_text: str, *, case_id: Optional[str] = None) -> ExtractedInvoice:
+    def extract_invoice(
+        self,
+        canonical_text: str,
+        *,
+        case_id: Optional[str] = None,
+        temperature: Optional[float] = None,
+    ) -> ExtractedInvoice:
         _ = case_id
         s = self.settings
+        if temperature is not None:
+            temp = temperature
+        elif self._temperature_override is not None:
+            temp = self._temperature_override
+        else:
+            temp = s.temperature
         messages = [
             {"role": "system", "content": self.prompt},
             {"role": "user", "content": f"Invoice text:\n\n{canonical_text}"},
         ]
-        resp = self.client.chat.completions.create(
-            model=s.model_name,
-            messages=messages,
-            temperature=s.temperature,
-            top_p=s.top_p,
-            seed=s.seed,
-            n=1,
-            response_format={
+        extra_body = build_chat_extra_body(s.model_name, s.reasoning_effort)
+        kwargs: dict[str, Any] = {
+            "model": s.model_name,
+            "messages": messages,
+            "temperature": temp,
+            "top_p": s.top_p,
+            "seed": s.seed,
+            "n": 1,
+            "response_format": {
                 "type": "json_schema",
                 "json_schema": INVOICE_JSON_SCHEMA,
             },
-            extra_body={
-                "chat_template_kwargs": {"enable_thinking": False},
-            },
-        )
-        content = resp.choices[0].message.content or "{}"
+        }
+        if extra_body:
+            kwargs["extra_body"] = extra_body
+        resp = self.client.chat.completions.create(**kwargs)
+        # Hash / parse the final channel only. Never use reasoning_content / traces.
+        message = resp.choices[0].message
+        content = message.content or "{}"
         data = json.loads(content)
         return ExtractedInvoice.model_validate(data)
 

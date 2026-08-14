@@ -1,0 +1,25 @@
+{
+  "currency": "USD",
+  "lines": [
+    {
+      "description": "Cleaning Solvent Gal",
+      "gl_account": "5200",
+      "line_number": 1,
+      "quantity": "2",
+      "sku": "SKU-1008",
+      "unit_price": "22.00"
+    },
+    {
+      "description": "Widget Assembly A",
+      "gl_account": "5400",
+      "line_number": 2,
+      "quantity": "10",
+      "sku": "SKU-1005",
+      "unit_price": "100.00"
+    }
+  ],
+  "po_id": "PO-H-1005",
+  "status": "OPEN",
+  "vendor_id": "V005",
+  "vendor_name": "Pinecrest Facilities Goods"
+}

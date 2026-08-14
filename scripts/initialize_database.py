@@ -31,14 +31,16 @@ VENDORS = [
     {"vendor_id": "V003", "vendor_name": "Blue Harbor Packaging Co", "active": True, "ap_account": "2000"},
     {"vendor_id": "V004", "vendor_name": "Summit Ridge Labware Inc", "active": True, "ap_account": "2000"},
     {"vendor_id": "V005", "vendor_name": "Pinecrest Facilities Goods", "active": True, "ap_account": "2000"},
+    {"vendor_id": "V006", "vendor_name": "Harbor Closed Supply LLC", "active": False, "ap_account": "2000"},
 ]
 
 
-def iter_case_dirs() -> list[Path]:
-    roots = [
-        REPO / "tests" / "fixtures" / "development",
-        REPO / "tests" / "fixtures" / "holdout",
-    ]
+def iter_case_dirs(roots: list[Path] | None = None) -> list[Path]:
+    if roots is None:
+        roots = [
+            REPO / "tests" / "fixtures" / "development",
+            REPO / "tests" / "fixtures" / "holdout",
+        ]
     cases: list[Path] = []
     for root in roots:
         if not root.exists():
@@ -51,11 +53,20 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--reset", action="store_true", help="Drop and recreate tables")
     parser.add_argument("--database-url", default=None)
+    parser.add_argument(
+        "--fixture-root",
+        action="append",
+        dest="fixture_roots",
+        default=None,
+        help="Case directory parent (repeatable). Default: development+holdout.",
+    )
     args = parser.parse_args()
 
     settings = get_settings()
     db_url = args.database_url or settings.database_url
     sf = reset_db(db_url) if args.reset else init_db(db_url)
+    roots = [Path(r) for r in args.fixture_roots] if args.fixture_roots else None
+    case_dirs = iter_case_dirs(roots)
 
     with sf() as session:
         for v in sorted(VENDORS, key=lambda x: x["vendor_id"]):
@@ -63,7 +74,7 @@ def main() -> None:
                 session.add(VendorRow(**v))
         session.commit()
 
-        for case_dir in iter_case_dirs():
+        for case_dir in case_dirs:
             po = json.loads((case_dir / "po.json").read_text(encoding="utf-8"))
             receipt = json.loads((case_dir / "receipt.json").read_text(encoding="utf-8"))
             expected = json.loads((case_dir / "expected.json").read_text(encoding="utf-8"))
@@ -120,7 +131,7 @@ def main() -> None:
             session.commit()
 
     print(f"Initialized database at {db_url}")
-    print(f"Loaded {len(iter_case_dirs())} cases")
+    print(f"Loaded {len(case_dirs)} cases")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # Technical Decisions
 
-Fetched/verified reference notes: 2026-08-12. Local (non-GPU) prototype uses Python 3.12 via `uv`. Real vLLM inference is deferred; local tests use `MockLLMClient`.
+Fetched/verified reference notes: 2026-08-13. Local (non-GPU) prototype uses Python 3.12 via `uv`. Local tests use `MockLLMClient`. Live default is `openai/gpt-oss-120b` on vLLM >= 0.10.0.
 
 ## Language / tooling
 
@@ -11,7 +11,26 @@ Fetched/verified reference notes: 2026-08-12. Local (non-GPU) prototype uses Pyt
 | Money / qty | `decimal.Decimal` + normalized strings in schemas | Avoid float drift in AP matching |
 | Decision space | `READY_FOR_DRAFT` \| `HUMAN_REVIEW` only | Bounded control plane |
 
-## Model + serving pins (GPU phase — do not silently change)
+## Model + serving pins — current default (gpt-oss-120b)
+
+| Item | Pin |
+|------|-----|
+| Model | `openai/gpt-oss-120b` |
+| Revision | optional; pin at launch and record in `reports/environment.json` |
+| Docker image | current `vllm/vllm-openai` **>= 0.10.0** (do **not** reuse `v0.27.1`) |
+| Digest | pin at launch |
+| Serve | 1× H100, `--tp 1`, `--gpu-memory-utilization 0.95`, `--max-num-batched-tokens 1024`, `--max-model-len 8192` |
+| Batch invariance | `VLLM_BATCH_INVARIANT=1` (and `=0` only on the negative-control server start) |
+| Reasoning | Harmony top-level `extra_body.reasoning_effort=low`. **Not** `chat_template_kwargs.reasoning_effort` (ignored by vLLM Harmony; issues #23015, #41902). |
+| Structured outputs | `--structured-outputs-config.backend xgrammar` + client `response_format` `json_schema` |
+| Hash | canonical `ExtractedInvoice` JSON from `message.content` only; never reasoning traces |
+| Sampling | `seed=42`, `top_p=1`, `n=1`; temperature is an experiment factor |
+
+Qwen3 dense remains supported: when `MODEL_NAME` looks like Qwen3 (not 3.5 / 3.6 GDN), the client still sends `extra_body.chat_template_kwargs.enable_thinking=false`. That kwarg is **not** sent for gpt-oss.
+
+Protocol: [`docs/experiment_temp_difficulty.md`](experiment_temp_difficulty.md).
+
+## Prior pin (Qwen3-8B, 2026-08-13) — do not silently retag
 
 | Item | Pin |
 |------|-----|
@@ -33,6 +52,10 @@ Sources:
 - https://huggingface.co/Qwen/Qwen3-8B
 - https://huggingface.co/api/models/Qwen/Qwen3-8B
 - Docker Hub tag `v0.27.1` for `vllm/vllm-openai`
+- https://docs.vllm.ai/projects/recipes/en/latest/OpenAI/GPT-OSS.html
+- https://github.com/vllm-project/vllm/issues/41902 (top-level `reasoning_effort`)
+- https://github.com/vllm-project/vllm/issues/23015 (Harmony ignores `chat_template_kwargs`)
+- https://huggingface.co/openai/gpt-oss-120b
 
 ## Why temp=0 alone is insufficient
 

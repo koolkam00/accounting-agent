@@ -115,3 +115,34 @@ def test_holdout_cases_decisions(erp_db):
             if not exp_codes.issubset(got):
                 failures.append((case_dir.name, sorted(exp_codes), sorted(got), "codes"))
     assert failures == []
+
+
+def test_ocr_required_short_circuits(tmp_path):
+    """Image-only PDF sets OCR_REQUIRED and never calls the LLM."""
+    from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas
+
+    from app.pipeline import Pipeline
+    from app.schemas import WorkflowDecision
+
+    pdf_path = tmp_path / 'image_only.pdf'
+    c = canvas.Canvas(str(pdf_path), pagesize=letter, invariant=1)
+    c.setFillGray(0.75)
+    c.rect(72, 200, 400, 300, fill=1, stroke=0)
+    c.showPage()
+    c.save()
+
+    class BoomLLM:
+        def extract_invoice(self, *args, **kwargs):
+            raise AssertionError('LLM must not run when OCR_REQUIRED')
+
+    class DummyERP:
+        pass
+
+    result = Pipeline(erp=DummyERP(), llm=BoomLLM()).run(
+        pdf_path.read_bytes(), case_id='ocr_image_only', mode='evaluate'
+    )
+    assert result.ocr_required is True
+    assert result.decision == WorkflowDecision.HUMAN_REVIEW
+    assert 'OCR_REQUIRED' in result.exception_codes
+    assert result.extracted_invoice is None

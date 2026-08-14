@@ -1,0 +1,72 @@
+{
+  "already_processed": null,
+  "case_id": "case_020",
+  "decision": "HUMAN_REVIEW",
+  "difficulty": "medium",
+  "duplicate_of": null,
+  "exception_codes": [
+    "VENDOR_INACTIVE"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-M-2026020"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "72.50"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-M-1020"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Harbor Closed Supply LLC"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-08-20",
+    "invoice_number": "INV-M-2026020",
+    "invoice_total": "72.50",
+    "line_items": [
+      {
+        "description": "Safety Gloves Box",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1003|Safety Gloves Box|5|12.25|61.25"
+        },
+        "line_number": 1,
+        "line_total": "61.25",
+        "quantity": "5",
+        "sku": "SKU-1003",
+        "unit_price": "12.25"
+      },
+      {
+        "description": "Packing Tape Roll",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1004|Packing Tape Roll|3|3.75|11.25"
+        },
+        "line_number": 2,
+        "line_total": "11.25",
+        "quantity": "3",
+        "sku": "SKU-1004",
+        "unit_price": "3.75"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-M-1020",
+    "subtotal": "72.50",
+    "tax": "0.00",
+    "vendor_id": "V006",
+    "vendor_name": "Harbor Closed Supply LLC"
+  },
+  "layout": "layout_compact",
+  "po_id": "PO-M-1020",
+  "scenario": "inactive_vendor",
+  "split": "holdout"
+}

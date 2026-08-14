@@ -1,0 +1,25 @@
+{
+  "currency": "USD",
+  "lines": [
+    {
+      "description": "Safety Gloves Box",
+      "gl_account": "5200",
+      "line_number": 1,
+      "quantity": "1",
+      "sku": "SKU-1003",
+      "unit_price": "12.25"
+    },
+    {
+      "description": "Cleaning Solvent Gal",
+      "gl_account": "5200",
+      "line_number": 2,
+      "quantity": "10",
+      "sku": "SKU-1008",
+      "unit_price": "22.00"
+    }
+  ],
+  "po_id": "PO-M-1011",
+  "status": "OPEN",
+  "vendor_id": "V001",
+  "vendor_name": "Northwind Office Supply LLC"
+}

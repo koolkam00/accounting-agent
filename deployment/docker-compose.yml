@@ -12,7 +12,8 @@ services:
 
   # GPU service is documented only; do not start without an allocated GPU.
   # vllm:
-  #   image: vllm/vllm-openai:v0.27.1@sha256:0a51ea5b4ae2dc5d81890e5173f54203d2a3ae0cfffe51b8fd2afd4391bfd967
+  #   image: vllm/vllm-openai:latest   # >=0.10.0 for gpt-oss-120b; pin digest at launch
+  #   # do not reuse v0.27.1
   #   environment:
   #     VLLM_BATCH_INVARIANT: "1"
   #   # ... see start_vllm.sh / runpod-template.md

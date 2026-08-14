@@ -1,0 +1,70 @@
+{
+  "already_processed": null,
+  "case_id": "case_003",
+  "decision": "READY_FOR_DRAFT",
+  "difficulty": "easy",
+  "duplicate_of": null,
+  "exception_codes": [],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-E-2026003"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "491.80"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-E-1003"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Blue Harbor Packaging Co"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-03-16",
+    "invoice_number": "INV-E-2026003",
+    "invoice_total": "491.80",
+    "line_items": [
+      {
+        "description": "Label Stock Pack",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1007|Label Stock Pack|2|18.40|36.80"
+        },
+        "line_number": 1,
+        "line_total": "36.80",
+        "quantity": "2",
+        "sku": "SKU-1007",
+        "unit_price": "18.40"
+      },
+      {
+        "description": "Toner Cartridge Black",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1002|Toner Cartridge Black|10|45.50|455.00"
+        },
+        "line_number": 2,
+        "line_total": "455.00",
+        "quantity": "10",
+        "sku": "SKU-1002",
+        "unit_price": "45.50"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-E-1003",
+    "subtotal": "491.80",
+    "tax": "0.00",
+    "vendor_id": "V003",
+    "vendor_name": "Blue Harbor Packaging Co"
+  },
+  "layout": "layout_classic",
+  "po_id": "PO-E-1003",
+  "scenario": "exact_match",
+  "split": "development"
+}

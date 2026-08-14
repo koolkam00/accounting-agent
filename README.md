@@ -49,7 +49,8 @@ uv python install 3.12
 uv sync --python 3.12
 cp .env.example .env
 
-make generate-data   # 50 synthetic cases, byte-reproducible PDFs
+make generate-data         # 50 synthetic cases, byte-reproducible PDFs (seed 20260812)
+make generate-difficulty   # easy/medium/hard packs, 20 cases each
 make init-db
 make test            # mock LLM
 make evaluate-accuracy
@@ -57,7 +58,7 @@ make report
 make run-ui          # Streamlit demo
 ```
 
-Local tests use `MockLLMClient`. They do not call Qwen.
+Local tests use `MockLLMClient`. They do not call gpt-oss or Qwen.
 
 Live GPU accuracy (after a pinned vLLM pod is up):
 
@@ -67,12 +68,18 @@ uv run python scripts/evaluate_accuracy.py --live
 
 ## GPU pins (do not silently change)
 
-- Model: `Qwen/Qwen3-8B` @ `b968826d9c46dd6066d109eabc6255188de91218`
-- Image: `vllm/vllm-openai:v0.27.1` @ `sha256:0a51ea5b4ae2dc5d81890e5173f54203d2a3ae0cfffe51b8fd2afd4391bfd967`
-- `VLLM_BATCH_INVARIANT=1`, thinking disabled, xgrammar structured outputs (`disable_any_whitespace`)
-- Sampling: temperature 0, top_p 1, seed 42, n 1
+**Current default (temperature × difficulty experiment, not yet executed):**
 
-See [`docs/technical_decisions.md`](docs/technical_decisions.md) and [`deployment/`](deployment/).
+- Model: `openai/gpt-oss-120b` (revision pin-at-launch)
+- Image: `vllm/vllm-openai` **>= 0.10.0** (do not reuse `v0.27.1`; pin digest at launch)
+- Serve: 1× H100, `--tp 1`, `--gpu-memory-utilization 0.95`, `--max-num-batched-tokens 1024`, `--max-model-len 8192`
+- `VLLM_BATCH_INVARIANT=1` (and `=0` only for the negative-control start)
+- Harmony: client `extra_body.reasoning_effort=low`; parse `message.content` only
+- Sampling: seed 42, top_p 1, n 1; temperature is a factor (`0, 0.3, 0.7, 1.0`)
+
+**Prior Qwen3-8B pin (still supported):** `Qwen/Qwen3-8B` @ `b968826d9c46dd6066d109eabc6255188de91218` on `v0.27.1`. Client sends `chat_template_kwargs.enable_thinking=false` only when `MODEL_NAME` looks like Qwen3 (not 3.5 / 3.6 GDN).
+
+See [`docs/technical_decisions.md`](docs/technical_decisions.md), [`docs/experiment_temp_difficulty.md`](docs/experiment_temp_difficulty.md), and [`deployment/`](deployment/).
 
 ## Secret sweep
 

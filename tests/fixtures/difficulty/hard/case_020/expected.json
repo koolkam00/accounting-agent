@@ -1,0 +1,72 @@
+{
+  "already_processed": null,
+  "case_id": "case_020",
+  "decision": "HUMAN_REVIEW",
+  "difficulty": "hard",
+  "duplicate_of": null,
+  "exception_codes": [
+    "PRICE_VARIANCE"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-H-2026020"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "526.60"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-H-1020"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Pinecrest Facilities Goods"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-08-20",
+    "invoice_number": "INV-H-2026020",
+    "invoice_total": "526.60",
+    "line_items": [
+      {
+        "description": "Safety Gloves Box",
+        "evidence": {
+          "page": 1,
+          "quote": "SKU-1003"
+        },
+        "line_number": 1,
+        "line_total": "62.50",
+        "quantity": "5",
+        "sku": "SKU-1003",
+        "unit_price": "12.50"
+      },
+      {
+        "description": "Toner Cartridge Black",
+        "evidence": {
+          "page": 1,
+          "quote": "SKU-1002"
+        },
+        "line_number": 2,
+        "line_total": "464.10",
+        "quantity": "10",
+        "sku": "SKU-1002",
+        "unit_price": "46.41"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-H-1020",
+    "subtotal": "526.60",
+    "tax": "0.00",
+    "vendor_id": "V005",
+    "vendor_name": "Pinecrest Facilities Goods"
+  },
+  "layout": "wrapped",
+  "po_id": "PO-H-1020",
+  "scenario": "price_over",
+  "split": "holdout"
+}

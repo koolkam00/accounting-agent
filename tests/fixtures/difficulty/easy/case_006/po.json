@@ -1,0 +1,25 @@
+{
+  "currency": "USD",
+  "lines": [
+    {
+      "description": "Cleaning Solvent Gal",
+      "gl_account": "5200",
+      "line_number": 1,
+      "quantity": "1",
+      "sku": "SKU-1008",
+      "unit_price": "22.00"
+    },
+    {
+      "description": "Toner Cartridge Black",
+      "gl_account": "5100",
+      "line_number": 2,
+      "quantity": "1",
+      "sku": "SKU-1002",
+      "unit_price": "45.50"
+    }
+  ],
+  "po_id": "PO-E-1006",
+  "status": "OPEN",
+  "vendor_id": "V001",
+  "vendor_name": "Northwind Office Supply LLC"
+}

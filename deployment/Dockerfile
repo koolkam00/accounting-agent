@@ -14,6 +14,6 @@ COPY scripts ./scripts
 RUN uv sync --frozen --python 3.12
 
 ENV DATABASE_URL=sqlite:////app/accounting_agent.db
-# GPU serving uses (do not change silently):
-#   vllm/vllm-openai:v0.27.1@sha256:0a51ea5b4ae2dc5d81890e5173f54203d2a3ae0cfffe51b8fd2afd4391bfd967
+# GPU serving (gpt-oss-120b): vllm/vllm-openai >=0.10.0; pin digest at launch.
+# Do not reuse v0.27.1. See deployment/start_vllm.sh.
 CMD ["uv", "run", "python", "scripts/run_case.py", "--help"]

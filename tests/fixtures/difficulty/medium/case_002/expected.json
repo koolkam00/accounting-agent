@@ -1,0 +1,70 @@
+{
+  "already_processed": null,
+  "case_id": "case_002",
+  "decision": "READY_FOR_DRAFT",
+  "difficulty": "medium",
+  "duplicate_of": null,
+  "exception_codes": [],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-M-2026002"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "250.00"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-M-1002"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Cedar Ridge Industrial Parts"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-02-11",
+    "invoice_number": "INV-M-2026002",
+    "invoice_total": "250.00",
+    "line_items": [
+      {
+        "description": "Label Stock Pack",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1007|Label Stock Pack|10|18.40|184.00"
+        },
+        "line_number": 1,
+        "line_total": "184.00",
+        "quantity": "10",
+        "sku": "SKU-1007",
+        "unit_price": "18.40"
+      },
+      {
+        "description": "Cleaning Solvent Gal",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1008|Cleaning Solvent Gal|3|22.00|66.00"
+        },
+        "line_number": 2,
+        "line_total": "66.00",
+        "quantity": "3",
+        "sku": "SKU-1008",
+        "unit_price": "22.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-M-1002",
+    "subtotal": "250.00",
+    "tax": "0.00",
+    "vendor_id": "V002",
+    "vendor_name": "Cedar Ridge Industrial Parts"
+  },
+  "layout": "layout_boxed",
+  "po_id": "PO-M-1002",
+  "scenario": "exact_match",
+  "split": "development"
+}

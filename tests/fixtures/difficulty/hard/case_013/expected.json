@@ -1,0 +1,84 @@
+{
+  "already_processed": null,
+  "case_id": "case_013",
+  "decision": "HUMAN_REVIEW",
+  "difficulty": "hard",
+  "duplicate_of": null,
+  "exception_codes": [
+    "SKU_NOT_FOUND"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-H-2026013"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "219.00"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-H-1013"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Blue Harbor Packaging Co"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-01-12",
+    "invoice_number": "INV-H-2026013",
+    "invoice_total": "219.00",
+    "line_items": [
+      {
+        "description": "Label Stock Pack",
+        "evidence": {
+          "page": 1,
+          "quote": "SKU-1007"
+        },
+        "line_number": 1,
+        "line_total": "184.00",
+        "quantity": "10",
+        "sku": "SKU-1007",
+        "unit_price": "18.40"
+      },
+      {
+        "description": "Copy Paper Case",
+        "evidence": {
+          "page": 1,
+          "quote": "SKU-1001"
+        },
+        "line_number": 2,
+        "line_total": "20.00",
+        "quantity": "2",
+        "sku": "SKU-1001",
+        "unit_price": "10.00"
+      },
+      {
+        "description": "Rush processing fee",
+        "evidence": {
+          "page": 1,
+          "quote": "FEE-RUSH"
+        },
+        "line_number": 3,
+        "line_total": "15.00",
+        "quantity": "1",
+        "sku": "FEE-RUSH",
+        "unit_price": "15.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-H-1013",
+    "subtotal": "219.00",
+    "tax": "0.00",
+    "vendor_id": "V003",
+    "vendor_name": "Blue Harbor Packaging Co"
+  },
+  "layout": "wrapped",
+  "po_id": "PO-H-1013",
+  "scenario": "extra_fees",
+  "split": "holdout"
+}

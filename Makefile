@@ -1,4 +1,4 @@
-.PHONY: setup generate-data test run-local run-ui evaluate-accuracy evaluate-determinism report init-db capture-env
+.PHONY: setup generate-data generate-difficulty test run-local run-ui evaluate-accuracy evaluate-determinism report init-db capture-env
 
 setup:
 	uv python install 3.12
@@ -7,6 +7,9 @@ setup:
 
 generate-data:
 	uv run python scripts/generate_cases.py
+
+generate-difficulty:
+	uv run python scripts/generate_cases.py --difficulty all
 
 init-db:
 	uv run python scripts/initialize_database.py
@@ -25,6 +28,11 @@ evaluate-accuracy:
 
 evaluate-determinism:
 	uv run python scripts/evaluate_determinism.py
+
+# Live examples (require a running vLLM server; do not rent a GPU from make):
+#   uv run python scripts/evaluate_accuracy.py --live --difficulty hard --temperature 0.7 --label grid
+#   uv run python scripts/evaluate_determinism.py --live --difficulty easy --temperature 0 --reps 5 --conc 1 8 --label grid
+#   uv run python scripts/evaluate_determinism.py --live --negative-control --difficulty easy --temperature 0 --label neg
 
 capture-env:
 	uv run python scripts/capture_environment.py

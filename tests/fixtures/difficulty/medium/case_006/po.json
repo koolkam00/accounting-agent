@@ -1,0 +1,25 @@
+{
+  "currency": "USD",
+  "lines": [
+    {
+      "description": "Widget Assembly A",
+      "gl_account": "5400",
+      "line_number": 1,
+      "quantity": "2",
+      "sku": "SKU-1005",
+      "unit_price": "100.00"
+    },
+    {
+      "description": "Safety Gloves Box",
+      "gl_account": "5200",
+      "line_number": 2,
+      "quantity": "5",
+      "sku": "SKU-1003",
+      "unit_price": "12.25"
+    }
+  ],
+  "po_id": "PO-M-1006",
+  "status": "OPEN",
+  "vendor_id": "V001",
+  "vendor_name": "Northwind Office Supply LLC"
+}

@@ -1,0 +1,70 @@
+{
+  "already_processed": null,
+  "case_id": "case_004",
+  "decision": "READY_FOR_DRAFT",
+  "difficulty": "easy",
+  "duplicate_of": null,
+  "exception_codes": [],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-E-2026004"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "116.50"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-E-1004"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Summit Ridge Labware Inc"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-04-21",
+    "invoice_number": "INV-E-2026004",
+    "invoice_total": "116.50",
+    "line_items": [
+      {
+        "description": "Label Stock Pack",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|1|SKU-1007|Label Stock Pack|5|18.40|92.00"
+        },
+        "line_number": 1,
+        "line_total": "92.00",
+        "quantity": "5",
+        "sku": "SKU-1007",
+        "unit_price": "18.40"
+      },
+      {
+        "description": "Safety Gloves Box",
+        "evidence": {
+          "page": 1,
+          "quote": "LINE|2|SKU-1003|Safety Gloves Box|2|12.25|24.50"
+        },
+        "line_number": 2,
+        "line_total": "24.50",
+        "quantity": "2",
+        "sku": "SKU-1003",
+        "unit_price": "12.25"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-E-1004",
+    "subtotal": "116.50",
+    "tax": "0.00",
+    "vendor_id": "V004",
+    "vendor_name": "Summit Ridge Labware Inc"
+  },
+  "layout": "layout_classic",
+  "po_id": "PO-E-1004",
+  "scenario": "exact_match",
+  "split": "development"
+}

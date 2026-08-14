@@ -1,0 +1,72 @@
+{
+  "already_processed": null,
+  "case_id": "case_018",
+  "decision": "HUMAN_REVIEW",
+  "difficulty": "hard",
+  "duplicate_of": null,
+  "exception_codes": [
+    "INVOICE_MATH_ERROR"
+  ],
+  "extraction": {
+    "ambiguities": [],
+    "currency": "USD",
+    "evidence": {
+      "invoice_number": {
+        "page": 1,
+        "quote": "INV-H-2026018"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "350.50"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO-H-1018"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Blue Harbor Packaging Co"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-06-10",
+    "invoice_number": "INV-H-2026018",
+    "invoice_total": "350.50",
+    "line_items": [
+      {
+        "description": "Toner Cartridge Black",
+        "evidence": {
+          "page": 1,
+          "quote": "SKU-1002"
+        },
+        "line_number": 1,
+        "line_total": "45.50",
+        "quantity": "1",
+        "sku": "SKU-1002",
+        "unit_price": "45.50"
+      },
+      {
+        "description": "Widget Assembly A",
+        "evidence": {
+          "page": 1,
+          "quote": "SKU-1005"
+        },
+        "line_number": 2,
+        "line_total": "300.00",
+        "quantity": "3",
+        "sku": "SKU-1005",
+        "unit_price": "100.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-H-1018",
+    "subtotal": "345.50",
+    "tax": "0.00",
+    "vendor_id": "V003",
+    "vendor_name": "Blue Harbor Packaging Co"
+  },
+  "layout": "odd_spacing",
+  "po_id": "PO-H-1018",
+  "scenario": "math_error",
+  "split": "holdout"
+}

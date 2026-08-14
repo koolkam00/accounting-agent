@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import random
@@ -30,6 +31,13 @@ VENDORS = [
     {"vendor_id": "V004", "vendor_name": "Summit Ridge Labware Inc", "active": True},
     {"vendor_id": "V005", "vendor_name": "Pinecrest Facilities Goods", "active": True},
 ]
+
+# Not part of the legacy 50-case vendor cycle (would change seed-20260812 PDFs).
+INACTIVE_VENDOR = {
+    "vendor_id": "V006",
+    "vendor_name": "Harbor Closed Supply LLC",
+    "active": False,
+}
 
 SKUS = [
     ("SKU-1001", "Copy Paper Case", "10.00", "5000"),
@@ -631,12 +639,23 @@ def scenario_plan() -> list[tuple[str, str]]:
     return plan
 
 
-def build_case(idx: int, scenario: str, decision: str, rng: random.Random) -> dict:
-    case_id = f"case_{idx:03d}"
-    vendor = VENDORS[(idx - 1) % len(VENDORS)]
-    layout = LAYOUTS[(idx - 1) % len(LAYOUTS)]
-    po_id = f"PO-{1000 + idx}"
-    invoice_number = f"INV-{2026000 + idx}"
+def build_case(
+    idx: int,
+    scenario: str,
+    decision: str,
+    rng: random.Random,
+    *,
+    case_id: str | None = None,
+    po_id: str | None = None,
+    invoice_number: str | None = None,
+    layout=None,
+    vendor: dict | None = None,
+) -> dict:
+    case_id = case_id or f"case_{idx:03d}"
+    vendor = vendor or VENDORS[(idx - 1) % len(VENDORS)]
+    layout = layout or LAYOUTS[(idx - 1) % len(LAYOUTS)]
+    po_id = po_id or f"PO-{1000 + idx}"
+    invoice_number = invoice_number or f"INV-{2026000 + idx}"
     invoice_date = f"2026-0{(idx % 8) + 1:1d}-{((idx * 3) % 27) + 1:02d}"
     # normalize month
     month = ((idx - 1) % 12) + 1
@@ -706,8 +725,31 @@ def build_case(idx: int, scenario: str, decision: str, rng: random.Random) -> di
                 }
             ]
             exception_codes = ["AMBIGUOUS_FIELD"]
+    elif scenario == "nonzero_tax":
+        tax = "8.25"
+        exception_codes = ["NONZERO_TAX_REVIEW"]
+    elif scenario == "inactive_vendor":
+        vendor = dict(INACTIVE_VENDOR)
+        vendor_for_invoice = dict(INACTIVE_VENDOR)
+        exception_codes = ["VENDOR_INACTIVE"]
+    elif scenario == "extra_fees":
+        exception_codes = ["SKU_NOT_FOUND"]
 
     lines = build_lines(rng, n=2, price_factor=price_factor, qty_factor=qty_factor)
+    if scenario == "extra_fees":
+        lines.append(
+            {
+                "line_number": len(lines) + 1,
+                "sku": "FEE-RUSH",
+                "description": "Rush processing fee",
+                "quantity": "1",
+                "unit_price": "15.00",
+                "line_total": "15.00",
+                "po_unit_price": "0.00",
+                "po_quantity": "0",
+                "gl_account": "6900",
+            }
+        )
     subtotal, tax, freight, invoice_total = totals_from_lines(
         lines, tax=tax, freight=freight, corrupt_total=corrupt_total
     )
@@ -749,14 +791,15 @@ def build_case(idx: int, scenario: str, decision: str, rng: random.Random) -> di
     inv["display"] = build_display(inv, profile)
 
     # PO always uses the "true" vendor for the case (except missing_po still has a real PO elsewhere unused)
-    po = make_po(po_id, vendor, lines, status=po_status)
+    po_lines = [li for li in lines if li.get("sku") != "FEE-RUSH"] if scenario == "extra_fees" else lines
+    po = make_po(po_id, vendor, po_lines, status=po_status)
     # For missing_po scenario, the invoice references a non-existent PO; still store a PO file for the "real" po_id
     # but expected extraction uses missing id — initialize_database loads po.json as-is.
     if scenario == "missing_po":
         # Store PO with the real po_id but invoice points elsewhere — DB will have PO-xxxx that doesn't match invoice
         pass
 
-    receipt = make_receipt(f"RCV-{1000 + idx}", po_id, lines, qty_scale=receipt_scale)
+    receipt = make_receipt(f"RCV-{1000 + idx}", po_id, po_lines, qty_scale=receipt_scale)
 
     extraction = make_extraction(inv, ambiguities=ambiguities, drop_fields=drop_fields)
     if scenario == "missing_po":
@@ -806,7 +849,21 @@ def write_case(case: dict, root: Path) -> dict[str, str]:
     return files
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Generate synthetic AP fixture packs")
+    parser.add_argument(
+        "--difficulty",
+        choices=["easy", "medium", "hard", "all"],
+        default=None,
+        help="Generate a 20-case difficulty pack instead of the legacy 50-case set",
+    )
+    args = parser.parse_args(argv)
+    if args.difficulty:
+        from scripts.generate_difficulty_packs import main as pack_main
+
+        pack_main(["--difficulty", args.difficulty])
+        return
+
     rng = random.Random(SEED)
     plan = scenario_plan()
     # Shuffle scenarios deterministically but keep case_001.. indexing stable by re-sorting after assign

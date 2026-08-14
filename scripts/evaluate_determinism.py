@@ -11,6 +11,7 @@ Default live matrix is REDUCED (documented) unless --full is passed.
 from __future__ import annotations
 
 import argparse
+import os
 import hashlib
 import json
 import random
@@ -88,12 +89,39 @@ def extraction_hash(data: dict) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
-def list_cases() -> list[Path]:
+def list_cases(difficulty: str | None = None) -> list[Path]:
     cases: list[Path] = []
+    if difficulty:
+        root = REPO / "tests" / "fixtures" / "difficulty" / difficulty
+        cases.extend(sorted(p for p in root.iterdir() if p.is_dir() and p.name.startswith("case_")))
+        return cases
     for split in ("development", "holdout"):
         root = REPO / "tests" / "fixtures" / split
         cases.extend(sorted(p for p in root.iterdir() if p.is_dir() and p.name.startswith("case_")))
     return cases
+
+
+def pairwise_disagreement_rate(records: list[dict]) -> float:
+    by_case: dict[str, list[str]] = {}
+    for rec in records:
+        if rec.get("ok") and rec.get("hash"):
+            by_case.setdefault(rec["case_id"], []).append(rec["hash"])
+    pairs = 0
+    disagree = 0
+    for hashes in by_case.values():
+        n = len(hashes)
+        for i in range(n):
+            for j in range(i + 1, n):
+                pairs += 1
+                if hashes[i] != hashes[j]:
+                    disagree += 1
+    return (disagree / pairs) if pairs else 0.0
+
+
+def invariance_label(negative_control: bool) -> str:
+    if negative_control:
+        return "off"
+    return "on" if os.getenv("VLLM_BATCH_INVARIANT", "1") == "1" else "off"
 
 
 def load_canonical(case_dir: Path) -> str:
@@ -150,10 +178,10 @@ def gpu_matrix_not_executed() -> list[dict]:
     ]
 
 
-def one_extract(llm, canonical_text: str, case_id: str) -> dict:
+def one_extract(llm, canonical_text: str, case_id: str, temperature: float | None = None) -> dict:
     t0 = time.perf_counter()
     try:
-        extracted = llm.extract_invoice(canonical_text, case_id=case_id)
+        extracted = llm.extract_invoice(canonical_text, case_id=case_id, temperature=temperature)
         dump = extracted.model_dump(mode="json")
         return {
             "ok": True,
@@ -172,12 +200,12 @@ def one_extract(llm, canonical_text: str, case_id: str) -> dict:
         }
 
 
-def run_jobs(llm, jobs: list[dict], concurrency: int) -> list[dict]:
+def run_jobs(llm, jobs: list[dict], concurrency: int, temperature: float | None = None) -> list[dict]:
     """jobs: {case_id, canonical, rep, restart_id} shuffled by caller."""
     out: list[dict] = [None] * len(jobs)  # type: ignore[list-item]
     if concurrency <= 1:
         for i, job in enumerate(jobs):
-            r = one_extract(llm, job["canonical"], job["case_id"])
+            r = one_extract(llm, job["canonical"], job["case_id"], temperature=temperature)
             out[i] = {**job, **r, "concurrency": concurrency}
             if (i + 1) % 10 == 0 or i == 0:
                 print(f"  conc={concurrency} {i+1}/{len(jobs)} ok={r['ok']} hash={r['hash']}")
@@ -185,7 +213,7 @@ def run_jobs(llm, jobs: list[dict], concurrency: int) -> list[dict]:
 
     def _work(idx_job):
         idx, job = idx_job
-        r = one_extract(llm, job["canonical"], job["case_id"])
+        r = one_extract(llm, job["canonical"], job["case_id"], temperature=temperature)
         return idx, {**job, **r, "concurrency": concurrency}
 
     with ThreadPoolExecutor(max_workers=concurrency) as ex:
@@ -230,6 +258,12 @@ def summarize_records(records: list[dict], dimension: str, name: str, extra: dic
         "unique_hashes_per_case": {cid: len(h) for cid, h in unique_per_case.items()},
         "cases_with_more_than_one_hash": n_nonunique,
         "deterministic_per_case": n_nonunique == 0 and errors == 0 and len(by_case) > 0,
+        "pairwise_disagreement_rate": pairwise_disagreement_rate(records),
+        "first_diverging_token_index": None,
+        "first_diverging_token_note": (
+            "Not recorded: we hash canonical ExtractedInvoice JSON only, never reasoning traces "
+            "or token ids."
+        ),
         "latency_s_mean": (sum(latencies) / len(latencies)) if latencies else None,
         "latency_s_p50": (sorted(latencies)[len(latencies) // 2] if latencies else None),
         "hashes_by_case": unique_per_case,
@@ -239,26 +273,32 @@ def summarize_records(records: list[dict], dimension: str, name: str, extra: dic
     return summary
 
 
-def warmup(llm, canonical_by_case: dict[str, str], n: int = 3) -> None:
+def warmup(llm, canonical_by_case: dict[str, str], n: int = 3, temperature: float | None = None) -> None:
     cases = list(canonical_by_case.items())[:n]
     print(f"warmup {len(cases)} structured-output requests...")
     for cid, text in cases:
-        r = one_extract(llm, text, cid)
+        r = one_extract(llm, text, cid, temperature=temperature)
         print(f"  warmup {cid} ok={r['ok']} latency={r['latency_s']:.2f}s err={r['error']}")
 
 
 def live_matrix(args: argparse.Namespace) -> dict:
-    from app.llm_client import VLLMLLMClient
+    from app.llm_client import VLLMLLMClient, is_gpt_oss, is_qwen3_dense
     from app.settings import get_settings
 
     get_settings.cache_clear()
-    llm = VLLMLLMClient()
-    all_cases = list_cases()
+    settings = get_settings()
+    temp = args.temperature if args.temperature is not None else settings.temperature
+    inv = invariance_label(args.negative_control)
+    llm = VLLMLLMClient(temperature=temp)
+    all_cases = list_cases(args.difficulty)
     if args.cases < len(all_cases):
         all_cases = all_cases[: args.cases]
     canonical_by_case = {p.name: load_canonical(p) for p in all_cases}
-    print(f"loaded {len(canonical_by_case)} cases for GPU determinism")
-    warmup(llm, canonical_by_case, n=min(3, len(canonical_by_case)))
+    print(
+        f"loaded {len(canonical_by_case)} cases for GPU determinism "
+        f"model={settings.model_name} temp={temp} difficulty={args.difficulty} invariance={inv}"
+    )
+    warmup(llm, canonical_by_case, n=min(3, len(canonical_by_case)), temperature=temp)
 
     rng = random.Random(args.seed)
     gpu_sections: list[dict] = []
@@ -272,7 +312,7 @@ def live_matrix(args: argparse.Namespace) -> dict:
             jobs.append({"case_id": cid, "canonical": text, "rep": rep, "restart_id": restart_id})
     rng.shuffle(jobs)
     print(f"same_request conc=1 jobs={len(jobs)} reps={args.reps}")
-    recs = run_jobs(llm, jobs, concurrency=1)
+    recs = run_jobs(llm, jobs, concurrency=1, temperature=temp)
     all_records.extend(recs)
     gpu_sections.append(
         summarize_records(
@@ -285,6 +325,12 @@ def live_matrix(args: argparse.Namespace) -> dict:
                 "n_cases": len(canonical_by_case),
                 "restart_id": restart_id,
                 "matrix_label": args.label,
+                "temperature": temp,
+                "difficulty": args.difficulty,
+                "invariance": inv,
+                "model": settings.model_name,
+                "model_revision": settings.model_revision,
+                "reasoning_effort": settings.reasoning_effort,
             },
         )
     )
@@ -299,7 +345,7 @@ def live_matrix(args: argparse.Namespace) -> dict:
                 jobs.append({"case_id": cid, "canonical": text, "rep": rep, "restart_id": restart_id})
         rng.shuffle(jobs)
         print(f"batch_position conc={conc} jobs={len(jobs)}")
-        recs = run_jobs(llm, jobs, concurrency=conc)
+        recs = run_jobs(llm, jobs, concurrency=conc, temperature=temp)
         all_records.extend(recs)
         gpu_sections.append(
             summarize_records(
@@ -312,7 +358,16 @@ def live_matrix(args: argparse.Namespace) -> dict:
                     "n_cases": len(canonical_by_case),
                     "restart_id": restart_id,
                     "matrix_label": args.label,
-                    "note": "Server has VLLM_BATCH_INVARIANT=1. Request order shuffled to mix batch positions.",
+                    "temperature": temp,
+                    "difficulty": args.difficulty,
+                    "invariance": inv,
+                    "model": settings.model_name,
+                    "model_revision": settings.model_revision,
+                    "reasoning_effort": settings.reasoning_effort,
+                    "note": (
+                        f"Server invariance={inv}. Request order shuffled to mix batch positions. "
+                        "Hashed ExtractedInvoice JSON only."
+                    ),
                 },
             )
         )
@@ -324,6 +379,10 @@ def live_matrix(args: argparse.Namespace) -> dict:
                 "dimension": "negative_control",
                 "name": "batch_invariance_disabled_negative_control",
                 "status": "EXECUTED",
+                "invariance": "off",
+                "temperature": temp,
+                "difficulty": args.difficulty,
+                "model": settings.model_name,
                 "note": "Caller asserted VLLM_BATCH_INVARIANT was disabled for this run.",
             }
         )
@@ -371,15 +430,32 @@ def live_matrix(args: argparse.Namespace) -> dict:
             "n_requests": len(all_records),
         }
     )
-    gpu_sections.append(
-        {
-            "dimension": "nonthinking",
-            "name": "qwen3_nonthinking_extraction_repeatability",
-            "status": "EXECUTED",
-            "note": "Client and server set chat_template_kwargs.enable_thinking=false; hashed extraction JSON.",
-            "unique_hashes_global": len({r["hash"] for r in all_records if r.get("hash")}),
-        }
-    )
+    if is_qwen3_dense(settings.model_name):
+        gpu_sections.append(
+            {
+                "dimension": "nonthinking",
+                "name": "qwen3_nonthinking_extraction_repeatability",
+                "status": "EXECUTED",
+                "model": settings.model_name,
+                "note": "Client extra_body chat_template_kwargs.enable_thinking=false; hashed extraction JSON.",
+                "unique_hashes_global": len({r["hash"] for r in all_records if r.get("hash")}),
+            }
+        )
+    elif is_gpt_oss(settings.model_name):
+        gpu_sections.append(
+            {
+                "dimension": "reasoning",
+                "name": "gpt_oss_reasoning_effort_low",
+                "status": "EXECUTED",
+                "model": settings.model_name,
+                "reasoning_effort": settings.reasoning_effort,
+                "note": (
+                    "Client extra_body.reasoning_effort (Harmony top-level). "
+                    "Hashed ExtractedInvoice JSON only; message.content parsed, traces ignored."
+                ),
+                "unique_hashes_global": len({r["hash"] for r in all_records if r.get("hash")}),
+            }
+        )
 
     records_path = REPO / "reports" / f"determinism_records_{restart_id or 'r0'}.jsonl"
     with records_path.open("w", encoding="utf-8") as fh:
@@ -394,6 +470,12 @@ def live_matrix(args: argparse.Namespace) -> dict:
         "restart_id": restart_id,
         "n_records": len(all_records),
         "records_path": str(records_path.relative_to(REPO)),
+        "temperature": temp,
+        "difficulty": args.difficulty,
+        "invariance": inv,
+        "model": settings.model_name,
+        "model_revision": settings.model_revision,
+        "reasoning_effort": settings.reasoning_effort,
     }
 
 
@@ -407,6 +489,8 @@ def main() -> None:
     parser.add_argument("--restart-id", default="r0")
     parser.add_argument("--label", default="REDUCED")
     parser.add_argument("--negative-control", action="store_true")
+    parser.add_argument("--temperature", type=float, default=None)
+    parser.add_argument("--difficulty", choices=["easy", "medium", "hard"], default=None)
     parser.add_argument("--merge-records", nargs="*", default=None)
     args = parser.parse_args()
 
