@@ -1,0 +1,106 @@
+{
+  "case_id": "case_018",
+  "error": null,
+  "expected_codes": [],
+  "expected_decision": "READY_FOR_DRAFT",
+  "extraction": {
+    "ambiguities": [
+      {
+        "candidates": [
+          "0.00",
+          "null"
+        ],
+        "field": "tax",
+        "reason": "Tax exempt \u2014 no sales tax charged"
+      }
+    ],
+    "currency": "USD",
+    "evidence": {
+      "currency": {
+        "page": 1,
+        "quote": "USD 3.77 USD 11.31"
+      },
+      "freight": {
+        "page": 1,
+        "quote": "Freight USD 0.00"
+      },
+      "invoice_date": {
+        "page": 1,
+        "quote": "Date June 10, 2026"
+      },
+      "invoice_number": {
+        "page": 1,
+        "quote": "Inv # INV-2026018"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "Balance due USD 312.51"
+      },
+      "line_items": {
+        "page": 1,
+        "quote": "Description Qty SKU Unit Amount\nPacking Tape Roll 3 SKU-1004 USD 3.77 USD 11.31\nWidget Assembly A 3 SKU-1005 USD 100.40 USD 301.20"
+      },
+      "payment_terms": {
+        "page": 1,
+        "quote": "2/10 N30 \u2014 Net 30"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "PO Ref PO-1018"
+      },
+      "subtotal": {
+        "page": 1,
+        "quote": "Net merchandise USD 312.51"
+      },
+      "tax": {
+        "page": 1,
+        "quote": "Tax exempt \u2014 no sales tax charged"
+      },
+      "vendor_id": {
+        "page": 1,
+        "quote": "Vendor code V003"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Bill From: Blue Harbor Packaging Co"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "June 10, 2026",
+    "invoice_number": "INV-2026018",
+    "invoice_total": "312.51",
+    "line_items": [
+      {
+        "description": "Packing Tape Roll",
+        "evidence": null,
+        "line_number": 1,
+        "line_total": "11.31",
+        "quantity": "3",
+        "sku": "SKU-1004",
+        "unit_price": "3.77"
+      },
+      {
+        "description": "Widget Assembly A",
+        "evidence": null,
+        "line_number": 2,
+        "line_total": "301.20",
+        "quantity": "3",
+        "sku": "SKU-1005",
+        "unit_price": "100.40"
+      }
+    ],
+    "payment_terms": "2/10 N30",
+    "po_number": "PO-1018",
+    "subtotal": "312.51",
+    "tax": null,
+    "vendor_id": "V003",
+    "vendor_name": "Blue Harbor Packaging Co"
+  },
+  "got_codes": [
+    "AMBIGUOUS_FIELD",
+    "MISSING_REQUIRED_FIELD"
+  ],
+  "got_decision": "HUMAN_REVIEW",
+  "pass": false,
+  "scenario": "price_within"
+}

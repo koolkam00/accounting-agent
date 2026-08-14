@@ -1,0 +1,161 @@
+{
+  "case_id": "case_008",
+  "error": null,
+  "expected_codes": [],
+  "expected_decision": "READY_FOR_DRAFT",
+  "extraction": {
+    "ambiguities": [
+      {
+        "candidates": [
+          "Pay this stub: $8,888.00",
+          "Amount enclosed: $0.00 Credit limit: $8,888.00"
+        ],
+        "field": "payment_method",
+        "reason": "Not specified in the invoice text."
+      }
+    ],
+    "currency": "USD",
+    "evidence": {
+      "2/10 N30 \u2014 Net 30": {
+        "page": 1,
+        "quote": "2/10 N30 \u2014 Net 30"
+      },
+      "Amount enclosed: $0.00 Credit limit: $8,888.00": {
+        "page": 1,
+        "quote": "Amount enclosed: $0.00 Credit limit: $8,888.00"
+      },
+      "Balance due USD 462.50": {
+        "page": 1,
+        "quote": "Balance due USD 462.50"
+      },
+      "Bill From: Blue Harbor Packaging Co": {
+        "page": 1,
+        "quote": "Bill From: Blue Harbor Packaging Co"
+      },
+      "Blanket PO-9999": {
+        "page": 1,
+        "quote": "Blanket PO-9999"
+      },
+      "Blanket PO-9999 \u2014 do not pay this reference": {
+        "page": 1,
+        "quote": "Blanket PO-9999 \u2014 do not pay this reference"
+      },
+      "Claims must be made within 10 days of receipt. Title passes FOB origin.": {
+        "page": 1,
+        "quote": "Claims must be made within 10 days of receipt. Title passes FOB origin."
+      },
+      "Date August 14, 2026": {
+        "page": 1,
+        "quote": "Date August 14, 2026"
+      },
+      "Description Qty SKU Unit Amount": {
+        "page": 1,
+        "quote": "Description Qty SKU Unit Amount"
+      },
+      "Freight USD 0.00": {
+        "page": 1,
+        "quote": "Freight USD 0.00"
+      },
+      "Inv # INV-2026008": {
+        "page": 1,
+        "quote": "Inv # INV-2026008"
+      },
+      "Net merchandise USD 462.50": {
+        "page": 1,
+        "quote": "Net merchandise USD 462.50"
+      },
+      "PO Ref PO-1008": {
+        "page": 1,
+        "quote": "PO Ref PO-1008"
+      },
+      "Packing Tape Roll 2 SKU-1004 USD 3.75 USD 7.50": {
+        "page": 1,
+        "quote": "Packing Tape Roll 2 SKU-1004 USD 3.75 USD 7.50"
+      },
+      "Pay this stub: $8,888.00": {
+        "page": 1,
+        "quote": "Pay this stub: $8,888.00"
+      },
+      "Payment coupon below is for remittance only and may show a different amount.": {
+        "page": 1,
+        "quote": "Payment coupon below is for remittance only and may show a different amount."
+      },
+      "Remit to: Harbor Street Holdings LLC": {
+        "page": 1,
+        "quote": "Remit to: Harbor Street Holdings LLC"
+      },
+      "Remit: Harbor Street Holdings LLC": {
+        "page": 1,
+        "quote": "Remit: Harbor Street Holdings LLC"
+      },
+      "Returned goods require an RMA. Restocking 15% after 30 days.": {
+        "page": 1,
+        "quote": "Returned goods require an RMA. Restocking 15% after 30 days."
+      },
+      "Scan code INV-000000 prior balance $8,888.00": {
+        "page": 1,
+        "quote": "Scan code INV-000000 prior balance $8,888.00"
+      },
+      "Ship from: Westfield Distribution Center": {
+        "page": 1,
+        "quote": "Ship from: Westfield Distribution Center"
+      },
+      "Tax exempt \u2014 no sales tax charged": {
+        "page": 1,
+        "quote": "Tax exempt \u2014 no sales tax charged"
+      },
+      "This is not a packing list. Counts on the bill of lading control.": {
+        "page": 1,
+        "quote": "This is not a packing list. Counts on the bill of lading control."
+      },
+      "Toner Cartridge Black 10 SKU-1002 USD 45.50 USD 455.00": {
+        "page": 1,
+        "quote": "Toner Cartridge Black 10 SKU-1002 USD 45.50 USD 455.00"
+      },
+      "Vendor code V003": {
+        "page": 1,
+        "quote": "Vendor code V003"
+      },
+      "|| INV-000000 || also INV-2026008": {
+        "page": 1,
+        "quote": "|| INV-000000 || also INV-2026008"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "August 14, 2026",
+    "invoice_number": "INV-2026008",
+    "invoice_total": "462.50",
+    "line_items": [
+      {
+        "description": "Toner Cartridge Black",
+        "evidence": null,
+        "line_number": 1,
+        "line_total": "455.00",
+        "quantity": "10",
+        "sku": "SKU-1002",
+        "unit_price": "45.50"
+      },
+      {
+        "description": "Packing Tape Roll",
+        "evidence": null,
+        "line_number": 2,
+        "line_total": "7.50",
+        "quantity": "2",
+        "sku": "SKU-1004",
+        "unit_price": "3.75"
+      }
+    ],
+    "payment_terms": "2/10 N30",
+    "po_number": "PO-1008",
+    "subtotal": "462.50",
+    "tax": "0.00",
+    "vendor_id": "V003",
+    "vendor_name": "Blue Harbor Packaging Co"
+  },
+  "got_codes": [
+    "AMBIGUOUS_FIELD"
+  ],
+  "got_decision": "HUMAN_REVIEW",
+  "pass": false,
+  "scenario": "exact_match"
+}

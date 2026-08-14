@@ -1,0 +1,108 @@
+{
+  "case_id": "case_006",
+  "error": null,
+  "expected_codes": [],
+  "expected_decision": "READY_FOR_DRAFT",
+  "extraction": {
+    "ambiguities": [
+      {
+        "candidates": [
+          "0.00"
+        ],
+        "field": "tax",
+        "reason": "Tax exempt \u2014 no sales tax charged"
+      },
+      {
+        "candidates": [
+          "0.00"
+        ],
+        "field": "freight",
+        "reason": "Freight prepaid and billed on a separate advice"
+      }
+    ],
+    "currency": "USD",
+    "evidence": {
+      "freight": {
+        "page": 1,
+        "quote": "Freight prepaid and billed on a separate advice"
+      },
+      "invoice_date": {
+        "page": 1,
+        "quote": "Date 06/04/2026"
+      },
+      "invoice_number": {
+        "page": 1,
+        "quote": "Bill No. INV-2026006"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "Amount due $261.25"
+      },
+      "line_items": {
+        "page": 1,
+        "quote": "Qty Item Code Price Ext\n2 Widget Assembly A SKU-1005 $100.00 $200.00\n5 Safety Gloves Box SKU-1003 $12.25 $61.25"
+      },
+      "payment_terms": {
+        "page": 1,
+        "quote": "Due in 30 days (Net 30)"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "Customer # PO-1006"
+      },
+      "subtotal": {
+        "page": 1,
+        "quote": "Merchandise $261.25"
+      },
+      "tax": {
+        "page": 1,
+        "quote": "Tax exempt \u2014 no sales tax charged"
+      },
+      "vendor_id": {
+        "page": 1,
+        "quote": "Supplier # V001"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Sold by: Northwind Office Supply LLC"
+      }
+    },
+    "freight": null,
+    "invoice_date": "06/04/2026",
+    "invoice_number": "INV-2026006",
+    "invoice_total": "261.25",
+    "line_items": [
+      {
+        "description": "Widget Assembly A",
+        "evidence": null,
+        "line_number": 1,
+        "line_total": "200.00",
+        "quantity": "2",
+        "sku": "SKU-1005",
+        "unit_price": "100.00"
+      },
+      {
+        "description": "Safety Gloves Box",
+        "evidence": null,
+        "line_number": 2,
+        "line_total": "61.25",
+        "quantity": "5",
+        "sku": "SKU-1003",
+        "unit_price": "12.25"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1006",
+    "subtotal": "261.25",
+    "tax": null,
+    "vendor_id": "V001",
+    "vendor_name": "Northwind Office Supply LLC"
+  },
+  "got_codes": [
+    "AMBIGUOUS_FIELD",
+    "MISSING_REQUIRED_FIELD"
+  ],
+  "got_decision": "HUMAN_REVIEW",
+  "pass": false,
+  "scenario": "exact_match"
+}

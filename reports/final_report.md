@@ -1,7 +1,7 @@
 # Final Report — Accounting Agent (GPU / vLLM)
 
-Generated (UTC): 2026-08-13T16:50:00.482292+00:00
-Source commit: `c25abe0b342179b994cd3b1cd0bdc856c8244f16`
+Generated (UTC): 2026-08-13T23:44:03.956573+00:00
+Source commit: `907376acb29e7b3fed7605afa3ebd33087b5118e`
 
 ## Scope
 
@@ -29,11 +29,12 @@ Source commit: `c25abe0b342179b994cd3b1cd0bdc856c8244f16`
 
 - **MockLLM development**: 30/30 (accuracy=1.0)
 - **MockLLM holdout**: 20/20 (accuracy=1.0)
-- **Live Qwen3-8B development**: 30/30 (accuracy=1.0) schema_valid=30 false_READY_FOR_DRAFT=0
-- **Live Qwen3-8B holdout**: 20/20 (accuracy=1.0) schema_valid=20 false_READY_FOR_DRAFT=0
+- **Live Qwen3-8B development**: 9/30 (accuracy=0.3) schema_valid=30 false_READY_FOR_DRAFT=0
+- **Live Qwen3-8B holdout**: 19/20 (accuracy=0.95) schema_valid=20 false_READY_FOR_DRAFT=0
+- Holdout is **not** 100%. See `reports/failures/` — expected.json was not edited.
 - Live LLM: `VLLMLLMClient`; preseeded_from_expected=False
 - Per-case CSV: `reports/results.csv` (50 rows)
-- Failure artifacts: `reports/failures/` (0 files)
+- Failure artifacts: `reports/failures/` (22 files)
 
 ## Determinism
 
@@ -41,23 +42,23 @@ Source commit: `c25abe0b342179b994cd3b1cd0bdc856c8244f16`
 
 - `local_pdf_canonical_stability`: pass=True
 
-### GPU determinism matrix — MEDIUM
+### GPU determinism matrix — HOUR3
 
 | Dimension | Status | Unique hashes | n | Notes |
 |-----------|--------|---------------|---|-------|
-| same_request / same_request_repeatability | EXECUTED | 50 | 500 | cases_with_>1_hash=0;  |
-| batch_invariance / vllm_batch_invariant_token_stability_conc8 | EXECUTED | 50 | 500 | cases_with_>1_hash=0; Server has VLLM_BATCH_INVARIANT=1. Request order shuffled to mix batch positions. |
-| batch_invariance / vllm_batch_invariant_token_stability_conc32 | EXECUTED | 50 | 500 | cases_with_>1_hash=0; Server has VLLM_BATCH_INVARIANT=1. Request order shuffled to mix batch positions. |
+| same_request / same_request_repeatability | EXECUTED | 50 | 250 | cases_with_>1_hash=0;  |
+| batch_invariance / vllm_batch_invariant_token_stability_conc8 | EXECUTED | 50 | 250 | cases_with_>1_hash=0; Server has VLLM_BATCH_INVARIANT=1. Request order shuffled to mix batch positions. |
+| batch_invariance / vllm_batch_invariant_token_stability_conc32 | EXECUTED | 50 | 250 | cases_with_>1_hash=0; Server has VLLM_BATCH_INVARIANT=1. Request order shuffled to mix batch positions. |
 | negative_control / batch_invariance_disabled_negative_control | NOT_EXECUTED |  |  | NOT RUN. Disabling VLLM_BATCH_INVARIANT requires a pod restart and a second server configuration. This run kept VLLM_BATCH_INVARIANT=1. Do not interpret batch-invariant uniqueness as a negative-control result. |
-| restart / pod_restart_invariance | NOT_EXECUTED |  |  | NOT RUN. Pod restart was skipped to stay inside the ~3h MEDIUM window and remaining GPU budget. restart_id=r1 labels this process only; no stop/start of vLLM was performed. Do not treat PARTIAL as a restart result. |
-| cross_machine / cross_machine_invariance | EXECUTED |  |  | Hashes matched on all 50 cases vs prior PCIe/US-KS-2 reduced run. Prior run used 5 reps at conc 1 and 8; this run used 10 reps at conc 1, 8, and 32. |
-| structured_outputs / vllm_json_schema_xgrammar_stability | EXECUTED |  | 1500 |  |
+| restart / pod_restart_invariance | PARTIAL |  |  | This process is restart_id=r0. Cross-restart comparison is merged by the driver after stop/start. |
+| cross_machine / cross_machine_invariance | NOT_EXECUTED |  |  | Single RunPod H100 PCIe machine (US-KS-2); no second host rented. |
+| structured_outputs / vllm_json_schema_xgrammar_stability | EXECUTED |  | 750 |  |
 | nonthinking / qwen3_nonthinking_extraction_repeatability | EXECUTED | 50 |  | Client and server set chat_template_kwargs.enable_thinking=false; hashed extraction JSON. |
 
 ## Environment / spend
 
-- Captured in `reports/environment.json` (source_commit=`c25abe0b342179b994cd3b1cd0bdc856c8244f16`)
-- Platform: `Linux-6.12.94+-x86_64-with-glibc2.41`
+- Captured in `reports/environment.json` (source_commit=`907376acb29e7b3fed7605afa3ebd33087b5118e`)
+- Platform: `macOS-15.7.7-x86_64-i386-64bit`
 - GPU run flag: `True`
 - GPU hours: `13.0179`
 - GPU spend USD: `38.34293123660609`
@@ -71,9 +72,6 @@ Source commit: `c25abe0b342179b994cd3b1cd0bdc856c8244f16`
 - Cross-machine invariance was not rented as a second host unless listed EXECUTED.
 - Fictional vendors only; not production ERP-integrated.
 - API keys are not written into this report.
-- MEDIUM matrix is 50 cases × 10 reps × conc {1,8,32} = 1500 extracts (+ 3 warmup), not the full 9000-extract matrix.
-- Accuracy was not rerun (already 50/50 live). Negative-control and pod-restart were skipped.
-- Billing totals are API-billed through 16:00Z; the ~16:00–16:48Z tail after this H100 SXM pod stopped is not included.
 
 ## Artifacts
 

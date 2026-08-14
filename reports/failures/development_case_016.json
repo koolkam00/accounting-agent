@@ -1,0 +1,108 @@
+{
+  "case_id": "case_016",
+  "error": null,
+  "expected_codes": [],
+  "expected_decision": "READY_FOR_DRAFT",
+  "extraction": {
+    "ambiguities": [
+      {
+        "candidates": [
+          "0.00"
+        ],
+        "field": "tax",
+        "reason": "Tax exempt \u2014 no sales tax charged"
+      },
+      {
+        "candidates": [
+          "0.00"
+        ],
+        "field": "freight",
+        "reason": "Freight prepaid and billed on a separate advice"
+      }
+    ],
+    "currency": "USD",
+    "evidence": {
+      "freight": {
+        "page": 1,
+        "quote": "Freight prepaid and billed on a separate advice"
+      },
+      "invoice_date": {
+        "page": 1,
+        "quote": "Date 04/27/2026"
+      },
+      "invoice_number": {
+        "page": 1,
+        "quote": "Bill No. INV-2026016"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "Amount due $262.31"
+      },
+      "line_items": {
+        "page": 1,
+        "quote": "Qty Item Code Price Ext\n1 Widget Assembly B SKU-1006 $251.00 $251.00\n3 Packing Tape Roll SKU-1004 $3.77 $11.31"
+      },
+      "payment_terms": {
+        "page": 1,
+        "quote": "Due in 30 days (Net 30)"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "Customer # PO-1016"
+      },
+      "subtotal": {
+        "page": 1,
+        "quote": "Merchandise $262.31"
+      },
+      "tax": {
+        "page": 1,
+        "quote": "Tax exempt \u2014 no sales tax charged"
+      },
+      "vendor_id": {
+        "page": 1,
+        "quote": "Supplier # V001"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Sold by: Northwind Office Supply LLC"
+      }
+    },
+    "freight": null,
+    "invoice_date": "04/27/2026",
+    "invoice_number": "INV-2026016",
+    "invoice_total": "262.31",
+    "line_items": [
+      {
+        "description": "Widget Assembly B",
+        "evidence": null,
+        "line_number": 1,
+        "line_total": "251.00",
+        "quantity": "1",
+        "sku": "SKU-1006",
+        "unit_price": "251.00"
+      },
+      {
+        "description": "Packing Tape Roll",
+        "evidence": null,
+        "line_number": 2,
+        "line_total": "11.31",
+        "quantity": "3",
+        "sku": "SKU-1004",
+        "unit_price": "3.77"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1016",
+    "subtotal": "262.31",
+    "tax": null,
+    "vendor_id": "V001",
+    "vendor_name": "Northwind Office Supply LLC"
+  },
+  "got_codes": [
+    "AMBIGUOUS_FIELD",
+    "MISSING_REQUIRED_FIELD"
+  ],
+  "got_decision": "HUMAN_REVIEW",
+  "pass": false,
+  "scenario": "price_within"
+}

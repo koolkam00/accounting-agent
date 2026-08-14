@@ -1,0 +1,100 @@
+{
+  "case_id": "case_007",
+  "error": null,
+  "expected_codes": [],
+  "expected_decision": "READY_FOR_DRAFT",
+  "extraction": {
+    "ambiguities": [
+      {
+        "candidates": [
+          "USD"
+        ],
+        "field": "currency",
+        "reason": "Not explicitly stated, but USD is implied by the context."
+      }
+    ],
+    "currency": "USD",
+    "evidence": {
+      "freight": {
+        "page": 1,
+        "quote": "Freight 0.00"
+      },
+      "invoice_date": {
+        "page": 1,
+        "quote": "Date 2026-07-09"
+      },
+      "invoice_number": {
+        "page": 1,
+        "quote": "Document INV-2026007"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "Invoice total 160.00"
+      },
+      "line_items": {
+        "page": 1,
+        "quote": "SKU Description Amount Qty Unit\nSKU-1003 Safety Gloves Box 122.50 10 ea 12.25\nSKU-1004 Packing Tape Roll 37.50 10 ea 3.75"
+      },
+      "payment_terms": {
+        "page": 1,
+        "quote": "Terms Net 30 from invoice date"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "Our order PO-1007"
+      },
+      "subtotal": {
+        "page": 1,
+        "quote": "Goods 160.00"
+      },
+      "tax": {
+        "page": 1,
+        "quote": "Tax 0.00"
+      },
+      "vendor_id": {
+        "page": 1,
+        "quote": "Acct V002"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Issuer: Cedar Ridge Industrial Parts"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-07-09",
+    "invoice_number": "INV-2026007",
+    "invoice_total": "160.00",
+    "line_items": [
+      {
+        "description": "Safety Gloves Box",
+        "evidence": null,
+        "line_number": 1,
+        "line_total": "122.50",
+        "quantity": "10",
+        "sku": "SKU-1003",
+        "unit_price": "12.25"
+      },
+      {
+        "description": "Packing Tape Roll",
+        "evidence": null,
+        "line_number": 2,
+        "line_total": "37.50",
+        "quantity": "10",
+        "sku": "SKU-1004",
+        "unit_price": "3.75"
+      }
+    ],
+    "payment_terms": "Net 30 from invoice date",
+    "po_number": "PO-1007",
+    "subtotal": "160.00",
+    "tax": "0.00",
+    "vendor_id": "V002",
+    "vendor_name": "Cedar Ridge Industrial Parts"
+  },
+  "got_codes": [
+    "AMBIGUOUS_FIELD"
+  ],
+  "got_decision": "HUMAN_REVIEW",
+  "pass": false,
+  "scenario": "exact_match"
+}

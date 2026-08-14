@@ -1,0 +1,100 @@
+{
+  "case_id": "case_005",
+  "error": null,
+  "expected_codes": [],
+  "expected_decision": "READY_FOR_DRAFT",
+  "extraction": {
+    "ambiguities": [
+      {
+        "candidates": [
+          "0.00"
+        ],
+        "field": "tax",
+        "reason": "Tax exempt \u2014 no sales tax charged"
+      },
+      {
+        "candidates": [
+          "0.00"
+        ],
+        "field": "freight",
+        "reason": "Freight prepaid and billed on a separate advice"
+      }
+    ],
+    "currency": "USD",
+    "evidence": {
+      "invoice_date": {
+        "page": 1,
+        "quote": "Date 05/26/2026"
+      },
+      "invoice_number": {
+        "page": 1,
+        "quote": "BILL/INV-2026005"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "Please pay $124.50"
+      },
+      "line_items": {
+        "page": 1,
+        "quote": "SKU Qty Unit Ext Description\nSKU-1003 2.000 $12.25 $24.50 Safety Gloves Box\nSKU-1005 1.000 $100.00 $100.00 Widget Assembly A"
+      },
+      "payment_terms": {
+        "page": 1,
+        "quote": "NET30"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "This release PO-1005"
+      },
+      "subtotal": {
+        "page": 1,
+        "quote": "Lines $124.50"
+      },
+      "vendor_id": {
+        "page": 1,
+        "quote": "ID V005"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Pinecrest Facilities Goods"
+      }
+    },
+    "freight": null,
+    "invoice_date": "05/26/2026",
+    "invoice_number": "INV-2026005",
+    "invoice_total": "124.50",
+    "line_items": [
+      {
+        "description": "Safety Gloves Box",
+        "evidence": null,
+        "line_number": 1,
+        "line_total": "24.50",
+        "quantity": "2.000",
+        "sku": "SKU-1003",
+        "unit_price": "12.25"
+      },
+      {
+        "description": "Widget Assembly A",
+        "evidence": null,
+        "line_number": 2,
+        "line_total": "100.00",
+        "quantity": "1.000",
+        "sku": "SKU-1005",
+        "unit_price": "100.00"
+      }
+    ],
+    "payment_terms": "NET30",
+    "po_number": "PO-1005",
+    "subtotal": "124.50",
+    "tax": null,
+    "vendor_id": "V005",
+    "vendor_name": "Pinecrest Facilities Goods"
+  },
+  "got_codes": [
+    "AMBIGUOUS_FIELD",
+    "MISSING_REQUIRED_FIELD"
+  ],
+  "got_decision": "HUMAN_REVIEW",
+  "pass": false,
+  "scenario": "exact_match"
+}

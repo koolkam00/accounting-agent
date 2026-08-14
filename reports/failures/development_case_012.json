@@ -1,0 +1,100 @@
+{
+  "case_id": "case_012",
+  "error": null,
+  "expected_codes": [],
+  "expected_decision": "READY_FOR_DRAFT",
+  "extraction": {
+    "ambiguities": [
+      {
+        "candidates": [
+          "USD"
+        ],
+        "field": "currency",
+        "reason": "Currency not explicitly stated, but USD is implied by the context."
+      }
+    ],
+    "currency": "USD",
+    "evidence": {
+      "freight": {
+        "page": 1,
+        "quote": "Freight 0.00"
+      },
+      "invoice_date": {
+        "page": 1,
+        "quote": "Date 2026-12-07"
+      },
+      "invoice_number": {
+        "page": 1,
+        "quote": "Document INV-2026012"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "Invoice total 350.00"
+      },
+      "line_items": {
+        "page": 1,
+        "quote": "SKU-1006 Widget Assembly B 250.00 1 ea 250.00"
+      },
+      "payment_terms": {
+        "page": 1,
+        "quote": "Terms Net 30 from invoice date"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "Our order PO-1012"
+      },
+      "subtotal": {
+        "page": 1,
+        "quote": "Goods 350.00"
+      },
+      "tax": {
+        "page": 1,
+        "quote": "Tax 0.00"
+      },
+      "vendor_id": {
+        "page": 1,
+        "quote": "Acct V002"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Cedar Ridge Industrial Parts"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-12-07",
+    "invoice_number": "INV-2026012",
+    "invoice_total": "350.00",
+    "line_items": [
+      {
+        "description": "Copy Paper Case",
+        "evidence": null,
+        "line_number": 1,
+        "line_total": "100.00",
+        "quantity": "10.00",
+        "sku": "SKU-1001",
+        "unit_price": "10.00"
+      },
+      {
+        "description": "Widget Assembly B",
+        "evidence": null,
+        "line_number": 2,
+        "line_total": "250.00",
+        "quantity": "1.00",
+        "sku": "SKU-1006",
+        "unit_price": "250.00"
+      }
+    ],
+    "payment_terms": "Net 30 from invoice date",
+    "po_number": "PO-1012",
+    "subtotal": "350.00",
+    "tax": "0.00",
+    "vendor_id": "V002",
+    "vendor_name": "Cedar Ridge Industrial Parts"
+  },
+  "got_codes": [
+    "AMBIGUOUS_FIELD"
+  ],
+  "got_decision": "HUMAN_REVIEW",
+  "pass": false,
+  "scenario": "exact_match"
+}

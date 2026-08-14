@@ -1,7 +1,7 @@
 {
   "development": {
-    "accuracy": 1.0,
-    "correct": 30,
+    "accuracy": 0.3,
+    "correct": 9,
     "false_ready_for_draft": 0,
     "rows": [
       {
@@ -9,9 +9,107 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "tax",
+              "reason": "Tax exempt \u2014 no sales tax charged"
+            },
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "freight",
+              "reason": "Freight prepaid and billed on a separate advice"
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "freight": {
+              "page": 1,
+              "quote": "Freight prepaid and billed on a separate advice"
+            },
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 01/06/2026"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Bill No. INV-2026001"
+            },
+            "invoice_total": {
+              "page": 1,
+              "quote": "Amount due $250.00"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "Qty Item Code Price Ext\n3 Copy Paper Case SKU-1001 $10.00 $30.00\n10 Cleaning Solvent Gal SKU-1008 $22.00 $220.00"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "Due in 30 days (Net 30)"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "Customer # PO-1001"
+            },
+            "subtotal": {
+              "page": 1,
+              "quote": "Merchandise $250.00"
+            },
+            "tax": {
+              "page": 1,
+              "quote": "Tax exempt \u2014 no sales tax charged"
+            },
+            "vendor_id": {
+              "page": 1,
+              "quote": "Supplier # V001"
+            },
+            "vendor_name": {
+              "page": 1,
+              "quote": "Sold by: Northwind Office Supply LLC"
+            }
+          },
+          "freight": null,
+          "invoice_date": "01/06/2026",
+          "invoice_number": "INV-2026001",
+          "invoice_total": "250.00",
+          "line_items": [
+            {
+              "description": "Copy Paper Case",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "30.00",
+              "quantity": "3",
+              "sku": "SKU-1001",
+              "unit_price": "10.00"
+            },
+            {
+              "description": "Cleaning Solvent Gal",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "220.00",
+              "quantity": "10",
+              "sku": "SKU-1008",
+              "unit_price": "22.00"
+            }
+          ],
+          "payment_terms": "Net 30",
+          "po_number": "PO-1001",
+          "subtotal": "250.00",
+          "tax": null,
+          "vendor_id": "V001",
+          "vendor_name": "Northwind Office Supply LLC"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "exact_match"
       },
       {
@@ -19,9 +117,99 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "USD"
+              ],
+              "field": "currency",
+              "reason": "Not explicitly stated, but USD is implied by the context."
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "freight": {
+              "page": 1,
+              "quote": "Freight 0.00"
+            },
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 2026-02-11"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Document INV-2026002"
+            },
+            "invoice_total": {
+              "page": 1,
+              "quote": "Invoice total 250.00"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "SKU Description Amount Qty Unit\nSKU-1007 Label Stock Pack 184.00 10 ea 18.40\nSKU-1008 Cleaning Solvent Gal 66.00 3 ea 22.00"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "Terms Net 30 from invoice date"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "Our order PO-1002"
+            },
+            "subtotal": {
+              "page": 1,
+              "quote": "Goods 250.00"
+            },
+            "tax": {
+              "page": 1,
+              "quote": "Tax 0.00"
+            },
+            "vendor_id": {
+              "page": 1,
+              "quote": "Acct V002"
+            },
+            "vendor_name": {
+              "page": 1,
+              "quote": "Issuer: Cedar Ridge Industrial Parts"
+            }
+          },
+          "freight": "0.00",
+          "invoice_date": "2026-02-11",
+          "invoice_number": "INV-2026002",
+          "invoice_total": "250.00",
+          "line_items": [
+            {
+              "description": "Label Stock Pack",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "184.00",
+              "quantity": "10",
+              "sku": "SKU-1007",
+              "unit_price": "18.40"
+            },
+            {
+              "description": "Cleaning Solvent Gal",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "66.00",
+              "quantity": "3",
+              "sku": "SKU-1008",
+              "unit_price": "22.00"
+            }
+          ],
+          "payment_terms": "Net 30 from invoice date",
+          "po_number": "PO-1002",
+          "subtotal": "250.00",
+          "tax": "0.00",
+          "vendor_id": "V002",
+          "vendor_name": "Cedar Ridge Industrial Parts"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "exact_match"
       },
       {
@@ -29,9 +217,105 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "0.00",
+                "null"
+              ],
+              "field": "tax",
+              "reason": "Tax exempt \u2014 no sales tax charged"
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "currency": {
+              "page": 1,
+              "quote": "USD 3.75 USD 18.75"
+            },
+            "freight": {
+              "page": 1,
+              "quote": "Freight USD 0.00"
+            },
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date March 16, 2026"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Inv # INV-2026003"
+            },
+            "invoice_total": {
+              "page": 1,
+              "quote": "Balance due USD 38.75"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "Description Qty SKU Unit Amount\nPacking Tape Roll 5 SKU-1004 USD 3.75 USD 18.75\nCopy Paper Case 2 SKU-1001 USD 10.00 USD 20.00"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "2/10 N30 \u2014 Net 30"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "PO Ref PO-1003"
+            },
+            "subtotal": {
+              "page": 1,
+              "quote": "Net merchandise USD 38.75"
+            },
+            "tax": {
+              "page": 1,
+              "quote": "Tax exempt \u2014 no sales tax charged"
+            },
+            "vendor_id": {
+              "page": 1,
+              "quote": "Vendor code V003"
+            },
+            "vendor_name": {
+              "page": 1,
+              "quote": "Bill From: Blue Harbor Packaging Co"
+            }
+          },
+          "freight": "0.00",
+          "invoice_date": "March 16, 2026",
+          "invoice_number": "INV-2026003",
+          "invoice_total": "38.75",
+          "line_items": [
+            {
+              "description": "Packing Tape Roll",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "18.75",
+              "quantity": "5",
+              "sku": "SKU-1004",
+              "unit_price": "3.75"
+            },
+            {
+              "description": "Copy Paper Case",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "20.00",
+              "quantity": "2",
+              "sku": "SKU-1001",
+              "unit_price": "10.00"
+            }
+          ],
+          "payment_terms": "2/10 N30",
+          "po_number": "PO-1003",
+          "subtotal": "38.75",
+          "tax": null,
+          "vendor_id": "V003",
+          "vendor_name": "Blue Harbor Packaging Co"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "exact_match"
       },
       {
@@ -39,9 +323,88 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "V004"
+              ],
+              "field": "vendor_id",
+              "reason": "Not specified in the invoice text."
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 21 Apr 2026"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Invoice INV-2026004"
+            },
+            "invoice_total": {
+              "page": 2,
+              "quote": "Total due $266.00"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "Qty SKU Description Unit Amount\n3.000 SKU-1008 Cleaning Solvent Gal $22.00 $66.00\n2.000 SKU-1005 Widget Assembly A $100.00 $200.00"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "Payment terms: Net 30"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "Release PO-1004"
+            },
+            "subtotal": {
+              "page": 2,
+              "quote": "Subtotal $266.00"
+            },
+            "tax": {
+              "page": 2,
+              "quote": "Tax $0.00"
+            }
+          },
+          "freight": null,
+          "invoice_date": "21 Apr 2026",
+          "invoice_number": "INV-2026004",
+          "invoice_total": "266.00",
+          "line_items": [
+            {
+              "description": "Cleaning Solvent Gal",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "66.00",
+              "quantity": "3.000",
+              "sku": "SKU-1008",
+              "unit_price": "22.00"
+            },
+            {
+              "description": "Widget Assembly A",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "200.00",
+              "quantity": "2.000",
+              "sku": "SKU-1005",
+              "unit_price": "100.00"
+            }
+          ],
+          "payment_terms": "Net 30",
+          "po_number": "PO-1004",
+          "subtotal": "266.00",
+          "tax": "0.00",
+          "vendor_id": null,
+          "vendor_name": "Summit Ridge Labware Inc"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "exact_match"
       },
       {
@@ -49,9 +412,99 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "tax",
+              "reason": "Tax exempt \u2014 no sales tax charged"
+            },
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "freight",
+              "reason": "Freight prepaid and billed on a separate advice"
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 05/26/2026"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "BILL/INV-2026005"
+            },
+            "invoice_total": {
+              "page": 1,
+              "quote": "Please pay $124.50"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "SKU Qty Unit Ext Description\nSKU-1003 2.000 $12.25 $24.50 Safety Gloves Box\nSKU-1005 1.000 $100.00 $100.00 Widget Assembly A"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "NET30"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "This release PO-1005"
+            },
+            "subtotal": {
+              "page": 1,
+              "quote": "Lines $124.50"
+            },
+            "vendor_id": {
+              "page": 1,
+              "quote": "ID V005"
+            },
+            "vendor_name": {
+              "page": 1,
+              "quote": "Pinecrest Facilities Goods"
+            }
+          },
+          "freight": null,
+          "invoice_date": "05/26/2026",
+          "invoice_number": "INV-2026005",
+          "invoice_total": "124.50",
+          "line_items": [
+            {
+              "description": "Safety Gloves Box",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "24.50",
+              "quantity": "2.000",
+              "sku": "SKU-1003",
+              "unit_price": "12.25"
+            },
+            {
+              "description": "Widget Assembly A",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "100.00",
+              "quantity": "1.000",
+              "sku": "SKU-1005",
+              "unit_price": "100.00"
+            }
+          ],
+          "payment_terms": "NET30",
+          "po_number": "PO-1005",
+          "subtotal": "124.50",
+          "tax": null,
+          "vendor_id": "V005",
+          "vendor_name": "Pinecrest Facilities Goods"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "exact_match"
       },
       {
@@ -59,9 +512,107 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "tax",
+              "reason": "Tax exempt \u2014 no sales tax charged"
+            },
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "freight",
+              "reason": "Freight prepaid and billed on a separate advice"
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "freight": {
+              "page": 1,
+              "quote": "Freight prepaid and billed on a separate advice"
+            },
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 06/04/2026"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Bill No. INV-2026006"
+            },
+            "invoice_total": {
+              "page": 1,
+              "quote": "Amount due $261.25"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "Qty Item Code Price Ext\n2 Widget Assembly A SKU-1005 $100.00 $200.00\n5 Safety Gloves Box SKU-1003 $12.25 $61.25"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "Due in 30 days (Net 30)"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "Customer # PO-1006"
+            },
+            "subtotal": {
+              "page": 1,
+              "quote": "Merchandise $261.25"
+            },
+            "tax": {
+              "page": 1,
+              "quote": "Tax exempt \u2014 no sales tax charged"
+            },
+            "vendor_id": {
+              "page": 1,
+              "quote": "Supplier # V001"
+            },
+            "vendor_name": {
+              "page": 1,
+              "quote": "Sold by: Northwind Office Supply LLC"
+            }
+          },
+          "freight": null,
+          "invoice_date": "06/04/2026",
+          "invoice_number": "INV-2026006",
+          "invoice_total": "261.25",
+          "line_items": [
+            {
+              "description": "Widget Assembly A",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "200.00",
+              "quantity": "2",
+              "sku": "SKU-1005",
+              "unit_price": "100.00"
+            },
+            {
+              "description": "Safety Gloves Box",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "61.25",
+              "quantity": "5",
+              "sku": "SKU-1003",
+              "unit_price": "12.25"
+            }
+          ],
+          "payment_terms": "Net 30",
+          "po_number": "PO-1006",
+          "subtotal": "261.25",
+          "tax": null,
+          "vendor_id": "V001",
+          "vendor_name": "Northwind Office Supply LLC"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "exact_match"
       },
       {
@@ -69,9 +620,99 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "USD"
+              ],
+              "field": "currency",
+              "reason": "Not explicitly stated, but USD is implied by the context."
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "freight": {
+              "page": 1,
+              "quote": "Freight 0.00"
+            },
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 2026-07-09"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Document INV-2026007"
+            },
+            "invoice_total": {
+              "page": 1,
+              "quote": "Invoice total 160.00"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "SKU Description Amount Qty Unit\nSKU-1003 Safety Gloves Box 122.50 10 ea 12.25\nSKU-1004 Packing Tape Roll 37.50 10 ea 3.75"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "Terms Net 30 from invoice date"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "Our order PO-1007"
+            },
+            "subtotal": {
+              "page": 1,
+              "quote": "Goods 160.00"
+            },
+            "tax": {
+              "page": 1,
+              "quote": "Tax 0.00"
+            },
+            "vendor_id": {
+              "page": 1,
+              "quote": "Acct V002"
+            },
+            "vendor_name": {
+              "page": 1,
+              "quote": "Issuer: Cedar Ridge Industrial Parts"
+            }
+          },
+          "freight": "0.00",
+          "invoice_date": "2026-07-09",
+          "invoice_number": "INV-2026007",
+          "invoice_total": "160.00",
+          "line_items": [
+            {
+              "description": "Safety Gloves Box",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "122.50",
+              "quantity": "10",
+              "sku": "SKU-1003",
+              "unit_price": "12.25"
+            },
+            {
+              "description": "Packing Tape Roll",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "37.50",
+              "quantity": "10",
+              "sku": "SKU-1004",
+              "unit_price": "3.75"
+            }
+          ],
+          "payment_terms": "Net 30 from invoice date",
+          "po_number": "PO-1007",
+          "subtotal": "160.00",
+          "tax": "0.00",
+          "vendor_id": "V002",
+          "vendor_name": "Cedar Ridge Industrial Parts"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "exact_match"
       },
       {
@@ -79,9 +720,160 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "Pay this stub: $8,888.00",
+                "Amount enclosed: $0.00 Credit limit: $8,888.00"
+              ],
+              "field": "payment_method",
+              "reason": "Not specified in the invoice text."
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "2/10 N30 \u2014 Net 30": {
+              "page": 1,
+              "quote": "2/10 N30 \u2014 Net 30"
+            },
+            "Amount enclosed: $0.00 Credit limit: $8,888.00": {
+              "page": 1,
+              "quote": "Amount enclosed: $0.00 Credit limit: $8,888.00"
+            },
+            "Balance due USD 462.50": {
+              "page": 1,
+              "quote": "Balance due USD 462.50"
+            },
+            "Bill From: Blue Harbor Packaging Co": {
+              "page": 1,
+              "quote": "Bill From: Blue Harbor Packaging Co"
+            },
+            "Blanket PO-9999": {
+              "page": 1,
+              "quote": "Blanket PO-9999"
+            },
+            "Blanket PO-9999 \u2014 do not pay this reference": {
+              "page": 1,
+              "quote": "Blanket PO-9999 \u2014 do not pay this reference"
+            },
+            "Claims must be made within 10 days of receipt. Title passes FOB origin.": {
+              "page": 1,
+              "quote": "Claims must be made within 10 days of receipt. Title passes FOB origin."
+            },
+            "Date August 14, 2026": {
+              "page": 1,
+              "quote": "Date August 14, 2026"
+            },
+            "Description Qty SKU Unit Amount": {
+              "page": 1,
+              "quote": "Description Qty SKU Unit Amount"
+            },
+            "Freight USD 0.00": {
+              "page": 1,
+              "quote": "Freight USD 0.00"
+            },
+            "Inv # INV-2026008": {
+              "page": 1,
+              "quote": "Inv # INV-2026008"
+            },
+            "Net merchandise USD 462.50": {
+              "page": 1,
+              "quote": "Net merchandise USD 462.50"
+            },
+            "PO Ref PO-1008": {
+              "page": 1,
+              "quote": "PO Ref PO-1008"
+            },
+            "Packing Tape Roll 2 SKU-1004 USD 3.75 USD 7.50": {
+              "page": 1,
+              "quote": "Packing Tape Roll 2 SKU-1004 USD 3.75 USD 7.50"
+            },
+            "Pay this stub: $8,888.00": {
+              "page": 1,
+              "quote": "Pay this stub: $8,888.00"
+            },
+            "Payment coupon below is for remittance only and may show a different amount.": {
+              "page": 1,
+              "quote": "Payment coupon below is for remittance only and may show a different amount."
+            },
+            "Remit to: Harbor Street Holdings LLC": {
+              "page": 1,
+              "quote": "Remit to: Harbor Street Holdings LLC"
+            },
+            "Remit: Harbor Street Holdings LLC": {
+              "page": 1,
+              "quote": "Remit: Harbor Street Holdings LLC"
+            },
+            "Returned goods require an RMA. Restocking 15% after 30 days.": {
+              "page": 1,
+              "quote": "Returned goods require an RMA. Restocking 15% after 30 days."
+            },
+            "Scan code INV-000000 prior balance $8,888.00": {
+              "page": 1,
+              "quote": "Scan code INV-000000 prior balance $8,888.00"
+            },
+            "Ship from: Westfield Distribution Center": {
+              "page": 1,
+              "quote": "Ship from: Westfield Distribution Center"
+            },
+            "Tax exempt \u2014 no sales tax charged": {
+              "page": 1,
+              "quote": "Tax exempt \u2014 no sales tax charged"
+            },
+            "This is not a packing list. Counts on the bill of lading control.": {
+              "page": 1,
+              "quote": "This is not a packing list. Counts on the bill of lading control."
+            },
+            "Toner Cartridge Black 10 SKU-1002 USD 45.50 USD 455.00": {
+              "page": 1,
+              "quote": "Toner Cartridge Black 10 SKU-1002 USD 45.50 USD 455.00"
+            },
+            "Vendor code V003": {
+              "page": 1,
+              "quote": "Vendor code V003"
+            },
+            "|| INV-000000 || also INV-2026008": {
+              "page": 1,
+              "quote": "|| INV-000000 || also INV-2026008"
+            }
+          },
+          "freight": "0.00",
+          "invoice_date": "August 14, 2026",
+          "invoice_number": "INV-2026008",
+          "invoice_total": "462.50",
+          "line_items": [
+            {
+              "description": "Toner Cartridge Black",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "455.00",
+              "quantity": "10",
+              "sku": "SKU-1002",
+              "unit_price": "45.50"
+            },
+            {
+              "description": "Packing Tape Roll",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "7.50",
+              "quantity": "2",
+              "sku": "SKU-1004",
+              "unit_price": "3.75"
+            }
+          ],
+          "payment_terms": "2/10 N30",
+          "po_number": "PO-1008",
+          "subtotal": "462.50",
+          "tax": "0.00",
+          "vendor_id": "V003",
+          "vendor_name": "Blue Harbor Packaging Co"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "exact_match"
       },
       {
@@ -89,9 +881,84 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "V004"
+              ],
+              "field": "vendor_id",
+              "reason": "Not specified in the invoice text."
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 19 Sep 2026"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Invoice INV-2026009"
+            },
+            "invoice_total": {
+              "page": 2,
+              "quote": "Total due $1,360.00"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "Qty SKU Description Unit Amount\n5.000 SKU-1006 Widget Assembly B $250.00 $1,250.00\n5.000 SKU-1008 Cleaning Solvent Gal $22.00 $110.00"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "Release PO-1009"
+            },
+            "subtotal": {
+              "page": 2,
+              "quote": "Subtotal $1,360.00"
+            },
+            "tax": {
+              "page": 2,
+              "quote": "Tax $0.00"
+            }
+          },
+          "freight": null,
+          "invoice_date": "19 Sep 2026",
+          "invoice_number": "INV-2026009",
+          "invoice_total": "1360.00",
+          "line_items": [
+            {
+              "description": "Widget Assembly B",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "1250.00",
+              "quantity": "5.000",
+              "sku": "SKU-1006",
+              "unit_price": "250.00"
+            },
+            {
+              "description": "Cleaning Solvent Gal",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "110.00",
+              "quantity": "5.000",
+              "sku": "SKU-1008",
+              "unit_price": "22.00"
+            }
+          ],
+          "payment_terms": "Net 30",
+          "po_number": "PO-1009",
+          "subtotal": "1360.00",
+          "tax": "0.00",
+          "vendor_id": null,
+          "vendor_name": "Summit Ridge Labware Inc"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "exact_match"
       },
       {
@@ -99,9 +966,99 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "tax",
+              "reason": "Tax exempt \u2014 no sales tax charged"
+            },
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "freight",
+              "reason": "Freight prepaid and billed on a separate advice"
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 10/24/2026"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "BILL/INV-2026010"
+            },
+            "invoice_total": {
+              "page": 1,
+              "quote": "Please pay $786.75"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "SKU Qty Unit Ext Description\nSKU-1003 3.000 $12.25 $36.75 Safety Gloves Box\nSKU-1006 3.000 $250.00 $750.00 Widget Assembly B"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "NET30"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "This release PO-1010"
+            },
+            "subtotal": {
+              "page": 1,
+              "quote": "Lines $786.75"
+            },
+            "vendor_id": {
+              "page": 1,
+              "quote": "ID V005"
+            },
+            "vendor_name": {
+              "page": 1,
+              "quote": "Pinecrest Facilities Goods"
+            }
+          },
+          "freight": null,
+          "invoice_date": "10/24/2026",
+          "invoice_number": "INV-2026010",
+          "invoice_total": "786.75",
+          "line_items": [
+            {
+              "description": "Safety Gloves Box",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "36.75",
+              "quantity": "3.000",
+              "sku": "SKU-1003",
+              "unit_price": "12.25"
+            },
+            {
+              "description": "Widget Assembly B",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "750.00",
+              "quantity": "3.000",
+              "sku": "SKU-1006",
+              "unit_price": "250.00"
+            }
+          ],
+          "payment_terms": "NET30",
+          "po_number": "PO-1010",
+          "subtotal": "786.75",
+          "tax": null,
+          "vendor_id": "V005",
+          "vendor_name": "Pinecrest Facilities Goods"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "exact_match"
       },
       {
@@ -109,9 +1066,103 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "tax",
+              "reason": "Tax exempt \u2014 no sales tax charged"
+            },
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "freight",
+              "reason": "Freight prepaid and billed on a separate advice"
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "freight": {
+              "page": 1,
+              "quote": "Freight prepaid and billed on a separate advice"
+            },
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 11/02/2026"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Bill No. INV-2026011"
+            },
+            "invoice_total": {
+              "page": 1,
+              "quote": "Amount due $232.25"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "Due in 30 days (Net 30)"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "Customer # PO-1011"
+            },
+            "subtotal": {
+              "page": 1,
+              "quote": "Merchandise $232.25"
+            },
+            "tax": {
+              "page": 1,
+              "quote": "Tax exempt \u2014 no sales tax charged"
+            },
+            "vendor_id": {
+              "page": 1,
+              "quote": "Supplier # V001"
+            },
+            "vendor_name": {
+              "page": 1,
+              "quote": "Sold by: Northwind Office Supply LLC"
+            }
+          },
+          "freight": null,
+          "invoice_date": "11/02/2026",
+          "invoice_number": "INV-2026011",
+          "invoice_total": "232.25",
+          "line_items": [
+            {
+              "description": "Safety Gloves Box",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "12.25",
+              "quantity": "1",
+              "sku": "SKU-1003",
+              "unit_price": "12.25"
+            },
+            {
+              "description": "Cleaning Solvent Gal",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "220.00",
+              "quantity": "10",
+              "sku": "SKU-1008",
+              "unit_price": "22.00"
+            }
+          ],
+          "payment_terms": "Net 30",
+          "po_number": "PO-1011",
+          "subtotal": "232.25",
+          "tax": null,
+          "vendor_id": "V001",
+          "vendor_name": "Northwind Office Supply LLC"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "exact_match"
       },
       {
@@ -119,9 +1170,99 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "USD"
+              ],
+              "field": "currency",
+              "reason": "Currency not explicitly stated, but USD is implied by the context."
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "freight": {
+              "page": 1,
+              "quote": "Freight 0.00"
+            },
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 2026-12-07"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Document INV-2026012"
+            },
+            "invoice_total": {
+              "page": 1,
+              "quote": "Invoice total 350.00"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "SKU-1006 Widget Assembly B 250.00 1 ea 250.00"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "Terms Net 30 from invoice date"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "Our order PO-1012"
+            },
+            "subtotal": {
+              "page": 1,
+              "quote": "Goods 350.00"
+            },
+            "tax": {
+              "page": 1,
+              "quote": "Tax 0.00"
+            },
+            "vendor_id": {
+              "page": 1,
+              "quote": "Acct V002"
+            },
+            "vendor_name": {
+              "page": 1,
+              "quote": "Cedar Ridge Industrial Parts"
+            }
+          },
+          "freight": "0.00",
+          "invoice_date": "2026-12-07",
+          "invoice_number": "INV-2026012",
+          "invoice_total": "350.00",
+          "line_items": [
+            {
+              "description": "Copy Paper Case",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "100.00",
+              "quantity": "10.00",
+              "sku": "SKU-1001",
+              "unit_price": "10.00"
+            },
+            {
+              "description": "Widget Assembly B",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "250.00",
+              "quantity": "1.00",
+              "sku": "SKU-1006",
+              "unit_price": "250.00"
+            }
+          ],
+          "payment_terms": "Net 30 from invoice date",
+          "po_number": "PO-1012",
+          "subtotal": "350.00",
+          "tax": "0.00",
+          "vendor_id": "V002",
+          "vendor_name": "Cedar Ridge Industrial Parts"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "exact_match"
       },
       {
@@ -129,9 +1270,104 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "Pay this stub: $8,888.00",
+                "Amount enclosed: $0.00 Credit limit: $8,888.00"
+              ],
+              "field": "payment_method",
+              "reason": "Not specified in the invoice text."
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "currency": {
+              "page": 1,
+              "quote": "USD 12.25 USD 61.25"
+            },
+            "freight": {
+              "page": 1,
+              "quote": "Freight USD 0.00"
+            },
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date January 12, 2026"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Inv # INV-2026013"
+            },
+            "invoice_total": {
+              "page": 1,
+              "quote": "Balance due USD 281.25"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "Description Qty SKU Unit Amount\nSafety Gloves Box 5 SKU-1003 USD 12.25 USD 61.25\nCleaning Solvent Gal 10 SKU-1008 USD 22.00 USD 220.00"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "2/10 N30 \u2014 Net 30"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "PO Ref PO-1013"
+            },
+            "subtotal": {
+              "page": 1,
+              "quote": "Net merchandise USD 281.25"
+            },
+            "tax": {
+              "page": 1,
+              "quote": "Tax exempt \u2014 no sales tax charged"
+            },
+            "vendor_id": {
+              "page": 1,
+              "quote": "Vendor code V003"
+            },
+            "vendor_name": {
+              "page": 1,
+              "quote": "Bill From: Blue Harbor Packaging Co"
+            }
+          },
+          "freight": "0.00",
+          "invoice_date": "January 12, 2026",
+          "invoice_number": "INV-2026013",
+          "invoice_total": "281.25",
+          "line_items": [
+            {
+              "description": "Safety Gloves Box",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "61.25",
+              "quantity": "5",
+              "sku": "SKU-1003",
+              "unit_price": "12.25"
+            },
+            {
+              "description": "Cleaning Solvent Gal",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "220.00",
+              "quantity": "10",
+              "sku": "SKU-1008",
+              "unit_price": "22.00"
+            }
+          ],
+          "payment_terms": "2/10 N30",
+          "po_number": "PO-1013",
+          "subtotal": "281.25",
+          "tax": "0.00",
+          "vendor_id": "V003",
+          "vendor_name": "Blue Harbor Packaging Co"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "exact_match"
       },
       {
@@ -139,9 +1375,84 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "V004"
+              ],
+              "field": "vendor_id",
+              "reason": "Not specified in the invoice text."
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 17 Feb 2026"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Invoice INV-2026014"
+            },
+            "invoice_total": {
+              "page": 2,
+              "quote": "Total due $264.25"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "Qty SKU Description Unit Amount\n5.000 SKU-1002 Toner Cartridge Black $45.50 $227.50\n3.000 SKU-1003 Safety Gloves Box $12.25 $36.75"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "Release PO-1014"
+            },
+            "subtotal": {
+              "page": 2,
+              "quote": "Subtotal $264.25"
+            },
+            "tax": {
+              "page": 2,
+              "quote": "Tax $0.00"
+            }
+          },
+          "freight": null,
+          "invoice_date": "17 Feb 2026",
+          "invoice_number": "INV-2026014",
+          "invoice_total": "264.25",
+          "line_items": [
+            {
+              "description": "Toner Cartridge Black",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "227.50",
+              "quantity": "5.000",
+              "sku": "SKU-1002",
+              "unit_price": "45.50"
+            },
+            {
+              "description": "Safety Gloves Box",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "36.75",
+              "quantity": "3.000",
+              "sku": "SKU-1003",
+              "unit_price": "12.25"
+            }
+          ],
+          "payment_terms": "Net 30",
+          "po_number": "PO-1014",
+          "subtotal": "264.25",
+          "tax": "0.00",
+          "vendor_id": null,
+          "vendor_name": "Summit Ridge Labware Inc"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "exact_match"
       },
       {
@@ -149,9 +1460,111 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "tax",
+              "reason": "Tax exempt \u2014 no sales tax charged"
+            },
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "freight",
+              "reason": "Freight prepaid and billed on a separate advice"
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "currency": {
+              "page": 1,
+              "quote": "$250.00"
+            },
+            "freight": {
+              "page": 1,
+              "quote": "Freight prepaid and billed on a separate advice"
+            },
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 03/22/2026"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Ref INV-2026015"
+            },
+            "invoice_total": {
+              "page": 1,
+              "quote": "Please pay $886.50"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "SKU Qty Unit Ext Description\nSKU-1006 3.000 $250.00 $750.00 Widget Assembly B\nSKU-1002 3.000 $45.50 $136.50 Toner Cartridge Black"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "NET30"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "This release PO-1015"
+            },
+            "subtotal": {
+              "page": 1,
+              "quote": "Lines $886.50"
+            },
+            "tax": {
+              "page": 1,
+              "quote": "Tax exempt \u2014 no sales tax charged"
+            },
+            "vendor_id": {
+              "page": 1,
+              "quote": "ID V005"
+            },
+            "vendor_name": {
+              "page": 1,
+              "quote": "Pinecrest Facilities Goods"
+            }
+          },
+          "freight": null,
+          "invoice_date": "03/22/2026",
+          "invoice_number": "INV-2026015",
+          "invoice_total": "886.50",
+          "line_items": [
+            {
+              "description": "Widget Assembly B",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "750.00",
+              "quantity": "3.000",
+              "sku": "SKU-1006",
+              "unit_price": "250.00"
+            },
+            {
+              "description": "Toner Cartridge Black",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "136.50",
+              "quantity": "3.000",
+              "sku": "SKU-1002",
+              "unit_price": "45.50"
+            }
+          ],
+          "payment_terms": "NET30",
+          "po_number": "PO-1015",
+          "subtotal": "886.50",
+          "tax": null,
+          "vendor_id": "V005",
+          "vendor_name": "Pinecrest Facilities Goods"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "exact_match"
       },
       {
@@ -159,9 +1572,107 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "tax",
+              "reason": "Tax exempt \u2014 no sales tax charged"
+            },
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "freight",
+              "reason": "Freight prepaid and billed on a separate advice"
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "freight": {
+              "page": 1,
+              "quote": "Freight prepaid and billed on a separate advice"
+            },
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 04/27/2026"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Bill No. INV-2026016"
+            },
+            "invoice_total": {
+              "page": 1,
+              "quote": "Amount due $262.31"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "Qty Item Code Price Ext\n1 Widget Assembly B SKU-1006 $251.00 $251.00\n3 Packing Tape Roll SKU-1004 $3.77 $11.31"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "Due in 30 days (Net 30)"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "Customer # PO-1016"
+            },
+            "subtotal": {
+              "page": 1,
+              "quote": "Merchandise $262.31"
+            },
+            "tax": {
+              "page": 1,
+              "quote": "Tax exempt \u2014 no sales tax charged"
+            },
+            "vendor_id": {
+              "page": 1,
+              "quote": "Supplier # V001"
+            },
+            "vendor_name": {
+              "page": 1,
+              "quote": "Sold by: Northwind Office Supply LLC"
+            }
+          },
+          "freight": null,
+          "invoice_date": "04/27/2026",
+          "invoice_number": "INV-2026016",
+          "invoice_total": "262.31",
+          "line_items": [
+            {
+              "description": "Widget Assembly B",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "251.00",
+              "quantity": "1",
+              "sku": "SKU-1006",
+              "unit_price": "251.00"
+            },
+            {
+              "description": "Packing Tape Roll",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "11.31",
+              "quantity": "3",
+              "sku": "SKU-1004",
+              "unit_price": "3.77"
+            }
+          ],
+          "payment_terms": "Net 30",
+          "po_number": "PO-1016",
+          "subtotal": "262.31",
+          "tax": null,
+          "vendor_id": "V001",
+          "vendor_name": "Northwind Office Supply LLC"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "price_within"
       },
       {
@@ -169,9 +1680,99 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "USD"
+              ],
+              "field": "currency",
+              "reason": "Not explicitly stated, but USD is implied by the context."
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "freight": {
+              "page": 1,
+              "quote": "Freight 0.00"
+            },
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 2026-05-05"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Document INV-2026017"
+            },
+            "invoice_total": {
+              "page": 1,
+              "quote": "Invoice total 239.71"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "SKU Description Amount Qty Unit\nSKU-1002 Toner Cartridge Black 228.40 5 ea 45.68\nSKU-1004 Packing Tape Roll 11.31 3 ea 3.77"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "Terms Net 30 from invoice date"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "Our order PO-1017"
+            },
+            "subtotal": {
+              "page": 1,
+              "quote": "Goods 239.71"
+            },
+            "tax": {
+              "page": 1,
+              "quote": "Tax 0.00"
+            },
+            "vendor_id": {
+              "page": 1,
+              "quote": "Acct V002"
+            },
+            "vendor_name": {
+              "page": 1,
+              "quote": "Issuer: Cedar Ridge Industrial Parts"
+            }
+          },
+          "freight": "0.00",
+          "invoice_date": "2026-05-05",
+          "invoice_number": "INV-2026017",
+          "invoice_total": "239.71",
+          "line_items": [
+            {
+              "description": "Toner Cartridge Black",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "228.40",
+              "quantity": "5",
+              "sku": "SKU-1002",
+              "unit_price": "45.68"
+            },
+            {
+              "description": "Packing Tape Roll",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "11.31",
+              "quantity": "3",
+              "sku": "SKU-1004",
+              "unit_price": "3.77"
+            }
+          ],
+          "payment_terms": "Net 30 from invoice date",
+          "po_number": "PO-1017",
+          "subtotal": "239.71",
+          "tax": "0.00",
+          "vendor_id": "V002",
+          "vendor_name": "Cedar Ridge Industrial Parts"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "price_within"
       },
       {
@@ -179,9 +1780,105 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "0.00",
+                "null"
+              ],
+              "field": "tax",
+              "reason": "Tax exempt \u2014 no sales tax charged"
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "currency": {
+              "page": 1,
+              "quote": "USD 3.77 USD 11.31"
+            },
+            "freight": {
+              "page": 1,
+              "quote": "Freight USD 0.00"
+            },
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date June 10, 2026"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Inv # INV-2026018"
+            },
+            "invoice_total": {
+              "page": 1,
+              "quote": "Balance due USD 312.51"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "Description Qty SKU Unit Amount\nPacking Tape Roll 3 SKU-1004 USD 3.77 USD 11.31\nWidget Assembly A 3 SKU-1005 USD 100.40 USD 301.20"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "2/10 N30 \u2014 Net 30"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "PO Ref PO-1018"
+            },
+            "subtotal": {
+              "page": 1,
+              "quote": "Net merchandise USD 312.51"
+            },
+            "tax": {
+              "page": 1,
+              "quote": "Tax exempt \u2014 no sales tax charged"
+            },
+            "vendor_id": {
+              "page": 1,
+              "quote": "Vendor code V003"
+            },
+            "vendor_name": {
+              "page": 1,
+              "quote": "Bill From: Blue Harbor Packaging Co"
+            }
+          },
+          "freight": "0.00",
+          "invoice_date": "June 10, 2026",
+          "invoice_number": "INV-2026018",
+          "invoice_total": "312.51",
+          "line_items": [
+            {
+              "description": "Packing Tape Roll",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "11.31",
+              "quantity": "3",
+              "sku": "SKU-1004",
+              "unit_price": "3.77"
+            },
+            {
+              "description": "Widget Assembly A",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "301.20",
+              "quantity": "3",
+              "sku": "SKU-1005",
+              "unit_price": "100.40"
+            }
+          ],
+          "payment_terms": "2/10 N30",
+          "po_number": "PO-1018",
+          "subtotal": "312.51",
+          "tax": null,
+          "vendor_id": "V003",
+          "vendor_name": "Blue Harbor Packaging Co"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "price_within"
       },
       {
@@ -189,9 +1886,84 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "V004"
+              ],
+              "field": "vendor_id",
+              "reason": "Not explicitly provided in the invoice text."
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 15 Jul 2026"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "Invoice INV-2026019"
+            },
+            "invoice_total": {
+              "page": 2,
+              "quote": "Total due $92.31"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "Qty SKU Description Unit Amount\n3.000 SKU-1007 Label Stock Pack $18.47 $55.41\n3.000 SKU-1003 Safety Gloves Box $12.30 $36.90"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "Release PO-1019"
+            },
+            "subtotal": {
+              "page": 2,
+              "quote": "Subtotal $92.31"
+            },
+            "tax": {
+              "page": 2,
+              "quote": "Tax $0.00"
+            }
+          },
+          "freight": null,
+          "invoice_date": "15 Jul 2026",
+          "invoice_number": "INV-2026019",
+          "invoice_total": "92.31",
+          "line_items": [
+            {
+              "description": "Label Stock Pack",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "55.41",
+              "quantity": "3.000",
+              "sku": "SKU-1007",
+              "unit_price": "18.47"
+            },
+            {
+              "description": "Safety Gloves Box",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "36.90",
+              "quantity": "3.000",
+              "sku": "SKU-1003",
+              "unit_price": "12.30"
+            }
+          ],
+          "payment_terms": "Net 30",
+          "po_number": "PO-1019",
+          "subtotal": "92.31",
+          "tax": "0.00",
+          "vendor_id": null,
+          "vendor_name": "Summit Ridge Labware Inc"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "price_within"
       },
       {
@@ -199,9 +1971,99 @@
         "error": null,
         "expected_codes": [],
         "expected_decision": "READY_FOR_DRAFT",
-        "got_codes": [],
-        "got_decision": "READY_FOR_DRAFT",
-        "pass": true,
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "tax",
+              "reason": "Tax exempt \u2014 no sales tax charged"
+            },
+            {
+              "candidates": [
+                "0.00"
+              ],
+              "field": "freight",
+              "reason": "Freight prepaid and billed on a separate advice"
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "invoice_date": {
+              "page": 1,
+              "quote": "Date 08/20/2026"
+            },
+            "invoice_number": {
+              "page": 1,
+              "quote": "BILL/INV-2026020"
+            },
+            "invoice_total": {
+              "page": 1,
+              "quote": "Please pay $72.81"
+            },
+            "line_items": {
+              "page": 1,
+              "quote": "SKU Qty Unit Ext Description\nSKU-1003 5.000 $12.30 $61.50 Safety Gloves Box\nSKU-1004 3.000 $3.77 $11.31 Packing Tape Roll"
+            },
+            "payment_terms": {
+              "page": 1,
+              "quote": "NET30"
+            },
+            "po_number": {
+              "page": 1,
+              "quote": "This release PO-1020"
+            },
+            "subtotal": {
+              "page": 1,
+              "quote": "Lines $72.81"
+            },
+            "vendor_id": {
+              "page": 1,
+              "quote": "ID V005"
+            },
+            "vendor_name": {
+              "page": 1,
+              "quote": "Pinecrest Facilities Goods"
+            }
+          },
+          "freight": null,
+          "invoice_date": "08/20/2026",
+          "invoice_number": "INV-2026020",
+          "invoice_total": "72.81",
+          "line_items": [
+            {
+              "description": "Safety Gloves Box",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "61.50",
+              "quantity": "5.000",
+              "sku": "SKU-1003",
+              "unit_price": "12.30"
+            },
+            {
+              "description": "Packing Tape Roll",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "11.31",
+              "quantity": "3.000",
+              "sku": "SKU-1004",
+              "unit_price": "3.77"
+            }
+          ],
+          "payment_terms": "NET30",
+          "po_number": "PO-1020",
+          "subtotal": "72.81",
+          "tax": null,
+          "vendor_id": "V005",
+          "vendor_name": "Pinecrest Facilities Goods"
+        },
+        "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD"
+        ],
+        "got_decision": "HUMAN_REVIEW",
+        "pass": false,
         "scenario": "price_within"
       },
       {
@@ -212,6 +2074,8 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD",
           "PRICE_VARIANCE"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -226,6 +2090,7 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
           "PRICE_VARIANCE"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -240,6 +2105,8 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD",
           "PRICE_VARIANCE"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -254,6 +2121,8 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD",
           "PRICE_VARIANCE"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -268,6 +2137,8 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD",
           "PRICE_VARIANCE"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -282,6 +2153,8 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD",
           "QUANTITY_EXCEEDS_RECEIPT"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -296,6 +2169,7 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
           "QUANTITY_EXCEEDS_RECEIPT"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -309,11 +2183,162 @@
           "QUANTITY_EXCEEDS_RECEIPT"
         ],
         "expected_decision": "HUMAN_REVIEW",
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "0.00",
+                "exempt"
+              ],
+              "field": "tax",
+              "reason": "Tax exempt \u2014 no sales tax charged"
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "2/10 N30 \u2014 Net 30": {
+              "page": 1,
+              "quote": "2/10 N30 \u2014 Net 30"
+            },
+            "Amount enclosed: $0.00 Credit limit: $8,888.00": {
+              "page": 1,
+              "quote": "Amount enclosed: $0.00 Credit limit: $8,888.00"
+            },
+            "Balance due USD 277.50": {
+              "page": 1,
+              "quote": "Balance due USD 277.50"
+            },
+            "Bill From: Blue Harbor Packaging Co": {
+              "page": 1,
+              "quote": "Bill From: Blue Harbor Packaging Co"
+            },
+            "Blanket PO-9999": {
+              "page": 1,
+              "quote": "Blanket PO-9999"
+            },
+            "Blanket PO-9999 \u2014 do not pay this reference": {
+              "page": 1,
+              "quote": "Blanket PO-9999 \u2014 do not pay this reference"
+            },
+            "Claims must be made within 10 days of receipt. Title passes FOB origin.": {
+              "page": 1,
+              "quote": "Claims must be made within 10 days of receipt. Title passes FOB origin."
+            },
+            "Copy Paper Case 5 SKU-1001 USD 10.00 USD 50.00": {
+              "page": 1,
+              "quote": "Copy Paper Case 5 SKU-1001 USD 10.00 USD 50.00"
+            },
+            "Date April 6, 2026": {
+              "page": 1,
+              "quote": "Date April 6, 2026"
+            },
+            "Description Qty SKU Unit Amount": {
+              "page": 1,
+              "quote": "Description Qty SKU Unit Amount"
+            },
+            "Freight USD 0.00": {
+              "page": 1,
+              "quote": "Freight USD 0.00"
+            },
+            "Inv # INV-2026028": {
+              "page": 1,
+              "quote": "Inv # INV-2026028"
+            },
+            "Net merchandise USD 277.50": {
+              "page": 1,
+              "quote": "Net merchandise USD 277.50"
+            },
+            "PO Ref PO-1028": {
+              "page": 1,
+              "quote": "PO Ref PO-1028"
+            },
+            "Pay this stub: $8,888.00": {
+              "page": 1,
+              "quote": "Pay this stub: $8,888.00"
+            },
+            "Payment coupon below is for remittance only and may show a different amount.": {
+              "page": 1,
+              "quote": "Payment coupon below is for remittance only and may show a different amount."
+            },
+            "Remit to: Harbor Street Holdings LLC": {
+              "page": 1,
+              "quote": "Remit to: Harbor Street Holdings LLC"
+            },
+            "Remit: Harbor Street Holdings LLC": {
+              "page": 1,
+              "quote": "Remit: Harbor Street Holdings LLC"
+            },
+            "Returned goods require an RMA. Restocking 15% after 30 days.": {
+              "page": 1,
+              "quote": "Returned goods require an RMA. Restocking 15% after 30 days."
+            },
+            "Scan code INV-000000 prior balance $8,888.00": {
+              "page": 1,
+              "quote": "Scan code INV-000000 prior balance $8,888.00"
+            },
+            "Ship from: Westfield Distribution Center": {
+              "page": 1,
+              "quote": "Ship from: Westfield Distribution Center"
+            },
+            "Tax exempt \u2014 no sales tax charged": {
+              "page": 1,
+              "quote": "Tax exempt \u2014 no sales tax charged"
+            },
+            "This is not a packing list. Counts on the bill of lading control.": {
+              "page": 1,
+              "quote": "This is not a packing list. Counts on the bill of lading control."
+            },
+            "Toner Cartridge Black 5 SKU-1002 USD 45.50 USD 227.50": {
+              "page": 1,
+              "quote": "Toner Cartridge Black 5 SKU-1002 USD 45.50 USD 227.50"
+            },
+            "Vendor code V003": {
+              "page": 1,
+              "quote": "Vendor code V003"
+            },
+            "|| INV-000000 || also INV-2026028": {
+              "page": 1,
+              "quote": "|| INV-000000 || also INV-2026028"
+            }
+          },
+          "freight": "0.00",
+          "invoice_date": "April 6, 2026",
+          "invoice_number": "INV-2026028",
+          "invoice_total": "277.50",
+          "line_items": [
+            {
+              "description": "Toner Cartridge Black 5",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "227.50",
+              "quantity": "1",
+              "sku": "SKU-1002",
+              "unit_price": "45.50"
+            },
+            {
+              "description": "Copy Paper Case 5",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "50.00",
+              "quantity": "1",
+              "sku": "SKU-1001",
+              "unit_price": "10.00"
+            }
+          ],
+          "payment_terms": "2/10 N30",
+          "po_number": "PO-1028",
+          "subtotal": "277.50",
+          "tax": null,
+          "vendor_id": "V003",
+          "vendor_name": "Blue Harbor Packaging Co"
+        },
         "got_codes": [
-          "QUANTITY_EXCEEDS_RECEIPT"
+          "AMBIGUOUS_FIELD",
+          "INVOICE_MATH_ERROR",
+          "MISSING_REQUIRED_FIELD"
         ],
         "got_decision": "HUMAN_REVIEW",
-        "pass": true,
+        "pass": false,
         "scenario": "qty_exceeds_receipt"
       },
       {
@@ -324,6 +2349,8 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD",
           "QUANTITY_EXCEEDS_RECEIPT"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -338,6 +2365,8 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD",
           "QUANTITY_EXCEEDS_RECEIPT"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -351,8 +2380,8 @@
   },
   "gpu": true,
   "holdout": {
-    "accuracy": 1.0,
-    "correct": 20,
+    "accuracy": 0.95,
+    "correct": 19,
     "false_ready_for_draft": 0,
     "rows": [
       {
@@ -363,7 +2392,9 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
-          "DUPLICATE_INVOICE"
+          "AMBIGUOUS_FIELD",
+          "DUPLICATE_INVOICE",
+          "MISSING_REQUIRED_FIELD"
         ],
         "got_decision": "HUMAN_REVIEW",
         "pass": true,
@@ -377,6 +2408,7 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
           "DUPLICATE_INVOICE"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -391,7 +2423,9 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
-          "DUPLICATE_INVOICE"
+          "AMBIGUOUS_FIELD",
+          "DUPLICATE_INVOICE",
+          "MISSING_REQUIRED_FIELD"
         ],
         "got_decision": "HUMAN_REVIEW",
         "pass": true,
@@ -405,7 +2439,9 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
-          "DUPLICATE_INVOICE"
+          "AMBIGUOUS_FIELD",
+          "DUPLICATE_INVOICE",
+          "MISSING_REQUIRED_FIELD"
         ],
         "got_decision": "HUMAN_REVIEW",
         "pass": true,
@@ -419,7 +2455,9 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
-          "DUPLICATE_INVOICE"
+          "AMBIGUOUS_FIELD",
+          "DUPLICATE_INVOICE",
+          "MISSING_REQUIRED_FIELD"
         ],
         "got_decision": "HUMAN_REVIEW",
         "pass": true,
@@ -433,6 +2471,8 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD",
           "PO_NOT_FOUND"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -447,6 +2487,7 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
           "PO_NOT_FOUND"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -461,6 +2502,8 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD",
           "PO_NOT_FOUND"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -475,6 +2518,8 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD",
           "PO_NOT_FOUND"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -489,6 +2534,8 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD",
           "PO_NOT_FOUND"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -503,6 +2550,7 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
           "INVOICE_MATH_ERROR"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -517,6 +2565,7 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
           "INVOICE_MATH_ERROR"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -531,6 +2580,7 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
           "INVOICE_MATH_ERROR"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -545,7 +2595,9 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
-          "INVOICE_MATH_ERROR"
+          "AMBIGUOUS_FIELD",
+          "INVOICE_MATH_ERROR",
+          "MISSING_REQUIRED_FIELD"
         ],
         "got_decision": "HUMAN_REVIEW",
         "pass": true,
@@ -559,6 +2611,8 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD",
           "VENDOR_MISMATCH"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -573,6 +2627,8 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
+          "MISSING_REQUIRED_FIELD",
           "VENDOR_MISMATCH"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -587,6 +2643,7 @@
         ],
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
+          "AMBIGUOUS_FIELD",
           "VENDOR_MISMATCH"
         ],
         "got_decision": "HUMAN_REVIEW",
@@ -601,12 +2658,157 @@
           "MISSING_REQUIRED_FIELD"
         ],
         "expected_decision": "HUMAN_REVIEW",
+        "extraction": {
+          "ambiguities": [
+            {
+              "candidates": [
+                "0.00",
+                "null"
+              ],
+              "field": "tax",
+              "reason": "Tax exempt \u2014 no sales tax charged"
+            }
+          ],
+          "currency": "USD",
+          "evidence": {
+            "2/10 N30 \u2014 Net 30": {
+              "page": 1,
+              "quote": "2/10 N30 \u2014 Net 30"
+            },
+            "Amount enclosed: $0.00 Credit limit: $8,888.00": {
+              "page": 1,
+              "quote": "Amount enclosed: $0.00 Credit limit: $8,888.00"
+            },
+            "Balance due USD 1257.50": {
+              "page": 1,
+              "quote": "Balance due USD 1257.50"
+            },
+            "Bill From: Blue Harbor Packaging Co": {
+              "page": 1,
+              "quote": "Bill From: Blue Harbor Packaging Co"
+            },
+            "Blanket PO-9999": {
+              "page": 1,
+              "quote": "Blanket PO-9999"
+            },
+            "Blanket PO-9999 \u2014 do not pay this reference": {
+              "page": 1,
+              "quote": "Blanket PO-9999 \u2014 do not pay this reference"
+            },
+            "Claims must be made within 10 days of receipt. Title passes FOB origin.": {
+              "page": 1,
+              "quote": "Claims must be made within 10 days of receipt. Title passes FOB origin."
+            },
+            "Date December 25, 2026": {
+              "page": 1,
+              "quote": "Date December 25, 2026"
+            },
+            "Description Qty SKU Unit Amount": {
+              "page": 1,
+              "quote": "Description Qty SKU Unit Amount"
+            },
+            "Freight USD 0.00": {
+              "page": 1,
+              "quote": "Freight USD 0.00"
+            },
+            "Net merchandise USD 1257.50": {
+              "page": 1,
+              "quote": "Net merchandise USD 1257.50"
+            },
+            "PO Ref PO-1048": {
+              "page": 1,
+              "quote": "PO Ref PO-1048"
+            },
+            "Packing Tape Roll 2 SKU-1004 USD 3.75 USD 7.50": {
+              "page": 1,
+              "quote": "Packing Tape Roll 2 SKU-1004 USD 3.75 USD 7.50"
+            },
+            "Pay this stub: $8,888.00": {
+              "page": 1,
+              "quote": "Pay this stub: $8,888.00"
+            },
+            "Payment coupon below is for remittance only and may show a different amount.": {
+              "page": 1,
+              "quote": "Payment coupon below is for remittance only and may show a different amount."
+            },
+            "Remit to: Harbor Street Holdings LLC": {
+              "page": 1,
+              "quote": "Remit to: Harbor Street Holdings LLC"
+            },
+            "Remit: Harbor Street Holdings LLC": {
+              "page": 1,
+              "quote": "Remit: Harbor Street Holdings LLC"
+            },
+            "Returned goods require an RMA. Restocking 15% after 30 days.": {
+              "page": 1,
+              "quote": "Returned goods require an RMA. Restocking 15% after 30 days."
+            },
+            "Scan code INV-000000 prior balance $8,888.00": {
+              "page": 1,
+              "quote": "Scan code INV-000000 prior balance $8,888.00"
+            },
+            "Ship from: Westfield Distribution Center": {
+              "page": 1,
+              "quote": "Ship from: Westfield Distribution Center"
+            },
+            "Tax exempt \u2014 no sales tax charged": {
+              "page": 1,
+              "quote": "Tax exempt \u2014 no sales tax charged"
+            },
+            "This is not a packing list. Counts on the bill of lading control.": {
+              "page": 1,
+              "quote": "This is not a packing list. Counts on the bill of lading control."
+            },
+            "Vendor code V003": {
+              "page": 1,
+              "quote": "Vendor code V003"
+            },
+            "Widget Assembly B 5 SKU-1006 USD 250.00 USD 1250.00": {
+              "page": 1,
+              "quote": "Widget Assembly B 5 SKU-1006 USD 250.00 USD 1250.00"
+            },
+            "|| INV-000000 ||": {
+              "page": 1,
+              "quote": "|| INV-000000 ||"
+            }
+          },
+          "freight": "0.00",
+          "invoice_date": "December 25, 2026",
+          "invoice_number": "INV-000000",
+          "invoice_total": "1257.50",
+          "line_items": [
+            {
+              "description": "Packing Tape Roll",
+              "evidence": null,
+              "line_number": 1,
+              "line_total": "7.50",
+              "quantity": "2",
+              "sku": "SKU-1004",
+              "unit_price": "3.75"
+            },
+            {
+              "description": "Widget Assembly B",
+              "evidence": null,
+              "line_number": 2,
+              "line_total": "1250.00",
+              "quantity": "5",
+              "sku": "SKU-1006",
+              "unit_price": "250.00"
+            }
+          ],
+          "payment_terms": "2/10 N30 \u2014 Net 30",
+          "po_number": "PO-1048",
+          "subtotal": "1257.50",
+          "tax": null,
+          "vendor_id": "V003",
+          "vendor_name": "Blue Harbor Packaging Co"
+        },
         "got_codes": [
-          "MISSING_INVOICE_NUMBER",
+          "AMBIGUOUS_FIELD",
           "MISSING_REQUIRED_FIELD"
         ],
         "got_decision": "HUMAN_REVIEW",
-        "pass": true,
+        "pass": false,
         "scenario": "missing_ambiguous"
       },
       {
@@ -618,8 +2820,7 @@
         "expected_decision": "HUMAN_REVIEW",
         "got_codes": [
           "AMBIGUOUS_FIELD",
-          "MISSING_REQUIRED_FIELD",
-          "VENDOR_MISMATCH"
+          "MISSING_REQUIRED_FIELD"
         ],
         "got_decision": "HUMAN_REVIEW",
         "pass": true,

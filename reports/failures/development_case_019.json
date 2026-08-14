@@ -1,0 +1,85 @@
+{
+  "case_id": "case_019",
+  "error": null,
+  "expected_codes": [],
+  "expected_decision": "READY_FOR_DRAFT",
+  "extraction": {
+    "ambiguities": [
+      {
+        "candidates": [
+          "V004"
+        ],
+        "field": "vendor_id",
+        "reason": "Not explicitly provided in the invoice text."
+      }
+    ],
+    "currency": "USD",
+    "evidence": {
+      "invoice_date": {
+        "page": 1,
+        "quote": "Date 15 Jul 2026"
+      },
+      "invoice_number": {
+        "page": 1,
+        "quote": "Invoice INV-2026019"
+      },
+      "invoice_total": {
+        "page": 2,
+        "quote": "Total due $92.31"
+      },
+      "line_items": {
+        "page": 1,
+        "quote": "Qty SKU Description Unit Amount\n3.000 SKU-1007 Label Stock Pack $18.47 $55.41\n3.000 SKU-1003 Safety Gloves Box $12.30 $36.90"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "Release PO-1019"
+      },
+      "subtotal": {
+        "page": 2,
+        "quote": "Subtotal $92.31"
+      },
+      "tax": {
+        "page": 2,
+        "quote": "Tax $0.00"
+      }
+    },
+    "freight": null,
+    "invoice_date": "15 Jul 2026",
+    "invoice_number": "INV-2026019",
+    "invoice_total": "92.31",
+    "line_items": [
+      {
+        "description": "Label Stock Pack",
+        "evidence": null,
+        "line_number": 1,
+        "line_total": "55.41",
+        "quantity": "3.000",
+        "sku": "SKU-1007",
+        "unit_price": "18.47"
+      },
+      {
+        "description": "Safety Gloves Box",
+        "evidence": null,
+        "line_number": 2,
+        "line_total": "36.90",
+        "quantity": "3.000",
+        "sku": "SKU-1003",
+        "unit_price": "12.30"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1019",
+    "subtotal": "92.31",
+    "tax": "0.00",
+    "vendor_id": null,
+    "vendor_name": "Summit Ridge Labware Inc"
+  },
+  "got_codes": [
+    "AMBIGUOUS_FIELD",
+    "MISSING_REQUIRED_FIELD"
+  ],
+  "got_decision": "HUMAN_REVIEW",
+  "pass": false,
+  "scenario": "price_within"
+}

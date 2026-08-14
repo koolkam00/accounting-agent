@@ -1,0 +1,85 @@
+{
+  "case_id": "case_009",
+  "error": null,
+  "expected_codes": [],
+  "expected_decision": "READY_FOR_DRAFT",
+  "extraction": {
+    "ambiguities": [
+      {
+        "candidates": [
+          "V004"
+        ],
+        "field": "vendor_id",
+        "reason": "Not specified in the invoice text."
+      }
+    ],
+    "currency": "USD",
+    "evidence": {
+      "invoice_date": {
+        "page": 1,
+        "quote": "Date 19 Sep 2026"
+      },
+      "invoice_number": {
+        "page": 1,
+        "quote": "Invoice INV-2026009"
+      },
+      "invoice_total": {
+        "page": 2,
+        "quote": "Total due $1,360.00"
+      },
+      "line_items": {
+        "page": 1,
+        "quote": "Qty SKU Description Unit Amount\n5.000 SKU-1006 Widget Assembly B $250.00 $1,250.00\n5.000 SKU-1008 Cleaning Solvent Gal $22.00 $110.00"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "Release PO-1009"
+      },
+      "subtotal": {
+        "page": 2,
+        "quote": "Subtotal $1,360.00"
+      },
+      "tax": {
+        "page": 2,
+        "quote": "Tax $0.00"
+      }
+    },
+    "freight": null,
+    "invoice_date": "19 Sep 2026",
+    "invoice_number": "INV-2026009",
+    "invoice_total": "1360.00",
+    "line_items": [
+      {
+        "description": "Widget Assembly B",
+        "evidence": null,
+        "line_number": 1,
+        "line_total": "1250.00",
+        "quantity": "5.000",
+        "sku": "SKU-1006",
+        "unit_price": "250.00"
+      },
+      {
+        "description": "Cleaning Solvent Gal",
+        "evidence": null,
+        "line_number": 2,
+        "line_total": "110.00",
+        "quantity": "5.000",
+        "sku": "SKU-1008",
+        "unit_price": "22.00"
+      }
+    ],
+    "payment_terms": "Net 30",
+    "po_number": "PO-1009",
+    "subtotal": "1360.00",
+    "tax": "0.00",
+    "vendor_id": null,
+    "vendor_name": "Summit Ridge Labware Inc"
+  },
+  "got_codes": [
+    "AMBIGUOUS_FIELD",
+    "MISSING_REQUIRED_FIELD"
+  ],
+  "got_decision": "HUMAN_REVIEW",
+  "pass": false,
+  "scenario": "exact_match"
+}

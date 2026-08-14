@@ -1,41 +1,5 @@
 {
-  "cross_machine": {
-    "cases_compared": 50,
-    "cases_exact_hash_match": 50,
-    "mismatches": 0,
-    "note": "Compared unique ExtractedInvoice hashes per case. MEDIUM SXM/AP-IN-1 (conc 1/8/32, 10 reps) matched REDUCED PCIe/US-KS-2 (conc 1/8, 5 reps) on all 50 cases. Within this MEDIUM run, conc=1, conc=8, and conc=32 also produced the same single hash per case.",
-    "pass": true,
-    "prior_machine": {
-      "cases": 50,
-      "concurrencies": [
-        1,
-        8
-      ],
-      "datacenter": "US-KS-2",
-      "gpu": "NVIDIA H100 PCIe",
-      "matrix_label": "REDUCED",
-      "pod_id": "p7tdoz42gtf92g",
-      "reps": 5,
-      "restart_id": "r0"
-    },
-    "status": "EXECUTED",
-    "this_machine": {
-      "cases": 50,
-      "cloud": "SECURE",
-      "concurrencies": [
-        1,
-        8,
-        32
-      ],
-      "datacenter": "AP-IN-1",
-      "gpu": "NVIDIA H100 80GB HBM3 (SXM)",
-      "matrix_label": "MEDIUM",
-      "pod_id": "n56so1rkgs0ckh",
-      "reps": 10,
-      "restart_id": "r1"
-    }
-  },
-  "generated_at_utc": "2026-08-13T16:48:21.274833+00:00",
+  "generated_at_utc": "2026-08-13T22:16:24.769921+00:00",
   "gpu": [
     {
       "cases_with_more_than_one_hash": 0,
@@ -44,167 +8,167 @@
       "dimension": "same_request",
       "hashes_by_case": {
         "case_001": [
-          "59a8de8e1a811111a744e861ceb1ccaa998b5c8a73f52446ce01b6cf9238cd66"
+          "6fad18483a7387efe0d47d8c47b5a159b0067454152c93ffb875f8d4bdf5490b"
         ],
         "case_002": [
-          "eb08aa500a7423e275607fb9b450e5d0674deb8325e51a96572cb3402994a585"
+          "3b653d2b1afc4a54fd9de01091669563c9486f21d58c7e298f414ca275fbce17"
         ],
         "case_003": [
-          "5dcbe42ffb419dc22175761a85a673c6f478e67eb29691814327de61197540e6"
+          "5330d93f8f31dba17580341aa1357e77c7f4bdef005a4c904213719b8a13abd9"
         ],
         "case_004": [
-          "0c89b3aee059f194d589acb023011611fb961482497913a6f216a0d7943ff898"
+          "df0dfc73c04bdafad326f064bd17adcad3ba93a91a1ee104b79562c66863c81a"
         ],
         "case_005": [
-          "a32cf77fff81295f825d773a69857c54717ade340e68f0c2c8699e17f31d7c9d"
+          "b2fad12c2268b4528dd4498661b347471c56a9e1e11b62d7cf27b4d59ec9e4fb"
         ],
         "case_006": [
-          "6773e33caaecd48d15585fa05c1b21ee0f4ff1115053bba7968d003280c8b5c6"
+          "3545c7bdfc6c935f37bb93974460cb51d64b1fb13c8ac2d4ad48aecf892b927d"
         ],
         "case_007": [
-          "94b7a920b05d93142819e87a22a384b606119d3e37b0a2b46b882b52e87d5ea1"
+          "5db705aad66c108147b5f0379e1b9724ada61cf19c8eece5dcb97140ed5ceb93"
         ],
         "case_008": [
-          "8587ad2031de29d196d303a43b59bd27d8bea511334b7483569eebaa815e9837"
+          "eeff5994395328951f4a7d2817e1348a31f649c5b9a7975af352ae92780ebbdd"
         ],
         "case_009": [
-          "fe0e9948f8c7eaa9c9f334c30252973ba9ddca90944653a12bc985bbe45ed70c"
+          "c3dfdbcec8fd271cee9aacc6d7015f20a41793ce3687f504e1f45c03ff9a1d9c"
         ],
         "case_010": [
-          "254ac6bb8c4b9693f62eb2a38b0bdfbc83dc5555adbdd6324bb03aca0247cfdd"
+          "380dba36cf49f998cb0494264040bd7bfdd14ee049731dd7e2f0db5c733feb64"
         ],
         "case_011": [
-          "48465248c2c7e9d3669f6ea542be47ff81d9afd3bcfcd910c841273a2914f4a4"
+          "2496b083993dc26ee94b47af1d3948bbadd4484a4492c7769baf1d3f97444bd7"
         ],
         "case_012": [
-          "386eb274cae68c8098fee14c7c1606458d6963401d82b2f1d94cad7f4c97c396"
+          "54d9150e432fc87cf829d39c2ab74c7b4aaa8fddfb85b128aacb2500a27870d4"
         ],
         "case_013": [
-          "b99b235a0dcabe6d677f7cd8f69a9d06138e44bfd48e250b1bc4bf727eb1d64c"
+          "a234628cc67ec0f29b33407159e0d959bca2db76aaca9366033cfe4c95f21a7c"
         ],
         "case_014": [
-          "a5e57b9e5bf19b98ce2d093f5491ab4bf9f6a1e1f435adafae5f7203caede96e"
+          "0e93b3b06f322b9d478e2ac5b89ba1898f4e5f4e387bed93eabe48037410577d"
         ],
         "case_015": [
-          "1d6f6545f879e66a9e416c9a07ec79444c8e051a1f948ac46c1051d166592d1e"
+          "dd3e07fda657fd54cfc02f87a921a77510b85f8c048a53e7458c5172994fdd1a"
         ],
         "case_016": [
-          "a0487457f361224087212cf4a073f3f133f72480541da2f135fc4949beaaa34c"
+          "9ac67020efc83e02b5a92646240ac397ecdf222ed7dcdd6e9bd764a5f3fd4fef"
         ],
         "case_017": [
-          "1138b92c8f79178b2996eaf2d4dacf165203f8d3da489b65b3b8086fdc456228"
+          "a89c2c58216c45e6f582e0657cff45bd137f84928e3fb1289ba3968117e5a88f"
         ],
         "case_018": [
-          "ec9975964127f00df227b5d4447499d56d4caeacd3d1485a1857ae06bf80b2c0"
+          "9389b0c2224f4a9806c853ab306f4e637ec1db9ebc132055b85a8ac55fbbd907"
         ],
         "case_019": [
-          "22217fe41f179bfd7889d2af0ac6f476322705996afc8a523ba038404e573421"
+          "48cb7cfcc991a7208d59e114cf1c2544125a58c5d65d050d0f4662ef0e8f933d"
         ],
         "case_020": [
-          "bcad6aa6a50b2e7878123520d768f0dc22e204eca36a60cd42930defe94bfcbc"
+          "f7b67587c80ff60c2b66549f656f7e31313984d62955a772040c0af02890af9d"
         ],
         "case_021": [
-          "c26dd6402c2cd24af236d660a60ae869de5a91e6029a4c8e6b6f015ad9b1aee3"
+          "d4ed153096f661cf74a9d53189660779ce3c4429603d6b246b20e1ba1fb8db4e"
         ],
         "case_022": [
-          "e880da1b4f57ea6161a22cd32be5c7a2e2530f91c230346ef083e9e6c2d43d2f"
+          "fb5d6cff568e62b4b97e93b483722309a4952695ccac79d14f0753b807b90674"
         ],
         "case_023": [
-          "190adfb4d9cca20db1e00a9e13188e7688fcb7c75d953b07ddb159423acbab73"
+          "50de6c8b7fc9ed3a74abda8274d58bfad751331ff4cd95fcb56a448fb38444f9"
         ],
         "case_024": [
-          "8b4049ad6bbe891173817086c94bf60128412b8ef00431d2fa4a9fc1a15b0ce7"
+          "0dd0ce7d435fb974d0d65f675db248106985c1a2be75bec77c373368db658c85"
         ],
         "case_025": [
-          "eb732e2f2db75860b3982e64c9f087f5660f0a54f368d8a822d03a967c611c98"
+          "98648ae9ef48d2bd22317d0ba9125f097bd840c53091c8bbb20df1d0889828d2"
         ],
         "case_026": [
-          "64c3f526f99f32e65794ce2d79b009029a276de0aeac1b02497ae07a17a7215b"
+          "996f6a4f4b974e89d533861f3beaa6bd3ffa11344a30f8a24bc24ba539171c38"
         ],
         "case_027": [
-          "4a24d6458e439c26afc698a7dc4e99a83c9c973c858004ceff4bb3b61a6af5ea"
+          "4a53447c334a51ee94db27aa64939d6ce1d22aefaa895a6286c187810b9f70ee"
         ],
         "case_028": [
-          "ede00e547b42244ef261dbd6523d38ad8473274c70ab909b42cc60065b2eddb2"
+          "81c9639aa5ce4026e2845bd196a684332b0e81bcbafb6c71582e242436e734e8"
         ],
         "case_029": [
-          "99a2d6247b22ec9c82137a202b197c003a290f77735443c34b1ec868140340ee"
+          "92d5a82de7599ebc5764a08ebe2a737e1d616b283412ffb2e376f9cadb314b93"
         ],
         "case_030": [
-          "dd01ef5558920e980add4f8f8da7cfb87179d7dc84cb9352fea62cc30a06b8a9"
+          "66961c49e6d566a4857f8dff800973b2ace377665aa5ed64b87017dafed21277"
         ],
         "case_031": [
-          "f0ee7ca155ff7050ed6b33ed0415e0505866bfd9deaac40dcd4e2bf46d2a2947"
+          "1ec2ce137de5b112d718b02cb38598ac4830efd310ad7cec12f51d3fb0eb5790"
         ],
         "case_032": [
-          "dc046f1d1263ea7b1773e6e574c75f3a80f5274fb0013ee022a113d7462bbd9a"
+          "eafa653dc2592fa886f91f131b3ee164036e44a66282f1c44c6a266440ed4c3f"
         ],
         "case_033": [
-          "f0a73d2ff1b0f10892e5f55120847e961eba29da27c64781e9a5ddce40faf705"
+          "f2f7adb2c8d3bb3550402e548deaa435c7c5fc217269dd2d34cd8616649fa519"
         ],
         "case_034": [
-          "78b2f612e22f498d77ef6531c6ceccc06adc3b9297252f183e1a01eb64605432"
+          "b46c722dab23a598624e4451b89ac3506303710e78a59be7be1b5a7234563f73"
         ],
         "case_035": [
-          "a28bb7fc7253c0a8c9c553892a62e40641825a4991129f285b544e968f5cdf47"
+          "e72dbb47dadd2e46947b412155d0dbbcf35a02cf4df5d1acf65d25a92f76f26d"
         ],
         "case_036": [
-          "4603c784b44c882d302b33bedb9a909ad110a2cec95ff47d89fd4d021c3803d8"
+          "acde52d2e2192bb9cc9119d403b86e9569e8905300fe2591c5d06ac87ce551f0"
         ],
         "case_037": [
-          "cf2fe553d49a1c88eae4e6970d9aae9e705f143d3958b1f510a05ac351a72b82"
+          "9b832213c73391507d025cc2334c8d983c4ace38764ba770990195bf41297cbd"
         ],
         "case_038": [
-          "bddb456e236fa149d78b80a7469cfb10ef42f557d1269090dd6e32702ff7d443"
+          "ffa6c00b590a9b6f6dcabfb46ac2e0caa37ef46f4672a6ddcb5a26facb329b2e"
         ],
         "case_039": [
-          "6000c5370567d4c78fb2161fd79ab44b7b6710c945db8d3898ad8ebfa730d145"
+          "3a41c9d6bd71918fd15738f3f4f23ded5b1c9aa7ff942ca1ad5430334444271f"
         ],
         "case_040": [
-          "aec658114d70e230f09c9bea4d743f75eff9ff1c9b3059fed241a868de1dd295"
+          "61bff072a6120db1321130fb3e8a068179f171f6875ae772c3dd8a636cf1bf26"
         ],
         "case_041": [
-          "999ff5263a3c49a13460af7d698dfb3c02cffd886bc815b6f0a6acb016667895"
+          "9fe3f2a4b5c2fe33b2599269bdc3f3325b5b30e0a0655c4f85f6fc831ce1f95c"
         ],
         "case_042": [
-          "49b66c86cf9b99edb32217412fb7bbca21738c272445784e4eea3ca1b8323557"
+          "32977e84950fa1067ef8fd75248265a2072d81ed3254e03ee773f978236da2b9"
         ],
         "case_043": [
-          "c463696bc5a5d16681fa1455be2d2756ab7c417dceba31435d13d7056b8f3380"
+          "36cf66e798d57032499937ab84e565aa950999270da04f9f141afa8a8535536d"
         ],
         "case_044": [
-          "3391ef46db31b459801675dcec25282b364061a574a39395b5295bae9e25da26"
+          "1d87dc88b8aa88d355e90b86fb4e6005fe765fcf2b04c054e9df4e1b4e56fd60"
         ],
         "case_045": [
-          "8ca0cd0eb7b2aaec5cf90837b1cdb80503ebf9ee24f00665eae81e7220fbaba1"
+          "033308f5fb8640dc4b9292e8d276e7e9558e9f6cd3fc7f4c2c0ba4fecc6130e4"
         ],
         "case_046": [
-          "8ddfb68ae70cfb817d1b66197ed1177b53ab05b7b77a95a79ad95738093ec368"
+          "2039634e499a8ad25d61dd15a8f15d34a01986f0b67e4226bca0610393eec96c"
         ],
         "case_047": [
-          "d9613d1eef9bad1ea49f9cbc18ab490ad91c07bb701c73d8f36f6cfda06fb298"
+          "01eac703041d049da8cd3ac880445557de84625d4d77c26579bd8a9a9a8d228a"
         ],
         "case_048": [
-          "b51b873f8ee935592023c5ba9b7d6ee51822677462d0da6bee981a5803670b9d"
+          "907db126939bf3512cb76c6744c47f819a1a79d343c2465278b6b2fbd8c140bf"
         ],
         "case_049": [
-          "86498b73f8f39a9f98cc0cd9b6d63f001469497857520ca74c4cf972dfcd36f6"
+          "32a23d40d2d5b1cce057255a6a829ec5c1931d7ac759fffdbfc24edf679c184b"
         ],
         "case_050": [
-          "53aaf620434c2081ffe9c889f472eeb3c15f18c83c9dd6dcf6519dd8a387805f"
+          "968f3416e4244030a65ee220cb422e29edd1b36b35d1499ba79a421c7f726ed7"
         ]
       },
-      "latency_s_mean": 12.688533471332091,
-      "latency_s_p50": 13.22231327999907,
-      "matrix_label": "MEDIUM",
+      "latency_s_mean": 16.578768702911447,
+      "latency_s_p50": 15.691401613003109,
+      "matrix_label": "HOUR3",
       "n_cases": 50,
       "n_errors": 0,
-      "n_ok": 500,
-      "n_requests": 500,
+      "n_ok": 250,
+      "n_requests": 250,
       "name": "same_request_repeatability",
-      "reps": 10,
-      "restart_id": "r1",
-      "schema_valid": 500,
+      "reps": 5,
+      "restart_id": "r0",
+      "schema_valid": 250,
       "status": "EXECUTED",
       "unique_hashes_global": 50,
       "unique_hashes_per_case": {
@@ -267,168 +231,168 @@
       "dimension": "batch_invariance",
       "hashes_by_case": {
         "case_001": [
-          "59a8de8e1a811111a744e861ceb1ccaa998b5c8a73f52446ce01b6cf9238cd66"
+          "6fad18483a7387efe0d47d8c47b5a159b0067454152c93ffb875f8d4bdf5490b"
         ],
         "case_002": [
-          "eb08aa500a7423e275607fb9b450e5d0674deb8325e51a96572cb3402994a585"
+          "3b653d2b1afc4a54fd9de01091669563c9486f21d58c7e298f414ca275fbce17"
         ],
         "case_003": [
-          "5dcbe42ffb419dc22175761a85a673c6f478e67eb29691814327de61197540e6"
+          "5330d93f8f31dba17580341aa1357e77c7f4bdef005a4c904213719b8a13abd9"
         ],
         "case_004": [
-          "0c89b3aee059f194d589acb023011611fb961482497913a6f216a0d7943ff898"
+          "df0dfc73c04bdafad326f064bd17adcad3ba93a91a1ee104b79562c66863c81a"
         ],
         "case_005": [
-          "a32cf77fff81295f825d773a69857c54717ade340e68f0c2c8699e17f31d7c9d"
+          "b2fad12c2268b4528dd4498661b347471c56a9e1e11b62d7cf27b4d59ec9e4fb"
         ],
         "case_006": [
-          "6773e33caaecd48d15585fa05c1b21ee0f4ff1115053bba7968d003280c8b5c6"
+          "3545c7bdfc6c935f37bb93974460cb51d64b1fb13c8ac2d4ad48aecf892b927d"
         ],
         "case_007": [
-          "94b7a920b05d93142819e87a22a384b606119d3e37b0a2b46b882b52e87d5ea1"
+          "5db705aad66c108147b5f0379e1b9724ada61cf19c8eece5dcb97140ed5ceb93"
         ],
         "case_008": [
-          "8587ad2031de29d196d303a43b59bd27d8bea511334b7483569eebaa815e9837"
+          "eeff5994395328951f4a7d2817e1348a31f649c5b9a7975af352ae92780ebbdd"
         ],
         "case_009": [
-          "fe0e9948f8c7eaa9c9f334c30252973ba9ddca90944653a12bc985bbe45ed70c"
+          "c3dfdbcec8fd271cee9aacc6d7015f20a41793ce3687f504e1f45c03ff9a1d9c"
         ],
         "case_010": [
-          "254ac6bb8c4b9693f62eb2a38b0bdfbc83dc5555adbdd6324bb03aca0247cfdd"
+          "380dba36cf49f998cb0494264040bd7bfdd14ee049731dd7e2f0db5c733feb64"
         ],
         "case_011": [
-          "48465248c2c7e9d3669f6ea542be47ff81d9afd3bcfcd910c841273a2914f4a4"
+          "2496b083993dc26ee94b47af1d3948bbadd4484a4492c7769baf1d3f97444bd7"
         ],
         "case_012": [
-          "386eb274cae68c8098fee14c7c1606458d6963401d82b2f1d94cad7f4c97c396"
+          "54d9150e432fc87cf829d39c2ab74c7b4aaa8fddfb85b128aacb2500a27870d4"
         ],
         "case_013": [
-          "b99b235a0dcabe6d677f7cd8f69a9d06138e44bfd48e250b1bc4bf727eb1d64c"
+          "a234628cc67ec0f29b33407159e0d959bca2db76aaca9366033cfe4c95f21a7c"
         ],
         "case_014": [
-          "a5e57b9e5bf19b98ce2d093f5491ab4bf9f6a1e1f435adafae5f7203caede96e"
+          "0e93b3b06f322b9d478e2ac5b89ba1898f4e5f4e387bed93eabe48037410577d"
         ],
         "case_015": [
-          "1d6f6545f879e66a9e416c9a07ec79444c8e051a1f948ac46c1051d166592d1e"
+          "dd3e07fda657fd54cfc02f87a921a77510b85f8c048a53e7458c5172994fdd1a"
         ],
         "case_016": [
-          "a0487457f361224087212cf4a073f3f133f72480541da2f135fc4949beaaa34c"
+          "9ac67020efc83e02b5a92646240ac397ecdf222ed7dcdd6e9bd764a5f3fd4fef"
         ],
         "case_017": [
-          "1138b92c8f79178b2996eaf2d4dacf165203f8d3da489b65b3b8086fdc456228"
+          "a89c2c58216c45e6f582e0657cff45bd137f84928e3fb1289ba3968117e5a88f"
         ],
         "case_018": [
-          "ec9975964127f00df227b5d4447499d56d4caeacd3d1485a1857ae06bf80b2c0"
+          "9389b0c2224f4a9806c853ab306f4e637ec1db9ebc132055b85a8ac55fbbd907"
         ],
         "case_019": [
-          "22217fe41f179bfd7889d2af0ac6f476322705996afc8a523ba038404e573421"
+          "48cb7cfcc991a7208d59e114cf1c2544125a58c5d65d050d0f4662ef0e8f933d"
         ],
         "case_020": [
-          "bcad6aa6a50b2e7878123520d768f0dc22e204eca36a60cd42930defe94bfcbc"
+          "f7b67587c80ff60c2b66549f656f7e31313984d62955a772040c0af02890af9d"
         ],
         "case_021": [
-          "c26dd6402c2cd24af236d660a60ae869de5a91e6029a4c8e6b6f015ad9b1aee3"
+          "d4ed153096f661cf74a9d53189660779ce3c4429603d6b246b20e1ba1fb8db4e"
         ],
         "case_022": [
-          "e880da1b4f57ea6161a22cd32be5c7a2e2530f91c230346ef083e9e6c2d43d2f"
+          "fb5d6cff568e62b4b97e93b483722309a4952695ccac79d14f0753b807b90674"
         ],
         "case_023": [
-          "190adfb4d9cca20db1e00a9e13188e7688fcb7c75d953b07ddb159423acbab73"
+          "50de6c8b7fc9ed3a74abda8274d58bfad751331ff4cd95fcb56a448fb38444f9"
         ],
         "case_024": [
-          "8b4049ad6bbe891173817086c94bf60128412b8ef00431d2fa4a9fc1a15b0ce7"
+          "0dd0ce7d435fb974d0d65f675db248106985c1a2be75bec77c373368db658c85"
         ],
         "case_025": [
-          "eb732e2f2db75860b3982e64c9f087f5660f0a54f368d8a822d03a967c611c98"
+          "98648ae9ef48d2bd22317d0ba9125f097bd840c53091c8bbb20df1d0889828d2"
         ],
         "case_026": [
-          "64c3f526f99f32e65794ce2d79b009029a276de0aeac1b02497ae07a17a7215b"
+          "996f6a4f4b974e89d533861f3beaa6bd3ffa11344a30f8a24bc24ba539171c38"
         ],
         "case_027": [
-          "4a24d6458e439c26afc698a7dc4e99a83c9c973c858004ceff4bb3b61a6af5ea"
+          "4a53447c334a51ee94db27aa64939d6ce1d22aefaa895a6286c187810b9f70ee"
         ],
         "case_028": [
-          "ede00e547b42244ef261dbd6523d38ad8473274c70ab909b42cc60065b2eddb2"
+          "81c9639aa5ce4026e2845bd196a684332b0e81bcbafb6c71582e242436e734e8"
         ],
         "case_029": [
-          "99a2d6247b22ec9c82137a202b197c003a290f77735443c34b1ec868140340ee"
+          "92d5a82de7599ebc5764a08ebe2a737e1d616b283412ffb2e376f9cadb314b93"
         ],
         "case_030": [
-          "dd01ef5558920e980add4f8f8da7cfb87179d7dc84cb9352fea62cc30a06b8a9"
+          "66961c49e6d566a4857f8dff800973b2ace377665aa5ed64b87017dafed21277"
         ],
         "case_031": [
-          "f0ee7ca155ff7050ed6b33ed0415e0505866bfd9deaac40dcd4e2bf46d2a2947"
+          "1ec2ce137de5b112d718b02cb38598ac4830efd310ad7cec12f51d3fb0eb5790"
         ],
         "case_032": [
-          "dc046f1d1263ea7b1773e6e574c75f3a80f5274fb0013ee022a113d7462bbd9a"
+          "eafa653dc2592fa886f91f131b3ee164036e44a66282f1c44c6a266440ed4c3f"
         ],
         "case_033": [
-          "f0a73d2ff1b0f10892e5f55120847e961eba29da27c64781e9a5ddce40faf705"
+          "f2f7adb2c8d3bb3550402e548deaa435c7c5fc217269dd2d34cd8616649fa519"
         ],
         "case_034": [
-          "78b2f612e22f498d77ef6531c6ceccc06adc3b9297252f183e1a01eb64605432"
+          "b46c722dab23a598624e4451b89ac3506303710e78a59be7be1b5a7234563f73"
         ],
         "case_035": [
-          "a28bb7fc7253c0a8c9c553892a62e40641825a4991129f285b544e968f5cdf47"
+          "e72dbb47dadd2e46947b412155d0dbbcf35a02cf4df5d1acf65d25a92f76f26d"
         ],
         "case_036": [
-          "4603c784b44c882d302b33bedb9a909ad110a2cec95ff47d89fd4d021c3803d8"
+          "acde52d2e2192bb9cc9119d403b86e9569e8905300fe2591c5d06ac87ce551f0"
         ],
         "case_037": [
-          "cf2fe553d49a1c88eae4e6970d9aae9e705f143d3958b1f510a05ac351a72b82"
+          "9b832213c73391507d025cc2334c8d983c4ace38764ba770990195bf41297cbd"
         ],
         "case_038": [
-          "bddb456e236fa149d78b80a7469cfb10ef42f557d1269090dd6e32702ff7d443"
+          "ffa6c00b590a9b6f6dcabfb46ac2e0caa37ef46f4672a6ddcb5a26facb329b2e"
         ],
         "case_039": [
-          "6000c5370567d4c78fb2161fd79ab44b7b6710c945db8d3898ad8ebfa730d145"
+          "3a41c9d6bd71918fd15738f3f4f23ded5b1c9aa7ff942ca1ad5430334444271f"
         ],
         "case_040": [
-          "aec658114d70e230f09c9bea4d743f75eff9ff1c9b3059fed241a868de1dd295"
+          "61bff072a6120db1321130fb3e8a068179f171f6875ae772c3dd8a636cf1bf26"
         ],
         "case_041": [
-          "999ff5263a3c49a13460af7d698dfb3c02cffd886bc815b6f0a6acb016667895"
+          "9fe3f2a4b5c2fe33b2599269bdc3f3325b5b30e0a0655c4f85f6fc831ce1f95c"
         ],
         "case_042": [
-          "49b66c86cf9b99edb32217412fb7bbca21738c272445784e4eea3ca1b8323557"
+          "32977e84950fa1067ef8fd75248265a2072d81ed3254e03ee773f978236da2b9"
         ],
         "case_043": [
-          "c463696bc5a5d16681fa1455be2d2756ab7c417dceba31435d13d7056b8f3380"
+          "36cf66e798d57032499937ab84e565aa950999270da04f9f141afa8a8535536d"
         ],
         "case_044": [
-          "3391ef46db31b459801675dcec25282b364061a574a39395b5295bae9e25da26"
+          "1d87dc88b8aa88d355e90b86fb4e6005fe765fcf2b04c054e9df4e1b4e56fd60"
         ],
         "case_045": [
-          "8ca0cd0eb7b2aaec5cf90837b1cdb80503ebf9ee24f00665eae81e7220fbaba1"
+          "033308f5fb8640dc4b9292e8d276e7e9558e9f6cd3fc7f4c2c0ba4fecc6130e4"
         ],
         "case_046": [
-          "8ddfb68ae70cfb817d1b66197ed1177b53ab05b7b77a95a79ad95738093ec368"
+          "2039634e499a8ad25d61dd15a8f15d34a01986f0b67e4226bca0610393eec96c"
         ],
         "case_047": [
-          "d9613d1eef9bad1ea49f9cbc18ab490ad91c07bb701c73d8f36f6cfda06fb298"
+          "01eac703041d049da8cd3ac880445557de84625d4d77c26579bd8a9a9a8d228a"
         ],
         "case_048": [
-          "b51b873f8ee935592023c5ba9b7d6ee51822677462d0da6bee981a5803670b9d"
+          "907db126939bf3512cb76c6744c47f819a1a79d343c2465278b6b2fbd8c140bf"
         ],
         "case_049": [
-          "86498b73f8f39a9f98cc0cd9b6d63f001469497857520ca74c4cf972dfcd36f6"
+          "32a23d40d2d5b1cce057255a6a829ec5c1931d7ac759fffdbfc24edf679c184b"
         ],
         "case_050": [
-          "53aaf620434c2081ffe9c889f472eeb3c15f18c83c9dd6dcf6519dd8a387805f"
+          "968f3416e4244030a65ee220cb422e29edd1b36b35d1499ba79a421c7f726ed7"
         ]
       },
-      "latency_s_mean": 18.440672552601782,
-      "latency_s_p50": 19.139533123001456,
-      "matrix_label": "MEDIUM",
+      "latency_s_mean": 26.159007211130344,
+      "latency_s_p50": 24.57076244900236,
+      "matrix_label": "HOUR3",
       "n_cases": 50,
       "n_errors": 0,
-      "n_ok": 500,
-      "n_requests": 500,
+      "n_ok": 250,
+      "n_requests": 250,
       "name": "vllm_batch_invariant_token_stability_conc8",
       "note": "Server has VLLM_BATCH_INVARIANT=1. Request order shuffled to mix batch positions.",
-      "reps": 10,
-      "restart_id": "r1",
-      "schema_valid": 500,
+      "reps": 5,
+      "restart_id": "r0",
+      "schema_valid": 250,
       "status": "EXECUTED",
       "unique_hashes_global": 50,
       "unique_hashes_per_case": {
@@ -491,168 +455,168 @@
       "dimension": "batch_invariance",
       "hashes_by_case": {
         "case_001": [
-          "59a8de8e1a811111a744e861ceb1ccaa998b5c8a73f52446ce01b6cf9238cd66"
+          "6fad18483a7387efe0d47d8c47b5a159b0067454152c93ffb875f8d4bdf5490b"
         ],
         "case_002": [
-          "eb08aa500a7423e275607fb9b450e5d0674deb8325e51a96572cb3402994a585"
+          "3b653d2b1afc4a54fd9de01091669563c9486f21d58c7e298f414ca275fbce17"
         ],
         "case_003": [
-          "5dcbe42ffb419dc22175761a85a673c6f478e67eb29691814327de61197540e6"
+          "5330d93f8f31dba17580341aa1357e77c7f4bdef005a4c904213719b8a13abd9"
         ],
         "case_004": [
-          "0c89b3aee059f194d589acb023011611fb961482497913a6f216a0d7943ff898"
+          "df0dfc73c04bdafad326f064bd17adcad3ba93a91a1ee104b79562c66863c81a"
         ],
         "case_005": [
-          "a32cf77fff81295f825d773a69857c54717ade340e68f0c2c8699e17f31d7c9d"
+          "b2fad12c2268b4528dd4498661b347471c56a9e1e11b62d7cf27b4d59ec9e4fb"
         ],
         "case_006": [
-          "6773e33caaecd48d15585fa05c1b21ee0f4ff1115053bba7968d003280c8b5c6"
+          "3545c7bdfc6c935f37bb93974460cb51d64b1fb13c8ac2d4ad48aecf892b927d"
         ],
         "case_007": [
-          "94b7a920b05d93142819e87a22a384b606119d3e37b0a2b46b882b52e87d5ea1"
+          "5db705aad66c108147b5f0379e1b9724ada61cf19c8eece5dcb97140ed5ceb93"
         ],
         "case_008": [
-          "8587ad2031de29d196d303a43b59bd27d8bea511334b7483569eebaa815e9837"
+          "eeff5994395328951f4a7d2817e1348a31f649c5b9a7975af352ae92780ebbdd"
         ],
         "case_009": [
-          "fe0e9948f8c7eaa9c9f334c30252973ba9ddca90944653a12bc985bbe45ed70c"
+          "c3dfdbcec8fd271cee9aacc6d7015f20a41793ce3687f504e1f45c03ff9a1d9c"
         ],
         "case_010": [
-          "254ac6bb8c4b9693f62eb2a38b0bdfbc83dc5555adbdd6324bb03aca0247cfdd"
+          "380dba36cf49f998cb0494264040bd7bfdd14ee049731dd7e2f0db5c733feb64"
         ],
         "case_011": [
-          "48465248c2c7e9d3669f6ea542be47ff81d9afd3bcfcd910c841273a2914f4a4"
+          "2496b083993dc26ee94b47af1d3948bbadd4484a4492c7769baf1d3f97444bd7"
         ],
         "case_012": [
-          "386eb274cae68c8098fee14c7c1606458d6963401d82b2f1d94cad7f4c97c396"
+          "54d9150e432fc87cf829d39c2ab74c7b4aaa8fddfb85b128aacb2500a27870d4"
         ],
         "case_013": [
-          "b99b235a0dcabe6d677f7cd8f69a9d06138e44bfd48e250b1bc4bf727eb1d64c"
+          "a234628cc67ec0f29b33407159e0d959bca2db76aaca9366033cfe4c95f21a7c"
         ],
         "case_014": [
-          "a5e57b9e5bf19b98ce2d093f5491ab4bf9f6a1e1f435adafae5f7203caede96e"
+          "0e93b3b06f322b9d478e2ac5b89ba1898f4e5f4e387bed93eabe48037410577d"
         ],
         "case_015": [
-          "1d6f6545f879e66a9e416c9a07ec79444c8e051a1f948ac46c1051d166592d1e"
+          "dd3e07fda657fd54cfc02f87a921a77510b85f8c048a53e7458c5172994fdd1a"
         ],
         "case_016": [
-          "a0487457f361224087212cf4a073f3f133f72480541da2f135fc4949beaaa34c"
+          "9ac67020efc83e02b5a92646240ac397ecdf222ed7dcdd6e9bd764a5f3fd4fef"
         ],
         "case_017": [
-          "1138b92c8f79178b2996eaf2d4dacf165203f8d3da489b65b3b8086fdc456228"
+          "a89c2c58216c45e6f582e0657cff45bd137f84928e3fb1289ba3968117e5a88f"
         ],
         "case_018": [
-          "ec9975964127f00df227b5d4447499d56d4caeacd3d1485a1857ae06bf80b2c0"
+          "9389b0c2224f4a9806c853ab306f4e637ec1db9ebc132055b85a8ac55fbbd907"
         ],
         "case_019": [
-          "22217fe41f179bfd7889d2af0ac6f476322705996afc8a523ba038404e573421"
+          "48cb7cfcc991a7208d59e114cf1c2544125a58c5d65d050d0f4662ef0e8f933d"
         ],
         "case_020": [
-          "bcad6aa6a50b2e7878123520d768f0dc22e204eca36a60cd42930defe94bfcbc"
+          "f7b67587c80ff60c2b66549f656f7e31313984d62955a772040c0af02890af9d"
         ],
         "case_021": [
-          "c26dd6402c2cd24af236d660a60ae869de5a91e6029a4c8e6b6f015ad9b1aee3"
+          "d4ed153096f661cf74a9d53189660779ce3c4429603d6b246b20e1ba1fb8db4e"
         ],
         "case_022": [
-          "e880da1b4f57ea6161a22cd32be5c7a2e2530f91c230346ef083e9e6c2d43d2f"
+          "fb5d6cff568e62b4b97e93b483722309a4952695ccac79d14f0753b807b90674"
         ],
         "case_023": [
-          "190adfb4d9cca20db1e00a9e13188e7688fcb7c75d953b07ddb159423acbab73"
+          "50de6c8b7fc9ed3a74abda8274d58bfad751331ff4cd95fcb56a448fb38444f9"
         ],
         "case_024": [
-          "8b4049ad6bbe891173817086c94bf60128412b8ef00431d2fa4a9fc1a15b0ce7"
+          "0dd0ce7d435fb974d0d65f675db248106985c1a2be75bec77c373368db658c85"
         ],
         "case_025": [
-          "eb732e2f2db75860b3982e64c9f087f5660f0a54f368d8a822d03a967c611c98"
+          "98648ae9ef48d2bd22317d0ba9125f097bd840c53091c8bbb20df1d0889828d2"
         ],
         "case_026": [
-          "64c3f526f99f32e65794ce2d79b009029a276de0aeac1b02497ae07a17a7215b"
+          "996f6a4f4b974e89d533861f3beaa6bd3ffa11344a30f8a24bc24ba539171c38"
         ],
         "case_027": [
-          "4a24d6458e439c26afc698a7dc4e99a83c9c973c858004ceff4bb3b61a6af5ea"
+          "4a53447c334a51ee94db27aa64939d6ce1d22aefaa895a6286c187810b9f70ee"
         ],
         "case_028": [
-          "ede00e547b42244ef261dbd6523d38ad8473274c70ab909b42cc60065b2eddb2"
+          "81c9639aa5ce4026e2845bd196a684332b0e81bcbafb6c71582e242436e734e8"
         ],
         "case_029": [
-          "99a2d6247b22ec9c82137a202b197c003a290f77735443c34b1ec868140340ee"
+          "92d5a82de7599ebc5764a08ebe2a737e1d616b283412ffb2e376f9cadb314b93"
         ],
         "case_030": [
-          "dd01ef5558920e980add4f8f8da7cfb87179d7dc84cb9352fea62cc30a06b8a9"
+          "66961c49e6d566a4857f8dff800973b2ace377665aa5ed64b87017dafed21277"
         ],
         "case_031": [
-          "f0ee7ca155ff7050ed6b33ed0415e0505866bfd9deaac40dcd4e2bf46d2a2947"
+          "1ec2ce137de5b112d718b02cb38598ac4830efd310ad7cec12f51d3fb0eb5790"
         ],
         "case_032": [
-          "dc046f1d1263ea7b1773e6e574c75f3a80f5274fb0013ee022a113d7462bbd9a"
+          "eafa653dc2592fa886f91f131b3ee164036e44a66282f1c44c6a266440ed4c3f"
         ],
         "case_033": [
-          "f0a73d2ff1b0f10892e5f55120847e961eba29da27c64781e9a5ddce40faf705"
+          "f2f7adb2c8d3bb3550402e548deaa435c7c5fc217269dd2d34cd8616649fa519"
         ],
         "case_034": [
-          "78b2f612e22f498d77ef6531c6ceccc06adc3b9297252f183e1a01eb64605432"
+          "b46c722dab23a598624e4451b89ac3506303710e78a59be7be1b5a7234563f73"
         ],
         "case_035": [
-          "a28bb7fc7253c0a8c9c553892a62e40641825a4991129f285b544e968f5cdf47"
+          "e72dbb47dadd2e46947b412155d0dbbcf35a02cf4df5d1acf65d25a92f76f26d"
         ],
         "case_036": [
-          "4603c784b44c882d302b33bedb9a909ad110a2cec95ff47d89fd4d021c3803d8"
+          "acde52d2e2192bb9cc9119d403b86e9569e8905300fe2591c5d06ac87ce551f0"
         ],
         "case_037": [
-          "cf2fe553d49a1c88eae4e6970d9aae9e705f143d3958b1f510a05ac351a72b82"
+          "9b832213c73391507d025cc2334c8d983c4ace38764ba770990195bf41297cbd"
         ],
         "case_038": [
-          "bddb456e236fa149d78b80a7469cfb10ef42f557d1269090dd6e32702ff7d443"
+          "ffa6c00b590a9b6f6dcabfb46ac2e0caa37ef46f4672a6ddcb5a26facb329b2e"
         ],
         "case_039": [
-          "6000c5370567d4c78fb2161fd79ab44b7b6710c945db8d3898ad8ebfa730d145"
+          "3a41c9d6bd71918fd15738f3f4f23ded5b1c9aa7ff942ca1ad5430334444271f"
         ],
         "case_040": [
-          "aec658114d70e230f09c9bea4d743f75eff9ff1c9b3059fed241a868de1dd295"
+          "61bff072a6120db1321130fb3e8a068179f171f6875ae772c3dd8a636cf1bf26"
         ],
         "case_041": [
-          "999ff5263a3c49a13460af7d698dfb3c02cffd886bc815b6f0a6acb016667895"
+          "9fe3f2a4b5c2fe33b2599269bdc3f3325b5b30e0a0655c4f85f6fc831ce1f95c"
         ],
         "case_042": [
-          "49b66c86cf9b99edb32217412fb7bbca21738c272445784e4eea3ca1b8323557"
+          "32977e84950fa1067ef8fd75248265a2072d81ed3254e03ee773f978236da2b9"
         ],
         "case_043": [
-          "c463696bc5a5d16681fa1455be2d2756ab7c417dceba31435d13d7056b8f3380"
+          "36cf66e798d57032499937ab84e565aa950999270da04f9f141afa8a8535536d"
         ],
         "case_044": [
-          "3391ef46db31b459801675dcec25282b364061a574a39395b5295bae9e25da26"
+          "1d87dc88b8aa88d355e90b86fb4e6005fe765fcf2b04c054e9df4e1b4e56fd60"
         ],
         "case_045": [
-          "8ca0cd0eb7b2aaec5cf90837b1cdb80503ebf9ee24f00665eae81e7220fbaba1"
+          "033308f5fb8640dc4b9292e8d276e7e9558e9f6cd3fc7f4c2c0ba4fecc6130e4"
         ],
         "case_046": [
-          "8ddfb68ae70cfb817d1b66197ed1177b53ab05b7b77a95a79ad95738093ec368"
+          "2039634e499a8ad25d61dd15a8f15d34a01986f0b67e4226bca0610393eec96c"
         ],
         "case_047": [
-          "d9613d1eef9bad1ea49f9cbc18ab490ad91c07bb701c73d8f36f6cfda06fb298"
+          "01eac703041d049da8cd3ac880445557de84625d4d77c26579bd8a9a9a8d228a"
         ],
         "case_048": [
-          "b51b873f8ee935592023c5ba9b7d6ee51822677462d0da6bee981a5803670b9d"
+          "907db126939bf3512cb76c6744c47f819a1a79d343c2465278b6b2fbd8c140bf"
         ],
         "case_049": [
-          "86498b73f8f39a9f98cc0cd9b6d63f001469497857520ca74c4cf972dfcd36f6"
+          "32a23d40d2d5b1cce057255a6a829ec5c1931d7ac759fffdbfc24edf679c184b"
         ],
         "case_050": [
-          "53aaf620434c2081ffe9c889f472eeb3c15f18c83c9dd6dcf6519dd8a387805f"
+          "968f3416e4244030a65ee220cb422e29edd1b36b35d1499ba79a421c7f726ed7"
         ]
       },
-      "latency_s_mean": 21.301794312597906,
-      "latency_s_p50": 22.376893664993986,
-      "matrix_label": "MEDIUM",
+      "latency_s_mean": 26.53847868370777,
+      "latency_s_p50": 24.697937214979902,
+      "matrix_label": "HOUR3",
       "n_cases": 50,
       "n_errors": 0,
-      "n_ok": 500,
-      "n_requests": 500,
+      "n_ok": 250,
+      "n_requests": 250,
       "name": "vllm_batch_invariant_token_stability_conc32",
       "note": "Server has VLLM_BATCH_INVARIANT=1. Request order shuffled to mix batch positions.",
-      "reps": 10,
-      "restart_id": "r1",
-      "schema_valid": 500,
+      "reps": 5,
+      "restart_id": "r0",
+      "schema_valid": 250,
       "status": "EXECUTED",
       "unique_hashes_global": 50,
       "unique_hashes_per_case": {
@@ -717,26 +681,21 @@
     {
       "dimension": "restart",
       "name": "pod_restart_invariance",
-      "reason": "NOT RUN. Pod restart was skipped to stay inside the ~3h MEDIUM window and remaining GPU budget. restart_id=r1 labels this process only; no stop/start of vLLM was performed. Do not treat PARTIAL as a restart result.",
+      "reason": "This process is restart_id=r0. Cross-restart comparison is merged by the driver after stop/start.",
+      "restart_id": "r0",
+      "status": "PARTIAL"
+    },
+    {
+      "dimension": "cross_machine",
+      "name": "cross_machine_invariance",
+      "reason": "Single RunPod H100 PCIe machine (US-KS-2); no second host rented.",
       "status": "NOT_EXECUTED"
     },
     {
-      "cases_with_hash_change_across_machines": 0,
-      "dimension": "cross_machine",
-      "n_cases": 50,
-      "name": "cross_machine_invariance",
-      "note": "Hashes matched on all 50 cases vs prior PCIe/US-KS-2 reduced run. Prior run used 5 reps at conc 1 and 8; this run used 10 reps at conc 1, 8, and 32.",
-      "pass": true,
-      "prior_host": "NVIDIA H100 PCIe US-KS-2 p7tdoz42gtf92g r0 REDUCED",
-      "reason": "Hashes matched on all 50 cases vs prior PCIe/US-KS-2 reduced run. Prior run used 5 reps at conc 1 and 8; this run used 10 reps at conc 1, 8, and 32.",
-      "status": "EXECUTED",
-      "this_host": "NVIDIA H100 80GB HBM3 SXM AP-IN-1 n56so1rkgs0ckh r1 MEDIUM"
-    },
-    {
       "dimension": "structured_outputs",
-      "n_requests": 1500,
+      "n_requests": 750,
       "name": "vllm_json_schema_xgrammar_stability",
-      "schema_valid_total": 1500,
+      "schema_valid_total": 750,
       "status": "EXECUTED"
     },
     {
@@ -758,43 +717,37 @@
           "canonical_stable": true,
           "case_id": "case_001",
           "pdf_stable": true,
-          "sha256": "d78b8a0eb1c35b0be2620271aafed69afe338b0e03141752bf085ee12b7fd670"
+          "sha256": "be896f6aac75d170113e2dba1b7d307091225dedfe6ce421584e0f46a9f34a5d"
         },
         {
           "canonical_stable": true,
           "case_id": "case_002",
           "pdf_stable": true,
-          "sha256": "6c6f1c9319db82111ff003709353676df7491d1de9ec2a115cd95674f9e43b60"
+          "sha256": "f07601c5421b2c89a0b9d39b2f9c5609ccca3de7d8989989e38b53fa6c6b97cd"
         },
         {
           "canonical_stable": true,
           "case_id": "case_003",
           "pdf_stable": true,
-          "sha256": "0ecdfa4473283c1d9f227f7f866e737254a6def699eeb468e155a4bd90e536dd"
+          "sha256": "6172533d5a3499c5bd2c1a8c05cec3bdd4cf3f3daaea4b22592808ae9f626768"
         },
         {
           "canonical_stable": true,
           "case_id": "case_004",
           "pdf_stable": true,
-          "sha256": "83c66638e5ed06065aaa994a60bbf0715f097c409fd9ddffa170eee1205c6a6b"
+          "sha256": "aeaba0f5367502b3d286fba4256462f2f41ab6bbbcc18fa255d6ce38917125bc"
         },
         {
           "canonical_stable": true,
           "case_id": "case_005",
           "pdf_stable": true,
-          "sha256": "6b82a635bb6e9385c6005be8dd6973cb1777cd248b2b150ae0b7d535a96eb54d"
+          "sha256": "28f773afdca13d5953dba3e20e344f356872587ecec7b67ba26554887cfae93a"
         }
       ]
     }
   ],
-  "matrix_label": "MEDIUM",
-  "n_records": 1500,
-  "records_path": "reports/determinism_records_r1.jsonl",
-  "restart_id": "r1",
-  "skipped": {
-    "accuracy_rerun": true,
-    "full_9000": true,
-    "negative_control": true,
-    "pod_restart": true
-  }
+  "matrix_label": "HOUR3",
+  "n_records": 750,
+  "records_path": "reports/determinism_records_r0.jsonl",
+  "restart_id": "r0"
 }

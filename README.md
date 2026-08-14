@@ -4,7 +4,7 @@ Prototype accounts-payable agent: a vendor invoice PDF goes in, a `READY_FOR_DRA
 
 The LLM only extracts JSON. Python does every match, Decimal calculation, and decision. That split is the product, not an implementation detail.
 
-**Full file-by-file walkthrough:** [`docs/how_it_works.md`](docs/how_it_works.md).
+**Full walkthrough:** [`docs/how_it_works.md`](docs/how_it_works.md) (Markdown) · [`docs/Accounting_Agent_Guide.docx`](docs/Accounting_Agent_Guide.docx) (Word: folders, every `.py` file, GPU setup, how to read outputs).
 
 ## What we measured (2026-08-13)
 
@@ -77,7 +77,3 @@ See [`docs/technical_decisions.md`](docs/technical_decisions.md) and [`deploymen
 ## Secret sweep
 
 Before you fork this or paste logs elsewhere, run [`docs/SECRET_SWEEP.md`](docs/SECRET_SWEEP.md). `.env` is gitignored. Live vLLM/RunPod keys never belong in this repo.
-
-## License
-
-MIT. Evaluation prototype, fictional vendors, not production ERP-integrated.

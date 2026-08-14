@@ -1,0 +1,161 @@
+{
+  "case_id": "case_048",
+  "error": null,
+  "expected_codes": [
+    "MISSING_INVOICE_NUMBER",
+    "MISSING_REQUIRED_FIELD"
+  ],
+  "expected_decision": "HUMAN_REVIEW",
+  "extraction": {
+    "ambiguities": [
+      {
+        "candidates": [
+          "0.00",
+          "null"
+        ],
+        "field": "tax",
+        "reason": "Tax exempt \u2014 no sales tax charged"
+      }
+    ],
+    "currency": "USD",
+    "evidence": {
+      "2/10 N30 \u2014 Net 30": {
+        "page": 1,
+        "quote": "2/10 N30 \u2014 Net 30"
+      },
+      "Amount enclosed: $0.00 Credit limit: $8,888.00": {
+        "page": 1,
+        "quote": "Amount enclosed: $0.00 Credit limit: $8,888.00"
+      },
+      "Balance due USD 1257.50": {
+        "page": 1,
+        "quote": "Balance due USD 1257.50"
+      },
+      "Bill From: Blue Harbor Packaging Co": {
+        "page": 1,
+        "quote": "Bill From: Blue Harbor Packaging Co"
+      },
+      "Blanket PO-9999": {
+        "page": 1,
+        "quote": "Blanket PO-9999"
+      },
+      "Blanket PO-9999 \u2014 do not pay this reference": {
+        "page": 1,
+        "quote": "Blanket PO-9999 \u2014 do not pay this reference"
+      },
+      "Claims must be made within 10 days of receipt. Title passes FOB origin.": {
+        "page": 1,
+        "quote": "Claims must be made within 10 days of receipt. Title passes FOB origin."
+      },
+      "Date December 25, 2026": {
+        "page": 1,
+        "quote": "Date December 25, 2026"
+      },
+      "Description Qty SKU Unit Amount": {
+        "page": 1,
+        "quote": "Description Qty SKU Unit Amount"
+      },
+      "Freight USD 0.00": {
+        "page": 1,
+        "quote": "Freight USD 0.00"
+      },
+      "Net merchandise USD 1257.50": {
+        "page": 1,
+        "quote": "Net merchandise USD 1257.50"
+      },
+      "PO Ref PO-1048": {
+        "page": 1,
+        "quote": "PO Ref PO-1048"
+      },
+      "Packing Tape Roll 2 SKU-1004 USD 3.75 USD 7.50": {
+        "page": 1,
+        "quote": "Packing Tape Roll 2 SKU-1004 USD 3.75 USD 7.50"
+      },
+      "Pay this stub: $8,888.00": {
+        "page": 1,
+        "quote": "Pay this stub: $8,888.00"
+      },
+      "Payment coupon below is for remittance only and may show a different amount.": {
+        "page": 1,
+        "quote": "Payment coupon below is for remittance only and may show a different amount."
+      },
+      "Remit to: Harbor Street Holdings LLC": {
+        "page": 1,
+        "quote": "Remit to: Harbor Street Holdings LLC"
+      },
+      "Remit: Harbor Street Holdings LLC": {
+        "page": 1,
+        "quote": "Remit: Harbor Street Holdings LLC"
+      },
+      "Returned goods require an RMA. Restocking 15% after 30 days.": {
+        "page": 1,
+        "quote": "Returned goods require an RMA. Restocking 15% after 30 days."
+      },
+      "Scan code INV-000000 prior balance $8,888.00": {
+        "page": 1,
+        "quote": "Scan code INV-000000 prior balance $8,888.00"
+      },
+      "Ship from: Westfield Distribution Center": {
+        "page": 1,
+        "quote": "Ship from: Westfield Distribution Center"
+      },
+      "Tax exempt \u2014 no sales tax charged": {
+        "page": 1,
+        "quote": "Tax exempt \u2014 no sales tax charged"
+      },
+      "This is not a packing list. Counts on the bill of lading control.": {
+        "page": 1,
+        "quote": "This is not a packing list. Counts on the bill of lading control."
+      },
+      "Vendor code V003": {
+        "page": 1,
+        "quote": "Vendor code V003"
+      },
+      "Widget Assembly B 5 SKU-1006 USD 250.00 USD 1250.00": {
+        "page": 1,
+        "quote": "Widget Assembly B 5 SKU-1006 USD 250.00 USD 1250.00"
+      },
+      "|| INV-000000 ||": {
+        "page": 1,
+        "quote": "|| INV-000000 ||"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "December 25, 2026",
+    "invoice_number": "INV-000000",
+    "invoice_total": "1257.50",
+    "line_items": [
+      {
+        "description": "Packing Tape Roll",
+        "evidence": null,
+        "line_number": 1,
+        "line_total": "7.50",
+        "quantity": "2",
+        "sku": "SKU-1004",
+        "unit_price": "3.75"
+      },
+      {
+        "description": "Widget Assembly B",
+        "evidence": null,
+        "line_number": 2,
+        "line_total": "1250.00",
+        "quantity": "5",
+        "sku": "SKU-1006",
+        "unit_price": "250.00"
+      }
+    ],
+    "payment_terms": "2/10 N30 \u2014 Net 30",
+    "po_number": "PO-1048",
+    "subtotal": "1257.50",
+    "tax": null,
+    "vendor_id": "V003",
+    "vendor_name": "Blue Harbor Packaging Co"
+  },
+  "got_codes": [
+    "AMBIGUOUS_FIELD",
+    "MISSING_REQUIRED_FIELD"
+  ],
+  "got_decision": "HUMAN_REVIEW",
+  "pass": false,
+  "scenario": "missing_ambiguous"
+}

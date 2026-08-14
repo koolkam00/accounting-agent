@@ -1,8 +1,22 @@
 # How this repo works
 
-This document is the full map: what the system does, how a PDF becomes a decision, and what every file is for.
+This document is the full map: what the system does, how a PDF becomes a decision, and **every file** in git.
 
 Read this before running Qwen. Local tests do not call the GPU. They replay ground truth from `expected.json`.
+
+Jump to **[§8 Every file in the repo](#8-every-file-in-the-repo)** for the complete inventory (root, `app/`, scripts, all 50 fixture cases, reports).
+
+1. [What this is](#1-what-this-is)
+2. [How a request flows](#2-how-a-request-flows)
+3. [The objects that move through the system](#3-the-objects-that-move-through-the-system)
+4. [Policy](#4-policy-what-match-means)
+5. [Exception codes](#5-exception-codes)
+6. [Synthetic dataset](#6-synthetic-dataset)
+7. [Text extraction](#7-text-extraction-no-ocr)
+8. [Every file in the repo](#8-every-file-in-the-repo)
+9. [How the files call each other](#9-how-the-files-call-each-other)
+10. [What “ready for Qwen” means](#10-what-ready-for-qwen-means)
+11. [What this repo is not](#11-what-this-repo-is-not)
 
 ---
 
@@ -212,110 +226,215 @@ Live Qwen is prompted with `Invoice text:\n\n{canonical_text}` plus a JSON schem
 
 ---
 
-## 8. File catalog
+## 8. Every file in the repo
 
-### Root
+Git tracks these paths. This section names **all of them**. Ignored (not in git): `.venv/`, `.env`, `*.db`, `__pycache__/`, pytest/mypy/ruff caches, `.DS_Store`, extra `reports/*.json` that are not in the allow-list below.
 
-| File | Purpose |
+---
+
+### 8.1 Root
+
+| File | What it does |
 | --- | --- |
-| `README.md` | Entry point: what it is, measured results, how to run |
-| `LICENSE` | MIT |
-| `Makefile` | Shortcuts: setup, generate-data, init-db, test, UI, eval, report |
-| `pyproject.toml` | Package metadata, Python 3.12 pin, dependencies |
-| `uv.lock` | Locked dependency versions |
-| `.env.example` | Env template (fake API key). Copy to `.env` (gitignored) |
-| `.gitignore` | Drops `.venv`, `.env`, `*.db`, caches, most generated report JSON |
+| `README.md` | Front door: product one-liner, GPU results (easy invoices), harder-PDF note, local/GPU how-to, pins, link to this doc |
+| `Makefile` | Targets: `setup`, `generate-data`, `init-db`, `test`, `run-local`, `run-ui`, `evaluate-accuracy`, `evaluate-determinism`, `capture-env`, `report` |
+| `pyproject.toml` | Package `accounting-agent` 0.1.0; Python `>=3.12,<3.13`; deps (pydantic, openai, pypdf, reportlab, pytest, httpx, pyyaml, sqlalchemy, pandas, streamlit, python-dotenv); hatch wheel of `app/`; pytest `pythonpath = ["."]` |
+| `uv.lock` | Exact resolved versions for `uv sync`. Do not hand-edit |
+| `.env.example` | Template: `VLLM_BASE_URL`, `VLLM_API_KEY=not-a-real-key`, `MODEL_NAME`, `MODEL_REVISION`, docker image/digest, `VLLM_BATCH_INVARIANT`, `DATABASE_URL`, `AP_ACCOUNT=2000`, `PROMPT_VERSION`, `SCHEMA_VERSION`, `POLICY_PATH`, `TEMPERATURE=0`, `TOP_P=1`, `SEED=42`. Copy to `.env` |
+| `.gitignore` | Ignores `.venv`, bytecode, `.env`, `*.db`, caches, `*.log`, `.python-version`, Streamlit secrets. Ignores `reports/*.json` **except** the allow-listed GPU artifacts listed in §8.8 |
 
-### `app/` — the product
+---
 
-| File | Purpose |
+### 8.2 `app/` — runtime code
+
+| File | What it does |
 | --- | --- |
-| `app/__init__.py` | Empty package marker |
-| `app/schemas.py` | All Pydantic models and the exception-code list |
-| `app/settings.py` | Loads `.env`: vLLM URL, model pins, DB URL, AP account, prompt/policy paths, sampling |
-| `app/pdf_text.py` | pypdf text-layer extraction; OCR flag |
-| `app/canonicalize.py` | Stable text normalization + SHA-256 helpers |
-| `app/llm_client.py` | `LLMClient` ABC; `MockLLMClient`; `VLLMLLMClient`; JSON schema; fallback regex parser for synthetic text |
-| `app/validation.py` | Required fields, evidence substring check, Decimal arithmetic, normalize amounts |
-| `app/matching.py` | Three-way match vs PO, receipts, vendor, policy |
-| `app/journal.py` | Aggregate invoice lines onto PO GL accounts; credit AP `2000` |
-| `app/idempotency.py` | SHA-256 of PDF hash + PO + receipts + prompt + schema + policy + model revision |
-| `app/audit.py` | In-memory (and optional DB) event log: STATE, OCR_REQUIRED, COMPLETE, … |
-| `app/pipeline.py` | State machine that calls everything above; `run_case_dir` for fixtures |
-| `app/database.py` | SQLAlchemy tables: vendors, POs, receipts, drafts, processed docs, duplicates, audit |
-| `app/ui.py` | Streamlit demo: pick a fixture or upload a PDF, run mock pipeline |
-| `app/adapters/base.py` | `ERPAdapter` protocol (what a real NetSuite adapter would implement) |
-| `app/adapters/local_erp.py` | SQLite implementation of that protocol |
+| `app/__init__.py` | Empty. Makes `app` a Python package |
+| `app/adapters/__init__.py` | Empty. Makes `app.adapters` a package |
+| `app/adapters/base.py` | Abstract `ERPAdapter`: `get_vendor`, `get_purchase_order`, `get_receipts`, `check_duplicate_invoice`, `create_draft_bill`, `attach_source_document`, `get_previous_result`, `record_processed`. A real NetSuite/QBO adapter would implement this |
+| `app/adapters/local_erp.py` | SQLite `LocalERPAdapter`. Ordered SELECTs for determinism. Draft ids are `DRAFT-` + first 12 of the idempotency key. `attach_source_document` is a no-op (does not store PDF bytes). Extra helpers: `get_vendor_by_name`, `seed_duplicate` |
+| `app/schemas.py` | Pydantic v2 models (`extra="forbid"`): `ExtractedInvoice`, line items, evidence, PO/receipt/vendor, policy, journal, `WorkflowResult`, `AuditManifest`, enums `WorkflowDecision` / `PipelineState`, list `EXCEPTION_CODES` |
+| `app/settings.py` | `load_dotenv()` then `Settings` from env. `get_settings()` is lru-cached. Resolves `prompt_path` to `prompts/{PROMPT_VERSION}.txt` |
+| `app/pdf_text.py` | `extract_pdf_text`: `pypdf.PdfReader`, `extract_text(extraction_mode="plain")` per page. `ocr_required` if no page has text |
+| `app/canonicalize.py` | `canonicalize_page_text` (NFC, newlines, collapse spaces), `join_pages` with `--- PAGE n ---`, SHA-256 of bytes/text, `CanonicalDocument` |
+| `app/llm_client.py` | `INVOICE_JSON_SCHEMA` for vLLM structured output. `MockLLMClient` returns fixture `expected.json` extraction, else `parse_synthetic_invoice_text`. `VLLMLLMClient` calls OpenAI-compatible vLLM with the prompt + json_schema, thinking off |
+| `app/validation.py` | Required fields, ambiguity → exceptions, evidence quotes must be substrings of canonical text, Decimal line/total math, normalize qty/money strings, `decision_from_exceptions` |
+| `app/matching.py` | `match_invoice`: duplicate, PO exists/OPEN, vendor active + name/id vs PO, currency, nonzero tax, per-SKU price tolerance, qty vs PO, qty vs receipts |
+| `app/journal.py` | `propose_journal`: map invoice SKUs to PO `gl_account`, debit those accounts (freight onto first GL), credit `AP_ACCOUNT`. Unbalanced → `UNBALANCED_JOURNAL` |
+| `app/idempotency.py` | `compute_idempotency_key` = SHA-256 of `pdf\|po\|receipts\|prompt\|schema\|policy\|model_revision`. Plus `hash_text` / `hash_bytes` |
+| `app/audit.py` | `AuditLog.emit` appends `{event_type, case_id, detail}` in memory; optionally writes `AuditEventRow` if a session factory was passed |
+| `app/pipeline.py` | `Pipeline.run` is the state machine (§2). `load_policy` reads YAML. `build_manifest` hashes PDF/text/prompt/schema/policy. `run_case_dir` loads a fixture folder and **preseeds** extraction from `expected.json` when using the mock client |
+| `app/database.py` | SQLAlchemy models: `VendorRow`, `PurchaseOrderRow`, `POLineRow`, `ReceiptRow`, `ReceiptLineRow`, `WorkflowRunRow`, `ExtractedInvoiceRow`, `ControlCheckRow`, `JournalDraftRow`, `ProcessedDocumentRow` (unique idempotency key), `AuditEventRow`, `DuplicateSeedRow`. `init_db` / `reset_db`. SQLite gets `PRAGMA foreign_keys=ON` |
+| `app/ui.py` | Streamlit app (`make run-ui`). Sidebar: env + evaluate/create_draft. Tab 1: pick fixture, show PO/receipt JSON, run. Tab 2: upload PDF. Result: decision, exceptions, extracted fields, evidence, match checks, journal, audit hashes. Uses `MockLLMClient` only |
 
-### `config/` and `prompts/`
+---
 
-| File | Purpose |
+### 8.3 `config/` and `prompts/`
+
+| File | What it does |
 | --- | --- |
-| `config/policy.yaml` | Match tolerances (see §4) |
-| `prompts/invoice_extraction_v1.txt` | System prompt for Qwen: extract JSON, do not invent, evidence must be exact quotes |
+| `config/policy.yaml` | `currency: USD`; unit-price tolerance `0.005` (0.5%) with floor `$0.01`; qty tolerance `0`; invoice-total tolerance `$0.01`; `nonzero_tax_requires_review: true`; missing/ambiguous fields → `HUMAN_REVIEW` |
+| `prompts/invoice_extraction_v1.txt` | System prompt: extract JSON only, do not invent, null + `ambiguities` if unsure, evidence quotes exact, amounts two decimal places. Hashed into the idempotency key |
 
-Prompt path is `prompts/{PROMPT_VERSION}.txt`. Changing the prompt changes the prompt hash and therefore the idempotency key.
+---
 
-### `scripts/` — generate, seed, evaluate
+### 8.4 `scripts/`
 
-| File | Purpose |
+| File | What it does |
 | --- | --- |
-| `scripts/generate_cases.py` | Build 50 PDFs + JSON + `dataset_manifest.json` |
-| `scripts/initialize_database.py` | Load vendors, every `po.json` / `receipt.json`, duplicate seeds into SQLite |
-| `scripts/run_case.py` | Run one fixture (`--case case_001`) through the mock pipeline; print JSON |
-| `scripts/evaluate_accuracy.py` | Score decisions vs `expected.json`. Default mock (preseeded). `--live` calls vLLM and does **not** preseed |
-| `scripts/evaluate_determinism.py` | Local: PDF/canonical hash stability. `--live`: repeat extracts at concurrency 1/8/32 |
-| `scripts/capture_environment.py` | Write `reports/environment.json` (Python, packages, git commit, pins) |
-| `scripts/build_report.py` | Assemble `reports/final_report.md` from accuracy/determinism/env JSON |
+| `scripts/generate_cases.py` | Seed `20260812`. Builds 50 cases: 5 vendors, 8 SKUs, 5 PDF layouts (classic/boxed/two-column/modern/compact), 9 scenarios. Writes PDF + `po.json` + `receipt.json` + `expected.json`. Re-extracts each PDF to bind evidence page numbers. Writes `tests/fixtures/dataset_manifest.json` |
+| `scripts/initialize_database.py` | `--reset` drops tables. Inserts V001–V005, then every case’s PO, PO lines, receipt, receipt lines. If `expected.json` has `already_processed`, inserts `DuplicateSeedRow` |
+| `scripts/run_case.py` | CLI: `--case case_001 --mode evaluate\|create_draft`. Finds the fixture, mock LLM, prints `WorkflowResult` JSON |
+| `scripts/evaluate_accuracy.py` | For each case, run pipeline, compare decision + exception codes to `expected.json`. Default: mock + preseed. `--live`: `VLLMLLMClient`, no preseed. Writes `reports/accuracy_mock.json` or `reports/accuracy_gpu.json` |
+| `scripts/evaluate_determinism.py` | Always: local PDF/canonical hash check. `--live`: repeat extracts at concurrency 1/8/32; hash `ExtractedInvoice` JSON with volatile keys stripped. Writes `reports/determinism.json` and optional `determinism_records_*.jsonl` |
+| `scripts/capture_environment.py` | Writes `reports/environment.json`: UTC time, Python, platform, package versions, git commit/dirty, model pins |
+| `scripts/build_report.py` | Reads accuracy/determinism/env/billing JSON and writes `reports/final_report.md` |
 
-### `tests/`
+---
 
-| File | Purpose |
+### 8.5 `tests/` (code)
+
+| File | What it does |
 | --- | --- |
-| `tests/test_pipeline.py` | Exact match drafts; price-over reviews; duplicates; idempotent re-run; all 50 fixture decisions |
-| `tests/test_matching.py` | Unit tests for price/qty/tax/PO rules without PDFs |
-| `tests/test_validation.py` | Required fields, evidence, math, ambiguity |
-| `tests/test_journal.py` | Balanced journal shape |
-| `tests/test_idempotency.py` | Same inputs → same key; different PDF hash → different key |
-| `tests/test_canonicalization.py` | Whitespace / hash stability |
-| `tests/test_pdf_reproducibility.py` | Regenerating a PDF is byte-identical; no `LINE|` machine block; evidence quotes exist in canonical text |
-| `tests/fixtures/development/case_*/` | 30 labeled training/dev cases |
-| `tests/fixtures/holdout/case_*/` | 20 holdout cases |
-| `tests/fixtures/dataset_manifest.json` | File hashes for the generated dataset |
+| `tests/test_pipeline.py` | `test_pipeline_exact_match_ready` (case_001), `test_pipeline_price_over_review` (case_021), `test_pipeline_duplicate` (case_031), `test_idempotent_create_draft`, then loops all development and all holdout cases vs `expected.json` |
+| `tests/test_matching.py` | No PDFs. `test_exact_ready`, `test_price_within_tolerance`, `test_price_over`, `test_qty_exceeds_receipt`, `test_duplicate`, `test_po_missing`, `test_nonzero_tax`, `test_exceptions_sorted` |
+| `tests/test_validation.py` | `test_valid_invoice`, `test_missing_required`, `test_evidence_must_match`, `test_math_error`, `test_ambiguous` |
+| `tests/test_journal.py` | `test_balanced_journal` (debits sorted, AP credit), `test_unbalanced_triggers_review` |
+| `tests/test_idempotency.py` | `test_key_stable`, `test_key_changes_with_inputs` |
+| `tests/test_canonicalization.py` | NFC/newlines, whitespace policy, page separators, hash stability |
+| `tests/test_pdf_reproducibility.py` | Same case PDF generated twice → same SHA-256; all 5 layouts invariant; generated text has no `LINE|` / `Vendor:` machine block and includes distractors; every fixture evidence quote appears in canonical text |
 
-### `deployment/`
+---
 
-| File | Purpose |
+### 8.6 Fixture file types (four files per case)
+
+Every `tests/fixtures/{development,holdout}/case_NNN/` directory contains **exactly these four files**:
+
+| File | What it is |
 | --- | --- |
-| `deployment/start_vllm.sh` | `docker run` the **pinned** vLLM image + Qwen3-8B + batch invariance + xgrammar |
-| `deployment/runpod-template.md` | How to rent an H100 with those same pins |
-| `deployment/Dockerfile` | CPU app image (not the GPU server) |
-| `deployment/docker-compose.yml` | App service; vLLM service is commented (needs a GPU) |
+| `invoice.pdf` | ReportLab invoice, byte-reproducible (`invariant=1`). Text layer only. Layout rotates by case index (see table below) |
+| `po.json` | Purchase order seed: `po_id`, vendor, currency, `status: OPEN`, lines (`sku`, qty, unit_price, `gl_account`). Loaded into SQLite by `initialize_database.py` |
+| `receipt.json` | Goods receipt seed: `receipt_id`, `po_id`, lines (`sku`, `quantity_received`). Loaded into SQLite |
+| `expected.json` | Ground truth: `case_id`, `scenario`, `decision`, `exception_codes`, `layout`, `po_id`, `extraction` (perfect `ExtractedInvoice` including evidence quotes), optional `already_processed` / `duplicate_of` for duplicate cases |
+
+Plus:
+
+| File | What it is |
+| --- | --- |
+| `tests/fixtures/dataset_manifest.json` | `seed`, `case_count: 50`, split lists, scenario counts, SHA-256 of every generated PDF/JSON |
+
+#### All 50 cases
+
+Layout rotates `classic → boxed → two_column → modern → compact`. `modern` is the two-page layout.
+
+**Development (`tests/fixtures/development/`)** — iterate here.
+
+| Dir | Scenario | Decision | Layout | Exceptions | ERP PO |
+| --- | --- | --- | --- | --- | --- |
+| `case_001/` | exact_match | READY_FOR_DRAFT | classic | — | PO-1001 |
+| `case_002/` | exact_match | READY_FOR_DRAFT | boxed | — | PO-1002 |
+| `case_003/` | exact_match | READY_FOR_DRAFT | two_column | — | PO-1003 |
+| `case_004/` | exact_match | READY_FOR_DRAFT | modern | — | PO-1004 |
+| `case_005/` | exact_match | READY_FOR_DRAFT | compact | — | PO-1005 |
+| `case_006/` | exact_match | READY_FOR_DRAFT | classic | — | PO-1006 |
+| `case_007/` | exact_match | READY_FOR_DRAFT | boxed | — | PO-1007 |
+| `case_008/` | exact_match | READY_FOR_DRAFT | two_column | — | PO-1008 |
+| `case_009/` | exact_match | READY_FOR_DRAFT | modern | — | PO-1009 |
+| `case_010/` | exact_match | READY_FOR_DRAFT | compact | — | PO-1010 |
+| `case_011/` | exact_match | READY_FOR_DRAFT | classic | — | PO-1011 |
+| `case_012/` | exact_match | READY_FOR_DRAFT | boxed | — | PO-1012 |
+| `case_013/` | exact_match | READY_FOR_DRAFT | two_column | — | PO-1013 |
+| `case_014/` | exact_match | READY_FOR_DRAFT | modern | — | PO-1014 |
+| `case_015/` | exact_match | READY_FOR_DRAFT | compact | — | PO-1015 |
+| `case_016/` | price_within | READY_FOR_DRAFT | classic | — | PO-1016 |
+| `case_017/` | price_within | READY_FOR_DRAFT | boxed | — | PO-1017 |
+| `case_018/` | price_within | READY_FOR_DRAFT | two_column | — | PO-1018 |
+| `case_019/` | price_within | READY_FOR_DRAFT | modern | — | PO-1019 |
+| `case_020/` | price_within | READY_FOR_DRAFT | compact | — | PO-1020 |
+| `case_021/` | price_over | HUMAN_REVIEW | classic | PRICE_VARIANCE | PO-1021 |
+| `case_022/` | price_over | HUMAN_REVIEW | boxed | PRICE_VARIANCE | PO-1022 |
+| `case_023/` | price_over | HUMAN_REVIEW | two_column | PRICE_VARIANCE | PO-1023 |
+| `case_024/` | price_over | HUMAN_REVIEW | modern | PRICE_VARIANCE | PO-1024 |
+| `case_025/` | price_over | HUMAN_REVIEW | compact | PRICE_VARIANCE | PO-1025 |
+| `case_026/` | qty_exceeds_receipt | HUMAN_REVIEW | classic | QUANTITY_EXCEEDS_RECEIPT | PO-1026 |
+| `case_027/` | qty_exceeds_receipt | HUMAN_REVIEW | boxed | QUANTITY_EXCEEDS_RECEIPT | PO-1027 |
+| `case_028/` | qty_exceeds_receipt | HUMAN_REVIEW | two_column | QUANTITY_EXCEEDS_RECEIPT | PO-1028 |
+| `case_029/` | qty_exceeds_receipt | HUMAN_REVIEW | modern | QUANTITY_EXCEEDS_RECEIPT | PO-1029 |
+| `case_030/` | qty_exceeds_receipt | HUMAN_REVIEW | compact | QUANTITY_EXCEEDS_RECEIPT | PO-1030 |
+
+**Holdout (`tests/fixtures/holdout/`)** — score last; do not hand-edit `expected.json`.
+
+| Dir | Scenario | Decision | Layout | Exceptions | ERP PO |
+| --- | --- | --- | --- | --- | --- |
+| `case_031/` | duplicate | HUMAN_REVIEW | classic | DUPLICATE_INVOICE | PO-1031 |
+| `case_032/` | duplicate | HUMAN_REVIEW | boxed | DUPLICATE_INVOICE | PO-1032 |
+| `case_033/` | duplicate | HUMAN_REVIEW | two_column | DUPLICATE_INVOICE | PO-1033 |
+| `case_034/` | duplicate | HUMAN_REVIEW | modern | DUPLICATE_INVOICE | PO-1034 |
+| `case_035/` | duplicate | HUMAN_REVIEW | compact | DUPLICATE_INVOICE | PO-1035 |
+| `case_036/` | missing_po | HUMAN_REVIEW | classic | PO_NOT_FOUND | PO-1036 (PDF cites `PO-MISSING-36`) |
+| `case_037/` | missing_po | HUMAN_REVIEW | boxed | PO_NOT_FOUND | PO-1037 (PDF cites `PO-MISSING-37`) |
+| `case_038/` | missing_po | HUMAN_REVIEW | two_column | PO_NOT_FOUND | PO-1038 (PDF cites `PO-MISSING-38`) |
+| `case_039/` | missing_po | HUMAN_REVIEW | modern | PO_NOT_FOUND | PO-1039 (PDF cites `PO-MISSING-39`) |
+| `case_040/` | missing_po | HUMAN_REVIEW | compact | PO_NOT_FOUND | PO-1040 (PDF cites `PO-MISSING-40`) |
+| `case_041/` | math_error | HUMAN_REVIEW | classic | INVOICE_MATH_ERROR | PO-1041 |
+| `case_042/` | math_error | HUMAN_REVIEW | boxed | INVOICE_MATH_ERROR | PO-1042 |
+| `case_043/` | math_error | HUMAN_REVIEW | two_column | INVOICE_MATH_ERROR | PO-1043 |
+| `case_044/` | math_error | HUMAN_REVIEW | modern | INVOICE_MATH_ERROR | PO-1044 |
+| `case_045/` | vendor_mismatch | HUMAN_REVIEW | compact | VENDOR_MISMATCH | PO-1045 |
+| `case_046/` | vendor_mismatch | HUMAN_REVIEW | classic | VENDOR_MISMATCH | PO-1046 |
+| `case_047/` | vendor_mismatch | HUMAN_REVIEW | boxed | VENDOR_MISMATCH | PO-1047 |
+| `case_048/` | missing_ambiguous | HUMAN_REVIEW | two_column | MISSING_INVOICE_NUMBER, MISSING_REQUIRED_FIELD | PO-1048 |
+| `case_049/` | missing_ambiguous | HUMAN_REVIEW | modern | AMBIGUOUS_FIELD (letterhead Other Corp) | PO-1049 |
+| `case_050/` | missing_ambiguous | HUMAN_REVIEW | compact | MISSING_INVOICE_NUMBER, MISSING_REQUIRED_FIELD | PO-1050 |
+
+That is 50 × 4 = 200 fixture files, plus `dataset_manifest.json`.
+
+---
+
+### 8.7 `deployment/`
+
+| File | What it does |
+| --- | --- |
+| `deployment/start_vllm.sh` | Pulls pinned image digest, `docker run --gpus all` Qwen3-8B at the pinned revision, `VLLM_BATCH_INVARIANT=1`, thinking disabled, xgrammar backend, port 8000 |
+| `deployment/runpod-template.md` | Same pins for a RunPod H100; client `chat.completions` shape; do not leave the pod idle |
+| `deployment/Dockerfile` | CPU image: `python:3.12-slim`, `uv sync --frozen`, copies `app`, `config`, `prompts`, `scripts`. Default CMD is `run_case.py --help`. Not the GPU server |
+| `deployment/docker-compose.yml` | Service `accounting-agent` builds that Dockerfile, mounts fixtures read-only and `reports/`. vLLM service is commented out |
 
 Do not silently change model revision or image digest. See `docs/technical_decisions.md`.
 
-### `docs/`
+---
 
-| File | Purpose |
+### 8.8 `docs/`
+
+| File | What it does |
 | --- | --- |
-| `docs/how_it_works.md` | This file |
-| `docs/technical_decisions.md` | Why Python 3.12, why temp=0 is not enough, GPU pins, architecture split |
-| `docs/SECRET_SWEEP.md` | Checklist so `.env` / API keys never land in git or reports |
+| `docs/how_it_works.md` | This file: system map + every-file catalog |
+| `docs/technical_decisions.md` | Why 3.12 / uv / Decimal / two-way decision space; GPU pins and sources; why temp=0 is not enough; architecture split; what the 2026-08-13 GPU run did and did not prove |
+| `docs/SECRET_SWEEP.md` | Pre-publish checklist: never commit `.env`, tokens, `*.log`, `*.db`, Streamlit secrets; `rg` scan commands; which reports are safe |
 
-### `reports/`
+---
 
-Artifacts from the 2026-08-13 GPU run (easy labeled PDFs) plus local mock eval. Regenerated by `make report` / eval scripts.
+### 8.9 `reports/`
 
-| File | Purpose |
+These are **measured artifacts**, mostly from the 2026-08-13 GPU run on the **old labeled invoices**. Re-running eval scripts overwrites some of them. `.gitignore` keeps most new `reports/*.json` out of git except the allow-listed ones.
+
+| File | What it does |
 | --- | --- |
-| `reports/final_report.md` | Human writeup of measured results |
-| `reports/results.csv` | Per-case accuracy rows |
-| `reports/accuracy_gpu.json` / `accuracy_mock.json` | Structured accuracy |
-| `reports/determinism.json` and `determinism_*.json(l)` | Hash-stability matrices |
-| `reports/environment.json` | Pins, packages, git commit |
-| `reports/gpu_runtime.json` / `billing.json` | Runtime and spend |
-| `reports/runpod_quote.md` | Cost notes |
-| `reports/failures/README.md` | Placeholder for live-eval failures |
+| `reports/final_report.md` | Human writeup: pins, 50/50 accuracy, determinism, spend, caveats. Produced by `scripts/build_report.py` |
+| `reports/results.csv` | One row per case for the live GPU accuracy run: split, scenario, expected vs got decision/codes, pass, llm=`VLLMLLMClient` |
+| `reports/accuracy_gpu.json` | Structured live-Qwen accuracy (dev + holdout). `--live` eval writes this |
+| `reports/accuracy_mock.json` | Same shape for `MockLLMClient` (preseeded). Default `evaluate_accuracy.py` writes this |
+| `reports/determinism.json` | Local PDF/canonical stability plus GPU hash matrices (conc 1/8/32) and cross-machine comparison (PCIe US-KS-2 vs SXM AP-IN-1) |
+| `reports/determinism_r0_pcie_usks2.json` | First-machine (PCIe) determinism snapshot used as the cross-machine baseline |
+| `reports/determinism_records_r0.jsonl` | Per-extract records from restart_id `r0` (PCIe). One JSON object per line |
+| `reports/determinism_records_r1.jsonl` | Per-extract records from restart_id `r1` (SXM) |
+| `reports/environment.json` | Python/platform/packages/git commit + GPU pins + spend/hours copied in after the GPU run |
+| `reports/gpu_runtime.json` | Which determinism cells ran, pod ids, datacenter, skipped cells (negative control, pod restart, full 9000) |
+| `reports/billing.json` | RunPod billing: ~$38.34, ~13.0 GPU hours, pod ids `p7tdoz42gtf92g` and `n56so1rkgs0ckh` |
+| `reports/runpod_quote.md` | Pre-rental quote notes (written when spend was still $0). Historical planning doc |
+| `reports/failures/README.md` | Says there were no accuracy failure artifacts in the last GPU eval. Failed `--live` cases would land in this folder |
+
+`reports/.gitkeep` is mentioned in `.gitignore` but is not a tracked file. Extra JSON from a new local `make report` stays untracked unless you force-add it.
 
 ---
 

@@ -1,0 +1,100 @@
+{
+  "case_id": "case_002",
+  "error": null,
+  "expected_codes": [],
+  "expected_decision": "READY_FOR_DRAFT",
+  "extraction": {
+    "ambiguities": [
+      {
+        "candidates": [
+          "USD"
+        ],
+        "field": "currency",
+        "reason": "Not explicitly stated, but USD is implied by the context."
+      }
+    ],
+    "currency": "USD",
+    "evidence": {
+      "freight": {
+        "page": 1,
+        "quote": "Freight 0.00"
+      },
+      "invoice_date": {
+        "page": 1,
+        "quote": "Date 2026-02-11"
+      },
+      "invoice_number": {
+        "page": 1,
+        "quote": "Document INV-2026002"
+      },
+      "invoice_total": {
+        "page": 1,
+        "quote": "Invoice total 250.00"
+      },
+      "line_items": {
+        "page": 1,
+        "quote": "SKU Description Amount Qty Unit\nSKU-1007 Label Stock Pack 184.00 10 ea 18.40\nSKU-1008 Cleaning Solvent Gal 66.00 3 ea 22.00"
+      },
+      "payment_terms": {
+        "page": 1,
+        "quote": "Terms Net 30 from invoice date"
+      },
+      "po_number": {
+        "page": 1,
+        "quote": "Our order PO-1002"
+      },
+      "subtotal": {
+        "page": 1,
+        "quote": "Goods 250.00"
+      },
+      "tax": {
+        "page": 1,
+        "quote": "Tax 0.00"
+      },
+      "vendor_id": {
+        "page": 1,
+        "quote": "Acct V002"
+      },
+      "vendor_name": {
+        "page": 1,
+        "quote": "Issuer: Cedar Ridge Industrial Parts"
+      }
+    },
+    "freight": "0.00",
+    "invoice_date": "2026-02-11",
+    "invoice_number": "INV-2026002",
+    "invoice_total": "250.00",
+    "line_items": [
+      {
+        "description": "Label Stock Pack",
+        "evidence": null,
+        "line_number": 1,
+        "line_total": "184.00",
+        "quantity": "10",
+        "sku": "SKU-1007",
+        "unit_price": "18.40"
+      },
+      {
+        "description": "Cleaning Solvent Gal",
+        "evidence": null,
+        "line_number": 2,
+        "line_total": "66.00",
+        "quantity": "3",
+        "sku": "SKU-1008",
+        "unit_price": "22.00"
+      }
+    ],
+    "payment_terms": "Net 30 from invoice date",
+    "po_number": "PO-1002",
+    "subtotal": "250.00",
+    "tax": "0.00",
+    "vendor_id": "V002",
+    "vendor_name": "Cedar Ridge Industrial Parts"
+  },
+  "got_codes": [
+    "AMBIGUOUS_FIELD"
+  ],
+  "got_decision": "HUMAN_REVIEW",
+  "pass": false,
+  "scenario": "exact_match"
+}
