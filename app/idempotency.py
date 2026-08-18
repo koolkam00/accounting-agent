@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import hashlib
+from app.hashing import sha256_text
 
 
 SEPARATOR = "|"
@@ -31,18 +31,9 @@ def compute_idempotency_key(
         policy_hash,
         model_revision,
     ]
-    material = SEPARATOR.join(parts)
-    return hashlib.sha256(material.encode("utf-8")).hexdigest()
-
-
-def hash_bytes(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()
-
-
-def hash_text(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+    return sha256_text(SEPARATOR.join(parts))
 
 
 def receipt_snapshot_hash(receipt_ids_and_payload: str) -> str:
     """Hash a deterministic snapshot string of receipts."""
-    return hash_text(receipt_ids_and_payload)
+    return sha256_text(receipt_ids_and_payload)

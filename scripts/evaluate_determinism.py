@@ -17,13 +17,9 @@ Default live matrix is REDUCED (documented) unless --full is passed.
 from __future__ import annotations
 
 import argparse
-import os
-import hashlib
-import json
 import random
 import sys
 import time
-import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
@@ -32,9 +28,19 @@ from typing import Any
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from app.canonicalize import canonicalize_document, sha256_bytes
 from app.determinism import aggregate_field_disagreements, classify_case_records
-from app.pdf_text import extract_pdf_text
+from app.evaluation import field_exact_match, invariance_label
+from app.fixtures import (
+    DEVELOPMENT_ROOT,
+    all_case_dirs,
+    canonical_text_for_case,
+    case_dirs,
+    gold_extraction,
+    load_expected,
+    load_pdf_bytes,
+)
+from app.hashing import sha256_bytes, sha256_text
+from app.jsonio import dumps_canonical, read_jsonl, write_json, write_jsonl
 from app.schemas import ExtractedInvoice
 
 VOLATILE_KEYS = {
@@ -55,14 +61,12 @@ VOLATILE_KEYS = {
 
 def local_pdf_determinism() -> dict:
     results = []
-    root = REPO / "tests" / "fixtures" / "development"
-    for case_dir in sorted(root.glob("case_*"))[:5]:
-        pdf = (case_dir / "invoice.pdf").read_bytes()
+    for case_dir in case_dirs(DEVELOPMENT_ROOT)[:5]:
+        pdf = load_pdf_bytes(case_dir)
         h1 = sha256_bytes(pdf)
-        h2 = sha256_bytes((case_dir / "invoice.pdf").read_bytes())
-        pages = extract_pdf_text(pdf).pages
-        c1 = canonicalize_document(pdf, pages).canonical_hash
-        c2 = canonicalize_document(pdf, pages).canonical_hash
+        h2 = sha256_bytes(load_pdf_bytes(case_dir))
+        c1 = sha256_text(canonical_text_for_case(case_dir))
+        c2 = sha256_text(canonical_text_for_case(case_dir))
         results.append(
             {
                 "case_id": case_dir.name,
@@ -93,20 +97,7 @@ def strip_volatile(obj: Any) -> Any:
 
 
 def extraction_hash(data: dict) -> str:
-    payload = json.dumps(strip_volatile(data), sort_keys=True, separators=(",", ":"), ensure_ascii=True)
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
-
-def list_cases(difficulty: str | None = None) -> list[Path]:
-    cases: list[Path] = []
-    if difficulty:
-        root = REPO / "tests" / "fixtures" / "difficulty" / difficulty
-        cases.extend(sorted(p for p in root.iterdir() if p.is_dir() and p.name.startswith("case_")))
-        return cases
-    for split in ("development", "holdout"):
-        root = REPO / "tests" / "fixtures" / split
-        cases.extend(sorted(p for p in root.iterdir() if p.is_dir() and p.name.startswith("case_")))
-    return cases
+    return sha256_text(dumps_canonical(strip_volatile(data)))
 
 
 def pairwise_disagreement_rate(records: list[dict]) -> float:
@@ -124,18 +115,6 @@ def pairwise_disagreement_rate(records: list[dict]) -> float:
                 if hashes[i] != hashes[j]:
                     disagree += 1
     return (disagree / pairs) if pairs else 0.0
-
-
-def invariance_label(negative_control: bool) -> str:
-    if negative_control:
-        return "off"
-    return "on" if os.getenv("VLLM_BATCH_INVARIANT", "1") == "1" else "off"
-
-
-def load_canonical(case_dir: Path) -> str:
-    pdf = (case_dir / "invoice.pdf").read_bytes()
-    pages = extract_pdf_text(pdf).pages
-    return canonicalize_document(pdf, pages).canonical_text
 
 
 def gpu_matrix_not_executed() -> list[dict]:
@@ -194,7 +173,7 @@ def one_extract(
     *,
     erp=None,
     pdf_bytes: bytes | None = None,
-    gold_extraction: dict | None = None,
+    gold: dict | None = None,
 ) -> dict:
     t0 = time.perf_counter()
     try:
@@ -230,8 +209,8 @@ def one_extract(
             rec["decision"] = None
             rec["exception_codes"] = []
             rec["control_checks"] = []
-        if gold_extraction:
-            rec["vs_gold_exact_fields"] = _field_exact_match_like_accuracy(dump, gold_extraction)
+        if gold:
+            rec["vs_gold_exact_fields"] = field_exact_match(dump, gold)
         return rec
     except Exception as exc:  # noqa: BLE001
         return {
@@ -265,7 +244,7 @@ def run_jobs(
                 temperature=temperature,
                 erp=erp,
                 pdf_bytes=pdf_by_case.get(cid) if pdf_by_case else None,
-                gold_extraction=gold_by_case.get(cid) if gold_by_case else None,
+                gold=gold_by_case.get(cid) if gold_by_case else None,
             )
             out[i] = {**job, **r, "concurrency": concurrency}
             if (i + 1) % 10 == 0 or i == 0:
@@ -282,7 +261,7 @@ def run_jobs(
             temperature=temperature,
             erp=erp,
             pdf_bytes=pdf_by_case.get(cid) if pdf_by_case else None,
-            gold_extraction=gold_by_case.get(cid) if gold_by_case else None,
+            gold=gold_by_case.get(cid) if gold_by_case else None,
         )
         return idx, {**job, **r, "concurrency": concurrency}
 
@@ -356,21 +335,21 @@ def live_matrix(args: argparse.Namespace) -> dict:
     from app.settings import get_settings
     from app.database import init_db
     from app.adapters.local_erp import LocalERPAdapter
+    from app.erp_seed import seed_fixture_cases
 
     get_settings.cache_clear()
     settings = get_settings()
     temp = args.temperature if args.temperature is not None else settings.temperature
     inv = invariance_label(args.negative_control)
     llm = VLLMLLMClient(temperature=temp)
-    all_cases = list_cases(args.difficulty)
+    all_cases = all_case_dirs(args.difficulty)
     if args.cases < len(all_cases):
         all_cases = all_cases[: args.cases]
-    canonical_by_case = {p.name: load_canonical(p) for p in all_cases}
-    pdf_by_case = {p.name: (p / "invoice.pdf").read_bytes() for p in all_cases}
+    canonical_by_case = {p.name: canonical_text_for_case(p) for p in all_cases}
+    pdf_by_case = {p.name: load_pdf_bytes(p) for p in all_cases}
     gold_by_case: dict[str, dict] = {}
     for p in all_cases:
-        exp = json.loads((p / "expected.json").read_text(encoding="utf-8"))
-        gold = exp.get("extraction") or exp.get("extracted_invoice")
+        gold = gold_extraction(load_expected(p))
         if gold:
             gold_by_case[p.name] = gold
     print(
@@ -387,7 +366,7 @@ def live_matrix(args: argparse.Namespace) -> dict:
     db_path = REPO / "reports" / f"determinism_eval_{args.difficulty or 'all'}.db"
     sf = init_db(f"sqlite:///{db_path}")
     erp = LocalERPAdapter(sf)
-    _load_fixtures_into_local_erp(erp, all_cases)
+    seed_fixture_cases(sf, all_cases)
 
     # 1. same-request repeatability at concurrency 1
     jobs = []
@@ -554,16 +533,15 @@ def live_matrix(args: argparse.Namespace) -> dict:
             }
         )
 
-    records_path = REPO / "reports" / f"determinism_records_{restart_id or 'r0'}.jsonl"
-    with records_path.open("w", encoding="utf-8") as fh:
-        for rec in all_records:
-            slim = {k: v for k, v in rec.items() if k != "canonical"}
-            fh.write(json.dumps(slim, sort_keys=True) + "\n")
+    records_path = write_jsonl(
+        REPO / "reports" / f"determinism_records_{restart_id or 'r0'}.jsonl",
+        [{k: v for k, v in rec.items() if k != "canonical"} for rec in all_records],
+    )
     print(f"wrote {records_path} n={len(all_records)}")
-    enriched_path = REPO / "reports" / f"determinism_records_enriched_{restart_id or 'r0'}.jsonl"
-    with enriched_path.open("w", encoding="utf-8") as fh:
-        for rec in all_records:
-            fh.write(json.dumps(rec, sort_keys=True) + "\n")
+    enriched_path = write_jsonl(
+        REPO / "reports" / f"determinism_records_enriched_{restart_id or 'r0'}.jsonl",
+        all_records,
+    )
     print(f"wrote {enriched_path} n={len(all_records)}")
 
     # Classification and field-level disagreement rollup across all records
@@ -610,122 +588,6 @@ def live_matrix(args: argparse.Namespace) -> dict:
         "model_revision": settings.model_revision,
         "reasoning_effort": settings.reasoning_effort,
     }
-
-
-def _field_exact_match_like_accuracy(got: dict | None, gold: dict | None) -> bool:
-    """Exact field match function aligned with evaluate_accuracy.field_exact_match."""
-    if not got or not gold:
-        return False
-    field_keys = (
-        "vendor_name",
-        "vendor_id",
-        "invoice_number",
-        "invoice_date",
-        "po_number",
-        "currency",
-        "subtotal",
-        "tax",
-        "freight",
-        "invoice_total",
-        "payment_terms",
-    )
-    for k in field_keys:
-        if (got.get(k) or None) != (gold.get(k) or None):
-            return False
-    got_lines = got.get("line_items") or []
-    gold_lines = gold.get("line_items") or []
-    if len(got_lines) != len(gold_lines):
-        return False
-    line_keys = ("line_number", "sku", "description", "quantity", "unit_price", "line_total")
-    for a, b in zip(got_lines, gold_lines):
-        for k in line_keys:
-            if a.get(k) != b.get(k):
-                return False
-    return True
-
-
-def _load_fixtures_into_local_erp(erp, case_dirs: list[Path]) -> None:
-    """Populate the LocalERPAdapter database with fixture data for provided cases."""
-    from sqlalchemy.orm import Session
-    from app.database import (
-        VendorRow,
-        PurchaseOrderRow,
-        POLineRow,
-        ReceiptRow,
-        ReceiptLineRow,
-        DuplicateSeedRow,
-    )
-
-    vendors = [
-        {"vendor_id": "V001", "vendor_name": "Northwind Office Supply LLC", "active": True, "ap_account": "2000"},
-        {"vendor_id": "V002", "vendor_name": "Cedar Ridge Industrial Parts", "active": True, "ap_account": "2000"},
-        {"vendor_id": "V003", "vendor_name": "Blue Harbor Packaging Co", "active": True, "ap_account": "2000"},
-        {"vendor_id": "V004", "vendor_name": "Summit Ridge Labware Inc", "active": True, "ap_account": "2000"},
-        {"vendor_id": "V005", "vendor_name": "Pinecrest Facilities Goods", "active": True, "ap_account": "2000"},
-        {"vendor_id": "V006", "vendor_name": "Harbor Closed Supply LLC", "active": False, "ap_account": "2000"},
-    ]
-    with erp._sf() as session:  # type: ignore[attr-defined]
-        assert isinstance(session, Session)
-        for v in vendors:
-            if session.get(VendorRow, v["vendor_id"]) is None:
-                session.add(VendorRow(**v))
-        session.commit()
-        for case_dir in case_dirs:
-            po = json.loads((case_dir / "po.json").read_text(encoding="utf-8"))
-            receipt = json.loads((case_dir / "receipt.json").read_text(encoding="utf-8"))
-            expected = json.loads((case_dir / "expected.json").read_text(encoding="utf-8"))
-            if session.get(PurchaseOrderRow, po["po_id"]) is None:
-                session.add(
-                    PurchaseOrderRow(
-                        po_id=po["po_id"],
-                        vendor_id=po["vendor_id"],
-                        vendor_name=po["vendor_name"],
-                        currency=po["currency"],
-                        status=po["status"],
-                    )
-                )
-                session.flush()
-                for ln in sorted(po["lines"], key=lambda x: x["line_number"]):
-                    session.add(
-                        POLineRow(
-                            po_id=po["po_id"],
-                            line_number=ln["line_number"],
-                            sku=ln["sku"],
-                            description=ln["description"],
-                            quantity=ln["quantity"],
-                            unit_price=ln["unit_price"],
-                            gl_account=ln["gl_account"],
-                        )
-                    )
-            if session.get(ReceiptRow, receipt["receipt_id"]) is None:
-                session.add(ReceiptRow(receipt_id=receipt["receipt_id"], po_id=receipt["po_id"]))
-                session.flush()
-                for ln in receipt["lines"]:
-                    session.add(
-                        ReceiptLineRow(
-                            receipt_id=receipt["receipt_id"],
-                            sku=ln["sku"],
-                            quantity_received=ln["quantity_received"],
-                        )
-                    )
-            already = expected.get("already_processed")
-            if already:
-                exists = (
-                    session.query(DuplicateSeedRow)
-                    .filter_by(
-                        vendor_id=already["vendor_id"],
-                        invoice_number=already["invoice_number"],
-                    )
-                    .first()
-                )
-                if exists is None:
-                    session.add(
-                        DuplicateSeedRow(
-                            vendor_id=already["vendor_id"],
-                            invoice_number=already["invoice_number"],
-                        )
-                    )
-        session.commit()
 
 
 def main() -> None:
@@ -780,9 +642,7 @@ def main() -> None:
             path = Path(p)
             if not path.is_absolute():
                 path = REPO / path
-            for line in path.read_text(encoding="utf-8").splitlines():
-                if line.strip():
-                    merged.append(json.loads(line))
+            merged.extend(read_jsonl(path))
         by_case: dict[str, dict[str, set[str]]] = {}
         for rec in merged:
             if rec.get("hash"):
@@ -813,10 +673,8 @@ def main() -> None:
         report["gpu"] = gpu
 
     ok = all(x.get("pass", True) for x in report["local"])
-    path = REPO / "reports" / "determinism.json"
-    path.parent.mkdir(exist_ok=True)
-    path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps({"local_pass": ok, "gpu_executed": report.get("gpu_determinism_matrix_executed")}, indent=2))
+    path = write_json(REPO / "reports" / "determinism.json", report)
+    print(f"local_pass={ok} gpu_executed={report.get('gpu_determinism_matrix_executed')}")
     print(f"wrote {path}")
     for g in report.get("gpu", []):
         print(f"{g.get('status')} [{g.get('dimension')}]: {g.get('name')} unique_global={g.get('unique_hashes_global')} n={g.get('n_requests')}")

@@ -9,6 +9,8 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any, Optional
 
+from app.fixtures import DIFFICULTY_PACKS, SPLITS, gold_extraction
+from app.jsonio import read_json
 from app.schemas import ExtractedInvoice, InvoiceLineItem, EvidenceSpan
 from app.settings import get_settings
 
@@ -159,7 +161,7 @@ class MockLLMClient(LLMClient):
     def load_fixture_expected(self, case_dir: Path) -> None:
         expected_path = case_dir / "expected.json"
         if expected_path.exists():
-            data = json.loads(expected_path.read_text(encoding="utf-8"))
+            data = read_json(expected_path)
             case_id = data.get("case_id") or case_dir.name
             self._expected_by_case[case_id] = data
 
@@ -172,27 +174,25 @@ class MockLLMClient(LLMClient):
     ) -> ExtractedInvoice:
         _ = temperature  # sampling is a live-client concern; mock is deterministic
         if case_id and case_id in self._expected_by_case:
-            exp = self._expected_by_case[case_id]
-            extraction = exp.get("extraction") or exp.get("extracted_invoice")
+            extraction = gold_extraction(self._expected_by_case[case_id])
             if extraction:
                 return ExtractedInvoice.model_validate(extraction)
         # Try locate fixture by scanning known roots
         if case_id and self.fixture_root:
             candidates = [
                 self.fixture_root / split / case_id / "expected.json"
-                for split in ("development", "holdout")
+                for split in SPLITS
             ]
             candidates.extend(
                 self.fixture_root / "difficulty" / diff / case_id / "expected.json"
-                for diff in ("easy", "medium", "hard")
+                for diff in DIFFICULTY_PACKS
             )
             # fixture_root may already be a pack directory
             candidates.append(self.fixture_root / case_id / "expected.json")
             candidates.append(self.fixture_root / "expected.json")
             for path in candidates:
                 if path.exists():
-                    data = json.loads(path.read_text(encoding="utf-8"))
-                    extraction = data.get("extraction") or data.get("extracted_invoice")
+                    extraction = gold_extraction(read_json(path))
                     if extraction:
                         return ExtractedInvoice.model_validate(extraction)
         return parse_synthetic_invoice_text(canonical_text)

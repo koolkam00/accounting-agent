@@ -7,7 +7,6 @@ Does not touch the legacy 50-case seed-20260812 fixtures.
 from __future__ import annotations
 
 import argparse
-import json
 import random
 import sys
 from pathlib import Path
@@ -18,6 +17,8 @@ from reportlab.pdfgen import canvas
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
+from app.hashing import sha256_file  # noqa: E402
+from app.jsonio import write_json  # noqa: E402
 from scripts.generate_cases import (  # noqa: E402
     INACTIVE_VENDOR,
     LAYOUTS,
@@ -25,7 +26,6 @@ from scripts.generate_cases import (  # noqa: E402
     _setup_canvas,
     build_case,
     layout_classic,
-    sha256_file,
     write_case,
 )
 
@@ -347,9 +347,7 @@ def align_evidence_to_pdf(case_dir: Path, expected: dict) -> dict:
         else:
             li.pop("evidence", None)
     expected["extraction"] = ext
-    (case_dir / "expected.json").write_text(
-        json.dumps(expected, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    write_json(case_dir / "expected.json", expected)
     return expected
 
 
@@ -464,8 +462,7 @@ def generate_all(which: str = "all") -> dict:
         manifest["packs"][name] = {k: v for k, v in pack.items() if k != "files"}
         files.update(pack["files"])
     manifest["files"] = files
-    out = DIFF_ROOT / "manifest.json"
-    out.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out = write_json(DIFF_ROOT / "manifest.json", manifest)
     print(f"manifest -> {out}")
     return manifest
 

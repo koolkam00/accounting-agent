@@ -2,10 +2,21 @@
 
 from __future__ import annotations
 
-import hashlib
 import re
 import unicodedata
 from dataclasses import dataclass
+
+from app.hashing import sha256_bytes, sha256_text
+
+__all__ = [
+    "CanonicalDocument",
+    "PAGE_SEP_TEMPLATE",
+    "canonicalize_document",
+    "canonicalize_page_text",
+    "join_pages",
+    "sha256_bytes",
+    "sha256_text",
+]
 
 
 PAGE_SEP_TEMPLATE = "\n\n--- PAGE {n} ---\n\n"
@@ -40,14 +51,6 @@ def join_pages(pages: list[str]) -> str:
             parts.append(PAGE_SEP_TEMPLATE.format(n=i))
         parts.append(canonicalize_page_text(page))
     return "".join(parts) if parts else ""
-
-
-def sha256_bytes(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()
-
-
-def sha256_text(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 @dataclass(frozen=True)

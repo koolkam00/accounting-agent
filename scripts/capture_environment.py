@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import json
 import platform
 import subprocess
 import sys
@@ -11,6 +10,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO))
+
+from app.jsonio import read_json, write_json
 
 
 def _git_commit() -> str | None:
@@ -86,14 +88,12 @@ def main() -> None:
     }
     overlay_path = REPO / "reports" / "gpu_runtime.json"
     if overlay_path.exists():
-        overlay = json.loads(overlay_path.read_text(encoding="utf-8"))
+        overlay = read_json(overlay_path)
         # never copy secrets
         overlay.pop("vllm_api_key", None)
         overlay.pop("api_key", None)
         data.update(overlay)
-    out = REPO / "reports" / "environment.json"
-    out.parent.mkdir(exist_ok=True)
-    out.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out = write_json(REPO / "reports" / "environment.json", data)
     print(f"wrote {out} source_commit={commit}")
 
 

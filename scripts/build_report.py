@@ -4,17 +4,14 @@
 from __future__ import annotations
 
 import csv
-import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO))
 
-
-def _load(path: Path):
-    if not path.exists():
-        return None
-    return json.loads(path.read_text(encoding="utf-8"))
+from app.jsonio import read_json_if_exists, write_json
 
 
 def _redact(s: str) -> str:
@@ -31,12 +28,12 @@ def main() -> None:
     failures_dir = reports / "failures"
     failures_dir.mkdir(exist_ok=True)
 
-    accuracy_gpu = _load(reports / "accuracy_gpu.json")
-    accuracy_mock = _load(reports / "accuracy_mock.json")
+    accuracy_gpu = read_json_if_exists(reports / "accuracy_gpu.json")
+    accuracy_mock = read_json_if_exists(reports / "accuracy_mock.json")
     accuracy = accuracy_gpu or accuracy_mock
-    determinism = _load(reports / "determinism.json")
-    environment = _load(reports / "environment.json")
-    billing = _load(reports / "billing.json")
+    determinism = read_json_if_exists(reports / "determinism.json")
+    environment = read_json_if_exists(reports / "environment.json")
+    billing = read_json_if_exists(reports / "billing.json")
 
     csv_path = reports / "results.csv"
     rows_out = []
@@ -65,9 +62,7 @@ def main() -> None:
                 )
                 if not r.get("pass"):
                     fail_count += 1
-                    fail_path = failures_dir / f"{split}_{r.get('case_id')}.json"
-                    slim = {k: v for k, v in r.items()}
-                    fail_path.write_text(json.dumps(slim, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+                    write_json(failures_dir / f"{split}_{r.get('case_id')}.json", dict(r))
 
     if accuracy and fail_count == 0:
         gpu = bool(accuracy.get("gpu"))
