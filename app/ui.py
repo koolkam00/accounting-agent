@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import platform
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Optional
@@ -73,8 +74,6 @@ def _env_metadata() -> dict[str, Any]:
     settings = get_settings()
     commit = "unknown"
     try:
-        import subprocess
-
         commit = (
             subprocess.check_output(
                 ["git", "rev-parse", "HEAD"],
@@ -84,8 +83,8 @@ def _env_metadata() -> dict[str, Any]:
             .decode()
             .strip()
         )
-    except Exception:
-        pass
+    except (OSError, subprocess.SubprocessError, UnicodeDecodeError) as exc:
+        commit = f"unknown (git rev-parse failed: {type(exc).__name__})"
     return {
         "python": sys.version.split()[0],
         "platform": platform.platform(),

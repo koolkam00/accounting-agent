@@ -160,6 +160,7 @@ def eval_cases(name: str, cases: list[Path], db_url: str, *, live: bool, llm) ->
             got_codes = set()
             result = None
             print(f"  ERROR {case_dir.name}: {error}", flush=True)
+            traceback.print_exc()
 
         ok = result is not None and result.decision.value == expected["decision"]
         exp_codes = set(expected.get("exception_codes") or [])
@@ -214,6 +215,7 @@ def eval_cases(name: str, cases: list[Path], db_url: str, *, live: bool, llm) ->
         "field_exact_match": field_match,
         "field_exact_match_rate": (field_match / total) if total else 0.0,
         "false_ready_for_draft": false_ready,
+        "errors": sum(1 for r in rows if r["error"]),
         "rows": rows,
     }
 
@@ -301,6 +303,12 @@ def main() -> None:
                     row.pop("extraction", None)
     path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"wrote {path}")
+
+    # A run where cases blew up is not a successful run, whatever the accuracy says.
+    errored = sum(out[split]["errors"] for split in splits if out.get(split))
+    if errored:
+        print(f"FAILED: {errored} case(s) raised during evaluation", file=sys.stderr)
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

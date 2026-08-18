@@ -5,9 +5,11 @@ from __future__ import annotations
 import json
 from typing import Any, Optional
 
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.database import AuditEventRow
+from app.errors import AuditPersistenceError
 
 
 class AuditLog:
@@ -41,4 +43,11 @@ class AuditLog:
                         detail_json=json.dumps(payload, sort_keys=True),
                     )
                 )
-                session.commit()
+                try:
+                    session.commit()
+                except SQLAlchemyError as exc:
+                    session.rollback()
+                    raise AuditPersistenceError(
+                        f"Failed to persist audit event {event_type} "
+                        f"for case {case_id!r}: {exc}"
+                    ) from exc

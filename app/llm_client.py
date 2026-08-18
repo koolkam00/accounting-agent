@@ -9,6 +9,9 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any, Optional
 
+from pydantic import ValidationError
+
+from app.errors import LLMExtractionError
 from app.schemas import ExtractedInvoice, InvoiceLineItem, EvidenceSpan
 from app.settings import get_settings
 
@@ -159,7 +162,7 @@ class MockLLMClient(LLMClient):
     def load_fixture_expected(self, case_dir: Path) -> None:
         expected_path = case_dir / "expected.json"
         if expected_path.exists():
-            data = json.loads(expected_path.read_text(encoding="utf-8"))
+            data = _read_fixture_json(expected_path)
             case_id = data.get("case_id") or case_dir.name
             self._expected_by_case[case_id] = data
 
@@ -175,7 +178,7 @@ class MockLLMClient(LLMClient):
             exp = self._expected_by_case[case_id]
             extraction = exp.get("extraction") or exp.get("extracted_invoice")
             if extraction:
-                return ExtractedInvoice.model_validate(extraction)
+                return _validate_extraction(extraction, source=f"registered fixture {case_id}")
         # Try locate fixture by scanning known roots
         if case_id and self.fixture_root:
             candidates = [
@@ -191,10 +194,10 @@ class MockLLMClient(LLMClient):
             candidates.append(self.fixture_root / "expected.json")
             for path in candidates:
                 if path.exists():
-                    data = json.loads(path.read_text(encoding="utf-8"))
+                    data = _read_fixture_json(path)
                     extraction = data.get("extraction") or data.get("extracted_invoice")
                     if extraction:
-                        return ExtractedInvoice.model_validate(extraction)
+                        return _validate_extraction(extraction, source=str(path))
         return parse_synthetic_invoice_text(canonical_text)
 
 
@@ -246,10 +249,49 @@ class VLLMLLMClient(LLMClient):
             kwargs["extra_body"] = extra_body
         resp = self.client.chat.completions.create(**kwargs)
         # Hash / parse the final channel only. Never use reasoning_content / traces.
-        message = resp.choices[0].message
-        content = message.content or "{}"
-        data = json.loads(content)
+        if not resp.choices:
+            raise LLMExtractionError(f"Model {s.model_name} returned no choices")
+        choice = resp.choices[0]
+        finish_reason = choice.finish_reason
+        content = choice.message.content
+        if not content or not content.strip():
+            raise LLMExtractionError(
+                f"Model {s.model_name} returned empty final-channel content "
+                f"(finish_reason={finish_reason!r})"
+            )
+        if finish_reason == "length":
+            raise LLMExtractionError(
+                f"Model {s.model_name} response truncated by max tokens; "
+                f"partial content ({len(content)} chars) is not a complete extraction"
+            )
+        try:
+            data = json.loads(content)
+        except json.JSONDecodeError as exc:
+            raise LLMExtractionError(
+                f"Model {s.model_name} returned non-JSON content "
+                f"(finish_reason={finish_reason!r}): {exc}; content starts with "
+                f"{content[:200]!r}"
+            ) from exc
+        return _validate_extraction(data, source=f"model {s.model_name}")
+
+
+def _read_fixture_json(path: Path) -> dict[str, Any]:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise LLMExtractionError(f"Unreadable fixture {path}: {exc}") from exc
+    if not isinstance(data, dict):
+        raise LLMExtractionError(f"Fixture {path} is a {type(data).__name__}, expected an object")
+    return data
+
+
+def _validate_extraction(data: Any, *, source: str) -> ExtractedInvoice:
+    try:
         return ExtractedInvoice.model_validate(data)
+    except ValidationError as exc:
+        raise LLMExtractionError(
+            f"Extraction from {source} does not match ExtractedInvoice: {exc}"
+        ) from exc
 
 
 def parse_synthetic_invoice_text(text: str) -> ExtractedInvoice:

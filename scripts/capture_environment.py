@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import importlib.metadata as md
 import json
 import platform
 import subprocess
@@ -21,7 +22,8 @@ def _git_commit() -> str | None:
             stderr=subprocess.DEVNULL,
         )
         return out.decode().strip()
-    except Exception:
+    except (OSError, subprocess.SubprocessError, UnicodeDecodeError) as exc:
+        print(f"warning: git rev-parse failed: {type(exc).__name__}: {exc}", file=sys.stderr)
         return None
 
 
@@ -33,29 +35,28 @@ def _git_dirty() -> bool | None:
             stderr=subprocess.DEVNULL,
         )
         return bool(out.strip())
-    except Exception:
+    except (OSError, subprocess.SubprocessError) as exc:
+        print(f"warning: git status failed: {type(exc).__name__}: {exc}", file=sys.stderr)
         return None
 
 
 def main() -> None:
-    try:
-        import importlib.metadata as md
-
-        pkgs = {
-            name: md.version(name)
-            for name in [
-                "pydantic",
-                "pypdf",
-                "reportlab",
-                "sqlalchemy",
-                "openai",
-                "pytest",
-                "streamlit",
-                "pandas",
-            ]
-        }
-    except Exception as exc:  # pragma: no cover
-        pkgs = {"error": str(exc)}
+    pkgs: dict[str, str] = {}
+    for name in [
+        "pydantic",
+        "pypdf",
+        "reportlab",
+        "sqlalchemy",
+        "openai",
+        "pytest",
+        "streamlit",
+        "pandas",
+    ]:
+        # Record per-package failures instead of dropping the whole version map.
+        try:
+            pkgs[name] = md.version(name)
+        except md.PackageNotFoundError:
+            pkgs[name] = "not installed"
 
     commit = _git_commit()
     data = {

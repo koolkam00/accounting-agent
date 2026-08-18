@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 from typing import Optional
 
+from pydantic import ValidationError
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.adapters.base import ERPAdapter
@@ -20,6 +22,7 @@ from app.database import (
     VendorRow,
     WorkflowRunRow,
 )
+from app.errors import ERPPersistenceError
 from app.schemas import (
     POLine,
     PurchaseOrder,
@@ -147,21 +150,37 @@ class LocalERPAdapter(ERPAdapter):
                 mode="create_draft",
             )
             session.add(run)
-            session.flush()
-            session.add(
-                JournalDraftRow(
-                    workflow_run_id=run.id,
-                    draft_bill_id=draft_id,
-                    payload_json=result.proposed_journal.model_dump_json() if result.proposed_journal else "{}",
+            try:
+                session.flush()
+                session.add(
+                    JournalDraftRow(
+                        workflow_run_id=run.id,
+                        draft_bill_id=draft_id,
+                        payload_json=result.proposed_journal.model_dump_json() if result.proposed_journal else "{}",
+                    )
                 )
-            )
-            session.commit()
+                session.commit()
+            except SQLAlchemyError as exc:
+                session.rollback()
+                raise ERPPersistenceError(
+                    f"Failed to persist draft {draft_id} for case {result.case_id!r}: {exc}"
+                ) from exc
         return draft_id
 
     def attach_source_document(self, draft_bill_id: str, pdf_bytes: bytes, filename: str) -> None:
-        # Local adapter: no-op persistence of attachment metadata (bytes not stored to keep DB light)
-        _ = (draft_bill_id, len(pdf_bytes), filename)
-        return None
+        """Local adapter: bytes are intentionally not stored, but the call must still
+        be well-formed — a real ERP would reject these inputs, and silently accepting
+        them here would hide the bug until the production adapter is wired up."""
+        if not draft_bill_id:
+            raise ERPPersistenceError("attach_source_document called without a draft_bill_id")
+        if not pdf_bytes:
+            raise ERPPersistenceError(
+                f"attach_source_document called with empty document for {draft_bill_id}"
+            )
+        if not filename:
+            raise ERPPersistenceError(
+                f"attach_source_document called without a filename for {draft_bill_id}"
+            )
 
     def get_previous_result(self, idempotency_key: str) -> Optional[WorkflowResult]:
         with self._sf() as session:
@@ -173,7 +192,13 @@ class LocalERPAdapter(ERPAdapter):
             ).first()
             if row is None:
                 return None
-            return WorkflowResult.model_validate_json(row.result_json)
+            try:
+                return WorkflowResult.model_validate_json(row.result_json)
+            except ValidationError as exc:
+                raise ERPPersistenceError(
+                    f"Stored result for idempotency key {idempotency_key} is corrupt "
+                    f"(processed_documents.id={row.id}): {exc}"
+                ) from exc
 
     def record_processed(
         self,
@@ -199,7 +224,21 @@ class LocalERPAdapter(ERPAdapter):
                     result_json=result.model_dump_json(),
                 )
             )
-            session.commit()
+            try:
+                session.commit()
+            except IntegrityError as exc:
+                session.rollback()
+                # A concurrent writer winning the uq_idempotency_key race is the
+                # intended outcome; any other constraint violation is a real bug.
+                if "idempotency_key" not in str(exc.orig):
+                    raise ERPPersistenceError(
+                        f"Failed to record processed document {idempotency_key}: {exc}"
+                    ) from exc
+            except SQLAlchemyError as exc:
+                session.rollback()
+                raise ERPPersistenceError(
+                    f"Failed to record processed document {idempotency_key}: {exc}"
+                ) from exc
 
     def seed_duplicate(self, vendor_id: str, invoice_number: str) -> None:
         with self._sf() as session:
@@ -214,4 +253,10 @@ class LocalERPAdapter(ERPAdapter):
             ).first()
             if existing is None:
                 session.add(DuplicateSeedRow(vendor_id=vendor_id, invoice_number=invoice_number))
-                session.commit()
+                try:
+                    session.commit()
+                except SQLAlchemyError as exc:
+                    session.rollback()
+                    raise ERPPersistenceError(
+                        f"Failed to seed duplicate {vendor_id}/{invoice_number}: {exc}"
+                    ) from exc
