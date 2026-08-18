@@ -14,6 +14,10 @@ COPY scripts ./scripts
 RUN uv sync --frozen --python 3.12
 
 ENV DATABASE_URL=sqlite:////app/accounting_agent.db
+
+# Run the app unprivileged.
+RUN useradd --create-home --uid 10001 appuser && chown -R appuser:appuser /app
+USER appuser
 # GPU serving (gpt-oss-120b): vllm/vllm-openai >=0.10.0; pin digest at launch.
 # Do not reuse v0.27.1. See deployment/start_vllm.sh.
 CMD ["uv", "run", "python", "scripts/run_case.py", "--help"]

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from typing import Optional
 
 from app.schemas import (
@@ -106,7 +106,7 @@ def match_invoice(
     # Tax review
     try:
         tax = money(to_decimal(invoice.tax or "0"))
-    except Exception:
+    except (InvalidOperation, TypeError, ValueError):
         tax = Decimal("0.01")  # force review if unparseable here
     if policy.nonzero_tax_requires_review and tax != Decimal("0.00"):
         exceptions.append("NONZERO_TAX_REVIEW")
@@ -125,6 +125,19 @@ def match_invoice(
         qty_tol = to_decimal(policy.quantity_tolerance)
 
         for li in invoice.line_items:
+            try:
+                _ = (to_decimal(li.unit_price), to_decimal(li.quantity))
+            except (InvalidOperation, TypeError, ValueError):
+                # Unparseable or non-finite extracted amount: never auto-approve.
+                exceptions.append("INVOICE_MATH_ERROR")
+                checks.append(
+                    ControlCheck(
+                        code="LINE_AMOUNTS",
+                        passed=False,
+                        detail=f"{li.sku}: unparseable quantity/unit_price",
+                    )
+                )
+                continue
             if li.sku not in po_by_sku:
                 exceptions.append("SKU_NOT_FOUND")
                 checks.append(

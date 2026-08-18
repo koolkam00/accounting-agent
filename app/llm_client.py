@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import json
 import re
+import warnings
 from abc import ABC, abstractmethod
 from decimal import Decimal
 from pathlib import Path
 from typing import Any, Optional
+from urllib.parse import urlparse
 
+from app.identifiers import is_safe_case_id
 from app.schemas import ExtractedInvoice, InvoiceLineItem, EvidenceSpan
 from app.settings import get_settings
 
@@ -100,6 +103,11 @@ INVOICE_JSON_SCHEMA: dict[str, Any] = {
 }
 
 
+def _is_loopback_url(url: str) -> bool:
+    host = urlparse(url).hostname or ""
+    return host in ("localhost", "127.0.0.1", "::1", "0.0.0.0")
+
+
 def is_qwen3_dense(model_name: str) -> bool:
     """True for Qwen3 dense checkpoints, not Qwen3.5 / 3.6 GDN."""
     n = (model_name or "").lower()
@@ -176,8 +184,9 @@ class MockLLMClient(LLMClient):
             extraction = exp.get("extraction") or exp.get("extracted_invoice")
             if extraction:
                 return ExtractedInvoice.model_validate(extraction)
-        # Try locate fixture by scanning known roots
-        if case_id and self.fixture_root:
+        # Try locate fixture by scanning known roots. case_id becomes a path
+        # segment, so only accept safe single-segment identifiers.
+        if case_id and self.fixture_root and is_safe_case_id(case_id):
             candidates = [
                 self.fixture_root / split / case_id / "expected.json"
                 for split in ("development", "holdout")
@@ -207,6 +216,12 @@ class VLLMLLMClient(LLMClient):
         s = get_settings()
         self.settings = s
         self._temperature_override = temperature
+        if s.vllm_api_key in ("", "not-a-real-key") and not _is_loopback_url(s.vllm_base_url):
+            warnings.warn(
+                f"VLLM_API_KEY is unset or the placeholder while targeting {s.vllm_base_url}; "
+                "the server is either unauthenticated or will reject these calls.",
+                stacklevel=2,
+            )
         self.client = OpenAI(base_url=s.vllm_base_url, api_key=s.vllm_api_key, timeout=1200.0)
         self.prompt = s.prompt_path.read_text(encoding="utf-8")
 

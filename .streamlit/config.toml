@@ -1,0 +1,12 @@
+# The demo UI has no authentication and can write drafts to the local SQLite DB,
+# so it binds to loopback only. Put it behind an authenticating proxy before
+# exposing it on a network.
+[server]
+address = "127.0.0.1"
+headless = true
+enableCORS = true
+enableXsrfProtection = true
+maxUploadSize = 25
+
+[browser]
+gatherUsageStats = false

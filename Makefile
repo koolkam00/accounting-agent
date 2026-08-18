@@ -20,8 +20,9 @@ test:
 run-local:
 	uv run python scripts/run_case.py --case case_001 --mode evaluate
 
+# UI is unauthenticated: keep it on loopback.
 run-ui:
-	uv run streamlit run app/ui.py
+	uv run streamlit run app/ui.py --server.address=127.0.0.1
 
 evaluate-accuracy:
 	uv run python scripts/evaluate_accuracy.py

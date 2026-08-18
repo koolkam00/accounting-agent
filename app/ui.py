@@ -21,7 +21,9 @@ from app.adapters.local_erp import LocalERPAdapter
 from app.audit import AuditLog
 from app.canonicalize import sha256_bytes
 from app.database import init_db
+from app.identifiers import is_safe_case_id
 from app.llm_client import MockLLMClient
+from app.pdf_text import MAX_PDF_BYTES
 from app.pipeline import Pipeline, load_policy, run_case_dir
 from app.schemas import ExtractedInvoice, WorkflowDecision, WorkflowResult
 from app.settings import get_settings
@@ -95,7 +97,6 @@ def _env_metadata() -> dict[str, Any]:
         "model_revision": settings.model_revision,
         "schema_version": settings.schema_version,
         "prompt_version": settings.prompt_version,
-        "database_url": settings.database_url,
         "llm_mode": "MockLLMClient (local)",
         "gpu_run": False,
     }
@@ -370,8 +371,15 @@ def main() -> None:
         )
         upload_case_id = st.text_input("Case / document id", value="upload_001")
         run_upload = st.button("Run workflow (upload)", type="primary", key="run_upload")
-        if run_upload and uploaded is not None:
+        if run_upload and uploaded is not None and not is_safe_case_id(upload_case_id):
+            st.error(
+                "Case / document id must be 1-64 characters of letters, digits, '.', '_' or '-'."
+            )
+        elif run_upload and uploaded is not None:
             pdf_bytes = uploaded.read()
+            if len(pdf_bytes) > MAX_PDF_BYTES:
+                st.error(f"PDF exceeds the {MAX_PDF_BYTES // (1024 * 1024)} MB limit.")
+                return
             with st.spinner("Running pipeline on upload…"):
                 result, manifest, pdf_bytes = _run_upload_workflow(
                     pdf_bytes,

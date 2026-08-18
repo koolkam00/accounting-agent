@@ -84,3 +84,7 @@ See [`docs/technical_decisions.md`](docs/technical_decisions.md), [`docs/experim
 ## Secret sweep
 
 Before you fork this or paste logs elsewhere, run [`docs/SECRET_SWEEP.md`](docs/SECRET_SWEEP.md). `.env` is gitignored. Live vLLM/RunPod keys never belong in this repo.
+
+## Security posture
+
+Findings and fixes: [`docs/security_review.md`](docs/security_review.md). Two defaults matter when you run this: the Streamlit demo is unauthenticated and binds loopback only, and `deployment/start_vllm.sh` refuses to serve unless `VLLM_API_KEY` is a real secret (`VLLM_ALLOW_NO_AUTH=1` overrides) and publishes the port on `VLLM_BIND_HOST`, default `127.0.0.1`.
