@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from decimal import InvalidOperation
 from pathlib import Path
 from typing import Literal, Optional
 
@@ -196,7 +197,16 @@ class Pipeline:
         # PROPOSE_JOURNAL only when match side is clean of non-journal exceptions so far
         self.audit.emit("STATE", {"state": PipelineState.PROPOSE_JOURNAL.value}, case_id=case_id)
         if not all_exceptions and po is not None:
-            proposed, j_exc, j_decision = propose_journal(invoice, po, ap_account=self.ap_account)
+            try:
+                proposed, j_exc, j_decision = propose_journal(
+                    invoice, po, ap_account=self.ap_account
+                )
+            except (InvalidOperation, TypeError, ValueError):
+                proposed, j_exc, j_decision = (
+                    None,
+                    ["INVOICE_MATH_ERROR"],
+                    WorkflowDecision.HUMAN_REVIEW,
+                )
             all_exceptions.extend(j_exc)
             all_exceptions = sorted(set(all_exceptions))
             if j_exc:

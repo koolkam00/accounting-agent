@@ -26,9 +26,16 @@ REQUIRED_FIELDS = [
 
 
 def to_decimal(value: str | Decimal) -> Decimal:
-    if isinstance(value, Decimal):
-        return value
-    return Decimal(str(value))
+    """Parse a money/quantity string. Rejects NaN and Infinity.
+
+    Extracted values are model output derived from an untrusted document, so a
+    non-finite Decimal must never reach a comparison (it raises mid-match) or a
+    journal amount.
+    """
+    d = value if isinstance(value, Decimal) else Decimal(str(value))
+    if not d.is_finite():
+        raise InvalidOperation(f"non-finite decimal value: {value!r}")
+    return d
 
 
 def money(value: Decimal) -> Decimal:
