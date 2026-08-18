@@ -1,4 +1,10 @@
-from app.schemas import EvidenceSpan, ExtractedInvoice, InvoiceLineItem, PolicyConfig
+from app.schemas import (
+    EvidenceSpan,
+    ExtractedInvoice,
+    InvoiceLineItem,
+    PolicyConfig,
+    WorkflowDecision,
+)
 from app.validation import decision_from_exceptions, validate_invoice
 
 
@@ -81,7 +87,5 @@ def test_incomplete_totals_leave_math_check_in_pass_branch():
 
 
 def test_decision_from_exceptions_branches():
-    from app.schemas import WorkflowDecision
-
     assert decision_from_exceptions([]) == WorkflowDecision.READY_FOR_DRAFT
     assert decision_from_exceptions(["INVOICE_MATH_ERROR"]) == WorkflowDecision.HUMAN_REVIEW
