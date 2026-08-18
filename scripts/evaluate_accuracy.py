@@ -9,119 +9,37 @@ Does not tune on holdout. Does not edit expected.json.
 from __future__ import annotations
 
 import argparse
-import json
-import os
-import subprocess
+import copy
 import sys
 import tempfile
-import traceback
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from app.adapters.local_erp import LocalERPAdapter
-from app.database import init_db
+from app.database import reset_db
+from app.erp_seed import seed_fixture_cases
+from app.evaluation import field_exact_match, invariance_label
+from app.fixtures import (
+    FIXTURE_ROOT,
+    canonical_text_for_pdf,
+    case_dirs_by_split,
+    case_dirs,
+    gold_extraction,
+    load_expected,
+    load_pdf_bytes,
+)
+from app.jsonio import write_json
 from app.llm_client import MockLLMClient, VLLMLLMClient
 from app.pipeline import Pipeline, run_case_dir
 from app.settings import get_settings
-from app.canonicalize import canonicalize_document
-from app.pdf_text import extract_pdf_text
-
-
-FIELD_KEYS = (
-    "vendor_name",
-    "vendor_id",
-    "invoice_number",
-    "invoice_date",
-    "po_number",
-    "currency",
-    "subtotal",
-    "tax",
-    "freight",
-    "invoice_total",
-    "payment_terms",
-)
-
-
-def invariance_label(negative_control: bool) -> str:
-    if negative_control:
-        return "off"
-    return "on" if os.getenv("VLLM_BATCH_INVARIANT", "1") == "1" else "off"
-
-
-def field_exact_match(got: Optional[dict], gold: Optional[dict]) -> bool:
-    if not got or not gold:
-        return False
-    for k in FIELD_KEYS:
-        if (got.get(k) or None) != (gold.get(k) or None):
-            return False
-    got_lines = got.get("line_items") or []
-    gold_lines = gold.get("line_items") or []
-    if len(got_lines) != len(gold_lines):
-        return False
-    line_keys = ("line_number", "sku", "description", "quantity", "unit_price", "line_total")
-    for a, b in zip(got_lines, gold_lines):
-        for k in line_keys:
-            if a.get(k) != b.get(k):
-                return False
-    return True
-
-
-def case_dirs_for(difficulty: Optional[str]) -> dict[str, list[Path]]:
-    if difficulty:
-        root = REPO / "tests" / "fixtures" / "difficulty" / difficulty
-        dev: list[Path] = []
-        hold: list[Path] = []
-        for case_dir in sorted(p for p in root.iterdir() if p.is_dir() and p.name.startswith("case_")):
-            expected = json.loads((case_dir / "expected.json").read_text(encoding="utf-8"))
-            split = expected.get("split")
-            if split == "holdout":
-                hold.append(case_dir)
-            else:
-                dev.append(case_dir)
-        return {"development": dev, "holdout": hold}
-    return {
-        "development": sorted(
-            p
-            for p in (REPO / "tests" / "fixtures" / "development").iterdir()
-            if p.is_dir() and p.name.startswith("case_")
-        ),
-        "holdout": sorted(
-            p
-            for p in (REPO / "tests" / "fixtures" / "holdout").iterdir()
-            if p.is_dir() and p.name.startswith("case_")
-        ),
-    }
-
-
-def init_eval_db(db_url: str, difficulty: Optional[str]) -> None:
-    cmd = [
-        sys.executable,
-        str(REPO / "scripts" / "initialize_database.py"),
-        "--reset",
-        "--database-url",
-        db_url,
-    ]
-    if difficulty:
-        cmd.extend(["--fixture-root", str(REPO / "tests" / "fixtures" / "difficulty" / difficulty)])
-    subprocess.check_call(cmd, cwd=str(REPO))
 
 
 def eval_cases(name: str, cases: list[Path], db_url: str, *, live: bool, llm) -> dict:
-    roots = sorted({str(c.parent) for c in cases})
-    cmd = [
-        sys.executable,
-        str(REPO / "scripts" / "initialize_database.py"),
-        "--reset",
-        "--database-url",
-        db_url,
-    ]
-    for r in roots:
-        cmd.extend(["--fixture-root", r])
-    subprocess.check_call(cmd, cwd=str(REPO))
-    sf = init_db(db_url)
+    sf = reset_db(db_url)
+    seed_fixture_cases(sf, cases)
     erp = LocalERPAdapter(sf)
 
     rows = []
@@ -131,17 +49,16 @@ def eval_cases(name: str, cases: list[Path], db_url: str, *, live: bool, llm) ->
     false_ready = 0
     field_match = 0
     for case_dir in cases:
-        expected = json.loads((case_dir / "expected.json").read_text(encoding="utf-8"))
-        gold_extraction = expected.get("extraction") or expected.get("extracted_invoice")
+        expected = load_expected(case_dir)
+        gold = gold_extraction(expected)
         error = None
         extraction_dump = None
         fields_ok = False
         # Canonical PDF text actually sent to the model (INGEST text-layer output)
-        pdf_bytes_for_canon = (case_dir / "invoice.pdf").read_bytes()
-        canon_text = canonicalize_document(pdf_bytes_for_canon, extract_pdf_text(pdf_bytes_for_canon).pages).canonical_text
+        pdf_bytes = load_pdf_bytes(case_dir)
+        canon_text = canonical_text_for_pdf(pdf_bytes)
         try:
             if live:
-                pdf_bytes = (case_dir / "invoice.pdf").read_bytes()
                 result = Pipeline(erp=erp, llm=llm).run(
                     pdf_bytes, case_id=case_dir.name, mode="evaluate"
                 )
@@ -152,7 +69,7 @@ def eval_cases(name: str, cases: list[Path], db_url: str, *, live: bool, llm) ->
             if result.extracted_invoice is not None:
                 schema_valid += 1
                 extraction_dump = result.extracted_invoice.model_dump(mode="json")
-                fields_ok = field_exact_match(extraction_dump, gold_extraction)
+                fields_ok = field_exact_match(extraction_dump, gold)
                 field_match += int(fields_ok)
         except Exception as exc:  # noqa: BLE001 — record live failures honestly
             error = f"{type(exc).__name__}: {exc}"
@@ -177,7 +94,7 @@ def eval_cases(name: str, cases: list[Path], db_url: str, *, live: bool, llm) ->
                 "case_id": case_dir.name,
                 "scenario": expected.get("scenario"),
                 "difficulty": expected.get("difficulty"),
-                    "canonical_text": canon_text,
+                "canonical_text": canon_text,
                 "expected_decision": expected["decision"],
                 "got_decision": got_decision,
                 "expected_codes": sorted(exp_codes),
@@ -194,16 +111,11 @@ def eval_cases(name: str, cases: list[Path], db_url: str, *, live: bool, llm) ->
             f"running={correct}/{total}",
             flush=True,
         )
-        ck = REPO / "reports" / "accuracy_gpu.partial.json"
-        ck.parent.mkdir(exist_ok=True)
-        slim_rows = []
-        for r in rows:
-            s = {k: v for k, v in r.items() if k != "extraction"}
-            slim_rows.append(s)
-        ck.write_text(
-            json.dumps({"split": name, "correct": correct, "total": total, "rows": slim_rows}, indent=2)
-            + "\n",
-            encoding="utf-8",
+        slim_rows = [{k: v for k, v in r.items() if k != "extraction"} for r in rows]
+        write_json(
+            REPO / "reports" / "accuracy_gpu.partial.json",
+            {"split": name, "correct": correct, "total": total, "rows": slim_rows},
+            sort_keys=False,
         )
     return {
         "split": name,
@@ -220,13 +132,12 @@ def eval_cases(name: str, cases: list[Path], db_url: str, *, live: bool, llm) ->
 
 def eval_split(name: str, root: Path, db_url: str, *, live: bool) -> dict:
     """Backward-compatible wrapper used by older callers."""
-    cases = sorted(p for p in root.iterdir() if p.is_dir() and p.name.startswith("case_"))
     if live:
         get_settings.cache_clear()
         llm = VLLMLLMClient()
     else:
-        llm = MockLLMClient(fixture_root=REPO / "tests" / "fixtures")
-    return eval_cases(name, cases, db_url, live=live, llm=llm)
+        llm = MockLLMClient(fixture_root=FIXTURE_ROOT)
+    return eval_cases(name, case_dirs(root), db_url, live=live, llm=llm)
 
 
 def main() -> None:
@@ -248,9 +159,9 @@ def main() -> None:
     if live:
         llm = VLLMLLMClient(temperature=temp)
     else:
-        llm = MockLLMClient(fixture_root=REPO / "tests" / "fixtures")
+        llm = MockLLMClient(fixture_root=FIXTURE_ROOT)
 
-    splits = case_dirs_for(args.difficulty)
+    splits = case_dirs_by_split(args.difficulty)
     out: dict[str, Any] = {
         "development": None,
         "holdout": None,
@@ -281,7 +192,6 @@ def main() -> None:
                 print(" FAIL", slim)
 
     reports = REPO / "reports"
-    reports.mkdir(exist_ok=True)
     if args.difficulty or args.temperature is not None or args.label:
         parts = ["accuracy", "gpu" if live else "mock"]
         if args.difficulty:
@@ -293,13 +203,13 @@ def main() -> None:
         path = reports / ("_".join(parts) + ".json")
     else:
         path = reports / ("accuracy_gpu.json" if live else "accuracy_mock.json")
-    summary = json.loads(json.dumps(out))
+    summary = copy.deepcopy(out)
     for split in ("development", "holdout"):
         if summary.get(split) and summary[split].get("rows"):
             for row in summary[split]["rows"]:
                 if row.get("pass"):
                     row.pop("extraction", None)
-    path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    write_json(path, summary)
     print(f"wrote {path}")
 
 

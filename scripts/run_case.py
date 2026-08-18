@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
@@ -13,17 +12,10 @@ sys.path.insert(0, str(REPO))
 
 from app.adapters.local_erp import LocalERPAdapter
 from app.database import init_db
+from app.fixtures import FIXTURE_ROOT, find_case_dir
 from app.llm_client import MockLLMClient
 from app.pipeline import run_case_dir
 from app.settings import get_settings
-
-
-def find_case(case_id: str) -> Path:
-    for split in ("development", "holdout"):
-        p = REPO / "tests" / "fixtures" / split / case_id
-        if p.exists():
-            return p
-    raise FileNotFoundError(case_id)
 
 
 def main() -> None:
@@ -35,8 +27,8 @@ def main() -> None:
     settings = get_settings()
     sf = init_db(settings.database_url)
     erp = LocalERPAdapter(sf)
-    llm = MockLLMClient(fixture_root=REPO / "tests" / "fixtures")
-    case_dir = find_case(args.case)
+    llm = MockLLMClient(fixture_root=FIXTURE_ROOT)
+    case_dir = find_case_dir(args.case)
     result = run_case_dir(case_dir, erp=erp, llm=llm, mode=args.mode)
     print(result.model_dump_json(indent=2))
 

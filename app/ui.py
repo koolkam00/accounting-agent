@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import platform
 import sys
 from pathlib import Path
@@ -19,34 +18,26 @@ except ImportError:  # pragma: no cover
 
 from app.adapters.local_erp import LocalERPAdapter
 from app.audit import AuditLog
-from app.canonicalize import sha256_bytes
 from app.database import init_db
+from app.fixtures import FIXTURE_ROOT, SPLITS, case_dirs, split_root
+from app.hashing import sha256_bytes
+from app.jsonio import read_json
 from app.llm_client import MockLLMClient
 from app.pipeline import Pipeline, load_policy, run_case_dir
 from app.schemas import ExtractedInvoice, WorkflowDecision, WorkflowResult
 from app.settings import get_settings
 
 
-FIXTURE_ROOT = REPO_ROOT / "tests" / "fixtures"
-
-
 def _list_cases() -> list[tuple[str, str]]:
-    cases: list[tuple[str, str]] = []
-    for split in ("development", "holdout"):
-        root = FIXTURE_ROOT / split
-        if not root.exists():
-            continue
-        for d in sorted(p for p in root.iterdir() if p.is_dir() and p.name.startswith("case_")):
-            cases.append((split, d.name))
-    return cases
+    return [(split, d.name) for split in SPLITS for d in case_dirs(split_root(split))]
 
 
 def _case_dir(split: str, case_id: str) -> Path:
-    return FIXTURE_ROOT / split / case_id
+    return split_root(split) / case_id
 
 
 def _load_fixture_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
+    return read_json(path)
 
 
 def _ensure_session() -> None:

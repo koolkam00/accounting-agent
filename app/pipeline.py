@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Literal, Optional
 
@@ -11,8 +10,11 @@ import yaml
 from app.adapters.base import ERPAdapter
 from app.adapters.local_erp import LocalERPAdapter
 from app.audit import AuditLog
-from app.canonicalize import canonicalize_document, sha256_bytes, sha256_text
-from app.idempotency import compute_idempotency_key, hash_text
+from app.canonicalize import canonicalize_document
+from app.fixtures import gold_extraction, load_expected, load_pdf_bytes
+from app.hashing import sha256_bytes, sha256_text
+from app.idempotency import compute_idempotency_key
+from app.jsonio import dumps_canonical
 from app.journal import propose_journal
 from app.llm_client import LLMClient, MockLLMClient
 from app.matching import match_invoice
@@ -25,7 +27,7 @@ from app.schemas import (
     WorkflowDecision,
     WorkflowResult,
 )
-from app.settings import REPO_ROOT, get_settings
+from app.settings import get_settings
 from app.validation import validate_invoice
 
 
@@ -51,13 +53,13 @@ def _receipt_snapshot(receipts) -> str:
         }
         for r in sorted(receipts, key=lambda x: x.receipt_id)
     ]
-    return json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return dumps_canonical(payload)
 
 
 def _schema_hash() -> str:
     # Stable hash of schema module version marker
     settings = get_settings()
-    return hash_text(f"ExtractedInvoice:{settings.schema_version}")
+    return sha256_text(f"ExtractedInvoice:{settings.schema_version}")
 
 
 def _prompt_hash() -> str:
@@ -159,7 +161,7 @@ class Pipeline:
             is_duplicate = self.erp.check_duplicate_invoice(vendor_id_for_dup, invoice.invoice_number)
 
         receipt_snap = _receipt_snapshot(receipts)
-        receipt_hash = hash_text(receipt_snap)
+        receipt_hash = sha256_text(receipt_snap)
         po_id = po.po_id if po else (invoice.po_number or "")
         idem_key = compute_idempotency_key(
             invoice_pdf_hash=pdf_hash,
@@ -288,12 +290,12 @@ def run_case_dir(
     mode: Mode = "evaluate",
 ) -> WorkflowResult:
     case_id = case_dir.name
-    pdf_bytes = (case_dir / "invoice.pdf").read_bytes()
-    expected = json.loads((case_dir / "expected.json").read_text(encoding="utf-8"))
+    pdf_bytes = load_pdf_bytes(case_dir)
+    expected = load_expected(case_dir)
     client = llm or MockLLMClient()
     if isinstance(client, MockLLMClient):
         client.register_expected(case_id, expected)
-    extraction = expected.get("extraction")
+    extraction = gold_extraction(expected)
     preseeded = ExtractedInvoice.model_validate(extraction) if extraction else None
     pipe = Pipeline(erp=erp, llm=client)
     return pipe.run(pdf_bytes, case_id=case_id, mode=mode, preseeded_extraction=preseeded)

@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import random
 import sys
@@ -18,6 +17,8 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from app.canonicalize import canonicalize_page_text  # noqa: E402
+from app.hashing import sha256_file  # noqa: E402
+from app.jsonio import write_json  # noqa: E402
 from app.pdf_text import extract_pdf_text  # noqa: E402
 
 SEED = 20260812
@@ -472,12 +473,6 @@ def layout_compact(path: Path, inv: dict) -> None:
 LAYOUTS = [layout_classic, layout_boxed, layout_two_column, layout_modern, layout_compact]
 
 
-def sha256_file(path: Path) -> str:
-    h = hashlib.sha256()
-    h.update(path.read_bytes())
-    return h.hexdigest()
-
-
 def build_lines(rng: random.Random, n: int = 2, price_factor: Decimal = Decimal("1"), qty_factor: Decimal = Decimal("1")):
     chosen = rng.sample(SKUS, k=n)
     lines = []
@@ -833,13 +828,9 @@ def write_case(case: dict, root: Path) -> dict[str, str]:
     pdf_path = case_dir / "invoice.pdf"
     case["layout"](pdf_path, case["inv"])
     bind_evidence_pages(case["expected"]["extraction"], pdf_path)
-    (case_dir / "po.json").write_text(json.dumps(case["po"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    (case_dir / "receipt.json").write_text(
-        json.dumps(case["receipt"], indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
-    (case_dir / "expected.json").write_text(
-        json.dumps(case["expected"], indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    write_json(case_dir / "po.json", case["po"])
+    write_json(case_dir / "receipt.json", case["receipt"])
+    write_json(case_dir / "expected.json", case["expected"])
     files = {
         f"{case['case_id']}/invoice.pdf": sha256_file(pdf_path),
         f"{case['case_id']}/po.json": sha256_file(case_dir / "po.json"),
@@ -890,8 +881,7 @@ def main(argv: list[str] | None = None) -> None:
         manifest["scenario_counts"][scenario] = manifest["scenario_counts"].get(scenario, 0) + 1
         print(f"wrote {split}/{case['case_id']} scenario={scenario} decision={decision}")
 
-    out = REPO / "tests" / "fixtures" / "dataset_manifest.json"
-    out.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out = write_json(REPO / "tests" / "fixtures" / "dataset_manifest.json", manifest)
     print(f"manifest -> {out}")
     print("scenario_counts:", json.dumps(manifest["scenario_counts"], sort_keys=True))
 
