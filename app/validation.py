@@ -122,6 +122,8 @@ def validate_invoice(
 
     # Arithmetic — only if we have parseable decimals
     math_ok = True
+    math_checked = True
+    math_detail = "Arithmetic mismatch"
     try:
         if invoice.line_items and invoice.subtotal is not None and invoice.invoice_total is not None:
             line_sum = Decimal("0")
@@ -147,15 +149,21 @@ def validate_invoice(
             expected_total = money(subtotal + tax + freight)
             if abs(expected_total - total) > tol:
                 math_ok = False
-        elif invoice.line_items:
-            # Incomplete totals — treat as math/required already covered
-            pass
-    except (InvalidOperation, TypeError, ValueError):
+        else:
+            # Line items and/or totals absent: arithmetic cannot be checked. Recorded as
+            # unverified so a skipped control never reads as a passing one;
+            # MISSING_REQUIRED_FIELD already routes the document to review.
+            math_checked = False
+            math_detail = "Not verified: line items, subtotal, or invoice_total absent"
+    except (InvalidOperation, TypeError, ValueError) as exc:
         math_ok = False
+        math_detail = f"Unparseable decimal: {type(exc).__name__}: {exc}"
 
-    if not math_ok:
+    if not math_checked:
+        checks.append(ControlCheck(code="INVOICE_MATH", passed=False, detail=math_detail))
+    elif not math_ok:
         exceptions.append("INVOICE_MATH_ERROR")
-        checks.append(ControlCheck(code="INVOICE_MATH", passed=False, detail="Arithmetic mismatch"))
+        checks.append(ControlCheck(code="INVOICE_MATH", passed=False, detail=math_detail))
     else:
         checks.append(ControlCheck(code="INVOICE_MATH", passed=True, detail="ok"))
 
@@ -182,8 +190,18 @@ def validate_invoice(
             normalized = invoice.model_copy(update=updates)
         else:
             normalized = invoice
-    except (InvalidOperation, TypeError, ValueError):
+    except (InvalidOperation, TypeError, ValueError) as exc:
+        # Downstream match and journal steps would silently consume the raw,
+        # un-normalized strings otherwise.
         normalized = invoice
+        exceptions.append("DECIMAL_NORMALIZATION_FAILED")
+        checks.append(
+            ControlCheck(
+                code="DECIMAL_NORMALIZATION",
+                passed=False,
+                detail=f"{type(exc).__name__}: {exc}",
+            )
+        )
 
     # Deterministic sort of exception codes
     exceptions = sorted(set(exceptions))

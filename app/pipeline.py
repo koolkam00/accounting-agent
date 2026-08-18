@@ -7,11 +7,13 @@ from pathlib import Path
 from typing import Literal, Optional
 
 import yaml
+from pydantic import ValidationError
 
 from app.adapters.base import ERPAdapter
 from app.adapters.local_erp import LocalERPAdapter
 from app.audit import AuditLog
 from app.canonicalize import canonicalize_document, sha256_bytes, sha256_text
+from app.errors import PolicyConfigError
 from app.idempotency import compute_idempotency_key, hash_text
 from app.journal import propose_journal
 from app.llm_client import LLMClient, MockLLMClient
@@ -35,8 +37,14 @@ Mode = Literal["evaluate", "create_draft"]
 def load_policy(path: Optional[Path] = None) -> PolicyConfig:
     settings = get_settings()
     p = path or settings.policy_path
-    data = yaml.safe_load(p.read_text(encoding="utf-8"))
-    return PolicyConfig.model_validate(data)
+    try:
+        data = yaml.safe_load(p.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as exc:
+        raise PolicyConfigError(f"Cannot read policy file {p}: {exc}") from exc
+    try:
+        return PolicyConfig.model_validate(data)
+    except ValidationError as exc:
+        raise PolicyConfigError(f"Policy file {p} does not match PolicyConfig: {exc}") from exc
 
 
 def _receipt_snapshot(receipts) -> str:
@@ -232,23 +240,49 @@ class Pipeline:
         )
 
         if mode == "create_draft" and decision == WorkflowDecision.READY_FOR_DRAFT:
-            draft_id = self.erp.create_draft_bill(result)
-            self.erp.attach_source_document(draft_id, pdf_bytes, f"{case_id or 'invoice'}.pdf")
-            result.draft_bill_id = draft_id
-            self.erp.record_processed(
-                idem_key,
-                vendor_id_for_dup or "UNKNOWN",
-                invoice.invoice_number or "UNKNOWN",
-                result,
-            )
+            # A partial write here (draft created, attachment or idempotency record
+            # missing) must land in the audit trail before the error propagates.
+            draft_id: Optional[str] = None
+            try:
+                draft_id = self.erp.create_draft_bill(result)
+                self.erp.attach_source_document(draft_id, pdf_bytes, f"{case_id or 'invoice'}.pdf")
+                result.draft_bill_id = draft_id
+                self.erp.record_processed(
+                    idem_key,
+                    vendor_id_for_dup or "UNKNOWN",
+                    invoice.invoice_number or "UNKNOWN",
+                    result,
+                )
+            except Exception as exc:
+                self.audit.emit(
+                    "DRAFT_PERSIST_FAILED",
+                    {
+                        "idempotency_key": idem_key,
+                        "draft_bill_id": draft_id,
+                        "error": f"{type(exc).__name__}: {exc}",
+                    },
+                    case_id=case_id,
+                )
+                raise
         elif mode == "create_draft":
             # Still record processed for idempotency of review outcomes
-            self.erp.record_processed(
-                idem_key,
-                vendor_id_for_dup or "UNKNOWN",
-                invoice.invoice_number or "UNKNOWN",
-                result,
-            )
+            try:
+                self.erp.record_processed(
+                    idem_key,
+                    vendor_id_for_dup or "UNKNOWN",
+                    invoice.invoice_number or "UNKNOWN",
+                    result,
+                )
+            except Exception as exc:
+                self.audit.emit(
+                    "REVIEW_PERSIST_FAILED",
+                    {
+                        "idempotency_key": idem_key,
+                        "error": f"{type(exc).__name__}: {exc}",
+                    },
+                    case_id=case_id,
+                )
+                raise
 
         self.audit.emit(
             "COMPLETE",

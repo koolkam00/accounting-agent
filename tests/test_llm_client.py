@@ -7,6 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from app.errors import LLMExtractionError
 from app.llm_client import (
     VLLMLLMClient,
     build_chat_extra_body,
@@ -47,11 +48,17 @@ class FakeCompletions:
         self.calls: list[dict] = []
         self.content = json.dumps(SAMPLE)
         self.reasoning_content = '{"vendor_name": "DO-NOT-PARSE"}'
+        self.finish_reason = "stop"
+        self.choices_empty = False
 
     def create(self, **kwargs):
         self.calls.append(kwargs)
+        if self.choices_empty:
+            return SimpleNamespace(choices=[])
         msg = SimpleNamespace(content=self.content, reasoning_content=self.reasoning_content)
-        return SimpleNamespace(choices=[SimpleNamespace(message=msg)])
+        return SimpleNamespace(
+            choices=[SimpleNamespace(message=msg, finish_reason=self.finish_reason)]
+        )
 
 
 class FakeOpenAI:
@@ -172,3 +179,21 @@ def test_parses_message_content_only(monkeypatch):
     extracted = client.extract_invoice("invoice text")
     assert extracted.vendor_name == "Acme"
     assert extracted.vendor_name != "DO-NOT-PARSE"
+
+
+@pytest.mark.parametrize(
+    "attr,value",
+    [
+        ("content", None),
+        ("content", "   "),
+        ("content", "not json at all"),
+        ("content", '{"vendor_name": 5}'),
+        ("finish_reason", "length"),
+        ("choices_empty", True),
+    ],
+)
+def test_unusable_model_response_raises(monkeypatch, attr, value):
+    client = _client(monkeypatch, MODEL_NAME="openai/gpt-oss-120b")
+    setattr(FakeOpenAI.last.chat.completions, attr, value)
+    with pytest.raises(LLMExtractionError):
+        client.extract_invoice("invoice text")

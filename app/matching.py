@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from typing import Optional
 
+from app.errors import ERPPersistenceError
 from app.schemas import (
     ControlCheck,
     ExtractedInvoice,
+    InvoiceLineItem,
     PolicyConfig,
     PurchaseOrder,
     Receipt,
@@ -15,6 +17,11 @@ from app.schemas import (
     WorkflowDecision,
 )
 from app.validation import money, to_decimal
+
+
+def _parse_line_amounts(line: InvoiceLineItem) -> tuple[Decimal, Decimal]:
+    """Parse the invoice-line numbers the match needs, raising on bad input."""
+    return to_decimal(line.quantity), to_decimal(line.unit_price)
 
 
 def _price_tolerance(po_unit_price: Decimal, policy: PolicyConfig) -> Decimal:
@@ -105,13 +112,23 @@ def match_invoice(
 
     # Tax review
     try:
-        tax = money(to_decimal(invoice.tax or "0"))
-    except Exception:
-        tax = Decimal("0.01")  # force review if unparseable here
-    if policy.nonzero_tax_requires_review and tax != Decimal("0.00"):
+        tax: Optional[Decimal] = money(to_decimal(invoice.tax or "0"))
+    except (InvalidOperation, TypeError, ValueError) as exc:
+        # An unparseable tax is a data problem, not a taxable invoice: report it as
+        # such instead of hiding it behind NONZERO_TAX_REVIEW.
+        tax = None
+        exceptions.append("TAX_UNPARSEABLE")
+        checks.append(
+            ControlCheck(
+                code="TAX",
+                passed=False,
+                detail=f"tax={invoice.tax!r} unparseable: {type(exc).__name__}: {exc}",
+            )
+        )
+    if tax is not None and policy.nonzero_tax_requires_review and tax != Decimal("0.00"):
         exceptions.append("NONZERO_TAX_REVIEW")
         checks.append(ControlCheck(code="TAX", passed=False, detail=f"tax={tax}"))
-    else:
+    elif tax is not None:
         checks.append(ControlCheck(code="TAX", passed=True, detail="ok"))
 
     # Line-level SKU / price / qty vs PO and receipts
@@ -120,11 +137,35 @@ def match_invoice(
         received: dict[str, Decimal] = {}
         for r in receipts:
             for rl in r.lines:
-                received[rl.sku] = received.get(rl.sku, Decimal("0")) + to_decimal(rl.quantity_received)
+                try:
+                    qty_received = to_decimal(rl.quantity_received)
+                except (InvalidOperation, TypeError, ValueError) as exc:
+                    raise ERPPersistenceError(
+                        f"Receipt {r.receipt_id} line {rl.sku} has non-numeric "
+                        f"quantity_received={rl.quantity_received!r}"
+                    ) from exc
+                received[rl.sku] = received.get(rl.sku, Decimal("0")) + qty_received
 
         qty_tol = to_decimal(policy.quantity_tolerance)
 
         for li in invoice.line_items:
+            try:
+                inv_qty, inv_unit_price = _parse_line_amounts(li)
+            except (InvalidOperation, TypeError, ValueError) as exc:
+                # Without this the whole match would abort on one bad number and the
+                # caller would see a raw decimal error instead of a review decision.
+                exceptions.append("LINE_ITEM_PARSE_ERROR")
+                checks.append(
+                    ControlCheck(
+                        code="LINE_ITEM_PARSE",
+                        passed=False,
+                        detail=(
+                            f"{li.sku}: unparseable quantity/unit_price "
+                            f"({type(exc).__name__}: {exc})"
+                        ),
+                    )
+                )
+                continue
             if li.sku not in po_by_sku:
                 exceptions.append("SKU_NOT_FOUND")
                 checks.append(
@@ -132,8 +173,15 @@ def match_invoice(
                 )
                 continue
             po_line = po_by_sku[li.sku]
-            inv_price = money(to_decimal(li.unit_price))
-            po_price = money(to_decimal(po_line.unit_price))
+            try:
+                po_price = money(to_decimal(po_line.unit_price))
+                po_qty = to_decimal(po_line.quantity)
+            except (InvalidOperation, TypeError, ValueError) as exc:
+                raise ERPPersistenceError(
+                    f"PO {po.po_id} line {po_line.line_number} has non-numeric "
+                    f"quantity={po_line.quantity!r} / unit_price={po_line.unit_price!r}"
+                ) from exc
+            inv_price = money(inv_unit_price)
             tol = _price_tolerance(po_price, policy)
             if abs(inv_price - po_price) > tol:
                 exceptions.append("PRICE_VARIANCE")
@@ -149,8 +197,6 @@ def match_invoice(
                     ControlCheck(code="PRICE", passed=True, detail=f"{li.sku}: within tolerance")
                 )
 
-            inv_qty = to_decimal(li.quantity)
-            po_qty = to_decimal(po_line.quantity)
             if inv_qty > po_qty + qty_tol:
                 exceptions.append("QUANTITY_EXCEEDS_PO")
                 checks.append(
