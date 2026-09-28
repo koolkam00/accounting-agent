@@ -453,7 +453,13 @@ The tool also proposes adjustments that are not on management's schedule, where 
   - `claimed` is all zeros; `category` is OTHER; `treatment` is REVISE.
   - `proposed` = + every posting except the first, in the periods of those postings, because each extra posting overstates expense.
   - `gl_links` list every posting in the group. The first posting is marked `supports_claim=False`.
-- **Nothing counted twice.** A posting that a management item's supporting set already carries is excluded.
+- **Nothing counted twice.** When a management item claims more than one posting of a duplicate group:
+  - the management item keeps only the first posting;
+  - `DUPLICATE_GL_ENTRY` on the management item removes the extra postings;
+  - the D item carries those extras.
+
+  A duplicate is a bookkeeping error, not a non-recurring cost, so it belongs in its own line.
+- **Other supported reporting differences.** A management P&L top-side that the evidence supports is modeled as a diligence item, for example a signed bonus calculation later paid through the GL. The item carries − the accrual in the period it belongs to, and it offsets the `dil_recon` reversal. The identity still holds: GL EBITDA + management finals + diligence items.
 - **Review.** Diligence items are reviewed like management items: same `ReviewDecision`, same final-amount rules.
 
 ## 6. Reconciliation (`reconcile.py`)
