@@ -16,12 +16,14 @@ from types import SimpleNamespace
 import pytest
 
 from qoe.ai import (
+    CLASSIFY_ENTRIES_SCHEMA,
     OpenAICompatibleEvidenceAI,
     RuleBasedEvidenceAI,
+    _Evidence,
     get_ai,
     load_prompt,
 )
-from qoe.ai_base import AdjustmentIntent, EvidenceAI, verify_quote
+from qoe.ai_base import MIN_QUOTE_CHARS, AdjustmentIntent, EvidenceAI, verify_quote
 from qoe.pdf_text import canonicalize_page_text
 from qoe.schemas import (
     AdjustmentCategory,
@@ -1016,13 +1018,19 @@ def test_llm_extract_facts_verifies_quotes(docs):
     client = _fake_client(_llm_facts_payload())
     ai = OpenAICompatibleEvidenceAI("fake-model", client=client)
     doc = docs["4.2.1 Harrow Vale Invoice 25-0317.pdf"]
+    rules = RuleBasedEvidenceAI().extract_facts(doc)
     f = ai.extract_facts(doc)
     assert f.extractor == "llm:fake-model" and ai.name == "llm:fake-model"
-    assert [a.amount for a in f.amounts] == ["14500.00"]  # amount not in its quote is dropped
-    assert [q.quote for q in f.key_statements] == ["Payment is due within 30 days."]
+    amounts = [a.amount for a in f.amounts]
+    assert "14500.00" in amounts and "15000.00" not in amounts  # an amount not in its quote is dropped
+    statements = [q.quote for q in f.key_statements]
+    assert "Payment is due within 30 days." in statements
+    assert not any("guarantees" in q for q in statements)
     assert f.dropped_quotes == 2  # hallucinated statement + unsupported amount
-    assert f.reference_numbers == ["25-0317", "3310"]
-    assert f.service_period_end is None
+    assert "99-9999" not in f.reference_numbers and {"25-0317", "3310"} <= set(f.reference_numbers)
+    # The model gave only a start date; the rules read the stated service period, which stands.
+    assert (f.service_period_start, f.service_period_end) == (rules.service_period_start, rules.service_period_end)
+    assert all(verify_quote(q, {doc.doc_id: doc}) for q in _all_quotes(f))
     assert ai.fallbacks == []
     call = client.chat.completions.calls[0]
     assert call["temperature"] == 0 and call["seed"] == 42
@@ -1077,7 +1085,9 @@ def test_llm_parse_intent_rejects_unstated_values():
     intent = ai.parse_intent(adj)
     assert intent.counterparties == ["Harrow & Vale LLP"]
     assert intent.reference_numbers == ["3310"]
-    assert intent.keywords == ["litigation", "brennan"]  # the firm's name is a counterparty, not a keyword
+    assert intent.keywords[:2] == ["litigation", "brennan"]  # the firm's name is a counterparty, not a keyword
+    assert not any("harrow" in k or "vale" in k for k in intent.keywords)
+    assert set(RuleBasedEvidenceAI().parse_intent(adj).keywords) <= set(intent.keywords)  # the rules' terms stay
     assert intent.normalized_amount is None
     assert intent.event_months == ["2025-11"]
     assert intent.notes.startswith("llm:fake-model")
@@ -1103,10 +1113,13 @@ def test_llm_contradictions_drop_hallucinated_quotes(docs):
     adj = _claim("A-23", "One-time RouteWise implementation", AdjustmentCategory.NON_RECURRING)
     intent = AdjustmentIntent(adj_id="A-23", asserts_nonrecurring=True)
     found = ai.find_contradictions(adj, intent, [rules_facts], _routewise_entries())
-    assert len(found) == 1
     # GL-R999 is unknown; GL-R100 is kept because code sees the tie (monthly fee amount, same vendor).
     assert found[0].quote.quote == good and found[0].entry_ids == ["GL-R100"]
+    assert all(c.statement != "Invented." for c in found)
     assert ai.dropped_quotes == 1
+    # The rules' own findings are the floor, whatever the model reports.
+    rules_found = RuleBasedEvidenceAI().find_contradictions(adj, intent, [rules_facts], _routewise_entries())
+    assert {(c.doc_id, c.quote.quote) for c in rules_found} <= {(c.doc_id, c.quote.quote) for c in found}
     sent = json.loads(client.chat.completions.calls[1]["messages"][1]["content"])
     assert sent["documents"][0]["pages"][0]["text"] == msa.pages[0].text
 
@@ -1138,6 +1151,217 @@ def test_llm_questions_happy_path():
     assert payload["flags"][0]["code"] == "UNSIGNED_OR_DRAFT_SUPPORT"
 
 
+def _rules_payload(f: DocFacts) -> dict:
+    """The rule-based reading of a document in the LLM schema (what an honest model might return)."""
+    return {
+        "doc_type": f.doc_type, "title": f.title, "counterparty": f.counterparty, "doc_date": f.doc_date,
+        "reference_numbers": list(f.reference_numbers),
+        "amounts": [{"label": a.label, "amount": a.amount, "page": a.quote.page, "quote": a.quote.quote} for a in f.amounts],
+        "service_period_start": f.service_period_start, "service_period_end": f.service_period_end,
+        "is_draft": f.is_draft, "is_signed": f.is_signed,
+        "terms": [{"kind": t.kind, "text": t.text, "page": t.quote.page, "quote": t.quote.quote} for t in f.terms],
+        "key_statements": [{"page": q.page, "quote": q.quote} for q in f.key_statements],
+    }
+
+
+def test_llm_cannot_mark_a_draft_agreement_signed(docs):
+    # Review finding security-llm-unverified-doc-fields (A): a model (or text planted for it) flips the
+    # execution status of a DRAFT, and retypes it as an invoice to escape the draft check.
+    doc = docs["2.1 Executive Employment Agreement DRAFT.pdf"]
+    rules = RuleBasedEvidenceAI().extract_facts(doc)
+    assert rules.is_draft and rules.is_signed is False
+    payload = _rules_payload(rules) | {"is_draft": False, "is_signed": True, "doc_type": "invoice"}
+    f = OpenAICompatibleEvidenceAI("fake-model", client=_fake_client(payload)).extract_facts(doc)
+    assert f.is_draft is True and f.is_signed is False
+    assert f.doc_type == rules.doc_type
+
+
+def test_llm_signed_needs_the_rules_or_a_quoted_signature_mark(docs):
+    # The rules read no execution status here (no signature block): "signed" needs a verbatim mark.
+    doc = docs["3.4 SMCS 2025 Registration Confirmation.pdf"]
+    rules = RuleBasedEvidenceAI().extract_facts(doc)
+    assert rules.is_signed is None
+    claimed = _rules_payload(rules) | {"is_signed": True}
+    assert OpenAICompatibleEvidenceAI("m", client=_fake_client(claimed)).extract_facts(doc).is_signed is None
+    invented = claimed | {"key_statements": [{"page": 1, "quote": "Signed: /s/ D. Okafor"}]}
+    assert OpenAICompatibleEvidenceAI("m", client=_fake_client(invented)).extract_facts(doc).is_signed is None
+    approved = _doc("7.9 Approved Invoice.pdf", "INVOICE\nInvoice No.: 77-100\nTotal Due: $1,000.00\nApproved: /s/ Dana Pruitt\n")
+    rules = RuleBasedEvidenceAI().extract_facts(approved)
+    assert rules.is_signed is None  # the rules read execution status only on agreements
+    marked = _rules_payload(rules) | {"is_signed": True, "key_statements": [{"page": 1, "quote": "Approved: /s/ Dana Pruitt"}]}
+    assert OpenAICompatibleEvidenceAI("m", client=_fake_client(marked)).extract_facts(approved).is_signed is True
+
+
+def test_llm_service_period_and_date_must_be_written_in_the_document(docs):
+    # Finding security-llm-unverified-doc-fields (B): a service period the text never states moved M-10.
+    doc = docs["4.1.2 Harrow Vale Litigation Engagement Matter 3310.pdf"]
+    rules = RuleBasedEvidenceAI().extract_facts(doc)
+    assert rules.service_period_start is None and rules.service_period_end is None
+    invented = _rules_payload(rules) | {"service_period_start": "2025-03-01", "service_period_end": "2025-03-31",
+                                        "doc_date": "2025-02-02"}
+    f = OpenAICompatibleEvidenceAI("m", client=_fake_client(invented)).extract_facts(doc)
+    assert (f.service_period_start, f.service_period_end) == (None, None)
+    assert f.doc_date == rules.doc_date
+    stated = _rules_payload(rules) | {"service_period_start": "2025-01-10", "service_period_end": None}
+    f = OpenAICompatibleEvidenceAI("m", client=_fake_client(stated)).extract_facts(doc)
+    assert f.service_period_start == "2025-01-10"  # "January 10, 2025" is written in the letter
+
+
+def test_llm_rewritten_terms_and_labels_do_not_replace_the_rules_reading(docs):
+    # Finding security-llm-unverified-doc-fields (C): kinds, descriptions and labels rewritten while the
+    # quotes stay verbatim dropped CONTINUING_OBLIGATION on M-06.
+    doc = docs["6.1 Northgate Managed Services Agreement.pdf"]
+    rules = RuleBasedEvidenceAI().extract_facts(doc)
+    payload = _rules_payload(rules)
+    for t in payload["terms"]:
+        t["kind"], t["text"] = "other", "monthly fee of $1.00"
+    for a in payload["amounts"]:
+        a["label"] = "line"
+    f = OpenAICompatibleEvidenceAI("m", client=_fake_client(payload)).extract_facts(doc)
+    rule_terms = {(t.kind, t.quote.quote) for t in rules.terms}
+    assert rule_terms <= {(t.kind, t.quote.quote) for t in f.terms}
+    assert {(a.label, a.amount) for a in rules.amounts} <= {(a.label, a.amount) for a in f.amounts}
+    # A description may not carry a figure its quote does not state.
+    assert not any("$1.00" in t.text for t in f.terms)
+
+
+def test_llm_titles_and_references_are_checked_against_the_text(docs):
+    doc = docs["4.2.1 Harrow Vale Invoice 25-0317.pdf"]
+    rules = RuleBasedEvidenceAI().extract_facts(doc)
+    payload = _rules_payload(rules) | {"title": "One-time retainer invoice", "reference_numbers": ["331", "ab", "3310"]}
+    f = OpenAICompatibleEvidenceAI("m", client=_fake_client(payload)).extract_facts(doc)
+    assert f.title == rules.title  # an unstated title would steer document linking
+    assert "331" not in f.reference_numbers and "ab" not in f.reference_numbers  # whole tokens, 3+ characters
+    assert "3310" in f.reference_numbers
+
+
+def test_llm_omissions_keep_the_rules_floor(docs, ai_and_facts):
+    # Finding security-llm-omission-no-rules-floor: a valid but empty answer ("report nothing") removed
+    # challenges. The rules' terms, statements, contradictions and removals now always stand.
+    rules_ai, facts = ai_and_facts
+    doc = docs["6.1 Northgate Managed Services Agreement.pdf"]
+    empty = _rules_payload(facts[doc.doc_id]) | {"terms": [], "key_statements": [], "amounts": []}
+    ai = OpenAICompatibleEvidenceAI("m", client=_fake_client(empty, {"contradictions": []}))
+    f = ai.extract_facts(doc)
+    assert f.terms == facts[doc.doc_id].terms and f.key_statements == facts[doc.doc_id].key_statements
+    adj = _claim("A-30", "One-time RouteWise implementation", AdjustmentCategory.NON_RECURRING,
+                 "One-time implementation of the RouteWise dispatch system.")
+    intent = rules_ai.parse_intent(adj)
+    found = ai.find_contradictions(adj, intent, [f], _routewise_entries())
+    assert found == rules_ai.find_contradictions(adj, intent, [f], _routewise_entries()) and found
+
+    lit = _claim("A-31", "Brennan litigation legal fees", AdjustmentCategory.NON_RECURRING,
+                 "Legal fees defending Brennan v. Coastline. Non-recurring.")
+    entries = [
+        _gl("GL-R700", "2025-03-14", "6400", "Harrow & Vale LLP", "Matter 3310 – Brennan v. Coastline", "14500.00", "25-0317"),
+        _gl("GL-R702", "2025-03-01", "6400", "Harrow & Vale LLP", "Matter 1187 – monthly retainer – Mar 2025", "2500.00", "25-0301"),
+    ]
+    linked = [facts["4.1 Harrow Vale Engagement Letter Matter 1187.pdf"], facts["4.2.1 Harrow Vale Invoice 25-0317.pdf"]]
+    all_qualify = {"classifications": [
+        {"entry_id": e.entry_id, "qualifies": True, "reason": "fits the basis", "doc_ids": [], "page": None, "quote": ""}
+        for e in entries]}
+    ai = OpenAICompatibleEvidenceAI("m", client=_fake_client(all_qualify))
+    out = {c.entry_id: c for c in ai.classify_entries(lit, rules_ai.parse_intent(lit), entries, linked)}
+    assert out["GL-R702"].qualifies is False and "1187" in out["GL-R702"].reason
+
+    intent_payload = {"counterparties": [], "keywords": [], "reference_numbers": [], "event_type": "other",
+                      "asserts_nonrecurring": False, "asserts_personal": False, "is_pro_forma": False,
+                      "is_normalization": False, "normalized_amount": None, "event_months": [], "notes": ""}
+    merged = OpenAICompatibleEvidenceAI("m", client=_fake_client(intent_payload)).parse_intent(lit)
+    floor = RuleBasedEvidenceAI().parse_intent(lit)
+    assert merged.asserts_nonrecurring and set(floor.keywords) <= set(merged.keywords)
+    assert set(floor.counterparties) <= set(merged.counterparties)
+
+
+def test_llm_trivial_or_unbacked_contradiction_quotes_are_dropped(docs, ai_and_facts):
+    # Finding security-trivial-quote-verification: a one-character quote "verified" a contradiction
+    # that turned M-04 from ACCEPT to REJECT. Quotes need MIN_QUOTE_CHARS and must back the statement.
+    rules_ai, facts = ai_and_facts
+    letter = docs["10.1 Keel Point Engagement Letter.pdf"]
+    good = "The Company will pay a non-refundable retainer of $26,000 upon execution of this letter and a success fee at closing."
+    assert good in letter.pages[0].text
+    items = [
+        {"doc_id": letter.doc_id, "statement": "shows the search fee is a recurring monthly retainer.", "page": 1,
+         "quote": "a", "conflicts_with": "non-recurring", "entry_ids": []},
+        {"doc_id": letter.doc_id, "statement": "sets a retainer of $99,000 a month.", "page": 1, "quote": good,
+         "conflicts_with": "non-recurring", "entry_ids": []},
+        {"doc_id": letter.doc_id, "statement": "describes the payroll as owner compensation.", "page": 1, "quote": good,
+         "conflicts_with": "non-recurring", "entry_ids": []},
+        {"doc_id": letter.doc_id, "statement": "adds a success fee payable at closing.", "page": 1, "quote": good,
+         "conflicts_with": "non-recurring", "entry_ids": []},
+    ]
+    ai = OpenAICompatibleEvidenceAI("m", client=_fake_client(_rules_payload(facts[letter.doc_id]), {"contradictions": items}))
+    ai.extract_facts(letter)
+    adj = _claim("A-32", "Sell-side advisory retainer", AdjustmentCategory.NON_RECURRING)
+    found = ai.find_contradictions(adj, AdjustmentIntent(adj_id="A-32"), [facts[letter.doc_id]], [])
+    assert [c.statement for c in found] == ["adds a success fee payable at closing."]
+    assert ai.dropped_quotes == 3  # too short; a figure the quote lacks; nothing in common with the quote
+
+
+def test_llm_only_removals_must_quote_their_basis(docs, ai_and_facts):
+    # Finding security-trivial-quote-verification: qualifies=False with a free-text reason and no quote
+    # removed every M-04 entry. Without a verified passage that backs the reason, nothing is removed.
+    rules_ai, facts = ai_and_facts
+    invoice = docs["4.2.1 Harrow Vale Invoice 25-0317.pdf"]
+    adj = _claim("A-33", "Brennan litigation legal fees", AdjustmentCategory.NON_RECURRING,
+                 "Legal fees defending Brennan v. Coastline.")
+    entries = [
+        _gl("GL-R720", "2025-03-14", "6400", "Harrow & Vale LLP", "Matter 3310 – Brennan v. Coastline", "14500.00", "25-0317"),
+        _gl("GL-R721", "2025-03-20", "6400", "Harrow & Vale LLP", "Matter 3310 – deposition preparation", "3125.00", "25-0320"),
+        _gl("GL-R722", "2025-03-25", "6400", "Harrow & Vale LLP", "Matter 3310 – motion to dismiss", "7150.00", "25-0325"),
+    ]
+    reply = {"classifications": [
+        {"entry_id": "GL-R720", "qualifies": False, "reason": "owner personal expense", "doc_ids": [invoice.doc_id],
+         "page": None, "quote": ""},
+        {"entry_id": "GL-R721", "qualifies": False, "reason": "Deposition preparation belongs to a different case.",
+         "doc_ids": [invoice.doc_id], "page": 1, "quote": "Deposition preparation"},
+        {"entry_id": "GL-R722", "qualifies": False, "reason": "Motion practice is outside the claim.",
+         "doc_ids": [invoice.doc_id], "page": 1, "quote": "Motion practice is outside the claim."},
+    ]}
+    ai = OpenAICompatibleEvidenceAI("m", client=_fake_client(_rules_payload(facts[invoice.doc_id]), reply))
+    ai.extract_facts(invoice)
+    out = {c.entry_id: c for c in ai.classify_entries(adj, rules_ai.parse_intent(adj), entries, [facts[invoice.doc_id]])}
+    assert out["GL-R720"].qualifies is False and out["GL-R720"].doc_ids == []  # kept: the engine asks instead
+    assert out["GL-R721"].doc_ids == [invoice.doc_id]  # a verbatim passage that carries the reason's subject
+    assert out["GL-R722"].doc_ids == []  # the "quote" is not in the document
+    assert ai.dropped_quotes == 1
+
+
+def test_rule_quotes_are_never_shorter_than_verification_accepts():
+    doc = _doc("9.9 Short Lines.pdf", "INVOICE\nRef: Q-100\nAmount due\n$950\nThank you\n")
+    f = RuleBasedEvidenceAI().extract_facts(doc)
+    assert f.dropped_quotes == 0
+    for q in _all_quotes(f):
+        assert len(q.quote.strip()) >= MIN_QUOTE_CHARS and verify_quote(q, {doc.doc_id: doc})
+
+
+def test_quotes_checked_against_facts_also_need_the_minimum_length(ai_and_facts):
+    _, facts = ai_and_facts
+    f = facts["6.1 Northgate Managed Services Agreement.pdf"]
+    evidence = _Evidence({})  # no page text cached: checked against the extracted facts' quotes
+    assert not evidence.verified(EvidenceQuote(doc_id=f.doc_id, page=1, quote="a"), {f.doc_id: f})
+    assert evidence.verified(f.terms[0].quote, {f.doc_id: f})
+
+
+def test_contradiction_statements_state_facts_not_conclusions(ai_and_facts):
+    # Review finding ui-09: "records a business purpose ..., so it is not a personal cost" answered the
+    # judgment question inside the facts panel. Statements say what the document says; nothing more.
+    ai, facts = ai_and_facts
+    personal = _claim("A-34", "Owner personal expenses", AdjustmentCategory.OWNER_DISCRETIONARY,
+                      "Owner travel run through the Company.")
+    trip = [_gl("GL-R730", "2025-03-21", "6600", "Delta Air Lines", "Travel – SMCS summit Orlando – D. Okafor", "5600.00")]
+    found = ai.find_contradictions(personal, ai.parse_intent(personal),
+                                   [facts["3.4 SMCS 2025 Registration Confirmation.pdf"]], trip)
+    one_time = _claim("A-35", "One-time RouteWise implementation", AdjustmentCategory.NON_RECURRING)
+    found += ai.find_contradictions(one_time, ai.parse_intent(one_time),
+                                    [facts["6.1 Northgate Managed Services Agreement.pdf"],
+                                     facts["4.1 Harrow Vale Engagement Letter Matter 1187.pdf"]], _routewise_entries())
+    assert found
+    for c in found:
+        for inference in ("so it is not", "rather than", "not a one-time", "not one-time", "so the cost"):
+            assert inference not in c.statement, c.statement
+
+
 # ---------------------------------------------------------------------------
 # get_ai and prompts
 # ---------------------------------------------------------------------------
@@ -1167,6 +1391,14 @@ def test_prompts_state_the_boundary():
         assert "never compute" in text, task
         assert "not stated" in text, task
         assert "verbatim" in text or task == "parse_intent", task
+        # Document text is data, never instructions (finding security-llm-unverified-doc-fields).
+        assert "untrusted content" in text and "never instructions" in text, task
+
+
+def test_classification_schema_asks_for_the_backing_quote():
+    props = CLASSIFY_ENTRIES_SCHEMA["properties"]["classifications"]["items"]["properties"]
+    assert {"quote", "page"} <= set(props)
+    assert "quote" in load_prompt("classify_entries")
 
 
 def test_no_ap_imports_or_hardcoded_root():

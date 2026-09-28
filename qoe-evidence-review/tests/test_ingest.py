@@ -8,6 +8,7 @@ import io
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
+from typing import Optional
 
 import openpyxl
 import pytest
@@ -598,3 +599,383 @@ def test_qbo_source_rows_point_at_the_physical_line(tmp_path: Path):
     for e in pkg.gl:
         assert e.source_row == rows[(e.date, e.account, e.doc_number)]
         assert e.entry_id == f"GL-R{e.source_row}"
+
+
+# ---------------------------------------------------------------------------
+# Review fixes: P&L sections and account rows
+# ---------------------------------------------------------------------------
+
+
+def _pl(path: Path, body: list[list[object]]) -> Path:
+    return _xlsx(path, [["Test Co (SYNTHETIC)"], ["Profit and Loss by Month"], [], [None, "Jan 2024", "Feb 2024", "Total"], *body])
+
+
+def test_pl_group_heading_inherits_the_parent_sign_and_total_closes_it(tmp_path: Path):
+    """A QBO parent-account grouping inside Income must not flip revenue to debit-natural."""
+    pl = read_monthly_pl(_pl(tmp_path / "pl.xlsx", [
+        ["Income"],  # 5
+        ["4000 Service Revenue", 100, 110, 210],  # 6
+        ["Maintenance Agreements"],  # 7 unnumbered group heading
+        ["4100 Maintenance Agreement Revenue", 50, 50, 100],  # 8
+        ["Total Maintenance Agreements", 50, 50, 100],  # 9
+        ["4900 Sales Discounts", -5, -5, -10],  # 10 back in Income after the group's total
+        ["Total Income", 145, 155, 300],  # 11
+        ["Expenses"],  # 12
+        ["Payroll Expenses"],  # 13 group heading inside Expenses
+        ["6010 Officer Compensation", 30, 30, 60],  # 14
+        ["Total Payroll Expenses", 30, 30, 60],  # 15
+        ["6400 Legal", 10, 10, 20],  # 16
+    ]))
+    lines = {ln.account: ln for ln in pl.lines}
+    assert lines["4100"].amounts["2024-01"] == "-50.00" and lines["4100"].section == "Income > Maintenance Agreements"
+    assert lines["4900"].amounts["2024-01"] == "5.00" and lines["4900"].section == "Income"
+    assert lines["6010"].amounts["2024-01"] == "30.00" and lines["6010"].section == "Expenses > Payroll Expenses"
+    assert lines["6400"].section == "Expenses"
+
+
+def test_pl_sales_and_marketing_is_an_expense_section(tmp_path: Path):
+    pl = read_monthly_pl(_pl(tmp_path / "pl.xlsx", [
+        ["Revenue"],
+        ["4000 Product Revenue", 100, 100, 200],
+        ["Cost of Revenue"],
+        ["5000 Hosting", 10, 10, 20],
+        ["Operating Expenses"],
+        ["Sales & Marketing"],
+        ["6500 Advertising", 20, 20, 40],
+        ["6510 Sales Commissions", 7, 7, 14],
+        ["General & Administrative"],
+        ["6400 Legal", 5, 5, 10],
+    ]))
+    lines = {ln.account: ln for ln in pl.lines}
+    assert [lines[a].amounts["2024-01"] for a in ("4000", "5000", "6500", "6510", "6400")] == ["-100.00", "10.00", "20.00", "7.00", "5.00"]
+
+
+@pytest.mark.parametrize(
+    "heading, credit",
+    [
+        ("Income", True), ("Revenue", True), ("Sales", True), ("Net Sales", True), ("Trading Income", True),
+        ("Other Income", True), ("Other Income (Expense)", True), ("Other income and expense", True),
+        ("Other income (expense), net", True), ("Other Income/Expense", True),
+        ("Sales & Marketing", False), ("Sales and Marketing Expenses", False), ("Selling Expenses", False),
+        ("Cost of Sales", False), ("Cost of Revenue", False), ("Income Tax Expense", False),
+        ("Expenses", False), ("Other Expenses", False), ("Sales Commissions", False),
+    ],
+)
+def test_section_sign_rules(heading: str, credit: bool):
+    from qoe.ingest import section_is_credit_natural
+
+    assert section_is_credit_natural(heading) is credit
+
+
+def test_pl_net_of_other_income_expense_section(tmp_path: Path):
+    """Management P&Ls show "Other Income (Expense)" net: income positive, expense in parentheses."""
+    pl = read_monthly_pl(_pl(tmp_path / "pl.xlsx", [
+        ["Other Income (Expense)"],
+        ["8000 Other Income", 3, 3, 6],
+        ["8100 Interest Expense", -2, -2, -4],
+    ]))
+    lines = {ln.account: ln for ln in pl.lines}
+    assert lines["8000"].amounts["2024-01"] == "-3.00"  # a credit
+    assert lines["8100"].amounts["2024-01"] == "2.00"  # a debit
+
+
+def test_pl_account_numbers_are_parsed_like_the_gl(tmp_path: Path):
+    pl = read_monthly_pl(_pl(tmp_path / "pl.xlsx", [
+        ["Expenses"],
+        ["6000.10 Salaries - Office sub", 5, 5, 10],
+        ["60001000 Big Number Account", 7, 7, 14],
+        ["4000-10 Service Revenue - Commercial", 1, 1, 2],
+        ["6400 - Legal & Professional Fees", 1, 1, 2],
+    ]))
+    assert [(ln.account, ln.account_name) for ln in pl.lines] == [
+        ("6000.10", "Salaries - Office sub"),
+        ("60001000", "Big Number Account"),
+        ("4000-10", "Service Revenue - Commercial"),
+        ("6400", "Legal & Professional Fees"),
+    ]
+
+
+def test_pl_without_account_numbers_matches_chart_of_accounts_names(tmp_path: Path):
+    from qoe.schemas import Account, EbitdaClass
+
+    accounts = {
+        "Services": Account(number="Services", name="Services", source_type="Income", ebitda_class=EbitdaClass.REVENUE),
+        "Office Expenses:Other": Account(number="Office Expenses:Other", name="Office Expenses:Other", source_type="Expenses", ebitda_class=EbitdaClass.OPEX),
+        "Services:Other": Account(number="Services:Other", name="Services:Other", source_type="Income", ebitda_class=EbitdaClass.REVENUE),
+        "Uncategorized Expense": Account(number="Uncategorized Expense", name="Uncategorized Expense", source_type="Expenses", ebitda_class=EbitdaClass.OPEX),
+    }
+    path = _pl(tmp_path / "pl.xlsx", [
+        ["Income"],
+        ["Services", 100, 100, 200],
+        ["Expenses"],
+        ["Office Expenses"],
+        ["Other", 25, 25, 50],
+        ["Total Office Expenses", 25, 25, 50],
+        ["Uncategorized Expense", 4, 4, 8],
+    ])
+    pl = read_monthly_pl(path, accounts=accounts)
+    assert [(ln.account, ln.amounts["2024-01"]) for ln in pl.lines] == [
+        ("Services", "-100.00"), ("Office Expenses:Other", "25.00"), ("Uncategorized Expense", "4.00")
+    ]
+    # Without the chart of accounts nothing can be matched: an error that says why, not an empty P&L.
+    with pytest.raises(ValueError, match=r"no account rows found.*chart of accounts.*row 6 'Services'"):
+        read_monthly_pl(path)
+
+
+# ---------------------------------------------------------------------------
+# Review fixes: management schedule
+# ---------------------------------------------------------------------------
+
+
+def _sched(path: Path, body: list[list[object]], header: Optional[list[object]] = None) -> Path:
+    return _xlsx(path, [["Test Co (SYNTHETIC)"], header or ["Ref", "Adjustment", "Category", "GL Account(s)", "FY2024", "FY2025"], *body])
+
+
+def test_schedule_duplicate_refs_are_kept_apart_with_a_warning(tmp_path: Path):
+    from qoe.ingest import _parse_schedule
+
+    path = _sched(tmp_path / "adj.xlsx", [
+        ["M-03", "Owner personal - club dues", "Owner", "6700", 0, 12000],
+        ["M-03", "Owner personal - vehicle", "Owner", "6600", 0, 36000],
+        ["M-04", "Other", "Other", None, 1, 1],
+    ])
+    sched, notes = _parse_schedule(path, ["FY2024", "FY2025"], None)
+    assert [(a.adj_id, a.amounts["FY2025"]) for a in sched.adjustments] == [("M-03", "12000.00"), ("M-03#2", "36000.00"), ("M-04", "1.00")]
+    assert any("WARNING - duplicate Refs" in n and "row 4 repeats Ref 'M-03' of row 3" in n for n in notes)
+
+
+def test_schedule_numeric_refs_keep_their_displayed_decimals(tmp_path: Path):
+    from qoe.ingest import _parse_schedule
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(["Ref", "Adjustment", "FY2024"])
+    ws.append([1.1, "Legal A", 10])
+    ws.append([1.2, "Legal B", 20])
+    ws.append([1.10, "Legal J (tenth item)", 30])
+    ws.append([3, "Storm", 40])
+    ws["A4"].number_format = "0.00"
+    path = tmp_path / "adj.xlsx"
+    wb.save(path)
+    sched, notes = _parse_schedule(path, ["FY2024"], None)
+    assert [a.adj_id for a in sched.adjustments] == ["1.1", "1.2", "1.10", "3"]
+    assert any("Refs stored as decimal numbers" in n and "1.1 (row 2)" in n for n in notes)
+
+
+def test_schedule_lettered_subtotals_are_label_rows_not_adjustments(tmp_path: Path):
+    from qoe.ingest import _parse_schedule
+
+    path = _sched(tmp_path / "adj.xlsx", [
+        ["A", "Net income", None, None, 900, 1900],
+        ["B", "Interest expense", None, None, 100, 100],
+        ["C", "EBITDA (A+B)", None, None, 1000, 2000],
+        [1, "Legal fees", "Non-recurring", "6400", 10, 20],
+        [2, "Owner comp", "Normalization", "6010", 100, 100],
+        ["D", "Total adjustments", None, None, 110, 120],
+        ["C+D", "Adjusted EBITDA", None, None, 1110, 2120],
+    ])
+    sched, notes = _parse_schedule(path, ["FY2024", "FY2025"], None)
+    assert [a.adj_id for a in sched.adjustments] == ["1", "2"]
+    assert sched.net_income["FY2024"] == "900.00" and sched.interest["FY2024"] == "100.00"
+    assert sched.reported_ebitda["FY2025"] == "2000.00"
+    assert sched.total_adjustments["FY2025"] == "120.00" and sched.adjusted_ebitda["FY2025"] == "2120.00"
+    assert any("read as reported_ebitda" in n and "(C+D 'Adjusted EBITDA') read as adjusted_ebitda" in n for n in notes)
+    # An adjustment that merely mentions EBITDA stays an adjustment.
+    sched2, _ = _parse_schedule(_sched(tmp_path / "adj2.xlsx", [
+        [None, "Reported EBITDA", None, None, 1000, 2000],
+        ["PF-1", "Run-rate EBITDA of acquired entity", "Pro forma", None, 50, 60],
+    ]), ["FY2024", "FY2025"], None)
+    assert [a.adj_id for a in sched2.adjustments] == ["PF-1"]
+
+
+def test_schedule_category_subtotals_are_not_the_total(tmp_path: Path):
+    from decimal import Decimal as Dec
+
+    from qoe.ingest import _parse_schedule
+    from qoe.reconcile import _arithmetic_issues
+
+    path = _sched(tmp_path / "adj.xlsx", [
+        [None, "Net income", None, None, 1150, 2150],
+        [None, "Reported EBITDA", None, None, 1150, 2150],
+        [1, "Legal fees", "Non-recurring", "6400", 10, 20],
+        [2, "Severance", "Non-recurring", "6000", 5, 5],
+        [None, "Total non-recurring adjustments", None, None, 15, 25],
+        [3, "Owner comp", "Normalization", "6010", 100, 100],
+        [None, "Total owner adjustments", None, None, 100, 100],
+        [None, "Total management adjustments", None, None, 115, 125],
+        [None, "Adjusted EBITDA", None, None, 1265, 2275],
+    ])
+    sched, notes = _parse_schedule(path, ["FY2024", "FY2025"], None)
+    assert sched.total_adjustments == {"FY2024": "115.00", "FY2025": "125.00"}
+    assert any("'Total management adjustments' used as total adjustments" in n for n in notes)
+    assert _arithmetic_issues(sched, ["FY2024", "FY2025"], Dec("1")) == []
+
+
+def test_schedule_footnote_rows_are_not_adjustments(tmp_path: Path):
+    from qoe.ingest import _parse_schedule
+
+    path = _sched(tmp_path / "adj.xlsx", [
+        [None, "Reported EBITDA", None, None, 1000, 2000],
+        ["M-01", "Legal fees", "Non-recurring", "6400", 10, 20],
+        ["M-02", "Rent normalization (amount TBD)", "Normalization", "6100", None, None],  # kept: a real item
+        [None, "Adjusted EBITDA", None, None, 1010, 2020],
+        ["(1)", "Amounts are unaudited and exclude pre-tax interest income.", None, None, None, None],
+        ["*", "Management estimate", None, None, None, None],
+        ["9", "Prepared for Project Cobalt", None, None, None, None],
+    ])
+    sched, notes = _parse_schedule(path, ["FY2024", "FY2025"], None)
+    assert [a.adj_id for a in sched.adjustments] == ["M-01", "M-02"]
+    assert any("ignored 3 note rows" in n for n in notes)
+
+
+def test_schedule_two_row_header_and_spaced_period_labels(tmp_path: Path):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(["Co (SYNTHETIC)"])
+    ws.append(["Ref", "Adjustment", "Category", "Fiscal year ended", None])
+    ws.append([None, None, None, "FY 2024", "FY 2025"])
+    ws.merge_cells("A2:A3")
+    ws.merge_cells("B2:B3")
+    ws.merge_cells("D2:E2")
+    ws.append(["M-01", "Legal", "Non-recurring", 1, 2])
+    path = tmp_path / "adj.xlsx"
+    wb.save(path)
+    sched = read_schedule(path, ["FY2024", "FY2025"])
+    assert [(a.adj_id, a.title, a.amounts) for a in sched.adjustments] == [("M-01", "Legal", {"FY2024": "1.00", "FY2025": "2.00"})]
+
+
+def test_schedule_header_error_shows_what_was_found(tmp_path: Path):
+    path = _sched(tmp_path / "adj.xlsx", [["M-01", "Legal", None, None, 1, 2]], header=["Ref", "Adjustment", "Category", "GL", "FY24", "FY25"])
+    with pytest.raises(ValueError) as err:
+        read_schedule(path, ["FY2024", "FY2025"])
+    message = str(err.value)
+    assert "first rows" in message and "'FY24'" in message and "closest cells" in message
+
+
+def test_schedule_uncached_formula_amounts_stop_the_run(tmp_path: Path):
+    from qoe.gl_formats import UncachedFormulaError
+
+    path = _sched(tmp_path / "adj.xlsx", [
+        [None, "Net income", None, None, 1000, 2000],
+        ["M-01", "Legal fees", "Non-recurring", "6400", 10, "=5*4"],
+    ])
+    with pytest.raises(UncachedFormulaError, match=r"cell F4 holds a formula \(=5\*4\)"):
+        read_schedule(path, ["FY2024", "FY2025"])
+
+
+# ---------------------------------------------------------------------------
+# Review fixes: documents and package containment
+# ---------------------------------------------------------------------------
+
+
+def test_html_email_is_stripped_in_linear_time():
+    import time
+
+    from qoe.ingest import _strip_html
+
+    html = "<html><head><style>p{x:1}</style><title>t</title></head><body><p>Hello&nbsp;<b>there</b> &amp; you&#39;re</p>" \
+           "<br/>Line2<script>alert(1)</script><div>Tail &lt;ok&gt;</div></body></html>"
+    text = _strip_html(html)
+    assert "Hello there & you're" in text and "Line2" in text and "Tail <ok>" in text
+    assert "alert" not in text and "x:1" not in text
+    for hostile in ("<script>" * 40000, "<style>" * 40000, "<" * 200000, "<a " * 60000, "<![" * 40000):
+        start = time.perf_counter()
+        _strip_html(hostile)
+        assert time.perf_counter() - start < 2.0
+
+
+def test_documents_skip_links_outside_the_deal_and_to_the_answer_key(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    import os
+
+    deal = build_deal(tmp_path / "deal")
+    secrets = _text(tmp_path / "secrets" / "credentials.txt", "AWS_SECRET_ACCESS_KEY=not-a-real-key\n")
+    ops = deal / "documents" / "10 Operations"
+    ops.mkdir(parents=True)
+    os.symlink(secrets, ops / "10.9 Vendor Statement.txt")
+    os.symlink(Path("..") / ".." / "ground_truth.json", ops / "10.8 Board Notes.txt")
+    os.link(deal / "ground_truth.json", ops / "10.7 Hard Link.txt")
+    os.symlink(tmp_path / "secrets", deal / "documents" / "linked folder")
+
+    real_open = io.open
+
+    def spy_open(file, *args, **kwargs):
+        if Path(str(file)).resolve().name in ("ground_truth.json", "credentials.txt") or "10.7 Hard Link" in str(file):
+            raise AssertionError(f"ingest opened {file}")
+        return real_open(file, *args, **kwargs)
+
+    monkeypatch.setattr(io, "open", spy_open)
+    monkeypatch.setattr(builtins, "open", spy_open)
+    pkg = load_deal(deal)
+    monkeypatch.undo()
+
+    assert [d.doc_id for d in pkg.documents] == ["4.2 Hollis Crane engagement letter.txt", "4.2.1 Hollis Crane Invoice H-03.pdf"]
+    assert not any("10 Operations" in rel for rel in pkg.input_hashes)
+    notes = "\n".join(pkg.ingest_notes)
+    assert "resolve outside the deal directory: documents/10 Operations/10.9 Vendor Statement.txt" in notes
+    assert "answer key under another name" in notes and "10.8 Board Notes.txt" in notes and "10.7 Hard Link.txt" in notes
+    assert "not-a-real-key" not in pkg.model_dump_json()
+
+
+@pytest.mark.parametrize(
+    "key, value",
+    [
+        ("gl", "../outside/general_ledger.csv"),
+        ("chart_of_accounts", "/etc/passwd"),
+        ("documents_dir", "../secrets_docs"),
+        ("documents_dir", "/tmp"),
+        ("monthly_pl", "financials/../../x.xlsx"),
+    ],
+)
+def test_deal_yaml_paths_must_stay_inside_the_deal(tmp_path: Path, key: str, value: str):
+    deal = build_deal(tmp_path / "deal")
+    _text(tmp_path / "outside" / "general_ledger.csv", "x")
+    (tmp_path / "secrets_docs").mkdir()
+    yaml_path = deal / "deal.yaml"
+    text = yaml_path.read_text()
+    current = {"gl": "gl/general_ledger.csv", "chart_of_accounts": "gl/chart_of_accounts.csv", "documents_dir": "documents",
+               "monthly_pl": "financials/monthly_pl.xlsx"}[key]
+    yaml_path.write_text(text.replace(f"  {key}: {current}", f"  {key}: {value}"))
+    with pytest.raises(ValueError, match="deal directory"):
+        load_deal(deal)
+
+
+def test_linked_input_file_outside_the_deal_is_refused(tmp_path: Path):
+    import os
+
+    deal = build_deal(tmp_path / "deal")
+    outside = _text(tmp_path / "elsewhere.csv", "Account #,Full name,Type\n4000,Revenue,Income\n")
+    coa = deal / "gl" / "chart_of_accounts.csv"
+    coa.unlink()
+    os.symlink(outside, coa)
+    with pytest.raises(ValueError, match="resolves outside the deal directory"):
+        load_deal(deal)
+
+
+@pytest.mark.parametrize("deal_id", ["../escaped/owned", "a/b", "..", "/tmp/abs"])
+def test_deal_id_must_be_a_plain_name(tmp_path: Path, deal_id: str):
+    deal = build_deal(tmp_path / "deal")
+    yaml_path = deal / "deal.yaml"
+    yaml_path.write_text(yaml_path.read_text().replace("deal_id: test_deal", f"deal_id: {deal_id!r}"))
+    with pytest.raises(ValueError, match="deal_id"):
+        load_deal(deal)
+
+
+def test_schedule_accounts_keep_sub_account_numbers_and_parents_cover_children(tmp_path: Path):
+    """The GL keeps "4000-10" whole, so the schedule must too; a cited parent covers its sub-accounts."""
+    from qoe.ingest import _parse_schedule, _with_sub_accounts
+    from qoe.schemas import Account, EbitdaClass
+
+    accounts = {n: Account(number=n, name=n, source_type="Income", ebitda_class=EbitdaClass.REVENUE) for n in ("4000", "4000-10", "4000-20", "6000", "6100")}
+    path = _sched(tmp_path / "adj.xlsx", [
+        ["M-01", "Commercial credits", "Other", "4000-10", 1, 1],
+        ["M-02", "Revenue true-up", "Other", "4000", 2, 2],
+        ["M-03", "Opex range", "Other", "6000-6100", 3, 3],
+    ])
+    sched, _ = _parse_schedule(path, ["FY2024", "FY2025"], None, accounts)
+    assert [a.gl_accounts for a in sched.adjustments] == [["4000-10"], ["4000"], ["6000", "6100"]]
+    expanded, notes = _with_sub_accounts(sched, accounts)
+    assert [a.gl_accounts for a in expanded.adjustments] == [["4000-10"], ["4000", "4000-10", "4000-20"], ["6000", "6100"]]
+    assert notes and "M-02: 4000-10, 4000-20" in notes[0]
+    # Without a chart of accounts the SPEC rule applies: every 3-6 digit number.
+    plain = read_schedule(path, ["FY2024", "FY2025"])
+    assert [a.gl_accounts for a in plain.adjustments] == [["4000"], ["4000"], ["6000", "6100"]]

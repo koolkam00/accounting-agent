@@ -26,10 +26,10 @@ from datetime import date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 from typing import Iterable, Optional, Sequence
+from xml.etree import ElementTree
 
 import openpyxl
 from openpyxl.utils.cell import coordinate_to_tuple, get_column_letter
-from xml.etree import ElementTree
 
 from qoe.money import D, fmt
 from qoe.schemas import Account, EbitdaClass, GLEntry
@@ -162,6 +162,8 @@ def detect_dayfirst(values: Iterable[object], default: bool, what: str) -> bool:
         if not m:
             continue
         first, second = int(m.group(1)), int(m.group(2))
+        if first > 31 or second > 31 or (first > 12 and second > 12):
+            continue  # not a date either way; proves nothing
         if first > 12 and day_first is None:
             day_first = value.strip()
         if second > 12 and month_first is None:
@@ -216,8 +218,9 @@ def read_table(path: Path, sheet: Optional[str] = None, *, keep_number_formats: 
 
     xlsx: the named sheet is used when present (case-insensitive), else the first
     sheet. The sheet's stored ``<dimension>`` is ignored (read-only openpyxl would
-    otherwise stop at a stale one and silently drop rows), and formula cells that
-    carry no calculated value are reported, because they read as blank.
+    otherwise stop at a stale one and silently drop rows). A formula cell saved
+    without its calculated value becomes an ``UncachedFormula`` placeholder: blank
+    as text, an error when read as an amount or a date, and listed in a note.
 
     CSV / text: UTF-16 (Excel "Unicode Text") and UTF-8 are recognised; lines that
     are not valid UTF-8 fall back to Windows-1252 one line at a time, with a note.
@@ -244,17 +247,13 @@ def load_table_rows(path: Path, sheet: Optional[str] = None) -> list[Row]:
 _FORMULA_TAG = re.compile(rb"<(?:\w+:)?f[\s>/]")
 
 
-def _workbook_has_formulas(path: Path) -> bool:
-    """Cheap pre-check (no XML parsing): does any worksheet part contain a formula element?"""
+def _sheet_has_formulas(path: Path, worksheet_part: str) -> bool:
+    """Cheap pre-check (a byte search, no XML parsing): does the sheet contain a formula element?"""
     try:
         with zipfile.ZipFile(path) as zf:
-            return any(
-                _FORMULA_TAG.search(zf.read(name))
-                for name in zf.namelist()
-                if name.startswith("xl/worksheets/") and name.endswith(".xml")
-            )
+            return bool(_FORMULA_TAG.search(zf.read(worksheet_part)))
     except (zipfile.BadZipFile, OSError, KeyError):
-        return True  # let openpyxl report the real problem
+        return False
 
 
 class UncachedFormula:
@@ -312,7 +311,7 @@ def _read_xlsx(path: Path, sheet: Optional[str], keep_number_formats: bool) -> T
     finally:
         wb.close()
     notes: list[str] = []
-    if worksheet_part and _workbook_has_formulas(path):
+    if worksheet_part and _sheet_has_formulas(path, worksheet_part):
         uncached = _uncached_formula_cells(path, worksheet_part)
         for (r_idx, c_idx), (coordinate, formula) in uncached.items():
             while len(rows) <= r_idx:

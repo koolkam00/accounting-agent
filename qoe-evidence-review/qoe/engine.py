@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -66,7 +67,9 @@ def verify_doc_facts(facts: DocFacts, doc: SourceDocument, docs_by_id: dict[str,
     )
 
 
-def extract_verified_facts(ai: EvidenceAI, docs: list[SourceDocument], notes: list[str]) -> list[DocFacts]:
+def extract_verified_facts(
+    ai: EvidenceAI, docs: list[SourceDocument], notes: list[str], failures: Optional[list[str]] = None
+) -> list[DocFacts]:
     docs_by_id = {d.doc_id: d for d in docs}
     out: list[DocFacts] = []
     for doc in sorted(docs, key=lambda d: d.doc_id):
@@ -74,6 +77,8 @@ def extract_verified_facts(ai: EvidenceAI, docs: list[SourceDocument], notes: li
             raw = ai.extract_facts(doc)
         except Exception as exc:  # one unreadable document must not stop the review
             notes.append(f"Fact extraction failed for {doc.doc_id}: {exc}")
+            if failures is not None:
+                failures.append(f"extract_facts[{doc.doc_id}]: {type(exc).__name__}: {str(exc)[:200]}")
             raw = DocFacts(doc_id=doc.doc_id, doc_type="other", extractor=ai.name)
         facts = verify_doc_facts(raw, doc, docs_by_id)
         if facts.dropped_quotes:
@@ -92,13 +97,17 @@ def _fallback_intent(adj: AdjustmentClaim) -> AdjustmentIntent:
     )
 
 
-def parse_intents(ai: EvidenceAI, adjustments: list[AdjustmentClaim], notes: list[str]) -> list[AdjustmentIntent]:
+def parse_intents(
+    ai: EvidenceAI, adjustments: list[AdjustmentClaim], notes: list[str], failures: Optional[list[str]] = None
+) -> list[AdjustmentIntent]:
     out: list[AdjustmentIntent] = []
     for adj in adjustments:
         try:
             intent = ai.parse_intent(adj)
         except Exception as exc:  # fall back to what the schedule's category says
             notes.append(f"Intent parsing failed for {adj.adj_id}: {exc}")
+            if failures is not None:
+                failures.append(f"parse_intent[{adj.adj_id}]: {type(exc).__name__}: {str(exc)[:200]}")
             intent = _fallback_intent(adj)
         if intent.adj_id != adj.adj_id:
             intent = intent.model_copy(update={"adj_id": adj.adj_id})
@@ -137,8 +146,12 @@ def review_package(
 
         recon = reconcile(pkg)
     notes = list(pkg.ingest_notes)
-    facts = extract_verified_facts(ai, pkg.documents, notes)
-    intents = parse_intents(ai, pkg.schedule.adjustments, notes)
+    # AI provenance for this run only: an adapter object may be reused across runs.
+    fallbacks_before = len(_adapter_fallbacks(ai))
+    adapter_drops_before = _adapter_drops(ai)
+    failures: list[str] = []
+    facts = extract_verified_facts(ai, pkg.documents, notes, failures)
+    intents = parse_intents(ai, pkg.schedule.adjustments, notes, failures)
     index = build_index(pkg, facts, recon)
     traces = [trace_adjustment(index, adj, intent, order=i) for i, (adj, intent) in enumerate(zip(pkg.schedule.adjustments, intents))]
     resolve_overlaps(traces)
@@ -150,6 +163,22 @@ def review_package(
     assessments += propose_duplicate_items(index, traces, taken_ids=[a.adj_id for a in assessments])
     for t in traces:
         notes.extend(f"{t.adj.adj_id}: {n}" for n in t.notes)
+        failures.extend(f"{n.split(' failed: ')[0]}[{t.adj.adj_id}]: {n.split(' failed: ', 1)[1]}"
+                        for n in t.notes if _AI_CALL_FAILED.match(n))
+    ai_fallbacks = _adapter_fallbacks(ai)[fallbacks_before:] + failures
+    # Every AI quote rejected in this run: in document facts, at the challenge, and inside the adapter.
+    ai_dropped = (
+        sum(f.dropped_quotes for f in facts)
+        + sum(t.dropped_quotes for t in traces)
+        + max(0, _adapter_drops(ai) - adapter_drops_before)
+    )
+    if ai_fallbacks:
+        notes.append(
+            f"AI provenance: {len(ai_fallbacks)} AI call(s) failed and fell back to the rule-based reader or to "
+            f"the schedule; this run is not purely {ai.name}. See ai_fallbacks."
+        )
+    if ai_dropped:
+        notes.append(f"AI provenance: {ai_dropped} AI quote(s) were not verbatim (or too short to prove anything) and were dropped.")
     bridge = build_bridge(pkg, recon, pkg.schedule, assessments)
     return Workpaper(
         run_id=run_id or default_run_id(pkg, ai.name),
@@ -164,7 +193,24 @@ def review_package(
         assessments=assessments,
         bridge=bridge,
         schedule=pkg.schedule,
+        ai_fallbacks=ai_fallbacks,
+        ai_dropped_quotes=ai_dropped,
     )
+
+
+# The notes challenge.py and propose.py record when an AI call raises (they then carry on without it).
+_AI_CALL_FAILED = re.compile(r"^(find_contradictions|classify_entries|draft_questions) failed: ")
+
+
+def _adapter_fallbacks(ai: EvidenceAI) -> list[str]:
+    """Calls an AI adapter answered from its rule-based fallback (the LLM adapter records them)."""
+    value = getattr(ai, "fallbacks", None)
+    return [str(x) for x in value] if isinstance(value, list) else []
+
+
+def _adapter_drops(ai: EvidenceAI) -> int:
+    value = getattr(ai, "dropped_quotes", 0)
+    return value if isinstance(value, int) else 0
 
 
 def run_review(
@@ -195,9 +241,28 @@ def workpaper_json(wp: Workpaper) -> str:
     return json.dumps(wp.model_dump(mode="json"), sort_keys=True, indent=2, ensure_ascii=False) + "\n"
 
 
+_SAFE_NAME = re.compile(r"[^A-Za-z0-9_.-]+")
+
+
+def deal_dir_name(deal_id: str) -> str:
+    """A deal id as one safe path component: letters, digits, '_', '.', '-'.
+
+    deal.yaml is an input like any other, so its deal_id may carry '/', '..' or an absolute
+    path; used raw it would write the workpaper outside the output root. Unsafe characters
+    become '_' and leading dots are dropped, so the name can never leave its parent directory.
+    """
+    name = _SAFE_NAME.sub("_", (deal_id or "").strip()).lstrip(".")
+    if not name.strip("_"):
+        raise ValueError(f"deal_id {deal_id!r} has no characters usable in a directory name")
+    return name
+
+
 def save_workpaper(wp: Workpaper, out_dir: Path) -> Path:
-    """Write <out_dir>/<deal_id>/workpaper.json and return its path."""
-    path = Path(out_dir) / wp.deal.deal_id / WORKPAPER_FILENAME
+    """Write <out_dir>/<deal_id>/workpaper.json and return its path (deal_id made path-safe)."""
+    root = Path(out_dir).resolve()
+    path = root / deal_dir_name(wp.deal.deal_id) / WORKPAPER_FILENAME
+    if root not in path.resolve().parents:  # belt and braces: the name is one plain component
+        raise ValueError(f"refusing to write the workpaper outside {root}")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(workpaper_json(wp).encode("utf-8"))
     return path

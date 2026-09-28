@@ -9,7 +9,7 @@ from typing import Iterable, Optional
 import pytest
 
 from qoe.money import D, fmt
-from qoe.reconcile import find_duplicate_entries, gl_ebitda, reconcile
+from qoe.reconcile import find_duplicate_entries, find_duplicate_groups, gl_ebitda, is_generic_doc_number, reconcile
 from qoe.schemas import (
     Account,
     AdjustmentClaim,
@@ -102,7 +102,7 @@ def package(gl: list[GLEntry], pl: ManagementPL, periods: list[tuple[str, str, s
     meta = DealMeta(
         deal_id="unit",
         target_name="Unit Co (SYNTHETIC)",
-        periods=[PeriodDef(label=l, start=s, end=e) for l, s, e in periods],
+        periods=[PeriodDef(label=lab, start=s, end=e) for lab, s, e in periods],
         data_start=data[0],
         data_end=data[1],
         files=DealFiles(gl="gl.csv", chart_of_accounts="coa.csv", monthly_pl="pl.xlsx", adjustments="adj.xlsx"),
@@ -243,6 +243,43 @@ def test_partially_posted_month_is_missing_period():
     assert sum(1 for i in recon.items if i.month == "2024-02" and not i.within_tolerance) == 4
 
 
+def _partial(month: str) -> list[GLEntry]:
+    """Only revenue and rent posted: the month's books are not closed."""
+    return [entry(f"{month}-05", "4000", "-10000", "Acme", "Service"), entry(f"{month}-01", "6100", "2000", "Landlord", "Rent")]
+
+
+def test_two_consecutive_incomplete_months_are_both_missing_period():
+    """Each incomplete month must not become the other's baseline (mid-year Jun + Jul)."""
+    months = [f"2024-{m:02d}" for m in range(1, 13)]
+    gl = []
+    for m in months:
+        gl += _partial(m) if m in ("2024-06", "2024-07") else steady_gl([m])
+    recon = reconcile(package(gl, pl_from_gl(steady_gl(months), months), [("FY", "2024-01", "2024-12")], ("2024-01", "2024-12")))
+    missing = [i for i in recon.issues if i.code is DataQualityCode.MISSING_PERIOD]
+    assert [i.month for i in missing] == ["2024-06", "2024-07"]
+    assert all("only 2 of the 6 accounts" in i.message for i in missing)
+
+
+@pytest.mark.parametrize("tail", [["2024-12"], ["2024-11", "2024-12"], ["2024-10", "2024-11", "2024-12"]])
+def test_unclosed_tail_months_are_missing_period(tail: list[str]):
+    """The last months of a TTM before close: the P&L comes from the same unclosed books, so only
+    the completeness test can see them."""
+    months = [f"2024-{m:02d}" for m in range(1, 13)]
+    gl = []
+    for m in months:
+        gl += _partial(m) if m in tail else steady_gl([m])
+    recon = reconcile(package(gl, pl_from_gl(gl, months), [("FY", "2024-01", "2024-12")], ("2024-01", "2024-12")))
+    assert [i.month for i in recon.issues if i.code is DataQualityCode.MISSING_PERIOD] == tail
+
+
+def test_sporadic_accounts_do_not_make_a_complete_month_look_incomplete():
+    """A quarterly account is not part of the monthly baseline."""
+    months = [f"2024-{m:02d}" for m in range(1, 13)]
+    gl = steady_gl(months) + [entry(f"{m}-15", "6400", "900", "Hollis", "Quarterly review") for m in ("2024-03", "2024-06", "2024-09", "2024-12")]
+    recon = reconcile(package(gl, pl_from_gl(gl, months), [("FY", "2024-01", "2024-12")], ("2024-01", "2024-12")))
+    assert "MISSING_PERIOD" not in codes(recon.issues)
+
+
 def test_pl_missing_month_and_period_outside_data_range():
     months = ["2024-01", "2024-02", "2024-03"]
     gl = steady_gl(months)
@@ -272,6 +309,8 @@ def test_find_duplicate_entries_rules():
                         entry("2025-08-02", "6300", "99", "Vendor B", "Seat", "INV-1", row=402)]
     no_context = [entry("2025-08-05", "6300", "12", row=501), entry("2025-08-06", "6300", "12", row=502)]
     zero = [entry("2025-08-09", "6300", "0", "X", "Void", "V-1", row=601), entry("2025-08-09", "6300", "0", "X", "Void", "V-1", row=602)]
+    # Same doc number on the same day twice, and again three months later: only the pair
+    # within the 45-day document window is one document posted twice.
     triple = [entry("2025-09-01", "5000", "75", "Supply", "Filters", "S-9", row=703),
               entry("2025-09-01", "5000", "75", "Supply", "Filters", "S-9", row=701),
               entry("2025-12-01", "5000", "75", "supply ", "Filters", "s-9", row=702)]
@@ -279,9 +318,93 @@ def test_find_duplicate_entries_rules():
     assert find_duplicate_entries(gl) == [
         ["GL-R101", "GL-R104"],
         ["GL-R201", "GL-R202"],
-        ["GL-R701", "GL-R702", "GL-R703"],
+        ["GL-R701", "GL-R703"],
         ["GL-R801", "GL-R802"],
     ]
+    assert [basis for _, basis in find_duplicate_groups(gl)] == ["doc", "memo", "doc", "memo"]
+
+
+@pytest.mark.parametrize("doc", ["ACH", "ach", "EFT", "Debit", "DEBIT", "WIRE", "Wire Transfer", "CHK", "Auto Pay", "-", "N/A", "000", " "])
+def test_generic_payment_references_never_form_doc_groups(doc: str):
+    """A monthly bill whose Num is a payment-channel placeholder is not twelve postings of one document."""
+    months = [f"2024-{m:02d}" for m in range(1, 13)]
+    gl = [entry(f"{m}-01", "6100", "2000", "Palm River Properties", f"Rent {m}", doc=doc) for m in months]
+    assert find_duplicate_entries(gl) == []
+    # Two postings a few days apart with a placeholder Num: the placeholder proves nothing either.
+    pair = [entry("2024-03-01", "6100", "2000", "Palm River Properties", "Rent March", doc=doc, row=11),
+            entry("2024-03-04", "6100", "2000", "Palm River Properties", "Rent Mar", doc=doc, row=12)]
+    assert find_duplicate_entries(pair) == []
+
+
+def test_generic_doc_number_classification():
+    for generic in ("ACH", "eft", "Debit", "WIRE", "chk", "Direct Debit", "EFT PMT", "--", "n/a", "0", "0000"):
+        assert is_generic_doc_number(generic), generic
+    for specific in ("CRI-25-0507", "10231", "ACH-004512", "CHK 1043", "INV-1", "S-9", "JE-12"):
+        assert not is_generic_doc_number(specific), specific
+
+
+def test_placeholder_doc_numbers_do_not_turn_a_memo_group_into_a_doc_group():
+    """Same memo two days apart with Num "ACH": a memo-rule group, reported as such (stays a question)."""
+    gl = [entry("2024-05-01", "6200", "900", "Coastal Risk", "Premium May", doc="ACH", row=21),
+          entry("2024-05-03", "6200", "900", "Coastal Risk", "Premium May", doc="ACH", row=22)]
+    assert find_duplicate_groups(gl) == [(["GL-R21", "GL-R22"], "memo")]
+    months = ["2024-05"]
+    recon = reconcile(package(gl, pl_from_gl(gl, months), [("P", "2024-05", "2024-05")], ("2024-05", "2024-05")))
+    issue = next(i for i in recon.issues if i.code is DataQualityCode.DUPLICATE_GL_ENTRY)
+    assert "same memo within 7 days" in issue.message and "doc #" not in issue.message
+
+
+def test_doc_number_groups_need_the_postings_within_45_days():
+    near = [entry("2024-01-10", "6400", "5000", "Hollis", "Matter 2291", "25-0212", row=31),
+            entry("2024-02-15", "6400", "5000", "Hollis", "Matter 2291 paid", "25-0212", row=32)]  # 36 days: bill, then paid as expense
+    far = [entry("2024-01-10", "6400", "7000", "Hollis", "Matter 1004", "25-0415", row=41),
+           entry("2024-03-15", "6400", "7000", "Hollis", "Matter 1004 again", "25-0415", row=42)]  # 65 days
+    other_vendor = [entry("2024-04-01", "6400", "5000", "Baxter", "Fees", "25-0212", row=51)]
+    assert find_duplicate_groups(near + far + other_vendor) == [(["GL-R31", "GL-R32"], "doc")]
+
+
+def test_standing_reference_used_every_month_is_not_a_duplicate():
+    """A lease number on every monthly rent bill (a standing reference, not a document number)."""
+    months = [f"2024-{m:02d}" for m in range(1, 13)]
+    gl = [entry(f"{m}-01", "6100", "2000", "Palm River Properties", f"Rent {m}", doc="LEASE-7") for m in months]
+    assert find_duplicate_entries(gl) == []
+    # The memo rule still catches a real double posting of one month's bill.
+    gl.append(entry("2024-06-03", "6100", "2000", "Palm River Properties", "Rent 2024-06", doc="LEASE-7", row=990))
+    groups = find_duplicate_groups(gl)
+    assert len(groups) == 1 and groups[0][1] == "memo" and "GL-R990" in groups[0][0] and len(groups[0][0]) == 2
+
+
+def test_memo_groups_are_anchored_to_the_first_posting_and_do_not_chain():
+    chain = [entry("2024-03-01", "6400", "900", "V", "m", row=338), entry("2024-03-07", "6400", "900", "V", "m", row=339),
+             entry("2024-03-13", "6400", "900", "V", "m", row=340)]
+    # The 13th is 12 days after the 1st: it is not pulled in through the 7th.
+    assert find_duplicate_entries(chain) == [["GL-R338", "GL-R339"]]
+
+
+def test_weekly_recurring_charge_is_not_a_duplicate():
+    from datetime import date, timedelta
+
+    months = [f"2024-{m:02d}" for m in range(1, 13)]
+    gl = steady_gl(months)
+    d = date(2024, 1, 5)
+    weekly = []
+    while d.year == 2024:
+        weekly.append(entry(d.isoformat(), "6400", "2500", "Harbor Staffing", "Weekly bookkeeping retainer"))
+        d += timedelta(days=7)
+    assert find_duplicate_entries(weekly) == []
+    # Weekly with jitter (posted on varying weekdays) is still a recurring charge.
+    jitter = [entry((date(2024, 1, 1) + timedelta(days=7 * k + (k % 3))).isoformat(), "6400", "800", "Cleaner", "Weekly cleaning")
+              for k in range(20)]
+    assert find_duplicate_entries(jitter) == []
+    gl += weekly
+    recon = reconcile(package(gl, pl_from_gl(gl, months), [("FY", "2024-01", "2024-12")], ("2024-01", "2024-12")))
+    assert "DUPLICATE_GL_ENTRY" not in codes(recon.issues)
+
+
+def test_monthly_series_with_one_double_posting_is_still_found():
+    gl = [entry(f"2024-{m:02d}-02", "6300", "250", "Brightline", "Subscription", row=600 + m) for m in range(1, 13)]
+    gl.append(entry("2024-05-04", "6300", "250", "Brightline", "Subscription", row=699))
+    assert find_duplicate_groups(gl) == [(["GL-R605", "GL-R699"], "memo")]
 
 
 def test_duplicate_issue_lists_the_whole_group():

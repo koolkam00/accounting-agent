@@ -293,6 +293,41 @@ def test_facts_are_evidenced_and_kept_apart_from_judgment_questions():
     assert link.supports_claim is False and link.reasons[-1].startswith("Removed (RECURRING_PATTERN)")
 
 
+def test_supported_facts_state_each_period_so_they_tie_to_the_proposal():
+    # Review finding ui-16: "Supported: ... (18 entries, Jan 2025–Jun 2026, 19,800)" summed overlapping
+    # periods (FY vs TTM) and tied to no tie-out column.
+    entries = repairs(("2025-03", 10000), ("2025-08", 5000))
+    pkg, facts = documented_repairs(entries, claim("P-1", [0, 15000, 5000], ["6150"]))
+    a = propose(traced(pkg, REPAIR_INTENT, facts))
+    assert a.proposed == amounts(0, 15000, 5000)
+    supported = [f.text for f in a.facts if f.text.startswith("Supported:")]
+    assert supported == ["Supported: Tidewater Restoration · Storm repair: FY2025 15,000; TTM Jun-26 5,000 "
+                         "(2 entries, Mar 2025–Aug 2025)."]
+
+
+def test_costs_already_below_ebitda_say_there_is_no_judgment_to_make():
+    # Review finding ui-09: a purely mechanical removal left "What needs judgment" reading "None recorded".
+    entries = [entry(40, "2025-06-20", "8100", 22000, "Harbor Bank", "Loan fee write-off - refinancing"),
+               entry(41, "2025-06-20", "8100", 13000, "Harbor Bank", "Prepayment penalty - refinancing")]
+    pkg = package(entries, claim("P-7", [0, 35000, 0], ["8100"]))
+    a = propose(traced(pkg, AdjustmentIntent(adj_id="P-7", counterparties=["Harbor Bank"])))
+    assert a.treatment == Treatment.REJECT
+    assert len(a.judgment_questions) == 1
+    assert a.judgment_questions[0].startswith("No judgment needed on the amount:")
+    assert "8100 Interest Expense" in a.judgment_questions[0]
+    assert "No judgment needed" in a.rationale and "Judgment: No judgment" not in a.rationale
+    (flag,) = [f for f in a.flags if f.code == FlagCode.ALREADY_EXCLUDED_FROM_EBITDA]
+    assert flag.effects == {FY25: "-35000.00"} and flag.amount_impact == "-35000.00"
+
+
+def test_a_partial_gap_is_the_flags_effect():
+    pkg, facts = documented_repairs(repairs(("2025-03", 20000)), claim("P-1", [0, 25000, 0], ["6150"]))
+    a = propose(traced(pkg, REPAIR_INTENT, facts))
+    (gap,) = [f for f in a.flags if f.code == FlagCode.PARTIAL_GL_SUPPORT]
+    assert gap.effects == {FY25: "-5000.00"} and gap.amount_impact == "-5000.00" and gap.period_label == FY25
+    assert a.proposed == amounts(0, 20000, 0)
+
+
 def test_propose_is_deterministic():
     pkg, facts = documented_repairs(repairs(("2024-03", 6000), ("2025-03", 6000), ("2025-08", 4000)), claim("P-1", [0, 10000, 4000], ["6150"]))
     one = propose(traced(pkg, REPAIR_INTENT, facts)).model_dump_json()

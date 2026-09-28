@@ -443,15 +443,21 @@ def html_table(
     rows: Iterable[Mapping[str, Any]],
     numeric: Iterable[str] = (),
     class_key: str = "_class",
+    nowrap: Iterable[str] = (),
 ) -> str:
-    """A compact, escaped HTML table; a row's ``_class`` becomes its CSS class."""
-    num = set(numeric)
-    head = "".join(f'<th class="{"num" if c in num else ""}">{_esc(c)}</th>' for c in columns)
+    """A compact, escaped HTML table; a row's ``_class`` becomes its CSS class.
+    ``nowrap`` columns (ids, refs) never break across lines."""
+    num, nw = set(numeric), set(nowrap)
+
+    def cls(c: str) -> str:
+        return " ".join(k for k, on in (("num", c in num), ("nw", c in nw)) if on)
+
+    head = "".join(f'<th class="{cls(c)}">{_esc(c)}</th>' for c in columns)
     body = []
     for r in rows:
-        cls = _esc(r.get(class_key, ""))
-        cells = "".join(f'<td class="{"num" if c in num else ""}">{_esc(r.get(c, ""))}</td>' for c in columns)
-        body.append(f'<tr class="{cls}">{cells}</tr>')
+        row_cls = _esc(r.get(class_key, ""))
+        cells = "".join(f'<td class="{cls(c)}">{_esc(r.get(c, ""))}</td>' for c in columns)
+        body.append(f'<tr class="{row_cls}">{cells}</tr>')
     return f'<table class="qoe"><thead><tr>{head}</tr></thead><tbody>{"".join(body)}</tbody></table>'
 
 
@@ -631,11 +637,22 @@ def queue_columns(labels: list[str], all_columns: bool = True) -> list[str]:
     """Queue columns. The compact set (the default view) keeps what a reviewer scans:
     the item, the treatments, where it stands, the final amounts, flags and questions."""
     if not all_columns:
-        return ["Ref", "Title", "Tool", "Reviewer", "Status", "Bridge", *(f"Final {p}" for p in labels), "Top flags", "Open Qs"]
+        # Free text (Top flags) last: on a narrow window it is the column that gets cut.
+        return ["Ref", "Title", "Tool", "Reviewer", "Status", "Bridge", *(f"Final {p}" for p in labels), "Open Qs", "Top flags"]
     cols = ["Ref", "Title", "Category", "Tool", "Reviewer", "Status", "Bridge"]
     for prefix in ("Claimed", "Proposed", "Final"):
         cols.extend(f"{prefix} {p}" for p in labels)
     return cols + ["Top flags", "Confidence", "GL links", "Supporting GL links", "Docs", "Open Qs"]
+
+
+# Pixel widths for the queue grid: the compact set fits a 1,500px window with the
+# sidebar open (longer titles and flag lists show in full on hover).
+QUEUE_WIDTHS = {"Ref": 55, "Title": 190, "Tool": 90, "Reviewer": 88, "Status": 98, "Bridge": 108, "Top flags": 150, "Open Qs": 62}
+QUEUE_AMOUNT_WIDTH = 80
+
+
+def queue_widths(columns: Iterable[str]) -> dict[str, int]:
+    return {c: QUEUE_WIDTHS.get(c, QUEUE_AMOUNT_WIDTH) for c in columns if c in QUEUE_WIDTHS or c.split(" ")[0] in ("Claimed", "Proposed", "Final")}
 
 
 BRIDGE_EXCLUDED = "Excluded (pending)"
@@ -870,17 +887,18 @@ def gl_link_rows(a: AdjustmentAssessment, gl_by_id: Mapping[str, GLEntry]) -> li
     out = []
     for link in sorted(a.gl_links, key=sort_key):
         e = gl_by_id.get(link.entry_id)
+        # Role and amount first: they are what ties the listing to the tie-out.
         out.append(
             {
                 "GL row": e.source_row if e is not None else (gl_row_of(link.entry_id) or ""),
                 "Date": e.date if e is not None else link.period,
-                "Account": f"{e.account} {e.account_name}" if e is not None else "",
-                "Counterparty": e.counterparty if e is not None else "",
-                "Doc #": e.doc_number if e is not None else "",
-                "Memo": e.memo if e is not None else "",
                 "Amount": fmt_amount(link.amount, cents=True),
                 "Role": role_label(*link_role(link)),
                 "Challenged by": ", ".join(challenged.get(link.entry_id, [])),
+                "Counterparty": e.counterparty if e is not None else "",
+                "Doc #": e.doc_number if e is not None else "",
+                "Memo": e.memo if e is not None else "",
+                "Account": f"{e.account} {e.account_name}" if e is not None else "",
                 "Group": link.group,
                 "Score": f"{link.score:.2f}",
                 "Why linked": "; ".join(link.reasons),
@@ -964,6 +982,11 @@ def question_rows(wp: Workpaper, question_log: Iterable[QuestionLogEntry] = ()) 
                 }
             )
     return out
+
+
+def basis_label(basis: str) -> str:
+    """In-app wording for a question's basis: a flag code in words; other text as is."""
+    return humanize_code(basis) if re.fullmatch(r"[A-Z][A-Z_]+", basis or "") else basis
 
 
 # The information request list sent to management: no internal basis (flag codes,
@@ -1374,6 +1397,7 @@ table.qoe{{border-collapse:collapse;width:100%;font-size:.88rem;margin:.25rem 0 
 table.qoe th{{text-align:left;border-bottom:2px solid rgba(128,128,128,.55);padding:4px 8px;font-weight:600}}
 table.qoe td{{padding:3px 8px;border-bottom:1px solid rgba(128,128,128,.18);vertical-align:top}}
 table.qoe .num{{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}}
+table.qoe .nw{{white-space:nowrap}}
 table.qoe tr.subtotal td{{font-weight:600;border-top:1px solid rgba(128,128,128,.6)}}
 table.qoe tr.memo td{{font-style:italic;opacity:.8}}
 table.qoe tr.group td{{font-weight:600;color:inherit;background:rgba(91,122,153,.18);border-top:2px solid #5B7A99}}
@@ -1501,10 +1525,13 @@ def _table(
     fit_rows: Optional[int] = 25,
     key: Optional[str] = None,
     on_select: Any = None,
+    widths: Optional[Mapping[str, int]] = None,
+    pinned: Iterable[str] = (),
 ) -> None:
     """A dataframe sized to show its rows (up to ``fit_rows``; None = always all), so rows
     are not hidden behind an inner scrollbar. ``on_select``: a callback for a single-row
-    selection (the grid's selection state is at ``st.session_state[key]``)."""
+    selection (the grid's selection state is at ``st.session_state[key]``). ``widths``
+    (pixels) and ``pinned`` columns keep the key columns in view."""
     import pandas as pd
 
     if not rows:
@@ -1517,7 +1544,14 @@ def _table(
         # Arrow rejects object columns that mix ints and strings (e.g. a blank GL row).
         if df[c].dtype == object and df[c].map(type).nunique() > 1:
             df[c] = df[c].astype(str)
-    config = {c: st.column_config.TextColumn(c, alignment="right") for c in numeric if c in df.columns}
+    num, pin, width = set(numeric), set(pinned), dict(widths or {})
+    config = {
+        c: st.column_config.TextColumn(
+            c, alignment="right" if c in num else None, width=width.get(c), pinned=True if c in pin else None
+        )
+        for c in df.columns
+        if c in num or c in pin or c in width
+    }
     data: Any = df
     colored = [c for c in color_cols if c in df.columns]
     if colored:
@@ -1893,9 +1927,11 @@ def _page_queue(ctx: ReviewContext) -> None:
             fit_rows=None,
             key=key,
             on_select=lambda key=key, refs=refs: _open_selected(key, refs),
+            widths=queue_widths(columns),
+            pinned=["Ref"],
         )
     st.caption(
-        "Click a row to open it. Final = reviewer's amounts where reviewed, otherwise the tool's proposal. "
+        "Tick the box at the left of a row to open it. Final = reviewer's amounts where reviewed, otherwise the tool's proposal. "
         "Bridge: Carried (in diligence adjusted EBITDA), Carried at 0 (rejected), or Excluded (pending)."
     )
     ids = [a.adj_id for a in ctx.wp.assessments]
@@ -2037,7 +2073,7 @@ def _detail_gl(ctx: ReviewContext, a: AdjustmentAssessment) -> None:
         )
     )
     st.html(html_table(["Line", *ctx.labels], claimed_link_tieout(a, ctx.wp.deal.periods), numeric=ctx.labels))
-    _table(gl_link_rows(a, gl_by_id), numeric=["GL row", "Amount", "Score"], fit_rows=40)
+    _table(gl_link_rows(a, gl_by_id), numeric=["GL row", "Amount", "Score"], fit_rows=40, pinned=["GL row"])
 
 
 def _detail_docs(ctx: ReviewContext, a: AdjustmentAssessment) -> None:
@@ -2465,7 +2501,7 @@ def _page_questions(ctx: ReviewContext) -> None:
         ref_f = f3.multiselect("Adjustment", refs, key="oq_f_ref")
         shown = filter_question_rows(rows, status_f, prio_f, ref_f)
         if shown:
-            st.html(html_table(QUESTION_TABLE_COLUMNS, shown))
+            st.html(html_table(QUESTION_TABLE_COLUMNS, [{**r, "Basis": basis_label(r["Basis"])} for r in shown], nowrap=["Q id", "Ref", "Status"]))
         else:
             st.caption("No questions match the filters.")
         st.download_button(
@@ -2544,8 +2580,12 @@ def _page_export(ctx: ReviewContext) -> None:
 
             from qoe.export_xlsx import export_workpaper
 
-            # SPEC signature is (wp, out_path); pass the deal package too when the exporter accepts it.
-            extra = {"pkg": ctx.pkg} if ctx.pkg is not None and "pkg" in inspect.signature(export_workpaper).parameters else {}
+            # SPEC signature is (wp, out_path); pass the deal package, and the question log (whose
+            # lines are not decisions, so they are not in wp.reviews), when the exporter accepts them.
+            params = inspect.signature(export_workpaper).parameters
+            extra: dict[str, Any] = {"pkg": ctx.pkg} if ctx.pkg is not None and "pkg" in params else {}
+            if "question_log" in params:
+                extra["question_log"] = ctx.question_log
             with st.spinner("Writing workbook..."):
                 out = export_workpaper(ctx.wp, ctx.paths.xlsx, **extra)
             write_export_stamp(ctx.paths, ctx.signature, _iso(datetime.now(timezone.utc)))

@@ -128,6 +128,8 @@ _ONE_OFF_TERM = re.compile(
     re.IGNORECASE,
 )
 _MONEY = re.compile(r"\$\s?(\d{1,3}(?:,\d{3})+(?:\.\d{2})?|\d+(?:\.\d{2})?)")
+# A period written right after an amount: "$2,500 per month", "$26,000 a quarter", "$1,200 monthly".
+_PERIOD_AFTER = re.compile(r"\s*(?:(?:per|a|each|every)\s+(?:month|quarter|year|annum)|monthly|quarterly|annually)\b", re.I)
 _TOTAL_LABEL = re.compile(r"total|due|balance|invoice|amount", re.IGNORECASE)
 _MONTH_NAMES = {
     name: i + 1
@@ -732,11 +734,16 @@ def _term_fee(term: TermFact) -> Optional[Decimal]:
     """The fee a term states, read from its verified quote.
 
     ``term.text`` is the extractor's own description (free text when an LLM wrote it), so it
-    may only pick which of the quote's amounts is the fee, never supply an amount itself."""
-    in_quote = _money_in(term.quote.quote)
+    may only pick which of the quote's amounts is the fee, never supply an amount itself.
+    Otherwise the amount written next to a periodic cue ("$8,000 per month") is the fee."""
+    text = term.quote.quote
+    in_quote = _money_in(text)
     for amount in _money_in(term.text):
         if amount in in_quote:
             return amount
+    for m in _MONEY.finditer(text):
+        if _PERIODIC.search(text[max(0, m.start() - 25) : m.start()]) or _PERIOD_AFTER.match(text, m.end()):
+            return D(m.group(1))
     return in_quote[0] if in_quote else None
 
 

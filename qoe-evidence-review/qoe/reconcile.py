@@ -129,12 +129,14 @@ _GENERIC_REF_WORDS = frozenset(
     """.split()
 )
 # A document number identifies one document, so postings that share it are one document
-# posted more than once only when they are close together. 45 days covers a bill entered on
-# receipt and entered again (or expensed directly) when it is paid on net-30 terms, plus
-# processing lag; it is short of the two-month span over which a reused reference repeats.
+# posted more than once only when they are close together. 45 days covers the common way a
+# bill gets into the GL twice: entered on receipt, then entered again (or expensed directly)
+# when it is paid on net-30 terms, plus processing lag. Postings further apart with the same
+# number are a reused reference or a re-billing, a question rather than a mechanical reversal.
 DOC_NUMBER_WINDOW_DAYS = 45
-# A number seen on the same account/amount/counterparty in this many different months is a
-# standing reference (lease, contract or standing-order number), not a document number.
+# One month apart falls inside that window, so a number seen on the same account, amount and
+# counterparty in this many different months is treated as a standing reference (a lease,
+# contract or standing-order number on every monthly bill), not a document number.
 STANDING_REFERENCE_MONTHS = 3
 # A memo that repeats at least this often (average days between postings, over two weeks
 # or more) is a high-frequency recurring charge: equal memos days apart are its rhythm.

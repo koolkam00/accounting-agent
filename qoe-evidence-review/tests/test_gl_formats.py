@@ -511,3 +511,301 @@ def test_coa_combined_account_column(tmp_path: Path):
 def test_coa_without_name_column_raises(tmp_path: Path):
     with pytest.raises(ValueError):
         read_chart_of_accounts(_write(tmp_path / "coa.csv", "Foo,Bar\n1,2\n"))
+
+
+# ---------------------------------------------------------------------------
+# Review fixes: loading, labels, dates, sub-accounts, totals, classification
+# ---------------------------------------------------------------------------
+
+
+def _rewrite_sheet_xml(path: Path, edit) -> Path:
+    """Rewrite the first worksheet's XML in place (simulates writers other than Excel)."""
+    import zipfile
+
+    with zipfile.ZipFile(path) as zf:
+        parts = {n: zf.read(n) for n in zf.namelist()}
+    name = "xl/worksheets/sheet1.xml"
+    parts[name] = edit(parts[name].decode("utf-8")).encode("utf-8")
+    with zipfile.ZipFile(path, "w") as zf:
+        for n, data in parts.items():
+            zf.writestr(n, data)
+    return path
+
+
+def test_xlsx_stale_dimension_does_not_truncate_rows(tmp_path: Path):
+    """Read-only openpyxl trusts <dimension>; a stale one must not drop GL rows silently."""
+    import re
+
+    path = _xero_workbook(tmp_path / "gl.xlsx")
+    _rewrite_sheet_xml(path, lambda xml: re.sub(r'<dimension ref="[^"]+"', '<dimension ref="A1"', xml))
+    assert detect_format(path) == XERO
+    entries, notes = read_gl(path, XERO, {})
+    assert [e.entry_id for e in entries] == ["GL-R6", "GL-R7", "GL-R8"]
+    assert "3 entries read from rows 6-8" in notes[0]
+
+
+def test_uncached_formula_amounts_stop_the_run_instead_of_reading_zero(tmp_path: Path):
+    from qoe.gl_formats import UncachedFormulaError, read_table
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(["Ref", "Adjustment", "FY2024"])
+    ws.append(["M-01", "Legal fees", "=5*4"])  # openpyxl stores the formula without a value
+    ws.append(["M-02", "Label", '=IF(1=1,"","x")'])
+    path = tmp_path / "sched.xlsx"
+    wb.save(path)
+    # Excel stores a formula's cached result; an empty-string result is marked t="str".
+    _rewrite_sheet_xml(path, lambda xml: xml.replace('<c r="C3"><f>', '<c r="C3" t="str"><f>'))
+    table = read_table(path)
+    assert "C2 =5*4" in table.notes[0] and "C3" not in table.notes[0]
+    assert table.rows[2][2] is None  # cached empty string reads as blank
+    with pytest.raises(UncachedFormulaError, match=r"cell C2 holds a formula \(=5\*4\)"):
+        parse_money(table.rows[1][2])
+    assert str(table.rows[1][2]) == ""
+
+
+def test_excel_saved_formulas_with_cached_values_are_read(tmp_path: Path):
+    from qoe.gl_formats import read_table
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(["a", 2, "=B1*2"])
+    path = tmp_path / "cached.xlsx"
+    wb.save(path)
+    _rewrite_sheet_xml(path, lambda xml: xml.replace("<f>B1*2</f><v />", "<f>B1*2</f><v>4</v>").replace("<f>B1*2</f><v></v>", "<f>B1*2</f><v>4</v>"))
+    table = read_table(path)
+    assert table.rows[0] == ["a", 2, 4] and table.notes == []
+
+
+def test_utf16_and_mixed_encoding_csv_exports(tmp_path: Path):
+    from qoe.gl_formats import read_table
+
+    tsv = NETSUITE_CSV.replace(",", "\t").replace('"1\t000.00"', "1000.00").replace('"5\t000.00"', "5000.00").replace('"6\t250.50"', "6250.50")
+    utf16 = tmp_path / "gl_utf16.csv"
+    utf16.write_bytes(tsv.encode("utf-16"))  # Excel "Unicode Text": UTF-16 with BOM, tab-delimited
+    assert detect_format(utf16) == NETSUITE
+    entries, _ = read_gl(utf16, NETSUITE, {})
+    assert [e.amount for e in entries] == ["-1000.00", "5000.00", "250.50"]
+
+    mixed = tmp_path / "gl_mixed.csv"
+    body = NETSUITE_CSV.replace("Acme Corp", "Café Corp").encode("utf-8").replace("Café".encode("utf-8"), b"Caf\xe9")
+    mixed.write_bytes(b"\xef\xbb\xbf" + body.replace("Landlord LLC".encode(), "Landlord – LLC".encode("utf-8")))
+    assert detect_format(mixed) == NETSUITE  # header not mangled by a whole-file cp1252 fallback
+    table = read_table(mixed)
+    assert table.rows[0][0] == "Internal ID"
+    assert table.rows[1][6] == "Café Corp" and table.rows[2][6] == "Landlord – LLC"
+    assert "1 line(s) are not valid UTF-8" in table.notes[0] and "lines 2" in table.notes[0]
+
+
+def test_split_account_label_keeps_sub_account_numbers():
+    assert split_account_label("4000-10 Service Revenue - Commercial") == ("4000-10", "Service Revenue - Commercial")
+    assert split_account_label("4-1000 Sales") == ("4-1000", "Sales")
+    assert split_account_label("6000.10 Salaries - Office") == ("6000.10", "Salaries - Office")
+    assert split_account_label("4000 - Service Revenue") == ("4000", "Service Revenue")
+    assert split_account_label("4000-Service Revenue") == ("4000", "Service Revenue")
+    assert split_account_label("4000- Service Revenue") == ("4000", "Service Revenue")
+    assert split_account_label("4000-10") == ("4000-10", "")
+
+
+def test_netsuite_hyphenated_sub_accounts_do_not_collapse_into_the_parent(tmp_path: Path):
+    coa = _write(tmp_path / "coa.csv", "Number,Name,Type\n4000,Revenue,Income\n4000-10,Revenue - Commercial,Income\n4000-20,Revenue - Residential,Income\n")
+    accounts, _ = read_chart_of_accounts(coa)
+    by_number = {a.number: a for a in accounts}
+    assert set(by_number) == {"4000", "4000-10", "4000-20"}
+    gl = _write(
+        tmp_path / "gl.csv",
+        "\n".join(
+            [
+                "Internal ID,Date,Period,Type,Document Number,Account,Name,Memo,Debit,Credit",
+                "1,1/3/2024,Jan 2024,Invoice,I1,4000-10 Revenue - Commercial,Acme,x,,1000",
+                "2,1/4/2024,Jan 2024,Invoice,I2,4000-20 Revenue - Residential,Bob,x,,500",
+                "3,1/5/2024,Jan 2024,Invoice,I3,4000 Revenue,Carl,x,,70",
+            ]
+        ),
+    )
+    entries, notes = read_gl(gl, NETSUITE, by_number)
+    assert [(e.account, e.amount) for e in entries] == [("4000-10", "-1000.00"), ("4000-20", "-500.00"), ("4000", "-70.00")]
+    assert not any("not in the chart of accounts" in n for n in notes)
+
+
+def test_unnumbered_sub_accounts_keep_their_full_path(tmp_path: Path):
+    """QBO without account numbers: "Other" under an income parent and under an expense parent
+    are different accounts; the expense must not be read as a revenue credit."""
+    coa = _write(
+        tmp_path / "coa.csv",
+        "\n".join(
+            [
+                "Full name,Type,Detail type",
+                "Services,Income,Service/Fee Income",
+                "Services:Other,Income,Service/Fee Income",
+                "Office Expenses,Expenses,Office/General Administrative Expenses",
+                "Office Expenses:Other,Expenses,Office/General Administrative Expenses",
+                "Uncategorized Expense,Expenses,Other Miscellaneous Service Cost",
+            ]
+        ),
+    )
+    accounts, notes = read_chart_of_accounts(coa)
+    by_id = {a.number: a for a in accounts}
+    assert by_id["Services:Other"].ebitda_class is EbitdaClass.REVENUE
+    assert by_id["Office Expenses:Other"].ebitda_class is EbitdaClass.OPEX
+    assert by_id["Office Expenses:Other"].name == "Office Expenses:Other"
+    joined = "\n".join(notes)
+    assert "full account name is used as the id" in joined
+    assert "'other': Services:Other, Office Expenses:Other" in joined
+    gl = "\n".join(
+        [
+            ",Date,Transaction Type,Num,Name,Memo/Description,Split,Amount,Balance",  # 1
+            "Services,,,,,,,,",  # 2
+            "Other,,,,,,,,",  # 3
+            ",01/10/2024,Invoice,1001,Acme,Misc service,A/R,400.00,",  # 4
+            "Total for Other,,,,,,,400.00,",  # 5
+            "Total for Services,,,,,,,400.00,",  # 6
+            "Office Expenses,,,,,,,,",  # 7
+            "Other,,,,,,,,",  # 8
+            ",01/15/2024,Expense,,Staples,Toner,Checking,250.00,",  # 9
+            "Total for Other,,,,,,,250.00,",  # 10
+            "Total for Office Expenses,,,,,,,250.00,",  # 11
+            "Uncategorized Expense,,,,,,,,",  # 12
+            ",01/20/2024,Expense,,Amazon,Misc,Checking,42.00,",  # 13
+            "Total for Uncategorized Expense,,,,,,,42.00,",  # 14
+            "Other,,,,,,,,",  # 15 a leaf alone, no parent: ambiguous
+            ",01/21/2024,Expense,,Somebody,Misc,Checking,5.00,",  # 16
+        ]
+    )
+    entries, gl_notes = read_gl(_write(tmp_path / "gl.csv", gl), QBO, by_id)
+    assert [(e.source_row, e.account, e.amount) for e in entries] == [
+        (4, "Services:Other", "-400.00"),
+        (9, "Office Expenses:Other", "250.00"),
+        (13, "Uncategorized Expense", "42.00"),
+        (16, "Other", "5.00"),
+    ]
+    assert any("WARNING" in n and "'Other' could be Services:Other, Office Expenses:Other" in n for n in gl_notes)
+
+
+def test_qbo_account_named_total_is_a_section_not_a_subtotal(tmp_path: Path):
+    text = "\n".join(
+        [
+            ",Date,Transaction Type,Num,Name,Memo/Description,Split,Amount,Balance",  # 1
+            "Totalflex Equipment Rental,,,,,,,,",  # 2
+            ",01/21/2024,Bill,B1,Sunbelt,rental,A/P,\"1,234.00\",",  # 3
+            "Total for Totalflex Equipment Rental,,,,,,,\"$1,234.00\",",  # 4
+            "Total Care Janitorial,,,,,,,,",  # 5
+            ",01/22/2024,Bill,B2,Total Care,cleaning,A/P,500.00,",  # 6
+            "Total for Total Care Janitorial,,,,,,,$500.00,",  # 7
+            "6400 Legal,,,,,,,,",  # 8  QBO Desktop style: "Total <account>"
+            ",01/23/2024,Bill,B3,Hollis,fees,A/P,100.00,",  # 9
+            "Total 6400 Legal,,,,,,,100.00,",  # 10
+            ",01/24/2024,Bill,B4,Nobody,orphan,A/P,1.00,",  # 11 outside any section
+            "TOTAL,,,,,,,\"1,835.00\",",  # 12
+        ]
+    )
+    entries, notes = read_gl(_write(tmp_path / "gl.csv", text), QBO, {})
+    assert [(e.source_row, e.account) for e in entries] == [(3, "Totalflex Equipment Rental"), (6, "Total Care Janitorial"), (9, "6400")]
+    joined = "\n".join(notes)
+    assert "total/subtotal rows (rows 4, 7, 10, 12)" in joined
+    assert "outside any account section (rows 11)" in joined
+
+
+def test_parse_date_time_suffixes_and_text_serials():
+    assert parse_date("1/7/2024 0:00").isoformat() == "2024-01-07"
+    assert parse_date("01/07/2024 12:00:00 AM").isoformat() == "2024-01-07"
+    assert parse_date("2024-01-07T00:00:00").isoformat() == "2024-01-07"
+    assert parse_date("2024-01-07 13:45").isoformat() == "2024-01-07"
+    assert parse_date("45300").isoformat() == "2024-01-09"  # Excel serial written as text (45292 = 2024-01-01)
+    assert parse_date("15/01/2024 0:00", dayfirst=True).isoformat() == "2024-01-15"
+    assert parse_date("12345") is None
+
+
+def test_detect_dayfirst_from_the_dates_themselves():
+    from qoe.gl_formats import detect_dayfirst
+
+    assert detect_dayfirst(["03/01/2024", "15/01/2024"], False, "gl") is True
+    assert detect_dayfirst(["03/01/2024", "01/15/2024"], True, "gl") is False
+    assert detect_dayfirst(["03/01/2024", "04/02/2024"], False, "gl") is False  # no proof: default
+    with pytest.raises(ValueError, match="mixes day-first"):
+        detect_dayfirst(["15/01/2024", "01/15/2024"], False, "gl")
+
+
+NETSUITE_DAYFIRST = "\n".join(
+    [
+        "Internal ID,Date,Period,Type,Document Number,Account,Name,Memo,Debit,Credit",  # 1
+        '1,03/01/2024,Jan 2024,Bill,B1,6400 Legal & Professional Fees,Hollis,Jan fees,"1,000.00",',  # 2  3 Jan
+        '2,15/01/2024,Jan 2024,Bill,B2,6400 Legal & Professional Fees,Hollis,Jan fees,"2,000.00",',  # 3
+        '3,31/01/2024 0:00,Jan 2024,Bill,B3,6400 Legal & Professional Fees,Hollis,Jan fees,"3,000.00",',  # 4
+        '4,Jan 32 2024,Jan 2024,Bill,B4,6400 Legal & Professional Fees,Hollis,bad date,"4,000.00",',  # 5 unreadable
+        ',,,,,,,Total,"10,000.00",',  # 6
+    ]
+)
+
+
+def test_netsuite_day_first_export_is_read_day_first_and_undated_money_is_a_warning(tmp_path: Path):
+    entries, notes = read_gl(_write(tmp_path / "gl.csv", NETSUITE_DAYFIRST), NETSUITE, {})
+    assert [(e.source_row, e.date) for e in entries] == [(2, "2024-01-03"), (3, "2024-01-15"), (4, "2024-01-31")]
+    joined = "\n".join(notes)
+    assert "day-first" in joined
+    # The unreadable row carries money: a warning with the amount, not a benign "totals" skip.
+    assert "WARNING - dropped 1 row(s) that carry amounts (4000.00" in joined and "5 ('Jan 32 2024')" in joined
+    assert "rows without a transaction date (e.g. totals) (rows 6)" in joined
+
+
+def test_netsuite_ambiguous_dates_follow_the_period_column(tmp_path: Path):
+    text = "\n".join(
+        [
+            "Internal ID,Date,Period,Type,Document Number,Account,Name,Memo,Debit,Credit",
+            "1,03/01/2024,Jan 2024,Bill,B1,6400 Legal,Hollis,x,100,",
+            "2,05/02/2024,Feb 2024,Bill,B2,6400 Legal,Hollis,x,100,",
+            "3,07/03/2024,Mar 2024,Bill,B3,6400 Legal,Hollis,x,100,",
+        ]
+    )
+    entries, notes = read_gl(_write(tmp_path / "gl.csv", text), NETSUITE, {})
+    assert [e.date for e in entries] == ["2024-01-03", "2024-02-05", "2024-03-07"]
+    assert not any("different month than their Period" in n for n in notes)
+
+
+def test_qbo_rows_with_amounts_but_unreadable_dates_are_warned(tmp_path: Path):
+    text = "\n".join(
+        [
+            ",Date,Transaction Type,Num,Name,Memo/Description,Split,Amount,Balance",  # 1
+            "6400 Legal,,,,,,,,",  # 2
+            ",Beginning Balance,,,,,,,\"9,000.00\"",  # 3 balance only: benign
+            ",13/13/2024,Bill,B1,Hollis,fees,A/P,\"2,500.00\",",  # 4 unreadable date with money
+            ",01/05/2024,Bill,B2,Hollis,fees,A/P,100.00,",  # 5
+        ]
+    )
+    entries, notes = read_gl(_write(tmp_path / "gl.csv", text), QBO, {})
+    assert [e.source_row for e in entries] == [5]
+    joined = "\n".join(notes)
+    assert "WARNING - dropped 1 row(s) that carry amounts (2500.00" in joined
+    assert "(e.g. beginning balance) (rows 3)" in joined
+
+
+@pytest.mark.parametrize(
+    "name, source_type, expected",
+    [
+        ("Interest Earned", "Other Income", EbitdaClass.INTEREST),  # QBO default interest-income account
+        ("Bank Interest", "Other Income", EbitdaClass.INTEREST),
+        ("Mortgage Interest", "Other Expense", EbitdaClass.INTEREST),
+        ("Interest - Line of Credit", "Other Expense", EbitdaClass.INTEREST),
+        ("Interest", "Other Expense", EbitdaClass.INTEREST),
+        ("Interest", "OthExpense", EbitdaClass.INTEREST),
+        ("Taxes - Federal Income", "Other Expense", EbitdaClass.TAXES),
+        ("Interest-free loan forgiveness", "Other Income", EbitdaClass.OTHER_INCOME),
+        ("Non-controlling interest", "Other Expense", EbitdaClass.OTHER_EXPENSE),
+        ("Bank Charges & Interest", "Expenses", EbitdaClass.OPEX),  # operating type keeps its class
+        ("State Income", "Income", EbitdaClass.REVENUE),  # not a tax
+        ("Federal Unemployment Tax", "Expenses", EbitdaClass.OPEX),  # payroll tax
+    ],
+)
+def test_interest_and_income_tax_name_rules_cover_common_names(name: str, source_type: str, expected: EbitdaClass):
+    cls, basis = classify_account(name, source_type)
+    assert cls is expected, basis
+    assert not basis.startswith(FALLBACK_BASIS)
+
+
+def test_interest_earned_in_a_qbo_gl_is_a_credit_below_ebitda(tmp_path: Path):
+    coa = _write(tmp_path / "coa.csv", "Account #,Full name,Type\n8150,Interest Earned,Other Income\n")
+    accounts, _ = read_chart_of_accounts(coa)
+    assert accounts[0].ebitda_class is EbitdaClass.INTEREST
+    gl = ",Date,Transaction Type,Num,Name,Memo/Description,Split,Amount,Balance\n8150 Interest Earned,,,,,,,,\n,01/31/2024,Deposit,,Bank,Interest,Checking,15.25,\n"
+    entries, _ = read_gl(_write(tmp_path / "gl.csv", gl), QBO, {a.number: a for a in accounts})
+    assert entries[0].amount == "-15.25"

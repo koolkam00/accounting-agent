@@ -11,7 +11,15 @@ import pytest
 
 from qoe import TOOL_VERSION
 from qoe.ai_base import AdjustmentIntent
-from qoe.engine import default_run_id, load_workpaper, review_package, run_review, save_workpaper, verify_doc_facts
+from qoe.engine import (
+    deal_dir_name,
+    default_run_id,
+    load_workpaper,
+    review_package,
+    run_review,
+    save_workpaper,
+    verify_doc_facts,
+)
 from qoe.money import ZERO, D, fmt
 from qoe.periods import in_period, month_range
 from qoe.schemas import (
@@ -247,6 +255,71 @@ def test_ai_failures_are_recorded_not_fatal():
     wp = review_package(pkg, FakeAI(fail_on="2.1 Nimbus agreement.txt"), gl_recon(pkg), **RUN)
     assert any("Fact extraction failed for 2.1 Nimbus agreement.txt: unreadable scan" in n for n in wp.ingest_notes)
     assert len(wp.assessments) == 3
+
+
+class ProvenanceAI(FakeAI):
+    """Stands in for the LLM adapter: it counts calls answered by its rule fallback and quotes it rejected."""
+
+    def __init__(self, fail_on: str = ""):
+        super().__init__(fail_on)
+        self.fallbacks = ["parse_intent[OLD-1]: from an earlier run"]  # an adapter object may be reused
+        self.dropped_quotes = 5
+
+    def find_contradictions(self, adj, intent, facts, entries):
+        if adj.adj_id == "E-2":
+            self.fallbacks.append("find_contradictions[E-2]: TimeoutError: endpoint down")
+            self.dropped_quotes += 1  # a fabricated quote the adapter rejected before the engine saw it
+        return []
+
+    def classify_entries(self, adj, intent, entries, facts):
+        if adj.adj_id == "E-1":
+            raise RuntimeError("bad JSON")
+        return []
+
+
+def test_ai_fallbacks_and_dropped_quotes_are_saved_in_the_workpaper(tmp_path):
+    # Review finding security-llm-provenance-not-recorded: a run labelled llm:<model> hid 83 fallbacks
+    # and a fabricated quote. They are now part of the workpaper, for this run only.
+    pkg = build_package()
+    ai = ProvenanceAI(fail_on="2.1 Nimbus agreement.txt")
+    wp = review_package(pkg, ai, gl_recon(pkg), **RUN)
+    assert "find_contradictions[E-2]: TimeoutError: endpoint down" in wp.ai_fallbacks
+    assert not any("OLD-1" in f for f in wp.ai_fallbacks)
+    assert any(f.startswith("extract_facts[2.1 Nimbus agreement.txt]: RuntimeError") for f in wp.ai_fallbacks)
+    assert "classify_entries[E-1]: bad JSON" in wp.ai_fallbacks
+    facts_drops = sum(f.dropped_quotes for f in wp.doc_facts)
+    assert facts_drops == 2 and wp.ai_dropped_quotes == facts_drops + 1
+    assert any(n.startswith("AI provenance:") and "fell back" in n for n in wp.ingest_notes)
+    e2 = next(a for a in wp.assessments if a.adj_id == "E-2")
+    assert "1 AI quote(s) failed verification" in e2.rationale
+    again = load_workpaper(save_workpaper(wp, tmp_path))
+    assert again.ai_fallbacks == wp.ai_fallbacks and again.ai_dropped_quotes == wp.ai_dropped_quotes
+
+
+def test_rules_run_records_no_fallbacks(workpaper):
+    assert workpaper.ai_fallbacks == [] and workpaper.ai_dropped_quotes == 2  # the two paraphrased quotes
+
+
+@pytest.mark.parametrize(
+    "deal_id, expected",
+    [("meridian_mechanical", "meridian_mechanical"), ("../escaped/owned", "_escaped_owned"),
+     ("/tmp/abs_target/x", "_tmp_abs_target_x"), ("Deal 7 (draft)", "Deal_7_draft_")],
+)
+def test_save_workpaper_keeps_the_deal_id_inside_the_output_root(tmp_path, workpaper, deal_id, expected):
+    # Review finding security-deal-yaml-path-traversal: deal_id comes from deal.yaml and was joined raw.
+    wp = workpaper.model_copy(update={"deal": workpaper.deal.model_copy(update={"deal_id": deal_id})})
+    root = tmp_path / "wp_root"
+    path = save_workpaper(wp, root)
+    assert path == root.resolve() / expected / "workpaper.json" and path.exists()
+    assert deal_dir_name(deal_id) == expected
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["wp_root"]  # nothing written beside the root
+
+
+@pytest.mark.parametrize("deal_id", ["..", ".", "", "///"])
+def test_a_deal_id_with_no_usable_name_is_refused(tmp_path, workpaper, deal_id):
+    wp = workpaper.model_copy(update={"deal": workpaper.deal.model_copy(update={"deal_id": deal_id})})
+    with pytest.raises(ValueError):
+        save_workpaper(wp, tmp_path)
 
 
 def test_bridge_identity_holds_on_the_workpaper(workpaper):

@@ -380,6 +380,19 @@ _SCHEDULE_COLUMNS = {
     "support": ("support ref", "support", "data room ref", "dr ref"),
 }
 _ACCOUNT_NUMBER = re.compile(r"(?<!\d)\d{3,6}(?!\d)")
+# A sub-account number as the GL writes it ("4000-10", "6000.10"): kept whole when the chart
+# of accounts has it, otherwise read as its 3-6 digit parts ("6000-6100" is a range).
+_ACCOUNT_TOKEN = re.compile(r"(?<![\d.\-])\d+(?:[.\-]\d+)*(?![\d])")
+
+
+def _schedule_accounts(cell: str, known: Optional[set[str]]) -> list[str]:
+    out: list[str] = []
+    for token in _ACCOUNT_TOKEN.findall(cell):
+        if known is not None and token in known:
+            out.append(token)
+        else:
+            out.extend(_ACCOUNT_NUMBER.findall(token))
+    return list(dict.fromkeys(out))
 
 # Checked in order: "adjusted ebitda" and "total ... adjustments" before plain "ebitda".
 _LABEL_RULES = (
@@ -535,7 +548,10 @@ def _schedule_header_error(rows: list[Row], period_labels: list[str], source: st
     )
 
 
-def _parse_schedule(path: Path, period_labels: list[str], source_label: Optional[str]) -> tuple[ManagementSchedule, list[str]]:
+def _parse_schedule(
+    path: Path, period_labels: list[str], source_label: Optional[str], accounts: Optional[dict[str, Account]] = None
+) -> tuple[ManagementSchedule, list[str]]:
+    known_accounts = set(accounts) if accounts else None
     table = read_table(path, keep_number_formats=True)
     rows = table.rows
     source = source_label or path.name
@@ -633,7 +649,7 @@ def _parse_schedule(path: Path, period_labels: list[str], source_label: Optional
                     adj_id = f"{ref}#{n}"
                     renamed.append(f"row {rowno} repeats Ref {ref!r} of row {first_row_of[ref]} and is kept as {adj_id!r}")
                 first_row_of[adj_id] = rowno
-                gl_accounts = list(dict.fromkeys(_ACCOUNT_NUMBER.findall(accounts_cell)))
+                gl_accounts = _schedule_accounts(accounts_cell, known_accounts)
                 support = [s.strip() for s in re.split(r"[;,\n]", text_at(row, "support")) if s.strip()]
                 adjustments.append(
                     AdjustmentClaim(
@@ -716,9 +732,37 @@ def _pick_total_adjustments(
     return chosen, f"row {chosen[0]} {chosen[1]!r} used as total adjustments ({why}); {others} read as subtotals"
 
 
-def read_schedule(path: Path, period_labels: list[str], *, source_label: Optional[str] = None) -> ManagementSchedule:
-    """Management's adjusted-EBITDA schedule for the given period labels (SPEC §3.6)."""
-    return _parse_schedule(Path(path), period_labels, source_label)[0]
+def read_schedule(
+    path: Path, period_labels: list[str], *, source_label: Optional[str] = None, accounts: Optional[dict[str, Account]] = None
+) -> ManagementSchedule:
+    """Management's adjusted-EBITDA schedule for the given period labels (SPEC §3.6).
+
+    ``accounts`` (the chart of accounts) keeps sub-account numbers such as "4000-10" whole.
+    """
+    return _parse_schedule(Path(path), period_labels, source_label, accounts)[0]
+
+
+def _with_sub_accounts(schedule: ManagementSchedule, accounts: dict[str, Account]) -> tuple[ManagementSchedule, list[str]]:
+    """A cited parent account ("4000") also covers its numbered sub-accounts ("4000-10",
+    "4000.20"), which the GL posts to separately."""
+    numbers = sorted(accounts)
+    notes: list[str] = []
+    changed = []
+    for adj in schedule.adjustments:
+        extra = [
+            n for cited in adj.gl_accounts for n in numbers
+            if n not in adj.gl_accounts and (n.startswith(cited + "-") or n.startswith(cited + "."))
+        ]
+        if extra:
+            extra = list(dict.fromkeys(extra))
+            notes.append(f"{adj.adj_id}: {', '.join(extra)}")
+            adj = adj.model_copy(update={"gl_accounts": [*adj.gl_accounts, *extra]})
+        changed.append(adj)
+    if not notes:
+        return schedule, []
+    return schedule.model_copy(update={"adjustments": changed}), [
+        f"schedule {schedule.source_file}: cited parent accounts extended to their sub-accounts: " + "; ".join(notes)
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -736,8 +780,8 @@ def _decode_text(data: bytes) -> str:
 class _TextExtractor(HTMLParser):
     """Visible text of an HTML email body. Linear in the input, unlike a backtracking regex."""
 
-    _BREAKS = frozenset({"br", "p", "div", "tr", "li", "table", "h1", "h2", "h3", "h4", "h5", "h6"})
-    _HIDDEN = frozenset({"script", "style", "head", "title"})
+    _BLOCKS = frozenset({"p", "div", "tr", "li", "table", "h1", "h2", "h3", "h4", "h5", "h6"})
+    _HIDDEN = frozenset({"script", "style"})
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
@@ -747,17 +791,17 @@ class _TextExtractor(HTMLParser):
     def handle_starttag(self, tag: str, attrs: list) -> None:
         if tag in self._HIDDEN:
             self._hidden += 1
-        elif tag in self._BREAKS:
+        elif tag == "br":
             self.parts.append("\n")
 
     def handle_startendtag(self, tag: str, attrs: list) -> None:
-        if tag in self._BREAKS:
+        if tag == "br":
             self.parts.append("\n")
 
     def handle_endtag(self, tag: str) -> None:
         if tag in self._HIDDEN:
             self._hidden = max(0, self._hidden - 1)
-        elif tag in self._BREAKS:
+        elif tag in self._BLOCKS:
             self.parts.append("\n")
 
     def handle_data(self, data: str) -> None:
@@ -1041,8 +1085,9 @@ def load_deal(deal_dir: Path) -> DealPackage:
     notes.extend(pl_notes)
 
     adj_path = input_file(files.adjustments, "adjustments")
-    schedule, sched_notes = _parse_schedule(adj_path, [p.label for p in meta.periods], _relpath(adj_path, deal_dir))
-    notes.extend(sched_notes)
+    schedule, sched_notes = _parse_schedule(adj_path, [p.label for p in meta.periods], _relpath(adj_path, deal_dir), accounts)
+    schedule, sub_notes = _with_sub_accounts(schedule, accounts)
+    notes.extend(sched_notes + sub_notes)
 
     docs_root, _ = _package_path(deal_dir, files.documents_dir, "documents_dir")
     documents, doc_notes = _scan_documents(docs_root, deal_dir)

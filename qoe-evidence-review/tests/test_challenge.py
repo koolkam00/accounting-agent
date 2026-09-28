@@ -12,10 +12,12 @@ from typing import Iterable
 import pytest
 
 from qoe.ai_base import AdjustmentIntent, Contradiction, EntryClassification
-from qoe.challenge import ChallengeContext, resolve_overlaps, run_challenges
-from qoe.money import fmt
+from decimal import Decimal
+
+from qoe.challenge import ChallengeContext, _term_end_month, _term_fee, resolve_overlaps, run_challenges
+from qoe.money import D, fmt
 from qoe.periods import month_range
-from qoe.propose import propose
+from qoe.propose import compute_proposed, flag_effects, propose
 from qoe.schemas import (
     Account,
     AdjustmentCategory,
@@ -1061,3 +1063,170 @@ def test_an_out_of_period_entry_is_replaced_entirely_by_its_effect():
     (t, a), _ = _true_up("2023-10-01", "2024-03-31", "2024-06-15", [9000, 0, 0])
     assert a.proposed == amounts(9000, 0, 0) and a.treatment == Treatment.ACCEPT
     assert t.supporting_total(FY24) == 0 and t.effect(FY24) == 9000
+
+
+# ---------------------------------------------------------------------------
+# Flag effects: the walk from claimed to proposed (review findings excel-flag-impact-column, ui-08)
+# ---------------------------------------------------------------------------
+
+
+def _unflagged(t, a) -> dict[str, Decimal]:
+    provisional = compute_proposed(t)  # the provisional amount for REQUEST_INFO items
+    carried = {lbl: sum((D(f.effects[lbl]) for f in a.flags if lbl in f.effects), Decimal(0)) for lbl in LABELS}
+    return {lbl: provisional[lbl] - D(a.claimed[lbl]) - carried[lbl] for lbl in LABELS}
+
+
+def test_flag_effects_walk_from_claimed_to_proposed(deal):
+    results, _ = deal
+    for adj_id, (t, a) in results.items():
+        assert all(abs(v) <= 1 for v in _unflagged(t, a).values()), (adj_id, _unflagged(t, a))
+        if a.proposed:
+            assert all(D(a.proposed[lbl]) == compute_proposed(t)[lbl] for lbl in LABELS)
+        for f in a.flags:
+            if f.code == FlagCode.EXCESS_GL_ACTIVITY:
+                assert f.effects == {} and f.amount_impact is None  # unclaimed context activity, not an effect
+            if len(f.effects) > 1:
+                assert f.amount_impact is None
+            elif f.effects:
+                ((lbl, v),) = f.effects.items()
+                assert f.period_label == lbl and f.amount_impact == v
+
+
+def test_each_removal_counts_once_and_corroborating_flags_say_so(deal):
+    results, _ = deal
+    _, a = results["A-06"]  # contradicted, continuing and recurring: one removal, three flags
+    contra = the_flag(a, FlagCode.CONTRADICTORY_EVIDENCE)
+    assert contra.effects and all(D(v) < 0 for v in contra.effects.values())
+    assert {lbl: D(v) for lbl, v in contra.effects.items()} == {lbl: -D(a.claimed[lbl]) for lbl in LABELS if D(a.claimed[lbl])}
+    for code in (FlagCode.CONTINUING_OBLIGATION, FlagCode.RECURRING_PATTERN):
+        f = the_flag(a, code)
+        assert f.effects == {} and f.amount_impact is None and f.period_label is None
+        assert "Already removed as contradicted by the documents; no further effect." in f.message
+    _, a = results["A-02"]
+    assert the_flag(a, FlagCode.CONTINUING_OBLIGATION).effects
+    recurring = the_flag(a, FlagCode.RECURRING_PATTERN)
+    assert recurring.effects == {} and "Already removed as a continuing obligation" in recurring.message
+
+
+def test_multi_period_removals_carry_an_effect_per_period(deal):
+    results, _ = deal
+    _, a = results["A-04"]  # the overlap loser: the shared bill sits in FY2025 and TTM
+    flag = the_flag(a, FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT)
+    assert flag.effects == {FY25: "-8000.00", TTM: "-8000.00"}
+    assert flag.period_label is None and flag.amount_impact is None  # no single period: see effects
+
+
+def test_amount_effects_of_recoveries_moves_and_gaps(deal):
+    results, _ = deal
+    assert the_flag(results["A-07"][1], FlagCode.OFFSETTING_RECOVERY).effects == {FY25: "-12000.00"}
+    assert the_flag(results["A-08"][1], FlagCode.OUT_OF_PERIOD).effects == {FY24: "-18000.00"}
+    assert the_flag(results["A-09"][1], FlagCode.PERIOD_MISMATCH).effects == {TTM: "-20000.00"}
+
+
+def test_the_walk_foots_when_a_capped_claim_is_moved_out_of_period():
+    (t, a), _ = _true_up("2023-10-01", "2024-03-31", "2024-06-15", [9000, 0, 0])
+    assert all(v == 0 for v in flag_effects(t).values())
+    assert all(abs(v) <= 1 for v in _unflagged(t, a).values())
+
+
+def test_gl_links_carry_their_audit_role(deal):
+    # Review finding excel-tick-x-on-claimed-entries: a claimed entry a challenge removed looked like
+    # context ("not part of the claim"). Each link now says whether it was claimed, and what removed it.
+    results, ids = deal
+    roles = {adj: {x.entry_id: x for x in a.gl_links} for adj, (_, a) in results.items()}
+    for e in ids["search"]:
+        assert (roles["A-01"][e].role, roles["A-01"][e].claimed) == ("supporting", True)
+    shared = roles["A-04"][ids["lit"][2]]
+    assert (shared.role, shared.claimed, shared.removed_by) == ("removed", True, FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT)
+    assert shared.supports_claim is False
+    for e in ids["refi"]:
+        assert roles["A-05"][e].removed_by == FlagCode.ALREADY_EXCLUDED_FROM_EBITDA and roles["A-05"][e].claimed
+    recovery = roles["A-07"][ids["insurance"][0]]
+    assert (recovery.role, recovery.claimed, recovery.removed_by) == ("recovery", False, None)
+    for e in ids["trueup"]:
+        assert roles["A-08"][e].role == "moved" and roles["A-08"][e].claimed and roles["A-08"][e].supports_claim
+    for links in roles.values():
+        for x in links.values():
+            assert x.role in {"supporting", "removed", "moved", "recovery", "context"}
+            assert (x.role == "removed") == (x.removed_by is not None)
+            assert x.claimed == (x.role in {"supporting", "removed", "moved"})
+
+
+def test_a_recovery_does_not_relabel_the_cost_invoices_that_cite_the_claim():
+    # Review finding ui-10: the repair invoices citing the claim number were relabelled "Recovery" and
+    # tied to the insurance proceeds.
+    gl = GL()
+    roof = gl.add("2024-10-01", "6150", 30000, "Gulfline Roofing", "Storm damage - roof", "GR-1")
+    proceeds = gl.add("2025-03-01", "8000", -20000, "Anchor Mutual Insurance", "Insurance proceeds - claim AM-77-X")
+    texts = {"7.1 Claim letter AM-77-X.txt": "Claim AM-77-X. Net payment of $20,000.00 for storm damage.",
+             "7.2 Gulfline invoice GR-1.txt": "Invoice GR-1. Roof repair, storm damage. Claim AM-77-X. Total $30,000.00"}
+    facts = {
+        "7.1 Claim letter AM-77-X.txt": DocFacts(
+            doc_id="7.1 Claim letter AM-77-X.txt", doc_type="insurance", counterparty="Anchor Mutual Insurance",
+            reference_numbers=["AM-77-X"],
+            amounts=[AmountFact(label="net_payment", amount="20000", quote=q("7.1 Claim letter AM-77-X.txt", "Net payment of $20,000.00"))]),
+        "7.2 Gulfline invoice GR-1.txt": DocFacts(
+            doc_id="7.2 Gulfline invoice GR-1.txt", doc_type="invoice", counterparty="Gulfline Roofing",
+            reference_numbers=["GR-1", "AM-77-X"]),
+    }
+    pkg = package(gl, [claim("C-9", "Storm repairs", [30000, 0, 0], ["6150"], ["DR 7"])], texts)
+    ai = FakeAI(facts=facts, intents={"C-9": AdjustmentIntent(adj_id="C-9", counterparties=["Gulfline Roofing"],
+                                                              keywords=["storm"])})
+    t, a = run(pkg, ai)["C-9"]
+    links = {d.doc_id: d for d in a.doc_links}
+    assert links["7.2 Gulfline invoice GR-1.txt"].relation == "invoice_for_entry"
+    assert links["7.2 Gulfline invoice GR-1.txt"].entry_ids == [roof]
+    assert links["7.1 Claim letter AM-77-X.txt"].relation == "recovery"
+    assert proceeds in links["7.1 Claim letter AM-77-X.txt"].entry_ids
+    flag = the_flag(a, FlagCode.OFFSETTING_RECOVERY)
+    assert set(flag.doc_ids) == set(texts)  # the invoice still shows why the credit belongs to the event
+    assert a.proposed == amounts(30000, -20000, 0)
+
+
+# ---------------------------------------------------------------------------
+# Term reading rests on verified quotes (review finding security-llm-unverified-doc-fields)
+# ---------------------------------------------------------------------------
+
+
+def test_a_term_fee_is_read_from_its_quote_not_its_description():
+    doc = "6.1 MSA.txt"
+    quote = q(doc, "Client shall pay a one-time setup fee of $500.00 and a monthly fee of $8,000.00.")
+    assert _term_fee(TermFact(kind="monthly_fee", text="monthly fee of $1.00", quote=quote)) == Decimal("8000.00")
+    assert _term_fee(TermFact(kind="monthly_fee", text="setup fee of $500.00", quote=quote)) == Decimal("500.00")
+    assert _term_fee(TermFact(kind="monthly_fee", text="monthly fee of $8,000.00", quote=quote)) == Decimal("8000.00")
+
+
+def test_a_term_end_is_read_from_its_quote_not_its_description():
+    doc = "6.1 MSA.txt"
+    facts = DocFacts(doc_id=doc, doc_type="contract")
+    term = TermFact(kind="term_end", text="term ends 2030-12-31",
+                    quote=q(doc, "This Agreement has a thirty-six (36) month initial term commencing January 1, 2025."))
+    assert _term_end_month(term, facts) == "2027-12"
+    words = TermFact(kind="term_end", text="term ends 2025-06-30", quote=q(doc, "a three-year term commencing March 1, 2025"))
+    assert _term_end_month(words, facts) == "2028-02"
+
+
+def test_a_description_calling_a_periodic_retainer_one_time_does_not_hide_it():
+    (t, a), _ = _retainer_letter(
+        "one-time retainer, payable in three installments, creditable against the success fee",
+        "A retainer of $26,000 per quarter is payable until terminated by either party.",
+    )
+    assert FlagCode.CONTINUING_OBLIGATION in codes(a) and a.treatment == Treatment.REJECT
+
+
+# ---------------------------------------------------------------------------
+# Facts vs judgment (review finding ui-09)
+# ---------------------------------------------------------------------------
+
+
+def test_overlap_recovery_and_period_moves_are_put_to_the_reviewer(deal):
+    results, _ = deal
+    (overlap,) = results["A-04"][1].judgment_questions
+    assert overlap.startswith("Which adjustment should carry") and "A-04 or A-02" in overlap
+    assert "links it more strongly" in overlap
+    recovery = results["A-07"][1].judgment_questions
+    assert any("recovery" in j and "netted in FY2025" in j and "FY2024" in j for j in recovery)
+    moved = results["A-08"][1].judgment_questions
+    assert any("FY2024 cost" in j and "left in FY2025" in j for j in moved)
+    for _, (_, a) in results.items():
+        assert not {f.text for f in a.facts} & set(a.judgment_questions)

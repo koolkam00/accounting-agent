@@ -964,6 +964,10 @@ def test_html_fragments_escape_and_highlight():
     assert "&lt;b&gt;" in out and "$" not in out  # $ escaped so it cannot trigger LaTeX
     table = ui.html_table(["Line", "FY2025"], [{"Line": "<script>", "FY2025": "1", "_class": "subtotal"}], numeric=["FY2025"])
     assert "&lt;script&gt;" in table and 'class="subtotal"' in table and '<td class="num">1</td>' in table
+    ids = ui.html_table(["Q id", "N"], [{"Q id": "Q-M-02-1", "N": "3"}], numeric=["N"], nowrap=["Q id", "N"])
+    assert '<td class="nw">Q-M-02-1</td>' in ids and '<td class="num nw">3</td>' in ids
+    assert ui.basis_label("UNSIGNED_OR_DRAFT_SUPPORT") == "Unsigned or draft support"
+    assert ui.basis_label("ai:draft_questions") == "ai:draft_questions"
     facts = ui.facts_html([Fact(text="Paid", entry_ids=["GL-R2"], quotes=[EvidenceQuote(doc_id="d.pdf", page=2, quote="paid")])])
     assert "GL row 2" in facts and "d.pdf, p. 2" in facts
     assert "No flags" not in ui.flag_html(Flag(code=FlagCode.SIGN_ERROR, severity=Severity.WARNING, message="m", amount_impact="-5"))
@@ -1197,6 +1201,9 @@ def test_store_conditional_append_refuses_a_decision_built_on_an_older_one(tmp_p
     with pytest.raises(ConflictError):
         store.append_question(q, expected_token=NO_ENTRY_TOKEN)
     assert question_token(store.questions(), "Q-A-4-1") != NO_ENTRY_TOKEN
+    other = ReviewStore(tmp_path / "other" / "review_log.jsonl")  # no entries at all for the token to match
+    with pytest.raises(ConflictError):
+        other.append_question(q, expected_token=question_token(store.questions(), "Q-A-4-1"))
 
 
 def test_app_stale_form_does_not_overwrite_a_colleagues_newer_decision(wp, tmp_path, monkeypatch):
@@ -1490,7 +1497,9 @@ def test_queue_gl_link_counts_match_the_workbook_columns():
 
 def test_queue_grid_is_compact_and_sized_to_its_rows():
     compact = ui.queue_columns(LABELS, all_columns=False)
-    assert compact == ["Ref", "Title", "Tool", "Reviewer", "Status", "Bridge", "Final FY2024", "Final FY2025", "Top flags", "Open Qs"]
+    assert compact == ["Ref", "Title", "Tool", "Reviewer", "Status", "Bridge", "Final FY2024", "Final FY2025", "Open Qs", "Top flags"]
+    widths = ui.queue_widths(compact)
+    assert set(widths) == set(compact) and sum(widths.values()) - widths["Top flags"] + 32 <= 1040  # fits 1,500px with the sidebar
     assert set(compact) < set(ui.queue_columns(LABELS))
     assert ui.table_height(14, None) == "content" and ui.table_height(300, None) == "content"
     assert ui.table_height(22) == "content" and ui.table_height(60, 25) == 35 * 26 + 3
@@ -1744,7 +1753,12 @@ def test_review_form_question_edits_go_to_the_question_log(wp, tmp_path, monkeyp
     q1 = _by_id(wp)["A-4"].open_questions[0]
     store.append_question(make_question_update(q1, adj_id="A-4", status=QuestionStatus.ANSWERED, response="Sent", reviewer="Bob"))
     at.run()
-    at.text_area(key="f:A-4:rationale").input("Still pending.")
+    assert at.selectbox(key="f:A-4:q:Q-A-4-1:status").value == QuestionStatus.ANSWERED  # the form follows the log
+    at.text_area(key="f:A-4:newq").input("Provide the signed agreement.")
     at.run()
     _click(at, "Record decision")
-    assert [e.reviewer for e in store.questions()] == ["Ann", "Bob"]
+    assert len(store.all()) == 2
+    assert [(e.reviewer, e.q_id) for e in store.questions()] == [("Ann", "Q-A-4-2"), ("Bob", "Q-A-4-1"), ("Ann", "Q-A-4-R1")]
+    out = apply_reviews(wp, store.all(), question_log=store.questions())
+    qs = {q.q_id: q for q in _by_id(out)["A-4"].open_questions}
+    assert (qs["Q-A-4-1"].status, qs["Q-A-4-1"].response) == (QuestionStatus.ANSWERED, "Sent")

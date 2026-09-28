@@ -27,6 +27,7 @@ from pathlib import Path
 from typing import Any, Iterable, Optional
 
 from qoe.ai_base import (
+    MIN_QUOTE_CHARS,
     AdjustmentIntent,
     Contradiction,
     EntryClassification,
@@ -960,6 +961,15 @@ class _Page:
         return self._q(s, e)
 
     def _q(self, s: int, e: int) -> EvidenceQuote:
+        # A unit shorter than verify_quote accepts ("$950" alone on a line) is widened to the
+        # neighbouring lines until it proves something.
+        while len(self.text[s:e].strip()) < MIN_QUOTE_CHARS and (s > 0 or e < len(self.text)):
+            if e < len(self.text):
+                nxt = self.text.find("\n", e + 1)
+                e = len(self.text) if nxt == -1 else nxt
+            else:
+                prev = self.text.rfind("\n", 0, max(s - 1, 0))
+                s = 0 if prev == -1 else prev + 1
         return EvidenceQuote(doc_id=self.doc_id, page=self.number, quote=self.text[s:e])
 
 
@@ -1929,7 +1939,7 @@ class _Evidence:
         if quote.doc_id in self.docs:
             return verify_quote(quote, self.docs)
         fact = facts_by_id.get(quote.doc_id)
-        if fact is None or not quote.quote.strip():
+        if fact is None or len(quote.quote.strip()) < MIN_QUOTE_CHARS:
             return False
         return any(q.page == quote.page and quote.quote in q.quote for q in _fact_quotes(fact))
 
@@ -2575,7 +2585,8 @@ CLASSIFY_ENTRIES_SCHEMA = _obj(
         "classifications": {
             "type": "array",
             "items": _obj({"entry_id": {"type": "string"}, "qualifies": {"type": "boolean"},
-                           "reason": {"type": "string"}, "doc_ids": {"type": "array", "items": {"type": "string"}}}),
+                           "reason": {"type": "string"}, "doc_ids": {"type": "array", "items": {"type": "string"}},
+                           "page": _nullable("integer"), "quote": {"type": "string"}}),
         }
     }
 )
@@ -2628,6 +2639,104 @@ def _amount_in_quote(amount: str, quote: str) -> bool:
         if re.search(rf"(?<![\d,.]){re.escape(written)}(?![\d,]|\.\d*[1-9])", quote):
             return True
     return False
+
+
+def _figures_in_quote(text: str, quote: str) -> bool:
+    """Every money figure a description names is written in its quote."""
+    for _, _, value, _ in _money_hits(text, bare=True):
+        if not _amount_in_quote(fmt(value), quote):
+            return False
+    return True
+
+
+def _stated_dates(doc: SourceDocument) -> tuple[set[str], set[str], set[str]]:
+    """(dates, first days of stated months, last days of stated months) written in a document, ISO."""
+    days: set[str] = set()
+    starts: set[str] = set()
+    ends: set[str] = set()
+    for page in doc.pages:
+        hits = _find_dates(page.text)
+        days.update(h.iso for h in hits)
+        for _, _, month in _month_year_hits(page.text, hits):
+            starts.add(_iso_month_start(month))
+            ends.add(_iso_month_end(month))
+    return days, starts, ends
+
+
+def _merge_signed(llm: Any, rules: Optional[bool], llm_quotes: list[EvidenceQuote]) -> Optional[bool]:
+    """Execution status from two readers, conservatively: unsigned if either says so."""
+    llm_value = llm if isinstance(llm, bool) else None
+    if llm_value is False or rules is False:
+        return False
+    if rules is True:
+        return True
+    if llm_value is True and any(_SIGNED_RE.search(q.quote) for q in llm_quotes):
+        return True  # the model showed a verbatim signature mark
+    return None
+
+
+# Types that exempt a document from the draft / unsigned challenge (qoe/challenge.py).
+_UNSIGNABLE = frozenset({"invoice", "correspondence", "memo", "payroll"})
+
+
+def _merge_doc_type(llm: str, rules: str, is_draft: bool, is_signed: Optional[bool]) -> str:
+    """The rules' document type; the model's only where the rules found none, and never one that
+    would take a draft or unsigned document out of the execution check."""
+    if llm not in DOC_TYPES or llm == rules or rules != "other":
+        return rules
+    if llm in _UNSIGNABLE and (is_draft or is_signed is False):
+        return rules
+    return llm
+
+
+_CONTENT_STOP = frozenset(
+    """that this with from have been were will would shall which their there they them than then into
+    about under over also only such other more most some each does document documents letter states shows
+    says management company entry entries adjustment cost costs expense expenses""".split()
+)
+
+
+def _content_words(text: str) -> set[str]:
+    """Distinctive words (first six letters, so 'recurring' meets 'recurs') for overlap tests."""
+    return {w[:6] for w in re.findall(r"[a-z]{4,}", text.lower()) if w not in _CONTENT_STOP}
+
+
+def _statement_backed(statement: str, quote: str) -> bool:
+    """An AI statement may only assert what its quote shows: every figure and date it names is
+    in the quote, and it shares at least one distinctive word with it."""
+    if not _figures_in_quote(statement, quote):
+        return False
+    quote_dates = {h.iso for h in _find_dates(quote)}
+    if any(h.iso not in quote_dates for h in _find_dates(statement)):
+        return False
+    return bool(_content_words(statement) & _content_words(quote))
+
+
+def _merge_intent(llm: AdjustmentIntent, rules: AdjustmentIntent) -> AdjustmentIntent:
+    """The model's reading of the narrative on top of the rules': search terms are the union and
+    each assertion holds if either reader finds it, so an omission cannot narrow the review."""
+
+    def union(a: list[str], b: list[str]) -> list[str]:
+        out: list[str] = []
+        for x in a + b:
+            if x.lower() not in {y.lower() for y in out}:
+                out.append(x)
+        return out
+
+    return llm.model_copy(
+        update={
+            "counterparties": union(llm.counterparties, rules.counterparties),
+            "keywords": union(llm.keywords, rules.keywords),
+            "reference_numbers": union(llm.reference_numbers, rules.reference_numbers),
+            "event_type": llm.event_type if llm.event_type != "other" else rules.event_type,
+            "asserts_nonrecurring": llm.asserts_nonrecurring or rules.asserts_nonrecurring,
+            "asserts_personal": llm.asserts_personal or rules.asserts_personal,
+            "is_pro_forma": llm.is_pro_forma or rules.is_pro_forma,
+            "is_normalization": llm.is_normalization or rules.is_normalization,
+            "normalized_amount": llm.normalized_amount or rules.normalized_amount,
+            "event_months": sorted(set(llm.event_months) | set(rules.event_months)),
+        }
+    )
 
 
 def _require_keys(data: Any, schema: dict[str, Any]) -> dict[str, Any]:
@@ -2780,9 +2889,28 @@ class OpenAICompatibleEvidenceAI:
             return self.rules.extract_facts(doc)
 
     def _facts_from_response(self, doc: SourceDocument, data: dict[str, Any]) -> DocFacts:
+        """The model's reading, checked against the page text and reconciled with the rules.
+
+        Quotes must be verbatim (and long enough to prove something); an amount must be written
+        in its own quote; references and names must appear in the text. Fields the model states
+        without a quote cannot be checked that way, so they are reconciled with the rule-based
+        reading of the same pages, which is the floor: the model may add facts the rules missed
+        but never remove one or overrule it (SPEC §1: AI proposes, code decides).
+
+        - is_draft: draft if either reader says so. is_signed: unsigned if either says so;
+          signed only if the rules agree or a verified quote shows a signature mark.
+        - doc_type: the rules' type; the model's only when the rules could not classify the
+          document, and never a type that would exempt a draft or unsigned document.
+        - service period and document date: the rules' reading; the model's only when the
+          rules found none and every date it gives is written in the document.
+        - amounts: the rules' labels for amounts both read; the model's other amounts are added.
+        - terms: a term's description may not name an amount its quote does not contain; the
+          rules' terms and key statements are always kept.
+        """
         docs_by_id = {doc.doc_id: doc}
         full_text = doc.full_text
         full_lower = _norm_space(full_text).lower()
+        rules = self.rules.extract_facts(doc)
         dropped = 0
 
         def quote(item: dict[str, Any]) -> Optional[EvidenceQuote]:
@@ -2797,7 +2925,8 @@ class OpenAICompatibleEvidenceAI:
                 return None
             return q
 
-        amounts: list[AmountFact] = []
+        rule_values = {a.amount for a in rules.amounts}
+        amounts: list[AmountFact] = list(rules.amounts)
         for item in data.get("amounts") or []:
             q = quote(item)
             if q is None:
@@ -2810,42 +2939,78 @@ class OpenAICompatibleEvidenceAI:
             if D(amount) == 0 or not _amount_in_quote(amount, q.quote):
                 dropped += 1
                 continue
-            label = str(item.get("label") or "line").strip().lower().replace(" ", "_") or "line"
-            amounts.append(AmountFact(label=label, amount=amount, quote=q))
-        terms: list[TermFact] = []
+            if amount in rule_values:
+                continue  # the rules read this amount: their label (and quote) stand
+            label = str(item.get("label") or "line").strip().lower().replace(" ", "_")
+            amounts.append(AmountFact(label=label if label in AMOUNT_LABELS else "line", amount=amount, quote=q))
+            rule_values.add(amount)
+        terms: list[TermFact] = list(rules.terms)
+        seen_terms = {(t.kind, t.quote.page, t.quote.quote) for t in terms}
         for item in data.get("terms") or []:
             q = quote(item)
             if q is None:
                 continue
             kind = str(item.get("kind") or "other")
-            terms.append(TermFact(kind=kind if kind in TERM_KINDS else "other",
-                                  text=_norm_space(str(item.get("text") or "")) or kind, quote=q))
-        statements = [q for item in data.get("key_statements") or [] if (q := quote(item)) is not None]
-        refs = [
-            r for r in (_stated(x) for x in data.get("reference_numbers") or [])
-            if r and r.lower() in full_text.lower()
-        ]
+            kind = kind if kind in TERM_KINDS else "other"
+            text = _norm_space(str(item.get("text") or ""))
+            if not text or not _figures_in_quote(text, q.quote):
+                text = kind.replace("_", " ")  # a description may not carry a figure the document does not state
+            if (kind, q.page, q.quote) not in seen_terms:
+                seen_terms.add((kind, q.page, q.quote))
+                terms.append(TermFact(kind=kind, text=text, quote=q))
+        statements: list[EvidenceQuote] = list(rules.key_statements)
+        llm_statements: list[EvidenceQuote] = []
+        for item in data.get("key_statements") or []:
+            q = quote(item)
+            if q is None:
+                continue
+            llm_statements.append(q)
+            if all((q.page, q.quote) != (x.page, x.quote) for x in statements):
+                statements.append(q)
+        refs = list(rules.reference_numbers)
+        for r in (_stated(x) for x in data.get("reference_numbers") or []):
+            # A reference must be a whole token of the text and long enough to identify something.
+            if r and len(re.sub(r"[^0-9A-Za-z]", "", r)) >= 3 and _token_in(r, full_text):
+                if r.lower() not in {x.lower() for x in refs}:
+                    refs.append(r)
         counterparty = _stated(data.get("counterparty"))
         if counterparty and _norm_space(counterparty).lower() not in full_lower:
             counterparty = None
-        doc_type = str(data.get("doc_type") or "other")
-        signed = data.get("is_signed")
+        title = _stated(data.get("title"))
+        if title and _norm_space(title).lower() not in full_lower:
+            title = None  # an unstated title would steer document linking
+        is_draft = bool(data.get("is_draft")) or rules.is_draft
+        is_signed = _merge_signed(data.get("is_signed"), rules.is_signed, llm_statements)
+        doc_type = _merge_doc_type(str(data.get("doc_type") or "other"), rules.doc_type, is_draft, is_signed)
+        stated = _stated_dates(doc)
+        sp_start, sp_end = rules.service_period_start, rules.service_period_end
+        if sp_start is None and sp_end is None:
+            llm_start = _iso_or_none(data.get("service_period_start"))
+            llm_end = _iso_or_none(data.get("service_period_end"))
+            if (llm_start or llm_end) and (llm_start is None or llm_start in stated[0] | stated[1]) and (
+                llm_end is None or llm_end in stated[0] | stated[2]
+            ):
+                sp_start, sp_end = llm_start, llm_end
+        doc_date = rules.doc_date
+        if doc_date is None:
+            llm_date = _iso_or_none(data.get("doc_date"))
+            doc_date = llm_date if llm_date in stated[0] else None
         return DocFacts(
             doc_id=doc.doc_id,
-            doc_type=doc_type if doc_type in DOC_TYPES else "other",
-            title=_stated(data.get("title")) or _filename_title(doc.doc_id),
-            counterparty=counterparty,
-            doc_date=_iso_or_none(data.get("doc_date")),
-            reference_numbers=list(dict.fromkeys(refs)),
+            doc_type=doc_type,
+            title=title or rules.title or _filename_title(doc.doc_id),
+            counterparty=counterparty or rules.counterparty,
+            doc_date=doc_date,
+            reference_numbers=refs,
             amounts=amounts,
-            service_period_start=_iso_or_none(data.get("service_period_start")),
-            service_period_end=_iso_or_none(data.get("service_period_end")),
-            is_draft=bool(data.get("is_draft")),
-            is_signed=signed if isinstance(signed, bool) else None,
+            service_period_start=sp_start,
+            service_period_end=sp_end,
+            is_draft=is_draft,
+            is_signed=is_signed,
             terms=terms,
             key_statements=statements,
             extractor=self.name,
-            dropped_quotes=dropped,
+            dropped_quotes=dropped + rules.dropped_quotes,
         )
 
     def parse_intent(self, adj: AdjustmentClaim) -> AdjustmentIntent:
@@ -2870,7 +3035,7 @@ class OpenAICompatibleEvidenceAI:
                 m for m in data.get("event_months") or [] if isinstance(m, str) and re.fullmatch(r"\d{4}-\d{2}", m)
             ]
             event_type = str(data.get("event_type") or "other")
-            return AdjustmentIntent(
+            llm = AdjustmentIntent(
                 adj_id=adj.adj_id,
                 counterparties=list(dict.fromkeys(counterparties)),
                 keywords=list(dict.fromkeys(keywords)),
@@ -2887,6 +3052,7 @@ class OpenAICompatibleEvidenceAI:
         except Exception as exc:  # noqa: BLE001
             self._fallback("parse_intent", adj.adj_id, exc)
             return self.rules.parse_intent(adj)
+        return _merge_intent(llm, self.rules.parse_intent(adj))
 
     def find_contradictions(
         self,
@@ -2922,6 +3088,11 @@ class OpenAICompatibleEvidenceAI:
             statement = _norm_space(str(item.get("statement") or ""))
             if not statement:
                 continue
+            if not _statement_backed(statement, q.quote):
+                # The engine shows the statement as what the document says: a quote that does not
+                # carry its figures, dates or subject cannot stand behind it.
+                self.dropped_quotes += 1
+                continue
             out.append(
                 Contradiction(
                     doc_id=q.doc_id,
@@ -2934,6 +3105,13 @@ class OpenAICompatibleEvidenceAI:
                     ),
                 )
             )
+        # The rule-based detectors are the floor: an answer that leaves out a conflict they find
+        # (a model obeying "report nothing" planted in a document) cannot remove the challenge.
+        seen = {(c.doc_id, c.quote.page, c.quote.quote) for c in out}
+        for c in self.rules.find_contradictions(adj, intent, facts, entries):
+            if (c.doc_id, c.quote.page, c.quote.quote) not in seen:
+                seen.add((c.doc_id, c.quote.page, c.quote.quote))
+                out.append(c)
         return out
 
     def classify_entries(
@@ -2955,23 +3133,52 @@ class OpenAICompatibleEvidenceAI:
             self._fallback("classify_entries", adj.adj_id, exc)
             return self.rules.classify_entries(adj, intent, entries, facts)
         known_docs = {f.doc_id for f in facts}
+        facts_by_id = {f.doc_id: f for f in facts}
+        evidence = _Evidence(self._docs)
+        # The rules classify every entry (they need the whole event group); a removal they make is
+        # the floor, and one only the model proposes must show the passage it rests on.
+        rules = {c.entry_id: c for c in self.rules.classify_entries(adj, intent, entries, facts)}
         by_id: dict[str, EntryClassification] = {}
         for item in data.get("classifications") or []:
             entry_id = str(item.get("entry_id") or "")
             reason = _norm_space(str(item.get("reason") or ""))
-            if entry_id not in {e.entry_id for e in entries} or entry_id in by_id or not reason:
+            if entry_id not in rules or entry_id in by_id or not reason:
                 continue
-            by_id[entry_id] = EntryClassification(
-                entry_id=entry_id,
-                qualifies=bool(item.get("qualifies")),
-                reason=reason,
-                doc_ids=[d for d in item.get("doc_ids") or [] if d in known_docs],
-            )
-        if any(e.entry_id not in by_id for e in entries):
-            # rules need every entry to see the event group, then fill only the gaps
-            for c in self.rules.classify_entries(adj, intent, entries, facts):
-                by_id.setdefault(c.entry_id, c)
+            qualifies = bool(item.get("qualifies"))
+            doc_ids = [d for d in item.get("doc_ids") or [] if d in known_docs]
+            if not qualifies and rules[entry_id].qualifies:
+                backing = self._classification_quote(item, doc_ids, reason, facts_by_id, evidence)
+                # Without a backing passage the proposal carries no document, so the engine keeps
+                # the entry and asks the reviewer instead of removing it.
+                doc_ids = [backing.doc_id] + [d for d in doc_ids if d != backing.doc_id] if backing else []
+            by_id[entry_id] = EntryClassification(entry_id=entry_id, qualifies=qualifies, reason=reason, doc_ids=doc_ids)
+        for entry_id, rule in rules.items():
+            if not rule.qualifies or entry_id not in by_id:
+                by_id[entry_id] = rule
         return [by_id[e.entry_id] for e in entries]
+
+    def _classification_quote(
+        self,
+        item: dict[str, Any],
+        doc_ids: list[str],
+        reason: str,
+        facts_by_id: dict[str, DocFacts],
+        evidence: "_Evidence",
+    ) -> Optional[EvidenceQuote]:
+        """The verbatim passage (in one of the cited documents) that backs a proposed removal."""
+        text = str(item.get("quote") or "")
+        if not text.strip():
+            return None
+        try:
+            page = int(item.get("page") or 0)
+        except (TypeError, ValueError):
+            page = 0
+        for doc_id in doc_ids:
+            q = EvidenceQuote(doc_id=doc_id, page=max(page, 1), quote=text)
+            if evidence.verified(q, facts_by_id) and _statement_backed(reason, text):
+                return q
+        self.dropped_quotes += 1
+        return None
 
     def draft_questions(self, adj: AdjustmentClaim, flags: list[Flag], facts: list[DocFacts]) -> list[str]:
         payload = {

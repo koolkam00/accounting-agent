@@ -293,10 +293,11 @@ class ReviewStore:
             def check(existing: bytes) -> None:
                 entries = _parse_question_entries(existing)[0]
                 if question_token(entries, entry.q_id) != expected_token:
-                    last = [e for e in entries if e.q_id == entry.q_id][-1]
+                    last = next((e for e in reversed(entries) if e.q_id == entry.q_id), None)
+                    who = f"by {last.reviewer or 'another reviewer'} at {last.timestamp} " if last is not None else ""
                     raise ConflictError(
-                        f"{entry.q_id} was updated by {last.reviewer or 'another reviewer'} at {last.timestamp} "
-                        "after this page loaded. Review the current status, then record again.",
+                        f"{entry.q_id} was updated {who}after this page loaded. "
+                        "Review the current status, then record again.",
                         last,
                     )
 

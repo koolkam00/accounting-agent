@@ -462,6 +462,73 @@ def test_documents_link_by_support_ref_and_doc_number_and_count_as_documented():
     assert any("Doc # PS-101 appears in" in r for r in gl_links[inv[0]].reasons)
 
 
+def _vendor_documents():
+    """Three documents management cites for a law firm's bills: one matter's invoice, that matter's
+    engagement letter (which mentions the firm's other matter in passing), and a mediation schedule."""
+    texts = {
+        "4.1 Marlow Finch invoice MF-7710-03.txt": "Marlow & Finch LLP. Invoice MF-7710-03. Matter 7710 Reyes v. Unit Co. "
+                                                   "Total due $12,000.00",
+        "4.2 Marlow Finch engagement letter Matter 7710.txt": "Marlow & Finch LLP will defend Unit Co in Reyes v. Unit Co "
+                                                              "(Matter 7710). This is separate from our general corporate "
+                                                              "retainer under Matter 3002.",
+        "4.3 Reyes mediation schedule.txt": "Mediation schedule, Reyes v. Unit Co litigation. Counsel: Marlow & Finch LLP.",
+    }
+    facts = [
+        DocFacts(doc_id="4.1 Marlow Finch invoice MF-7710-03.txt", doc_type="invoice", counterparty="Marlow & Finch LLP",
+                 reference_numbers=["MF-7710-03", "7710"]),
+        DocFacts(doc_id="4.2 Marlow Finch engagement letter Matter 7710.txt", doc_type="engagement_letter",
+                 counterparty="Marlow & Finch LLP", reference_numbers=["7710", "3002"]),
+        DocFacts(doc_id="4.3 Reyes mediation schedule.txt", doc_type="other"),
+    ]
+    return [doc(k, v) for k, v in texts.items()], facts
+
+
+def test_documents_are_tied_only_to_the_entries_they_are_about():
+    # Review findings ui-10 / excel-doc-vouching-overstated: every cited document that named the firm was
+    # tied to every claimed entry of the firm, so one matter's invoice "supported" the other matter's
+    # retainer and inflated the documented amount.
+    gl, lit, retainer, adhoc, *_ = _legal_deal()
+    docs, facts = _vendor_documents()
+    pkg = package(gl, [claim("A-1", "Legal fees", [0, 50000, 24000], ["6400"], refs=["DR 4"])], docs)
+    t = trace_one(pkg, intent("A-1", counterparties=["Marlow & Finch"]), facts)
+    links = {d.doc_id: d for d in t.doc_link_models()}
+    invoice, letter, schedule = (links[d.doc_id] for d in docs)
+    assert invoice.entry_ids == [lit[0]]  # its own number, not the firm's other bills
+    assert invoice.relation == "invoice_for_entry"
+    assert letter.entry_ids == lit  # Matter 7710 in its title; the passing mention of Matter 3002 ties nothing
+    assert schedule.entry_ids == lit  # names the firm and the litigation (party + subject), not the retainer
+    by_entry = {x.entry_id: x for x in t.gl_links()}
+    for e in retainer[12:24] + [adhoc]:
+        assert by_entry[e].doc_ids == [], e
+    assert set(by_entry[lit[0]].doc_ids) == {invoice.doc_id, letter.doc_id, schedule.doc_id}
+    # Documented is the portion of the claim with a document about the entry: the litigation only.
+    assert t.documented("FY2025") == Decimal("34000")
+    # The party-name match stays visible as a document-level reason.
+    assert any(r.startswith("Names Marlow & Finch") for r in letter.reasons)
+
+
+def test_an_invoice_that_is_about_no_claimed_entry_is_not_an_invoice_for_entry():
+    gl, lit, retainer, *_ = _legal_deal()
+    texts = {"4.9 Marlow Finch retainer invoice MF-3002-07.txt": "Marlow & Finch LLP. Invoice MF-3002-07. Matter 3002 retainer."}
+    facts = [DocFacts(doc_id="4.9 Marlow Finch retainer invoice MF-3002-07.txt", doc_type="invoice",
+                      counterparty="Marlow & Finch LLP", reference_numbers=["MF-3002-07"])]
+    pkg = package(gl, [claim("A-1", "Litigation fees", [0, 34000, 8000], ["6400"], refs=["DR 4"])], [doc(k, v) for k, v in texts.items()])
+    t = trace_one(pkg, intent("A-1", counterparties=["Marlow & Finch"], reference_numbers=["7710"]), facts)
+    (link,) = [d for d in t.doc_link_models() if d.doc_id.startswith("4.9")]
+    assert link.entry_ids == [] and link.relation == "other"
+
+
+def test_gl_links_record_whether_management_claimed_each_entry():
+    gl, lit, retainer, adhoc, *_ = _legal_deal()
+    pkg = package(gl, [claim("A-1", "Litigation fees", [0, 34000, 8000], ["6400"])])
+    t = trace_one(pkg, intent("A-1", counterparties=["Marlow & Finch"]))
+    by_entry = {x.entry_id: x for x in t.gl_links()}
+    for e in lit:
+        assert by_entry[e].claimed and by_entry[e].role == "supporting" and by_entry[e].removed_by is None
+    for e in retainer[12:24]:
+        assert not by_entry[e].claimed and by_entry[e].role == "context" and not by_entry[e].supports_claim
+
+
 # ---------------------------------------------------------------------------
 # Behaviours added for real-deal robustness
 # ---------------------------------------------------------------------------

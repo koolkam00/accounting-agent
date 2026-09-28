@@ -1745,26 +1745,70 @@ def _claim_elsewhere(t: AdjustmentTrace, label: str, target: int, tol: int, s: i
 # ---------------------------------------------------------------------------
 
 
+# Memo words that name no particular event: a document sharing only these with an entry is not about it.
+_EVENT_GENERIC = frozenset(
+    """travel services service fee fees payment payments monthly invoice invoices expense expenses cost costs air
+    hotel registration company business personal general office admin report reports statement statements agenda
+    summary details detail matter matters professional legal""".split()
+)
+
+
+# Distinctive words an entry's memo and a document must share to name the same subject; one
+# shared word ("loan", "Carrier") is a coincidence as often as not.
+MIN_EVENT_WORDS = 2
+
+
+def _event_words(text_tokens: Iterable[str]) -> set[str]:
+    return {stem(w) for w in text_tokens if len(w) >= 3 and w not in _EVENT_GENERIC and not w.isdigit()}
+
+
 def _associate_documents(t: AdjustmentTrace) -> None:
+    """Tie documents to the claimed entries they are about (SPEC §5.2 Document signal).
+
+    In order of strength: the document states the entry's doc number; it states the entry's
+    amount for the same party (named as its counterparty, or in its text when management's
+    support references point at it); correspondence cites the entry's number; it states a
+    group's total; it states the group's matter / contract reference. A document whose own
+    number belongs to another entry, or whose title names another matter of this adjustment,
+    is never tied to the entry on amount or party grounds. A related document that merely
+    names the entry's party is tied at document level only ("named"), unless it also names
+    the entry's subject ("event"), e.g. a plant-visit agenda naming the traveller and the visit.
+    """
     idx = t.index
     prelinked = {d for d, info in t.doc_links.items() if info.prelinked}
     support_docs = {d for d, info in t.doc_links.items() if info.cited}
+    group_refs = set(t.group_ref.values())
+
+    def other_matter(doc_id: str, entry_id: str) -> bool:
+        """The document's title names a matter of this adjustment other than the entry's own."""
+        named = idx.doc_title_refs.get(doc_id, frozenset()) & group_refs
+        return bool(named) and t.group_ref.get(t.group_of.get(entry_id, ""), "") not in named
+
+    def other_entry(doc_id: str, entry_id: str) -> bool:
+        """The document is the bill for a different entry (it states that entry's doc number)."""
+        own = idx.doc_entries.get(doc_id, frozenset())
+        return bool(own) and entry_id not in own
+
     amount_hits: dict[str, list[str]] = {}
     # Only claimed entries: documents about context-only activity (prior-year comparables,
     # other vendors' invoices in the same account) are not evidence for this claim.
     claimed = t.claimed_ids()
     for e in claimed:
         info = idx.by_id[e]
-        entry = info.entry
         if info.doc_number:
             for doc_id in idx.docs_by_ref.get(info.doc_number, []):
                 if e in idx.doc_entries[doc_id]:
                     t.associate(doc_id, e, "number", DW_ENTRY_NUMBER, "States the doc # of linked GL entries")
-        for doc_id, _amt in idx.docs_with_amount(info.amount):
-            if idx.doc_entries[doc_id] and e not in idx.doc_entries[doc_id]:
-                continue  # the document is the invoice for a different entry
+        for doc_id, _amt in dict.fromkeys(idx.docs_with_amount(info.amount)):
+            if other_entry(doc_id, e) or other_matter(doc_id, e):
+                continue
             dcp = idx.doc_cp[doc_id]
-            if names_match(dcp, info.cp_tokens) or (not info.cp_tokens and doc_id in support_docs):
+            if (
+                names_match(dcp, info.cp_tokens)
+                or (not info.cp_tokens and doc_id in support_docs)
+                # A cited notice from a third party (debtor's counsel) naming the customer and the amount.
+                or (doc_id in prelinked and name_in_text(info.cp_tokens, idx.doc_text_tokens[doc_id]))
+            ):
                 amount_hits.setdefault(doc_id, []).append(e)
     # Correspondence that cites a claimed entry's doc number discusses that entry. Short
     # numbers ("1001") also occur in addresses, so only distinctive ones count.
@@ -1778,13 +1822,6 @@ def _associate_documents(t: AdjustmentTrace) -> None:
         basis = "amount" if len(hits) == 1 else "amount_multi"
         for e in hits:
             t.associate(doc_id, e, basis, DW_ENTRY_AMOUNT, "States the amount of linked GL entries for the same party")
-    for e in claimed:
-        info = idx.by_id[e]
-        entry = info.entry
-        if info.cp_tokens:
-            for doc_id in sorted(prelinked):
-                if name_in_text(info.cp_tokens, idx.doc_text_tokens[doc_id]):
-                    t.associate(doc_id, e, "named", DW_ENTRY_NAMED, f"Names {entry.counterparty}")
     # A document stating a group's total (an engagement fee paid in installments) supports every entry in it.
     claimed_set = set(claimed)
     for g, all_members in t.groups.items():
@@ -1813,11 +1850,25 @@ def _associate_documents(t: AdjustmentTrace) -> None:
             if dcp and g_cp and not names_match(dcp, g_cp):
                 continue
             for e in (x for x in t.groups[g] if x in claimed_set):
-                if idx.doc_entries[doc_id] and e not in idx.doc_entries[doc_id]:
-                    continue  # another entry's invoice under the same matter is not support for this one
+                if other_entry(doc_id, e) or other_matter(doc_id, e):
+                    continue  # another entry's invoice, or another matter's letter that mentions this one
                 t.associate(doc_id, e, "reference", DW_ENTRY_NUMBER, f"States reference {ref} of {g}")
+    # Last and weakest: a related document naming the entry's party.
+    for e in claimed:
+        info = idx.by_id[e]
+        if not info.cp_tokens:
+            continue
+        subject = _event_words(info.theme)
+        for doc_id in sorted(prelinked):
+            if not name_in_text(info.cp_tokens, idx.doc_text_tokens[doc_id]):
+                continue
+            doc_words = _event_words(idx.doc_text_tokens[doc_id] | frozenset(norm_text(doc_id).split()))
+            if len(subject & doc_words) >= MIN_EVENT_WORDS and not other_entry(doc_id, e) and not other_matter(doc_id, e):
+                t.associate(doc_id, e, "event", DW_ENTRY_NAMED, f"Names {info.entry.counterparty} and the entry's subject")
+            else:
+                t.associate(doc_id, e, "named", DW_ENTRY_NAMED, f"Names {info.entry.counterparty}")
     for info in t.doc_links.values():
-        n = len(info.entry_basis)
+        n = sum(1 for b in info.entry_basis.values() if b in ENTRY_ABOUT_BASES)
         if n and not info.prelinked:
             info.reasons.append(f"Linked through {n} GL entr{'y' if n == 1 else 'ies'}")
 
