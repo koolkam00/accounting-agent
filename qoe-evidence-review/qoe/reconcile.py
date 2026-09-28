@@ -9,9 +9,9 @@ amortization classes.
 
 from __future__ import annotations
 
+import re
 from collections import Counter, defaultdict
 from datetime import date
-from itertools import pairwise
 from decimal import Decimal
 from typing import Iterable
 
@@ -32,10 +32,14 @@ from qoe.schemas import (
     Severity,
 )
 
-# A month is "partially missing" when it has entries in fewer than half of the
-# accounts active in both neighbouring months; below this many accounts the
-# test is too noisy to mean anything.
+# A month is "partially missing" when it has entries in fewer than half of the accounts
+# that are regularly active around it; below this many accounts the test is too noisy
+# to mean anything.
 MISSING_PERIOD_MIN_BASE = 3
+# "Regularly active around it": posted in more than half of the months within this many
+# months on either side. A wide neighbourhood keeps the baseline honest when neighbouring
+# months are themselves incomplete (the last two or three unclosed months of a TTM).
+MISSING_PERIOD_NEIGHBOURHOOD = 6
 # Same account/amount/counterparty/memo at most this many days apart is a possible duplicate.
 DUPLICATE_WINDOW_DAYS = 7
 
@@ -114,13 +118,83 @@ def gl_ebitda(pkg: DealPackage) -> dict[str, EbitdaComponents]:
 # Duplicates
 # ---------------------------------------------------------------------------
 
+# Words that make up payment-channel placeholders QBO, NetSuite and bank feeds put in the
+# document-number column ("ACH", "EFT", "DEBIT", "Wire", "CHK", "Auto Pay", "N/A"). They
+# are the same on every recurring payment, so they cannot say two postings are one document.
+_GENERIC_REF_WORDS = frozenset(
+    """
+    ach eft debit credit wire wires chk chq check cheque dd direct auto autopay autodebit draft pmt pymt pay
+    payment payments online epay e transfer xfer trf tfr card cc pos bacs sepa giro standing order so recurring
+    bank fee fees dep deposit withdrawal cash visa mc amex na n a none nil tbd misc various je journal entry adj
+    """.split()
+)
+# A document number identifies one document, so postings that share it are one document
+# posted more than once only when they are close together. 45 days covers a bill entered on
+# receipt and entered again (or expensed directly) when it is paid on net-30 terms, plus
+# processing lag; it is short of the two-month span over which a reused reference repeats.
+DOC_NUMBER_WINDOW_DAYS = 45
+# A number seen on the same account/amount/counterparty in this many different months is a
+# standing reference (lease, contract or standing-order number), not a document number.
+STANDING_REFERENCE_MONTHS = 3
+# A memo that repeats at least this often (average days between postings, over two weeks
+# or more) is a high-frequency recurring charge: equal memos days apart are its rhythm.
+RECURRING_CADENCE_DAYS = 10
 
-def find_duplicate_entries(gl: list[GLEntry]) -> list[list[str]]:
-    """Groups of entry ids that look like the same transaction posted twice.
 
-    Two entries match on account, amount and counterparty plus either the same
-    non-empty doc number, or the same memo within 7 days. Groups are
-    ordered by GL row, as are the ids within each group.
+def is_generic_doc_number(doc_number: str) -> bool:
+    """True for placeholders such as "ACH", "EFT", "DEBIT", "Wire", "CHK", "-", "N/A" or "000"."""
+    text = doc_number.casefold()
+    if not any(ch.isalnum() for ch in text):
+        return True
+    words = re.findall(r"[a-z]+", text)
+    digits = re.findall(r"\d+", text)
+    if digits:
+        return not words and all(set(d) == {"0"} for d in digits)
+    return all(w in _GENERIC_REF_WORDS for w in words)
+
+
+def _days(a: GLEntry, b: GLEntry) -> int:
+    return (date.fromisoformat(b.date) - date.fromisoformat(a.date)).days
+
+
+def _anchored_clusters(entries: list[GLEntry], window: int) -> list[list[GLEntry]]:
+    """Date-ordered clusters where every member is within ``window`` days of the cluster's
+    first posting. Anchoring to the first posting stops a chain of postings a few days
+    apart from linking entries that are weeks apart."""
+    ordered = sorted(entries, key=lambda x: (x.date, x.source_row, x.entry_id))
+    clusters: list[list[GLEntry]] = []
+    for e in ordered:
+        if clusters and _days(clusters[-1][0], e) <= window:
+            clusters[-1].append(e)
+        else:
+            clusters.append([e])
+    return clusters
+
+
+def _is_high_frequency(entries: list[GLEntry]) -> bool:
+    if len(entries) < 3:
+        return False
+    ordered = sorted(e.date for e in entries)
+    span = (date.fromisoformat(ordered[-1]) - date.fromisoformat(ordered[0])).days
+    return span >= 2 * DUPLICATE_WINDOW_DAYS and span / (len(entries) - 1) <= RECURRING_CADENCE_DAYS
+
+
+def find_duplicate_groups(gl: list[GLEntry]) -> list[tuple[list[str], str]]:
+    """Duplicate groups with the rule that matched them: ``"doc"`` or ``"memo"``.
+
+    Entries match on account, amount and counterparty (SPEC §6) plus either
+
+    - **doc**: the same document number, not a generic payment placeholder, with every
+      posting within ``DOC_NUMBER_WINDOW_DAYS`` of the group's first; a number used in
+      ``STANDING_REFERENCE_MONTHS`` or more different months is a standing reference and
+      forms no doc groups; or
+    - **memo**: the same memo with every posting within ``DUPLICATE_WINDOW_DAYS`` of the
+      group's first (no chaining), except for charges that recur at least every
+      ``RECURRING_CADENCE_DAYS`` days on average.
+
+    A group reached by both rules, or by two doc numbers, is reported as ``"memo"``, so only
+    a pure single-document group can be reversed as a diligence item. Groups are ordered by
+    GL row, as are the ids within each group.
     """
     parent = {e.entry_id: e.entry_id for e in gl}
 
@@ -142,38 +216,54 @@ def find_duplicate_entries(gl: list[GLEntry]) -> list[list[str]]:
         if amount == 0:
             continue
         counterparty, memo, doc = _norm(e.counterparty), _norm(e.memo), _norm(e.doc_number)
-        if doc:
+        if doc and not is_generic_doc_number(doc):
             by_doc[(e.account, amount, counterparty, doc)].append(e)
         # With neither a name nor a memo there is nothing to say two postings are one event.
         if counterparty or memo:
             by_memo[(e.account, amount, counterparty, memo)].append(e)
+
+    doc_clusters: list[frozenset[str]] = []
     for group in by_doc.values():
-        for other in group[1:]:
-            union(group[0].entry_id, other.entry_id)
+        if len(group) < 2 or len({e.period for e in group}) >= STANDING_REFERENCE_MONTHS:
+            continue
+        for cluster in _anchored_clusters(group, DOC_NUMBER_WINDOW_DAYS):
+            if len(cluster) > 1:
+                doc_clusters.append(frozenset(e.entry_id for e in cluster))
+                for other in cluster[1:]:
+                    union(cluster[0].entry_id, other.entry_id)
     for group in by_memo.values():
-        ordered = sorted(group, key=lambda x: (x.date, x.source_row, x.entry_id))
-        for a, b in pairwise(ordered):
-            gap = (date.fromisoformat(b.date) - date.fromisoformat(a.date)).days
-            if gap <= DUPLICATE_WINDOW_DAYS:
-                union(a.entry_id, b.entry_id)
+        if len(group) < 2 or _is_high_frequency(group):
+            continue
+        for cluster in _anchored_clusters(group, DUPLICATE_WINDOW_DAYS):
+            for other in cluster[1:]:
+                union(cluster[0].entry_id, other.entry_id)
 
     order = {e.entry_id: (e.source_row, e.entry_id) for e in gl}
     groups: dict[str, list[str]] = defaultdict(list)
     for e in gl:
         groups[find(e.entry_id)].append(e.entry_id)
-    out = [sorted(ids, key=order.__getitem__) for ids in groups.values() if len(ids) > 1]
-    return sorted(out, key=lambda ids: order[ids[0]])
+    doc_sets = set(doc_clusters)
+    out = []
+    for ids in groups.values():
+        if len(ids) > 1:
+            ids = sorted(ids, key=order.__getitem__)
+            out.append((ids, "doc" if frozenset(ids) in doc_sets else "memo"))
+    return sorted(out, key=lambda g: order[g[0][0]])
+
+
+def find_duplicate_entries(gl: list[GLEntry]) -> list[list[str]]:
+    """Groups of entry ids that look like the same transaction posted twice (see ``find_duplicate_groups``)."""
+    return [ids for ids, _basis in find_duplicate_groups(gl)]
 
 
 def _duplicate_issues(entries: list[GLEntry]) -> list[DataQualityIssue]:
     by_id = {e.entry_id: e for e in entries}
     issues = []
-    for group in find_duplicate_entries(entries):
+    for group, rule in find_duplicate_groups(entries):
         es = [by_id[i] for i in group]
         first = es[0]
         amount = D(first.amount)
-        same_doc = bool(first.doc_number) and all(_norm(e.doc_number) == _norm(first.doc_number) for e in es)
-        basis = f"same doc # {first.doc_number}" if same_doc else f"same memo within {DUPLICATE_WINDOW_DAYS} days"
+        basis = f"same doc # {first.doc_number}" if rule == "doc" else f"same memo within {DUPLICATE_WINDOW_DAYS} days"
         rows = ", ".join(str(e.source_row) for e in es)
         dates = ", ".join(e.date for e in es)
         excess = amount * (len(es) - 1)
@@ -232,6 +322,26 @@ def _unmapped_issues(pkg: DealPackage, gl_used: set[str], pl_used: set[str]) -> 
     return issues
 
 
+def _regular_accounts(month: str, in_range: set[str], active: dict[str, set[str]]) -> set[str]:
+    """Accounts with GL activity in more than half of the months around ``month``.
+
+    The neighbourhood is up to ``MISSING_PERIOD_NEIGHBOURHOOD`` months on each side, inside
+    the data range, counting only months with some activity (empty months are reported on
+    their own). A majority vote rather than an intersection, so one or two incomplete
+    neighbours cannot shrink the baseline to their own few accounts.
+    """
+    around = [
+        m
+        for k in range(1, MISSING_PERIOD_NEIGHBOURHOOD + 1)
+        for m in (add_months(month, -k), add_months(month, k))
+        if m in in_range and active.get(m)
+    ]
+    if not around:
+        return set()
+    counts = Counter(acct for m in around for acct in active[m])
+    return {acct for acct, n in counts.items() if n * 2 > len(around)}
+
+
 def _missing_period_issues(
     pkg: DealPackage, data_months: list[str], pl_entries: list[GLEntry]
 ) -> tuple[list[DataQualityIssue], set[str]]:
@@ -256,9 +366,8 @@ def _missing_period_issues(
                 )
             )
             continue
-        neighbours = [n for n in (add_months(month, -1), add_months(month, 1)) if n in in_range and active.get(n)]
-        if neighbours:
-            base = set.intersection(*(active[n] for n in neighbours))
+        base = _regular_accounts(month, in_range, active)
+        if base:
             present = len(active.get(month, set()) & base)
             if len(base) >= MISSING_PERIOD_MIN_BASE and present * 2 < len(base):
                 gl_gaps.add(month)
@@ -268,8 +377,8 @@ def _missing_period_issues(
                         code=DataQualityCode.MISSING_PERIOD,
                         severity=Severity.WARNING,
                         message=(
-                            f"{month} looks incomplete: only {present} of the {len(base)} accounts active in the "
-                            f"neighbouring month(s) have GL entries (missing: {', '.join(absent[:12])}"
+                            f"{month} looks incomplete: only {present} of the {len(base)} accounts regularly active in the "
+                            f"surrounding months have GL entries (missing: {', '.join(absent[:12])}"
                             + (", ..." if len(absent) > 12 else "") + ")."
                         ),
                         month=month,

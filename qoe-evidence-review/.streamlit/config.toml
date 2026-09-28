@@ -1,0 +1,15 @@
+# Streamlit settings for the QoE Evidence Review app (qoe/ui.py). Read when Streamlit
+# is started from this directory (`make ui` or `uv run streamlit run qoe/ui.py`).
+
+[server]
+# The app has no authentication and shows confidential deal data: listen on this
+# machine only. Put an authenticating proxy in front before exposing it further.
+address = "127.0.0.1"
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+# White text on #3A6EA5 is 5.3:1 (WCAG AA); #3A6EA5 is also >= 3:1 against both the
+# light and the dark background. Streamlit's default red (#FF4B4B) is 3.3:1 with white.
+primaryColor = "#3A6EA5"

@@ -394,6 +394,9 @@ class DealIndex:
     # claim of already-excluded costs can be shown against the line that adds them back.
     mgmt_lines: dict[EbitdaClass, dict[str, Decimal]] = field(default_factory=dict)
     gl_lines: dict[EbitdaClass, dict[str, Decimal]] = field(default_factory=dict)
+    # Reference-like tokens in a document's file name and title: the matter / invoice it is *about*,
+    # as opposed to references its body merely mentions ("separate from Matter 1004").
+    doc_title_refs: dict[str, frozenset[str]] = field(default_factory=dict)
     _amount_keys: list[int] = field(default_factory=list, repr=False)
 
     def __post_init__(self) -> None:
@@ -540,6 +543,7 @@ def build_index(
         duplicate_groups=duplicates,
         mgmt_lines={k: v for k, v in mgmt_lines.items() if v},
         gl_lines=gl_lines,
+        doc_title_refs={d: ref_tokens(d) | ref_tokens(facts_by_id[d].title) for d in docs},
     )
 
 
@@ -577,7 +581,11 @@ _SPECIFIC_BASES = frozenset({"number", "amount", "amount_multi", "group", "refer
 # the documented amount. "named" (the document merely names the entry's counterparty) and
 # "classification" (an AI said the removal rests on it) stay document-level: a law firm's
 # litigation invoice names the firm, which does not make it support for the firm's retainer.
-ENTRY_ABOUT_BASES = frozenset({"number", "amount", "amount_multi", "group", "reference", "mention", "recovery"})
+# "event" is a party name plus the entry's own subject (a plant-visit agenda naming the traveller
+# and the visit), on a document that is not another entry's bill or another matter's letter.
+ENTRY_ABOUT_BASES = frozenset(
+    {"number", "amount", "amount_multi", "group", "reference", "mention", "event", "recovery"}
+)
 _MIN_CITED_NUMBER = 5
 # Bases that pin a document to one entry: only these may carry a service period onto it.
 ENTRY_SPECIFIC_BASES = frozenset({"number", "amount", "group"})
@@ -768,8 +776,11 @@ class AdjustmentTrace:
         return sorted(d for d, info in self.doc_links.items() if info.entry_basis.get(entry_id) in wanted)
 
     def associate(self, doc_id: str, entry_id: str, basis: str, weight: float, reason: str) -> None:
+        """Tie a document to an entry. The first basis stands, except that a basis on which the
+        document is about the entry replaces a weaker one (a party-name match, an AI citation)."""
         info = self.doc_links.setdefault(doc_id, DocLinkInfo(doc_id=doc_id))
-        if entry_id in info.entry_basis:
+        current = info.entry_basis.get(entry_id)
+        if current is not None and (current in ENTRY_ABOUT_BASES or basis not in ENTRY_ABOUT_BASES):
             return
         info.entry_basis[entry_id] = basis
         if reason and reason not in info.reasons:

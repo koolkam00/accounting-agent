@@ -28,6 +28,8 @@ from pathlib import Path
 from typing import Iterable, Optional, Sequence
 
 import openpyxl
+from openpyxl.utils.cell import coordinate_to_tuple, get_column_letter
+from xml.etree import ElementTree
 
 from qoe.money import D, fmt
 from qoe.schemas import Account, EbitdaClass, GLEntry
@@ -69,7 +71,10 @@ def is_blank(value: object) -> bool:
 
 
 def parse_money(value: object) -> Optional[Decimal]:
-    """Amount cell -> Decimal; None when blank. Raises ValueError for non-numeric text."""
+    """Amount cell -> Decimal; None when blank. Raises ValueError for non-numeric text
+    (``UncachedFormulaError`` for a formula saved without its value)."""
+    if isinstance(value, UncachedFormula):
+        raise value.error()
     if is_blank(value):
         return None
     if isinstance(value, bool):
@@ -110,6 +115,8 @@ def parse_date(value: object, *, dayfirst: bool = False) -> Optional[date]:
     of day is ignored, and a five-digit text cell is read as an Excel serial
     (some exports write the serial as text).
     """
+    if isinstance(value, UncachedFormula):
+        raise value.error()
     if isinstance(value, datetime):
         return value.date()
     if isinstance(value, date):
@@ -250,11 +257,42 @@ def _workbook_has_formulas(path: Path) -> bool:
         return True  # let openpyxl report the real problem
 
 
+class UncachedFormula:
+    """Stands in for a formula cell saved without its calculated value.
+
+    Script-written workbooks (openpyxl, some exporters) store the formula but no result,
+    so the cell's value is unknown. It reads as blank text, but using it as an amount or a
+    date raises ``UncachedFormulaError`` instead of silently becoming 0.
+    """
+
+    __slots__ = ("file", "coordinate", "formula")
+
+    def __init__(self, file: str, coordinate: str, formula: str) -> None:
+        self.file, self.coordinate, self.formula = file, coordinate, formula
+
+    def __str__(self) -> str:
+        return ""
+
+    def __repr__(self) -> str:
+        return f"UncachedFormula({self.file} {self.coordinate} ={self.formula})"
+
+    def error(self) -> "UncachedFormulaError":
+        return UncachedFormulaError(
+            f"{self.file}: cell {self.coordinate} holds a formula (={self.formula}) saved without its calculated "
+            "value, so its amount is unknown. The file was probably written by a script: open and save it in "
+            "Excel or LibreOffice so the values are stored, then rerun."
+        )
+
+
+class UncachedFormulaError(ValueError):
+    """An amount or date cell is a formula with no stored value (see ``UncachedFormula``)."""
+
+
 def _read_xlsx(path: Path, sheet: Optional[str], keep_number_formats: bool) -> Table:
     wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
     try:
         ws = _pick_sheet(wb, sheet)
-        title = ws.title
+        worksheet_part = getattr(ws, "_worksheet_path", None)
         ws.reset_dimensions()
         formats: dict[tuple[int, int], str] = {}
         if keep_number_formats:
@@ -274,33 +312,63 @@ def _read_xlsx(path: Path, sheet: Optional[str], keep_number_formats: bool) -> T
     finally:
         wb.close()
     notes: list[str] = []
-    if _workbook_has_formulas(path):
-        uncached = _uncached_formulas(path, title, rows)
+    if worksheet_part and _workbook_has_formulas(path):
+        uncached = _uncached_formula_cells(path, worksheet_part)
+        for (r_idx, c_idx), (coordinate, formula) in uncached.items():
+            while len(rows) <= r_idx:
+                rows.append([])
+            row = rows[r_idx] = list(rows[r_idx])
+            row.extend([None] * (c_idx + 1 - len(row)))
+            row[c_idx] = UncachedFormula(path.name, coordinate, formula)
         if uncached:
-            sample = "; ".join(uncached[:8]) + ("; ..." if len(uncached) > 8 else "")
+            listed = [f"{coord} ={formula}" for coord, formula in uncached.values()]
+            sample = "; ".join(listed[:8]) + ("; ..." if len(listed) > 8 else "")
             notes.append(
-                f"{path.name}: {len(uncached)} formula cell(s) have no stored value and were read as blank ({sample}). "
-                "If these cells should hold numbers, the file was saved without calculated values (typical of "
-                "script-written files): open and save it in Excel or LibreOffice, then rerun."
+                f"{path.name}: {len(listed)} formula cell(s) have no stored value ({sample}); they read as blank "
+                "text and stop the run if used as an amount or date. Open and save the file in Excel or "
+                "LibreOffice so the values are stored."
             )
     return Table(rows=rows, notes=notes, number_formats=formats)
 
 
-def _uncached_formulas(path: Path, title: str, rows: list[Row]) -> list[str]:
-    wb = openpyxl.load_workbook(path, read_only=True, data_only=False)
-    out: list[str] = []
-    try:
-        ws = wb[title]
-        ws.reset_dimensions()
-        for r_idx, cells in enumerate(ws.iter_rows()):
-            for c_idx, cell in enumerate(cells):
-                if getattr(cell, "data_type", None) != "f":
-                    continue
-                cached = rows[r_idx][c_idx] if r_idx < len(rows) and c_idx < len(rows[r_idx]) else None
-                if cached is None:
-                    out.append(f"{cell.coordinate} {cell.value}")
-    finally:
-        wb.close()
+def _local(tag: str) -> str:
+    return tag.rsplit("}", 1)[-1]
+
+
+def _uncached_formula_cells(path: Path, worksheet_part: str) -> dict[tuple[int, int], tuple[str, str]]:
+    """(row index, column index) -> (coordinate, formula) for formula cells without a cached value.
+
+    Read from the sheet XML because openpyxl cannot tell an uncached formula from one whose
+    cached result is an empty string: Excel marks the latter ``t="str"``.
+    """
+    out: dict[tuple[int, int], tuple[str, str]] = {}
+    with zipfile.ZipFile(path) as zf, zf.open(worksheet_part) as fh:
+        row_no, col_no = 0, 0
+        for event, elem in ElementTree.iterparse(fh, events=("start", "end")):
+            tag = _local(elem.tag)
+            if event == "start":
+                if tag == "row":
+                    r = elem.get("r")
+                    row_no, col_no = (int(r) if r and r.isdigit() else row_no + 1), 0
+                continue
+            if tag == "c":
+                ref = elem.get("r")
+                if ref:
+                    row_no, col_no = coordinate_to_tuple(ref)
+                else:
+                    col_no += 1
+                formula = value = None
+                for child in elem:
+                    if _local(child.tag) == "f":
+                        formula = child
+                    elif _local(child.tag) == "v":
+                        value = child
+                if formula is not None and elem.get("t") != "str" and (value is None or not (value.text or "").strip()):
+                    coordinate = ref or f"{get_column_letter(col_no)}{row_no}"
+                    out[(row_no - 1, col_no - 1)] = (coordinate, (formula.text or "").strip())
+                elem.clear()
+            elif tag == "row":
+                elem.clear()
     return out
 
 
@@ -848,6 +916,8 @@ def _find_header(rows: list[Row], fmt_name: str) -> tuple[int, dict[str, int]]:
 def _money_or_skip(value: object, rowno: int, skips: _SkipLog) -> tuple[bool, Optional[Decimal]]:
     try:
         return True, parse_money(value)
+    except UncachedFormulaError:
+        raise
     except ValueError:
         skips.add("rows with an unparseable amount", rowno)
         return False, None

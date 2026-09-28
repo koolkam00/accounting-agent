@@ -1484,6 +1484,15 @@ def _render_safely(title: str, fn: Any, *args: Any) -> None:
 ROW_PX = 35
 
 
+def table_height(n_rows: int, fit_rows: Optional[int] = 25) -> Any:
+    """Dataframe height: every row when there are at most ``fit_rows`` (None = always),
+    else a fixed height for ``fit_rows`` rows. Streamlit's default ("auto") shows ten
+    rows and hides the rest behind an inner scrollbar."""
+    if fit_rows is None or n_rows <= fit_rows:
+        return "content"
+    return ROW_PX * (fit_rows + 1) + 3
+
+
 def _table(
     rows: list[dict[str, Any]],
     numeric: Iterable[str] = (),
@@ -1519,7 +1528,7 @@ def _table(
             return f"background-color:{pair[0]};color:{pair[1]};font-weight:600" if pair else ""
 
         data = df.style.map(style, subset=colored)
-    height: Any = "content" if fit_rows is None or len(df) <= fit_rows else ROW_PX * (fit_rows + 1) + 3
+    height = table_height(len(df), fit_rows)
     kwargs: dict[str, Any] = {}
     if on_select is not None:
         kwargs = {"on_select": on_select, "selection_mode": "single-row", "key": key}

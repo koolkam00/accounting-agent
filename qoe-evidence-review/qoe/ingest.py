@@ -29,6 +29,7 @@ from qoe.gl_formats import (
     QBO,
     AccountIndex,
     Row,
+    UncachedFormulaError,
     classify_account,
     clean_text,
     detect_format,
@@ -302,6 +303,8 @@ def _parse_monthly_pl(
         for c, month in month_cols.items():
             try:
                 value = parse_money(cells[c])
+            except UncachedFormulaError:
+                raise
             except ValueError:
                 bad_cells.append(f"row {rowno} {month}")
                 value = None
@@ -597,6 +600,8 @@ def _parse_schedule(path: Path, period_labels: list[str], source_label: Optional
             has_amount = has_amount or not is_blank(cell)
             try:
                 amounts[label] = fmt(parse_money(cell) or 0)
+            except UncachedFormulaError:
+                raise
             except ValueError:
                 bad_cells.append(f"row {rowno} {label}")
                 amounts[label] = fmt(0)
