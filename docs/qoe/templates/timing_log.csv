@@ -1,0 +1,2 @@
+participant_id,arm,package,adj_id,phase,start_iso,end_iso,minutes,interruptions,notes
+EXAMPLE,A,D0,X-01,review,2026-10-06T14:05:00-04:00,2026-10-06T14:47:00-04:00,39,3,"EXAMPLE row (fictional practice item; scorer drops participant_id=EXAMPLE). 42 min elapsed less a 3-min phone call = 39. phase is prep or review; adj_id PKG for package-level work."
