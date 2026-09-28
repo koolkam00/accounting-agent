@@ -15,6 +15,7 @@ Two properties matter more than looks:
 from __future__ import annotations
 
 import io
+import re
 from dataclasses import dataclass, field
 from decimal import Decimal
 from typing import Any, Optional
@@ -26,7 +27,7 @@ from reportlab.pdfgen import canvas
 from qoe.money import D, ZERO, q2
 from qoe.pdf_text import canonicalize_page_text, extract_pdf_pages
 
-from .ledger import GenerationError
+from .ledger import MONTH_NAME, GenerationError, Txn
 from .spec import DealSpec, DocumentSpec, Party
 
 FOOTER = "SYNTHETIC — generated for QoE Evidence Review testing"
@@ -35,7 +36,9 @@ PAGE_W, PAGE_H = letter
 LEFT, RIGHT = 72.0, PAGE_W - 72.0
 TOP, BOTTOM = PAGE_H - 66.0, 76.0
 WIDTH = RIGHT - LEFT
-NBSP = " "
+NBSP = "\u00a0"  # binds key phrases during wrapping
+# Document text can cite generated rows, e.g. "{num:halvorsen_inv_1}" or "{amount:halvorsen_inv_1}".
+_ROW_REF = re.compile(r"\{(num|amount|date|mdy|memo|counterparty):([^{}:]+)\}")
 BODY, BOLD, ITALIC = "Helvetica", "Helvetica-Bold", "Helvetica-Oblique"
 
 
@@ -61,6 +64,7 @@ class Block:
     rows: list[Row] = field(default_factory=list)
     keep: bool = False  # keep every row on one page
     columns: Optional[list[list[Row]]] = None  # side-by-side columns, drawn one column at a time
+    keep_with_next: bool = False  # headings never end a page
 
     def height(self) -> float:
         if self.columns is not None:
@@ -129,13 +133,16 @@ def paragraph(text: str, keep: list[str], font: str = BODY, size: float = 10.0, 
 
 
 def heading(text: str, size: float = 10.5, after: float = 4.0) -> Block:
-    return Block([Row([Cell(LEFT, text, "left", BOLD, size)], 14.0 + after)], keep=True)
+    return Block([Row([Cell(LEFT, text, "left", BOLD, size)], 14.0 + after)], keep=True, keep_with_next=True)
 
 
 def kv_rows(pairs: list[list[str]], keep: list[str], x: float = LEFT, size: float = 10.0, leading: float = 13.0) -> list[Row]:
     # Label and value share one string so extraction keeps "Invoice No.: 25-0212" intact.
     rows: list[Row] = []
-    for label, value in pairs:
+    for pair in pairs:
+        if not isinstance(pair, (list, tuple)) or len(pair) != 2:
+            raise GenerationError(f"key-value row must be [label, value], got {pair!r} (quote values that contain commas)")
+        label, value = pair
         text = f"{label}: {value}" if label else str(value)
         lines = wrap(text, RIGHT - x, BODY, size, keep)
         rows.append(Row([Cell(x, lines[0], "left", BODY, size)], leading))
@@ -363,7 +370,7 @@ def _letter(spec: DealSpec, doc: DocumentSpec, f: dict[str, Any], keep: list[str
         blocks.append(Block([Row([Cell(LEFT, str(f["salutation"]))], 20.0)]))
     blocks += body_items(f.get("body", []), keep, where)
     if f.get("closing"):
-        blocks.append(Block([Row([Cell(LEFT, str(f["closing"]))], 16.0)], keep=True))
+        blocks.append(Block([Row([Cell(LEFT, str(f["closing"]))], 16.0)], keep=True, keep_with_next=True))
     for sig in f.get("signatures", []) or []:
         blocks.append(signature_block({"style": "letter", **sig}, where))
     if f.get("countersign"):
@@ -448,7 +455,13 @@ def _form(spec: DealSpec, doc: DocumentSpec, f: dict[str, Any], keep: list[str])
 def _paginate(blocks: list[Block]) -> list[list[tuple[str, Any, float]]]:
     pages: list[list[tuple[str, Any, float]]] = [[]]
     y = TOP
-    for blk in blocks:
+    for i, blk in enumerate(blocks):
+        if blk.keep_with_next and i + 1 < len(blocks) and pages[-1]:
+            nxt = blocks[i + 1]
+            need = blk.height() + (nxt.height() if nxt.keep or nxt.columns is not None else nxt.rows[0].height)
+            if y - need + (nxt.rows[-1].height if nxt.keep and nxt.rows else 0) < BOTTOM:
+                pages.append([])
+                y = TOP
         if blk.columns is not None:
             if y - blk.height() < BOTTOM and pages[-1]:
                 pages.append([])
@@ -543,12 +556,37 @@ def _pdf_bytes(spec: DealSpec, doc: DocumentSpec, blocks: list[Block], author: s
     c.setCreator("qoe_synth deal generator")
     c.setProducer("ReportLab PDF Library")
     c.setKeywords("SYNTHETIC")
-    continuation = f"{author} — {doc.title or doc.filename.rsplit('.', 1)[0]} (continued)" if author else ""
+    heading_title = str(doc.fields.get("title", "")).strip()
+    continuation = f"{author} — {heading_title} (continued)" if heading_title else f"{author} (continued)"
     for i, items in enumerate(pages, start=1):
         _draw_page(c, items, i, len(pages), doc.draft, continuation)
         c.showPage()
     c.save()
     return buf.getvalue()
+
+
+def resolve_row_refs(value: Any, rows: dict[str, Txn], where: str) -> Any:
+    if isinstance(value, dict):
+        return {k: resolve_row_refs(v, rows, where) for k, v in value.items()}
+    if isinstance(value, list):
+        return [resolve_row_refs(v, rows, where) for v in value]
+    if not isinstance(value, str) or "{" not in value:
+        return value
+
+    def sub(m: re.Match[str]) -> str:
+        kind, key = m.group(1), m.group(2)
+        t = rows.get(key)
+        if t is None:
+            raise GenerationError(f"{where}: {m.group(0)} cites unknown row key {key!r}")
+        if kind == "amount":
+            return money(abs(t.amount), dollar=False)
+        if kind == "date":
+            return f"{MONTH_NAME[t.date.month - 1]} {t.date.day}, {t.date.year}"
+        if kind == "mdy":
+            return t.date.strftime("%m/%d/%Y")
+        return str(getattr(t, kind))
+
+    return _ROW_REF.sub(sub, value)
 
 
 def _email(spec: DealSpec, doc: DocumentSpec, f: dict[str, Any]) -> str:
@@ -562,7 +600,12 @@ def _email(spec: DealSpec, doc: DocumentSpec, f: dict[str, Any]) -> str:
 TEMPLATES = {"invoice": _invoice, "letter": _letter, "agreement": _agreement, "memo": _memo, "form": _form}
 
 
-def render_document(spec: DealSpec, doc: DocumentSpec) -> Rendered:
+def render_document(spec: DealSpec, doc: DocumentSpec, rows: Optional[dict[str, Txn]] = None) -> Rendered:
+    where = f"document {doc.id}"
+    doc = doc.model_copy(update={
+        "fields": resolve_row_refs(doc.fields, rows or {}, where),
+        "key_phrases": resolve_row_refs(list(doc.key_phrases), rows or {}, where),
+    })
     keep = list(doc.key_phrases)
     if doc.template == "email":
         if not doc.filename.endswith((".txt", ".eml", ".md")):

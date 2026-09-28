@@ -301,6 +301,11 @@ class _Builder:
                         continue
                     for n, day in enumerate(rep.days, start=1):
                         dates.append((_adjust(_day_date(month, day), rep.adjust), n))
+            num_req = None
+            if p.num_sequence is not None:
+                if p.num_sequence not in self.spec.sequences:
+                    raise GenerationError(f"planted {p.key}: unknown sequence {p.num_sequence!r}")
+                num_req = (f"seq:{p.num_sequence}", p.num or "{seq}", self.spec.sequences[p.num_sequence], (1, 1))
             for d, n in dates:
                 ctx = date_context(d, n)
                 where = f"planted {p.key}"
@@ -311,18 +316,19 @@ class _Builder:
                         account=p.account,
                         txn_type=p.txn_type,
                         counterparty=render(p.counterparty, ctx, where),
-                        num=render(p.num, ctx, where),
+                        num="" if num_req else render(p.num, ctx, where),
                         memo=render(p.memo, ctx, where),
                         amount=q2(D(p.amount)),
                         split=p.split,
                         dimensions=dict(p.dimensions),
                         origin="planted",
                         seq=self.next_seq(),
+                        num_req=num_req,
                     )
                 )
 
     def assign_numbers(self) -> None:
-        reserved = {t.num for t in self.txns if t.origin == "planted" and t.num}
+        reserved = {t.num for t in self.txns if t.origin == "planted" and t.num and not t.num_req}
         rng = sub_rng(self.spec.seed, "numbers")
         state: dict[str, int] = {}
         for t in sorted((t for t in self.txns if t.num_req), key=lambda t: (t.date, t.seq)):

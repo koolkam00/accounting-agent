@@ -121,9 +121,33 @@ def decide_treatment(t: AdjustmentTrace, proposed: dict[str, Decimal]) -> tuple[
         return Treatment.REQUEST_INFO, no_doc, "more than 25% of the claim has no supporting document"
     if all(abs(proposed[lbl] - t.claim(lbl)) <= tol for lbl in t.labels):
         return Treatment.ACCEPT, [], "the GL and documents support the claim"
+    causes = _change_causes(t)
     if all(proposed[lbl] == 0 for lbl in t.labels):
-        return Treatment.REJECT, [], "no part of the claim survives the challenges"
-    return Treatment.REVISE, [], "part of the claim is supported, or it belongs in other periods"
+        return Treatment.REJECT, [], "no part of the claim survives" + (f" ({causes})" if causes else "")
+    return Treatment.REVISE, [], "the supported amount differs from the claim" + (f" ({causes})" if causes else "")
+
+
+_CAUSE = {
+    FlagCode.ALREADY_EXCLUDED_FROM_EBITDA: "costs already below EBITDA",
+    FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT: "entries also claimed in another adjustment",
+    FlagCode.CONTRADICTORY_EVIDENCE: "entries contradicted by the documents",
+    FlagCode.CONTINUING_OBLIGATION: "a continuing obligation",
+    FlagCode.RECURRING_PATTERN: "recurring activity",
+    FlagCode.OUT_OF_PERIOD: "costs that belong to other periods",
+    FlagCode.OFFSETTING_RECOVERY: "an unadjusted recovery",
+    FlagCode.PERIOD_MISMATCH: "claims in periods without matching activity",
+    FlagCode.PARTIAL_GL_SUPPORT: "claims larger than the GL activity",
+    FlagCode.SIGN_ERROR: "a claim whose sign conflicts with the GL",
+    FlagCode.EXCESS_GL_ACTIVITY: "a claim no combination of entries ties to",
+}
+
+
+def _change_causes(t: AdjustmentTrace) -> str:
+    codes = [r.code for r in t.removals.values()] + [x.code for x in t.effects]
+    codes += [f.code for f in t.flags if f.code in (FlagCode.PERIOD_MISMATCH, FlagCode.PARTIAL_GL_SUPPORT, FlagCode.SIGN_ERROR)]
+    if t.capped:
+        codes.append(FlagCode.EXCESS_GL_ACTIVITY)
+    return "; ".join(_CAUSE[c] for c in dict.fromkeys(codes) if c in _CAUSE)
 
 
 def assess_confidence(
@@ -217,9 +241,10 @@ def _question_for(t: AdjustmentTrace, f: Flag) -> Optional[str]:
             "and whether further recoveries are expected."
         )
     if code == FlagCode.CONTRADICTORY_EVIDENCE:
-        quote = f.quotes[0].quote if f.quotes else ""
-        if quote:
-            return f"{docs} states \"{quote}\". Please reconcile this with management's description of {title}."
+        if f.quotes:
+            q = f.quotes[0]
+            text = " ".join(q.quote.split())
+            return f"{q.doc_id} states \"{text}\" Please reconcile this with management's description of {title}."
         return f"Please reconcile {docs} with management's description of {title}."
     if code == FlagCode.UNSIGNED_OR_DRAFT_SUPPORT:
         return f"Please provide the executed version of {docs}."
@@ -314,11 +339,14 @@ def build_facts(t: AdjustmentTrace) -> list[Fact]:
         if not ids or t.is_normalization:
             continue
         docs = sum(1 for e in ids if t.entry_docs(e))
+        n = len(ids)
+        tie = "ties to a document" if docs == n == 1 else f"{docs} of {n} tie to a document"
         facts.append(
             Fact(
                 text=(
-                    f"{lbl}: {len(ids)} GL entr{'y' if len(ids) == 1 else 'ies'} in {', '.join(accounts)} trace to "
-                    f"{money(t.traced(lbl))} against a claim of {money(t.claim(lbl))}; {docs} of them tie to a document."
+                    f"{lbl}: {n} GL {'entry' if n == 1 else 'entries'} in {', '.join(accounts)} "
+                    f"{'traces' if n == 1 else 'trace'} to {money(t.traced(lbl))} against a claim of "
+                    f"{money(t.claim(lbl))}; {tie}."
                 ),
                 entry_ids=ids,
             )
@@ -357,8 +385,9 @@ def build_rationale(
     if claimed_ids:
         traced = {lbl: t.traced(lbl) for lbl in t.labels}
         documented = {lbl: t.documented(lbl) for lbl in t.labels}
+        n = len(claimed_ids)
         parts.append(
-            f"Established: {len(claimed_ids)} GL entries trace to {_amounts_text(t, traced)} "
+            f"Established: {n} GL {'entry traces' if n == 1 else 'entries trace'} to {_amounts_text(t, traced)} "
             f"(documented: {_amounts_text(t, documented)})."
         )
     elif not t.candidates:
@@ -370,8 +399,13 @@ def build_rationale(
         parts.append(f"Removed ({code.value}): {t.describe_groups(ids, 2)}.")
     effect_codes = sorted({x.code.value for x in t.effects})
     if effect_codes:
-        eff = {lbl: t.effect(lbl) for lbl in t.labels}
-        parts.append(f"Effects added ({', '.join(effect_codes)}): {_amounts_text(t, eff)}.")
+        # Shown against the traced entries: an out-of-period entry stays in its booking period's
+        # supporting total here, so only the move itself appears as an effect.
+        eff = {
+            lbl: t.effect(lbl) - sum((t.amount(e) for e in t.supporting(lbl) if e in t.moved), ZERO)
+            for lbl in t.labels
+        }
+        parts.append(f"Effects ({', '.join(effect_codes)}): {_amounts_text(t, eff)}.")
     if treatment == Treatment.REQUEST_INFO:
         pending = "; ".join(sorted({f.code.value for f in drivers}))
         if t.is_normalization and normalization_level(t) is not None:

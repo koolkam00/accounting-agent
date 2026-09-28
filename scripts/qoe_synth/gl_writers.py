@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import csv
 import io
-from datetime import date, datetime
+from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
@@ -17,6 +17,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font
 
 from qoe.money import ZERO
+from qoe.periods import month_end
 
 from .accounts import AccountInfo
 from .ledger import MONTH_ABBR, MONTH_NAME, Txn, sub_rng
@@ -95,10 +96,7 @@ def fmt_amount(value: Decimal, dollar: bool = False) -> str:
 def _range_text_long(spec: DealSpec) -> str:
     y0, m0 = (int(x) for x in spec.data_start.split("-"))
     y1, m1 = (int(x) for x in spec.data_end.split("-"))
-    from qoe.periods import month_end
-
-    last = month_end(spec.data_end).day
-    return f"{MONTH_NAME[m0 - 1]} 1, {y0} - {MONTH_NAME[m1 - 1]} {last}, {y1}"
+    return f"{MONTH_NAME[m0 - 1]} 1, {y0} - {MONTH_NAME[m1 - 1]} {month_end(spec.data_end).day}, {y1}"
 
 
 def _csv_bytes(rows: list[list[str]]) -> bytes:
@@ -182,8 +180,6 @@ def write_xero_gl(path: Path, spec: DealSpec, accounts: dict[str, AccountInfo], 
     ws.title = "Account Transactions"
     y0, m0 = (int(x) for x in spec.data_start.split("-"))
     y1, m1 = (int(x) for x in spec.data_end.split("-"))
-    from qoe.periods import month_end
-
     ws.append(["Account Transactions"])
     ws.append([spec.company.name])
     ws.append([f"For the period 1 {MONTH_NAME[m0 - 1]} {y0} to {month_end(spec.data_end).day} {MONTH_NAME[m1 - 1]} {y1}"])
@@ -247,11 +243,3 @@ def write_chart_of_accounts(deal_dir: Path, spec: DealSpec, accounts: dict[str, 
     (deal_dir / ov_rel).write_bytes(_csv_bytes([["account", "ebitda_class", "basis"], *overrides]))
     return coa_rel, ov_rel
 
-
-def parse_date(value: object) -> date:
-    """Shared by tests: accept an Excel datetime or a text date."""
-    if isinstance(value, datetime):
-        return value.date()
-    if isinstance(value, date):
-        return value
-    return datetime.strptime(str(value), "%d %b %Y").date()

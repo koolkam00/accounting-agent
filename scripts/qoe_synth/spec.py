@@ -184,6 +184,7 @@ class Planted(SpecModel):
     txn_type: str = "bill"
     counterparty: str = ""
     num: str = ""
+    num_sequence: Optional[str] = None  # draw the number from a shared sequence (num is then the format)
     memo: str = ""
     split: Optional[str] = None
     dimensions: dict[str, str] = Field(default_factory=dict)
@@ -338,6 +339,7 @@ class TruthSpec(SpecModel):
     authored_by: str
     notes: str = ""
     adjustments: list[TruthAdjustment]
+    diligence_items: list[TruthAdjustment] = Field(default_factory=list)  # not on management's schedule
 
 
 class DealSpec(SpecModel):
@@ -394,8 +396,11 @@ class DealSpec(SpecModel):
         truth_ids = {a.adj_id for a in self.ground_truth.adjustments}
         if refs != truth_ids:
             raise ValueError(f"ground_truth adj ids {sorted(truth_ids)} do not match schedule refs {sorted(refs)}")
+        clash = refs & {t.adj_id for t in self.ground_truth.diligence_items}
+        if clash:
+            raise ValueError(f"diligence item ids clash with schedule refs: {sorted(clash)}")
         known_docs = set(doc_ids)
-        for t in self.ground_truth.adjustments:
+        for t in [*self.ground_truth.adjustments, *self.ground_truth.diligence_items]:
             unknown = [d for d in t.supporting_docs if d not in known_docs]
             if unknown:
                 raise ValueError(f"ground_truth {t.adj_id}: unknown document ids {unknown}")

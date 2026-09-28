@@ -6,7 +6,6 @@ import time
 from decimal import Decimal
 from typing import Iterable, Optional
 
-import pytest
 
 from qoe.ai_base import AdjustmentIntent
 from qoe.money import fmt
@@ -32,6 +31,7 @@ from qoe.schemas import (
 )
 from qoe.trace import (
     LINK_THRESHOLD,
+    STRONG_LINK,
     build_index,
     find_subset,
     money,
@@ -352,7 +352,7 @@ def test_no_exact_subset_uses_strong_links_and_caps_the_proposal():
     c = gl.add("2025-04-01", "6450", 500, "Jobly", "CFO search job ad")
     pkg = package(gl, [claim("A-1", "CFO search", [0, 10000, 0], ["6450"])])
     t = trace_one(pkg, intent("A-1", counterparties=["Pinecrest Search"], keywords=["search"]))
-    assert c in t.links and t.links[c].score < 3.0
+    assert c in t.links and t.links[c].score < STRONG_LINK <= t.links[a].score
     assert t.fits["FY2025"].method == "strong"
     assert set(t.claimed["FY2025"]) == {a, b}
     assert "FY2025" in t.capped

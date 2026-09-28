@@ -7,8 +7,7 @@ have noise to work through.
 
 from __future__ import annotations
 
-from decimal import Decimal
-from typing import Iterable, Optional
+from typing import Iterable
 
 import pytest
 
@@ -606,7 +605,7 @@ def test_out_of_period_cost_moves_to_its_service_period(deal):
     assert a.proposed == amounts(-18000, 18000, 0)
     flag = the_flag(a, FlagCode.OUT_OF_PERIOD)
     assert flag.period_label == FY24 and flag.amount_impact == "-18000.00"
-    assert "service period of Jul 2024–Dec 2024" in flag.message
+    assert "covers services in Jul 2024–Dec 2024" in flag.message and "moves out of FY2025" in flag.message
     assert flag.quotes[0].quote.startswith("Service period")
     # The routine monthly subcontract invoices from the same vendor are not part of the claim.
     assert {x.entry_id for x in a.gl_links if x.supports_claim} == set(ids["trueup"])

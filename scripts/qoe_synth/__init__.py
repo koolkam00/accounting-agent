@@ -154,7 +154,7 @@ def generate_deal(spec: DealSpec | Path | str, out_root: Path | str) -> Generati
     all_keys = [t.key for t in ledger.txns]
     documents: dict[str, str] = {}
     for doc in spec.documents:
-        rendered = render_document(spec, doc)
+        rendered = render_document(spec, doc, by_key)
         rel = "/".join(x for x in ("documents", doc.folder, doc.filename) if x)
         path = deal_dir / rel
         path.parent.mkdir(parents=True, exist_ok=True)

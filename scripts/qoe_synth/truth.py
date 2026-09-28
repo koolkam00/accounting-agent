@@ -12,7 +12,10 @@ Amount rule for a verified adjustment, per period label p:
               - sum(moved rows, pro rata by service months in p)
 
 where dp is the row's debit-positive amount. Rows named under recoveries are
-reported as related_gl_rows; moved rows must also be supporting rows.
+reported as related_gl_rows; moved rows must also be supporting rows. Diligence
+items (adjustments the tool should raise that are not on management's schedule,
+such as reversing a duplicate posting) follow the same rules and count toward
+diligence_adjusted_ebitda.
 """
 
 from __future__ import annotations
@@ -33,7 +36,7 @@ from qoe.schemas import (
 )
 
 from .ledger import GenerationError, Ledger, Txn, resolve_keys
-from .spec import DealSpec
+from .spec import DealSpec, TruthAdjustment
 
 TOLERANCE = Decimal("0.005")
 
@@ -78,14 +81,13 @@ def build_ground_truth(
     labels = [p.label for p in periods]
     by_key = ledger.by_key()
     gl_keys = sorted(key_rows, key=lambda k: key_rows[k])
+    effects: dict[str, TruthEffects] = {}
+    total_final = {l: ZERO for l in labels}
 
     def rows(keys: list[str]) -> list[int]:
         return sorted(key_rows[k] for k in keys)
 
-    adjustments: list[ExpectedAdjustment] = []
-    effects: dict[str, TruthEffects] = {}
-    total_final = {l: ZERO for l in labels}
-    for t in spec.ground_truth.adjustments:
+    def expected(t: TruthAdjustment) -> ExpectedAdjustment:
         where = f"ground_truth {t.adj_id}"
         supporting = resolve_keys(t.supporting, gl_keys, where + " supporting")
         related = resolve_keys(t.related, gl_keys, where + " related")
@@ -123,30 +125,30 @@ def build_ground_truth(
             for l in labels:
                 total_final[l] += declared[l]
         effects[t.adj_id] = eff
-        adjustments.append(
-            ExpectedAdjustment(
-                adj_id=t.adj_id,
-                case_type=t.case_type,
-                treatment=Treatment(t.treatment),
-                amounts=amounts,
-                supporting_gl_rows=rows(supporting),
-                related_gl_rows=rows(related),
-                supporting_docs=[doc_filenames[d] for d in t.supporting_docs],
-                expected_flags=[FlagCode(f) for f in t.expected_flags],
-                question_topics=list(t.question_topics),
-                rationale=t.rationale.strip(),
-                ambiguity=t.ambiguity,
-                reviewer_note=t.reviewer_note.strip(),
-            )
+        return ExpectedAdjustment(
+            adj_id=t.adj_id,
+            case_type=t.case_type,
+            treatment=Treatment(t.treatment),
+            amounts=amounts,
+            supporting_gl_rows=rows(supporting),
+            related_gl_rows=rows(related),
+            supporting_docs=[doc_filenames[d] for d in t.supporting_docs],
+            expected_flags=[FlagCode(f) for f in t.expected_flags],
+            question_topics=list(t.question_topics),
+            rationale=t.rationale.strip(),
+            ambiguity=t.ambiguity,
+            reviewer_note=t.reviewer_note.strip(),
         )
 
-    data_quality = _data_quality(spec, ledger, key_rows, gl_ebitda, mgmt_reported)
+    adjustments = [expected(t) for t in spec.ground_truth.adjustments]
+    diligence_items = [expected(t) for t in spec.ground_truth.diligence_items]
     truth = GroundTruth(
         deal_id=spec.deal_id,
         authored_by=spec.ground_truth.authored_by,
         split=spec.split,
         adjustments=adjustments,
-        data_quality=data_quality,
+        data_quality=_data_quality(spec, ledger, key_rows, gl_ebitda, mgmt_reported),
+        diligence_items=diligence_items,
         gl_ebitda={l: fmt(gl_ebitda[l]) for l in labels},
         diligence_adjusted_ebitda={l: fmt(gl_ebitda[l] + total_final[l]) for l in labels},
         notes=spec.ground_truth.notes.strip(),
@@ -183,7 +185,7 @@ def _data_quality(
                 code=DataQualityCode.RECON_VARIANCE,
                 month=ts.month,
                 account=ts.account,
-                note=(ts.note.strip() + f" (P&L exceeds GL by {fmt(D(ts.amount))}).").strip(),
+                note=f"{ts.note.strip()} Management P&L less GL: {fmt(D(ts.amount))}.".strip(),
             )
         )
     for mm in spec.data_quality.missing_gl_months:
