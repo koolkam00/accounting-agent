@@ -1,7 +1,7 @@
 [project]
 name = "accounting-agent"
 version = "0.1.0"
-description = "Deterministic accounts-payable three-way-match prototype"
+description = "Accounting agents: deterministic AP three-way match and QoE evidence review"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
@@ -17,6 +17,7 @@ dependencies = [
     "pandas>=2.0",
     "streamlit>=1.30",
     "python-dotenv>=1.0",
+    "openpyxl>=3.1",
 ]
 
 [project.optional-dependencies]
@@ -27,7 +28,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["app"]
+packages = ["app", "qoe"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

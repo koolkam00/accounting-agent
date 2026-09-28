@@ -26,3 +26,6 @@ reports/*.json
 *.log
 .python-version
 .streamlit/secrets.toml
+
+# QoE review runs (workpaper json, review logs, exports) are local working state
+workpapers/
