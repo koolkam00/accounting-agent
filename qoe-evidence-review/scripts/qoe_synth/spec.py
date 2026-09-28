@@ -346,6 +346,9 @@ class TruthAdjustment(SpecModel):
     # amount[p] -= the debit-positive total of those ledger rows in p.
     restore_missing_months: list[str] = Field(default_factory=list)
     verify_amounts: bool = True
+    # Periods whose amount must tie to the rows (default: all). A run-rate pro forma presented in TTM only has
+    # its supporting rows in other periods too, where the carried amount is 0 by presentation, not by the GL.
+    verify_periods: list[str] = Field(default_factory=list)
     supporting_docs: list[str] = Field(default_factory=list)  # document ids
     related_docs: list[str] = Field(default_factory=list)  # document ids surfaced as context / evidence against
     expected_flags: list[str] = Field(default_factory=list)

@@ -1,0 +1,13 @@
+From: Megan Sato <msato@kineticridgept.example>
+To: Brent Oyelaran <boyelaran@kineticridgept.example>
+Date: Tue, 2 Jun 2026 09:15:40 -0400
+Subject: May reporting pack - Stridewise / account 6305
+
+Brent,
+
+Heads up for the May pack. When Stridewise went live in April I opened a new Xero account, 6305 Patient Engagement Platform, for their $2,150 monthly fee. The reporting-pack mapping table hasn't been updated, so the management P&L shows the $2,150 per month inside 6300 Software, EMR & IT and 6305 doesn't appear as its own line. April and May are affected. No EBITDA effect; I'll fix the mapping for June.
+
+Megan
+
+--
+SYNTHETIC — generated for QoE Evidence Review testing

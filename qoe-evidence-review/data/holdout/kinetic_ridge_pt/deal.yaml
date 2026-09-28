@@ -1,0 +1,19 @@
+deal_id: kinetic_ridge_pt
+target_name: "Kinetic Ridge Physical Therapy Partners, LLC"
+industry: "Multi-site outpatient physical therapy (central Indiana; 12 clinics, 11 after the Feb-2026 Brownsburg closure)"
+synthetic: true
+currency: USD
+periods:
+  - {label: "FY2024", start: "2024-01", end: "2024-12"}
+  - {label: "FY2025", start: "2025-01", end: "2025-12"}
+  - {label: "TTM May-26", start: "2025-06", end: "2026-05"}
+data_start: "2024-01"
+data_end: "2026-05"
+gl_format: auto
+files:
+  gl: gl/general_ledger.xlsx
+  chart_of_accounts: gl/chart_of_accounts.csv
+  monthly_pl: financials/monthly_pl.xlsx
+  adjustments: adjustments/management_adjusted_ebitda.xlsx
+  documents_dir: documents
+tolerance: "1.00"

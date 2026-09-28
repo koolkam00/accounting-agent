@@ -794,7 +794,7 @@ background:
     mode: fixed
     end: "2026-01"
     schedule: {days: [-1]}
-    amount: {by_year: {2024: 9850, 2025: 8600, 2026: 7900}}
+    amount: {by_year: {2024: 5900, 2025: 5150, 2026: 4284.55}}
     counterparties: [Ogeechee National Bank]
     memo: "Term loan interest – {mon} {yyyy}"
 
@@ -824,7 +824,7 @@ background:
     mode: fixed
     start: "2026-02"
     schedule: {days: [-1]}
-    amount: {fixed: 20650}
+    amount: {fixed: 16250}
     counterparties: [Coastal Trust Bank]
     memo: "Term loan interest – {mon} {yyyy}"
 
@@ -1100,3 +1100,1821 @@ parties:
     address: ["191 Peachtree Street NE, Suite 3900", "Atlanta, GA 30303"]
     phone: (404) 555-0147
 
+# ---------------------------------------------------------------------------
+# Data room. doc_id = filename. `supports` lists the planted keys a document
+# evidences; invoice totals are checked against those rows.
+# ---------------------------------------------------------------------------
+documents:
+  # --- 01 Financial Information (data-quality context, D-2, D-3) -------------------------
+  - id: ns_export_email
+    filename: 1.1 NetSuite Admin Email - Aug 2024 GL Export Batch.eml
+    folder: 01 Financial Information
+    template: email
+    key_phrases:
+      - "exported with the 16-account flash report saved search"
+      - "The August 2024 income statement and trial balance in NetSuite are complete"
+    fields:
+      from: Derek Olsen <dolsen@tidewelldist.example>
+      to: Nadia Pruitt <npruitt@tidewelldist.example>
+      cc: Jamal Whitaker <jwhitaker@tidewelldist.example>
+      date: Mon, 27 Jul 2026 10:41:12 -0400
+      subject: "RE: VDR 1 - GL detail export for the buyer (Project Marlin)"
+      body: |
+        Nadia,
+
+        I pulled the GL detail for the data room in monthly batches from the "GL Detail - All Accounts" saved search. I just noticed the August 2024 batch was exported with the 16-account flash report saved search instead (the one we use for the weekly flash to Wade), so that month only has the sales, cost of sales, freight, wage, officer, rent and legal accounts. Every other month is the full export.
+
+        The August 2024 income statement and trial balance in NetSuite are complete - the management P&L in the data room ties to them. Nothing is wrong in the books; it is only the export. I can re-run August from the correct search tonight if the buyer wants the replacement file.
+
+        Derek
+
+        Derek Olsen | NetSuite Administrator
+        Tidewell Distribution Group, LLC
+
+  - id: mip_topside_email
+    filename: 1.2 Controller Email - FY2026 MIP Accrual in Management P&L.eml
+    folder: 01 Financial Information
+    template: email
+    key_phrases:
+      - "top-side accrual of $186,000 in 6040 for March 2026"
+      - "reversed the top-side in June 2026 when the payout ran through payroll"
+    fields:
+      from: Jamal Whitaker <jwhitaker@tidewelldist.example>
+      to: Nadia Pruitt <npruitt@tidewelldist.example>
+      date: Fri, 19 Jun 2026 15:02:40 -0400
+      subject: MIP accrual - management P&L vs NetSuite
+      attachments: ["FY2026 MIP Bonus Calculation - Approved.pdf"]
+      body: |
+        Nadia,
+
+        For the record in the Project Marlin data room: we do not accrue the MIP in NetSuite during the year; it is expensed when paid. For the management P&L I booked a top-side accrual of $186,000 in 6040 for March 2026 so the FY2026 income statement carries the bonus in the year it was earned (Plan Year April 1, 2025 - March 31, 2026).
+
+        Wade approved the calculation on April 24 and the $186,000 payout ran on the June 12 payroll, coded to 6040 in NetSuite. I reversed the top-side in June 2026 when the payout ran through payroll, so the management P&L expenses the MIP once, in March 2026. The payout agrees to the approved calculation to the dollar.
+
+        Jamal
+
+  - id: mip_plan
+    filename: 1.3 FY2026 Management Incentive Plan.pdf
+    folder: 01 Financial Information
+    template: agreement
+    key_phrases:
+      - "Plan Year: April 1, 2025 through March 31, 2026"
+      - "Awards are earned as of the last day of the Plan Year"
+    fields:
+      issuer: tidewell
+      title: FY2026 MANAGEMENT INCENTIVE PLAN
+      subtitle: [Adopted by the Board of Managers on April 8, 2025]
+      sections:
+        - heading: Purpose.
+          body: ["The Plan rewards the Company's branch and functional managers for achieving the fiscal 2026 EBITDA and inventory-turn targets set by the Board."]
+        - heading: Plan Year.
+          body: ["Plan Year: April 1, 2025 through March 31, 2026. This is the first year of the Plan; no incentive plan was in place for the fiscal year ended March 31, 2025."]
+        - heading: Participants and Target Awards.
+          body: ["Six managers participate: the branch managers for Jacksonville and Charleston, the Savannah DC operations manager, the Controller, the Director of Sales and the Customer Service Manager. Target awards range from 15% to 25% of base salary."]
+        - heading: Earning and Payment.
+          body: ["Awards are earned as of the last day of the Plan Year, subject to the Board's approval of the final calculation after the fiscal year-end close, and are paid in cash through regular payroll no later than June 30 following the Plan Year. A participant must be employed on the last day of the Plan Year to earn an award."]
+      signatures:
+        - {party: "TIDEWELL DISTRIBUTION GROUP, LLC", name: Wade A. Carrow, title: Manager and Chief Executive Officer, signed: true, date: "April 8, 2025"}
+
+  - id: mip_calc
+    filename: 1.4 FY2026 MIP Bonus Calculation - Approved.pdf
+    folder: 01 Financial Information
+    template: form
+    supports: [mip_payout]
+    key_phrases:
+      - "Total FY2026 MIP awards: $186,000.00"
+      - "Payment date: June 12, 2026 (regular payroll)"
+    fields:
+      issuer: tidewell
+      title: FY2026 Management Incentive Plan - Final Award Calculation
+      subtitle: ["Plan Year April 1, 2025 - March 31, 2026 | Prepared by the Controller, April 21, 2026"]
+      meta:
+        - [FY2026 Adjusted EBITDA vs target, 104% of target (EBITDA factor 1.10)]
+        - [Inventory turns vs target, 6.1x vs 6.0x (inventory factor 1.00)]
+      body:
+        - table:
+            columns: [{title: Participant, width: 150}, {title: Role}, {title: Award, align: right, width: 90}]
+            rows:
+              - [L. Moreno, Branch Manager - Jacksonville, "31,500.00"]
+              - [D. Hightower, Branch Manager - Charleston, "28,000.00"]
+              - [S. Kaminski, Operations Manager - Savannah DC, "33,000.00"]
+              - [J. Whitaker, Controller, "30,500.00"]
+              - [B. Ellison, Director of Sales, "39,000.00"]
+              - [A. Freeman, Customer Service Manager, "24,000.00"]
+            total: ["", Total, "186,000.00"]
+        - "Total FY2026 MIP awards: $186,000.00"
+        - "Payment date: June 12, 2026 (regular payroll)"
+        - kv:
+            - [Approved, "/s/ Wade A. Carrow, Chief Executive Officer - April 24, 2026"]
+            - [Reviewed, "/s/ Nadia Pruitt, Chief Financial Officer - April 22, 2026"]
+
+  # --- 02 Ownership & Related Party (Refs 1, 2, 3) -------------------------------------------
+  - id: carrow_ea
+    filename: 2.1 Carrow Executive Employment Agreement - Executed.pdf
+    folder: 02 Ownership and Related Party
+    template: agreement
+    key_phrases:
+      - "annual base salary of $300,000"
+      - "target annual bonus equal to 20% of Base Salary"
+      - "Total target cash compensation is $360,000"
+    fields:
+      title: EXECUTIVE EMPLOYMENT AGREEMENT
+      subtitle: ["Wade A. Carrow - Chief Executive Officer", "Effective as of the Closing (Project Marlin)"]
+      preamble: "This Executive Employment Agreement (the \"Agreement\") is entered into on May 18, 2026 between Tidewell Distribution Group, LLC (the \"Company\") and Wade A. Carrow (the \"Executive\"). It becomes effective on, and only upon, the closing of the acquisition of the Company by Saltmarsh Equity Partners II, L.P. or its affiliate (the \"Closing\"), and replaces all prior compensation arrangements between the Company and the Executive."
+      sections:
+        - heading: Position.
+          body: ["The Executive will serve as Chief Executive Officer of the Company, reporting to the Board of Managers."]
+        - heading: Term.
+          body: ["The term begins on the Closing and continues for three (3) years, renewing annually thereafter unless either party gives ninety (90) days' notice."]
+        - heading: Base Salary.
+          body: ["The Company will pay the Executive an annual base salary of $300,000 (\"Base Salary\"), payable semi-monthly through regular payroll and reviewed annually by the Board."]
+        - heading: Annual Bonus.
+          body: ["The Executive is eligible for a target annual bonus equal to 20% of Base Salary, payable on achievement of targets set by the Board. Total target cash compensation is $360,000."]
+        - heading: Benefits.
+          body: ["The Executive may participate in the Company's group medical, dental and 401(k) plans on the same terms as other salaried employees. No automobile, club or other perquisite allowance is provided."]
+        - heading: Restrictive Covenants.
+          body: ["The Executive's non-competition and non-solicitation obligations are set out in the purchase agreement and are incorporated by reference."]
+      witness: "IN WITNESS WHEREOF, the parties have executed this Agreement on the date first written above."
+      signatures:
+        - {party: "TIDEWELL DISTRIBUTION GROUP, LLC", name: Nadia Pruitt, title: Chief Financial Officer (authorized by resolution of the Board of Managers), signed: true, date: "May 18, 2026"}
+        - {party: EXECUTIVE, name: Wade A. Carrow, title: Individually, signed: true, date: "May 18, 2026"}
+        - {party: "ACKNOWLEDGED - SALTMARSH EQUITY PARTNERS II, L.P.", name: Grant Whitcomb, title: Partner, signed: true, date: "May 19, 2026"}
+
+  - id: holloway_benchmark
+    filename: 2.2 Holloway Compensation Advisors - CEO Pay Benchmark Jan 2026.pdf
+    folder: 02 Ownership and Related Party
+    template: letter
+    key_phrases:
+      - "50th percentile total target cash compensation of $358,000"
+      - "$360,000 of total target cash compensation is within the competitive range"
+    fields:
+      issuer: holloway
+      date: "January 26, 2026"
+      to: [Grant Whitcomb, Partner, "Saltmarsh Equity Partners II, L.P.", "3500 Lenox Road NE, Suite 1900", "Atlanta, GA 30326"]
+      re: ["Market pay benchmark - Chief Executive Officer, Tidewell Distribution Group, LLC"]
+      salutation: "Dear Grant:"
+      body:
+        - "You asked us to benchmark market compensation for the Chief Executive Officer of Tidewell Distribution Group, LLC, a Savannah-based distributor of foodservice packaging and janitorial supplies with fiscal 2026 revenue of about $76 million. We were engaged and paid by Saltmarsh Equity Partners and have no relationship with the Company or its owner."
+        - heading: Peer group and data
+        - "Our peer group is 23 privately held wholesale distributors headquartered in the Southeast with revenue of $50 to $100 million, drawn from our 2025 Distribution Executive Pay Survey (412 participating companies). Data are aged to January 1, 2026."
+        - table:
+            columns: [{title: CEO pay element}, {title: 25th pct, align: right, width: 75}, {title: 50th pct, align: right, width: 75}, {title: 75th pct, align: right, width: 75}]
+            rows:
+              - [Base salary, "$262,000", "$298,000", "$341,000"]
+              - [Target annual bonus (% of base), "15%", "20%", "30%"]
+              - [Total target cash compensation, "$305,000", "$358,000", "$436,000"]
+        - "The peer group shows a 50th percentile total target cash compensation of $358,000. The proposed package of a $300,000 base salary and a 20% target bonus, $360,000 of total target cash compensation is within the competitive range and sits at the market median."
+        - "Owner-CEOs of private distributors are commonly paid above market for tax and distribution reasons; our figures reflect professional CEOs without an ownership stake."
+      closing: Sincerely,
+      signatures:
+        - {name: "Renee Holloway, CCP", title: "Managing Principal, Holloway Compensation Advisors", signed: true}
+
+  - id: pih_lease
+    filename: 2.3 Lease Agreement - 410 Grange Road (Pooler Industrial Holdings).pdf
+    folder: 02 Ownership and Related Party
+    template: agreement
+    key_phrases:
+      - "Base Rent: $24,000.00 per month"
+      - "48,000 rentable square feet"
+      - "the managing member of Landlord, is the Chief Executive Officer and majority owner of Tenant"
+    fields:
+      issuer: pooler_holdings
+      title: INDUSTRIAL LEASE AGREEMENT
+      subtitle: ["410 Grange Road, Pooler, Georgia 31322"]
+      preamble: "This Industrial Lease Agreement is made as of April 1, 2019 between Pooler Industrial Holdings, LLC, a Georgia limited liability company (\"Landlord\"), and Tidewell Distribution Group, LLC (\"Tenant\")."
+      sections:
+        - heading: Premises.
+          body: ["Landlord leases to Tenant the warehouse and office building at 410 Grange Road, Pooler, Georgia, containing 48,000 rentable square feet, with 8 dock doors and a fenced truck court (the \"Premises\")."]
+        - heading: Term.
+          body: ["Ten (10) years, from April 1, 2019 through March 31, 2029, with two five-year renewal options at fair market rent."]
+        - heading: Rent.
+          body: ["Base Rent: $24,000.00 per month, payable in advance on the first day of each month, with no annual escalation during the initial term."]
+        - heading: Net Lease.
+          body: ["This is a triple-net lease. Tenant pays real estate taxes, building insurance and all maintenance and repairs of the Premises in addition to Base Rent."]
+        - heading: Related Party.
+          body: ["The parties acknowledge that Wade A. Carrow, the managing member of Landlord, is the Chief Executive Officer and majority owner of Tenant. Rent was set by agreement of the parties in 2019 and was not the subject of an independent appraisal."]
+      signatures:
+        - {party: "POOLER INDUSTRIAL HOLDINGS, LLC (Landlord)", name: Wade A. Carrow, title: Managing Member, signed: true, date: "March 22, 2019"}
+        - {party: "TIDEWELL DISTRIBUTION GROUP, LLC (Tenant)", name: Lena M. Carrow, title: Vice President and Manager, signed: true, date: "March 22, 2019"}
+
+  - id: bov
+    filename: 2.4 Marsh Point Broker Opinion of Market Rent - 410 Grange Road.pdf
+    folder: 02 Ownership and Related Party
+    template: letter
+    key_phrases:
+      - "market rent of $7.25 per square foot per year, NNN"
+      - "$29,000 per month"
+      - "the current contract rent of $24,000 per month is below market"
+    fields:
+      issuer: marsh_point
+      date: "February 10, 2026"
+      to: [Grant Whitcomb, Partner, "Saltmarsh Equity Partners II, L.P.", "3500 Lenox Road NE, Suite 1900", "Atlanta, GA 30326"]
+      re: ["Broker Opinion of Market Rent - 410 Grange Road, Pooler, GA 31322 (48,000 SF)"]
+      salutation: "Dear Mr. Whitcomb:"
+      body:
+        - "At your request we have prepared this opinion of the current market rent for the Tidewell Distribution Group facility at 410 Grange Road, Pooler, Georgia, in connection with a proposed new lease between the owner's entity and the Company at closing. We represent neither the landlord nor the tenant in any transaction involving the property."
+        - heading: Comparable leases (Savannah / Pooler submarket, signed 2024-2025)
+        - table:
+            columns: [{title: Property}, {title: Size (SF), align: right, width: 65}, {title: Signed, align: right, width: 70}, {title: Rent ($/SF/yr NNN), align: right, width: 110}]
+            rows:
+              - [1250 Jimmy DeLoach Pkwy (rear-load), "52,500", "Mar 2025", "7.10"]
+              - [85 Crossroads Blvd (dock-high), "40,000", "Aug 2024", "7.60"]
+              - [2204 Pooler Pkwy (office/warehouse), "46,200", "Jan 2025", "7.35"]
+              - ["19 Commerce Loop (older, 22' clear)", "55,000", "Oct 2025", "6.95"]
+        - "Adjusting for the subject's 24-foot clear height, eight dock doors and 2004 construction, we conclude a market rent of $7.25 per square foot per year, NNN, for a new five-year lease with 3% annual escalations. On 48,000 square feet this is $348,000 per year, or $29,000 per month."
+        - "For reference, the current contract rent of $24,000 per month is below market ($6.00 per square foot); the lease was set in 2019 and has not escalated."
+      closing: Respectfully submitted,
+      signatures:
+        - {name: "Carter Beaumont, SIOR", title: "Senior Vice President, Marsh Point Commercial Advisors (Georgia broker license 348812)", signed: true}
+
+  # --- 03 Human Resources (Refs 4, 5, 6) ----------------------------------------------------
+  - id: rif_memo
+    filename: 3.1 HR Memo - Charleston Order Desk Reduction in Force.pdf
+    folder: 03 Human Resources
+    template: memo
+    key_phrases:
+      - "The three Charleston order desk positions are eliminated effective January 30, 2026"
+      - "The positions will not be backfilled"
+    fields:
+      issuer: tidewell
+      title: MEMORANDUM
+      to: "Wade A. Carrow, CEO; Nadia Pruitt, CFO"
+      from: "Tasha Greene, Human Resources Manager"
+      cc: "D. Hightower, Branch Manager - Charleston"
+      date: "January 12, 2026"
+      re: "Charleston order desk - reduction in force"
+      body:
+        - "Since the B2B ordering portal went live in September 2025, 71% of Charleston branch order lines arrive electronically and the remaining phone and fax orders are handled by the Savannah customer service team. The three Charleston order desk positions are eliminated effective January 30, 2026."
+        - table:
+            columns: [{title: Employee, width: 140}, {title: Position}, {title: Hire date, width: 80}, {title: Severance, align: right, width: 80}]
+            rows:
+              - [Rosa Alvarez, Order desk specialist (lead), 06/2017, "4,150.00"]
+              - [Kendra Brooks, Order desk specialist, 03/2019, "3,950.00"]
+              - [Thanh Nguyen, Order desk specialist, 08/2021, "3,750.00"]
+            total: ["", "Total severance (two weeks' pay per employee)", "", "11,850.00"]
+        - "The positions will not be backfilled. Separation agreements with a release are being provided to each employee; severance is payable on the first payroll after the revocation period."
+
+  - id: sep_alvarez
+    filename: 3.1.1 Separation Agreement - R. Alvarez.pdf
+    folder: 03 Human Resources
+    template: agreement
+    key_phrases: ["Separation Date: January 30, 2026", "severance of $4,150.00", "has been eliminated as part of a reduction in force"]
+    fields: &order_desk_sep
+      title: SEPARATION AGREEMENT AND RELEASE
+      preamble: "This Separation Agreement and Release is entered into between Tidewell Distribution Group, LLC (the \"Company\") and Rosa Alvarez (\"Employee\")."
+      sections:
+        - heading: Separation.
+          body: ["Employee's position as Order Desk Specialist (Lead) at the Charleston branch has been eliminated as part of a reduction in force. Separation Date: January 30, 2026. Employee will be paid all wages earned through the Separation Date on the regular January 30 payroll."]
+        - heading: Severance.
+          body: ["Provided Employee signs and does not revoke this Agreement, the Company will pay Employee severance of $4,150.00, equal to two weeks of base pay, less applicable withholdings, on the first regular payroll after the revocation period."]
+        - heading: Release.
+          body: ["Employee releases the Company and its members, managers and employees from all claims arising out of Employee's employment or its termination, to the extent permitted by law."]
+      signatures:
+        - {party: "TIDEWELL DISTRIBUTION GROUP, LLC", name: Tasha Greene, title: Human Resources Manager, signed: true, date: "February 2, 2026"}
+        - {party: EMPLOYEE, name: Rosa Alvarez, title: Individually, signed: true, date: "February 2, 2026"}
+
+  - id: sep_brooks
+    filename: 3.1.2 Separation Agreement - K. Brooks.pdf
+    folder: 03 Human Resources
+    template: agreement
+    key_phrases: ["Separation Date: January 30, 2026", "severance of $3,950.00", "has been eliminated as part of a reduction in force"]
+    fields:
+      <<: *order_desk_sep
+      preamble: "This Separation Agreement and Release is entered into between Tidewell Distribution Group, LLC (the \"Company\") and Kendra Brooks (\"Employee\")."
+      sections:
+        - heading: Separation.
+          body: ["Employee's position as Order Desk Specialist at the Charleston branch has been eliminated as part of a reduction in force. Separation Date: January 30, 2026. Employee will be paid all wages earned through the Separation Date on the regular January 30 payroll."]
+        - heading: Severance.
+          body: ["Provided Employee signs and does not revoke this Agreement, the Company will pay Employee severance of $3,950.00, equal to two weeks of base pay, less applicable withholdings, on the first regular payroll after the revocation period."]
+        - heading: Release.
+          body: ["Employee releases the Company and its members, managers and employees from all claims arising out of Employee's employment or its termination, to the extent permitted by law."]
+      signatures:
+        - {party: "TIDEWELL DISTRIBUTION GROUP, LLC", name: Tasha Greene, title: Human Resources Manager, signed: true, date: "February 2, 2026"}
+        - {party: EMPLOYEE, name: Kendra Brooks, title: Individually, signed: true, date: "February 3, 2026"}
+
+  - id: sep_nguyen
+    filename: 3.1.3 Separation Agreement - T. Nguyen.pdf
+    folder: 03 Human Resources
+    template: agreement
+    key_phrases: ["Separation Date: January 30, 2026", "severance of $3,750.00", "has been eliminated as part of a reduction in force"]
+    fields:
+      <<: *order_desk_sep
+      preamble: "This Separation Agreement and Release is entered into between Tidewell Distribution Group, LLC (the \"Company\") and Thanh Nguyen (\"Employee\")."
+      sections:
+        - heading: Separation.
+          body: ["Employee's position as Order Desk Specialist at the Charleston branch has been eliminated as part of a reduction in force. Separation Date: January 30, 2026. Employee will be paid all wages earned through the Separation Date on the regular January 30 payroll."]
+        - heading: Severance.
+          body: ["Provided Employee signs and does not revoke this Agreement, the Company will pay Employee severance of $3,750.00, equal to two weeks of base pay, less applicable withholdings, on the first regular payroll after the revocation period."]
+        - heading: Release.
+          body: ["Employee releases the Company and its members, managers and employees from all claims arising out of Employee's employment or its termination, to the extent permitted by law."]
+      signatures:
+        - {party: "TIDEWELL DISTRIBUTION GROUP, LLC", name: Tasha Greene, title: Human Resources Manager, signed: true, date: "February 2, 2026"}
+        - {party: EMPLOYEE, name: Thanh Nguyen, title: Individually, signed: true, date: "February 4, 2026"}
+
+  - id: chs_register
+    filename: 3.1.4 Payroll Register Extract - Charleston Order Desk Jul 2025-Jan 2026.pdf
+    folder: 03 Human Resources
+    template: form
+    supports: ["chs_order_desk/2025-0[7-9]/*", "chs_order_desk/2025-1*", "chs_order_desk/2026-01/*"]
+    key_phrases:
+      - "Total, 14 pay periods: $88,230.18"
+      - "Cost center: Customer Service - Charleston order desk"
+    fields:
+      issuer: tidewell
+      title: Payroll Register Extract - Gross Wages by Pay Period
+      subtitle: ["Cost center: Customer Service - Charleston order desk", "Employees: R. Alvarez, K. Brooks, T. Nguyen (hourly, including overtime)"]
+      body:
+        - table:
+            columns: [{title: Pay period ending, width: 120}, {title: NetSuite account}, {title: Gross wages, align: right, width: 100}]
+            rows:
+              - ["{mdy:chs_order_desk/2025-07/1}", 6030 Wages - Customer Service, "{amount:chs_order_desk/2025-07/1}"]
+              - ["{mdy:chs_order_desk/2025-07/2}", 6030 Wages - Customer Service, "{amount:chs_order_desk/2025-07/2}"]
+              - ["{mdy:chs_order_desk/2025-08/1}", 6030 Wages - Customer Service, "{amount:chs_order_desk/2025-08/1}"]
+              - ["{mdy:chs_order_desk/2025-08/2}", 6030 Wages - Customer Service, "{amount:chs_order_desk/2025-08/2}"]
+              - ["{mdy:chs_order_desk/2025-09/1}", 6030 Wages - Customer Service, "{amount:chs_order_desk/2025-09/1}"]
+              - ["{mdy:chs_order_desk/2025-09/2}", 6030 Wages - Customer Service, "{amount:chs_order_desk/2025-09/2}"]
+              - ["{mdy:chs_order_desk/2025-10/1}", 6030 Wages - Customer Service, "{amount:chs_order_desk/2025-10/1}"]
+              - ["{mdy:chs_order_desk/2025-10/2}", 6030 Wages - Customer Service, "{amount:chs_order_desk/2025-10/2}"]
+              - ["{mdy:chs_order_desk/2025-11/1}", 6030 Wages - Customer Service, "{amount:chs_order_desk/2025-11/1}"]
+              - ["{mdy:chs_order_desk/2025-11/2}", 6030 Wages - Customer Service, "{amount:chs_order_desk/2025-11/2}"]
+              - ["{mdy:chs_order_desk/2025-12/1}", 6030 Wages - Customer Service, "{amount:chs_order_desk/2025-12/1}"]
+              - ["{mdy:chs_order_desk/2025-12/2}", 6030 Wages - Customer Service, "{amount:chs_order_desk/2025-12/2}"]
+              - ["{mdy:chs_order_desk/2026-01/1}", 6030 Wages - Customer Service, "{amount:chs_order_desk/2026-01/1}"]
+              - ["{mdy:chs_order_desk/2026-01/2}", 6030 Wages - Customer Service, "{amount:chs_order_desk/2026-01/2}"]
+            total: ["", "Total, 14 pay periods", "88,230.18"]
+        - "Total, 14 pay periods: $88,230.18"
+        - "Final regular pay date for the cost center: January 30, 2026. The February 13, 2026 severance payments are reported separately. Employer payroll taxes are recorded in 6100 and are not included above."
+
+  - id: coo_email_desk
+    filename: 3.1.5 COO Email - Order Desk Volume Moved to Portal.eml
+    folder: 03 Human Resources
+    template: email
+    key_phrases: ["no backfill", "order desk cost center has had no payroll since the January 30 run"]
+    fields:
+      from: Marcus Tillman <mtillman@tidewelldist.example>
+      to: Nadia Pruitt <npruitt@tidewelldist.example>
+      date: Wed, 8 Apr 2026 09:15:03 -0400
+      subject: Charleston order desk - status for the buyer's diligence team
+      body: |
+        Nadia,
+
+        Confirming for the Project Marlin data room: the three Charleston order desk roles were eliminated at the end of January and there will be no backfill. Charleston phone and fax orders now route to the Savannah customer service team, which absorbed them without adding headcount, and the portal is running above 70% of Charleston order lines.
+
+        Payroll confirms the order desk cost center has had no payroll since the January 30 run apart from the February 13 severance checks.
+
+        Marcus
+
+        Marcus Tillman | Chief Operating Officer
+
+  - id: bell_separation
+    filename: 3.2 Separation and Release Agreement - M. Bell (Purchasing Manager).pdf
+    folder: 03 Human Resources
+    template: agreement
+    key_phrases:
+      - "current annual base salary of $86,400"
+      - "Separation Date: December 31, 2025"
+      - "the Purchasing Manager position will be eliminated"
+    fields:
+      title: SEPARATION AND RELEASE AGREEMENT
+      preamble: "This Separation and Release Agreement is entered into on December 5, 2025 between Tidewell Distribution Group, LLC (the \"Company\") and Mitchell Bell (\"Employee\")."
+      sections:
+        - heading: Separation.
+          body: ["Employee has elected to retire. Employee's employment as Purchasing Manager ends on the Separation Date. Separation Date: December 31, 2025. The Company has informed Employee that the Purchasing Manager position will be eliminated and replenishment buying moved to the KestrelWMS automated replenishment module and the branch managers."]
+        - heading: Final Pay.
+          body: ["Employee will receive base pay through the Separation Date at Employee's current annual base salary of $86,400, paid semi-monthly on the regular payroll. No severance is payable. Accrued, unused paid time off was used before the Separation Date."]
+        - heading: Release.
+          body: ["Employee releases the Company from all claims arising out of Employee's employment or its end, to the extent permitted by law."]
+      signatures:
+        - {party: "TIDEWELL DISTRIBUTION GROUP, LLC", name: Tasha Greene, title: Human Resources Manager, signed: true, date: "December 5, 2025"}
+        - {party: EMPLOYEE, name: Mitchell Bell, title: Individually, signed: true, date: "December 8, 2025"}
+
+  - id: census
+    filename: 3.2.1 HR Census Extract - Purchasing Dec 2025.pdf
+    folder: 03 Human Resources
+    template: form
+    key_phrases:
+      - "2026 approved salary (effective 1/1/2026): $96,000"
+      - "Current annual salary: $86,400"
+    fields:
+      issuer: tidewell
+      title: Employee Census Extract - Purchasing Department
+      subtitle: ["Run date: December 10, 2025 | Source: HR system census report"]
+      meta:
+        - [Employee, Mitchell Bell]
+        - [Position, Purchasing Manager]
+        - [Department / location, Purchasing / Savannah DC]
+        - [Status, "Active - retiring 12/31/2025"]
+        - [Current annual salary, "$86,400"]
+        - [2026 approved salary (effective 1/1/2026), "$96,000"]
+      body:
+        - "The 2026 salary column reflects merit and market increases approved in the November 2025 compensation review. Increases take effect with the first payroll of January 2026."
+
+  - id: cfo_calc_email
+    filename: 3.2.2 CFO Email - Pro Forma Savings Calculations.eml
+    folder: 03 Human Resources
+    template: email
+    key_phrases: ["$96,000 x 6/12 = $48,000", "used the payroll register actuals"]
+    fields:
+      from: Nadia Pruitt <npruitt@tidewelldist.example>
+      to: Carter Lyle <clyle@cordellharbor.example>
+      cc: Jamal Whitaker <jwhitaker@tidewelldist.example>
+      date: Thu, 12 Mar 2026 18:27:55 -0400
+      subject: Adj EBITDA - pro forma payroll lines (refs 4 and 5)
+      body: |
+        Carter,
+
+        Backup for the two pro forma payroll lines on the adjusted EBITDA schedule:
+
+        Ref 4 - Charleston order desk. I used the payroll register actuals for the cost center for July 2025 through January 2026 (see VDR 3.1.4).
+
+        Ref 5 - Purchasing Manager. Mitch Bell retired 12/31 and we are not replacing him. I took his salary from the December census: $96,000 x 6/12 = $48,000 for July-December 2025.
+
+        Nadia
+
+  - id: txn_bonus_plan
+    filename: 3.3 Project Marlin Transaction Bonus Plan.pdf
+    folder: 03 Human Resources
+    template: agreement
+    supports: [txn_bonus]
+    key_phrases:
+      - "aggregate LOI Payments of $90,000"
+      - "one-time payments in connection with the Sale"
+      - "paid on the first regular payroll after the LOI Date"
+    fields:
+      issuer: tidewell
+      title: PROJECT MARLIN TRANSACTION BONUS PLAN
+      subtitle: [Adopted by written consent of the Members and the Board of Managers - November 14, 2025]
+      sections:
+        - heading: Purpose.
+          body: ["To retain and reward key employees whose efforts are needed to complete a sale of the Company (the \"Sale\"). Awards under this Plan are one-time payments in connection with the Sale and are not part of any employee's regular compensation."]
+        - heading: LOI Payment.
+          body: ["Each Participant listed in Exhibit A receives the LOI Payment shown there upon the Company's execution of a letter of intent for a Sale (the \"LOI Date\"). LOI Payments are paid on the first regular payroll after the LOI Date."]
+        - heading: Closing Payment.
+          body: ["Each Participant employed on the closing of a Sale receives the Closing Payment shown in Exhibit A, payable within ten days after closing. Closing Payments are an obligation of the selling Members and are funded from Sale proceeds."]
+        - heading: Termination.
+          body: ["The Plan terminates on the earlier of the payment of all Closing Payments or December 31, 2026. No payments are due under the Plan after termination."]
+      signatures:
+        - {party: "TIDEWELL DISTRIBUTION GROUP, LLC", name: Wade A. Carrow, title: Manager and Chief Executive Officer, signed: true, date: "November 14, 2025"}
+        - {party: "MEMBERS", name: Lena M. Carrow, title: Member and Manager, signed: true, date: "November 14, 2025"}
+      exhibits:
+        - title: "EXHIBIT A - PARTICIPANTS AND AWARDS"
+          body:
+            - table:
+                columns: [{title: Participant}, {title: LOI Payment, align: right, width: 90}, {title: Closing Payment, align: right, width: 95}]
+                rows:
+                  - [Nadia Pruitt - Chief Financial Officer, "30,000.00", "60,000.00"]
+                  - [Marcus Tillman - Chief Operating Officer, "30,000.00", "60,000.00"]
+                  - [Jamal Whitaker - Controller, "15,000.00", "25,000.00"]
+                  - [Brian Ellison - Director of Sales, "15,000.00", "25,000.00"]
+                total: [Total, "90,000.00", "170,000.00"]
+            - "The four Participants are entitled to aggregate LOI Payments of $90,000. The letter of intent with Saltmarsh Equity Partners II, L.P. was executed March 4, 2026."
+
+  # --- 04 Legal (Refs 9, 12) ---------------------------------------------------------------------
+  - id: bv_retainer_letter
+    filename: 4.1 Brannock Vail Engagement Letter - General Counsel (Matter 100).pdf
+    folder: 04 Legal
+    template: letter
+    key_phrases: ["flat monthly fee of $3,500", "continues month to month until either party terminates it"]
+    fields:
+      issuer: brannock_vail
+      date: "June 1, 2022"
+      to: [Mr. Wade A. Carrow, Chief Executive Officer, "Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      re: [Outside general counsel services - Matter 100]
+      salutation: "Dear Wade:"
+      body:
+        - "This letter sets out the terms on which Brannock & Vail LLP will act as outside general counsel to Tidewell Distribution Group, LLC (the \"Company\") under Matter 100."
+        - "Our services cover day-to-day corporate, contract, employment and real estate advice, including review of customer and supplier agreements. For these services the Company will pay a flat monthly fee of $3,500, billed on the first of each month. This arrangement continues month to month until either party terminates it on thirty days' written notice."
+        - "Litigation, arbitration and transactions are outside Matter 100. If the Company asks us to handle one, we will open a separate matter under a separate engagement letter and bill it at our hourly rates."
+      closing: Very truly yours,
+      signatures:
+        - {party: BRANNOCK & VAIL LLP, name: Philip Brannock, title: Partner, signed: true}
+      countersign:
+        heading: "AGREED:"
+        signatures:
+          - {party: "TIDEWELL DISTRIBUTION GROUP, LLC", name: Wade A. Carrow, title: Chief Executive Officer, signed: true, date: "June 3, 2022"}
+
+  - id: bv_arb_el
+    filename: 4.2 Brannock Vail Engagement Letter - Brightfield Arbitration (Matter 2025-014).pdf
+    folder: 04 Legal
+    template: letter
+    key_phrases:
+      - "Matter 2025-014 (Brightfield Converting v. Tidewell)"
+      - "through the issuance of a final award"
+    fields:
+      issuer: brannock_vail
+      date: "April 3, 2025"
+      to: [Ms. Nadia Pruitt, Chief Financial Officer, "Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      re: ["Engagement - Brightfield Converting, Inc. demand for arbitration", "Matter 2025-014 (Brightfield Converting v. Tidewell)"]
+      salutation: "Dear Nadia:"
+      body:
+        - "Brightfield Converting, Inc., a former cup-stock supplier, has filed a demand for arbitration with the Coastal Dispute Resolution Center claiming $412,000 for an alleged minimum-purchase shortfall under a 2021 supply agreement that expired in December 2023. The Company disputes the claim. This letter confirms that we will defend the Company in the arbitration as Matter 2025-014 (Brightfield Converting v. Tidewell)."
+        - "Our engagement runs through the issuance of a final award and any motion to confirm or vacate it. Fees are billed monthly in arrears at our hourly rates ($495 partner, $310 associate, $165 paralegal), plus the Company's share of tribunal fees. This matter is separate from, and is not covered by, the Matter 100 general counsel fee."
+      closing: Very truly yours,
+      signatures:
+        - {party: BRANNOCK & VAIL LLP, name: Philip Brannock, title: Partner, signed: true}
+      countersign:
+        heading: "AGREED:"
+        signatures:
+          - {party: "TIDEWELL DISTRIBUTION GROUP, LLC", name: Nadia Pruitt, title: Chief Financial Officer, signed: true, date: "April 4, 2025"}
+
+  - id: bv_inv_0611
+    filename: 4.2.1 Brannock Vail Invoice BV-25-0611.pdf
+    folder: 04 Legal
+    template: invoice
+    supports: [bv_arb_1]
+    key_phrases: ["Invoice: BV-25-0611", "Matter: 2025-014 Brightfield Converting v. Tidewell", "Amount Due: $16,800.00"]
+    fields: &bv_invoice
+      issuer: brannock_vail
+      title: STATEMENT OF SERVICES
+      bill_to_label: "Client:"
+      bill_to: ["Tidewell Distribution Group, LLC", Attn. Nadia Pruitt, 410 Grange Road, "Pooler, GA 31322"]
+      meta:
+        - [Invoice, BV-25-0611]
+        - [Date, "June 12, 2025"]
+        - [Matter, 2025-014 Brightfield Converting v. Tidewell]
+        - [Services through, "May 31, 2025"]
+      intro: ["Defense of arbitration - pleadings, document exchange and scheduling (April 1 - May 31, 2025)."]
+      columns: {qty: Hours, rate: Rate, description: Timekeeper / task}
+      lines:
+        - {description: "P. Brannock - answering statement, case strategy", qty: 14.0, rate: 495}
+        - {description: "A. Suarez - document exchange, supplier correspondence review", qty: 26.0, rate: 310}
+        - {description: "Tribunal administrative fee - Company share", amount: 1810}
+      total_label: Amount Due
+      terms: "Payment due in 30 days. Matter 100 general counsel fees are billed separately."
+
+  - id: bv_inv_0813
+    filename: 4.2.2 Brannock Vail Invoice BV-25-0813.pdf
+    folder: 04 Legal
+    template: invoice
+    supports: [bv_arb_2]
+    key_phrases: ["Invoice: BV-25-0813", "Matter: 2025-014 Brightfield Converting v. Tidewell", "Amount Due: $21,450.00"]
+    fields:
+      <<: *bv_invoice
+      meta:
+        - [Invoice, BV-25-0813]
+        - [Date, "August 14, 2025"]
+        - [Matter, 2025-014 Brightfield Converting v. Tidewell]
+        - [Services through, "July 31, 2025"]
+      intro: ["Defense of arbitration - witness preparation and pre-hearing brief (July 1 - July 31, 2025). No time was recorded in June 2025 while the tribunal set the hearing date."]
+      lines:
+        - {description: "P. Brannock - pre-hearing brief, witness preparation", qty: 24.0, rate: 495}
+        - {description: "A. Suarez - damages analysis, exhibit list", qty: 26.0, rate: 310}
+        - {description: "M. Oyelaran - hearing binders", qty: 4.0, rate: 165}
+        - {description: "Expert consultation - purchase-volume analysis (Hollins Economics)", amount: 850}
+
+  - id: bv_inv_1015
+    filename: 4.2.3 Brannock Vail Invoice BV-25-1015.pdf
+    folder: 04 Legal
+    template: invoice
+    supports: [bv_arb_3]
+    key_phrases: ["Invoice: BV-25-1015", "Matter: 2025-014 Brightfield Converting v. Tidewell", "Amount Due: $12,750.00", "Final invoice for this matter"]
+    fields:
+      <<: *bv_invoice
+      meta:
+        - [Invoice, BV-25-1015]
+        - [Date, "October 16, 2025"]
+        - [Matter, 2025-014 Brightfield Converting v. Tidewell]
+        - [Services through, "September 30, 2025"]
+      intro: ["Defense of arbitration - evidentiary hearing (August 26-27, 2025) and final award (August 1 - September 30, 2025). Final invoice for this matter; the file is closed."]
+      lines:
+        - {description: "P. Brannock - hearing attendance, post-hearing submission", qty: 16.0, rate: 495}
+        - {description: "A. Suarez - hearing support, award review", qty: 12.0, rate: 310}
+        - {description: "Tribunal hearing fee - Company share", amount: 1110}
+
+  - id: arb_award
+    filename: 4.2.4 Final Award - Brightfield Converting v Tidewell.pdf
+    folder: 04 Legal
+    template: form
+    key_phrases: ["The claims of Brightfield Converting, Inc. are denied in their entirety", "Each party shall bear its own attorneys' fees and costs"]
+    fields:
+      issuer: cdrc
+      title: FINAL AWARD
+      subtitle: ["Brightfield Converting, Inc. v. Tidewell Distribution Group, LLC", "Case No. CDRC-25-0417"]
+      meta:
+        - [Arbitrator, "Hon. Margaret L. Spence (ret.)"]
+        - [Hearing, "August 26-27, 2025, Savannah, Georgia"]
+        - [Date of award, "September 24, 2025"]
+      body:
+        - "Having considered the evidence and the submissions of the parties, the Arbitrator finds that the 2021 supply agreement contained no enforceable minimum-purchase commitment after its first contract year."
+        - "The claims of Brightfield Converting, Inc. are denied in their entirety. Each party shall bear its own attorneys' fees and costs. Tribunal fees shall be borne as already paid."
+        - "This Award is in full settlement of all claims submitted in this arbitration."
+        - kv:
+            - [Signed, "/s/ Margaret L. Spence, Arbitrator"]
+
+  - id: sunmeadow_termination
+    filename: 4.3 Sunmeadow Termination and Release Agreement.pdf
+    folder: 04 Legal
+    template: agreement
+    supports: [sunmeadow_termination_fee]
+    key_phrases: ["Termination Fee of $46,500.00", "shall not recur"]
+    fields:
+      title: TERMINATION AND RELEASE AGREEMENT
+      subtitle: [Exclusive Distribution Agreement dated January 15, 2023]
+      preamble: "This Termination and Release Agreement is made as of October 28, 2025 between Sunmeadow Brands, Inc. (\"Sunmeadow\") and Tidewell Distribution Group, LLC (\"Distributor\")."
+      recitals:
+        - "Sunmeadow appointed Distributor as its exclusive distributor of Sunmeadow compostable foodservice packaging in Georgia and South Carolina under an agreement running through December 31, 2027."
+        - "Sunmeadow has appointed a national distributor and wishes to end Distributor's exclusivity early."
+      sections:
+        - heading: Termination.
+          body: ["The Exclusive Distribution Agreement terminates effective November 30, 2025."]
+        - heading: Termination Fee.
+          body: ["In consideration of the early termination, Sunmeadow shall pay Distributor a Termination Fee of $46,500.00 by wire within ten business days after signing. The Termination Fee is a one-time payment and shall not recur."]
+        - heading: Wind-down.
+          body: ["Distributor may sell its remaining Sunmeadow inventory through January 31, 2026. Sunmeadow will accept return of unopened cases at invoice cost less 10%."]
+        - heading: Release.
+          body: ["Each party releases the other from all claims under the Exclusive Distribution Agreement, other than obligations under this Agreement."]
+      signatures:
+        - {party: "SUNMEADOW BRANDS, INC.", name: Elise Rutherford, title: "Vice President, Channel Sales", signed: true, date: "October 28, 2025"}
+        - {party: "TIDEWELL DISTRIBUTION GROUP, LLC", name: Wade A. Carrow, title: Chief Executive Officer, signed: true, date: "October 29, 2025"}
+
+  # --- 05 Technology (Ref 10, D-1) -------------------------------------------------------------------
+  - id: kestrel_order_form
+    filename: 5.1 Kestrel Systems Order Form KS-OF-2025-061.pdf
+    folder: 05 Technology
+    template: agreement
+    key_phrases:
+      - "One-time implementation fee: $64,000.00"
+      - "Subscription fee: $5,400.00 per month"
+      - "renews automatically for successive 12-month terms"
+    fields:
+      issuer: kestrel
+      title: ORDER FORM AND SUBSCRIPTION TERMS
+      subtitle: [Order Form No. KS-OF-2025-061 | KestrelWMS Cloud]
+      preamble: "This Order Form is entered into as of June 20, 2025 between Kestrel Systems, Inc. (\"Kestrel\") and Tidewell Distribution Group, LLC (\"Customer\") under Kestrel's Master Subscription Terms."
+      sections:
+        - heading: Implementation Services.
+          body:
+            - "Kestrel will configure KestrelWMS for Customer's Savannah, Jacksonville and Charleston warehouses, migrate item and location data, integrate with NetSuite and train Customer's staff."
+            - "One-time implementation fee: $64,000.00, invoiced in two milestones of $32,000.00 each: (1) on project kickoff and (2) on go-live. Implementation fees are non-recurring."
+        - heading: Subscription.
+          body:
+            - "Subscription fee: $5,400.00 per month, invoiced monthly in advance beginning with the month of go-live, for up to 45 named users and three sites, including hosting, upgrades and standard support."
+            - "The initial subscription term is 36 months from go-live and renews automatically for successive 12-month terms unless either party gives 60 days' notice of non-renewal."
+        - heading: Legacy System.
+          body: ["Customer expects to retire its StockPilot WMS license after a parallel-run period following go-live."]
+      signatures:
+        - {party: "KESTREL SYSTEMS, INC.", name: Owen Castell, title: Regional Vice President, signed: true, date: "June 20, 2025"}
+        - {party: "TIDEWELL DISTRIBUTION GROUP, LLC", name: Marcus Tillman, title: Chief Operating Officer, signed: true, date: "June 23, 2025"}
+
+  - id: kestrel_inv_10311
+    filename: 5.1.1 Kestrel Systems Invoice KS-10311.pdf
+    folder: 05 Technology
+    template: invoice
+    supports: [kestrel_impl_1]
+    key_phrases: ["Invoice No.: KS-10311", "Implementation milestone 1 of 2 - project kickoff & solution design"]
+    fields: &kestrel_invoice
+      issuer: kestrel
+      bill_to: [Accounts Payable, "Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      meta:
+        - [Invoice No., KS-10311]
+        - [Invoice Date, "July 8, 2025"]
+        - [Order Form, KS-OF-2025-061]
+        - [Terms, Net 30]
+      lines:
+        - {description: "Implementation milestone 1 of 2 - project kickoff & solution design", amount: 32000}
+      total_label: Amount Due
+      notes: ["One-time implementation fee per Order Form KS-OF-2025-061 ($64,000.00 total)."]
+
+  - id: kestrel_inv_10442
+    filename: 5.1.2 Kestrel Systems Invoice KS-10442.pdf
+    folder: 05 Technology
+    template: invoice
+    supports: [kestrel_impl_2]
+    key_phrases: ["Invoice No.: KS-10442", "Implementation milestone 2 of 2 - go-live", "Amount Due: $32,000.00"]
+    fields:
+      <<: *kestrel_invoice
+      meta:
+        - [Invoice No., KS-10442]
+        - [Invoice Date, "October 3, 2025"]
+        - [Order Form, KS-OF-2025-061]
+        - [Go-live date, "October 1, 2025"]
+        - [Terms, Net 30]
+      lines:
+        - {description: "Implementation milestone 2 of 2 - go-live", amount: 32000}
+
+  - id: kestrel_inv_sub_2511
+    filename: 5.1.3 Kestrel Systems Invoice KS-SUB-2511.pdf
+    folder: 05 Technology
+    template: invoice
+    supports: [kestrel_sub_202511]
+    key_phrases: ["Invoice No.: KS-SUB-2511", "KestrelWMS Cloud subscription - November 2025 (month 2 of 36)"]
+    fields:
+      <<: *kestrel_invoice
+      meta:
+        - [Invoice No., KS-SUB-2511]
+        - [Invoice Date, "November 5, 2025"]
+        - [Order Form, KS-OF-2025-061]
+        - [Service period, "November 1 - 30, 2025"]
+        - [Terms, Net 15]
+      lines:
+        - {description: "KestrelWMS Cloud subscription - November 2025 (month 2 of 36)", amount: 5400}
+      notes: ["Recurring monthly subscription per Order Form KS-OF-2025-061."]
+
+  - id: kestrel_statement
+    filename: 5.1.4 Kestrel Systems Customer Statement Dec 2025.pdf
+    folder: 05 Technology
+    template: form
+    key_phrases:
+      - "Unapplied cash - duplicate payment of invoice KS-10442"
+      - "Credit balance available: $32,000.00"
+    fields:
+      issuer: kestrel
+      title: Customer Account Statement
+      subtitle: ["Tidewell Distribution Group, LLC | Customer No. C-20931 | Statement date December 31, 2025"]
+      body:
+        - table:
+            columns: [{title: Date, width: 70}, {title: Document}, {title: Charges, align: right, width: 80}, {title: Payments, align: right, width: 80}]
+            rows:
+              - ["07/08/2025", "Invoice KS-10311 - implementation milestone 1", "32,000.00", ""]
+              - ["08/05/2025", "Payment - ACH (KS-10311)", "", "32,000.00"]
+              - ["10/03/2025", "Invoice KS-10442 - implementation milestone 2 (go-live)", "32,000.00", ""]
+              - ["10/05/2025", "Invoice KS-SUB-2510 - subscription Oct 2025", "5,400.00", ""]
+              - ["10/24/2025", "Payment - ACH (KS-10442)", "", "32,000.00"]
+              - ["10/31/2025", "Payment - ACH (KS-10442)", "", "32,000.00"]
+              - ["11/05/2025", "Invoice KS-SUB-2511 - subscription Nov 2025", "5,400.00", ""]
+              - ["12/05/2025", "Invoice KS-SUB-2512 - subscription Dec 2025", "5,400.00", ""]
+              - ["Oct-Dec 2025", "Payments - subscription invoices Oct-Dec 2025", "", "16,200.00"]
+        - "Unapplied cash - duplicate payment of invoice KS-10442 received 10/31/2025. Invoice KS-10442 was billed once."
+        - "Credit balance available: $32,000.00. Please advise whether to refund or apply the credit to future subscription invoices."
+
+  # --- 06 Operations & Facilities (Refs 7, 8, 11, 13) --------------------------------------------
+  - id: cer_invoice
+    filename: 6.1 Coastal Empire Restoration Invoice CER-25-3318.pdf
+    folder: 06 Operations and Facilities
+    template: invoice
+    supports: [sprinkler_mitigation]
+    key_phrases: ["Invoice No.: CER-25-3318", "Insurance claim: Palmetto State Mutual PSM-25-40718", "Total Due: $38,500.00"]
+    fields:
+      issuer: coastal_empire
+      bill_to: ["Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      meta:
+        - [Invoice No., CER-25-3318]
+        - [Invoice Date, "August 22, 2025"]
+        - [Loss, "Fire sprinkler branch line break, August 11, 2025"]
+        - [Insurance claim, Palmetto State Mutual PSM-25-40718]
+      lines:
+        - {description: Emergency water extraction - warehouse aisles 4-9 and break room, amount: 12400}
+        - {description: "Structural drying - dehumidifiers & air movers (6 days)", amount: 9850}
+        - {description: Wet ceiling tile and insulation removal; debris haul-off, amount: 6750}
+        - {description: Antimicrobial treatment, amount: 4100}
+        - {description: "Contents handling - restack and rewrap wet pallets", amount: 5400}
+      total_label: Total Due
+
+  - id: lrs_invoice
+    filename: 6.1.1 Lowcountry Rack Invoice LRS-7742.pdf
+    folder: 06 Operations and Facilities
+    template: invoice
+    supports: [sprinkler_racking]
+    key_phrases: ["Invoice No.: LRS-7742", "Total Due: $33,500.00"]
+    fields:
+      issuer: lowcountry_rack
+      bill_to: ["Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      meta:
+        - [Invoice No., LRS-7742]
+        - [Invoice Date, "September 19, 2025"]
+        - [Job, "Savannah DC - water-damaged racking, aisles 4-9"]
+      lines:
+        - {description: Rack inspection and engineer's load report, amount: 4200}
+        - {description: "Replacement uprights (12) and beams (40) - materials", amount: 17800}
+        - {description: "Labor - teardown, replacement and re-anchoring to seismic spec", amount: 11500}
+      total_label: Total Due
+
+  - id: sprinkler_estimate_email
+    filename: 6.1.2 Controller Email - Sprinkler Event Amount for Adj EBITDA.eml
+    folder: 06 Operations and Facilities
+    template: email
+    key_phrases: ["plus an estimate of $28,000", "has not been invoiced or booked"]
+    fields:
+      from: Jamal Whitaker <jwhitaker@tidewelldist.example>
+      to: Nadia Pruitt <npruitt@tidewelldist.example>
+      date: Tue, 16 Dec 2025 11:48:20 -0500
+      subject: Sprinkler event - number for the adjusted EBITDA schedule
+      body: |
+        Nadia,
+
+        For the sprinkler break I carried $100,000 on the adjusted EBITDA schedule: $72,000 invoiced (Coastal Empire $38,500 and Lowcountry Rack $33,500, both in 6220) plus an estimate of $28,000 for the break room ceiling and drywall. The $28,000 has not been invoiced or booked - Marcus is still getting quotes.
+
+        The Palmetto State claim is still open. No word yet on what they will pay.
+
+        Jamal
+
+  - id: psm_claim_letter
+    filename: 6.1.3 Palmetto State Mutual Claim Payment Letter PSM-25-40718.pdf
+    folder: 06 Operations and Facilities
+    template: letter
+    supports: [sprinkler_recovery]
+    key_phrases: ["Claim No. PSM-25-40718", "Net claim payment", "This payment closes the claim."]
+    fields:
+      issuer: palmetto_state
+      date: "April 30, 2026"
+      to: [Ms. Nadia Pruitt, "Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      re: [Claim No. PSM-25-40718, Policy CPP-5530914, "Date of loss: August 11, 2025 (sprinkler line break)"]
+      salutation: "Dear Ms. Pruitt:"
+      body:
+        - "We have completed our adjustment of the above claim. Our settlement is summarized below."
+        - table:
+            columns: [{title: Item}, {title: Amount, align: right, width: 100}]
+            rows:
+              - ["Water mitigation - Coastal Empire Restoration (CER-25-3318)", "38,500.00"]
+              - ["Racking repair - Lowcountry Rack & Storage (LRS-7742)", "33,500.00"]
+              - [Total loss submitted, "72,000.00"]
+              - ["Less: upgrade to seismic anchoring not covered (betterment)", "(17,000.00)"]
+              - ["Less: policy deductible", "(25,000.00)"]
+            total: [Net claim payment, "30,000.00"]
+        - "Payment of $30,000.00 will be made by electronic funds transfer within ten business days. This payment closes the claim."
+      closing: Sincerely,
+      signatures:
+        - {name: Lauren Poston, title: "Commercial Property Claims Specialist, Palmetto State Mutual Insurance Co.", signed: true}
+
+  - id: facilities_email
+    filename: 6.1.4 Facilities Email - Break Room Ceiling Repaired In-House.eml
+    folder: 06 Operations and Facilities
+    template: email
+    key_phrases: ["No contractor was used and there is no invoice coming"]
+    fields:
+      from: Marcus Tillman <mtillman@tidewelldist.example>
+      to: Jamal Whitaker <jwhitaker@tidewelldist.example>
+      date: Mon, 18 May 2026 07:52:11 -0400
+      subject: "RE: Break room ceiling - any invoice coming?"
+      body: |
+        Jamal - the break room ceiling and drywall were repaired by our own maintenance tech in March with tile and board we had in stock. No contractor was used and there is no invoice coming, so you can drop the $28K estimate.
+
+        Marcus
+
+  - id: pfas_memo
+    filename: 6.2 Inventory Write-off Memo - PFAS-Treated Molded Fiber Dec 2025.pdf
+    folder: 06 Operations and Facilities
+    template: memo
+    supports: [pfas_writeoff]
+    key_phrases:
+      - "Total write-off: $148,600.00"
+      - "all remaining molded-fiber SKUs are certified PFAS-free"
+      - "not part of this write-off"
+    fields:
+      issuer: tidewell
+      to: "Wade A. Carrow, CEO; Nadia Pruitt, CFO"
+      from: "Jamal Whitaker, Controller; S. Kaminski, Operations Manager"
+      date: "January 8, 2026"
+      re: "Write-off of PFAS-treated molded fiber inventory - December 31, 2025"
+      body:
+        - "Our three largest foodservice customers (Coastal Kitchen Co., Island Grill Franchise Group and Lowcountry Hospitality Group) require PFAS-free molded fiber from January 1, 2026. Greenleaf Molded Fiber discontinued its fluorotreated line on November 30, 2025 and will not accept returns. We found no other buyer for the remaining stock, and it was hauled for disposal on January 6, 2026."
+        - table:
+            columns: [{title: SKU}, {title: Cases, align: right, width: 55}, {title: Unit cost, align: right, width: 70}, {title: Extended, align: right, width: 85}]
+            rows:
+              - ["MF-99C 9x9 clamshell (fluorotreated)", "1,240", "38.50", "47,740.00"]
+              - ["MF-66H 6x6 hinged container (fluorotreated)", "980", "31.20", "30,576.00"]
+              - ["MF-12B 12 oz bowl (fluorotreated)", "1,450", "22.40", "32,480.00"]
+              - ["MF-24B 24 oz bowl (fluorotreated)", "820", "27.90", "22,878.00"]
+              - ["MF-103P 10 in 3-compartment plate (fluorotreated)", "439", "34.00", "14,926.00"]
+            total: ["Total write-off", "4,929", "", "148,600.00"]
+        - "Total write-off: $148,600.00, recorded to 5300 Inventory Adjustments & Write-offs on December 31, 2025."
+        - "Following the transition, all remaining molded-fiber SKUs are certified PFAS-free. Routine cycle count adjustments (about $3,000 a month) and the annual physical count adjustment ($8,940 at March 31, 2025) are not part of this write-off."
+
+  - id: greenleaf_letter
+    filename: 6.2.1 Greenleaf Molded Fiber Letter - Discontinued Line.pdf
+    folder: 06 Operations and Facilities
+    template: letter
+    key_phrases: ["discontinue all fluorotreated molded fiber products", "unable to accept returns"]
+    fields:
+      issuer: greenleaf
+      date: "October 15, 2025"
+      to: [Purchasing Department, "Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      re: [Discontinuation of fluorotreated molded fiber products]
+      salutation: "Dear Valued Distributor Partner:"
+      body:
+        - "Greenleaf Molded Fiber will discontinue all fluorotreated molded fiber products on November 30, 2025, as our customers move to PFAS-free packaging. Our PFAS-free replacement line is available now at the prices in the enclosed schedule."
+        - "Because the discontinued products cannot be resold into our channels, we are unable to accept returns of fluorotreated inventory held by distributors, and no return credits will be issued."
+      closing: Sincerely,
+      signatures:
+        - {name: Victor Sandoval, title: "Director of Distributor Sales, Greenleaf Molded Fiber", signed: true}
+
+  - id: disposal_cert
+    filename: 6.2.2 Certificate of Disposal - Chatham Waste & Recycling Jan 2026.pdf
+    folder: 06 Operations and Facilities
+    template: form
+    key_phrases: ["4,929 cases of molded fiber foodservice containers", "No salvage value"]
+    fields:
+      title: CERTIFICATE OF DISPOSAL
+      subtitle: [Chatham Waste & Recycling | 1400 Dean Forest Road, Savannah, GA 31408]
+      meta:
+        - [Generator, "Tidewell Distribution Group, LLC - 410 Grange Road, Pooler, GA"]
+        - [Pickup date, "January 6, 2026"]
+        - [Material, "4,929 cases of molded fiber foodservice containers (fluorotreated)"]
+        - [Disposition, Landfill - non-hazardous commercial waste]
+        - [Charges, "Included in existing roll-off service agreement; no additional charge"]
+      body:
+        - "No salvage value. We certify that the material described above was received and disposed of in accordance with applicable regulations."
+        - kv:
+            - [Signed, "/s/ Darnell Hughes, Site Supervisor"]
+
+  - id: altamaha_invoice
+    filename: 6.3 Altamaha Freight Lines Invoice AFL-TU-25-118.pdf
+    folder: 06 Operations and Facilities
+    template: invoice
+    supports: [altamaha_trueup]
+    key_phrases: ["Invoice No.: AFL-TU-25-118", "Service period: April 1, 2025 – September 30, 2025", "Total Due: $38,400.00"]
+    fields:
+      issuer: altamaha
+      title: FREIGHT BILL ADJUSTMENT
+      bill_to: [Freight Payables, "Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      meta:
+        - [Invoice No., AFL-TU-25-118]
+        - [Invoice Date, "November 14, 2025"]
+        - [Service period, "April 1, 2025 – September 30, 2025"]
+        - [Customer No., TDG-0442]
+      intro:
+        - "One-time reconciliation: from April through September 2025 our billing system applied a superseded fuel surcharge table to Tidewell shipments. This bill recovers the difference by month of shipment. The corrected table has been applied to every freight bill since October 1, 2025."
+      lines:
+        - {description: "Fuel surcharge & accessorial correction - April 2025 shipments", amount: 6400}
+        - {description: "Fuel surcharge & accessorial correction - May 2025 shipments", amount: 6400}
+        - {description: "Fuel surcharge & accessorial correction - June 2025 shipments", amount: 6400}
+        - {description: "Fuel surcharge & accessorial correction - July 2025 shipments", amount: 6400}
+        - {description: "Fuel surcharge & accessorial correction - August 2025 shipments", amount: 6400}
+        - {description: "Fuel surcharge & accessorial correction - September 2025 shipments", amount: 6400}
+      total_label: Total Due
+
+  - id: ridgeline_el
+    filename: 6.4 Ridgeline Engagement Letter - Distribution Network Study.pdf
+    folder: 06 Operations and Facilities
+    template: letter
+    key_phrases: ["fixed fee of $84,000", "three phases", "Phase 3 - final recommendations: $30,000"]
+    fields:
+      issuer: ridgeline
+      date: "September 22, 2025"
+      to: [Mr. Marcus Tillman, Chief Operating Officer, "Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      re: [Distribution network study - Savannah / Jacksonville / Charleston]
+      salutation: "Dear Marcus:"
+      body:
+        - "Ridgeline will assess Tidewell's three-site distribution network and recommend the future footprint, including whether to consolidate branch inventory into the Savannah DC. The study is a single project delivered in three phases:"
+        - {bullets: ["Phase 1 - data collection and baseline cost-to-serve: $30,000", "Phase 2 - scenario modeling: $24,000", "Phase 3 - final recommendations: $30,000"]}
+        - "Our fixed fee of $84,000 is billed on completion of each phase. Travel is included. The engagement ends on delivery of the Phase 3 report; any implementation support would be a separate engagement."
+      closing: Regards,
+      signatures:
+        - {party: "RIDGELINE SUPPLY CHAIN PARTNERS, LLC", name: Hannah Okafor, title: Managing Director, signed: true}
+      countersign:
+        heading: "ACCEPTED:"
+        signatures:
+          - {party: "TIDEWELL DISTRIBUTION GROUP, LLC", name: Marcus Tillman, title: Chief Operating Officer, signed: true, date: "September 24, 2025"}
+
+  - id: ridgeline_inv_1
+    filename: 6.4.1 Ridgeline Invoice RSC-2291.pdf
+    folder: 06 Operations and Facilities
+    template: invoice
+    supports: [ridgeline_1]
+    key_phrases: ["Invoice No.: RSC-2291", "Phase 1 - data collection and baseline cost-to-serve"]
+    fields: &ridgeline_invoice
+      issuer: ridgeline
+      bill_to: [Attn. Marcus Tillman, "Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      meta:
+        - [Invoice No., RSC-2291]
+        - [Invoice Date, "October 10, 2025"]
+        - [Project, Distribution network study]
+      lines:
+        - {description: "Phase 1 - data collection and baseline cost-to-serve", amount: 30000}
+      total_label: Amount Due
+
+  - id: ridgeline_inv_2
+    filename: 6.4.2 Ridgeline Invoice RSC-2344.pdf
+    folder: 06 Operations and Facilities
+    template: invoice
+    supports: [ridgeline_2]
+    key_phrases: ["Invoice No.: RSC-2344", "Phase 2 - scenario modeling"]
+    fields:
+      <<: *ridgeline_invoice
+      meta:
+        - [Invoice No., RSC-2344]
+        - [Invoice Date, "December 12, 2025"]
+        - [Project, Distribution network study]
+      lines:
+        - {description: "Phase 2 - scenario modeling", amount: 24000}
+
+  - id: ridgeline_inv_3
+    filename: 6.4.3 Ridgeline Invoice RSC-2403.pdf
+    folder: 06 Operations and Facilities
+    template: invoice
+    supports: [ridgeline_3]
+    key_phrases: ["Invoice No.: RSC-2403", "Phase 3 - final recommendations (report delivered February 13, 2026)", "Amount Due: $30,000.00"]
+    fields:
+      <<: *ridgeline_invoice
+      meta:
+        - [Invoice No., RSC-2403]
+        - [Invoice Date, "February 20, 2026"]
+        - [Project, Distribution network study]
+      lines:
+        - {description: "Phase 3 - final recommendations (report delivered February 13, 2026)", amount: 30000}
+      notes: ["Final invoice. Project complete."]
+
+  # --- 07 Financing (Refs 14, 15) -----------------------------------------------------------------
+  - id: marlowe_el
+    filename: 7.1 Marlowe Capital Advisors Engagement Letter - Debt Placement.pdf
+    folder: 07 Financing
+    template: letter
+    key_phrases: ["1.0% of the total committed amount", "payable only on closing of the new facilities"]
+    fields:
+      issuer: marlowe
+      date: "November 3, 2025"
+      to: [Ms. Nadia Pruitt, Chief Financial Officer, "Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      re: [Placement of senior credit facilities]
+      salutation: "Dear Nadia:"
+      body:
+        - "Marlowe Capital Advisors will act as exclusive debt advisor to Tidewell Distribution Group, LLC in arranging new senior credit facilities to refinance the Company's Ogeechee National Bank term loan and revolving line of credit."
+        - "Our placement fee is 1.0% of the total committed amount of the new facilities, payable only on closing of the new facilities. There is no retainer. The engagement ends at closing."
+      closing: Sincerely,
+      signatures:
+        - {party: "MARLOWE CAPITAL ADVISORS, LLC", name: Julian Marlowe, title: Managing Partner, signed: true}
+      countersign:
+        heading: "AGREED:"
+        signatures:
+          - {party: "TIDEWELL DISTRIBUTION GROUP, LLC", name: Nadia Pruitt, title: Chief Financial Officer, signed: true, date: "November 4, 2025"}
+
+  - id: marlowe_inv
+    filename: 7.1.1 Marlowe Capital Advisors Invoice MCA-2026-004.pdf
+    folder: 07 Financing
+    template: invoice
+    supports: [marlowe_fee]
+    key_phrases: ["Invoice No.: MCA-2026-004", "Total Due: $42,000.00"]
+    fields:
+      issuer: marlowe
+      bill_to: [Attn. Nadia Pruitt, "Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      meta:
+        - [Invoice No., MCA-2026-004]
+        - [Invoice Date, "January 16, 2026"]
+        - [Transaction, "Coastal Trust Bank - $3,200,000 term loan and $1,000,000 revolving credit facility (closed January 15, 2026)"]
+      lines:
+        - {description: "Placement fee - 1.0% x $4,200,000 committed facilities", amount: 42000}
+      total_label: Total Due
+
+  - id: ogeechee_payoff
+    filename: 7.2 Ogeechee National Bank Payoff Letter - Term Loan.pdf
+    folder: 07 Financing
+    template: letter
+    supports: [ogeechee_prepay]
+    key_phrases: ["Prepayment premium (2.00% of principal prepaid)", "Loan No. 7730-1186"]
+    fields:
+      issuer: ogeechee
+      date: "January 26, 2026"
+      to: [Ms. Nadia Pruitt, Chief Financial Officer, "Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      re: ["Payoff statement - Term Loan, Loan No. 7730-1186", "Payoff date: January 30, 2026"]
+      salutation: "Dear Ms. Pruitt:"
+      body:
+        - "The amounts required to repay the above loan in full on January 30, 2026 are:"
+        - table:
+            columns: [{title: Item}, {title: Amount, align: right, width: 110}]
+            rows:
+              - [Principal balance, "925,000.00"]
+              - ["Accrued interest, January 1-29, 2026", "4,284.55"]
+              - [Prepayment premium (2.00% of principal prepaid), "18,500.00"]
+              - [Lien release and UCC termination fees, "150.00"]
+            total: [Total payoff, "947,934.55"]
+        - "The prepayment premium applies under Section 2.7 of the Term Loan Agreement because the loan is repaid in its third loan year. The revolving line of credit will be closed on the same date. Interest after January 29 accrues at $147.74 per day (5.75% on a 360-day basis)."
+      closing: Sincerely,
+      signatures:
+        - {name: Patricia Dwyer, title: "Vice President, Loan Operations, Ogeechee National Bank", signed: true}
+
+  - id: dic_schedule
+    filename: 7.3 Debt Issuance Cost Amortization Schedule - Ogeechee Term Loan.pdf
+    folder: 07 Financing
+    template: form
+    supports: [dic_writeoff]
+    key_phrases: ["Unamortized balance written off to 8100 Interest Expense: $27,600.00"]
+    fields:
+      issuer: tidewell
+      title: Debt Issuance Costs - Ogeechee National Bank Term Loan
+      subtitle: ["Prepared by the Controller | January 31, 2026"]
+      meta:
+        - [Costs capitalized (February 2023), "$69,000.00 (lender fees and legal)"]
+        - [Amortization, "60 months straight-line, $1,150.00 per month to 8100 Interest Expense"]
+      body:
+        - table:
+            columns: [{title: Period}, {title: Amortization, align: right, width: 100}, {title: Unamortized balance, align: right, width: 120}]
+            rows:
+              - ["At February 1, 2023", "", "69,000.00"]
+              - [February 2023 - March 2024 (14 months), "16,100.00", "52,900.00"]
+              - [April 2024 - March 2025 (12 months), "13,800.00", "39,100.00"]
+              - [April 2025 - January 2026 (10 months), "11,500.00", "27,600.00"]
+        - "Unamortized balance written off to 8100 Interest Expense: $27,600.00 on January 31, 2026, on repayment of the loan."
+
+  # --- 08 Transaction (Ref 16) ---------------------------------------------------------------------
+  - id: cordell_el
+    filename: 8.1 Cordell Harbor Partners Engagement Letter - Project Marlin.pdf
+    folder: 08 Transaction
+    template: letter
+    key_phrases: ["one-time retainer of $35,000, payable upon signing and fully creditable against the Success Fee", "Project Marlin"]
+    fields:
+      issuer: cordell
+      date: "October 27, 2025"
+      to: [Mr. Wade A. Carrow, Chief Executive Officer, "Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      re: [Exclusive sell-side financial advisor - Project Marlin]
+      salutation: "Dear Wade:"
+      body:
+        - "This letter confirms that Cordell Harbor Partners, LLC will act as exclusive financial advisor to Tidewell Distribution Group, LLC and its Members in connection with a sale of the Company (Project Marlin)."
+        - heading: Compensation
+        - "(a) A one-time retainer of $35,000, payable upon signing and fully creditable against the Success Fee."
+        - "(b) A Success Fee of 3.0% of Transaction Value, payable at closing."
+        - "(c) Reimbursement of reasonable expenses, not to exceed $20,000 without the Company's consent."
+        - heading: Term
+        - "Twelve months from the date of this letter, terminable by either party on thirty days' notice; the Success Fee tail runs twelve months after termination."
+      closing: Very truly yours,
+      signatures:
+        - {party: "CORDELL HARBOR PARTNERS, LLC", name: Carter Lyle, title: Managing Director, signed: true}
+      countersign:
+        heading: "AGREED AND ACCEPTED:"
+        signatures:
+          - {party: "TIDEWELL DISTRIBUTION GROUP, LLC", name: Wade A. Carrow, title: Chief Executive Officer, signed: true, date: "October 29, 2025"}
+
+  - id: cordell_inv
+    filename: 8.1.1 Cordell Harbor Partners Invoice CHP-1125-07.pdf
+    folder: 08 Transaction
+    template: invoice
+    supports: [cordell_retainer]
+    key_phrases: ["Invoice No.: CHP-1125-07", "Total Due: $35,000.00"]
+    fields:
+      issuer: cordell
+      bill_to: [Attn. Wade A. Carrow, "Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      meta:
+        - [Invoice No., CHP-1125-07]
+        - [Invoice Date, "November 20, 2025"]
+        - [Engagement, Project Marlin - sell-side advisory]
+      lines:
+        - {description: "Retainer per engagement letter dated October 27, 2025 (creditable against Success Fee)", amount: 35000}
+      total_label: Total Due
+
+  - id: whitlock_el
+    filename: 8.2 Whitlock Rowe Engagement Letter - Sell-Side Quality of Earnings.pdf
+    folder: 08 Transaction
+    template: letter
+    key_phrases: ["fixed fee of $60,000, billed in two installments of $30,000", "This engagement relates solely to Project Marlin"]
+    fields:
+      issuer: whitlock
+      date: "November 24, 2025"
+      to: [Ms. Nadia Pruitt, Chief Financial Officer, "Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      re: [Sell-side quality of earnings - Project Marlin]
+      salutation: "Dear Nadia:"
+      body:
+        - "Whitlock & Rowe LLP will perform a sell-side quality of earnings analysis of Tidewell Distribution Group, LLC for the fiscal years ended March 31, 2025 and 2026 and the trailing twelve months, and will deliver a report for use in Project Marlin."
+        - "Our fee is a fixed fee of $60,000, billed in two installments of $30,000: on commencement and on delivery of the report. This engagement relates solely to Project Marlin and does not include audit, review or tax services, which remain with the Company's accountants."
+      closing: Sincerely,
+      signatures:
+        - {party: WHITLOCK & ROWE LLP, name: "Simone Rowe, CPA", title: Partner, signed: true}
+      countersign:
+        heading: "ACCEPTED:"
+        signatures:
+          - {party: "TIDEWELL DISTRIBUTION GROUP, LLC", name: Nadia Pruitt, title: Chief Financial Officer, signed: true, date: "November 25, 2025"}
+
+  - id: whitlock_inv_1
+    filename: 8.2.1 Whitlock Rowe Invoice WR-25-3381.pdf
+    folder: 08 Transaction
+    template: invoice
+    supports: [whitlock_qoe_1]
+    key_phrases: ["Invoice No.: WR-25-3381", "installment 1 of 2"]
+    fields: &whitlock_invoice
+      issuer: whitlock
+      bill_to: [Attn. Nadia Pruitt, "Tidewell Distribution Group, LLC", 410 Grange Road, "Pooler, GA 31322"]
+      meta:
+        - [Invoice No., WR-25-3381]
+        - [Invoice Date, "December 18, 2025"]
+        - [Engagement, Project Marlin - sell-side quality of earnings]
+      lines:
+        - {description: "Sell-side quality of earnings - fixed fee installment 1 of 2 (commencement)", amount: 30000}
+      total_label: Amount Due
+
+  - id: whitlock_inv_2
+    filename: 8.2.2 Whitlock Rowe Invoice WR-26-0412.pdf
+    folder: 08 Transaction
+    template: invoice
+    supports: [whitlock_qoe_2]
+    key_phrases: ["Invoice No.: WR-26-0412", "installment 2 of 2"]
+    fields:
+      <<: *whitlock_invoice
+      meta:
+        - [Invoice No., WR-26-0412]
+        - [Invoice Date, "February 26, 2026"]
+        - [Engagement, Project Marlin - sell-side quality of earnings]
+      lines:
+        - {description: "Sell-side quality of earnings - fixed fee installment 2 of 2 (report delivered)", amount: 30000}
+
+# ---------------------------------------------------------------------------
+# Management's monthly P&L (NetSuite income statement layout)
+# ---------------------------------------------------------------------------
+monthly_pl:
+  sheet_name: Income Statement
+  title: Income Statement - Monthly Trend
+  month_format: date
+  basis_line: "Accrual basis | Management P&L incl. top-side entries | SYNTHETIC — generated for QoE Evidence Review testing"
+  sections:
+    - {role: income, name: Income, types: [Income]}
+    - {role: cogs, name: Cost Of Sales, types: [Cost of Goods Sold]}
+    - {role: expenses, name: Operating Expense, types: [Expense]}
+    - {role: other_income, name: Other Income, types: [Other Income]}
+    - {role: other_expenses, name: Other Expense, types: [Other Expense]}
+
+# ---------------------------------------------------------------------------
+# Management's adjusted EBITDA schedule. Reported EBITDA comes from management's
+# P&L (basis: pl), so the Aug-24 accounts missing from the GL export and the MIP
+# top-side flow into it. The total-adjustments row stops short of ref 16.
+# ---------------------------------------------------------------------------
+schedule:
+  sheet_name: Adj. EBITDA
+  title_rows:
+    - Adjusted EBITDA - Management Presentation (Project Marlin)
+    - "USD; fiscal years ended March 31, 2025 and 2026 and trailing twelve months ended June 30, 2026 (unaudited)"
+    - SYNTHETIC — generated for QoE Evidence Review testing
+  columns: {ref: "#", title: Item, category: Type, description: Management commentary, accounts: GL Accounts, support: Data room ref}
+  labels:
+    net_income: Net income
+    interest: Interest expense, net
+    taxes: State income taxes (PTET)
+    depreciation_amortization: Depreciation & amortization
+    reported_ebitda: EBITDA, as reported
+    total_adjustments: Total adjustments
+    adjusted_ebitda: Adjusted EBITDA
+  basis: pl
+  total_excludes: ["16"]
+  arithmetic_note: >-
+    Management's SUM range for the total row ends at ref 15; ref 16 (sale-process fees, added last) is listed
+    but not totaled, so the printed total and adjusted EBITDA are understated by 95,000 in FY2026 and TTM.
+  adjustments:
+    - ref: "1"
+      title: Owner compensation normalization
+      category: Normalization
+      description: "W. Carrow's salary ($900,000 a year) normalized to the $360,000 total target cash in his executed post-close employment agreement, benchmarked to market by Holloway Compensation Advisors."
+      accounts: "6050"
+      support: VDR 2.1, 2.2
+      amounts: {FY2025: 540000, FY2026: 540000, TTM Jun-26: 540000}
+    - ref: "2"
+      title: Related-party rent - Savannah DC
+      category: Normalization (related party)
+      description: "The Savannah DC is leased from Pooler Industrial Holdings, an entity owned by W. Carrow, at $24,000 a month. Rent is above market; normalized to a market rent of $20,000 a month."
+      accounts: "6200"
+      support: VDR 2.3, 2.4
+      amounts: {FY2025: 48000, FY2026: 48000, TTM Jun-26: 48000}
+    - ref: "3"
+      title: Family office shared services
+      category: Owner / related party
+      description: "Accounting, HR and IT support provided to the Company by Carrow Family Holdings (owner family office). Management estimate of $5,000 a month; the support ends at closing."
+      accounts: ""
+      support: Mgmt estimate
+      amounts: {FY2025: 60000, FY2026: 60000, TTM Jun-26: 60000}
+    - ref: "4"
+      title: Charleston order desk eliminated
+      category: Pro forma
+      description: "Three Charleston order desk positions eliminated January 30, 2026 after orders moved to the B2B portal and Savannah customer service. Savings = TTM payroll of the positions (Jul-25 to Jan-26); no backfill."
+      accounts: "6030"
+      support: VDR 3.1; 3.1.4; 3.1.5
+      amounts: {FY2025: 0, FY2026: 0, TTM Jun-26: 88230.18}
+      claim_keys: ["chs_order_desk/2025-0[7-9]/*", "chs_order_desk/2025-1*", "chs_order_desk/2026-01/*"]
+      claim_periods: [TTM Jun-26]
+    - ref: "5"
+      title: Purchasing Manager position eliminated
+      category: Pro forma
+      description: "Purchasing Manager retired December 31, 2025; buying moved to KestrelWMS auto-replenishment and branch managers. Savings for Jul-Dec 2025 at the $96,000 salary."
+      accounts: "6040"
+      support: VDR 3.2; 3.2.1
+      amounts: {FY2025: 0, FY2026: 0, TTM Jun-26: 48000}
+    - ref: "6"
+      title: Transaction bonuses - Project Marlin
+      category: Non-recurring
+      description: "One-time LOI payments to four executives under the Project Marlin Transaction Bonus Plan."
+      accounts: "6040"
+      support: VDR 3.3
+      amounts: {FY2025: 0, FY2026: 90000, TTM Jun-26: 90000}
+      claim_keys: [txn_bonus]
+    - ref: "7"
+      title: Sprinkler line break - Savannah DC
+      category: Non-recurring
+      description: "Water mitigation, racking repairs and ceiling/drywall repairs after the August 2025 sprinkler line break. Non-recurring casualty event."
+      accounts: "6220"
+      support: VDR 6.1; 6.1.1; 6.1.2
+      amounts: {FY2025: 0, FY2026: 100000, TTM Jun-26: 100000}
+    - ref: "8"
+      title: PFAS molded fiber inventory write-off
+      category: Non-recurring
+      description: "Write-off of fluorotreated molded fiber stock made unsaleable by customers' PFAS-free requirements; the supplier discontinued the line and refused returns."
+      accounts: "5300"
+      support: VDR 6.2; 6.2.1; 6.2.2
+      amounts: {FY2025: 0, FY2026: 148600, TTM Jun-26: 148600}
+      claim_keys: [pfas_writeoff]
+    - ref: "9"
+      title: Brightfield arbitration legal fees
+      category: Non-recurring
+      description: "Brannock & Vail fees defending the Brightfield Converting arbitration (Matter 2025-014). Claim denied September 2025; matter closed."
+      accounts: "6400"
+      support: VDR 4.2; 4.2.1; 4.2.2; 4.2.3; 4.2.4
+      amounts: {FY2025: 0, FY2026: 51000, TTM Jun-26: 34200}
+      claim_keys: ["bv_arb_*"]
+    - ref: "10"
+      title: KestrelWMS implementation
+      category: Non-recurring
+      description: "One-time cost of implementing the KestrelWMS warehouse management system (Kestrel Systems), which went live October 2025."
+      accounts: "6600"
+      support: VDR 5.1; 5.1.1; 5.1.2
+      amounts: {FY2025: 0, FY2026: 128400, TTM Jun-26: 144600}
+      claim_keys: ["kestrel_*"]
+    - ref: "11"
+      title: Distribution network study
+      category: Non-recurring
+      description: "Ridgeline Supply Chain Partners study of the Savannah / Jacksonville / Charleston footprint. One-time strategic project."
+      accounts: "6420"
+      support: VDR 6.4; 6.4.1; 6.4.2; 6.4.3
+      amounts: {FY2025: 0, FY2026: 54000, TTM Jun-26: 54000}
+      claim_keys: [ridgeline_1, ridgeline_2]
+    - ref: "12"
+      title: Sunmeadow termination settlement
+      category: Non-recurring
+      description: "One-time settlement with Sunmeadow Brands on early termination of the exclusive distribution agreement (November 2025)."
+      accounts: "8000"
+      support: VDR 4.3
+      amounts: {FY2025: 0, FY2026: 46500, TTM Jun-26: 46500}
+    - ref: "13"
+      title: Prior-period freight true-up
+      category: Out-of-period
+      description: "Altamaha Freight Lines fuel surcharge true-up billed November 2025 for shipments made April-September 2025. Relates to prior periods; removed."
+      accounts: "5400"
+      support: VDR 6.3
+      amounts: {FY2025: 0, FY2026: 38400, TTM Jun-26: 38400}
+      claim_keys: [altamaha_trueup]
+    - ref: "14"
+      title: Refinancing costs
+      category: Non-recurring
+      description: "Costs of the January 2026 refinancing of the Ogeechee National Bank facilities with Coastal Trust Bank: Marlowe placement fee and write-off of unamortized debt issuance costs."
+      accounts: 6400, 8100
+      support: VDR 7.1; 7.1.1; 7.3
+      amounts: {FY2025: 0, FY2026: 69600, TTM Jun-26: 69600}
+      claim_keys: [marlowe_fee, dic_writeoff]
+    - ref: "15"
+      title: Loss on extinguishment - prepayment premium
+      category: Non-recurring
+      description: "Prepayment premium paid to Ogeechee National Bank on early repayment of the term loan (January 2026)."
+      accounts: "8200"
+      support: VDR 7.2
+      amounts: {FY2025: 0, FY2026: 18500, TTM Jun-26: 18500}
+      claim_keys: [ogeechee_prepay]
+    - ref: "16"
+      title: Sale-process professional fees
+      category: Non-recurring
+      description: "Project Marlin sell-side costs: Cordell Harbor Partners retainer and Whitlock & Rowe sell-side quality of earnings."
+      accounts: 6400, 6410
+      support: VDR 8.1; 8.2
+      amounts: {FY2025: 0, FY2026: 95000, TTM Jun-26: 95000}
+      claim_keys: [cordell_retainer, "whitlock_qoe_*"]
+
+# ---------------------------------------------------------------------------
+# Answer key. Keys and globs resolve to GL source rows. Non-REQUEST_INFO amounts
+# are verified against the GL: supporting rows + recoveries - period moves
+# - normalized level - restored missing-month activity.
+# ---------------------------------------------------------------------------
+ground_truth:
+  authored_by: QoE Evidence Review build team - dev deal 2 answer key (independent of the engine); see docs/deal_notes/tidewell_distribution_author_notes.md
+  notes: >-
+    SYNTHETIC. Fiscal years end March 31; FY2026 and TTM Jun-26 overlap in Jul 2025 - Mar 2026. supporting_gl_rows
+    are the GL rows behind the diligence amount (for the normalizations, the actual cost the benchmark level is
+    netted against); related_gl_rows are rows a good review surfaces that do not support the amount (unclaimed
+    same-vendor retainers, duplicate postings, subscription months, recoveries, routine same-account entries).
+    supporting_docs support the amount carried; related_docs are context or evidence against the claim. Flags
+    that must not fire are recorded in reviewer_note. Amounts are EBITDA-signed. ADEQUATE items: refs 1, 4, 6, 8,
+    9, 15, 16 (7 of 16). Expected totals (FY2025 / FY2026 / TTM Jun-26): claims 648,000.00 / 1,488,000.00 /
+    1,623,630.18 (management's printed total omits ref 16: 648,000.00 / 1,393,000.00 / 1,528,630.18); management
+    finals 480,000.00 / 1,098,600.00 / 1,202,430.18; pending (ref 3) 60,000 in each period; diligence items D-1
+    0 / 32,000 / 32,000, D-2 0 / -186,000 / 0, D-3 -363,586.47 / 0 / 0.
+  adjustments:
+    - adj_id: "1"
+      case_type: ADEQUATE
+      treatment: ACCEPT
+      amounts: {FY2025: 540000, FY2026: 540000, TTM Jun-26: 540000}
+      supporting: ["owner_pay_*"]
+      normalized_level: {monthly: 30000}
+      supporting_docs: [carrow_ea, holloway_benchmark]
+      question_topics:
+        - Employer payroll tax effect of the salary reduction (Medicare on the $540,000; not claimed)
+        - Any other owner compensation, perquisites or family members on payroll outside 6050
+        - Confirmation that the executed agreement is the one the buyer will sign at closing, with no side arrangements
+      reviewer_note: >-
+        Normalization positive control. Must not fire: UNSIGNED_OR_DRAFT_SUPPORT, NORMALIZATION_BENCHMARK_MISSING,
+        RECURRING_PATTERN. The agreement is executed and acknowledged by the buyer (effective at closing) and the
+        benchmark was commissioned by the buyer from an independent consultant. Unclaimed seller upside: employer
+        Medicare 1.45% x 540,000 = 7,830 per period (Social Security is capped below both salaries); not carried
+        because management did not claim it.
+      rationale: >-
+        W. Carrow's salary is $900.0k a year (24 semi-monthly payrolls of $37.5k in 6050) in every period. The
+        executed post-close employment agreement (signed 5/18/26 by the Company and the Executive, acknowledged by
+        Saltmarsh) sets a $300.0k base and a 20% target bonus, total target cash of $360.0k, with no perquisites.
+        Holloway's independent benchmark, engaged by the buyer, puts the peer median at $358.0k of total target cash,
+        so $360.0k is a market level. $900.0k less $360.0k is $540.0k per period, as claimed. Accept.
+
+    - adj_id: "2"
+      case_type: CONTRADICTED
+      treatment: REVISE
+      amounts: {FY2025: -60000, FY2026: -60000, TTM Jun-26: -60000}
+      supporting: ["pih_rent_*"]
+      related: ["prop_tax/*"]
+      normalized_level: {monthly: 29000}
+      supporting_docs: [pih_lease, bov]
+      expected_flags: [CONTRADICTORY_EVIDENCE]
+      question_topics:
+        - Terms of the post-close lease with Pooler Industrial Holdings (rent, escalations, term)
+        - Basis for management's $20,000 a month market rent
+        - Landlord costs the Company pays under the NNN lease (property taxes, insurance, roof and structure)
+        - Other related-party arrangements with the Carrow family
+      reviewer_note: >-
+        Normalization whose sign flips. Must not fire: NORMALIZATION_BENCHMARK_MISSING (a signed independent broker
+        opinion exists), UNSIGNED_OR_DRAFT_SUPPORT, RECURRING_PATTERN. SIGN_ERROR is not the right code: the GL rows
+        are ordinary rent debits and the direction change comes from the benchmark. A post-close lease at $7.25/SF
+        with 3% escalations raises run-rate rent further in later years (buyer model).
+      rationale: >-
+        Tidewell pays $24.0k a month ($288.0k a year; $6.00/SF NNN, flat since 2019) to Pooler Industrial Holdings,
+        which the CEO controls. Management adds back $48.0k, saying the rent is above a $20.0k market level, but
+        gives no support for that level. The only benchmark in the data room is Marsh Point's signed opinion
+        (2/10/26; four 2024-25 Pooler comparables at $6.95-7.60/SF): market rent is $7.25/SF NNN, $348.0k a year,
+        and the letter states the contract rent is below market. The Company already pays the property taxes, so
+        the NNN basis is like for like. Normalizing to market reduces EBITDA: $288.0k less $348.0k = -$60.0k per
+        period. Revised from +$48.0k to -$60.0k.
+
+    - adj_id: "3"
+      case_type: NEEDS_INFO
+      treatment: REQUEST_INFO
+      expected_flags: [NO_GL_SUPPORT]
+      ambiguity: medium
+      question_topics:
+        - Where the $60,000 of family-office support is recorded in the GL, if anywhere
+        - Whether Carrow Family Holdings invoices or is reimbursed by the Company (management fee, expense reports)
+        - Nature and hours of the accounting, HR and IT support provided
+        - Standalone cost to replace the services after closing (a negative adjustment if they are provided free)
+      reviewer_note: >-
+        Pre-registered alternative: REJECT 0 / 0 / 0 (nothing in the GL to add back). If the family office provides
+        the services free of charge, a standalone-cost adjustment would reduce EBITDA; that is a buyer diligence
+        item, not management's add-back. Must not fire: RECURRING_PATTERN. There is no document to link;
+        NO_DOCUMENT_SUPPORT on the claimed set is acceptable as INFO.
+      rationale: >-
+        Management adds back $60.0k a year (its estimate of $5.0k a month) for accounting, HR and IT support from
+        Carrow Family Holdings, the owner's family office. There is no GL activity with Carrow Family Holdings in
+        any account and no invoice, agreement or management-fee entry; the schedule cites a management estimate
+        only. An add-back needs a cost inside EBITDA. Pending until management shows where the cost is recorded;
+        provisional supported amount 0 / 0 / 0. If the family office provides the services without charge, the
+        adjustment runs the other way as a standalone cost.
+
+    - adj_id: "4"
+      case_type: ADEQUATE
+      treatment: ACCEPT
+      amounts: {FY2025: 0, FY2026: 0, TTM Jun-26: 88230.18}
+      supporting: ["chs_order_desk/2025-0[7-9]/*", "chs_order_desk/2025-1*", "chs_order_desk/2026-01/*"]
+      related: [chs_severance]
+      verify_periods: [TTM Jun-26]
+      supporting_docs: [rif_memo, sep_alvarez, sep_brooks, sep_nguyen, chs_register, coo_email_desk]
+      question_topics:
+        - Employer payroll taxes and benefits on the eliminated wages (not claimed)
+        - Whether Savannah customer service overtime or headcount rose after the transfer
+        - The February 2026 severance ($11,850), a separate one-time cost management did not claim
+        - B2B portal adoption and service levels for Charleston customers
+      reviewer_note: >-
+        Realized pro forma positive control. Must not fire: PRO_FORMA_NOT_REALIZED (separation agreements signed,
+        payroll stops after the 1/30/26 run, COO confirms no backfill), RECURRING_PATTERN, EXCESS_GL_ACTIVITY. The
+        Feb-26 severance in 6030 is not part of the run-rate savings; folding it in as an unclaimed same-event entry
+        would be wrong. Unclaimed upside: employer taxes on the wages (about 7.65% x 88,230 = 6,750). Savannah
+        customer service payroll shows no step-up after February.
+      rationale: >-
+        Realized headcount reduction. The three Charleston order desk roles were eliminated 1/30/26 (HR memo;
+        separation agreements signed 2/2-2/4/26; COO email confirms no backfill after orders moved to the B2B portal
+        and the Savannah team). The cost center's payroll in 6030 stops after the 1/30/26 run. The $88,230.18 claim
+        equals the fourteen order desk payrolls from Jul-25 to Jan-26 in the GL, which agree to the payroll register
+        extract. Accept for TTM; management correctly claims nothing in FY2025 or FY2026.
+
+    - adj_id: "5"
+      case_type: PARTIAL
+      treatment: REVISE
+      amounts: {FY2025: 0, FY2026: 0, TTM Jun-26: 43200}
+      supporting: ["purch_pay_20250[7-9]_*", "purch_pay_20251[0-2]_*"]
+      verify_periods: [TTM Jun-26]
+      supporting_docs: [bell_separation]
+      related_docs: [census, cfo_calc_email]
+      expected_flags: [PARTIAL_GL_SUPPORT]
+      question_topics:
+        - Why the 2026 census salary was used instead of the payroll actually paid
+        - Added workload or overtime for branch managers who took over buying (replacement cost)
+        - Status of KestrelWMS automated replenishment
+      reviewer_note: >-
+        Contract-salary variant of the realized pro forma. Must not fire: PRO_FORMA_NOT_REALIZED (retirement
+        agreement signed; payroll stops after the 12/31/25 run). The census $96,000 is a 2026 merit rate that was
+        never paid; carry GL actual. Unclaimed upside: employer taxes on $43,200.
+      rationale: >-
+        The Purchasing Manager retired 12/31/25 and the role is eliminated (agreement signed 12/5/25; the Purchasing
+        payroll line in 6040 stops after the 12/31/25 run). Management priced the savings at the December census
+        2026 salary: $96.0k x 6/12 = $48.0k. That rate never took effect. The agreement states his current base of
+        $86.4k, and the GL shows twelve semi-monthly payrolls of $3.6k from Jul to Dec-25, $43.2k. Revised to GL
+        actual.
+
+    - adj_id: "6"
+      case_type: ADEQUATE
+      treatment: ACCEPT
+      amounts: {FY2025: 0, FY2026: 90000, TTM Jun-26: 90000}
+      supporting: [txn_bonus]
+      supporting_docs: [txn_bonus_plan]
+      related_docs: [mip_calc]
+      question_topics:
+        - Confirmation that the $170,000 of Closing Payments is funded by the selling Members at closing
+        - Employer payroll taxes on the LOI payments (not claimed)
+        - Changes to the participants' regular compensation after closing
+      reviewer_note: >-
+        Transaction-compensation positive control. Must not fire: RECURRING_PATTERN, CONTINUING_OBLIGATION. The
+        FY2026 MIP payout in 6040 (Jun-26, $186,000) is a separate annual plan (see D-2) and is not part of this item.
+      rationale: >-
+        The Project Marlin Transaction Bonus Plan (adopted 11/14/25 by the Members and the Board) pays four
+        executives one-time LOI Payments totaling $90.0k after the letter of intent (signed 3/4/26); the 3/13/26
+        payroll entry in 6040 ties. Closing Payments ($170.0k) are funded by the selling Members at closing and are
+        not in the GL. Transaction-related compensation; accept.
+
+    - adj_id: "7"
+      case_type: RECOVERY_OFFSET
+      treatment: REVISE
+      amounts: {FY2025: 0, FY2026: 72000, TTM Jun-26: 42000}
+      supporting: [sprinkler_mitigation, sprinkler_racking]
+      recoveries: [sprinkler_recovery]
+      supporting_docs: [cer_invoice, lrs_invoice, psm_claim_letter]
+      related_docs: [sprinkler_estimate_email, facilities_email]
+      expected_flags: [PARTIAL_GL_SUPPORT, OFFSETTING_RECOVERY]
+      question_topics:
+        - Support for the $28,000 estimate (never invoiced; repaired in-house)
+        - Deductible and betterment borne by the Company ($42,000) and whether any further recovery is expected
+        - Condition of the fire protection system and any capex still needed
+      reviewer_note: >-
+        Combines PARTIAL_GL_SUPPORT (an estimated accrual never booked) with a contra-expense recovery that lands in
+        TTM only. Must not fire: RECURRING_PATTERN (routine 6220 repairs are small and unrelated). The recovery is a
+        credit in 6220 in May-26: inside TTM, after FY2026. Accruing the recovery back to FY2026 as probable at
+        3/31/26 is not supported, because the claim was open and unquantified until the 4/30/26 letter.
+      rationale: >-
+        Sprinkler line break at the Savannah DC (8/11/25). Coastal Empire ($38.5k, Aug-25) and Lowcountry Rack
+        ($33.5k, Sep-25) are booked in 6220 and supported by invoices citing claim PSM-25-40718: $72.0k,
+        non-recurring. Management's $100.0k adds a $28.0k estimate for ceiling and drywall work that was never
+        invoiced or booked; the COO confirms the repair was done in-house with stock materials. Palmetto State paid
+        $30.0k in May-26 (letter 4/30/26), credited to 6220, and management did not net it. FY2026: $72.0k (the
+        credit falls after 3/31/26). TTM: $72.0k less the $30.0k recovery = $42.0k.
+
+    - adj_id: "8"
+      case_type: ADEQUATE
+      treatment: ACCEPT
+      amounts: {FY2025: 0, FY2026: 148600, TTM Jun-26: 148600}
+      supporting: [pfas_writeoff]
+      related: [phys_count_2025, phys_count_2026]
+      supporting_docs: [pfas_memo, greenleaf_letter, disposal_cert]
+      ambiguity: medium
+      question_topics:
+        - Other non-compliant or slow-moving SKUs still in inventory
+        - Customer PFAS requirements for other categories (future write-off risk)
+        - Inventory reserve policy and gross margin on the PFAS-free replacement line
+      reviewer_note: >-
+        False-reject trap: one large write-off among small routine entries in the same account. Must not fire:
+        RECURRING_PATTERN (cycle counts of about $3,200 a month and annual counts of $8,940 and $10,420 are below the
+        25% floor and a different theme), CONTRADICTORY_EVIDENCE. Pre-registered alternative (minority view): REJECT
+        as ordinary obsolescence risk of a distributor.
+      rationale: >-
+        Dec-25 write-off of $148.6k in 5300 for 4,929 cases of fluorotreated molded fiber (five SKUs; the memo
+        agrees to the GL). Three large customers required PFAS-free product from 1/1/26, Greenleaf discontinued the
+        line and refused returns (10/15/25 letter), and the stock went to landfill with no salvage (certificate
+        1/6/26). The memo states all remaining molded fiber SKUs are PFAS-free. Routine 5300 activity is small cycle
+        counts (about $3k a month) and annual count adjustments of $8.9k and $10.4k, which management correctly left
+        in EBITDA. A discrete product-transition loss; accept.
+
+    - adj_id: "9"
+      case_type: ADEQUATE
+      treatment: ACCEPT
+      amounts: {FY2025: 0, FY2026: 51000, TTM Jun-26: 34200}
+      supporting: [bv_arb_1, bv_arb_2, bv_arb_3]
+      related: ["bv_retainer_*"]
+      supporting_docs: [bv_arb_el, bv_inv_0611, bv_inv_0813, bv_inv_1015, arb_award]
+      related_docs: [bv_retainer_letter]
+      question_topics:
+        - Other supplier disputes or arbitration demands, open or threatened
+        - Any Brightfield-related fees billed after the award
+        - Post-close status of the Matter 100 general counsel fee
+      reviewer_note: >-
+        False-reject trap: a one-time matter from a firm that also bills an unclaimed retainer. Must not fire:
+        RECURRING_PATTERN, CONTINUING_OBLIGATION (the $3,500 a month Matter 100 fee 'continues month to month until
+        either party terminates it' but belongs to a different matter that management did not claim), OUT_OF_PERIOD
+        (each invoice bills services inside the same period labels as its booking month).
+      rationale: >-
+        Brannock & Vail Matter 2025-014 defended the Brightfield Converting arbitration (a $412k minimum-purchase
+        claim on an expired supply agreement) under a separate April 2025 engagement letter. Three invoices ($16.8k
+        Jun-25, $21.45k Aug-25, $12.75k Oct-25) total $51.0k in FY2026 and $34.2k in TTM (Aug and Oct). The final
+        award (9/24/25) denied all claims with each side bearing its own fees, and the last invoice closes the file.
+        The $3.5k monthly Matter 100 general counsel fee is ongoing and correctly left out. Accept.
+
+    - adj_id: "10"
+      case_type: CONTRADICTED
+      treatment: REVISE
+      amounts: {FY2025: 0, FY2026: 64000, TTM Jun-26: 64000}
+      supporting: [kestrel_impl_1, kestrel_impl_2]
+      related: ["kestrel_sub_*", kestrel_impl_2_dup]
+      supporting_docs: [kestrel_order_form, kestrel_inv_10311, kestrel_inv_10442]
+      related_docs: [kestrel_inv_sub_2511, kestrel_statement]
+      expected_flags: [CONTINUING_OBLIGATION, DUPLICATE_GL_ENTRY]
+      question_topics:
+        - Refund or application of the $32,000 duplicate payment of KS-10442
+        - Retirement date of StockPilot and the overlap of two WMS costs
+        - Accounting policy for implementation costs of cloud software (capitalize vs expense)
+      reviewer_note: >-
+        Mixed contract with a duplicate posting inside the claim. The duplicate second posting of KS-10442 is carried
+        by D-1, not here: this item keeps the first posting only, so nothing is counted twice. Must not fire:
+        RECURRING_PATTERN on the implementation milestones. The $5,400 monthly subscription (36-month term,
+        auto-renew) is a go-forward cost. Buyer note: the StockPilot overlap ($2,950 a month, Oct-Dec 2025) is a
+        possible further add-back management did not claim.
+      rationale: >-
+        The KestrelWMS order form (6/20/25) separates a one-time $64.0k implementation fee (milestones of $32.0k at
+        kickoff, Jul-25, and go-live, Oct-25) from a $5.4k monthly subscription that starts at go-live, runs 36
+        months and renews automatically. Management labeled all Kestrel activity one-time: $128.4k in FY2026 and
+        $144.6k in TTM, including six (FY2026) and nine (TTM) subscription months and a second posting of go-live
+        bill KS-10442. The subscription is the continuing cost of the new WMS and stays in EBITDA; the second
+        KS-10442 posting is a duplicate (see D-1). Revised to the implementation fee: $64.0k in FY2026 and TTM.
+
+    - adj_id: "11"
+      case_type: UNDERSTATED
+      treatment: REVISE
+      amounts: {FY2025: 0, FY2026: 84000, TTM Jun-26: 84000}
+      supporting: [ridgeline_1, ridgeline_2, ridgeline_3]
+      supporting_docs: [ridgeline_el, ridgeline_inv_1, ridgeline_inv_2, ridgeline_inv_3]
+      expected_flags: [EXCESS_GL_ACTIVITY]
+      question_topics:
+        - Why the phase 3 invoice was left out of the claim
+        - Costs or savings from implementing the network recommendations (pro forma)
+        - Any further Ridgeline work after the final report
+      reviewer_note: >-
+        Upward revision: carry the unclaimed invoice from the same engagement. Management's own support reference
+        cites the phase 3 invoice (VDR 6.4.3) and the letter fixes one $84,000 fee for one project. Must not fire:
+        RECURRING_PATTERN, PARTIAL_GL_SUPPORT. The routine SafePoint EHS quarterly audits in 6420 are a different
+        vendor and theme and must not be pulled in.
+      rationale: >-
+        Ridgeline's engagement letter (9/22/25) prices the distribution network study as one project at a fixed
+        $84.0k in three phases. All three phase invoices are in 6420: $30.0k Oct-25, $24.0k Dec-25 and $30.0k Feb-26
+        (final report delivered 2/13/26). Management claimed only the first two ($54.0k) although its support
+        reference cites the phase 3 invoice. The study is a one-time strategic project; the routine SafePoint EHS
+        audits in 6420 are correctly excluded. Revised up to $84.0k in FY2026 and TTM.
+
+    - adj_id: "12"
+      case_type: SIGN_ERROR
+      treatment: REVISE
+      amounts: {FY2025: 0, FY2026: -46500, TTM Jun-26: -46500}
+      supporting: [sunmeadow_termination_fee]
+      supporting_docs: [sunmeadow_termination]
+      expected_flags: [SIGN_ERROR]
+      question_topics:
+        - Sunmeadow revenue and gross margin lost after the 11/30/25 termination (buyer run-rate)
+        - Returns of remaining Sunmeadow inventory and any related credits
+        - Other supplier termination or exclusivity payments
+      reviewer_note: >-
+        Must not fire: RECURRING_PATTERN (small monthly recycling rebates in 8000 are unrelated). The fee is a gain
+        inside EBITDA (8000 Other Income); removing a one-time gain reduces EBITDA. The lost Sunmeadow line is a
+        separate buyer run-rate question.
+      rationale: >-
+        Sunmeadow paid a one-time $46.5k termination fee (agreement 10/28/25) to end Tidewell's exclusive
+        distribution agreement early; it was received 11/7/25 and credited to 8000 Other Income, which is inside
+        EBITDA. Management presents it as a +$46.5k add-back. Removing a non-recurring gain reduces EBITDA, so the
+        adjustment is -$46.5k in FY2026 and TTM. Revised to the negative amount.
+
+    - adj_id: "13"
+      case_type: OUT_OF_PERIOD
+      treatment: REVISE
+      amounts: {FY2025: 0, FY2026: 0, TTM Jun-26: 19200}
+      supporting: [altamaha_trueup]
+      period_moves:
+        - {keys: [altamaha_trueup], service_start: "2025-04", service_end: "2025-09"}
+      supporting_docs: [altamaha_invoice]
+      expected_flags: [OUT_OF_PERIOD]
+      question_topics:
+        - Whether the carrier has billed the corrected fuel surcharge table since October 2025 (run-rate freight)
+        - Other carrier true-ups or rebills
+        - Freight-out as a percentage of sales before and after the correction
+      reviewer_note: >-
+        Straddles the FY2026 / TTM overlap. Must not fire: RECURRING_PATTERN (routine Altamaha LTL bills in 5400 are
+        ordinary freight; this is the only true-up). FY2026 contains the booking month and all six service months,
+        so management's FY2026 claim is wrong in full; TTM keeps only the Apr-Jun 2025 half (3/6 x 38,400).
+      rationale: >-
+        Altamaha bill AFL-TU-25-118 ($38.4k, booked 11/14/25 in 5400) recovers fuel surcharge underbilled on
+        shipments from April to September 2025, $6.4k a month; it is a cost of those months. FY2026 contains both the
+        booking and all six service months, so there is no FY2026 adjustment. TTM (Jul-25 to Jun-26) contains the
+        booking but only three service months, so the $19.2k for Apr-Jun 2025 belongs before the TTM and is added
+        back. Revised FY2026 to 0 and TTM to $19.2k.
+
+    - adj_id: "14"
+      case_type: EBITDA_EXCLUDED
+      treatment: REVISE
+      amounts: {FY2025: 0, FY2026: 42000, TTM Jun-26: 42000}
+      supporting: [marlowe_fee]
+      related: [dic_writeoff]
+      supporting_docs: [marlowe_el, marlowe_inv]
+      related_docs: [dic_schedule]
+      expected_flags: [ALREADY_EXCLUDED_FROM_EBITDA]
+      question_topics:
+        - Other fees on the Coastal Trust facility and how they were recorded
+        - Whether the Coastal Trust facility will be repaid at closing
+        - Any other financing-related charges inside operating expenses
+      reviewer_note: >-
+        Partial ALREADY_EXCLUDED. Must not fire: OVERLAP_WITH_OTHER_ADJUSTMENT (ref 15's prepayment premium is a
+        different entry, in 8200). Management's interest expense line equals GL 8100 including the $27,600
+        write-off. The Marlowe fee is a debt placement cost expensed in 6400, inside EBITDA; under GAAP it would be
+        deferred and amortized into interest, so the add-back is appropriate.
+      rationale: >-
+        The Jan-26 refinancing claim combines Marlowe's $42.0k placement fee (1.0% of $4.2M of committed facilities,
+        6400) and the $27.6k write-off of unamortized Ogeechee debt issuance costs (8100). The write-off sits in
+        Interest Expense; management's interest line equals GL 8100 including it, so reported EBITDA already adds it
+        back and claiming it again double counts. The Marlowe fee is a financing cost inside operating expenses,
+        supported by the engagement letter and invoice. Revised to $42.0k in FY2026 and TTM.
+
+    - adj_id: "15"
+      case_type: ADEQUATE
+      treatment: ACCEPT
+      amounts: {FY2025: 0, FY2026: 18500, TTM Jun-26: 18500}
+      supporting: [ogeechee_prepay]
+      supporting_docs: [ogeechee_payoff]
+      question_topics:
+        - Prepayment terms of the Coastal Trust facility if it is repaid at closing
+        - Classification policy for financing costs
+      reviewer_note: >-
+        Contrast case to D1 M-07 and to ref 14. Must not fire: ALREADY_EXCLUDED_FROM_EBITDA (8200 Other Expense is
+        inside EBITDA), OVERLAP_WITH_OTHER_ADJUSTMENT.
+      rationale: >-
+        The $18.5k prepayment premium on the Ogeechee term loan (2.00% of the $925.0k principal prepaid in the third
+        loan year, per the 1/26/26 payoff letter) was paid 1/30/26 and booked to 8200 Other Expense, which is inside
+        EBITDA. It is a financing cost of the one-time refinancing. Accept.
+
+    - adj_id: "16"
+      case_type: ADEQUATE
+      treatment: ACCEPT
+      amounts: {FY2025: 0, FY2026: 95000, TTM Jun-26: 95000}
+      supporting: [cordell_retainer, whitlock_qoe_1, whitlock_qoe_2]
+      supporting_docs: [cordell_el, cordell_inv, whitlock_el, whitlock_inv_1, whitlock_inv_2]
+      question_topics:
+        - Success fee and other Project Marlin costs due at closing, and who bears them
+        - Sale-process legal fees incurred but not yet billed or recorded
+      reviewer_note: >-
+        False-reject trap: a one-time retainer creditable against a success fee plus two installments of one fixed
+        fee. Must not fire: CONTINUING_OBLIGATION, RECURRING_PATTERN (Pemberton Lyle's routine 6410 fees are a
+        different firm and unclaimed). This is the row management's total formula leaves out (see the
+        MGMT_SCHEDULE_ARITHMETIC data-quality entry); the adjustment itself is sound.
+      rationale: >-
+        Project Marlin sell-side costs: Cordell Harbor's one-time $35.0k retainer (6400, Nov-25; payable on signing
+        and creditable against the 3% success fee) and Whitlock & Rowe's sell-side quality of earnings, a $60.0k
+        fixed fee billed in two $30.0k installments (6410, Dec-25 and Feb-26). All tie to engagement letters and
+        invoices. Pemberton Lyle's quarterly and annual accounting fees in 6410 recur and are correctly left out.
+        Accept $95.0k in FY2026 and TTM.
+
+  diligence_items:
+    - adj_id: D-1
+      case_type: DUPLICATE_POSTING
+      treatment: REVISE
+      amounts: {FY2025: 0, FY2026: 32000, TTM Jun-26: 32000}
+      supporting: [kestrel_impl_2_dup]
+      related: [kestrel_impl_2]
+      supporting_docs: [kestrel_inv_10442, kestrel_statement]
+      expected_flags: [DUPLICATE_GL_ENTRY]
+      question_topics:
+        - Refund of the $32,000 unapplied credit or its application to later Kestrel invoices
+        - AP controls over bills received both by email and through vendor portals
+      reviewer_note: >-
+        Document-number duplicate group (SPEC 5.7). The extra posting sits inside ref 10's claim; ref 10's final
+        excludes it and this item carries it, so the add-back is counted once.
+      rationale: >-
+        Kestrel go-live bill KS-10442 ($32.0k) is posted twice in 6600 (10/3/25 and 10/9/25, same document number).
+        The invoice shows one $32.0k charge, and Kestrel's statement shows the second payment held as an unapplied
+        $32.0k credit. Reverse the second posting: +$32.0k in FY2026 and TTM.
+
+    - adj_id: D-2
+      case_type: SUPPORTED_TOPSIDE
+      treatment: REVISE
+      amounts: {FY2025: 0, FY2026: -186000, TTM Jun-26: 0}
+      supporting: [mip_payout]
+      period_moves:
+        - {keys: [mip_payout], service_start: "2026-03", service_end: "2026-03"}
+      supporting_docs: [mip_plan, mip_calc, mip_topside_email]
+      question_topics:
+        - FY2027 MIP targets and the run-rate bonus cost
+        - Whether FY2025 would have carried a bonus cost had the plan existed (buyer run-rate)
+      reviewer_note: >-
+        Supported management top-side (SPEC 5.7): it offsets the dil_recon reversal, so diligence EBITDA follows
+        accrual accounting (FY2026 = GL - 186,000; TTM = GL, which already holds the Jun-26 payment once).
+        RECON_VARIANCE fires on 6040 in 2026-03 (+186,000) and 2026-06 (-186,000). Not an add-back, and not part
+        of ref 6.
+      rationale: >-
+        Management's P&L accrues the FY2026 Management Incentive Plan ($186.0k) as a top-side in Mar-26 and reverses
+        it when paid in Jun-26; NetSuite records the bonus only when paid (6/12/26, 6040). The plan (adopted 4/8/25)
+        earns awards on the last day of the plan year (3/31/26), and the approved calculation (4/24/26) ties to the
+        payout. The accrual is a supported reporting difference, so keep it: FY2026 carries the cost (-$186.0k
+        against GL), TTM already carries it once through the Jun-26 payment (0), and FY2025 had no plan (0).
+
+    - adj_id: D-3
+      case_type: MISSING_GL_MONTH
+      treatment: REVISE
+      amounts: {FY2025: -363586.47, FY2026: 0, TTM Jun-26: 0}
+      restore_missing_months: ["2024-08"]
+      supporting_docs: [ns_export_email]
+      question_topics:
+        - Replacement GL detail export for August 2024
+        - Confirmation that the August 2024 P&L agrees to the NetSuite trial balance
+      reviewer_note: >-
+        Not a SPEC 5.7 v1 item type: it has no GL rows, because its rows are the ones missing from the export, so it
+        can only be scored on amount. A tool that reverses the August difference to the incomplete GL overstates
+        FY2025 EBITDA by the same amount. Only EBITDA accounts count; the missing 7000, 7050 and 8100 rows are below
+        EBITDA.
+      rationale: >-
+        The Aug-2024 GL batch was exported with the 16-account flash-report search (NetSuite administrator's email),
+        so 23 accounts with August activity are missing from the GL, while management's P&L, which agrees to the
+        trial balance, has them. Using the GL alone would drop a month of operating costs (benefits, payroll taxes,
+        commissions, insurance, fleet, IT and others) and overstate FY2025 EBITDA. Keep management's August amounts:
+        -$363.6k in FY2025, no effect on FY2026 or TTM. Request the replacement export to close the point.

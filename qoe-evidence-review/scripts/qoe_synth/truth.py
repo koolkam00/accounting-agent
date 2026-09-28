@@ -138,7 +138,10 @@ def build_ground_truth(
                     eff.restored[label] = eff.restored.get(label, ZERO) - total
                     computed[label] -= total
             if t.verify_amounts:
-                for l in labels:
+                unknown = set(t.verify_periods) - set(labels)
+                if unknown:
+                    raise GenerationError(f"{where}: verify_periods names unknown periods {sorted(unknown)}")
+                for l in t.verify_periods or labels:
                     if abs(computed[l] - declared[l]) > TOLERANCE:
                         raise GenerationError(
                             f"{where}: declared {l} amount {declared[l]} but the GL rows give {computed[l]}; "

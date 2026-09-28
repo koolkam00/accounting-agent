@@ -121,6 +121,11 @@ counterparty can set:
 - `memo`, which overrides the stream memo;
 - `num`, `seq_start`, and `seq_step`, its own document-number series.
 
+**`dimensions`** (NetSuite Subsidiary, Department, Class, Location) override `default_dimensions`.
+A list value picks one entry per row, which plants tagging noise such as a blank Department or a
+mis-tagged Class: `dimensions: {Department: [Sales, Sales, ""]}`. The picks come from their own RNG,
+so adding noise never changes amounts.
+
 **Numbers.** A counterparty's `num` format takes precedence. Otherwise the stream's
 `num: {format, sequence | start, step}` applies. A named `sequence` is shared with every
 other stream that uses it and increases in date order. Planted numbers are never reused.
@@ -176,7 +181,10 @@ data_quality:
 
 The answer key's `data_quality` entries are derived from these items:
 `DUPLICATE_GL_ENTRY`, `RECON_VARIANCE`, `MISSING_PERIOD`, and `MGMT_EBITDA_DIFFERS_FROM_GL`.
-The last is added automatically whenever management's reported EBITDA differs from the GL.
+The last is added automatically whenever management's reported EBITDA differs from the GL;
+`data_quality.mgmt_ebitda_note` replaces its default explanation. Top-side amounts may be negative
+(for example, reversing an accrual in the month it is paid).
+`MGMT_SCHEDULE_ARITHMETIC` is added when `schedule.total_excludes` is set (see below).
 The generator also rejects any duplicate group, by the SPEC §6 rule, that you did not plant.
 
 ## Documents
@@ -242,6 +250,9 @@ net income through reported EBITDA, the adjustments, the total, and adjusted EBI
   `basis: gl` uses the GL instead.
 - **`claim_keys`** checks a pass-through claim. The claimed amount in each of
   `claim_periods` (all periods by default) must equal the debit-positive sum of those rows.
+- **`total_excludes`** plants a schedule that does not foot: the listed refs are printed but left
+  out of the total-adjustments row (a SUM range that stops short), and adjusted EBITDA is built from
+  that total. `arithmetic_note` is appended to the answer key's `MGMT_SCHEDULE_ARITHMETIC` entry.
 
 ## Ground truth
 
@@ -277,6 +288,20 @@ amount[p] = Σ supporting rows in p (dp) + Σ recovery rows in p (dp) − Σ mov
 Here dp is the debit-positive amount. Removing an expense row adds back `+dp`, and removing
 an unadjusted gain adds `dp < 0`. Set `verify_amounts: false` only when an amount is a
 judgment that the GL cannot reproduce.
+
+Optional terms extend the rule:
+
+- **`normalized_level: {monthly, start?, end?}`** for normalizations: subtract `monthly` for each
+  month of the window (default `data_start..data_end`) inside the period. Owner pay of $75,000 a
+  month normalized to `monthly: 30000` gives 900,000 - 360,000 = 540,000 per 12-month period; a
+  benchmark above the cost gives a negative amount.
+- **`restore_missing_months: ["YYYY-MM"]`** keeps P&L activity that a planted missing GL month
+  dropped from the export: subtract the debit-positive total of those ledger rows (EBITDA
+  accounts only) from the period. Such an item has no GL rows of its own.
+- **`verify_periods: [label, ...]`** limits the GL tie-out to those periods, for a run-rate pro
+  forma presented in TTM only whose rows also fall in another period where the carried amount is 0.
+- **`related_docs`** lists document ids surfaced as context or evidence against the claim; they are
+  written to `ExpectedAdjustment.related_docs` as filenames.
 
 `gl_ebitda` is computed from the generated GL using SPEC §6, and `diligence_adjusted_ebitda`
 is `gl_ebitda` plus every non-REQUEST_INFO amount, including diligence items. You never type
