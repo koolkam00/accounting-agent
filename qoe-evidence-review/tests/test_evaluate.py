@@ -17,11 +17,13 @@ from typing import Any, Optional
 import pytest
 
 from qoe.evaluate import (
+    CASE_TYPES,
     aggregate,
     build_report,
     entry_row,
     load_ground_truth,
     match_diligence_items,
+    normalize_case_type,
     regression_cases,
     render_markdown,
     score,
@@ -32,6 +34,7 @@ from qoe.evaluate import (
 from qoe.schemas import (
     AdjustmentAssessment,
     AdjustmentCategory,
+    AdjustmentClaim,
     BridgeRow,
     CorrectionType,
     DataQualityCode,
@@ -47,7 +50,10 @@ from qoe.schemas import (
     FlagCode,
     GLLink,
     GroundTruth,
+    ManagementSchedule,
+    OpenQuestion,
     PeriodDef,
+    QuestionStatus,
     RecurrenceObservation,
     ReconciliationResult,
     ReviewDecision,
@@ -784,6 +790,162 @@ def test_request_info_handling():
     assert s2["amount_accuracy"]["den"] == 0
 
 
+# -- false accepts vs missed revisions (SPEC §9) -------------------------------
+
+
+def test_accept_on_understated_item_is_a_missed_revision_not_a_false_accept():
+    wp = _workpaper(
+        [
+            # Key revises upward (the claim is understated): accepting leaves EBITDA low, not high.
+            _assessment("U-1", Treatment.ACCEPT, {"FY2024": "0.00", "FY2025": "1000.00"}),
+            # Key rejects a negative claim: accepting it understates EBITDA too.
+            _assessment("U-2", Treatment.ACCEPT, {"FY2024": "0.00", "FY2025": "-500.00"}),
+            # Key revises down in one period only: accepting overstates that period.
+            _assessment("O-1", Treatment.ACCEPT, {"FY2024": "300.00", "FY2025": "1000.00"}),
+            # Within the 1.00 tolerance of the key: not an overstatement.
+            _assessment("U-3", Treatment.ACCEPT, {"FY2024": "0.00", "FY2025": "1000.90"}),
+            # The tool challenged it, so no ACCEPT error; its claim still puts it in the false-accept population.
+            _assessment("O-2", Treatment.REVISE, {"FY2024": "0.00", "FY2025": "600.00"},
+                        claimed={"FY2024": "0.00", "FY2025": "900.00"}),
+        ]
+    )
+    gt = _gt(
+        [
+            _expected("U-1", Treatment.REVISE, {"FY2024": "0.00", "FY2025": "1200.00"}, case_type="UNDERSTATED"),
+            _expected("U-2", Treatment.REJECT, {"FY2024": "0.00", "FY2025": "0.00"}, case_type="SIGN_ERROR"),
+            _expected("O-1", Treatment.REVISE, {"FY2024": "0.00", "FY2025": "1000.00"}, case_type="WRONG_PERIOD"),
+            _expected("U-3", Treatment.REVISE, {"FY2024": "0.00", "FY2025": "1000.00"}),
+            _expected("O-2", Treatment.REVISE, {"FY2024": "0.00", "FY2025": "600.00"}),
+        ]
+    )
+    s = score(wp, gt)
+    assert (s["false_accept_rate"]["num"], s["false_accept_rate"]["den"]) == (1, 2)
+    assert s["false_accept_rate"]["adj_ids"] == ["O-1"]
+    assert (s["missed_revisions"]["num"], s["missed_revisions"]["den"]) == (3, 3)
+    assert s["missed_revisions"]["adj_ids"] == ["U-1", "U-2", "U-3"]
+    o1, u1 = _row(s, "O-1"), _row(s, "U-1")
+    assert o1["verdict"] == "FALSE_ACCEPT" and o1["overstated_periods"] == ["FY2024"]
+    assert u1["verdict"] == "MISSED_REVISION" and u1["false_accept"] is False and u1["missed_revision"] is True
+    assert _row(s, "O-2")["accept_overstates"] is True and _row(s, "O-2")["verdict"] == "PASS"
+
+    o = aggregate([s])
+    assert o["missed_revisions"]["items"] == [{"deal_id": "toy_deal", "adj_id": a} for a in ("U-1", "U-2", "U-3")]
+    md = render_markdown(build_report("dev", [s], "rules"))
+    assert md.index("## 1. False accepts") < md.index("### Missed revisions (3 of 3") < md.index("## 3. Headline")
+    fa_section = md[md.index("## 1. False accepts"): md.index("## 2. Misses")]
+    assert "| toy_deal | O-1 |" in fa_section and "| toy_deal | U-1 |" not in fa_section
+    assert "| Missed revisions | 100.0% | 3/3 |" in md
+
+
+def test_false_accept_population_uses_the_schedule_claim_for_unassessed_items():
+    schedule = ManagementSchedule(
+        source_file="adjustments/schedule.xlsx",
+        period_labels=LABELS,
+        adjustments=[
+            AdjustmentClaim(adj_id="N-1", title="Understated", amounts={"FY2024": "0.00", "FY2025": "100.00"},
+                            source_row=5),
+        ],
+    )
+    wp = _workpaper([]).model_copy(update={"schedule": schedule})
+    gt = _gt(
+        [
+            _expected("N-1", Treatment.REVISE, {"FY2024": "0.00", "FY2025": "150.00"}),
+            # Not on the schedule and not assessed: the claim is unknown, so it is counted as overstating.
+            _expected("N-2", Treatment.REJECT, {"FY2024": "0.00", "FY2025": "0.00"}),
+        ]
+    )
+    s = score(wp, gt)
+    assert _row(s, "N-1")["accept_overstates"] is False and _row(s, "N-1")["claimed"]["FY2025"] == "100.00"
+    assert _row(s, "N-2")["accept_overstates"] is True
+    assert (s["false_accept_rate"]["den"], s["missed_revisions"]["den"]) == (1, 1)
+    assert _row(s, "N-1")["verdict"] == "NOT_ASSESSED"
+
+
+# -- supporting links: audit roles and out-of-period moves ---------------------
+
+
+def test_supporting_links_follow_audit_roles_and_count_out_of_period_moves():
+    moved = GLLink(entry_id="GL-R5", period="2025-03", amount="42000.00", score=4.0, supports_claim=False,
+                   role="moved", claimed=True)
+    dup_extra = GLLink(entry_id="GL-R6", period="2025-05", amount="100.00", score=3.0, supports_claim=False,
+                       role="removed", claimed=True, removed_by=FlagCode.DUPLICATE_GL_ENTRY)
+    carried = GLLink(entry_id="GL-R7", period="2025-06", amount="100.00", score=3.0, role="supporting", claimed=True)
+    context = GLLink(entry_id="GL-R8", period="2024-06", amount="100.00", score=3.0, role="context")
+    # No role recorded, the entry taken out of the supporting set, but the OUT_OF_PERIOD flag cites the claimed entry.
+    legacy_oop = GLLink(entry_id="GL-R9", period="2025-03", amount="10.00", score=4.0, supports_claim=False, claimed=True)
+    a = _assessment("A-1", Treatment.REVISE, {"FY2024": "-42000.00", "FY2025": "42000.00"},
+                    links=(moved, dup_extra, carried, context, legacy_oop),
+                    flags=(_flag(FlagCode.OUT_OF_PERIOD, (5, 9)), _flag(FlagCode.DUPLICATE_GL_ENTRY, (6, 7))))
+    assert supporting_entry_ids(a) == {"GL-R5", "GL-R7", "GL-R9"}
+    exp = _expected("A-1", Treatment.REVISE, {"FY2024": "-42000.00", "FY2025": "42000.00"}, supporting=(5, 7, 9))
+    gl = _row(score(_workpaper([a]), _gt([exp])), "A-1")["gl_links"]
+    assert (gl["precision"], gl["recall"]) == (1.0, 1.0)
+
+
+# -- case types (the ExpectedAdjustment.case_type vocabulary) ------------------
+
+
+def test_case_type_vocabulary_matches_the_schema_comment():
+    source = (ROOT / "qoe" / "schemas.py").read_text(encoding="utf-8")
+    line = next(ln for ln in source.splitlines() if ln.strip().startswith("case_type: str"))
+    assert tuple(t.strip() for t in line.split("#", 1)[1].split("|")) == CASE_TYPES
+    assert normalize_case_type(" recovery-offset ") == "RECOVERY_OFFSET"
+    assert normalize_case_type("") == "UNSPECIFIED"
+
+
+def test_by_case_type_lists_the_vocabulary_and_includes_diligence_items():
+    wp, gt = _with_diligence([_dup_item("D-1", 4465, 4464)], [_expected_dup()])
+    gt = gt.model_copy(update={"adjustments": [
+        gt.adjustments[0].model_copy(update={"case_type": "adequate"}),
+    ]})
+    gt = gt.model_copy(update={"diligence_items": [*gt.diligence_items, _expected_dup("D-2").model_copy(
+        update={"case_type": "Topside Accrual", "supporting_gl_rows": [9999], "related_gl_rows": []})]})
+    s = score(wp, gt)
+    by = s["by_case_type"]
+    assert list(by)[: len(CASE_TYPES)] == list(CASE_TYPES)
+    assert by["ADEQUATE"] == {"num": 1, "den": 1, "rate": 1.0}
+    assert by["DUPLICATE_POSTING"] == {"num": 1, "den": 1, "rate": 1.0}
+    assert by["MISSING_GL_MONTH"] == {"num": 0, "den": 0, "rate": None}
+    # Outside the vocabulary: still grouped (the missed item is wrong), and named.
+    assert by["TOPSIDE_ACCRUAL"] == {"num": 0, "den": 1, "rate": 0.0}
+    assert s["case_types_outside_vocabulary"] == ["TOPSIDE_ACCRUAL"]
+    o = aggregate([s])
+    assert o["by_case_type"]["DUPLICATE_POSTING"]["den"] == 1 and o["case_types_outside_vocabulary"] == ["TOPSIDE_ACCRUAL"]
+    md = render_markdown(build_report("dev", [s], "rules"))
+    assert "| MISSING_GL_MONTH | - | - |" in md
+    assert "| TOPSIDE_ACCRUAL (outside the vocabulary) | 0/1 | 0.0% |" in md
+    assert md.index("| ADEQUATE |") < md.index("| DUPLICATE_POSTING |") < md.index("| TOPSIDE_ACCRUAL")
+
+
+# -- diligence items with no GL rows (e.g. a documented GL-export gap) --------
+
+
+def _gap_item(adj_id: str, amounts: dict[str, str], links: tuple[GLLink, ...] = ()) -> AdjustmentAssessment:
+    a = _assessment(adj_id, Treatment.REVISE, amounts, claimed={"FY2024": "0.00", "FY2025": "0.00"}, links=links)
+    return a.model_copy(update={"source": "diligence", "title": f"Supported difference ({adj_id})"})
+
+
+def test_diligence_item_without_gl_rows_matches_on_the_same_nonzero_periods():
+    expected_gap = _expected("D-3", Treatment.REVISE, {"FY2024": "-363586.47", "FY2025": "0.00"},
+                             case_type="MISSING_GL_MONTH")
+    wrong_period = _gap_item("D-7", {"FY2024": "0.00", "FY2025": "-363586.47"})
+    with_links = _gap_item("D-8", {"FY2024": "-363586.47", "FY2025": "0.00"}, links=(_link(77, period="2024-08"),))
+    gap = _gap_item("D-9", {"FY2024": "-363000.00", "FY2025": "0.00"})
+    pairs = match_diligence_items([expected_gap], [wrong_period, with_links, gap])
+    assert pairs == [(0, 2, "period_labels")]
+    wp, gt = _with_diligence([wrong_period, with_links, gap], [expected_gap])
+    di = score(wp, gt)["diligence_item_accuracy"]
+    item = next(r for r in di["items"] if r["key_id"] == "D-3")
+    assert (item["tool_id"], item["match_basis"], item["verdict"]) == ("D-9", "period_labels", "WRONG_AMOUNT")
+    assert item["amount_diffs"]["FY2024"] == "586.47"
+    assert sorted(di["extra"]) == ["D-7", "D-8"]
+    # An item that has supporting rows in the key never matches on periods alone.
+    keyed = expected_gap.model_copy(update={"supporting_gl_rows": [500]})
+    assert match_diligence_items([keyed], [gap]) == []
+    md = render_markdown(build_report("dev", [score(wp, gt)], "rules"))
+    assert "| toy_deal | D-3 | D-9 | period labels |" in md
+
+
 def test_data_quality_recall():
     dq = score(*_mixed())["data_quality_recall"]
     # Duplicate matched on account + GL rows (issue has no month); variance month differs; EBITDA gap has no locator.
@@ -1110,28 +1272,47 @@ def test_run_script_exports_with_package_and_reports_recalc(tmp_path, monkeypatc
     monkeypatch.setattr("qoe.ingest.load_deal", lambda d: pkg)
     seen: dict[str, Any] = {}
 
-    def fake_apply(w: Workpaper, log: list[ReviewDecision], schedule=None) -> Workpaper:
+    def fake_apply(w: Workpaper, log: list[ReviewDecision], schedule=None, question_log=None) -> Workpaper:
         seen["schedule"] = schedule
+        seen["applied_questions"] = list(question_log or [])
         return w.model_copy(update={"reviews": list(log)})
 
-    def fake_export(w: Workpaper, path: Path, pkg=None) -> Path:
+    def fake_export(w: Workpaper, path: Path, pkg=None, question_log=None) -> Path:
         seen["pkg"] = pkg
+        seen["exported_questions"] = question_log
+        seen["xlsx"] = Path(path)
         Path(path).write_bytes(b"xlsx")
         return Path(path)
 
     recalc = {"status": "success", "total_errors": 0, "total_formulas": 321, "error_summary": {}}
+    checks: dict[str, Any] = {"Workbook checks": "OK", "EBITDA Bridge: ties": "OK",
+                              "Agreement to source data: schedule": "DIFFERENCE: see EBITDA Bridge"}
     monkeypatch.setattr("qoe.review_store.apply_reviews", fake_apply)
     monkeypatch.setattr("qoe.export_xlsx.export_workpaper", fake_export)
     monkeypatch.setattr("qoe.export_xlsx.recalc_and_check", lambda path, timeout=90: dict(recalc, path=str(path)))
+    monkeypatch.setattr("qoe.export_xlsx.workbook_check_status", lambda path: dict(checks))
     out = tmp_path / "wp"
     _write_log(out / "toy_deal" / "review_log.jsonl", decisions)
     script = _load_script("qoe_run")
     argv = ["--deal", str(deal), "--out", str(out), "--xlsx"]
     assert script.main(argv) == 0
     assert seen["pkg"] is pkg and seen["schedule"] is pkg.schedule
+    assert seen["applied_questions"] == [] and seen["exported_questions"] == []
+    assert seen["xlsx"] == out / "toy_deal" / "QoE_Evidence_Review_toy_deal.xlsx"
     printed = capsys.readouterr().out
     assert "Recalculated with LibreOffice: 321 formulas, 0 formula error(s)" in printed
+    assert "Workbook checks: OK" in printed
+    # Management's own arithmetic is reported, but it is not a workbook check and does not fail the run.
+    assert "Agreement to source data: schedule: DIFFERENCE: see EBITDA Bridge (not a workbook check)" in printed
     assert f"Review log applied: {out / 'toy_deal' / 'review_log.jsonl'} (6 decision(s))" in printed
+    assert "Question log applied" not in printed
+
+    # A difference in the Workbook checks fails the run and names the area.
+    checks.update({"Workbook checks": "DIFFERENCE: see checks", "EBITDA Bridge: ties": "DIFFERENCE"})
+    assert script.main(argv) == 1
+    printed = capsys.readouterr().out
+    assert "Workbook checks: DIFFERENCE: see checks" in printed and "  EBITDA Bridge: ties: DIFFERENCE" in printed
+    checks.update({"Workbook checks": "OK", "EBITDA Bridge: ties": "OK"})
 
     recalc.update(status="errors_found", total_errors=2,
                   error_summary={"#REF!": {"count": 2, "locations": ["EBITDA Bridge!C9", "Cover!B30"]}})
@@ -1148,6 +1329,69 @@ def test_run_script_exports_with_package_and_reports_recalc(tmp_path, monkeypatc
     assert script.main([*argv, "--no-recalc"]) == 0
     assert seen["pkg"] is None and seen["schedule"] is None
     assert "could not be reloaded" in capsys.readouterr().err
+
+
+def test_run_script_applies_a_question_log_on_its_own(tmp_path, monkeypatch, capsys):
+    wp, _ = _mixed()
+    wp = wp.model_copy(update={"assessments": [
+        a.model_copy(update={"open_questions": [OpenQuestion(q_id="Q-A-4-1", adj_id="A-4", text="Proof?")]})
+        if a.adj_id == "A-4" else a for a in wp.assessments]})
+    deal = tmp_path / "toy_deal"
+    deal.mkdir()
+    (deal / "deal.yaml").write_text("deal_id: toy_deal\n", encoding="utf-8")
+    _fake_engine(monkeypatch, wp, [])
+    monkeypatch.setattr("qoe.ingest.load_deal", lambda d: (_ for _ in ()).throw(ValueError("no package")))
+    from qoe.review_store import QuestionLogEntry, ReviewStore
+
+    out = tmp_path / "wp"
+    store = ReviewStore(out / "toy_deal" / "review_log.jsonl")
+    store.append_question(QuestionLogEntry(kind="update", q_id="Q-A-4-1", adj_id="A-4", reviewer="m.reyes",
+                                           timestamp="2026-02-01T00:00:00Z", status=QuestionStatus.ANSWERED,
+                                           response="Signed agreement received"))
+    assert not store.path.exists()  # only the question log has entries
+    script = _load_script("qoe_run")
+    assert script.main(["--deal", str(deal), "--out", str(out)]) == 0
+    saved = Workpaper.model_validate_json((out / "toy_deal" / "workpaper.json").read_text(encoding="utf-8"))
+    q = next(a for a in saved.assessments if a.adj_id == "A-4").open_questions[0]
+    assert (q.status, q.response) == (QuestionStatus.ANSWERED, "Signed agreement received")
+    assert saved.reviews == []  # a question update is not a decision
+    printed = capsys.readouterr().out
+    assert f"Question log applied: {out / 'toy_deal' / 'question_log.jsonl'} (1 entry)" in printed
+    assert "Review log applied" not in printed
+
+
+def test_run_script_never_uses_a_raw_deal_id_in_paths(tmp_path, monkeypatch, capsys):
+    script = _load_script("qoe_run")
+    # The engine's rule when it has one ...
+    engine = pytest.importorskip("qoe.engine")
+    if hasattr(engine, "deal_dir_name"):
+        assert script.deal_dir_name("../../etc/passwd") == engine.deal_dir_name("../../etc/passwd")
+    # ... and the local fallback otherwise: one safe component, never a path or '..'.
+    for raw, safe in (("../../etc", "_.._etc"), ("a/b c", "a_b_c"), (".hidden", "hidden"), ("toy_deal", "toy_deal")):
+        assert script._local_deal_dir_name(raw) == safe
+    with pytest.raises(ValueError):
+        script._local_deal_dir_name("../")
+    wp, _ = _mixed()
+    # model_copy skips validation: a workpaper whose deal id never went through DealMeta's pattern.
+    unsafe = wp.model_copy(update={"deal": wp.deal.model_copy(update={"deal_id": "../escape"})})
+    deal = tmp_path / "deal"
+    deal.mkdir()
+    (deal / "deal.yaml").write_text("deal_id: x\n", encoding="utf-8")
+    _fake_engine(monkeypatch, unsafe, [])
+    out = tmp_path / "out" / "wp"
+    seen: dict[str, Path] = {}
+
+    def fake_export(w, path, pkg=None, question_log=None):
+        seen["xlsx"] = Path(path)
+        return Path(path)
+
+    monkeypatch.setattr("qoe.ingest.load_deal", lambda d: None)
+    monkeypatch.setattr("qoe.export_xlsx.export_workpaper", fake_export)
+    # A review log under the raw id's path (outside the output root) must not be picked up.
+    _write_log(out.parent / "escape" / "review_log.jsonl", _review_fixture()[1])
+    assert script.main(["--deal", str(deal), "--out", str(out), "--xlsx", "--no-recalc"]) == 0
+    assert seen["xlsx"] == out / "_escape" / "QoE_Evidence_Review__escape.xlsx"
+    assert "Review log applied" not in capsys.readouterr().out
 
 
 def test_run_summary_lists_diligence_items_separately():

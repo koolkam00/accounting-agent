@@ -8,7 +8,7 @@ from typing import Iterable, Optional
 
 
 from qoe.ai_base import AdjustmentIntent
-from qoe.money import fmt
+from qoe.money import D, fmt
 from qoe.schemas import (
     Account,
     AdjustmentCategory,
@@ -39,7 +39,9 @@ from qoe.trace import (
     name_tokens,
     names_match,
     ref_tokens,
+    restates_account,
     support_ref_matches,
+    vouch_tick,
     theme_tokens,
     trace_adjustment,
 )
@@ -61,6 +63,7 @@ ACCOUNTS = {
         ("6300", "Software & IT", "Expense", EbitdaClass.OPEX),
         ("6400", "Legal Fees", "Expense", EbitdaClass.OPEX),
         ("6450", "Recruiting", "Expense", EbitdaClass.OPEX),
+        ("6950", "Bad Debt Expense", "Expense", EbitdaClass.OPEX),
         ("8000", "Other Income", "Other Income", EbitdaClass.OTHER_INCOME),
         ("1000", "Operating Cash", "Bank", EbitdaClass.BALANCE_SHEET),
     ]
@@ -456,7 +459,11 @@ def test_documents_link_by_support_ref_and_doc_number_and_count_as_documented():
     assert set(links["3.1 Pinecrest engagement letter.txt"].entry_ids) == set(inv + [undocumented])
     assert links["3.1 Pinecrest engagement letter.txt"].relation == "agreement"
     assert links["3.1 Pinecrest engagement letter.txt"].quotes[0].quote == "Fee of $30,000"
-    assert t.documented("FY2025") == Decimal("30000")
+    # (c) Documented counts entries vouched to their own document (the audit trail's D tick): the two
+    # invoices. Installment 3 has only the engagement letter, agreement-level support (A).
+    assert t.documented("FY2025") == Decimal("20000")
+    assert t.vouched(inv[0]) and t.vouched(inv[1]) and not t.vouched(undocumented)
+    assert t.support_docs(undocumented) == ["3.1 Pinecrest engagement letter.txt"]
     gl_links = {x.entry_id: x for x in t.gl_links()}
     assert "3.2 Pinecrest invoice PS-101.txt" in gl_links[inv[0]].doc_ids
     assert any("Doc # PS-101 appears in" in r for r in gl_links[inv[0]].reasons)
@@ -501,8 +508,9 @@ def test_documents_are_tied_only_to_the_entries_they_are_about():
     for e in retainer[12:24] + [adhoc]:
         assert by_entry[e].doc_ids == [], e
     assert set(by_entry[lit[0]].doc_ids) == {invoice.doc_id, letter.doc_id, schedule.doc_id}
-    # Documented is the portion of the claim with a document about the entry: the litigation only.
-    assert t.documented("FY2025") == Decimal("34000")
+    # Documented is the portion of the claim vouched to its own document: the one litigation bill whose
+    # invoice is in the data room. The letter and the schedule support the other two at agreement level only.
+    assert t.documented("FY2025") == Decimal("12000")
     # The party-name match stays visible as a document-level reason.
     assert any(r.startswith("Names Marlow & Finch") for r in letter.reasons)
 
@@ -588,3 +596,214 @@ def test_correspondence_citing_a_claimed_invoice_number_is_linked_to_it():
     (link,) = t.doc_link_models()
     assert link.doc_id == "6.2 Controller email.txt" and link.entry_ids == [e] and link.relation == "other"
     assert t.doc_links["6.2 Controller email.txt"].entry_basis[e] == "mention"
+
+
+# ---------------------------------------------------------------------------
+# Account-name keywords, vouching, claim membership (SPEC §5.2, §5.3)
+# ---------------------------------------------------------------------------
+
+
+def test_a_keyword_that_repeats_the_account_name_is_not_an_independent_signal():
+    assert restates_account("repairs", "Repairs & Maintenance - Facilities")
+    assert restates_account("write-off", "Inventory Adjustments & Write-offs")
+    assert not restates_account("sprinkler", "Repairs & Maintenance - Facilities")
+    assert not restates_account("recruiting", "Legal Fees")
+
+
+def test_only_the_accounts_own_words_or_their_stems_restate_it():
+    assert restates_account("repair", "Repairs & Maintenance")
+    assert not restates_account("rent", "Rental Income")
+    assert not restates_account("pro", "Professional Fees")
+
+
+def test_account_name_demotion_applies_per_account():
+    # A dedicated bad-debt account holds entries that only restate its name; the legal fees of the same claim
+    # link on the firm's name in another account. The bad debts are still the claim's entries.
+    gl = GL()
+    legal = gl.add("2025-04-10", "6400", 6000, "Marlow & Finch LLP", "Collection counsel - Halvor", "MF-1")
+    debts = [gl.add("2025-05-31", "6950", 18000, "", "Bad debt write-off - customer account"),
+             gl.add("2025-06-30", "6950", 7000, "", "Bad debt write-off - customer account")]
+    pkg = package(gl, [claim("A-1", "Customer bankruptcy", [0, 31000, 0], ["6400", "6950"])])
+    t = trace_one(pkg, intent("A-1", counterparties=["Marlow & Finch"], keywords=["bad debt"]))
+    assert set(t.claimed["FY2025"]) == {legal, *debts}
+    assert not t.echo_context
+
+
+def test_routine_entries_that_close_the_gap_are_raised_as_a_judgment():
+    # In the same account one write-off names the customer; two others only restate the account name. They are
+    # context, but they tie to the gap, so the reviewer is asked rather than the tool dropping them silently.
+    gl = GL()
+    named = gl.add("2025-05-31", "6950", 18000, "Halvor Builders", "Bad debt write-off - Halvor Builders")
+    rest = [gl.add("2025-06-30", "6950", 4000, "", "Bad debt write-off - customer account"),
+            gl.add("2025-07-31", "6950", 3000, "", "Bad debt write-off - customer account")]
+    pkg = package(gl, [claim("A-1", "Customer bankruptcies", [0, 25000, 0], ["6950"])])
+    t = trace_one(pkg, intent("A-1", counterparties=["Halvor Builders"], keywords=["bad debt"]))
+    assert t.claimed["FY2025"] == [named] and set(t.echo_context) == set(rest)
+    assert any(f.code == FlagCode.PARTIAL_GL_SUPPORT for f in t.flags)
+    assert any("only restates the account name" in j and "7,000" in j for j in t.judgments)
+
+
+def test_routine_account_activity_is_context_when_the_event_links_on_its_own():
+    gl = GL()
+    event = gl.add("2025-03-10", "6450", 15000, "Pinecrest Search Partners", "Executive recruiting - retained search", "PS-1")
+    routine = gl.monthly("2025-01", "2025-12", "6450", 900, "Jobly", "Recruiting - job board")
+    pkg = package(gl, [claim("A-1", "CFO search", [0, 15000, 0], ["6450"])])
+    t = trace_one(pkg, intent("A-1", counterparties=["Pinecrest Search"], keywords=["recruiting"]))
+    assert t.candidates == [event]
+    assert all(t.links[e].context and any("restates the account name" in r for r in t.links[e].reasons) for e in routine)
+    assert {x.entry_id: x.role for x in t.gl_links()}[routine[0]] == "context"
+
+
+def test_in_a_dedicated_account_the_account_name_match_is_all_the_evidence_there_is():
+    # Nothing links more specifically, so entries whose memo repeats the account name stay candidates.
+    gl = GL()
+    ids = [gl.add("2025-05-31", "6950", 18000, "", "Bad debt write-off - customer account"),
+           gl.add("2025-06-30", "6950", 7000, "", "Bad debt write-off - customer account")]
+    pkg = package(gl, [claim("A-1", "Bad debt write-offs", [0, 25000, 0], ["6950"])])
+    t = trace_one(pkg, intent("A-1", keywords=["bad debt"]))
+    assert t.candidates == ids and t.claimed["FY2025"] == ids
+
+
+def test_vouching_ticks_follow_the_audit_trail_rule():
+    e = GLEntry(entry_id="GL-R9", date="2025-05-15", period="2025-05", account="6450", account_name="Recruiting",
+                doc_number="PS-9", counterparty="Pinecrest Search Partners", memo="Search fee", amount="10000.00",
+                source_file="gl.csv", source_row=9)
+    tol = Decimal("1.00")
+    own = DocFacts(doc_id="a", doc_type="invoice", reference_numbers=["PS-9"])
+    letter = DocFacts(doc_id="b", doc_type="engagement_letter", counterparty="Pinecrest Search Partners")
+    other_bill = DocFacts(doc_id="c", doc_type="invoice", reference_numbers=["PS-3"], counterparty="Pinecrest Search Partners",
+                          amounts=[AmountFact(label="total_due", amount="10000", quote=quote("c", "Total due $10,000"))])
+    email = DocFacts(doc_id="d", doc_type="correspondence", reference_numbers=["PS-9"])
+    statement = DocFacts(doc_id="e", doc_type="other", counterparty="Pinecrest Search Partners", doc_date="2025-05-31",
+                         amounts=[AmountFact(label="line", amount="10000", quote=quote("e", "Charge $10,000"))])
+    assert vouch_tick(own, e, D("10000"), tol) == "D"
+    assert vouch_tick(letter, e, D("10000"), tol) == "A"
+    assert vouch_tick(other_bill, e, D("10000"), tol) == "S"
+    assert vouch_tick(email, e, D("10000"), tol) == "C"
+    assert vouch_tick(statement, e, D("10000"), tol) == "D"
+    assert vouch_tick(None, e, D("10000"), tol) == ""
+
+
+def test_an_erp_internal_number_does_not_stop_an_entry_vouching_to_its_own_bill():
+    # NetSuite, Sage or Xero exports often carry the ERP's own transaction number, not the vendor's invoice
+    # number. The vendor's invoice for the same amount, party and month still vouches the entry.
+    def entry(num: str, party: str = "Acme Supply Co") -> GLEntry:
+        return GLEntry(entry_id="GL-R9", date="2025-05-15", period="2025-05", account="6450", account_name="Recruiting",
+                       doc_number=num, counterparty=party, memo="Supplies", amount="4200.00", source_file="gl.csv",
+                       source_row=9)
+
+    bill = DocFacts(doc_id="a", doc_type="invoice", reference_numbers=["INV-88213"], counterparty="Acme Supply Co",
+                    doc_date="2025-05-10", amounts=[AmountFact(label="total_due", amount="4200", quote=quote("a", "Total $4,200"))])
+    tol = Decimal("1.00")
+    for internal in ("BILL00421", "VENDBILL-1532", ""):
+        assert vouch_tick(bill, entry(internal), D("4200"), tol) == "D", internal
+    # A number from the same scheme is another invoice of the vendor: a sample, not this entry's bill.
+    assert vouch_tick(bill, entry("INV-88214"), D("4200"), tol) == "S"
+    # So is a document whose own number another GL entry carries.
+    assert vouch_tick(bill, entry("BILL00421"), D("4200"), tol, gl_numbers=frozenset({"INV88213"})) == "S"
+    # Legal-form words of other jurisdictions do not identify the party.
+    other = bill.model_copy(update={"counterparty": "Acme Supply Pty Limited"})
+    assert vouch_tick(other, entry("BILL00421", "Acme Supply GmbH"), D("4200"), tol) == "D"
+
+
+def test_gl_links_record_the_periods_whose_claim_includes_each_entry():
+    gl = GL()
+    ids = [gl.add("2025-03-10", "6400", 12000, "Marlow & Finch LLP", "Matter 7710 litigation", "MF-1"),
+           gl.add("2025-09-10", "6400", 8000, "Marlow & Finch LLP", "Matter 7710 litigation", "MF-2")]
+    pkg = package(gl, [claim("A-1", "Litigation", [0, 20000, 8000], ["6400"])])
+    t = trace_one(pkg, intent("A-1", counterparties=["Marlow & Finch"]))
+    links = {x.entry_id: x for x in t.gl_links()}
+    assert links[ids[0]].claimed_in == ["FY2025"]
+    assert links[ids[1]].claimed_in == ["FY2025", "TTM Jun-26"]
+
+
+def test_a_letter_for_another_matter_of_the_same_firm_is_not_the_claims_agreement():
+    gl, lit, retainer, adhoc, *_ = _legal_deal()
+    texts = {"4.5 Marlow Finch engagement letter (Matter 3002).txt": "General corporate counsel under Matter 3002."}
+    facts = [DocFacts(doc_id="4.5 Marlow Finch engagement letter (Matter 3002).txt", doc_type="engagement_letter",
+                      counterparty="Marlow & Finch LLP", reference_numbers=["3002"])]
+    pkg = package(gl, [claim("A-1", "Litigation", [0, 34000, 8000], ["6400"], refs=["DR 4"])],
+                  [doc(k, v) for k, v in texts.items()])
+    t = trace_one(pkg, intent("A-1", counterparties=["Marlow & Finch"], reference_numbers=["7710"]), facts)
+    (link,) = [d for d in t.doc_link_models() if d.doc_id.startswith("4.5")]
+    assert link.relation == "other" and link.entry_ids == []
+    assert all(t.about_other_matter(link.doc_id, g) for g in {t.group_of[e] for e in t.claimed_ids()})
+
+
+def test_excess_activity_is_not_netted_with_activity_running_against_the_claim():
+    # A credit linked by the party runs against the cost claim: it is context, reported apart, and never netted
+    # into the activity that "exceeds" the claim.
+    gl = GL()
+    bill = gl.add("2025-08-20", "6400", 10000, "Seaboard Restoration", "Flood claim - water extraction", "SR-1")
+    other = gl.add("2025-09-20", "6400", 3000, "Seaboard Restoration", "Flood claim - mold remediation", "SR-2")
+    credit = gl.add("2025-10-20", "6400", -5000, "Seaboard Restoration", "Flood claim - credit memo", "SR-C1")
+    pkg = package(gl, [claim("A-1", "Flood", [0, 10000, 0], ["6400"])])
+    t = trace_one(pkg, intent("A-1", counterparties=["Seaboard Restoration"]))
+    assert t.claimed["FY2025"] == [bill]
+    (flag,) = [f for f in t.flags if f.code == FlagCode.EXCESS_GL_ACTIVITY]
+    assert "linked GL activity of 13,000 exceeds the 10,000 claim" in flag.message
+    assert "the other 3,000 is context only" in flag.message and "running the other way ((5,000))" in flag.message
+    assert set(flag.entry_ids) == {other, credit}
+
+
+def test_a_single_shared_word_is_not_the_same_party():
+    from qoe.trace import name_tokens, names_match
+    # A one-word name (a city read as a party) does not match a longer name that merely contains it.
+    assert not names_match(name_tokens("Springfield"), name_tokens("Springfield Grand Hotels"))
+    assert not names_match(name_tokens("Springfield"), name_tokens("Lakeside Inn Springfield"))
+    assert not names_match(name_tokens("Varga Family Holdings"), name_tokens("J. Varga"))
+    # Initials abbreviate the other name's extra words; generic words and legal forms do not matter.
+    assert names_match(name_tokens("J. Varga"), name_tokens("Jamal B. Varga"))
+    assert names_match(name_tokens("Nimbus"), name_tokens("Nimbus Systems, Inc."))
+    assert names_match(name_tokens("Marlow & Finch"), name_tokens("Marlow & Finch LLP"))
+
+
+def test_a_party_is_named_in_a_document_only_as_a_phrase_outside_its_address_lines():
+    from qoe.trace import body_words, name_in_body, place_words
+    broker = ("Harbor Point Advisors\nIndustrial & Logistics Brokerage | Springfield - Riverton\n"
+              "2 East Bryan Street, Suite 600 | Springfield, GA 31401\n"
+              "Re: Opinion of market rent - 12 Dock Street, Millbrook, GA 31322\n"
+              "We conclude a market rent of $10,500 per month for the premises in the Millbrook submarket.\n")
+    words, places = body_words(broker), place_words(broker)
+    # 'Millbrook' the town and 'Industrial' in the tagline do not make 'Millbrook Industrial Holdings'.
+    assert not name_in_body("Millbrook Industrial Holdings, LLC", words, places)
+    # A one-word party that is also a place in the document's own address lines is not named by the place.
+    assert not name_in_body("Millbrook Holdings", words, places)
+    letter = "Refinancing memo\nThe placement fee is due at the Brookline payoff.\n"
+    assert name_in_body("Brookline National Bank", body_words(letter), place_words(letter))
+    assert name_in_body("Marlow & Finch LLP", body_words("Counsel: Marlow and Finch, LLP will attend."))
+    assert name_in_body("J. Varga", body_words("Travel booked for Jamal Varga."))
+
+
+def _rent_docs(broker_title: str):
+    gl = GL()
+    rent = gl.monthly("2025-01", "2025-12", "6400", 9000, "Bayfront Holdings, LLC", "Rent - main yard")
+    lease_id = "2.3 Lease Agreement - 12 Dock Street (Bayfront Holdings).txt"
+    broker_id = f"2.4 {broker_title}.txt"
+    lease = "INDUSTRIAL LEASE\nLandlord: Bayfront Holdings, LLC\nBase Rent: $9,000.00 per month.\n"
+    broker = (f"Coastline Realty Advisors\nRe: {broker_title}\nThe current contract rent of $9,000 per month is below "
+              "market; we conclude a market rent of $10,500 per month.\n")
+    facts = [
+        DocFacts(doc_id=lease_id, doc_type="contract", counterparty="Bayfront Holdings, LLC", title="Industrial Lease",
+                 amounts=[AmountFact(label="monthly_fee", amount="9000", quote=quote(lease_id, "Base Rent: $9,000.00 per month."))]),
+        DocFacts(doc_id=broker_id, doc_type="benchmark", counterparty="Coastline Realty Advisors", title=broker_title,
+                 amounts=[AmountFact(label="monthly_fee", amount="9000",
+                                     quote=quote(broker_id, "The current contract rent of $9,000 per month is below"))]),
+    ]
+    pkg = package(gl, [claim("R-1", "Related-party rent", [0, 12000, 0], ["6400"], refs=["DR 2.3", "DR 2.4"],
+                             category=AdjustmentCategory.NORMALIZATION)],
+                  [doc(lease_id, lease), doc(broker_id, broker)])
+    t = trace_one(pkg, intent("R-1", counterparties=["Bayfront Holdings"], is_normalization=True,
+                              normalized_amount="96000.00"), facts)
+    return t, rent, broker_id
+
+
+def test_a_cited_benchmark_for_the_same_property_is_tied_to_the_rent_it_states():
+    # The broker never names the landlord, but management cites it, it states the rent the entries carry, and
+    # its title names the same property as the lease already tied to them.
+    t, rent, broker_id = _rent_docs("Broker Opinion of Market Rent - 12 Dock Street")
+    about = {e for e, b in t.doc_links[broker_id].entry_basis.items() if b in ("amount", "amount_multi")}
+    assert about == set(rent)
+    # About another property: not tied.
+    t, rent, broker_id = _rent_docs("Broker Opinion of Market Rent - 40 Harbor Way")
+    assert not {e for e, b in t.doc_links[broker_id].entry_basis.items() if b in ("amount", "amount_multi")}

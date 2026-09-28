@@ -94,6 +94,7 @@ def main(argv: list[str] | None = None) -> int:
         f"Split {args.split}: {len(report['deals'])} deal(s), {o['n_adjustments']} adjustments, AI {report['ai_mode']}"
     )
     print(f"  False accept rate : {pct('false_accept_rate')}")
+    print(f"  Missed revisions  : {pct('missed_revisions')}")
     print(f"  Missed challenges : {pct('missed_contradictions')}")
     print(f"  Treatment accuracy: {pct('treatment_accuracy')}")
     print(f"  Amount accuracy   : {pct('amount_accuracy')}")

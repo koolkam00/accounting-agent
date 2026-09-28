@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
 """Run a QoE evidence review on one deal package.
 
-Writes ``<out>/<deal_id>/workpaper.json``. If ``<out>/<deal_id>/review_log.jsonl``
-already holds reviewer decisions they are applied (the bridge is rebuilt with
-the reviewer's final amounts, from management's schedule in the deal package),
-and ``--xlsx`` exports the Excel workpaper beside it with the deal package's GL
-detail, then recalculates it with LibreOffice (when available) and reports the
-formula count and any formula errors. Prints a short console summary.
+Writes ``<out>/<deal>/workpaper.json``, where ``<deal>`` is the deal id made
+path-safe (``qoe.engine.deal_dir_name``): a deal id is input data and is never
+used raw in a path. The reviewer's logs beside it are applied: decisions from
+``review_log.jsonl`` (the bridge is rebuilt with the reviewer's final amounts,
+from management's schedule in the deal package) and question status changes,
+management responses and reviewer-raised questions from
+``question_log.jsonl``, also when only the question log has entries.
+``--xlsx`` exports the Excel workpaper beside it with the deal package's GL
+detail and the question log, then recalculates a copy with LibreOffice (when
+available) and reports the formula count, any formula errors, and the
+Cover's Workbook checks. Prints a short console summary.
 
 Exit status: 0 on success, 2 when --deal is not a deal package, 1 when the
-exported workbook recalculates with formula errors.
+exported workbook recalculates with formula errors or its Workbook checks
+show a difference.
 
 Usage:
     uv run python scripts/qoe_run.py --deal data/dev/meridian_mechanical --xlsx
@@ -19,6 +25,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from collections import Counter
 from decimal import ROUND_HALF_UP, Decimal
@@ -33,9 +40,34 @@ from qoe.money import D
 from qoe.schemas import DealPackage, Severity, Treatment, Workpaper
 
 REVIEW_LOG = "review_log.jsonl"
+QUESTION_LOG = "question_log.jsonl"
 DILIGENCE_SOURCE = "diligence"
 TOP_FLAGS = 8
+WORKBOOK_CHECKS = "Workbook checks"  # the Cover's overall check status (qoe.export_xlsx.workbook_check_status)
+SOURCE_AGREEMENT = "Agreement to source data"  # the Cover line comparing management's own figures; informational
 _SEVERITY_ORDER = {Severity.CRITICAL: 0, Severity.WARNING: 1, Severity.INFO: 2}
+
+
+_UNSAFE_NAME = re.compile(r"[^A-Za-z0-9_.-]+")
+
+
+def _local_deal_dir_name(deal_id: str) -> str:
+    """Fallback for ``qoe.engine.deal_dir_name`` (same rule): one safe path component, never a path,
+    '.' or '..': unsafe characters become '_' and leading dots are dropped."""
+    name = _UNSAFE_NAME.sub("_", (deal_id or "").strip()).lstrip(".")
+    if not name.strip("_"):
+        raise ValueError(f"deal_id {deal_id!r} has no characters usable in a directory name")
+    return name
+
+
+def deal_dir_name(deal_id: str) -> str:
+    """The deal's workpaper directory / file-name token: ``qoe.engine.deal_dir_name`` when the
+    engine provides it, else the same rule locally."""
+    try:
+        from qoe.engine import deal_dir_name as engine_name
+    except ImportError:
+        engine_name = None
+    return (engine_name or _local_deal_dir_name)(deal_id)
 
 
 def _deal_path(arg: str) -> Path:
@@ -146,29 +178,51 @@ def main(argv: list[str] | None = None) -> int:
     out_root = args.out if args.out is not None else ROOT / "workpapers"
 
     wp = run_review(deal_dir, ai=get_ai(args.ai), run_id=args.run_id, created_at=args.created_at)
-    log_path = out_root / wp.deal.deal_id / REVIEW_LOG
-    decisions = []
-    if log_path.is_file():
+    try:
+        safe_name = deal_dir_name(wp.deal.deal_id)
+    except ValueError as exc:
+        print(f"Cannot name the workpaper directory: {exc}", file=sys.stderr)
+        return 2
+    wp_dir = out_root / safe_name
+    log_path = wp_dir / REVIEW_LOG
+    question_path = wp_dir / QUESTION_LOG
+    decisions: list = []
+    questions: list = []
+    if log_path.is_file() or question_path.is_file():
         from qoe.review_store import ReviewStore
 
-        decisions = ReviewStore(log_path).all()
-    pkg = _load_package(deal_dir) if decisions or args.xlsx else None
-    if decisions:
+        store = ReviewStore(log_path, question_path)
+        decisions = store.all()
+        questions = store.questions()
+        for name, skipped in ((log_path.name, store.skipped_lines), (question_path.name, store.skipped_question_lines)):
+            if skipped:
+                print(f"Note: {name} line(s) {', '.join(map(str, skipped))} could not be read and were skipped "
+                      "(the log is never rewritten).", file=sys.stderr)
+    reviewed = bool(decisions or questions)
+    pkg = _load_package(deal_dir) if reviewed or args.xlsx else None
+    if reviewed:
         from qoe.review_store import apply_reviews
 
-        wp = apply_reviews(wp, decisions, schedule=pkg.schedule if pkg is not None else None)
+        wp = apply_reviews(wp, decisions, schedule=pkg.schedule if pkg is not None else None, question_log=questions)
     wp_path = save_workpaper(wp, out_root)
+    if wp_path.parent.resolve() != wp_dir.resolve():
+        print(f"Note: the workpaper was saved to {wp_path.parent}, not {wp_dir}; the logs and the workbook "
+              f"are read from and written to {wp_dir}.", file=sys.stderr)
 
     print(summarize(wp))
     print("")
     print(f"Workpaper: {wp_path}")
-    if log_path.is_file():
-        print(f"Review log applied: {log_path} ({len(wp.reviews)} decision(s))")
+    if decisions:
+        print(f"Review log applied: {log_path} ({len(decisions)} decision(s))")
+    if questions:
+        print(f"Question log applied: {question_path} ({len(questions)} entr{'y' if len(questions) == 1 else 'ies'})")
     status = 0
     if args.xlsx:
         from qoe.export_xlsx import export_workpaper
 
-        xlsx_path = export_workpaper(wp, wp_path.parent / f"QoE_Evidence_Review_{wp.deal.deal_id}.xlsx", pkg=pkg)
+        xlsx_path = export_workpaper(
+            wp, wp_dir / f"QoE_Evidence_Review_{safe_name}.xlsx", pkg=pkg, question_log=questions
+        )
         print(f"Excel workpaper: {xlsx_path}")
         if not args.no_recalc:
             status = _recalc_report(xlsx_path)
@@ -188,20 +242,31 @@ def _load_package(deal_dir: Path) -> Optional[DealPackage]:
 
 
 def _recalc_report(xlsx_path: Path) -> int:
-    """Recalculate with LibreOffice and print the formula count and errors; 1 if any formula errors.
+    """Recalculate with LibreOffice and print the formula count, formula errors, and the Cover's
+    check statuses; 1 if any formula errors or the Workbook checks show a difference.
 
     LibreOffice rewrites the file it recalculates, so it works on a temporary copy: the delivered
-    workbook stays exactly as exported (Excel recalculates it on open).
+    workbook stays exactly as exported (Excel recalculates it on open). The check statuses are
+    read from that recalculated copy.
     """
     import shutil
     import tempfile
 
     from qoe.export_xlsx import recalc_and_check
 
+    checks: Optional[dict[str, Optional[str]]] = None
+    check_error = ""
     with tempfile.TemporaryDirectory(prefix="qoe_recalc_") as tmp:
         copy = Path(tmp) / xlsx_path.name
         shutil.copy(xlsx_path, copy)
         result = recalc_and_check(copy, timeout=180)
+        if result.get("status") != "skipped" and "error" not in result:
+            try:
+                from qoe.export_xlsx import workbook_check_status
+
+                checks = workbook_check_status(copy)
+            except Exception as exc:  # noqa: BLE001 - reporting only; the formula check above still stands
+                check_error = f"{type(exc).__name__}: {exc}"
     if result.get("status") == "skipped":
         print(f"Recalculation skipped: {result.get('reason')}")
         return 0
@@ -210,13 +275,28 @@ def _recalc_report(xlsx_path: Path) -> int:
         return 1
     errors = int(result.get("total_errors", 0) or 0)
     print(f"Recalculated with LibreOffice: {result.get('total_formulas', 0)} formulas, {errors} formula error(s)")
+    status = 0
     if errors:
         for kind, detail in sorted((result.get("error_summary") or {}).items()):
             where = detail.get("locations", [])[:5] if isinstance(detail, dict) else detail
             count = detail.get("count", "") if isinstance(detail, dict) else ""
             print(f"  {kind} {count}: {', '.join(map(str, where))}")
-        return 1
-    return 0
+        status = 1
+    if checks is None:
+        print(f"Workbook checks: not read from the recalculated copy ({check_error or 'no Cover checks found'})")
+        return status
+    overall = checks.get(WORKBOOK_CHECKS)
+    print(f"Workbook checks: {overall if overall is not None else 'no value after recalculation'}")
+    source = [(area, value) for area, value in checks.items() if area.startswith(SOURCE_AGREEMENT)]
+    for area, value in checks.items():
+        if area != WORKBOOK_CHECKS and (area, value) not in source and value != "OK":
+            print(f"  {area}: {value if value is not None else 'no value'}")
+    for area, value in source:
+        # Management's own figures vs the GL: a difference is in the source data (see Data Quality), not the workbook.
+        print(f"{area}: {value if value is not None else 'no value'} (not a workbook check)")
+    if overall != "OK":
+        status = 1
+    return status
 
 
 if __name__ == "__main__":

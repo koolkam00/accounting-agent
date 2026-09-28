@@ -1408,6 +1408,193 @@ def test_no_ap_imports_or_hardcoded_root():
 
 
 # ---------------------------------------------------------------------------
+# Rules added for generalization (SPEC §5.2, §5.4)
+# ---------------------------------------------------------------------------
+
+
+def test_intent_normalized_level_stated_per_month_is_annualized():
+    # AdjustmentIntent.normalized_amount is an annual level; the narrative states it per month.
+    adj = _claim("N-1", "Related-party rent", AdjustmentCategory.NORMALIZATION,
+                 "The yard is leased from an owner entity at $9,000 a month; normalized to a market rent of "
+                 "$8,500 a month.", raw="Normalization")
+    assert RuleBasedEvidenceAI().parse_intent(adj).normalized_amount == "102000.00"
+    quarterly = _claim("N-2", "Related-party rent", AdjustmentCategory.NORMALIZATION,
+                       "Normalized to a market rent of $25,500 per quarter.", raw="Normalization")
+    assert RuleBasedEvidenceAI().parse_intent(quarterly).normalized_amount == "102000.00"
+
+
+WRITE_OFF_MEMO = """Brookfield Paper Supply, Inc.
+MEMORANDUM
+TO: CFO
+DATE: January 9, 2026
+RE: Write-off of discontinued coated-board stock - December 31, 2025
+The mill discontinued the coated line and will not take returns, so the remaining stock was scrapped.
+Total write-off: $92,300.00, recorded to 5300 on December 31, 2025.
+Routine cycle count adjustments (about $2,000 a month) and the annual physical count adjustment are not
+part of this write-off.
+SYNTHETIC — generated for QoE Evidence Review testing
+"""
+
+
+def test_a_statement_that_sets_routine_activity_apart_is_not_a_contradiction():
+    # The memo mentions routine (recurring) adjustments only to exclude them from the write-off it
+    # describes: that supports the claim that the write-off is unusual.
+    ai = RuleBasedEvidenceAI()
+    doc = _doc("6.2 Write-off memo.pdf", WRITE_OFF_MEMO)
+    facts = ai.extract_facts(doc)
+    adj = _claim("W-1", "Discontinued stock write-off", AdjustmentCategory.NON_RECURRING,
+                 "Write-off of discontinued coated-board stock.")
+    entries = [_gl("GL-R500", "2025-12-31", "5300", "", "Write-off - discontinued coated-board stock", "92300.00")]
+    assert ai.find_contradictions(adj, ai.parse_intent(adj), [facts], entries) == []
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "This agreement automatically renews for successive one-year terms other than as provided in Section 9.",
+        "Subscription fees recur monthly for 36 months, excluding the one-time implementation fee.",
+        "Recurring monthly subscription per Order Form, apart from implementation services.",
+        "Annual maintenance is billed every year, other than in the first year.",
+    ],
+)
+def test_a_qualifier_on_a_recurring_term_does_not_set_the_recurrence_apart(sentence):
+    # "other than", "excluding", "apart from" qualify the term; they do not say the recurring activity is
+    # not part of the claimed item, so the recurrence still contradicts a one-time claim.
+    ai = RuleBasedEvidenceAI()
+    doc = _doc("5.2 Platform agreement.pdf", f"PLATFORM SERVICES AGREEMENT\n{sentence}\n"
+                                              "SYNTHETIC — generated for QoE Evidence Review testing\n")
+    adj = _claim("S-2", "One-time platform implementation", AdjustmentCategory.NON_RECURRING,
+                 "One-time implementation of the platform.")
+    assert ai.find_contradictions(adj, ai.parse_intent(adj), [ai.extract_facts(doc)], [])
+
+
+def test_routine_activity_set_apart_from_another_kind_of_item_is_recognised():
+    # The negated inclusion names the claimed item with a generic noun ("project"), not the memo's own words.
+    ai = RuleBasedEvidenceAI()
+    doc = _doc("9.1 Remediation memo.pdf", "MEMORANDUM\nRE: Roof remediation\nThe roof was replaced after the storm.\n"
+                                           "Routine annual maintenance visits are not part of this remediation project.\n"
+                                           "SYNTHETIC — generated for QoE Evidence Review testing\n")
+    adj = _claim("W-2", "Storm roof remediation", AdjustmentCategory.NON_RECURRING, "Roof replacement after the storm.")
+    assert ai.find_contradictions(adj, ai.parse_intent(adj), [ai.extract_facts(doc)], []) == []
+
+
+def test_market_benchmarks_are_classified_as_benchmarks():
+    ai = RuleBasedEvidenceAI()
+    opinion = _doc("2.4 Broker Opinion of Market Rent - 12 Dock St.pdf",
+                   "Harbor Commercial Advisors\nRe: Broker Opinion of Market Rent - 12 Dock Street\n"
+                   "We conclude a market rent of $10,500 per month.\nSYNTHETIC — generated for QoE Evidence Review testing\n")
+    lease = _doc("2.3 Lease Agreement - 12 Dock St.pdf",
+                 "INDUSTRIAL LEASE AGREEMENT\nBase Rent: $9,000.00 per month.\nRent was not the subject of an "
+                 "independent appraisal.\nSYNTHETIC — generated for QoE Evidence Review testing\n")
+    assert ai.extract_facts(opinion).doc_type == "benchmark"
+    assert ai.extract_facts(lease).doc_type == "contract"
+
+
+@pytest.mark.parametrize(
+    "title, expected",
+    [
+        ("Performance Appraisal - J. Smith 2025", False),
+        ("Employee Appraisal Form - Q4", False),
+        ("Annual Performance Review - K. Brooks", False),
+        ("Fair Market Value Compensation Opinion - Medical Director", True),
+        ("FMV Report - Physician Services", True),
+        ("MGMA Physician Compensation Survey 2025", True),
+        ("Real Estate Appraisal - 12 Dock Street", True),
+    ],
+)
+def test_benchmark_titles_are_read_by_market_meaning(title, expected):
+    ai = RuleBasedEvidenceAI()
+    doc = _doc(f"2.9 {title}.pdf", f"{title}\nPrepared January 2026.\nSYNTHETIC — generated for QoE Evidence Review testing\n")
+    assert (ai.extract_facts(doc).doc_type == "benchmark") is expected
+
+
+def test_a_city_in_a_letterhead_address_block_is_never_the_counterparty():
+    ai = RuleBasedEvidenceAI()
+    doc = _doc("6.9 Certificate of Disposal - Brookline Waste.pdf",
+               "CERTIFICATE OF DISPOSAL\nBrookline Waste & Recycling | 200 Mill Road\nSpringfield\nGA 31408\n"
+               "Pickup date: January 6, 2026\nWe certify that the material was received and disposed of.\n"
+               "Signed: /s/ D. Hughes, Site Supervisor\nSYNTHETIC — generated for QoE Evidence Review testing\n")
+    assert ai.extract_facts(doc).counterparty == "Brookline Waste & Recycling"
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "Assuming the pilot goes well, we plan to reduce the dispatch team by three FTEs.",
+        "If the pilot is successful, the plan is to cut three FTEs from the dispatch team.",
+        "The plan is to consolidate the two warehouses next year.",
+        "Go-live of the new routing tool: target is Q3 2026.",
+        "We haven't said anything to the team yet.",
+        "Nothing has been decided on severance.",
+        "Once the new system goes live, the order desk will close.",
+    ],
+)
+def test_plan_statements_are_read_in_their_common_paraphrases(sentence):
+    from qoe.ai import _PLAN_RE
+    assert _PLAN_RE.search(sentence)
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    ["Performance targets for the plan year are set by the Board.", "Target annual bonus is 20% of base salary."],
+)
+def test_targets_that_are_not_plan_dates_are_not_plan_statements(sentence):
+    from qoe.ai import _PLAN_RE
+    assert not _PLAN_RE.search(sentence)
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "The retainer stays in place until either party ends it on thirty days' written notice.",
+        "This agreement remains in effect until either party terminates it.",
+        "There is no end date for this engagement.",
+        "We will keep billing the monthly retainer until one of us ends it in writing.",
+    ],
+)
+def test_continuing_terms_are_read_in_their_common_paraphrases(sentence):
+    from qoe.ai import _ONGOING_RE, _RECURRENCE_RE
+    assert _RECURRENCE_RE.search(sentence) and _ONGOING_RE.search(sentence)
+
+
+def test_the_company_not_being_required_to_fund_is_a_recovery_statement():
+    from qoe.ai import _RECOVERY_RE
+    assert _RECOVERY_RE.search("The Company is not required to fund any part of the Settlement Payment.")
+    assert _RECOVERY_RE.search("The Company has no obligation to fund any part of the Settlement Payment.")
+
+
+def test_a_rate_review_is_not_quoted_as_recurrence():
+    ai = RuleBasedEvidenceAI()
+    doc = _doc("4.9 Engagement letter - special counsel.pdf",
+               "ENGAGEMENT LETTER\nWe will represent the Company in the arbitration.\nRates are reviewed annually.\n"
+               "SYNTHETIC — generated for QoE Evidence Review testing\n")
+    adj = _claim("L-9", "Arbitration legal fees", AdjustmentCategory.NON_RECURRING, "One-time arbitration costs.")
+    assert ai.find_contradictions(adj, ai.parse_intent(adj), [ai.extract_facts(doc)], []) == []
+
+
+def test_an_agreement_stating_the_total_level_does_not_contradict_its_base_salary():
+    ai = RuleBasedEvidenceAI()
+    doc = _doc("2.1 Executive Employment Agreement.pdf",
+               "EXECUTIVE EMPLOYMENT AGREEMENT\nThe Company will pay the Executive an annual base salary of $250,000.\n"
+               "Target bonus is 20% of base salary. Total target cash compensation is $300,000.\n"
+               "By: /s/ A. Lindqvist\nSYNTHETIC — generated for QoE Evidence Review testing\n")
+    adj = _claim("N-3", "Owner compensation normalization", AdjustmentCategory.NORMALIZATION,
+                 "Owner pay normalized to the $300,000 total target cash in the executed agreement.")
+    assert ai.find_contradictions(adj, ai.parse_intent(adj), [ai.extract_facts(doc)], []) == []
+
+
+def test_a_recurrence_contradiction_quotes_the_priced_term_not_a_heading():
+    ai = RuleBasedEvidenceAI()
+    doc = _doc("5.1 Order Form OF-88.pdf",
+               "ORDER FORM AND SUBSCRIPTION TERMS\nOne-time setup fee: $12,000.00.\n"
+               "Subscription fee: $3,000.00 per month, invoiced monthly in advance.\n"
+               "SYNTHETIC — generated for QoE Evidence Review testing\n")
+    adj = _claim("S-1", "One-time platform setup", AdjustmentCategory.NON_RECURRING, "One-time setup of the platform.")
+    found = ai.find_contradictions(adj, ai.parse_intent(adj), [ai.extract_facts(doc)], [])
+    assert found and "$3,000.00 per month" in found[0].quote.quote
+
+
+# ---------------------------------------------------------------------------
 # Integration over generated deal packages (skipped when absent)
 # ---------------------------------------------------------------------------
 

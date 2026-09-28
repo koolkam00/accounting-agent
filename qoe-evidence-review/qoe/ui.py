@@ -12,7 +12,8 @@ duplicate posting) are reviewed exactly like management's items. The queue
 lists them as their own group after management's items, and the bridge shows
 their rows after the diligence revisions to management's items.
 
-Decisions go to ``<workpapers>/<deal_id>/review_log.jsonl`` (append-only),
+Decisions go to ``<workpapers>/<deal>/review_log.jsonl`` (append-only; ``<deal>`` is the
+deal id made path-safe by ``qoe.engine.deal_dir_name``, never the raw id),
 question status changes, management responses and reviewer-raised questions to
 ``question_log.jsonl``, and time on task to ``timing.jsonl`` beside them. A
 question update is signed by whoever makes it and never re-records a decision.
@@ -211,9 +212,40 @@ def data_root() -> Path:
     return _env_path("QOE_DATA_DIR", DATA_ROOT)
 
 
+_UNSAFE_NAME = re.compile(r"[^A-Za-z0-9_.-]+")
+
+
+def _local_deal_dir_name(deal_id: str) -> str:
+    """Fallback for ``qoe.engine.deal_dir_name`` (same rule): one safe path component."""
+    name = _UNSAFE_NAME.sub("_", (deal_id or "").strip()).lstrip(".")
+    if not name.strip("_"):
+        raise ValueError(f"deal_id {deal_id!r} has no characters usable in a directory name")
+    return name
+
+
+def deal_dir_name(deal_id: str) -> str:
+    """A deal id as one safe path component: ``qoe.engine.deal_dir_name`` when the engine has it.
+
+    deal.yaml is an input like any other, so its deal_id can carry '/', '..' or an absolute path;
+    it is never joined to a path raw. Raises ValueError when nothing usable is left."""
+    try:
+        from qoe.engine import deal_dir_name as engine_name
+    except ImportError:
+        engine_name = None
+    return (engine_name or _local_deal_dir_name)(deal_id)
+
+
+def deal_file_token(deal_id: str) -> str:
+    """The deal id as it appears in file names (workbook, downloads); never raises."""
+    try:
+        return deal_dir_name(deal_id)
+    except ValueError:
+        return "deal"
+
+
 @dataclass(frozen=True)
 class WorkpaperPaths:
-    root: Path  # <workpapers>/<deal_id>
+    root: Path  # <workpapers>/<deal_dir_name(deal_id)>
     deal_id: str
 
     @property
@@ -234,7 +266,8 @@ class WorkpaperPaths:
 
     @property
     def xlsx(self) -> Path:
-        return self.root / f"QoE_Evidence_Review_{self.deal_id}.xlsx"
+        # The same name scripts/qoe_run.py writes, so the app sees a command-line export.
+        return self.root / f"QoE_Evidence_Review_{deal_file_token(self.deal_id)}.xlsx"
 
     @property
     def export_stamp(self) -> Path:
@@ -243,7 +276,9 @@ class WorkpaperPaths:
 
 
 def workpaper_paths(deal_id: str, base: Optional[Path] = None) -> WorkpaperPaths:
-    return WorkpaperPaths(root=(base or workpapers_root()) / deal_id, deal_id=deal_id)
+    """Where a deal's run and logs live: ``<workpapers>/<deal_dir_name(deal_id)>`` (the directory
+    ``qoe.engine.save_workpaper`` writes). Raises ValueError for a deal id with no usable characters."""
+    return WorkpaperPaths(root=(base or workpapers_root()) / deal_dir_name(deal_id), deal_id=deal_id)
 
 
 @dataclass(frozen=True)
@@ -1633,9 +1668,15 @@ def _sidebar() -> None:
         sb.warning("That directory has no deal.yaml.")
         deal_dir = None
 
+    paths: Optional[WorkpaperPaths] = None
     if deal_dir is not None:
         deal_id, _ = read_deal_header(deal_dir)
-        paths = workpaper_paths(deal_id)
+        try:
+            paths = workpaper_paths(deal_id)
+        except ValueError:
+            sb.warning(md(f"deal.yaml's deal_id {deal_id!r} cannot name a workpaper folder. Fix deal.yaml."))
+            deal_dir = None
+    if deal_dir is not None and paths is not None:
         cached = paths.workpaper.is_file()
         if st.session_state.get("deal_dir") != str(deal_dir):
             # A new selection opens its cached run, or clears the screen until it is run.
@@ -2507,7 +2548,7 @@ def _page_questions(ctx: ReviewContext) -> None:
         st.download_button(
             "Download as CSV (information request list)",
             data=request_list_csv(shown),
-            file_name=f"QoE_open_questions_{ctx.wp.deal.deal_id}.csv",
+            file_name=f"QoE_open_questions_{deal_file_token(ctx.wp.deal.deal_id)}.csv",
             mime="text/csv",
             disabled=not shown,
         )
@@ -2620,21 +2661,21 @@ def _page_export(ctx: ReviewContext) -> None:
     c1.download_button(
         "Download reviewed workpaper (JSON)",
         data=ctx.wp.model_dump_json(indent=2).encode("utf-8"),
-        file_name=f"workpaper_reviewed_{ctx.wp.deal.deal_id}.json",
+        file_name=f"workpaper_reviewed_{deal_file_token(ctx.wp.deal.deal_id)}.json",
         mime="application/json",
     )
     if ctx.paths.review_log.is_file():
         c2.download_button(
             "Download review log (JSONL)",
             data=ctx.paths.review_log.read_bytes(),
-            file_name=f"review_log_{ctx.wp.deal.deal_id}.jsonl",
+            file_name=f"review_log_{deal_file_token(ctx.wp.deal.deal_id)}.jsonl",
             mime="application/jsonl",
         )
     if ctx.paths.question_log.is_file():
         c3.download_button(
             "Download question log (JSONL)",
             data=ctx.paths.question_log.read_bytes(),
-            file_name=f"question_log_{ctx.wp.deal.deal_id}.jsonl",
+            file_name=f"question_log_{deal_file_token(ctx.wp.deal.deal_id)}.jsonl",
             mime="application/jsonl",
         )
 

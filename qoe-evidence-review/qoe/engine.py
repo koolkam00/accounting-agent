@@ -2,7 +2,7 @@
 
     load_deal -> reconcile -> extract + verify document facts -> parse intent
     -> trace each adjustment -> resolve overlaps -> challenges -> propose
-    -> diligence-identified items (SPEC §5.7) -> bridge
+    -> diligence-identified items (SPEC §5.7: duplicate postings, supported reporting differences) -> bridge
 
 ``run_review`` works from a deal directory; ``review_package`` does the same
 from an in-memory ``DealPackage``. Output is deterministic: the same inputs,
@@ -27,7 +27,7 @@ from qoe import TOOL_VERSION
 from qoe.ai_base import AdjustmentIntent, EvidenceAI, verify_quote
 from qoe.bridge import build_bridge
 from qoe.challenge import ChallengeContext, _adapter_drops, resolve_overlaps, run_challenges
-from qoe.propose import propose, propose_duplicate_items
+from qoe.propose import propose, propose_duplicate_items, propose_reporting_items
 from qoe.schemas import (
     AdjustmentCategory,
     AdjustmentClaim,
@@ -166,6 +166,8 @@ def review_package(
     assessments = [propose(t, ai) for t in traces]
     # Management items in schedule order, then the items diligence identified itself.
     assessments += propose_duplicate_items(index, traces, taken_ids=[a.adj_id for a in assessments])
+    # Then the supported reporting differences between management's P&L and the GL (SPEC §5.7).
+    assessments += propose_reporting_items(index, recon, taken_ids=[a.adj_id for a in assessments])
     for t in traces:
         notes.extend(f"{t.adj.adj_id}: {n}" for n in t.notes)
         failures.extend(f"{n.split(' failed: ')[0]}[{t.adj.adj_id}]: {n.split(' failed: ', 1)[1]}"

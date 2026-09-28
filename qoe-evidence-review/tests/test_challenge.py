@@ -71,6 +71,8 @@ ACCOUNTS = {
         ("6600", "Travel", "Expense", EbitdaClass.OPEX),
         ("6700", "Dues & Subscriptions", "Expense", EbitdaClass.OPEX),
         ("6950", "Bad Debt Expense", "Expense", EbitdaClass.OPEX),
+        ("5300", "Inventory Write-offs", "Cost of Goods Sold", EbitdaClass.COGS),
+        ("6420", "Consulting Fees", "Expense", EbitdaClass.OPEX),
         ("8000", "Other Income", "Other Income", EbitdaClass.OTHER_INCOME),
         ("8100", "Interest Expense", "Other Expense", EbitdaClass.INTEREST),
     ]
@@ -720,18 +722,73 @@ def test_sign_error_when_an_add_back_is_made_of_credits():
     assert a.proposed[FY25] == "-5000.00" and a.treatment == Treatment.REVISE
 
 
-def test_duplicate_posting_inside_the_claim_raises_a_question():
+def test_repeated_bill_inside_the_claim_keeps_the_first_posting_only():
+    # SPEC §5.7: the same bill number posted twice and claimed twice. The claim keeps the first
+    # posting; the second leaves the claim (a diligence item reverses it once).
     entries = [
         ("2025-05-02", "6150", 7000, "Gulfline Roofing", "Roof repair", "GR-9"),
         ("2025-05-05", "6150", 7000, "Gulfline Roofing", "Roof repair", "GR-9"),
     ]
     issue = DataQualityIssue(code=DataQualityCode.DUPLICATE_GL_ENTRY, severity=Severity.WARNING, message="dup",
                              entry_ids=["GL-R6", "GL-R7"])
+    texts = {"4.1 Invoice GR-9.txt": "Invoice GR-9. Amount due $7,000.00"}
+    facts = {"4.1 Invoice GR-9.txt": DocFacts(
+        doc_id="4.1 Invoice GR-9.txt", doc_type="invoice", counterparty="Gulfline Roofing", reference_numbers=["GR-9"],
+        amounts=[AmountFact(label="total_due", amount="7000", quote=q("4.1 Invoice GR-9.txt", "Amount due $7,000.00"))])}
+    (t, a), ids = _small(entries, claim("B-2", "Roof repair", [0, 14000, 0], ["6150"]), texts, facts,
+                         intent=AdjustmentIntent(adj_id="B-2", counterparties=["Gulfline Roofing"]), issues=[issue])
+    flag = the_flag(a, FlagCode.DUPLICATE_GL_ENTRY)
+    assert flag.entry_ids == ids and "reversed once in a diligence item" in flag.message
+    assert flag.effects == {FY25: "-7000.00"}
+    assert a.proposed[FY25] == "7000.00" and a.treatment == Treatment.REVISE
+    removed = {l.entry_id: l.removed_by for l in a.gl_links}
+    assert removed == {"GL-R6": None, "GL-R7": FlagCode.DUPLICATE_GL_ENTRY}
+    assert any(oq.basis == "DUPLICATE_GL_ENTRY" for oq in a.open_questions)
+    assert a.judgment_questions and a.judgment_questions[0].startswith("No judgment needed")
+
+
+def _two_seats(dates: tuple[str, str], bill_total: int):
+    entries = [(dates[0], "6300", 1200, "Nimbus Cloud Systems", "Seat licence", "NC-77"),
+               (dates[1], "6300", 1200, "Nimbus Cloud Systems", "Seat licence", "NC-77")]
+    issue = DataQualityIssue(code=DataQualityCode.DUPLICATE_GL_ENTRY, severity=Severity.WARNING, message="dup",
+                             entry_ids=["GL-R6", "GL-R7"])
+    doc = "5.3 Invoice NC-77.txt"
+    lines = "Seat licence 1,200.00. Seat licence 1,200.00." if bill_total == 2400 else "Seat licence 1,200.00."
+    texts = {doc: f"Invoice NC-77. {lines} Total due ${bill_total:,}.00"}
+    facts = {doc: DocFacts(doc_id=doc, doc_type="invoice", counterparty="Nimbus Cloud Systems", reference_numbers=["NC-77"],
+                           amounts=[AmountFact(label="line", amount="1200", quote=q(doc, "Seat licence 1,200.00.")),
+                                    AmountFact(label="total_due", amount=str(bill_total),
+                                               quote=q(doc, f"Total due ${bill_total:,}.00"))])}
+    return _small(entries, claim("B-4", "Platform seats", [0, 2400, 0], ["6300"]), texts, facts,
+                  intent=AdjustmentIntent(adj_id="B-4", counterparties=["Nimbus Cloud Systems"]), issues=[issue])
+
+
+def test_two_identical_lines_of_one_bill_are_not_a_repeated_posting():
+    # Same number, same day: two seat licences on one invoice that totals twice the line. Nothing is removed;
+    # the duplicate check stays a question with no effect.
+    (t, a), _ = _two_seats(("2025-05-02", "2025-05-02"), 2400)
+    flag = the_flag(a, FlagCode.DUPLICATE_GL_ENTRY)
+    assert not flag.effects and t.supporting_total(FY25) == D(2400)
+    # Posted on different days but the bill itself charges the line twice: still two charges.
+    (t, a), _ = _two_seats(("2025-05-02", "2025-05-09"), 2400)
+    assert not the_flag(a, FlagCode.DUPLICATE_GL_ENTRY).effects and t.supporting_total(FY25) == D(2400)
+    # Posted on different days and the bill shows one charge: the second posting is the error.
+    (t, a), _ = _two_seats(("2025-05-02", "2025-05-09"), 1200)
+    assert the_flag(a, FlagCode.DUPLICATE_GL_ENTRY).effects == {FY25: "-1200.00"}
+
+
+def test_same_memo_duplicates_without_a_shared_number_stay_a_question():
+    entries = [
+        ("2025-05-02", "6150", 7000, "Gulfline Roofing", "Roof repair", ""),
+        ("2025-05-05", "6150", 7000, "Gulfline Roofing", "Roof repair", ""),
+    ]
+    issue = DataQualityIssue(code=DataQualityCode.DUPLICATE_GL_ENTRY, severity=Severity.WARNING, message="dup",
+                             entry_ids=["GL-R6", "GL-R7"])
     (t, a), ids = _small(entries, claim("B-2", "Roof repair", [0, 14000, 0], ["6150"]),
                          intent=AdjustmentIntent(adj_id="B-2", counterparties=["Gulfline Roofing"]), issues=[issue])
     flag = the_flag(a, FlagCode.DUPLICATE_GL_ENTRY)
-    assert flag.entry_ids == ids and "2 of the 2 postings are in the claimed set" in flag.message
-    assert any(oq.basis == "DUPLICATE_GL_ENTRY" for oq in a.open_questions)
+    assert "2 of the 2 postings are in the claimed set" in flag.message and not flag.effects
+    assert t.supporting_total(FY25) == D(14000)
 
 
 def test_document_total_that_differs_from_the_gl_entry():
@@ -1230,3 +1287,560 @@ def test_overlap_recovery_and_period_moves_are_put_to_the_reviewer(deal):
     assert any("FY2024 cost" in j and "left in FY2025" in j for j in moved)
     for _, (_, a) in results.items():
         assert not {f.text for f in a.facts} & set(a.judgment_questions)
+
+
+# ---------------------------------------------------------------------------
+# Generalization rules (SPEC §5.2-5.4): each one a practitioner principle, tested on its own
+# ---------------------------------------------------------------------------
+
+
+def _facts(doc_id: str, doc_type: str, cp: str = "", refs=(), amounts=(), terms=(), statements=(), signed=None,
+           start=None, end=None) -> DocFacts:
+    return DocFacts(
+        doc_id=doc_id, doc_type=doc_type, counterparty=cp or None, reference_numbers=list(refs),
+        amounts=[AmountFact(label=label, amount=str(amount), quote=q(doc_id, text)) for label, amount, text in amounts],
+        terms=[TermFact(kind=kind, text=text, quote=q(doc_id, quote)) for kind, text, quote in terms],
+        key_statements=[q(doc_id, x) for x in statements], is_signed=signed,
+        service_period_start=start, service_period_end=end,
+    )
+
+
+def test_routine_entries_that_only_restate_the_account_name_do_not_pad_the_claim():
+    # A casualty claim in a repairs account: the event bill links on its own evidence; routine repairs
+    # match only the account's own word ("repair") and must not be used to make up the claim. The part of
+    # the claim that is an unbooked estimate stays unsupported, citing the email that states it.
+    gl = GL()
+    event = gl.add("2025-08-20", "6150", 38500, "Seaboard Restoration", "Water extraction - sprinkler break", "SR-1")
+    routine = [gl.add(f"2025-{m:02d}-11", "6150", 1000 + 437.19 * m, "Dockside Electric", "Dock door repair", f"DE-{m}")
+               for m in range(1, 13)]
+    texts = {"6.1 Seaboard invoice SR-1.txt": "Invoice SR-1. Amount due $38,500.00",
+             "6.2 Controller email.txt": "We carried $60,000: $38,500 invoiced plus a $21,500 estimate not yet booked."}
+    facts = {
+        "6.1 Seaboard invoice SR-1.txt": _facts("6.1 Seaboard invoice SR-1.txt", "invoice", "Seaboard Restoration",
+                                               ["SR-1"], [("total_due", 38500, "Amount due $38,500.00")]),
+        "6.2 Controller email.txt": _facts("6.2 Controller email.txt", "correspondence", "", (),
+                                           [("line", 21500, "We carried $60,000: $38,500 invoiced plus a $21,500 estimate not yet booked.")]),
+    }
+    (t, a), _ = _small([], claim("C-1", "Sprinkler break", [0, 60000, 0], ["6150"], refs=["DR 6"]), texts, facts,
+                       AdjustmentIntent(adj_id="C-1", keywords=["sprinkler", "water", "repairs"]))
+    t2, a2 = _run_gl(gl, claim("C-1", "Sprinkler break", [0, 60000, 0], ["6150"], refs=["DR 6"]), texts, facts,
+                     AdjustmentIntent(adj_id="C-1", keywords=["sprinkler", "water", "repairs"]))
+    assert t2.claimed[FY25] == [event]
+    roles = {x.entry_id: x.role for x in a2.gl_links}
+    assert all(roles[e] == "context" for e in routine)
+    partial = [f for f in a2.flags if f.code == FlagCode.PARTIAL_GL_SUPPORT and f.period_label == FY25]
+    assert partial and partial[0].effects == {FY25: "-21500.00"} and "6.2 Controller email.txt" in partial[0].doc_ids
+    assert a2.proposed[FY25] == "38500.00" and a2.treatment == Treatment.REVISE
+    assert any("down to an amount not booked" in oq.text for oq in a2.open_questions)
+
+
+def test_a_document_that_merely_states_the_gap_amount_is_cited_neutrally():
+    # The engagement letter's retainer happens to equal the gap: it is cited, but nothing says the gap is an
+    # unbooked amount, so the question does not claim that it is.
+    gl = GL()
+    gl.add("2025-08-20", "6400", 20000, "Marlow & Finch LLP", "Matter 7710 Reyes v. Harbor - litigation", "MF-1")
+    letter = "4.1 Marlow Finch engagement letter (Matter 7710).txt"
+    text = "The Company will pay a retainer of $5,000 on signing."
+    facts = {letter: _facts(letter, "engagement_letter", "Marlow & Finch LLP", ["7710"], [("fee", 5000, text)],
+                            signed=True)}
+    t, a = _run_gl(gl, claim("L-2", "Reyes litigation", [0, 25000, 0], ["6400"], refs=["DR 4.1"]), {letter: text}, facts,
+                   AdjustmentIntent(adj_id="L-2", counterparties=["Marlow & Finch"], reference_numbers=["7710"]))
+    assert any(f.code == FlagCode.PARTIAL_GL_SUPPORT and letter in f.doc_ids for f in a.flags)
+    assert not any("not booked" in oq.text for oq in a.open_questions)
+    assert any(f"{letter} states the same 5,000" in oq.text for oq in a.open_questions)
+
+
+def _run_gl(gl: GL, adjustment, texts, facts, intent, issues=()):
+    pkg = package(gl, [adjustment], texts or {})
+    ai = FakeAI(facts=facts or {}, intents={adjustment.adj_id: intent})
+    return run(pkg, ai, issues)[adjustment.adj_id]
+
+
+def _related_rent(broker_amounts):
+    gl = GL()
+    related = gl.monthly("2025-01", "2026-06", "6100", 9000, "Bayfront Holdings", "Rent - main yard")
+    other = gl.monthly("2025-01", "2026-06", "6100", 4000, "Harbor Storage", "Rent - overflow site")
+    texts = {"2.3 Lease - main yard.txt": "Base Rent: $9,000.00 per month.",
+             "2.4 Broker opinion of market rent.txt": " ".join(t for _, _, t in broker_amounts)}
+    facts = {
+        "2.3 Lease - main yard.txt": _facts("2.3 Lease - main yard.txt", "contract", "Bayfront Holdings", (),
+                                           [("monthly_fee", 9000, "Base Rent: $9,000.00 per month.")], signed=True),
+        "2.4 Broker opinion of market rent.txt": _facts("2.4 Broker opinion of market rent.txt", "benchmark",
+                                                        "Coastline Realty Advisors", (), broker_amounts, signed=True),
+    }
+    adj = claim("R-1", "Related-party rent", [0, 12000, 12000], ["6100"], refs=["DR 2"],
+                category=AdjustmentCategory.NORMALIZATION)
+    intent = AdjustmentIntent(adj_id="R-1", counterparties=["Bayfront Holdings"], is_normalization=True,
+                              normalized_amount="96000.00", keywords=["rent"])
+    return _run_gl(gl, adj, texts, facts, intent), related, other
+
+
+def test_normalization_uses_the_arrangements_own_cost_and_an_independent_benchmark_level():
+    broker = [("line", 126000, "On 14,000 square feet this is $126,000 per year, or $10,500 per month."),
+              ("monthly_fee", 10500, "On 14,000 square feet this is $126,000 per year, or $10,500 per month."),
+              ("monthly_fee", 9000, "The current contract rent of $9,000 per month is below market."),
+              ("line", 9, "We conclude a market rent of $9.00 per square foot per year.")]
+    (t, a), related, other = _related_rent(broker)
+    # Actual cost is the related-party lease only; the other site's rent is not the arrangement.
+    assert t.claimed[FY25] == [e for e in related if t.index.by_id[e].month <= "2025-12"]
+    assert not set(other) & set(t.supporting_ids())
+    # Market (126,000) is above what is paid (108,000): the normalization reduces EBITDA.
+    assert a.proposed == amounts(0, -18000, -18000) and a.treatment == Treatment.REVISE
+    flag = the_flag(a, FlagCode.CONTRADICTORY_EVIDENCE)
+    assert flag.effects == {FY25: "-30000.00", TTM: "-30000.00"}  # 96,000 used by management -> 126,000
+    assert FlagCode.NORMALIZATION_BENCHMARK_MISSING not in codes(a) and FlagCode.SIGN_ERROR not in codes(a)
+    assert "126,000" in a.rationale
+
+
+def test_a_benchmark_that_states_several_levels_sets_none():
+    broker = [("monthly_fee", 10000, "Comparable A rents at $10,000 per month."),
+              ("monthly_fee", 11500, "Comparable B rents at $11,500 per month.")]
+    (t, a), _, _ = _related_rent(broker)
+    assert FlagCode.NORMALIZATION_BENCHMARK_MISSING in codes(a) and a.treatment == Treatment.REQUEST_INFO
+    assert any("Which market level applies?" in j for j in a.judgment_questions)
+
+
+def _study(cite_final_bill: bool, category=AdjustmentCategory.NON_RECURRING):
+    gl = GL()
+    bills = [gl.add("2025-03-10", "6420", 30000, "Ridgeway Consulting", "Network study - phase 1", "RC-1"),
+             gl.add("2025-06-10", "6420", 24000, "Ridgeway Consulting", "Network study - phase 2", "RC-2"),
+             gl.add("2025-09-10", "6420", 30000, "Ridgeway Consulting", "Network study - phase 3", "RC-3")]
+    texts = {"7.1 Ridgeway engagement letter.txt": "Our fixed fee of $84,000 is billed in three phases.",
+             "7.2 Invoice RC-1.txt": "Invoice RC-1. Amount due $30,000.00",
+             "7.3 Invoice RC-2.txt": "Invoice RC-2. Amount due $24,000.00",
+             "8.9 Invoice RC-3.txt": "Invoice RC-3. Amount due $30,000.00"}
+    facts = {
+        "7.1 Ridgeway engagement letter.txt": _facts("7.1 Ridgeway engagement letter.txt", "engagement_letter",
+                                                     "Ridgeway Consulting", (),
+                                                     [("fee", 84000, "Our fixed fee of $84,000 is billed in three phases.")],
+                                                     signed=True),
+        **{k: _facts(k, "invoice", "Ridgeway Consulting", [k.split()[-1][:-4]],
+                     [("total_due", v, f"Amount due ${v:,}.00")])
+           for k, v in (("7.2 Invoice RC-1.txt", 30000), ("7.3 Invoice RC-2.txt", 24000), ("8.9 Invoice RC-3.txt", 30000))},
+    }
+    refs = ["DR 7"] + (["8.9"] if cite_final_bill else [])
+    adj = claim("E-1", "Network study", [0, 54000, 0], ["6420"], refs=refs, category=category)
+    intent = AdjustmentIntent(adj_id="E-1", counterparties=["Ridgeway Consulting"], keywords=["network", "study"])
+    return _run_gl(gl, adj, texts, facts, intent), bills
+
+
+def test_the_rest_of_a_fixed_fee_engagement_is_carried_when_management_cites_its_bill():
+    (t, a), bills = _study(cite_final_bill=True)
+    assert a.proposed[FY25] == "84000.00" and a.treatment == Treatment.REVISE
+    flag = [f for f in a.flags if f.code == FlagCode.EXCESS_GL_ACTIVITY and f.severity == Severity.WARNING]
+    assert len(flag) == 1 and flag[0].effects == {FY25: "30000.00"} and flag[0].period_label == FY25
+    link = {x.entry_id: x for x in a.gl_links}[bills[2]]
+    assert link.supports_claim and not link.claimed and link.claimed_in == [] and link.role == "supporting"
+    # TTM Jun-26 has no claim, so nothing is carried there even though phase 3 falls in it.
+    assert a.proposed[TTM] == "0.00"
+
+
+def test_an_unclaimed_bill_is_context_unless_the_fixed_fee_rule_holds():
+    (t, a), _ = _study(cite_final_bill=False)  # management does not cite the unclaimed bill
+    assert a.proposed[FY25] == "54000.00" and a.treatment == Treatment.ACCEPT
+    assert all(f.severity == Severity.INFO for f in a.flags if f.code == FlagCode.EXCESS_GL_ACTIVITY)
+    (t, a), _ = _study(cite_final_bill=True, category=AdjustmentCategory.PRO_FORMA)
+    assert not t.carried_ids()
+
+
+def test_each_carried_bill_is_tied_to_its_own_engagement_letter():
+    # Two fixed-fee engagements are carried in the same period; each letter supports only its own bill.
+    gl = GL()
+    gl.add("2025-03-10", "6420", 30000, "Ridgeway Consulting", "Network study - phase 1", "RC-1")
+    gl.add("2025-06-10", "6420", 24000, "Ridgeway Consulting", "Network study - phase 2", "RC-2")
+    rc3 = gl.add("2025-09-10", "6420", 30000, "Ridgeway Consulting", "Network study - phase 3", "RC-3")
+    gl.add("2025-04-10", "6420", 11000, "Keystone Advisors", "Pricing review - stage 1", "KA-1")
+    ka2 = gl.add("2025-10-10", "6420", 16000, "Keystone Advisors", "Pricing review - stage 2", "KA-2")
+    letters = {"7.1 Ridgeway engagement letter.txt": ("Ridgeway Consulting", 84000),
+               "7.5 Keystone engagement letter.txt": ("Keystone Advisors", 27000)}
+    bills = {"7.2 Invoice RC-1.txt": ("Ridgeway Consulting", "RC-1", 30000),
+             "7.3 Invoice RC-2.txt": ("Ridgeway Consulting", "RC-2", 24000),
+             "7.4 Invoice RC-3.txt": ("Ridgeway Consulting", "RC-3", 30000),
+             "7.6 Invoice KA-1.txt": ("Keystone Advisors", "KA-1", 11000),
+             "7.7 Invoice KA-2.txt": ("Keystone Advisors", "KA-2", 16000)}
+    texts = {k: f"Our fixed fee of ${v:,} covers the whole engagement." for k, (_, v) in letters.items()}
+    texts |= {k: f"Invoice {n}. Amount due ${v:,}.00" for k, (_, n, v) in bills.items()}
+    facts = {k: _facts(k, "engagement_letter", cp, (), [("fee", v, texts[k])], signed=True) for k, (cp, v) in letters.items()}
+    facts |= {k: _facts(k, "invoice", cp, [n], [("total_due", v, f"Amount due ${v:,}.00")]) for k, (cp, n, v) in bills.items()}
+    adj = claim("E-2", "Consulting projects", [0, 65000, 0], ["6420"], refs=["DR 7"])
+    intent = AdjustmentIntent(adj_id="E-2", counterparties=["Ridgeway Consulting", "Keystone Advisors"])
+    t, a = _run_gl(gl, adj, texts, facts, intent)
+    assert set(t.carried.get(FY25, [])) == {rc3, ka2}
+    ridgeway, keystone = t.doc_links["7.1 Ridgeway engagement letter.txt"], t.doc_links["7.5 Keystone engagement letter.txt"]
+    assert rc3 in ridgeway.entry_basis and ka2 not in ridgeway.entry_basis
+    assert ka2 in keystone.entry_basis and rc3 not in keystone.entry_basis
+
+
+def _freight(booked: str, start: str, end: str, category=AdjustmentCategory.OUT_OF_PERIOD, claims=(0, 38400, 38400)):
+    gl = GL()
+    bill = gl.add(booked, "5200", 38400, "Altona Freight", "Fuel surcharge correction", "AF-118")
+    texts = {"6.3 Altona invoice AF-118.txt": "Invoice AF-118. Total due $38,400.00"}
+    facts = {"6.3 Altona invoice AF-118.txt": _facts("6.3 Altona invoice AF-118.txt", "invoice", "Altona Freight", ["AF-118"],
+                                                     [("total_due", 38400, "Total due $38,400.00")], start=start, end=end)}
+    adj = claim("O-1", "Freight true-up", list(claims), ["5200"], refs=["DR 6.3"], category=category)
+    intent = AdjustmentIntent(adj_id="O-1", counterparties=["Altona Freight"])
+    return _run_gl(gl, adj, texts, facts, intent), bill
+
+
+def test_out_of_period_is_tested_on_every_period_label():
+    # Service Apr-Sep 2025, booked Nov 2025: FY2025 holds the booking and every service month (no move),
+    # but TTM Jun-26 starts in July and holds only three of the six service months.
+    (t, a), bill = _freight("2025-11-14", "2025-04-01", "2025-09-30")
+    flag = the_flag(a, FlagCode.OUT_OF_PERIOD)
+    assert a.proposed == amounts(0, 0, 19200) and flag.effects == {FY25: "-38400.00", TTM: "-19200.00"}
+    assert "TTM Jun-26 holds 3 of the 6 service months" in flag.message
+
+
+def _quarterly(booked: str, start: str, end: str, *, previous: str = "", text: str = "Invoice LS-9. Total due $9,000.00",
+               category=AdjustmentCategory.NON_RECURRING, previous_doc: tuple[str, str] = ("", "")):
+    """A quarterly bill (LS-9) for a claim, optionally after the party's previous quarterly bill (LS-8)."""
+    gl = GL()
+    if previous:
+        gl.add(previous, "6150", 9000, "Lakeside Services", "Quarterly site services", "LS-8")
+    bill = gl.add(booked, "6150", 9000, "Lakeside Services", "Quarterly site services", "LS-9")
+    texts = {"6.4 Lakeside invoice LS-9.txt": text}
+    facts = {"6.4 Lakeside invoice LS-9.txt": _facts("6.4 Lakeside invoice LS-9.txt", "invoice", "Lakeside Services",
+                                                     ["LS-9"], [("total_due", 9000, "Total due $9,000.00")],
+                                                     start=start, end=end)}
+    if previous_doc[0]:
+        texts["6.3 Lakeside invoice LS-8.txt"] = "Invoice LS-8. Total due $9,000.00"
+        facts["6.3 Lakeside invoice LS-8.txt"] = _facts("6.3 Lakeside invoice LS-8.txt", "invoice", "Lakeside Services",
+                                                        ["LS-8"], [("total_due", 9000, "Total due $9,000.00")],
+                                                        start=previous_doc[0], end=previous_doc[1])
+    adj = claim("O-2", "Site services", [0, 9000, 9000], ["6150"], refs=["DR 6.4"], category=category)
+    intent = AdjustmentIntent(adj_id="O-2", counterparties=["Lakeside Services"])
+    return _run_gl(gl, adj, texts, facts, intent), bill
+
+
+def test_ordinary_billing_in_arrears_is_keyed_on_cadence_not_on_the_lag():
+    # A quarterly bill for Apr-Jun, booked in August (two months after quarter-end), the party's previous
+    # quarterly bill booked three months earlier: one cycle of an ordinary series, so nothing moves even
+    # though TTM Jun-26 (from July) holds the booking but none of the service months.
+    (t, a), _ = _quarterly("2025-08-12", "2025-04-01", "2025-06-30", previous="2025-05-12")
+    assert FlagCode.OUT_OF_PERIOD not in codes(a)
+    # The same series shown by the bills themselves: the previous bill's service period ends the month before
+    # (its booking, paid late, is only two months earlier, so the GL spacing alone would not show the cadence).
+    (t, a), _ = _quarterly("2025-08-12", "2025-04-01", "2025-06-30", previous="2025-06-12",
+                           previous_doc=("2025-01-01", "2025-03-31"))
+    assert FlagCode.OUT_OF_PERIOD not in codes(a)
+    # Presented by management as out-of-period: the move is measured whatever the cadence.
+    (t, a), _ = _quarterly("2025-08-12", "2025-04-01", "2025-06-30", previous="2025-05-12",
+                           category=AdjustmentCategory.OUT_OF_PERIOD)
+    assert FlagCode.OUT_OF_PERIOD in codes(a)
+
+
+def test_a_bill_outside_any_billing_series_is_out_of_period_even_one_month_after_its_service():
+    # A lone three-month bill: no earlier bill of the party, no abutting bill in the data room.
+    (t, a), _ = _quarterly("2025-07-12", "2025-04-01", "2025-06-30")
+    assert FlagCode.OUT_OF_PERIOD in codes(a)
+    # A previous bill only one month earlier: this one covers more than the time since the last bill.
+    (t, a), _ = _quarterly("2025-07-12", "2025-04-01", "2025-06-30", previous="2025-06-12")
+    assert FlagCode.OUT_OF_PERIOD in codes(a)
+    # Booked more than one cycle after the service ends: a late bill, not ordinary arrears.
+    (t, a), _ = _quarterly("2025-11-12", "2025-04-01", "2025-06-30", previous="2025-08-12")
+    assert FlagCode.OUT_OF_PERIOD in codes(a)
+
+
+def test_a_catch_up_or_multi_cycle_bill_is_never_ordinary_arrears():
+    # The bill calls itself a true-up: out of period even inside a series and one month after the service.
+    (t, a), _ = _quarterly("2025-07-12", "2025-04-01", "2025-06-30", previous="2025-04-12",
+                           text="Quarterly true-up of site services. Total due $9,000.00")
+    assert FlagCode.OUT_OF_PERIOD in codes(a)
+    # Six months at once, booked the month after they end: a catch-up whatever the lag.
+    (t, a), _ = _freight("2025-10-05", "2025-04-01", "2025-09-30", category=AdjustmentCategory.NON_RECURRING)
+    assert FlagCode.OUT_OF_PERIOD in codes(a)
+
+
+def test_recurrence_evidence_removes_only_the_recurring_part_of_a_mixed_contract():
+    gl = GL()
+    setup = [gl.add("2025-03-05", "6300", 20000, "Nimbus Cloud Systems", "Platform implementation - milestone 1", "NC-1"),
+             gl.add("2025-06-05", "6300", 20000, "Nimbus Cloud Systems", "Platform implementation - milestone 2", "NC-2")]
+    subs = gl.monthly("2025-06", "2025-12", "6300", 3000, "Nimbus Cloud Systems", "Platform subscription")
+    doc = "5.1 Nimbus order form.txt"
+    one_time = "One-time implementation fee: $40,000.00, invoiced in two milestones of $20,000.00 each."
+    monthly = "Subscription fee: $3,000.00 per month; the subscription renews automatically."
+    texts = {doc: f"{one_time} {monthly}"}
+    facts = {doc: _facts(doc, "contract", "Nimbus Cloud Systems", ["NC-OF-1"],
+                         [("fee", 40000, one_time), ("monthly_fee", 3000, monthly)],
+                         [("monthly_fee", "monthly fee of $3,000.00", monthly), ("auto_renew", "renews automatically", monthly)],
+                         [one_time, monthly], signed=True)}
+    adj = claim("K-1", "Platform implementation", [0, 61000, 0], ["6300"], refs=["DR 5.1"])
+    intent = AdjustmentIntent(adj_id="K-1", counterparties=["Nimbus Cloud Systems"], asserts_nonrecurring=True)
+    pkg = package(gl, [adj], texts)
+    ai = FakeAI(facts=facts, intents={"K-1": intent}, contradictions={"K-1": [Contradiction(
+        doc_id=doc, statement="describes the cost as a subscription.", quote=q(doc, monthly),
+        conflicts_with="one-time", entry_ids=setup + subs)]})
+    t, a = run(pkg, ai)["K-1"]
+    assert a.proposed[FY25] == "40000.00"
+    removed = {x.entry_id for x in a.gl_links if x.role == "removed"}
+    assert removed == set(subs)
+    assert any("one-time component" in f.text for f in a.facts)
+
+
+def test_a_document_about_another_matter_of_the_same_firm_contradicts_nothing():
+    gl = GL()
+    lit = [gl.add("2025-03-10", "6400", 12000, "Marlow & Finch LLP", "Matter 7710 Reyes v. Harbor - litigation", "MF-7710-03"),
+           gl.add("2025-06-10", "6400", 14000, "Marlow & Finch LLP", "Matter 7710 Reyes v. Harbor - litigation", "MF-7710-06")]
+    gl.monthly("2025-01", "2025-12", "6400", 1000, "Marlow & Finch LLP", "Matter 3002 general corporate retainer")
+    doc = "4.1 Marlow Finch engagement letter (Matter 3002).txt"
+    text = "General counsel services under Matter 3002 for a flat monthly fee of $1,000, until either party terminates."
+    facts = {doc: _facts(doc, "engagement_letter", "Marlow & Finch LLP", ["3002"], [("monthly_fee", 1000, text)],
+                         [("ongoing_services", "continues until terminated", text)], [text], signed=True)}
+    adj = claim("L-1", "Reyes litigation", [0, 26000, 0], ["6400"], refs=["DR 4"])
+    intent = AdjustmentIntent(adj_id="L-1", counterparties=["Marlow & Finch"], reference_numbers=["7710"],
+                              asserts_nonrecurring=True)
+    ai = FakeAI(facts=facts, intents={"L-1": intent}, contradictions={"L-1": [Contradiction(
+        doc_id=doc, statement="describes the cost as recurring.", quote=q(doc, text), conflicts_with="one-time",
+        entry_ids=lit)]})
+    t, a = run(package(gl, [adj], {doc: text}), ai)["L-1"]
+    assert FlagCode.CONTRADICTORY_EVIDENCE not in codes(a) and FlagCode.CONTINUING_OBLIGATION not in codes(a)
+    assert not t.removals and t.supporting_total(FY25) == D(26000)
+    assert any("separate engagement" in f.text for f in a.facts)
+
+
+def test_a_document_about_the_below_ebitda_part_says_nothing_about_the_rest():
+    gl = GL()
+    fee = gl.add("2026-01-16", "6400", 42000, "Marlowe Capital", "Debt placement fee", "MC-4")
+    writeoff = gl.add("2026-01-31", "8100", 27600, "", "Write-off of unamortized debt issuance costs", "JE-9")
+    doc = "7.3 Debt cost amortization schedule.txt"
+    text = "Amortization: $1,150.00 per month. Unamortized balance written off: $27,600.00."
+    facts = {doc: _facts(doc, "other", "", (), [("monthly_fee", 1150, text), ("line", 27600, text)],
+                         [("monthly_fee", "monthly fee of $1,150.00", text)], [text])}
+    adj = claim("F-1", "Refinancing costs", [0, 0, 69600], ["6400", "8100"], refs=["DR 7"])
+    ai = FakeAI(facts=facts, intents={"F-1": AdjustmentIntent(adj_id="F-1", keywords=["refinancing", "debt"])},
+                contradictions={"F-1": [Contradiction(doc_id=doc, statement="provides for a monthly fee of $1,150.00.",
+                                                     quote=q(doc, text), conflicts_with="one-time", entry_ids=[])]})
+    t, a = run(package(gl, [adj], {doc: text}), ai)["F-1"]
+    assert FlagCode.CONTRADICTORY_EVIDENCE not in codes(a)
+    assert the_flag(a, FlagCode.ALREADY_EXCLUDED_FROM_EBITDA).entry_ids == [writeoff]
+    assert t.supporting_total(TTM) == D(42000) and fee in t.supporting_ids()
+
+
+def test_a_document_about_both_an_out_of_play_entry_and_an_in_play_one_still_speaks():
+    # The schedule is about the below-EBITDA write-off and the fee still in play: it is not confined to the
+    # removed entry, so its recurrence statement reaches the fee.
+    gl = GL()
+    fee = gl.add("2026-01-16", "6400", 42000, "Marlowe Capital", "Debt placement fee", "MC-4")
+    writeoff = gl.add("2026-01-31", "8100", 27600, "", "Write-off of unamortized debt issuance costs", "JE-9")
+    doc = "7.3 Debt cost schedule.txt"
+    # The schedule names the fee's party and subject (not its amount) and states the write-off's amount.
+    text = ("Marlowe Capital arranged the debt placement. Unamortized balance written off: $27,600.00. "
+            "Monthly fee of $1,150.00, recurring.")
+    facts = {doc: _facts(doc, "other", "", (), [("line", 27600, text)], (), [text])}
+    adj = claim("F-2", "Refinancing costs", [0, 0, 69600], ["6400", "8100"], refs=["DR 7"])
+    ai = FakeAI(facts=facts, intents={"F-2": AdjustmentIntent(adj_id="F-2", keywords=["refinancing", "debt"])},
+                contradictions={"F-2": [Contradiction(doc_id=doc, statement="describes a recurring monthly fee.",
+                                                     quote=q(doc, text), conflicts_with="one-time", entry_ids=[])]})
+    t, a = run(package(gl, [adj], {doc: text}), ai)["F-2"]
+    assert the_flag(a, FlagCode.ALREADY_EXCLUDED_FROM_EBITDA).entry_ids == [writeoff]
+    assert FlagCode.CONTRADICTORY_EVIDENCE in codes(a)
+    assert {x.entry_id: x.removed_by for x in a.gl_links}[fee] == FlagCode.CONTRADICTORY_EVIDENCE
+
+
+def _write_off(with_outside_doc: bool, memo: str = "6.2 Write-off memo.txt", memo_type: str = "memo"):
+    gl = GL()
+    gl.add("2025-12-31", "5300", 92300, "", "Write-off - discontinued coated board", "IA-44")
+    letter = "6.2.1 Mill discontinuation letter.txt"
+    texts = {memo: "Total write-off: $92,300.00", letter: "The coated line is discontinued; no returns accepted."}
+    facts = {memo: _facts(memo, memo_type, "", (), [("total_due", 92300, "Total write-off: $92,300.00")]),
+             letter: _facts(letter, "other", "Brookfield Mill", (), (),
+                            statements=["The coated line is discontinued; no returns accepted."], signed=True)}
+    if not with_outside_doc:
+        texts.pop(letter)
+        facts.pop(letter)
+    adj = claim("W-1", "Discontinued stock write-off", [0, 92300, 0], ["5300"], refs=["DR 6.2"])
+    return _run_gl(gl, adj, texts, facts, AdjustmentIntent(adj_id="W-1", keywords=["discontinued", "coated"]))
+
+
+def test_a_journal_entry_is_supported_by_its_memo_when_an_outside_document_corroborates_it():
+    t, a = _write_off(with_outside_doc=True)
+    assert FlagCode.NO_DOCUMENT_SUPPORT not in codes(a) and a.treatment == Treatment.ACCEPT
+    assert any("journal entry" in f.text for f in a.facts)
+    t, a = _write_off(with_outside_doc=False)  # the company's memo alone is a representation
+    assert a.treatment == Treatment.REQUEST_INFO
+
+
+def test_a_journal_entrys_source_can_be_any_company_calculation_not_only_a_memo():
+    # A write-down schedule or reserve analysis (not titled "memo") is the company's own calculation too.
+    t, a = _write_off(with_outside_doc=True, memo="6.2 Inventory Write-down Schedule.txt", memo_type="other")
+    assert FlagCode.NO_DOCUMENT_SUPPORT not in codes(a) and a.treatment == Treatment.ACCEPT
+    # An email stating the amount is a representation, not the entry's source document.
+    t, a = _write_off(with_outside_doc=True, memo="6.2 Controller email.txt", memo_type="correspondence")
+    assert a.treatment == Treatment.REQUEST_INFO
+
+
+def test_an_outside_bill_of_another_claimed_entry_is_not_attached_to_the_journal_entry():
+    gl = GL()
+    journal = gl.add("2025-12-31", "5300", 92300, "", "Write-off - discontinued coated board", "IA-44")
+    haul = gl.add("2025-12-20", "5300", 4800, "Chatham Waste", "Disposal - discontinued coated board", "CW-9")
+    memo, invoice = "6.2 Write-off memo.txt", "6.2.2 Chatham Waste invoice CW-9.txt"
+    texts = {memo: "Total write-off: $92,300.00", invoice: "Invoice CW-9. Disposal of coated board. Total $4,800.00"}
+    facts = {memo: _facts(memo, "memo", "", (), [("total_due", 92300, "Total write-off: $92,300.00")]),
+             invoice: _facts(invoice, "invoice", "Chatham Waste", ["CW-9"], [("total_due", 4800, "Total $4,800.00")])}
+    adj = claim("W-2", "Discontinued stock write-off", [0, 97100, 0], ["5300"], refs=["DR 6.2"])
+    t, a = _run_gl(gl, adj, texts, facts, AdjustmentIntent(adj_id="W-2", keywords=["discontinued", "coated"]))
+    links = {x.entry_id: x.doc_ids for x in a.gl_links}
+    assert invoice in links[haul] and invoice not in links[journal]
+
+
+def test_one_time_pricing_binds_only_the_figure_the_cue_prices():
+    from qoe.challenge import _one_off_amounts
+    assert _one_off_amounts("The Company will pay a monthly retainer of $3,500, creditable against hourly fees.") == set()
+    assert _one_off_amounts("One-time setup fee of $10,000, then $2,500 per month thereafter.") == {D(10000)}
+    assert _one_off_amounts("Implementation is a one-time charge; support is $1,200 monthly.") == set()
+    assert _one_off_amounts("Implementation is a one-time charge, while support costs $1,200.") == set()
+    assert _one_off_amounts("A $10,000 one-time setup fee applies.") == {D(10000)}
+    # The installments of a one-time fee are one-time as well.
+    assert _one_off_amounts(
+        "One-time implementation fee: $64,000.00, invoiced in two milestones of $32,000.00 each."
+    ) == {D(64000), D(32000)}
+
+
+def _creditable_retainer(text: str, term_text: str):
+    gl = GL()
+    fees = gl.monthly("2025-01", "2025-12", "6400", 3500, "Pell & Ardent LLP", "Monthly retainer")
+    doc = "4.9 Pell Ardent engagement letter.txt"
+    facts = {doc: _facts(doc, "engagement_letter", "Pell & Ardent LLP", (), [("retainer", 3500, text)],
+                         [("retainer", term_text, text)], [text], signed=True)}
+    adj = claim("P-1", "Special counsel fees", [0, 42000, 21000], ["6400"], refs=["DR 4.9"])
+    intent = AdjustmentIntent(adj_id="P-1", counterparties=["Pell & Ardent"], asserts_nonrecurring=True)
+    return _run_gl(gl, adj, {doc: text}, facts, intent), fees
+
+
+def test_a_retainer_creditable_against_hourly_fees_is_still_a_continuing_obligation():
+    (t, a), fees = _creditable_retainer("The Company will pay a monthly retainer of $3,500, creditable against hourly fees.",
+                                        "retainer of $3,500.00 per month")
+    assert FlagCode.CONTINUING_OBLIGATION in codes(a)
+    assert {x.entry_id for x in a.gl_links if x.role == "removed"} == set(fees)
+    assert not any("one-time component" in f.text for f in a.facts)
+
+
+def test_a_retainer_creditable_against_the_success_fee_belongs_to_the_transaction():
+    (t, a), _ = _creditable_retainer(
+        "The Company will pay a monthly retainer of $3,500, creditable against the Success Fee payable at closing.",
+        "retainer of $3,500.00 per month")
+    assert FlagCode.CONTINUING_OBLIGATION not in codes(a)
+
+
+def _owner_pay(docs: dict, monthly: object = 125000, normalized: str = "400000.00", claims=(0, 1100000, 1100000)):
+    """Owner pay normalized to a market level; ``docs`` maps doc_id -> (doc_type, party, [(label, amount, text)], signed)."""
+    gl = GL()
+    pay = gl.monthly("2025-01", "2026-06", "6010", monthly, "J. Varga", "Officer payroll - J. Varga") if monthly else []
+    texts = {d: " ".join(x[2] for x in amts) for d, (_, _, amts, _) in docs.items()}
+    facts = {d: _facts(d, typ, party, (), amts, signed=signed) for d, (typ, party, amts, signed) in docs.items()}
+    adj = claim("N-1", "Owner compensation normalization", list(claims), ["6010"], refs=["DR 2"],
+                category=AdjustmentCategory.NORMALIZATION)
+    intent = AdjustmentIntent(adj_id="N-1", counterparties=["J. Varga"], is_normalization=True,
+                              normalized_amount=normalized, keywords=["officer"])
+    return _run_gl(gl, adj, texts, facts, intent), pay
+
+
+PAY_STUDY = "2.2 Harbor Pay Advisors - CEO pay study.txt"
+
+
+def test_a_benchmark_far_below_what_the_owner_draws_still_sets_the_level():
+    # The owner draws 1.5m a year; market is 300,000 (a fifth of it). What a figure measures is read from its
+    # words: the revenue figure and the hourly fee are not levels, the market median is.
+    study = ("benchmark", "Harbor Pay Advisors",
+             [("line", 76000000, "Peer companies report revenue of about $76 million."),
+              ("line", 185, "Our fee for this study is $185 per hour."),
+              ("line", 300000, "The 50th percentile total target cash compensation is $300,000.")], None)
+    (t, a), _ = _owner_pay({PAY_STUDY: study})
+    assert t.normalization.level == D(300000) and t.normalization.benchmark
+    assert a.proposed == amounts(0, 1200000, 1200000) and a.treatment == Treatment.REVISE
+    assert FlagCode.NORMALIZATION_BENCHMARK_MISSING not in codes(a)
+
+
+def test_a_rent_benchmark_stated_as_a_rate_and_an_area_sets_the_level():
+    broker = [("line", 9, "We conclude a market rent of $9.00 per square foot per year for the 14,000 square feet.")]
+    (t, a), related, other = _related_rent(broker)
+    # 9.00 x 14,000 = 126,000 a year, the same level the broker would state as a total.
+    assert t.normalization.level == D(126000)
+    assert a.proposed == amounts(0, -18000, -18000)
+
+
+def test_a_non_party_document_without_market_words_is_not_a_market_benchmark():
+    # Another executive's signed separation agreement states one salary in range; it is not a view of market.
+    other_exec = ("separation_agreement", "R. Alvarez", [("line", 350000, "Executive's annual base salary is $350,000.")],
+                  True)
+    (t, a), _ = _owner_pay({"3.1 Separation agreement - R. Alvarez.txt": other_exec})
+    assert FlagCode.NORMALIZATION_BENCHMARK_MISSING in codes(a) and a.treatment == Treatment.REQUEST_INFO
+    # The same kind of document speaking of market does set it.
+    fmv = ("other", "Coastline Valuation Group",
+           [("line", 350000, "The fair market value of the executive's services is $350,000 a year.")], True)
+    (t, a), _ = _owner_pay({"2.5 FMV compensation opinion.txt": fmv})
+    assert t.normalization.level == D(350000)
+
+
+def test_a_rent_free_arrangement_is_normalized_to_the_whole_market_level():
+    # The company occupies the owner's building rent-free: no rent in the GL, and management deducts the
+    # market rent it would pay. The level is the whole normalization, not a gap in the actual cost.
+    broker = ("benchmark", "Coastline Realty Advisors",
+              [("monthly_fee", 10500, "We conclude a market rent of $10,500 per month.")], True)
+    texts = {"2.4 Broker opinion of market rent.txt": broker[2][0][2]}
+    facts = {"2.4 Broker opinion of market rent.txt": _facts("2.4 Broker opinion of market rent.txt", broker[0],
+                                                             broker[1], (), broker[2], signed=True)}
+    gl = GL()
+    gl.monthly("2025-01", "2026-06", "6100", 4000, "Harbor Storage", "Rent - overflow site")
+    for level, expected in (("126000.00", Treatment.ACCEPT), ("120000.00", Treatment.REVISE)):
+        claimed = -D(level)
+        adj = claim("R-2", "Rent-free premises", [0, claimed, claimed], ["6100"], refs=["DR 2.4"],
+                    category=AdjustmentCategory.NORMALIZATION)
+        intent = AdjustmentIntent(adj_id="R-2", counterparties=["Bayfront Holdings"], is_normalization=True,
+                                  normalized_amount=level, keywords=["rent"])
+        t, a = _run_gl(gl, adj, texts, facts, intent)
+        assert FlagCode.NO_GL_SUPPORT not in codes(a) and FlagCode.PARTIAL_GL_SUPPORT not in codes(a)
+        assert a.proposed == amounts(0, -126000, -126000) and a.treatment == expected
+
+
+def test_normalization_keeps_the_owners_unnamed_payroll_journal_in_the_actual_cost():
+    # Xero-style: the owner's salary posts as a manual journal with no contact; only the car allowance names
+    # the owner. Another employee's pay in the same account names that employee and is not the arrangement.
+    gl = GL()
+    salary = gl.monthly("2025-01", "2025-12", "6010", 40000, "", "Salary journal - owner")
+    allowance = gl.monthly("2025-01", "2025-12", "6010", 1000, "J. Varga", "Car allowance")
+    other = gl.monthly("2025-01", "2025-12", "6010", 9000, "M. Chen", "Salary - M. Chen")
+    agreement = "2.1 Varga employment agreement.txt"
+    text = "The Executive's total annual compensation is $300,000."
+    facts = {agreement: _facts(agreement, "employment_agreement", "Harbor Unit Co", (), [("line", 300000, text)],
+                               signed=True)}
+    adj = claim("N-2", "Owner compensation normalization", [0, 192000, 0], ["6010"], refs=["DR 2.1"],
+                category=AdjustmentCategory.NORMALIZATION)
+    intent = AdjustmentIntent(adj_id="N-2", counterparties=["J. Varga"], is_normalization=True,
+                              normalized_amount="300000.00", keywords=["salary", "officer"])
+    t, a = _run_gl(gl, adj, {agreement: text}, facts, intent)
+    assert set(t.claimed[FY25]) == set(salary) | set(allowance)
+    assert not set(other) & set(t.claimed[FY25])
+    assert a.proposed == amounts(0, 192000, 0) and a.treatment == Treatment.ACCEPT
+    assert FlagCode.PARTIAL_GL_SUPPORT not in codes(a)
+
+
+def test_titles_name_an_engagement_only_by_a_typed_reference():
+    from qoe.trace import typed_refs
+    assert typed_refs("Lease Agreement - 410 Harbor Road") == frozenset()
+    assert typed_refs("Proof of Claim Official Form 410") == frozenset()
+    assert typed_refs("FY2026 Management Incentive Plan") == frozenset()
+    assert typed_refs("Master Services Agreement dated 2024-03-01") == frozenset()
+    assert typed_refs("Invoice Aug-24") == frozenset()
+    assert typed_refs("Engagement Letter - General Counsel (Matter 100)") == {("matter", "100")}
+
+
+def test_a_date_in_an_agreements_title_does_not_make_it_about_another_engagement():
+    # The subscription bills cite a purchase order; the agreement's title carries its date. The date names no
+    # engagement, so the agreement's auto-renewal still contradicts the "one-time" claim.
+    gl = GL()
+    subs = gl.monthly("2025-01", "2025-12", "6300", 3000, "Nimbus Cloud Systems", "Platform subscription - PO 4471")
+    doc = "5.2 Nimbus Master Services Agreement dated 2024-03-01.txt"
+    text = "Subscription fee: $3,000.00 per month; the subscription renews automatically."
+    facts = {doc: _facts(doc, "contract", "Nimbus Cloud Systems", (), [("monthly_fee", 3000, text)],
+                         [("monthly_fee", "monthly fee of $3,000.00", text), ("auto_renew", "renews automatically", text)],
+                         [text], signed=True)}
+    adj = claim("K-2", "Platform implementation (one-time)", [0, 36000, 18000], ["6300"], refs=["DR 5.2"])
+    intent = AdjustmentIntent(adj_id="K-2", counterparties=["Nimbus Cloud Systems"], asserts_nonrecurring=True)
+    ai = FakeAI(facts=facts, intents={"K-2": intent}, contradictions={"K-2": [Contradiction(
+        doc_id=doc, statement="describes the cost as a subscription that renews automatically.", quote=q(doc, text),
+        conflicts_with="one-time", entry_ids=subs)]})
+    t, a = run(package(gl, [adj], {doc: text}), ai)["K-2"]
+    assert FlagCode.CONTRADICTORY_EVIDENCE in codes(a) or FlagCode.CONTINUING_OBLIGATION in codes(a)
+    assert {x.entry_id for x in a.gl_links if x.role == "removed"} == set(subs)
+    assert not any("separate engagement" in f.text for f in a.facts)

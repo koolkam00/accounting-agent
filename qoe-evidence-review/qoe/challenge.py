@@ -38,6 +38,8 @@ from qoe.trace import (
     AGREEMENT_DOC_TYPES,
     ENTRY_ABOUT_BASES,
     ENTRY_SPECIFIC_BASES,
+    DW_ENTRY_AMOUNT,
+    DW_ENTRY_NUMBER,
     W_COUNTERPARTY,
     W_KEYWORD,
     W_KEYWORD_EXTRA,
@@ -51,6 +53,7 @@ from qoe.trace import (
     _short_sentence,
     cents,
     find_subset,
+    is_repeated_bill,
     join_limited,
     keyword_hits,
     keyword_list,
@@ -121,9 +124,12 @@ _FINITE = re.compile(
     r"(?:equal\s+)?(?:consecutive\s+)?(?:monthly\s+)?(?:installments?|instalments?|payments?)\b",
     re.IGNORECASE,
 )
-# A retainer or fee tied to one transaction or one search ends with it (SPEC §5.4).
+# A retainer or fee tied to one transaction or one search ends with it (SPEC §5.4). Being creditable
+# says so only when the credit is against the transaction's own fee; a retainer creditable against
+# hourly fees is an ordinary standing retainer.
 _ONE_OFF_TERM = re.compile(
-    r"one[- ]time|creditable|success fee|upon (?:closing|completion|placement)|(?:payable |due )?(?:up)?on signing|"
+    r"one[- ]time|creditable against (?:the |any )?(?:success|transaction|completion|closing|placement)\b|success fee"
+    r"|upon (?:closing|completion|placement)|(?:payable |due )?(?:up)?on signing|"
     r"retained search|search fee|single (?:transaction|search|engagement)",
     re.IGNORECASE,
 )
@@ -281,6 +287,7 @@ _REMOVED_AS = {
     FlagCode.CONTRADICTORY_EVIDENCE: "as contradicted by the documents",
     FlagCode.CONTINUING_OBLIGATION: "as a continuing obligation",
     FlagCode.RECURRING_PATTERN: "as recurring",
+    FlagCode.DUPLICATE_GL_ENTRY: "as a second posting of the same bill",
 }
 
 
@@ -405,7 +412,7 @@ def _doc_relates_to_entry(t: AdjustmentTrace, doc_id: str, entry_id: str) -> boo
     """Code-side check on an AI-proposed (document, entry) pair: the document must demonstrably be about the entry."""
     idx = t.index
     info = idx.by_id.get(entry_id)
-    if info is None:
+    if info is None or t.about_other_matter(doc_id, t.group_of.get(entry_id, "")):
         return False
     dl = t.doc_links.get(doc_id)
     if dl is not None and dl.entry_basis.get(entry_id) in ENTRY_SPECIFIC_BASES | {"reference", "amount_multi"}:
@@ -504,6 +511,7 @@ def run_challenges(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
     strongest evidence first (code facts, then verified quotes, then AI
     classifications, then pattern analysis)."""
     already_excluded(t)
+    duplicate_entries(t)
     contradictions(t, ctx)
     entry_qualification(t, ctx)
     continuing_obligation(t)
@@ -513,11 +521,11 @@ def run_challenges(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
     counterparty_history(t)
     period_mismatch(t)
     sign_error(t)
-    duplicate_entries(t)
     doc_gl_amount_mismatch(t)
     unsigned_or_draft(t)
     normalization(t)
     pro_forma(t)
+    excess_carry(t)
     document_coverage(t)
 
 
@@ -599,6 +607,9 @@ def contradictions(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
     claimed_set = set(claimed)
     claimed_groups = {t.group_of[e] for e in claimed if e in t.group_of}
     removable = not (t.is_normalization or t.is_pro_forma)
+    # Entries the documents themselves price as a one-time component: recurrence evidence about the
+    # rest of the arrangement does not reach them (see _one_off_component).
+    one_off = _one_off_component(t) if t.asserts_nonrecurring else {}
     # One statement per document (the AI lists its strongest first); documents that
     # contradict the same entries share one flag.
     merged: dict[tuple[str, ...], list[tuple[str, list[EvidenceQuote], str]]] = {}
@@ -609,13 +620,39 @@ def contradictions(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
                 quotes.append(c.quote)
         statement = next((c.statement for c in items if c.statement.strip()), "")
         proposed = {e for c in items for e in c.entry_ids if e in claimed_set}
-        scope = [e for e in claimed if e in proposed and _doc_relates_to_entry(t, doc_id, e)]
+        # A document about another engagement of the same party (the letter for one matter against another
+        # matter's bills) says nothing about this claim's entries.
+        elsewhere = {e for e in proposed if t.about_other_matter(doc_id, t.group_of.get(e, ""))}
+        if proposed and proposed <= elsewhere:
+            t.add_fact(
+                Fact(text=f"{doc_id} concerns a separate engagement with the same party; it does not bear on "
+                          f"{t.items_text(proposed, 1)}.", entry_ids=sorted(proposed)),
+                key=f"doc:{doc_id}",
+            )
+            continue
+        scope = [e for e in claimed if e in proposed and e not in elsewhere and _doc_relates_to_entry(t, doc_id, e)]
         if not scope and not proposed:
             groups = [g for g in t.groups_for_doc(doc_id) if g in claimed_groups]
             scope = [e for e in claimed if t.group_of.get(e) in groups]
+            if not scope and _about_entries_out_of_play(t, doc_id, claimed_set):
+                # The document is specifically about claimed entries already taken out on structural grounds
+                # (a debt-cost schedule for the part of the claim that sits below EBITDA): it says nothing
+                # about the rest of the claim.
+                continue
             if not scope and len(claimed_groups) == 1:
                 # One kind of activity is claimed, so a document contradicting the claim covers all of it.
                 scope = list(claimed)
+        spared = [e for e in scope if e in one_off]
+        scope = [e for e in scope if e not in one_off]
+        if spared:
+            t.add_fact(
+                Fact(text=f"{one_off[spared[0]]} prices {t.items_text(spared, 1)} as a one-time component, separate "
+                          "from the recurring charges; the recurrence evidence does not apply to it.",
+                     entry_ids=spared),
+                key=f"oneoff:{one_off[spared[0]]}",
+            )
+            if not scope:
+                continue
         merged.setdefault(tuple(scope), []).append((doc_id, quotes, statement))
     for scope_key, docs in merged.items():
         scope = list(scope_key)
@@ -649,6 +686,153 @@ def contradictions(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
             )
         for doc_id, qs, stmt in docs:
             t.add_fact(Fact(text=_doc_says(doc_id, stmt, idx.facts.get(doc_id)), entry_ids=scope, quotes=qs), key=f"doc:{doc_id}")
+
+
+# Words with which a document prices a component as a single, non-repeating charge. How a fee is
+# credited ("creditable against the success fee") says nothing about whether it recurs: monthly
+# retainers are routinely creditable, so that phrase is not a cue.
+_ONE_OFF_PRICE = re.compile(r"one[- ]time|non-?recurring|lump[- ]sum|single payment", re.IGNORECASE)
+# A figure is bound to the cue only inside the same clause and a few words away: "one-time
+# implementation fee: $64,000" or "a $10,000 one-time setup fee", never "... one-time; support is $1,200".
+_CUE_TO_FIGURE = 45
+_FIGURE_TO_CUE = 25
+_CLAUSE_BREAK = re.compile(r"[;,]|\.(?:\s|$)|\bthen\b|\bthereafter\b|\bplus\b|\bwhile\b|\bwhereas\b", re.IGNORECASE)
+# The installments of a one-time fee are one-time too: "invoiced in two milestones of $32,000 each".
+_INSTALLMENT_CUE = re.compile(r"install?ments?|milestones?|tranches?|\beach\b", re.IGNORECASE)
+_RECURRING_LABELS = frozenset({"monthly_fee", "retainer", "recurring_fee", "monthly_retainer", "rate"})
+
+
+_PERIOD_BEFORE = re.compile(
+    r"(?<!non-)(?<!non)\b(?:monthly|quarterly|annual(?:ly)?|per\s+month|each\s+month|every\s+month)\b[^$\d.;]{0,20}$",
+    re.IGNORECASE,
+)
+_SENTENCE_BREAK = re.compile(r";|\.(?:\s|$)")
+
+
+def _one_off_amounts(text: str) -> set[Decimal]:
+    """Amounts a text itself prices as one-time: the figure bound to a one-time cue, and its installments.
+
+    Sentence by sentence: a figure is bound when it sits in the cue's clause, a few words away, and is
+    not written as a periodic amount ("$2,500 per month", "monthly fee $2,000"); a figure in the same
+    sentence that splits a bound fee into 2-12 equal parts, beside an installment word, is one of its
+    installments.
+    """
+    text = text or ""
+    bound: set[Decimal] = set()
+    start = 0
+    for brk in list(_SENTENCE_BREAK.finditer(text)) + [None]:
+        stop = brk.start() if brk is not None else len(text)
+        sentence = text[start:stop]
+        start = brk.end() if brk is not None else len(text)
+        figures = []
+        for m in _MONEY.finditer(sentence):
+            if _PERIOD_AFTER.match(sentence, m.end()) or _PERIOD_BEFORE.search(sentence[: m.start()]):
+                continue  # a periodic amount is never the one-time component
+            try:
+                figures.append((m, D(m.group(1))))
+            except ValueError:
+                continue
+        here: set[Decimal] = set()
+        for cue in _ONE_OFF_PRICE.finditer(sentence):
+            for m, value in figures:
+                if cue.end() <= m.start() <= cue.end() + _CUE_TO_FIGURE:
+                    between = sentence[cue.end() : m.start()]
+                elif cue.start() - _FIGURE_TO_CUE <= m.end() <= cue.start():
+                    between = sentence[m.end() : cue.start()]  # "a $10,000 one-time setup fee"
+                else:
+                    continue
+                if not _CLAUSE_BREAK.search(between):
+                    here.add(value)
+        if here and _INSTALLMENT_CUE.search(sentence):
+            for _, value in figures:
+                if value > 0 and any(b > value and b % value == 0 and 2 <= b / value <= 12 for b in here):
+                    here.add(value)
+        bound |= here
+    bound.discard(ZERO)
+    return bound
+
+
+def _is_number(value: str) -> bool:
+    try:
+        D(value)
+        return True
+    except (ValueError, ArithmeticError):
+        return False
+
+
+def _periodic_amounts(text: str) -> set[Decimal]:
+    """Figures a text writes as periodic amounts ("$2,500 per month", "monthly fee $2,000")."""
+    text = text or ""
+    out: set[Decimal] = set()
+    for m in _MONEY.finditer(text):
+        if _PERIOD_AFTER.match(text, m.end()) or _PERIOD_BEFORE.search(text[max(0, m.start() - 40) : m.start()]):
+            try:
+                out.add(D(m.group(1)))
+            except ValueError:
+                continue
+    return out
+
+
+def _one_off_component(t: AdjustmentTrace) -> dict[str, str]:
+    """Claimed entries billed at an amount a related document itself calls one-time -> that document.
+
+    A contract often prices a one-time element (an implementation fee, a transaction retainer)
+    separately from a recurring one (a subscription). The recurring terms are evidence against
+    adding back the recurring charges, not against the one-time fee the same contract sets
+    apart: a practitioner removes only the subscription entries. Only verified quotes count,
+    only the figure the one-time cue itself prices (and that fee's installments) is one-time,
+    and the document must be the entry's party's (or be tied to the entry specifically).
+    """
+    idx = t.index
+    tol = idx.tolerance
+    out: dict[str, str] = {}
+    claimed = t.claimed_ids()
+    for doc_id in sorted(t.doc_links):
+        facts = idx.facts.get(doc_id)
+        if facts is None:
+            continue
+        amounts: set[Decimal] = set()
+        for a in facts.amounts:
+            if a.label.strip().lower() in _RECURRING_LABELS:
+                continue
+            try:
+                stated = abs(D(a.amount))
+            except ValueError:
+                continue
+            if any(abs(stated - x) <= tol for x in _one_off_amounts(a.quote.quote)):
+                amounts.add(stated)
+        for q in list(facts.key_statements) + [x.quote for x in facts.terms]:
+            amounts.update(_one_off_amounts(q.quote))
+        # A figure the same document also states as a periodic charge is not a one-time component.
+        periodic = {abs(D(a.amount)) for a in facts.amounts if a.label.strip().lower() in _RECURRING_LABELS
+                    and _is_number(a.amount)}
+        for q in [a.quote for a in facts.amounts] + list(facts.key_statements) + [x.quote for x in facts.terms]:
+            periodic |= _periodic_amounts(q.quote)
+        amounts = {x for x in amounts if all(abs(x - p) > tol for p in periodic)}
+        amounts.discard(ZERO)
+        if not amounts:
+            continue
+        dcp = idx.doc_cp.get(doc_id, frozenset())
+        basis = t.doc_links[doc_id].entry_basis
+        for e in claimed:
+            info = idx.by_id[e]
+            if not (names_match(dcp, info.cp_tokens) or basis.get(e) in ENTRY_SPECIFIC_BASES):
+                continue
+            if any(abs(abs(info.amount) - a) <= tol for a in amounts):
+                out.setdefault(e, doc_id)
+    return out
+
+
+def _about_entries_out_of_play(t: AdjustmentTrace, doc_id: str, in_play: set[str]) -> bool:
+    """The document is specifically about claimed entries no longer in play (removed as below
+    EBITDA, claimed elsewhere, or a repeated posting) and about no claimed entry still in play, so it
+    cannot speak for the rest of the claim. A document about both still speaks to the entries in play."""
+    dl = t.doc_links.get(doc_id)
+    if dl is None:
+        return False
+    claimed = set(t.claimed_ids())
+    about = {e for e, b in dl.entry_basis.items() if b in ENTRY_ABOUT_BASES and e in claimed}
+    return bool(about) and not (about & in_play)
 
 
 def entry_qualification(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
@@ -815,6 +999,11 @@ def continuing_obligation(t: AdjustmentTrace) -> None:
         return
     tol = idx.tolerance
     last = max(idx.by_id[e].month for e in claimed)
+    # The one-time component a contract prices separately is not the continuing obligation.
+    one_off = _one_off_component(t)
+    claimed = [e for e in claimed if e not in one_off]
+    if not claimed:
+        return
     by_scope: dict[tuple[str, ...], list[tuple[str, list[TermFact]]]] = {}
     claimed_groups = {t.group_of[e] for e in claimed if e in t.group_of}
     for doc_id in t.evidence_docs():
@@ -871,7 +1060,10 @@ def continuing_obligation(t: AdjustmentTrace) -> None:
             e
             for e in claimed
             if any(abs(abs(t.amount(e)) - fee) <= tol for fee in fees)
-            and (t.group_of.get(e) in doc_groups or names_match(idx.by_id[e].cp_tokens, doc_cp))
+            and (
+                t.group_of.get(e) in doc_groups
+                or (names_match(idx.by_id[e].cp_tokens, doc_cp) and not t.about_other_matter(doc_id, t.group_of.get(e, "")))
+            )
         ]
         covered = {t.group_of[e] for e in fee_hits}
         if feeless:
@@ -964,6 +1156,16 @@ def recurring_pattern(t: AdjustmentTrace) -> None:
             why = _comparable_reason(info, profile)
             if why:
                 comparables.append((info, why))
+        # The other bills of one fixed-fee engagement (an executed letter of the same party fixes one fee
+        # that the claimed and unclaimed bills make up together) are the same event, billed in phases,
+        # not evidence that it recurs.
+        same_party = [info for info, _ in comparables if profile.cp and names_match(info.cp_tokens, profile.cp)]
+        party_claimed = sum((t.amount(e) for e in claimed if names_match(idx.by_id[e].cp_tokens, profile.cp)), ZERO)
+        if same_party and _fixed_fee_letter(
+            t, profile.cp, abs(party_claimed + sum((x.amount for x in same_party), ZERO))
+        ) is not None:
+            engagement = {x.entry_id for x in same_party}
+            comparables = [(info, why) for info, why in comparables if info.entry_id not in engagement]
         if not comparables:
             continue
         by_label = {
@@ -1035,6 +1237,73 @@ def _service_quote(facts: DocFacts, months: list[str]) -> Optional[EvidenceQuote
     return None
 
 
+# The longest service period an ordinary recurring bill covers: a month or a quarter. A bill for four
+# or more months at once is a catch-up whatever its lag.
+ARREARS_MAX_SERVICE_MONTHS = 3
+# A bill that describes itself as correcting or catching up earlier charges is never ordinary billing. Routine
+# line items ("fuel surcharge adjustment", "rate adjustment") are not: they appear on every monthly bill.
+_CATCH_UP_BILL = re.compile(
+    r"\btrue[- ]?up\b|\bcatch[- ]?up\b|\bretroactive(?:ly)?\b|\bback[- ]?bill(?:ed|ing|s)?\b"
+    r"|\b(?:under|over)[- ]?bill(?:ed|ing)\b|\bone[- ]time (?:reconciliation|adjustment|correction|charge)"
+    r"|\b(?:billing|invoice) (?:reconciliation|correction)s?\b|\bbill(?:ing)? adjustment\b"
+    r"|\bprior[- ]period (?:adjustment|charges?|billing|correction)s?\b",
+    re.IGNORECASE,
+)
+
+
+def _months_between(earlier: str, later: str) -> int:
+    (y1, m1), (y2, m2) = (int(x) for x in earlier.split("-")), (int(x) for x in later.split("-"))
+    return (y2 - y1) * 12 + (m2 - m1)
+
+
+def _ordinary_arrears(t: AdjustmentTrace, entry_id: str, doc_id: str, s_months: list[str]) -> bool:
+    """The bill is one cycle of an ordinary billing series, billed in arrears (SPEC §5.4 OUT_OF_PERIOD).
+
+    A recurring bill for the last month or quarter recurs every cycle, so each period carries a full
+    year of it and nothing is out of period. What decides is the billing cadence, not the lag alone:
+    the bill covers one ordinary cycle (at most a quarter), is booked within one cycle after it ends,
+    does not call itself a correction or catch-up, and belongs to a series of the same party's bills
+    (a bill of the same party and series whose service period abuts this one, or the party's previous
+    booking in the account at least one cycle earlier, so the bill covers only the time since the last).
+    """
+    idx = t.index
+    info = idx.by_id[entry_id]
+    n = len(s_months)
+    if n > ARREARS_MAX_SERVICE_MONTHS or not s_months[-1] < info.month:
+        return False
+    if _months_between(s_months[-1], info.month) > n:
+        return False
+    doc = idx.docs.get(doc_id)
+    if doc is not None and _CATCH_UP_BILL.search(doc.full_text):
+        return False
+    party = idx.doc_cp.get(doc_id) or info.cp_tokens
+    ref = t.group_ref.get(t.group_of.get(entry_id, ""), "")
+    before, after = add_months(s_months[0], -1), add_months(s_months[-1], 1)
+    for other in idx.docs:
+        if other == doc_id or not party or not names_match(idx.doc_cp.get(other, frozenset()), party):
+            continue
+        if ref and ref not in idx.doc_refs.get(other, frozenset()):
+            continue  # another series of the same party (a retainer beside a matter's bills)
+        f = idx.facts.get(other)
+        months = month_range_safe(f.service_period_start, f.service_period_end) if f else []
+        if months and len(months) <= ARREARS_MAX_SERVICE_MONTHS and (months[-1] == before or months[0] == after):
+            return True
+    if not info.cp_tokens:
+        return False
+    earlier = [
+        x.month
+        for x in idx.entries
+        if x.entry_id != entry_id
+        and x.entry.account == info.entry.account
+        and (x.amount > 0) == (info.amount > 0)
+        and x.month <= info.month
+        and x.pos < info.pos
+        and names_match(x.cp_tokens, info.cp_tokens)
+        and (not info.memo_ref_norm or x.memo_ref_norm == info.memo_ref_norm)
+    ]
+    return bool(earlier) and _months_between(max(earlier), info.month) >= n
+
+
 def out_of_period(t: AdjustmentTrace) -> None:
     """Move entries whose documented service period sits in another analysis period.
 
@@ -1044,6 +1313,7 @@ def out_of_period(t: AdjustmentTrace) -> None:
     outside the analysis, so no negative side is carried for them (SPEC §5.4).
     """
     idx = t.index
+    declared = t.adj.category == AdjustmentCategory.OUT_OF_PERIOD
     for e in t.supporting_ids():
         if e in t.moved:
             continue
@@ -1053,12 +1323,28 @@ def out_of_period(t: AdjustmentTrace) -> None:
             s_months = month_range_safe(facts.service_period_start, facts.service_period_end)
             if not s_months or info.month in s_months:
                 continue
+            # Ordinary billing in arrears (one cycle of a recurring series, billed after it ends) recurs
+            # every cycle, so each period carries a full year of it and nothing is out of period. A
+            # catch-up (a true-up, a correction, a late or multi-cycle bill) is. When management itself
+            # presents the item as out-of-period, the move is measured whatever the cadence.
+            if not declared and _ordinary_arrears(t, e, doc_id, s_months):
+                continue
             book_labels = set(idx.labels_of(info.month))
             svc_labels = {lbl for m in s_months for lbl in idx.labels_of(m)}
             # Service months outside every analysis period (before data_start, say) are a different
             # fiscal period even when the rest of the service falls in the booking period's labels.
             outside = [m for m in s_months if not idx.labels_of(m)]
-            if book_labels == svc_labels and not outside:
+
+            def splits(lbl: str) -> bool:
+                """The label holds the booking but not every service month, or service months but not the booking."""
+                months = idx.label_months[lbl]
+                n_svc = sum(1 for m in s_months if m in months)
+                return (info.month in months and n_svc < len(s_months)) or (info.month not in months and n_svc > 0)
+
+            # Tested on every period label: overlapping periods (FY and TTM) can each cut the service
+            # differently, so a bill whose service sits wholly inside the fiscal year of booking can still
+            # belong partly outside a TTM that starts mid-service.
+            if not any(splits(lbl) for lbl in t.labels) and not outside:
                 continue
             total_months = len(s_months)
             contrib: dict[str, Decimal] = {}
@@ -1076,10 +1362,22 @@ def out_of_period(t: AdjustmentTrace) -> None:
             order = t.labels.index
             belongs = ", ".join(sorted(svc_labels, key=order)) or "months before the analysis periods"
             booked = ", ".join(sorted(book_labels, key=order)) or "the booking month"
-            msg = (
-                f"{t.entry_ref(e)} ({money(info.amount)}) covers services in {month_span(s_months)} per {doc_id}, so "
-                f"the cost belongs to {belongs} and moves out of {booked} pro rata by service month."
-            )
+            if svc_labels == book_labels:
+                # Same labels, cut differently: say which period holds only part of the service.
+                partial = [lbl for lbl in sorted(book_labels, key=order) if splits(lbl)]
+                where = ", ".join(
+                    f"{lbl} holds {sum(1 for m in s_months if m in idx.label_months[lbl])} of the "
+                    f"{len(s_months)} service months" for lbl in partial
+                )
+                msg = (
+                    f"{t.entry_ref(e)} ({money(info.amount)}) is for services in {month_span(s_months)} per {doc_id}; "
+                    f"{where}, so each period carries it pro rata."
+                )
+            else:
+                msg = (
+                    f"{t.entry_ref(e)} ({money(info.amount)}) covers services in {month_span(s_months)} per {doc_id}, "
+                    f"so the cost belongs to {belongs} and moves out of {booked} pro rata by service month."
+                )
             if outside:
                 msg += (
                     f" {len(outside)} service {_plural(len(outside), 'month falls', 'months fall')} outside the "
@@ -1352,6 +1650,13 @@ def sign_error(t: AdjustmentTrace) -> None:
 
 
 def duplicate_entries(t: AdjustmentTrace) -> None:
+    """A claimed entry that reconciliation found posted more than once (SPEC §5.4, §5.7).
+
+    When the postings share one document number and the claim includes more than one of them,
+    the claim keeps the first posting and loses the others: a bill entered twice is a bookkeeping
+    error, reversed once in its own diligence item, and must not also be added back here as a
+    non-recurring cost (counting it twice). Other duplicate groups only raise the question.
+    """
     idx = t.index
     claimed = set(t.claimed_ids())
     seen: set[tuple[str, ...]] = set()
@@ -1360,16 +1665,35 @@ def duplicate_entries(t: AdjustmentTrace) -> None:
         if not group or tuple(group) in seen:
             continue
         seen.add(tuple(group))
-        inside = [x for x in group if x in claimed]
-        rows = ", ".join(str(idx.by_id[x].entry.source_row) for x in group if x in idx.by_id)
-        _flag(
+        ordered = idx.sort_ids(group)
+        inside = [x for x in ordered if x in claimed]
+        rows = ", ".join(str(idx.by_id[x].entry.source_row) for x in ordered if x in idx.by_id)
+        n = len(ordered)
+        extras = inside[1:] if len(inside) > 1 and is_repeated_bill(idx, ordered) else []
+        if not extras:
+            _flag(
+                t,
+                FlagCode.DUPLICATE_GL_ENTRY,
+                Severity.WARNING,
+                f"{t.describe(e)} may be posted {n} times (GL rows {rows}: same account, amount and party); "
+                f"{len(inside)} of the {n} postings are in the claimed set.",
+                entry_ids=ordered,
+            )
+            continue
+        newly = t.remove(extras, FlagCode.DUPLICATE_GL_ENTRY, "a second posting of the same bill; a diligence item reverses it")
+        impact = t.impact_of_removing(newly)
+        extra_rows = ", ".join(str(idx.by_id[x].entry.source_row) for x in extras)
+        flag = _flag(
             t,
             FlagCode.DUPLICATE_GL_ENTRY,
             Severity.WARNING,
-            f"{t.describe(e)} may be posted {len(group)} times (GL rows {rows}: same account, amount and party); "
-            f"{len(inside)} of the {len(group)} postings are in the claimed set.",
-            entry_ids=group,
+            f"{t.entry_ref(inside[0])} is posted {n} times under one document number (GL rows {rows}) and the claim "
+            f"includes {len(inside)} of the postings. The claim keeps the first; GL row {extra_rows} is reversed once "
+            f"in a diligence item instead of being added back here." + _effect(t, impact),
+            entry_ids=ordered,
+            impact=impact,
         )
+        t.attach(newly, flag)
 
 
 def doc_gl_amount_mismatch(t: AdjustmentTrace) -> None:
@@ -1487,8 +1811,19 @@ def normalization(t: AdjustmentTrace) -> None:
                 elif not _executed(facts) and doc_id not in info.draft_docs:
                     info.draft_docs.append(doc_id)
     t.normalization = info
+    info.mgmt_level = candidates[0] if candidates else None
+    if info.supported_by is None:
+        _benchmark_normalization(t, info)
+    cost_free = t.cost_free_labels()
     for lbl in labels:
-        if actual[lbl] == 0:
+        if actual[lbl] == 0 and lbl in cost_free:
+            t.add_fact(
+                Fact(
+                    text=f"{lbl}: the GL carries no cost for the arrangement, and management's claim is the whole "
+                    f"normalized level ({money(t.claim(lbl))}), so the arrangement costs nothing today."
+                )
+            )
+        elif actual[lbl] == 0:
             _flag(
                 t,
                 FlagCode.PARTIAL_GL_SUPPORT,
@@ -1525,6 +1860,211 @@ def normalization(t: AdjustmentTrace) -> None:
             "agreement or benchmark sets it.",
             key="normalization:level",
         )
+
+
+_PER_MONTH = re.compile(r"month", re.IGNORECASE)
+_PER_QUARTER = re.compile(r"quarter", re.IGNORECASE)
+# What a figure measures is read from the words around it, not from its size. A per-unit rate ("$9.00 per
+# square foot", "$185 an hour") is not a level for the arrangement, and neither is a company-wide figure
+# ("revenue of about $40 million", "companies with revenue of $20 to $60 million").
+_SCALE_AFTER = r"\s*(?:million|billion|thousand|mm|bn|k|m)?\b"
+_PER_UNIT_AFTER = re.compile(
+    _SCALE_AFTER + r"\s*(?:/|per\b|an?\b|each\b)\s*(?:rentable\s+|usable\s+|gross\s+)?"
+    r"(?:square\s+f(?:oo|ee)t|sq\.?\s*f(?:ee)?t\.?|s\.?f\.?|hour|hr|day|unit|case|mile|visit|test|seat|user|employee"
+    r"|fte|head|bed|patient|pallet|ton|lb|pound|gallon|door|member|participant|shift|load|stop|procedure|rvu)\b"
+    r"|\s*(?:psf|/sf|/hr)\b",
+    re.IGNORECASE,
+)
+_COMPANY_FIGURE = re.compile(
+    r"\b(?:revenues?|sales|turnover|ebitda|net income|profits?|enterprise value|valuation|purchase price"
+    r"|market cap(?:itali[sz]ation)?|total assets|total payroll|headcount)\b[^.;]{0,30}$",
+    re.IGNORECASE,
+)
+_RANGE_TO_SCALE = re.compile(r"\s*(?:to|-|–)\s*\$?\s*[\d.,]+\s*(?:million|billion|mm|bn)\b", re.IGNORECASE)
+# A document that is not a benchmark sets a market level only in a sentence that speaks of market.
+_MARKET_CUE = re.compile(
+    r"\bmarket\b|\bbenchmark|\bcomparables?\b|\bcomparable (?:leases?|rents?|companies|positions)|\bmedian\b"
+    r"|\bpercentile\b|\bfair market value\b|\bFMV\b|\bpeer group\b",
+    re.IGNORECASE,
+)
+_AREA = re.compile(r"\b(\d{1,3}(?:,\d{3})+|\d{3,7})\s*(?:rentable\s+|usable\s+|gross\s+)?"
+                   r"(?:square\s+f(?:oo|ee)t|sq\.?\s*f(?:ee)?t\.?|SF)\b", re.IGNORECASE)
+_PER_SF_RATE = re.compile(
+    r"\$\s?(\d+(?:\.\d{1,2})?)\s*(?:/|per\b|a\b)\s*(?:rentable\s+|usable\s+)?(?:square\s+f(?:oo|ee)t|sq\.?\s*f(?:ee)?t\.?|s\.?f\.?)"
+    r"(?P<tail>[^.;]{0,30})",
+    re.IGNORECASE,
+)
+
+
+def _annualized(stated: Decimal, label: str, quote: str) -> Decimal:
+    """The annual level a stated amount represents: monthly x 12, quarterly x 4, else as stated."""
+    if label.strip().lower() in ("monthly_fee", "monthly_retainer"):
+        return stated * 12
+    for m in _MONEY.finditer(quote):
+        try:
+            value = D(m.group(1))
+        except ValueError:
+            continue
+        if value != stated:
+            continue
+        after = _PERIOD_AFTER.match(quote, m.end())
+        if after and _PER_MONTH.search(after.group()):
+            return stated * 12
+        if after and _PER_QUARTER.search(after.group()):
+            return stated * 4
+        break
+    return stated
+
+
+def _figure_context(t: AdjustmentTrace, quote: EvidenceQuote, stated: Decimal) -> Optional[tuple[str, str]]:
+    """(the sentence up to the figure, the words after it) for the figure ``stated`` in a verified quote,
+    read from the page so that a quote cut at a line break still shows its sentence."""
+    doc = t.index.docs.get(quote.doc_id)
+    page_text = next((p.text for p in doc.pages if p.page == quote.page), "") if doc is not None else ""
+    at = page_text.find(quote.quote)
+    text, base = (page_text, at) if at >= 0 else (quote.quote, 0)
+    scales = {"million": Decimal(1_000_000), "billion": Decimal(1_000_000_000), "thousand": Decimal(1000)}
+    for m in _MONEY.finditer(text, base, base + len(quote.quote)):
+        try:
+            value = D(m.group(1))
+        except ValueError:
+            continue
+        word = re.match(r"\s*(million|billion|thousand)\b", text[m.end() :], re.IGNORECASE)
+        if value != stated and not (word and value * scales[word.group(1).lower()] == stated):
+            continue
+        start = max(text.rfind(". ", 0, m.start()) + 2, text.rfind(";", 0, m.start()) + 1, 0)
+        return " ".join(text[start : m.start()].split()), text[m.end() : m.end() + 60]
+    return None
+
+
+def _per_unit_or_company(before: str, after: str) -> bool:
+    return bool(_PER_UNIT_AFTER.match(after) or _RANGE_TO_SCALE.match(after) or _COMPANY_FIGURE.search(before))
+
+
+def _rate_times_area(t: AdjustmentTrace, doc_id: str) -> list[tuple[Decimal, EvidenceQuote]]:
+    """Annual levels a document states as a rate per square foot and one area, both verbatim."""
+    doc = t.index.docs.get(doc_id)
+    if doc is None:
+        return []
+    areas = {D(m.group(1)) for m in _AREA.finditer(doc.full_text)}
+    if len(areas) != 1:
+        return []
+    area = next(iter(areas))
+    out: list[tuple[Decimal, EvidenceQuote]] = []
+    for page in doc.pages:
+        for line in page.text.splitlines():
+            for m in _PER_SF_RATE.finditer(line):
+                rate = D(m.group(1))
+                monthly = re.search(r"month|/mo\b", m.group("tail"), re.IGNORECASE)
+                out.append((q2(rate * area * (12 if monthly else 1)), EvidenceQuote(doc_id=doc_id, page=page.page,
+                                                                                   quote=line.strip())))
+    return out
+
+
+def _benchmark_normalization(t: AdjustmentTrace, info: NormalizationInfo) -> None:
+    """Take the normalized level from an independent market benchmark when nothing supports management's.
+
+    A normalization restates one arrangement at market. When no executed document states the level
+    management used, a benchmark for the same arrangement (a broker's opinion of market rent, an
+    independent pay study), prepared by someone who is not party to it, is the evidence of market. It
+    must state one market level for it (restated monthly and yearly counts once; a rate per square foot
+    times the one area the document states counts as that level); the current contract cost it quotes
+    for reference is not the market level, and what a figure measures is read from its words, not its
+    size: per-unit rates and company-wide figures (revenue, EBITDA) are not levels. A document that is not
+    a benchmark sets a level only in a sentence that speaks of market (market, benchmark, comparable,
+    median, percentile, fair market value). Diligence then normalizes to that level, whatever management
+    used: when market is above what is paid, the normalization reduces EBITDA. The benchmark contradicts
+    management's level, so a CONTRADICTORY_EVIDENCE flag carries the change in level. An arrangement that
+    costs nothing (rent-free premises) has no actual cost to compare: the level is the whole normalization.
+    """
+    idx = t.index
+    tol12 = idx.tolerance * 12
+    annual_actual = [
+        abs(v) * 12 / len(idx.label_months[lbl]) for lbl, v in info.actual.items() if v != 0 and idx.label_months[lbl]
+    ]
+    ref = sorted(annual_actual)[len(annual_actual) // 2] if annual_actual else ZERO
+    parties = [idx.by_id[e].cp_tokens for e in t.claimed_ids() if idx.by_id[e].cp_tokens]
+    parties += [name_tokens(n) for n in t.intent.counterparties if name_tokens(n)]
+    found: list[tuple[Decimal, str, EvidenceQuote]] = []
+    for doc_id in sorted(t.doc_links):
+        facts = idx.facts.get(doc_id)
+        if facts is None or not t.doc_links[doc_id].prelinked or not _executed(facts):
+            continue
+        dtype = facts.doc_type.strip().lower()
+        if dtype in _UNSIGNABLE_DOC_TYPES:
+            continue
+        dcp = idx.doc_cp.get(doc_id, frozenset())
+        if dcp and (any(names_match(dcp, p) for p in parties) or names_match(dcp, idx.company_tokens)):
+            continue  # a party to the arrangement (or the company itself) is not an independent view of market
+        benchmark = dtype in BENCHMARK_DOC_TYPES
+        stated_levels: list[tuple[Decimal, EvidenceQuote]] = []
+        for a in facts.amounts:
+            try:
+                stated = abs(D(a.amount))
+            except ValueError:
+                continue
+            if stated == 0 or a.label.strip().lower() == "rate":
+                continue
+            context = _figure_context(t, a.quote, stated)
+            before, after = context if context is not None else ("", "")
+            if _per_unit_or_company(before, after):
+                continue  # a rate per unit, or a figure for the whole company
+            if not benchmark and not _MARKET_CUE.search(f"{before} {a.quote.quote}"):
+                continue
+            stated_levels.append((_annualized(stated, a.label, a.quote.quote), a.quote))
+        stated_levels += [(v, q) for v, q in _rate_times_area(t, doc_id) if benchmark or _MARKET_CUE.search(q.quote)]
+        for annual, quote in stated_levels:
+            if any(abs(annual - x) <= tol12 for x in annual_actual):
+                continue  # the current cost, quoted for reference
+            found.append((annual, doc_id, quote))
+    levels: list[Decimal] = []
+    for annual, _, _ in found:
+        if all(abs(annual - x) > tol12 for x in levels):
+            levels.append(annual)
+    if len(levels) != 1:
+        if len(levels) > 1:
+            t.add_judgment(
+                f"Which market level applies? {join_limited(sorted({d for _, d, _ in found}), 1)} states several "
+                f"({join_limited([money(x) for x in sorted(levels)], 3)} a year), so no level was taken.",
+                key="normalization:level",
+            )
+        return
+    level = q2(levels[0])
+    doc_id = found[0][1]
+    quotes = [q for _, d, q in found if d == doc_id]
+    info.level, info.supported_by, info.benchmark = level, doc_id, True
+    actual_txt = money(ref)
+    mgmt = info.mgmt_level
+    direction = "above" if level > ref else "below"
+    impact = (
+        {lbl: q2((mgmt - level) * len(idx.label_months[lbl]) / 12) for lbl in t.claimed_labels()}
+        if mgmt is not None
+        else None
+    )
+    mgmt_txt = f"management's level of {money(mgmt)} a year is not supported" if mgmt is not None else (
+        "management's level is not supported")
+    flips = level > ref and all(t.claim(lbl) > 0 for lbl in t.claimed_labels())
+    paid = (
+        f"{direction} the {actual_txt} a year actually paid" if ref else "for an arrangement that costs nothing today"
+    )
+    msg = (
+        f"{doc_id} puts market at {money(level)} a year, {paid}; "
+        f"{mgmt_txt}, so diligence normalizes to the benchmark"
+        + (", which reduces EBITDA." if flips else ".")
+        + _effect(t, impact)
+    )
+    info.level_flag = _flag(
+        t, FlagCode.CONTRADICTORY_EVIDENCE, Severity.WARNING, msg, doc_ids=[doc_id], quotes=quotes, impact=impact,
+    )
+    t.add_fact(
+        Fact(text=f"{doc_id} sets the market level at {money(level)} a year for the arrangement.", quotes=quotes[:2]),
+        key=f"doc:{doc_id}",
+    )
+    t.add_judgment(
+        f"Should the arrangement be normalized to the {money(level)} market level in {doc_id}, as proposed, or left "
+        "unadjusted if the current terms continue unchanged after closing?",
+        key="normalization:level",
+    )
 
 
 def pro_forma(t: AdjustmentTrace) -> None:
@@ -1566,6 +2106,126 @@ def pro_forma(t: AdjustmentTrace) -> None:
         "run-rate consideration?",
         key="pro_forma",
     )
+
+
+def excess_carry(t: AdjustmentTrace) -> None:
+    """SPEC §5.4 EXCESS_GL_ACTIVITY carry rule: diligence carries the rest of a fixed-fee engagement.
+
+    Management's claim is normally the ceiling: unclaimed activity is context, and a buyer-side
+    review does not volunteer add-backs. The exception is a claim that covers only part of one
+    engagement whose whole cost is established: an executed engagement letter or order form with
+    the same party fixes one fee equal to the claimed entries plus the unclaimed ones, management
+    cites the unclaimed bill in its own support, and the bill falls in a period management claims.
+    The cost is then the same non-recurring project, and leaving part of it in EBITDA would be
+    inconsistent. Not for pro forma or normalization items, whose claim defines a run-rate.
+    Carried only when every claimed entry of the engagement survived the challenges.
+    """
+    idx = t.index
+    if t.is_pro_forma or t.is_normalization:
+        return
+    claimed_all = set(t.claimed_ids())
+
+    def cited_bill(e: str) -> list[str]:
+        return [d for d in sorted(t.doc_links) if t.doc_links[d].cited and e in idx.doc_entries.get(d, frozenset())]
+
+    for lbl in t.claimed_labels():
+        if lbl in t.capped:
+            continue
+        claim = t.claim(lbl)
+        months = idx.label_months[lbl]
+        mine = set(t.claimed.get(lbl, []))
+        carried: list[str] = []
+        # One (letter, fee, quote) per carried entry: each bill is tied to its own engagement's letter only.
+        letters_used: list[tuple[str, Decimal, Optional[EvidenceQuote]]] = []
+        for e in t.candidates:
+            info = idx.by_id[e]
+            if info.month not in months or e in mine or e in t.removals or (claim > 0) != (info.amount > 0):
+                continue
+            own = cited_bill(e)
+            if not own or not info.cp_tokens:
+                continue
+            party = [x for x in claimed_all if names_match(idx.by_id[x].cp_tokens, info.cp_tokens)]
+            if not party or any(x in t.removals for x in party) or not mine & set(party):
+                continue
+            unclaimed = [
+                x for x in t.candidates
+                if x not in claimed_all and names_match(idx.by_id[x].cp_tokens, info.cp_tokens) and cited_bill(x)
+            ]
+            total = sum((t.amount(x) for x in set(party) | set(unclaimed)), ZERO)
+            letter = _fixed_fee_letter(t, info.cp_tokens, abs(total))
+            if letter is None:
+                continue
+            carried.append(e)
+            letters_used.append((letter[0], abs(total), letter[1]))
+        if not carried:
+            continue
+        t.carried.setdefault(lbl, []).extend(idx.sort_ids(carried))
+        for e, (letter_id, fee, _) in zip(carried, letters_used):
+            for d in cited_bill(e):
+                t.associate(d, e, "number", DW_ENTRY_NUMBER, "States the doc # of linked GL entries")
+            t.associate(letter_id, e, "group", DW_ENTRY_AMOUNT, f"States the {money(fee)} fixed fee of the engagement")
+        t.drop_flags(FlagCode.EXCESS_GL_ACTIVITY, lbl)
+        in_label = [e for e in t.candidates if idx.by_id[e].month in months]
+        if all(e in mine or e in carried for e in in_label) and lbl in t.fits:
+            # Every linked entry of the period is now carried, so which subset made up the claim no longer matters.
+            t.fits[lbl].ties = 1
+            t.drop_judgment(f"fit:{lbl}")
+        letter_id, fee, _ = letters_used[0]
+        amount = sum((t.amount(e) for e in carried), ZERO)
+        bills = join_limited([t.entry_ref(e) for e in idx.sort_ids(carried)], 1)
+        own_docs = sorted({d for e in carried for d in cited_bill(e)})
+        letters = list(dict.fromkeys(x[0] for x in letters_used))
+        fixes = (
+            f"{letter_id} fixes one fee of {money(fee)} for the engagement it completes"
+            if len(letters) == 1
+            else f"{join_limited(letters, 1)} each fix one fee for the engagement the bill completes"
+        )
+        _flag(
+            t,
+            FlagCode.EXCESS_GL_ACTIVITY,
+            Severity.WARNING,
+            f"{lbl}: {bills} ({money(amount)}) is not claimed, but {fixes}, and management cites the bill. "
+            f"Carried: {money(amount)}.",
+            entry_ids=carried,
+            doc_ids=letters + own_docs,
+            quotes=[q for _, _, q in letters_used if q is not None],
+            label=lbl,
+            amount_impact=amount,
+        )
+        for letter, letter_fee, letter_quote in {x[0]: x for x in letters_used}.values():
+            mine_carried = [e for e, x in zip(carried, letters_used) if x[0] == letter]
+            t.add_fact(
+                Fact(
+                    text=f"{letter} fixes one fee of {money(letter_fee)} for the engagement; the claim includes only "
+                    "part of it.",
+                    entry_ids=idx.sort_ids(mine_carried),
+                    quotes=[letter_quote] if letter_quote is not None else [],
+                ),
+                key=f"doc:{letter}",
+            )
+        t.add_judgment(
+            f"Should the unclaimed {bills} ({money(amount)}) be added back with the rest of the fixed fee, as "
+            "proposed, or held at management's claim?",
+            key=f"carry:{','.join(idx.sort_ids(carried))}",
+        )
+
+
+def _fixed_fee_letter(
+    t: AdjustmentTrace, party: frozenset[str], total: Decimal
+) -> Optional[tuple[str, Optional[EvidenceQuote]]]:
+    """An executed engagement letter or order form of ``party``, related to the adjustment, that
+    states ``total`` as one amount: (doc_id, the quote stating it)."""
+    idx = t.index
+    for doc_id in sorted(t.doc_links):
+        facts = idx.facts.get(doc_id)
+        if facts is None or facts.doc_type.strip().lower() not in AGREEMENT_DOC_TYPES:
+            continue
+        if facts.is_draft or facts.is_signed is False or not names_match(idx.doc_cp.get(doc_id, frozenset()), party):
+            continue
+        for a in facts.amounts:
+            if _amount_is(a.amount, total, idx.tolerance):
+                return doc_id, a.quote
+    return None
 
 
 def document_coverage(t: AdjustmentTrace) -> None:

@@ -67,7 +67,14 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from qoe.money import D, fmt, period_map, q2
 from qoe.periods import labels_for_month, months_in
-from qoe.review_store import bridge_display_rows, bridge_row_adj_id, is_item_row
+from qoe.review_store import (
+    QuestionLogEntry,
+    bridge_display_rows,
+    bridge_row_adj_id,
+    decision_is_override,
+    decision_is_stale,
+    is_item_row,
+)
 from qoe.schemas import (
     AdjustmentAssessment,
     AdjustmentCategory,
@@ -107,6 +114,7 @@ __all__ = [
     "resolve_final_amounts",
     "sanitize_sheet_name",
     "support_sheet_names",
+    "workbook_check_status",
     "workbook_filename",
 ]
 
@@ -407,6 +415,38 @@ def recalc_and_check(path: Path, timeout: int = 90) -> dict[str, Any]:
     return result
 
 
+CHECKS_OVERALL = "Workbook checks"  # key of the overall status in workbook_check_status()
+_CHECKS_OVERALL_LABEL = "Workbook checks (all areas below)"  # its label on the Cover
+
+
+def workbook_check_status(path: Path) -> dict[str, Optional[str]]:
+    """The Cover's check statuses in a recalculated workbook, in Cover order.
+
+    ``CHECKS_OVERALL`` is the overall Workbook checks status; then each check area, and the separate
+    agreement to source data, by their Cover labels. Values are "OK" or "DIFFERENCE: ...", or None
+    when the file carries no calculated value (openpyxl never calculates: recalculate first, e.g.
+    with ``recalc_and_check``). Empty when the Cover has no checks table.
+    """
+    from openpyxl import load_workbook
+
+    labels = set(_WORKBOOK_AREAS) | {AREA_SOURCE}
+    wb = load_workbook(Path(path), data_only=True, read_only=True)
+    try:
+        ws = wb[SHEET_COVER]
+        out: dict[str, Optional[str]] = {}
+        for label, status, *_ in ws.iter_rows(min_col=1, max_col=2, values_only=True):
+            if not isinstance(label, str):
+                continue
+            value = None if status is None else str(status)
+            if label == _CHECKS_OVERALL_LABEL:
+                out[CHECKS_OVERALL] = value
+            elif re.sub(r" \(part \d+\)$", "", label) in labels:
+                out[label] = value
+        return out
+    finally:
+        wb.close()
+
+
 def _run_recalc(script: Path, path: Path, timeout: int) -> dict[str, Any]:
     try:
         proc = subprocess.run(
@@ -425,7 +465,13 @@ def _run_recalc(script: Path, path: Path, timeout: int) -> dict[str, Any]:
     return result if isinstance(result, dict) else {"error": f"unexpected recalc output: {result!r}"}
 
 
-def export_workpaper(wp: Workpaper, out_path: Path, *, pkg: Optional[DealPackage] = None) -> Path:
+def export_workpaper(
+    wp: Workpaper,
+    out_path: Path,
+    *,
+    pkg: Optional[DealPackage] = None,
+    question_log: Optional[Iterable[QuestionLogEntry]] = None,
+) -> Path:
     """Write the Excel workpaper and return its path.
 
     ``out_path`` is either the .xlsx path or a directory (the file is then named
@@ -433,12 +479,18 @@ def export_workpaper(wp: Workpaper, out_path: Path, *, pkg: Optional[DealPackage
     support sheets show management's description and full GL detail (date,
     account, counterparty, doc #, memo) for linked entries, which the
     workpaper itself does not carry.
+
+    Questions are shown as the workpaper carries them: ``qoe.review_store.apply_reviews``
+    (with its ``question_log``) has already applied every status change, response and
+    reviewer-raised question, so nothing is re-applied here. ``question_log``
+    (``ReviewStore.questions()``) is optional and only lists those question-log lines,
+    in order, on the Review Log sheet beside the decisions.
     """
     out_path = Path(out_path)
     if out_path.is_dir() or out_path.suffix.lower() != ".xlsx":
         out_path = out_path / workbook_filename(wp)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    wb = build_workbook(wp, pkg=pkg)
+    wb = build_workbook(wp, pkg=pkg, question_log=question_log)
     tmp = out_path.with_name(out_path.stem + ".partial.xlsx")
     wb.save(tmp)
     os.replace(tmp, out_path)  # a reviewer's open copy is never left half-written
@@ -471,6 +523,7 @@ class _Ctx:
     adj_sheets: dict[str, str]
     questions: dict[str, list[OpenQuestion]]
     drafted: dict[str, OpenQuestion]  # pending items with no open question: a request drafted for them
+    question_log: list[QuestionLogEntry]  # question-log lines, listed on the Review Log sheet
     has_gl_detail: bool
     records_roles: bool  # the workpaper records GLLink.role / claimed (the listing ties can be relied on)
     records_effects: bool  # the workpaper records Flag.effects (the flag walks can be relied on)
@@ -486,15 +539,15 @@ class _Ctx:
         rv = self.latest.get(adj_id)
         if rv is None:
             return UNREVIEWED
-        return OVERRIDDEN if _differs_from_tool(rv.treatment, rv.amounts, rv.tool_treatment, rv.tool_amounts,
-                                                self.wp.deal.tolerance) else AGREED
+        # The reviewer app's rule (qoe.review_store), so the workbook and the app agree on every status.
+        return OVERRIDDEN if decision_is_override(rv, self.wp.deal.tolerance) else AGREED
 
     def stale(self, rv: ReviewDecision) -> bool:
         """The tool's current proposal differs from what the reviewer saw."""
         a = next((x for x in self.wp.assessments if x.adj_id == rv.adj_id), None)
         if a is None:
             return False
-        return _differs_from_tool(a.treatment, a.proposed, rv.tool_treatment, rv.tool_amounts, self.wp.deal.tolerance)
+        return decision_is_stale(a, rv, self.wp.deal.tolerance)
 
     def final_treatment(self, a: AdjustmentAssessment) -> Treatment:
         rv = self.latest.get(a.adj_id)
@@ -527,13 +580,15 @@ def _period_labels(wp: Workpaper) -> list[str]:
     return list(wp.bridge.period_labels) or [p.label for p in wp.deal.periods]
 
 
-def _context(wp: Workpaper, pkg: Optional[DealPackage]) -> _Ctx:
+def _context(
+    wp: Workpaper, pkg: Optional[DealPackage], question_log: Optional[Iterable[QuestionLogEntry]] = None
+) -> _Ctx:
     schedule: Optional[ManagementSchedule] = pkg.schedule if pkg is not None else getattr(wp, "schedule", None)
     claims = {c.adj_id: c for c in schedule.adjustments} if schedule is not None else {}
     gl_by_id = {e.entry_id: e for e in pkg.gl} if pkg is not None else {}
     latest = latest_reviews(wp)
     final = resolve_final_amounts(wp)
-    questions = _questions_with_updates(wp)
+    questions = _current_questions(wp)
     drafted: dict[str, OpenQuestion] = {}
     for a in wp.assessments:
         if final.get(a.adj_id) or any(q.status == QuestionStatus.OPEN for q in questions.get(a.adj_id, [])):
@@ -561,6 +616,7 @@ def _context(wp: Workpaper, pkg: Optional[DealPackage]) -> _Ctx:
         adj_sheets=support_sheet_names(wp),
         questions=questions,
         drafted=drafted,
+        question_log=list(question_log or ()),
         has_gl_detail=pkg is not None,
         records_roles=any(lk.role for lk in links),
         records_effects=any(f.effects for a in wp.assessments for f in a.flags),
@@ -569,36 +625,14 @@ def _context(wp: Workpaper, pkg: Optional[DealPackage]) -> _Ctx:
     )
 
 
-def _questions_with_updates(wp: Workpaper) -> dict[str, list[OpenQuestion]]:
-    """Open questions per adjustment with reviewer status/response updates applied in log order.
+def _current_questions(wp: Workpaper) -> dict[str, list[OpenQuestion]]:
+    """Questions per adjustment as the workpaper carries them.
 
-    An update value is a status ("ANSWERED"), a status with a note ("ANSWERED: insurer
-    confirmed"), or a free-text response.
+    ``apply_reviews`` has already replayed every question update (decision lines and the question
+    log, in time order) onto the assessments. Re-applying the decisions' ``question_updates`` here
+    would undo a later question-log change (e.g. a question reopened after a decision closed it).
     """
-    statuses = {s.value for s in QuestionStatus}
-    by_id: dict[str, OpenQuestion] = {}
-    order: dict[str, list[str]] = {}
-    for a in wp.assessments:
-        order[a.adj_id] = []
-        for q in a.open_questions:
-            by_id[q.q_id] = q
-            order[a.adj_id].append(q.q_id)
-    for rv in wp.reviews:
-        for q_id, note in rv.question_updates.items():
-            q = by_id.get(q_id)
-            if q is None:
-                continue
-            text = note.strip()
-            head, sep, rest = text.partition(":")
-            if text.upper() in statuses:
-                by_id[q_id] = q.model_copy(update={"status": QuestionStatus(text.upper())})
-            elif sep and head.strip().upper() in statuses:
-                by_id[q_id] = q.model_copy(
-                    update={"status": QuestionStatus(head.strip().upper()), "response": rest.strip()}
-                )
-            elif text:
-                by_id[q_id] = q.model_copy(update={"response": text})
-    return {adj: [by_id[q] for q in ids] for adj, ids in order.items()}
+    return {a.adj_id: list(a.open_questions) for a in wp.assessments}
 
 
 # ---------------------------------------------------------------------------
@@ -975,19 +1009,6 @@ def _signed_status(facts: Optional[DocFacts]) -> str:
     return "Not stated"
 
 
-def _differs_from_tool(
-    treatment: Treatment, amounts: dict[str, str], tool_treatment: Treatment, tool_amounts: dict[str, str],
-    tolerance: object,
-) -> bool:
-    """Same rule as the reviewer app: a different treatment, or amounts apart by more than the tolerance."""
-    if treatment != tool_treatment:
-        return True
-    if treatment == Treatment.REQUEST_INFO:
-        return False
-    tol = D(tolerance)
-    return any(abs(D(amounts.get(k)) - D(tool_amounts.get(k))) > tol for k in set(amounts) | set(tool_amounts))
-
-
 def _review_pending(rv: ReviewDecision) -> bool:
     return rv.treatment == Treatment.REQUEST_INFO or not rv.amounts
 
@@ -1167,16 +1188,20 @@ def _cents(value: object) -> int:
 def _claimed_periods(ctx: _Ctx, a: AdjustmentAssessment, links: Sequence[GLLink]) -> dict[str, list[str]]:
     """The analysis periods in whose (b) Traced amount each entry is counted.
 
-    ``GLLink.claimed`` does not say which of two overlapping periods (a fiscal year and a TTM) an entry
-    is claimed in, and management can claim a month in one and not the other. Membership comes from,
-    in order: the trace's "Claimed in ..." reason; the only period with traced activity that contains
-    the entry's month; otherwise the exact subset of the undecided entries that makes up the period's
-    (b) Traced amount. When nothing ties, every containing period is used and the listing's check
-    shows the difference."""
+    Management can claim a month in one of two overlapping periods (a fiscal year and a TTM) and not
+    the other. Membership comes from, in order: ``GLLink.claimed_in`` (the engine's record of the
+    period labels whose claim includes the entry); for a workpaper without it, the trace's
+    "Claimed in ..." reason; the only period with traced activity that contains the entry's month;
+    otherwise the exact subset of the undecided entries that makes up the period's (b) Traced
+    amount. When nothing ties, every containing period is used and the listing's check shows the
+    difference."""
     active = [p for p in ctx.labels if D(a.claimed.get(p)) != 0 or D(a.traced_gl.get(p)) != 0]
     periods = ctx.wp.deal.periods
     hinted: dict[str, set[str]] = {}
     for lk in links:
+        if lk.claimed_in:
+            hinted[lk.entry_id] = set(lk.claimed_in) & set(ctx.labels)
+            continue
         for reason in lk.reasons:
             m = _CLAIMED_IN.match(reason)
             if m:
@@ -2930,7 +2955,8 @@ def _write_review_log(ws: Worksheet, ctx: _Ctx) -> None:
     widths = [5, 22, 16, 9, 15, 15, 24, 10] + [13] * (2 * n) + [54, 34, 12, 14]
     sh = _Sheet(ws, widths)
     _title_block(sh, ctx, "Review Log", "Every reviewer decision in log order (append-only). The latest decision "
-                 "per adjustment is Current.")
+                 "per adjustment is Current." + (" The question log follows the decisions." if ctx.question_log
+                                                 else ""))
     g, h = 6, 7
     for col, title in enumerate(("#", "Timestamp", "Reviewer", "Ref", "Tool treatment", "Reviewer treatment",
                                  "Correction type", "Tool error?"), start=1):
@@ -2979,9 +3005,49 @@ def _write_review_log(ws: Worksheet, ctx: _Ctx) -> None:
     if not ctx.wp.reviews:
         sh.put(row, 2, "No reviewer decisions recorded: every adjustment is UNREVIEWED.", bold=True,
                color=BANNER_RED)
+        row += 1
     else:
         ws.auto_filter.ref = f"A{h}:{get_column_letter(rat_col + 3)}{row - 1}"
+    if ctx.question_log:
+        _question_log_block(sh, ctx, row + 1, rat_col + 3)
     ws.freeze_panes = _a1(5, h + 1)
+
+
+_QUESTION_CHANGE = {"new": "Question raised", "update": "Update"}
+
+
+def _question_log_block(sh: _Sheet, ctx: _Ctx, row: int, last: int) -> int:
+    """The question log (status changes, management responses, reviewer-raised questions) in log
+    order. Its lines are not decisions: they never mark an adjustment reviewed. The Open Questions
+    sheet already shows their combined effect."""
+    n = len(ctx.question_log)
+    sh.section(row, f"QUESTION LOG: {n} entr{'y' if n == 1 else 'ies'} in log order (status changes, responses "
+                    "and questions raised; not decisions, so they never mark an item reviewed)")
+    row += 1
+    sh.header(row, [("#", 1), ("Timestamp", 1), ("Reviewer", 1), ("Ref", 1), ("Q id", 1), ("Change", 1),
+                    ("Status", 1), ("Response, or the question raised", last - 7)])
+    row += 1
+    for i, e in enumerate(ctx.question_log, start=1):
+        sh.put(row, 1, i, halign="center")
+        sh.text(row, 2, e.timestamp, wrap=False)
+        sh.text(row, 3, e.reviewer)
+        if e.adj_id in ctx.adj_sheets:
+            sh.link(row, 4, e.adj_id, ctx.adj_sheets[e.adj_id])
+        else:
+            sh.text(row, 4, e.adj_id)
+        sh.text(row, 5, e.q_id)
+        sh.text(row, 6, _QUESTION_CHANGE.get(e.kind, e.kind))
+        sh.text(row, 7, e.status.value if e.status is not None else "(unchanged)", halign="center",
+                italic=e.status is None)
+        if e.kind == "new":
+            detail = f"{e.text} (priority {e.priority})"
+        elif e.response is None:
+            detail = "(response unchanged)"
+        else:
+            detail = e.response or "(response cleared)"
+        sh.text(row, 8, detail, span=last - 7, indent=1, italic=e.kind != "new" and not e.response)
+        row += 1
+    return row
 
 
 # ---------------------------------------------------------------------------
@@ -2997,7 +3063,7 @@ _CONTENTS = [
     (SHEET_QUESTIONS, "Questions for management, with priority, basis, status, and responses."),
     (SHEET_RECON, "GL vs management P&L by month and analysis period, with variance detail."),
     (SHEET_DATA_QUALITY, "Reconciliation and ingest issues; AI quote verification."),
-    (SHEET_REVIEW_LOG, "Every reviewer decision, in order, with correction types."),
+    (SHEET_REVIEW_LOG, "Every reviewer decision, in order, with correction types; then the question log."),
 ]
 
 
@@ -3297,7 +3363,7 @@ def _cover_checks(sh: _Sheet, ctx: _Ctx, row: int, last: int) -> int:
             area_rows.append(row)
             row += 1
     if areas:
-        sh.put(overall, 1, "Workbook checks (all areas below)", bold=True)
+        sh.put(overall, 1, _CHECKS_OVERALL_LABEL, bold=True)
         sh.formula(overall, 3, "=" + "+".join(_a1(3, r) for r in area_rows), num_fmt=CHECK_FORMAT, bold=True)
         _status_cell(sh, overall, 2, _a1(3, overall), text="DIFFERENCE: see checks")
     if source:
@@ -3391,9 +3457,14 @@ def _page_setup(ws: Worksheet, ctx: _Ctx) -> None:
     ws.oddFooter.right.text = "Page &P of &N"
 
 
-def build_workbook(wp: Workpaper, *, pkg: Optional[DealPackage] = None) -> Workbook:
+def build_workbook(
+    wp: Workpaper,
+    *,
+    pkg: Optional[DealPackage] = None,
+    question_log: Optional[Iterable[QuestionLogEntry]] = None,
+) -> Workbook:
     """Build the workpaper in memory (see ``export_workpaper``)."""
-    ctx = _context(wp, pkg)
+    ctx = _context(wp, pkg, question_log)
     wb = Workbook()
     _use_arial_default(wb)
     cover = wb.active

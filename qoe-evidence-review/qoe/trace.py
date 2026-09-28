@@ -27,6 +27,7 @@ from qoe.ai_base import AdjustmentIntent
 from qoe.money import ZERO, D, fmt, q2
 from qoe.periods import month_range, months_in
 from qoe.schemas import (
+    EBITDA_EXCLUDED_CLASSES,
     Account,
     AdjustmentCategory,
     AdjustmentClaim,
@@ -124,8 +125,42 @@ _MEMO_REF = re.compile(
     re.IGNORECASE,
 )
 
+# The kind of engagement a typed reference names, so that like is compared with like: a document titled
+# "Matter 12" is about another matter than bills citing "Matter 2024-07", but a date, a fiscal year, a
+# street number or a form number in a title names no engagement at all.
+_REF_KINDS = {
+    "matter": "matter", "case": "matter", "contract": "contract", "agreement": "contract", "sow": "contract",
+    "engagement": "contract", "project": "project", "job": "project", "work order": "project", "claim": "claim",
+    "policy": "policy", "po": "po",
+}
+_STREET_AFTER = re.compile(
+    r"^\s+(?:[A-Z][a-z]+\s+){0,2}(?:road|rd|street|st|avenue|ave|boulevard|blvd|drive|dr|lane|ln|way|parkway|pkwy|court"
+    r"|ct|place|pl|highway|hwy|suite|ste|circle|cir|terrace|trail|loop)\b\.?",
+    re.IGNORECASE,
+)
+
+
+def ref_kind(label: str) -> str:
+    return _REF_KINDS.get(" ".join(label.lower().split()), "")
+
+
+def typed_refs(text: Optional[str]) -> frozenset[tuple[str, str]]:
+    """(kind, normalized reference) for each typed reference in a text ("Matter 7710" -> ('matter', '7710'))."""
+    out: set[tuple[str, str]] = set()
+    text = text or ""
+    for m in _MEMO_REF.finditer(text):
+        n = ref_norm(m.group(2))
+        if not _valid_ref(n) or _STREET_AFTER.match(text[m.end() :]):
+            continue
+        kind = ref_kind(m.group(1))
+        if kind:
+            out.add((kind, n))
+    return frozenset(out)
+
+
 _LEGAL_TOKENS = frozenset(
-    "llc inc ltd llp lp co corp corporation company pllc pc plc the and of na dba".split()
+    "llc inc ltd limited llp lllp lp co corp corporation company pllc pc plc pty gmbh bv nv ag sarl srl the and of na dba"
+    .split()
 )
 # Words that appear in many unrelated names; a match needs something more distinctive.
 _GENERIC_NAME_TOKENS = frozenset(
@@ -156,33 +191,136 @@ def norm_text(value: Optional[str]) -> str:
     return " ".join(_NON_ALNUM.sub(" ", s).split())
 
 
+# An initial ("J." in "J. Varga") is kept in a name's tokens with this mark, so that a surname with an
+# initial can be matched to the full name it abbreviates; it never counts as a word of the name.
+_INITIAL = "."
+
+
 def name_tokens(name: Optional[str]) -> frozenset[str]:
-    """Distinctive tokens of a party name: no legal suffixes, initials, or numbers."""
-    return frozenset(t for t in norm_text(name).split() if len(t) > 1 and t not in _LEGAL_TOKENS and not t.isdigit())
+    """Tokens of a party name: no legal suffixes or numbers; initials are kept as 'j.' (see ``names_match``)."""
+    words = norm_text(name).split()
+    out = {t for t in words if len(t) > 1 and t not in _LEGAL_TOKENS and not t.isdigit()}
+    out |= {t + _INITIAL for t in words if len(t) == 1 and t.isalpha()}
+    return frozenset(out)
+
+
+def _words(name: frozenset[str]) -> frozenset[str]:
+    return frozenset(t for t in name if not t.endswith(_INITIAL))
 
 
 def names_match(a: frozenset[str], b: frozenset[str]) -> bool:
-    if not a or not b:
+    """Two party names are the same party.
+
+    Normalized token overlap against the shorter name, with at least one distinctive (non-generic) word
+    shared. When either name has a single distinctive word, one shared word is a coincidence as often as not
+    ('Springfield' the city and 'Springfield Grand Hotels'), so the distinctive words must be the same, except
+    that the other name's extra words may be the ones the single-word name abbreviates to initials ('J.
+    Varga' and 'Jamal Varga')."""
+    wa, wb = _words(a), _words(b)
+    if not wa or not wb:
         return False
-    shared = a & b
+    shared = wa & wb
     if not (shared - _GENERIC_NAME_TOKENS):
         return False
-    return len(shared) / min(len(a), len(b)) >= NAME_OVERLAP_MIN
+    if len(shared) / min(len(wa), len(wb)) < NAME_OVERLAP_MIN:
+        return False
+    da, db = wa - _GENERIC_NAME_TOKENS, wb - _GENERIC_NAME_TOKENS
+    if len(da) >= 2 and len(db) >= 2:
+        return True
+    if da == db:
+        return True
+    single, other, initials = (da, db, a) if len(da) == 1 else (db, da, b)
+    extra = other - single
+    marks = {t[0] for t in initials if t.endswith(_INITIAL)}
+    return bool(marks) and single <= other and all(w[0] in marks for w in extra)
 
 
 def name_in_text(name: frozenset[str], text_tokens: frozenset[str]) -> bool:
     """Every distinctive token of the name appears in the text."""
-    distinctive = name - _GENERIC_NAME_TOKENS
+    distinctive = _words(name) - _GENERIC_NAME_TOKENS
     return bool(distinctive) and distinctive <= text_tokens
 
 
 def name_mentioned(name: frozenset[str], text_tokens: frozenset[str]) -> bool:
     """Most of a party's distinctive name appears in the text ('Ridgeway plant visit' names 'Ridgeway Air Systems')."""
-    distinctive = name - _GENERIC_NAME_TOKENS
+    distinctive = _words(name) - _GENERIC_NAME_TOKENS
     if not distinctive:
         return False
     shared = len(distinctive & text_tokens)
     return shared >= 1 and shared / len(distinctive) >= NAME_OVERLAP_MIN
+
+
+_ADDRESS_LINE = re.compile(
+    r"\b[A-Z]{2}\s+\d{5}(?:-\d{4})?\b|\(\d{3}\)\s*\d{3}-\d{4}|\b\d{3}[-.]\d{3}[-.]\d{4}\b|\bwww\.|https?://|@\S+\.\w"
+    r"|^\s*\d{1,6}\s+(?:[A-Z][\w.'-]*\s+){0,4}(?:Road|Rd|Street|St|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way"
+    r"|Parkway|Pkwy|Court|Ct|Place|Pl|Highway|Hwy|Circle|Terrace|Trail|Loop|Plaza|Square)\b",
+)
+_STREET = re.compile(
+    r"\b(\d{1,6})\s+((?:[A-Z][A-Za-z.'-]*\s+){1,4}?)(Road|Rd|Street|St|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln"
+    r"|Way|Parkway|Pkwy|Court|Ct|Place|Pl|Highway|Hwy|Circle|Terrace|Trail|Loop|Plaza|Square)\b"
+)
+_STREET_SUFFIX = {"rd": "road", "st": "street", "ave": "avenue", "blvd": "boulevard", "dr": "drive", "ln": "lane",
+                  "pkwy": "parkway", "ct": "court", "pl": "place", "hwy": "highway"}
+
+
+def body_words(text: str) -> tuple[str, ...]:
+    """The document's words outside address and contact lines, without legal-form words, in order."""
+    out: list[str] = []
+    for line in (text or "").splitlines():
+        if _ADDRESS_LINE.search(line):
+            continue
+        out += [w for w in norm_text(line).split() if w not in _LEGAL_TOKENS]
+    return tuple(out)
+
+
+def street_addresses(text: str) -> frozenset[str]:
+    """Normalized street addresses in a text ('12 Dock Street' -> '12 dock street')."""
+    out = set()
+    for m in _STREET.finditer(text or ""):
+        suffix = m.group(3).lower().rstrip(".")
+        out.add(f"{m.group(1)} {norm_text(m.group(2))} {_STREET_SUFFIX.get(suffix, suffix)}")
+    return frozenset(out)
+
+
+def _phrase_in(phrase: Sequence[str], words: Sequence[str]) -> bool:
+    n = len(words)
+    for i in range(n):
+        j, k = i, 0
+        while j < n and k < len(phrase):
+            want, got = phrase[k], words[j]
+            if got == want or (len(want) == 1 and got.startswith(want)):
+                j, k = j + 1, k + 1
+            elif len(got) == 1 and k > 0:
+                j += 1  # a middle initial the name leaves out
+            else:
+                break
+        if k == len(phrase):
+            return True
+    return False
+
+
+def place_words(text: str) -> frozenset[str]:
+    """Words of a document's address lines (streets, cities, states): place names, never a party's name."""
+    out: set[str] = set()
+    for line in (text or "").splitlines():
+        if _ADDRESS_LINE.search(line):
+            out |= set(norm_text(line).split())
+    return frozenset(out)
+
+
+def name_in_body(name: Optional[str], words: Sequence[str], places: frozenset[str] = frozenset()) -> bool:
+    """The party's name appears as a phrase, in order, in a document's body words: the whole name, or its
+    distinctive words together ('the Brookline payoff' names Brookline National Bank) when none of them is a
+    place the document's own address lines name. An initial matches any word it begins, and a middle initial
+    in the text may be skipped. Scattered words (a town that shares a word with the party, a word of a broker's
+    tagline) never make a name."""
+    name_words = [w for w in norm_text(name).split() if w not in _LEGAL_TOKENS]
+    distinctive = [w for w in name_words if w not in _GENERIC_NAME_TOKENS and len(w) > 1]
+    if not name_words or not distinctive:
+        return False
+    if _phrase_in(name_words, words):
+        return True
+    return not (set(distinctive) & places) and _phrase_in(distinctive, words)
 
 
 def ref_norm(value: str) -> str:
@@ -222,12 +360,12 @@ def theme_similarity(a: Sequence[str], b: Sequence[str]) -> float:
 
 
 _SUFFIXES = ("ations", "ation", "ings", "ing", "ers", "er", "ies", "es", "ed", "s")
-# Short stems match too much: five letters keeps "dispatch" and "repair" but not "rent" or "fee".
+# Short stems match too much: five letters keeps "install" and "repair" but not "rent" or "fee".
 _MIN_STEM = 5
 
 
 def stem(word: str) -> str:
-    """Crude suffix stripping so 'dispatcher' meets 'dispatch' and 'repairs' meets 'repair'."""
+    """Crude suffix stripping so 'installer' meets 'install' and 'repairs' meets 'repair'."""
     for suffix in _SUFFIXES:
         if word.endswith(suffix) and len(word) - len(suffix) >= 4:
             return word[: -len(suffix)]
@@ -363,6 +501,7 @@ class EntryInfo:
     theme: tuple[str, ...]
     memo_ref: str  # "Matter 7710" when the memo names a document reference
     memo_ref_norm: str
+    memo_ref_kind: str = ""  # "matter", "contract", "project", ... (see ``typed_refs``)
 
     @property
     def entry_id(self) -> str:
@@ -394,9 +533,17 @@ class DealIndex:
     # claim of already-excluded costs can be shown against the line that adds them back.
     mgmt_lines: dict[EbitdaClass, dict[str, Decimal]] = field(default_factory=dict)
     gl_lines: dict[EbitdaClass, dict[str, Decimal]] = field(default_factory=dict)
-    # Reference-like tokens in a document's file name and title: the matter / invoice it is *about*,
-    # as opposed to references its body merely mentions ("separate from Matter 1004").
-    doc_title_refs: dict[str, frozenset[str]] = field(default_factory=dict)
+    # Typed references (kind, reference) in a document's file name and title: the matter / contract /
+    # project it is *about*, as opposed to references its body merely mentions ("separate from Matter 12").
+    doc_title_refs: dict[str, frozenset[tuple[str, str]]] = field(default_factory=dict)
+    company_tokens: frozenset[str] = frozenset()  # the target company's name: its own documents are not outside evidence
+    gl_numbers: frozenset[str] = frozenset()  # normalized doc numbers the GL carries (P&L entries)
+    # A document's words outside its address and contact lines (street, "City, ST ZIP", phone, web), with
+    # legal-form words dropped, in order: a party is named in a document only as a phrase in these.
+    doc_body_words: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    doc_places: dict[str, frozenset[str]] = field(default_factory=dict)  # words of a document's address lines
+    # Street addresses in a document's title or file name: the property the document is about.
+    doc_subjects: dict[str, frozenset[str]] = field(default_factory=dict)
     _amount_keys: list[int] = field(default_factory=list, repr=False)
 
     def __post_init__(self) -> None:
@@ -415,13 +562,76 @@ class DealIndex:
         return sorted(set(ids), key=lambda e: (self.by_id[e].pos if e in self.by_id else 1 << 30, e))
 
 
+# Export columns that identify one transaction; lines of one transaction share it.
+_TXN_ID_KEYS = frozenset({"internal id", "transaction id", "transaction number", "journal id", "journal number", "txn id"})
+_TOTAL_LABELS = re.compile(r"total|due|balance", re.IGNORECASE)
+
+
+def _txn_id(entry: GLEntry) -> str:
+    return next((v for k, v in entry.dimensions.items() if k.strip().lower() in _TXN_ID_KEYS and v), "")
+
+
+def _bill_shows_one_charge(index: "DealIndex", number: str, amount: Decimal, postings: int) -> bool:
+    """Every document for the bill number shows one charge of ``amount``: its total equals one posting
+    (and no total is a multiple of it), or, without a total, it states the amount once. Without a
+    document the posting dates decide alone."""
+    tol = index.tolerance
+    for doc_id in index.docs_by_ref.get(number, []):
+        facts = index.facts.get(doc_id)
+        if facts is None:
+            continue
+        stated: list[tuple[str, Decimal]] = []
+        for a in facts.amounts:
+            try:
+                stated.append((a.label, abs(D(a.amount))))
+            except (ValueError, ArithmeticError):
+                continue
+        totals = [v for label, v in stated if _TOTAL_LABELS.search(label)]
+        if totals:
+            if any(abs(v - amount * k) <= tol for v in totals for k in range(2, postings + 1)):
+                return False  # the bill itself charges the amount more than once
+            if not any(abs(v - amount) <= tol for v in totals):
+                return False
+        elif sum(1 for _, v in stated if abs(v - amount) <= tol) != 1:
+            return False
+    return True
+
+
+def is_repeated_bill(index: "DealIndex", group: Sequence[str]) -> bool:
+    """A duplicate group the GL carries under one document number, inside EBITDA (SPEC §5.7).
+
+    The same bill number posted twice is a bookkeeping error with a mechanical reversal; a
+    same-memo pair within a week without a shared number may be two genuine charges, so it
+    stays a question. So does a group whose postings share a date (or a transaction id): two
+    identical lines of one bill (two seat licences, two installments on one invoice) post
+    together, and are one bill charging twice, not a bill entered twice. The bill's own document
+    must show one charge.
+    """
+    if len(group) < 2 or not all(e in index.by_id for e in group):
+        return False  # a balance-sheet posting has no EBITDA effect
+    infos = [index.by_id[e] for e in group]
+    numbers = {i.doc_number for i in infos}
+    if len(numbers) != 1 or not next(iter(numbers)):
+        return False
+    if any(i.klass in EBITDA_EXCLUDED_CLASSES for i in infos):
+        return False
+    ids = [_txn_id(i.entry) for i in infos]
+    if all(ids) and len(set(ids)) < len(ids):
+        return False  # lines of one transaction
+    dates = [i.entry.date for i in infos]
+    if len(set(dates)) < len(dates) and not (all(ids) and len(set(ids)) == len(ids)):
+        return False  # posted together: lines of one bill, unless the export shows separate transactions
+    return _bill_shows_one_charge(index, next(iter(numbers)), abs(infos[0].amount), len(infos))
+
+
 def _entry_info(entry: GLEntry, pos: int, klass: EbitdaClass) -> EntryInfo:
     cp = name_tokens(entry.counterparty)
     memo_norm = norm_text(entry.memo)
     m = _MEMO_REF.search(entry.memo or "")
-    memo_ref, memo_ref_norm = "", ""
+    memo_ref, memo_ref_norm, memo_ref_kind = "", "", ""
     if m and _valid_ref(ref_norm(m.group(2))):
         memo_ref, memo_ref_norm = f"{m.group(1)} {m.group(2)}", ref_norm(m.group(2))
+        memo_ref_kind = ref_kind(m.group(1))
     return EntryInfo(
         entry=entry,
         pos=pos,
@@ -436,6 +646,7 @@ def _entry_info(entry: GLEntry, pos: int, klass: EbitdaClass) -> EntryInfo:
         theme=theme_tokens(entry.memo, cp),
         memo_ref=memo_ref,
         memo_ref_norm=memo_ref_norm,
+        memo_ref_kind=memo_ref_kind,
     )
 
 
@@ -543,7 +754,12 @@ def build_index(
         duplicate_groups=duplicates,
         mgmt_lines={k: v for k, v in mgmt_lines.items() if v},
         gl_lines=gl_lines,
-        doc_title_refs={d: ref_tokens(d) | ref_tokens(facts_by_id[d].title) for d in docs},
+        doc_title_refs={d: typed_refs(d) | typed_refs(facts_by_id[d].title) for d in docs},
+        company_tokens=name_tokens(meta.target_name),
+        gl_numbers=frozenset(by_number),
+        doc_body_words={d: body_words(docs[d].full_text) for d in docs},
+        doc_places={d: place_words(docs[d].full_text) for d in docs},
+        doc_subjects={d: street_addresses(f"{d} {facts_by_id[d].title or ''}") for d in docs},
     )
 
 
@@ -559,6 +775,7 @@ class LinkInfo:
     reasons: list[str]
     group: str = ""
     context: bool = False  # surfaced by a challenge (recovery, comparable), not by scoring
+    party: bool = False  # the Counterparty signal fired: the entry is with a party the claim names
 
 
 @dataclass
@@ -597,6 +814,17 @@ ROLE_MOVED = "moved"
 ROLE_RECOVERY = "recovery"
 ROLE_CONTEXT = "context"
 
+# Removals that decide whose item an entry is rather than whether the claim is right: the entry
+# belongs to another adjustment, sits below EBITDA already, or is the extra posting of a bill the
+# GL carries twice (a diligence item reverses it, SPEC §5.7). Evidence challenges skip these.
+STRUCTURAL_REMOVALS = frozenset(
+    {
+        FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT,
+        FlagCode.ALREADY_EXCLUDED_FROM_EBITDA,
+        FlagCode.DUPLICATE_GL_ENTRY,
+    }
+)
+
 
 @dataclass
 class Removal:
@@ -626,6 +854,7 @@ class PeriodFit:
     ties: int = 1  # exact fits still level when the earliest-entries rule decided (SPEC §5.3)
     cited: int = 0  # chosen entries a support-ref document links to
     elsewhere: list[str] = field(default_factory=list)  # entries outside the period that tie to its claim
+    diff_cents: int = 0  # |chosen total - claim| in cents: 0 is a fit to the cent, else within the tolerance
 
 
 @dataclass
@@ -635,6 +864,9 @@ class NormalizationInfo:
     level_candidates: list[Decimal] = field(default_factory=list)
     supported_by: Optional[str] = None
     draft_docs: list[str] = field(default_factory=list)
+    mgmt_level: Optional[Decimal] = None  # annual level management used (stated, else implied by the claim)
+    benchmark: bool = False  # the level comes from an independent market benchmark, not management's
+    level_flag: Optional[Flag] = None  # the flag that set a level other than management's (carries that change)
 
 
 @dataclass
@@ -648,7 +880,11 @@ class AdjustmentTrace:
     groups: dict[str, list[str]] = field(default_factory=dict)  # group label -> linked entry ids
     group_of: dict[str, str] = field(default_factory=dict)
     group_ref: dict[str, str] = field(default_factory=dict)  # group label -> normalized reference
+    group_ref_kind: dict[str, str] = field(default_factory=dict)  # group label -> kind of that reference ("" unknown)
     claimed: dict[str, list[str]] = field(default_factory=dict)  # period label -> claimed entry ids
+    # Period label -> unclaimed entries diligence carries anyway (SPEC §5.4 EXCESS_GL_ACTIVITY carry
+    # rule): the rest of a fixed-fee engagement management claimed only in part.
+    carried: dict[str, list[str]] = field(default_factory=dict)
     fits: dict[str, PeriodFit] = field(default_factory=dict)
     capped: set[str] = field(default_factory=set)
     doc_links: dict[str, DocLinkInfo] = field(default_factory=dict)
@@ -657,6 +893,9 @@ class AdjustmentTrace:
     judgments: list[str] = field(default_factory=list)
     removals: dict[str, Removal] = field(default_factory=dict)
     moved: set[str] = field(default_factory=set)  # out-of-period entries; effects carry their amount
+    # Entries linked only because their memo restates the account name, in an account and period where
+    # other entries link on independent evidence: context, never claimed.
+    echo_context: list[str] = field(default_factory=list)
     effects: list[Effect] = field(default_factory=list)
     recurrence: list[RecurrenceObservation] = field(default_factory=list)
     normalization: Optional[NormalizationInfo] = None
@@ -665,6 +904,7 @@ class AdjustmentTrace:
     ai_dropped_quotes: int = 0  # AI quotes the AI adapter itself rejected during this adjustment's calls
     search_terms: str = ""
     _judgment_keys: set[str] = field(default_factory=set, repr=False)
+    _judgment_text: dict[str, str] = field(default_factory=dict, repr=False)
     _fact_keys: dict[str, int] = field(default_factory=dict, repr=False)
 
     # -- classification ----------------------------------------------------
@@ -702,6 +942,24 @@ class AdjustmentTrace:
     def claimed_labels(self) -> list[str]:
         return [lbl for lbl in self.labels if self.claim(lbl) != 0]
 
+    def cost_free_labels(self) -> set[str]:
+        """Normalization periods where management's own figures say the arrangement costs nothing (rent-free
+        premises, an unpaid owner): the claim is minus the stated annual level, pro rata, and the GL traces no
+        cost. The level is then the whole normalization, not a gap in the actual cost."""
+        if not self.is_normalization or not self.intent.normalized_amount:
+            return set()
+        try:
+            level = abs(D(self.intent.normalized_amount))
+        except (ValueError, ArithmeticError):
+            return set()
+        out: set[str] = set()
+        for lbl in self.claimed_labels():
+            months = len(self.index.label_months[lbl])
+            expected = level * months / 12
+            if self.claim(lbl) < 0 and self.traced(lbl) == 0 and abs(-self.claim(lbl) - expected) <= self.index.tolerance * months:
+                out.add(lbl)
+        return out
+
     def amount(self, entry_id: str) -> Decimal:
         return self.index.by_id[entry_id].amount
 
@@ -712,22 +970,43 @@ class AdjustmentTrace:
         return self.index.sort_ids(ids)
 
     def in_play_ids(self) -> list[str]:
-        """Claimed entries that are this adjustment's own items: not lost to another
-        adjustment and not already below EBITDA. Evidence challenges look only at these."""
-        structural = (FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT, FlagCode.ALREADY_EXCLUDED_FROM_EBITDA)
-        return [e for e in self.claimed_ids() if e not in self.removals or self.removals[e].code not in structural]
+        """Claimed entries that are this adjustment's own items: not lost to another adjustment,
+        not already below EBITDA, and not an extra posting of a duplicated bill (a diligence item
+        carries that). Evidence challenges look only at these."""
+        return [e for e in self.claimed_ids() if e not in self.removals or self.removals[e].code not in STRUCTURAL_REMOVALS]
+
+    def carried_ids(self) -> list[str]:
+        ids: set[str] = set()
+        for v in self.carried.values():
+            ids.update(v)
+        return self.index.sort_ids(ids)
 
     def supporting(self, label: str) -> list[str]:
-        return [e for e in self.claimed.get(label, []) if e not in self.removals]
+        """Entries diligence carries in the period: claimed and not removed, plus carried entries."""
+        own = [e for e in self.claimed.get(label, []) if e not in self.removals]
+        return own + [e for e in self.carried.get(label, []) if e not in self.removals and e not in own]
 
     def supporting_ids(self) -> list[str]:
-        return [e for e in self.claimed_ids() if e not in self.removals]
+        return self.index.sort_ids(
+            [e for e in self.claimed_ids() if e not in self.removals]
+            + [e for e in self.carried_ids() if e not in self.removals]
+        )
 
     def traced(self, label: str) -> Decimal:
         return sum((self.amount(e) for e in self.claimed.get(label, [])), ZERO)
 
     def documented(self, label: str) -> Decimal:
-        return sum((self.amount(e) for e in self.claimed.get(label, []) if self.support_docs(e)), ZERO)
+        """(c) Documented: claimed entries vouched to their own document (tick D), by the same
+        per-entry rule the workpaper's audit trail uses (``vouch_tick``), so the two agree."""
+        return sum((self.amount(e) for e in self.claimed.get(label, []) if self.vouched(e)), ZERO)
+
+    def vouched(self, entry_id: str) -> bool:
+        info = self.index.by_id[entry_id]
+        return any(
+            vouch_tick(self.index.facts.get(d), info.entry, info.amount, self.index.tolerance, self.index.gl_numbers)
+            == "D"
+            for d in self.entry_docs(entry_id)
+        )
 
     def effect(self, label: str) -> Decimal:
         return sum((x.amount for x in self.effects if x.label == label), ZERO)
@@ -761,14 +1040,25 @@ class AdjustmentTrace:
             d for d, info in self.doc_links.items() if info.entry_basis.get(entry_id) in ENTRY_ABOUT_BASES
         )
 
+    def doc_type(self, doc_id: str) -> str:
+        return (self.index.facts[doc_id].doc_type if doc_id in self.index.facts else "other").strip().lower()
+
     def support_docs(self, entry_id: str) -> list[str]:
         """Documents that evidence an entry. The company's own emails and memos are management
-        representations, not documentary support, so they do not count (SPEC §5.4 NO_DOCUMENT_SUPPORT)."""
+        representations, not documentary support, so they do not count (SPEC §5.4 NO_DOCUMENT_SUPPORT).
+        A journal entry's outside corroboration counts (see ``_associate_documents``)."""
+        return [d for d in self.entry_docs(entry_id) if self.doc_type(d) not in CORRESPONDENCE_DOC_TYPES]
+
+    def outside_corroboration(self) -> list[str]:
+        """Documents management cites that come from someone other than the company under review."""
+        company = self.index.company_tokens
         return [
             d
-            for d in self.entry_docs(entry_id)
-            if (self.index.facts[d].doc_type if d in self.index.facts else "other").strip().lower()
-            not in CORRESPONDENCE_DOC_TYPES
+            for d, info in sorted(self.doc_links.items())
+            if info.cited
+            and self.doc_type(d) not in CORRESPONDENCE_DOC_TYPES
+            and self.index.doc_cp.get(d)
+            and not (company and names_match(self.index.doc_cp[d], company))
         ]
 
     def entry_docs_by_basis(self, entry_id: str, bases: Iterable[str]) -> list[str]:
@@ -807,7 +1097,31 @@ class AdjustmentTrace:
         cp = idx.doc_cp.get(doc_id, frozenset())
         if not cp:
             return []
-        return [g for g, members in self.groups.items() if any(names_match(idx.by_id[e].cp_tokens, cp) for e in members)]
+        return [
+            g
+            for g, members in self.groups.items()
+            if any(names_match(idx.by_id[e].cp_tokens, cp) for e in members) and not self.about_other_matter(doc_id, g)
+        ]
+
+    def _other_engagement(self, doc_id: str) -> bool:
+        """Every claimed group carries a reference and the document is about another one."""
+        groups = {self.group_of.get(e, "") for e in self.claimed_ids()}
+        return bool(groups) and all(self.about_other_matter(doc_id, g) for g in groups)
+
+    def about_other_matter(self, doc_id: str, group: str) -> bool:
+        """The document is about a different engagement of the same party than the group's.
+
+        A law firm or vendor bills several matters or contracts; a document whose own heading
+        names a reference of the same kind as the group's (a matter against a matter, a contract
+        against a contract) but a different one is about that other engagement, and does not speak
+        to the group, which it never names. Like is compared with like: dates, fiscal years, street
+        numbers or form numbers in a title name no engagement.
+        """
+        ref, kind = self.group_ref.get(group, ""), self.group_ref_kind.get(group, "")
+        if not ref or not kind:
+            return False
+        own = {n for k, n in self.index.doc_title_refs.get(doc_id, frozenset()) if k == kind}
+        return bool(own) and ref not in own and ref not in self.index.doc_refs.get(doc_id, frozenset())
 
     # -- mutation ----------------------------------------------------------
 
@@ -862,7 +1176,15 @@ class AdjustmentTrace:
         key = key or text
         if text and key not in self._judgment_keys:
             self._judgment_keys.add(key)
+            self._judgment_text[key] = text
             self.judgments.append(text)
+
+    def drop_judgment(self, key: str) -> None:
+        """Withdraw a judgment point a later finding settled (e.g. a claimed-set tie made moot)."""
+        text = self._judgment_text.pop(key, None)
+        if text is not None:
+            self._judgment_keys.discard(key)
+            self.judgments = [j for j in self.judgments if j != text]
 
     def add_fact(self, fact: Fact, key: str = "") -> None:
         """One fact per topic (``key``, e.g. a document): later evidence on it adds quotes, not lines."""
@@ -951,12 +1273,18 @@ class AdjustmentTrace:
             return ROLE_REMOVED
         if any(entry_id in ids for ids in self.claimed.values()):
             return ROLE_MOVED if entry_id in self.moved else ROLE_SUPPORTING
+        if any(entry_id in ids for ids in self.carried.values()):
+            return ROLE_SUPPORTING
         if any(x.entry_id == entry_id and x.code == FlagCode.OFFSETTING_RECOVERY for x in self.effects):
             return ROLE_RECOVERY
         return ROLE_CONTEXT
 
+    def labels_carrying(self, entry_id: str) -> list[str]:
+        return [lbl for lbl in self.labels if entry_id in self.carried.get(lbl, [])]
+
     def gl_links(self) -> list[GLLink]:
         claimed = set(self.claimed_ids())
+        carried = set(self.carried_ids())
         out: list[GLLink] = []
         for eid in self.index.sort_ids(self.links):
             link = self.links[eid]
@@ -967,6 +1295,11 @@ class AdjustmentTrace:
                 reasons.append(f"Removed ({removal.code.value}): {removal.note}")
             elif eid in claimed:
                 reasons.append("Claimed in " + ", ".join(self.labels_claiming(eid)))
+            elif eid in carried:
+                reasons.append(
+                    "Not claimed; carried in " + ", ".join(self.labels_carrying(eid))
+                    + " as part of the same fixed-fee engagement (EXCESS_GL_ACTIVITY)"
+                )
             elif not link.context:
                 reasons.append(self._context_reason(info))
             out.append(
@@ -977,10 +1310,11 @@ class AdjustmentTrace:
                     score=round(link.score, 2),
                     reasons=reasons,
                     group=link.group,
-                    supports_claim=eid in claimed and removal is None,
+                    supports_claim=(eid in claimed or eid in carried) and removal is None,
                     doc_ids=self.entry_docs(eid),
                     role=self.role_of(eid),
                     claimed=eid in claimed,
+                    claimed_in=self.labels_claiming(eid),
                     removed_by=removal.code if removal is not None else None,
                 )
             )
@@ -1001,10 +1335,13 @@ class AdjustmentTrace:
                 continue
             facts = self.index.facts.get(doc_id)
             about = [e for e, basis in info.entry_basis.items() if basis in ENTRY_ABOUT_BASES]
+            relation = info.relation or _default_relation(facts, info)
+            if relation == "agreement" and not about and self._other_engagement(doc_id):
+                relation = "other"  # the agreement for another matter of the same party: context, not support
             out.append(
                 DocLink(
                     doc_id=doc_id,
-                    relation=info.relation or _default_relation(facts, info),
+                    relation=relation,
                     entry_ids=self.index.sort_ids(about),
                     score=round(info.score, 2),
                     reasons=list(info.reasons),
@@ -1013,6 +1350,108 @@ class AdjustmentTrace:
             )
         out.sort(key=lambda d: (-d.score, d.doc_id))
         return out
+
+
+# ---------------------------------------------------------------------------
+# Vouching (the D / A / S / U / C document ticks of the workpaper's audit trail)
+# ---------------------------------------------------------------------------
+
+# Legal-form words that do not identify a party when vouching an entry's counterparty.
+_VOUCH_PARTY_STOP = frozenset(
+    {"llc", "inc", "co", "corp", "corporation", "company", "the", "lp", "llp", "lllp", "pa", "na", "ltd", "limited",
+     "and", "of", "plc", "pc", "pllc", "pty", "dba", "gmbh", "bv", "nv", "ag", "sarl", "srl"}
+)
+
+
+def _ref_scheme(ref: str) -> tuple[str, str]:
+    """(alpha prefix, shape) of a normalized reference: 'KS10311' -> ('KS', 'AA99999')."""
+    prefix = re.match(r"[A-Z]*", ref).group() if ref else ""
+    return prefix, re.sub(r"[0-9]", "9", re.sub(r"[A-Z]", "A", ref))
+
+
+def same_numbering(a: str, b: str) -> bool:
+    """Two normalized references look like numbers from one numbering scheme: the same alpha prefix, or the
+    same pattern of letters and digits. A NetSuite 'BILL00421' and a vendor's 'INV88213' do not."""
+    (pa, sa), (pb, sb) = _ref_scheme(a), _ref_scheme(b)
+    return bool(pa and pa == pb) or sa == sb
+
+
+def _vouch_party(name: Optional[str]) -> set[str]:
+    return {w for w in re.findall(r"[a-z0-9]+", (name or "").lower()) if w not in _VOUCH_PARTY_STOP}
+
+
+def _month_no(month: Optional[str]) -> Optional[int]:
+    try:
+        y, m = (month or "")[:7].split("-")
+        return int(y) * 12 + int(m)
+    except ValueError:
+        return None
+
+
+def vouch_tick(
+    facts: Optional[DocFacts],
+    entry: GLEntry,
+    amount: Decimal,
+    tolerance: Decimal,
+    gl_numbers: frozenset[str] = frozenset(),
+) -> str:
+    """How a document about an entry vouches it: D (its own document: the entry's number, or the
+    same amount for the same party near the entry's month), A (agreement only), S (a sample: the
+    same charge under another number or in another month), U (draft / unsigned), C (the
+    company's own correspondence), or "" (not specific to the entry).
+
+    A practitioner ticks an entry as vouched only against the document that evidences that very
+    charge; an engagement letter or a monthly statement for another month supports the item but
+    does not vouch the entry. This is the rule the Excel audit trail uses for its D tick, so the
+    (c) Documented line and the ticks agree.
+
+    A document whose own number differs from the entry's is another charge (S) only when the two numbers
+    come from one numbering scheme, or when the document's number is on another GL entry
+    (``gl_numbers``: the normalized doc numbers the GL carries). An ERP's internal transaction number
+    ('BILL00421') says nothing about the vendor's invoice number, so the amount, party and date decide.
+    """
+    if facts is None:
+        return ""
+    dtype = (facts.doc_type or "").strip().lower()
+    if dtype in CORRESPONDENCE_DOC_TYPES:
+        return "C"
+    refs = {r for r in (ref_norm(x) for x in facts.reference_numbers) if r}
+    number = ref_norm(entry.doc_number)
+    if number and number in refs:
+        return "D"
+    states_amount = False
+    for a in facts.amounts:
+        try:
+            states_amount = states_amount or abs(abs(D(a.amount)) - abs(amount)) <= tolerance
+        except (ValueError, ArithmeticError):
+            continue
+    memo = ref_norm(entry.memo)
+    if states_amount and memo and any(len(r) >= 5 and any(ch.isdigit() for ch in r) and r in memo for r in refs):
+        return "D"
+    if dtype in AGREEMENT_DOC_TYPES:
+        return "U" if facts.is_draft or facts.is_signed is False else "A"
+    if facts.is_draft:
+        return "U"
+    if not states_amount:
+        return ""
+    if number and any(same_numbering(number, r) or r in gl_numbers for r in refs if r != number):
+        return "S"
+    a_party, b_party = _vouch_party(entry.counterparty), _vouch_party(facts.counterparty)
+    party_ok = (
+        not facts.counterparty
+        or not entry.counterparty
+        or (bool(a_party and b_party) and len(a_party & b_party) / min(len(a_party), len(b_party)) >= 0.6)
+    )
+    m = _month_no(entry.period or entry.date)
+    start, end, dated = (_month_no(facts.service_period_start), _month_no(facts.service_period_end),
+                         _month_no(facts.doc_date))
+    if m is None or (start is None and end is None and dated is None):
+        near = True
+    else:
+        near = (start is not None and end is not None and start - 1 <= m <= end + 2) or (
+            dated is not None and abs(dated - m) <= 2
+        )
+    return "D" if party_ok and near else "S"
 
 
 def _default_relation(facts: Optional[DocFacts], info: DocLinkInfo) -> str:
@@ -1513,7 +1952,31 @@ def _link_context(t: AdjustmentTrace) -> _LinkContext:
     )
 
 
-def _score_entry(info: EntryInfo, ctx: _LinkContext, idx: DealIndex) -> tuple[float, list[str]]:
+def restates_account(keyword: str, account_name: str) -> bool:
+    """The keyword only repeats the account's own name ('repairs' in 'Repairs & Maintenance').
+
+    Every entry in that account is described by those words, so they say nothing about which
+    entries belong to the claimed event: a routine repair in a repairs account is upkeep, not the
+    casualty loss management adds back. A word restates the account only when it is one of the
+    account's words, its plural or singular, or has the same stem: 'rent' does not restate
+    'Rental Income', nor 'pro' 'Professional Fees'.
+    """
+    toks = norm_text(account_name).split()
+    if not toks:
+        return False
+    stems = {stem(t) for t in toks}
+
+    def known(w: str) -> bool:
+        if w in toks or stem(w) in stems:
+            return True
+        return any(t in (w + "s", w + "es") or w in (t + "s", t + "es") for t in toks)
+
+    words = [w for w in norm_text(keyword).split() if w not in _THEME_STOP]
+    return bool(words) and all(known(w) for w in words)
+
+
+def _score_entry(info: EntryInfo, ctx: _LinkContext, idx: DealIndex) -> tuple[float, list[str], bool, float]:
+    """(score, reasons, party signal fired, weight of keywords that only restate the account name)."""
     e = info.entry
     score, reasons = 0.0, []
     if e.account in ctx.accounts:
@@ -1541,10 +2004,19 @@ def _score_entry(info: EntryInfo, ctx: _LinkContext, idx: DealIndex) -> tuple[fl
         score += W_COUNTERPARTY
         reasons.append(cp_reason)
 
-    hits = keyword_hits(ctx.keywords, info.memo_norm, info.memo_tokens, party)
+    all_hits = keyword_hits(ctx.keywords, info.memo_norm, info.memo_tokens, party)
+    # A keyword that restates the account name is not an independent signal (see restates_account).
+    hits = [h for h in all_hits if not restates_account(h, e.account_name)]
+    echo = [h for h in all_hits if h not in hits]
+    echo_bonus = 0.0
     if hits:
         score += W_KEYWORD + min(W_KEYWORD_EXTRA * (len(hits) - 1), W_KEYWORD_EXTRA_CAP)
         reasons.append("Memo mentions " + ", ".join(f"'{h}'" for h in hits))
+    elif echo:
+        echo_bonus = W_KEYWORD + min(W_KEYWORD_EXTRA * (len(echo) - 1), W_KEYWORD_EXTRA_CAP)
+        reasons.append(
+            "Memo mentions " + ", ".join(f"'{h}'" for h in echo) + ", which only restates the account name"
+        )
 
     # A document stating the entry's own doc number is the Document signal, not a Reference.
     ref_reason = ""
@@ -1576,7 +2048,7 @@ def _score_entry(info: EntryInfo, ctx: _LinkContext, idx: DealIndex) -> tuple[fl
     if doc_reason:
         score += W_DOCUMENT
         reasons.append(doc_reason)
-    return score, reasons
+    return score, reasons, bool(cp_reason), echo_bonus
 
 
 def _assign_groups(t: AdjustmentTrace, ctx: _LinkContext) -> None:
@@ -1613,6 +2085,7 @@ def _assign_groups(t: AdjustmentTrace, ctx: _LinkContext) -> None:
         t.links[e].group = label
         if ref:
             t.group_ref[label] = ref
+            t.group_ref_kind[label] = info.memo_ref_kind if ref == info.memo_ref_norm else ""
 
 
 # ---------------------------------------------------------------------------
@@ -1627,11 +2100,23 @@ def _fit_claims(t: AdjustmentTrace) -> None:
         lbl: [e for e in t.candidates if idx.by_id[e].month in idx.label_months[lbl]] for lbl in t.claimed_labels()
     }
     if t.is_normalization:
-        # The claim is actual cost in the named accounts less a normalized level (SPEC §5.4),
-        # so every linked entry in those accounts is actual cost.
+        # The claim is actual cost in the named accounts less a normalized level (SPEC §5.4).
+        # A normalization restates one arrangement (the owner's pay, the related-party lease) at
+        # market, so the actual cost is that arrangement's entries. An entry with a counterparty of its
+        # own that is not the arrangement's party (another landlord, the county's tax bill, another
+        # employee) is another arrangement and stays context. Entries without a counterparty (a payroll
+        # journal, an accrual) linked on the arrangement's own words stay in: many ledgers post salary
+        # with no contact, so the party signal alone would drop the owner's pay.
         accounts = set(t.adj.gl_accounts)
+        in_accounts = [e for e in t.candidates if not accounts or idx.by_id[e].entry.account in accounts]
+        named = {e for e in in_accounts if t.links[e].party}
+        party_known = bool(named) or any(name_tokens(n) for n in t.intent.counterparties)
+
+        def own_arrangement(e: str) -> bool:
+            return e in named or not party_known or not idx.by_id[e].cp_tokens
+
         for lbl, cands in cands_by_label.items():
-            cands = [e for e in cands if not accounts or idx.by_id[e].entry.account in accounts]
+            cands = [e for e in cands if e in in_accounts and own_arrangement(e)]
             t.claimed[lbl] = list(cands)
             t.fits[lbl] = PeriodFit(lbl, t.claim(lbl), sum((t.amount(e) for e in cands), ZERO), "normalization")
         return
@@ -1677,7 +2162,7 @@ def _fit_one(t: AdjustmentTrace, label: str, cands: list[str]) -> None:
         if found is not None:
             chosen = [cands[i] for i in found.indices]
             fit.method = "groups" if found.split_groups == 0 else "entries"
-            fit.bounded, fit.ties, fit.cited = found.bounded, found.ties, found.cited
+            fit.bounded, fit.ties, fit.cited, fit.diff_cents = found.bounded, found.ties, found.cited, found.diff
         else:
             fit.bounded = len(cands) > MAX_SUBSET_ITEMS
             elsewhere = _claim_elsewhere(t, label, target, tol, s)
@@ -1777,17 +2262,28 @@ def _associate_documents(t: AdjustmentTrace) -> None:
     idx = t.index
     prelinked = {d for d, info in t.doc_links.items() if info.prelinked}
     support_docs = {d for d, info in t.doc_links.items() if info.cited}
-    group_refs = set(t.group_ref.values())
+    group_refs = {(t.group_ref_kind.get(g, ""), r) for g, r in t.group_ref.items() if t.group_ref_kind.get(g)}
 
     def other_matter(doc_id: str, entry_id: str) -> bool:
-        """The document's title names a matter of this adjustment other than the entry's own."""
+        """The document's title names a matter (contract, project ...) of this adjustment other than the entry's own."""
         named = idx.doc_title_refs.get(doc_id, frozenset()) & group_refs
-        return bool(named) and t.group_ref.get(t.group_of.get(entry_id, ""), "") not in named
+        g = t.group_of.get(entry_id, "")
+        own = (t.group_ref_kind.get(g, ""), t.group_ref.get(g, ""))
+        return bool(named) and own not in named
 
     def other_entry(doc_id: str, entry_id: str) -> bool:
         """The document is the bill for a different entry (it states that entry's doc number)."""
         own = idx.doc_entries.get(doc_id, frozenset())
         return bool(own) and entry_id not in own
+
+    named_cache: dict[tuple[str, str], bool] = {}
+
+    def names_party(doc_id: str, party: str) -> bool:
+        """The document's body names the party as a phrase (see ``name_in_body``); cached per (document, name)."""
+        key = (doc_id, party)
+        if key not in named_cache:
+            named_cache[key] = name_in_body(party, idx.doc_body_words.get(doc_id, ()), idx.doc_places.get(doc_id, frozenset()))
+        return named_cache[key]
 
     amount_hits: dict[str, list[str]] = {}
     # Only claimed entries: documents about context-only activity (prior-year comparables,
@@ -1807,9 +2303,26 @@ def _associate_documents(t: AdjustmentTrace) -> None:
                 names_match(dcp, info.cp_tokens)
                 or (not info.cp_tokens and doc_id in support_docs)
                 # A cited notice from a third party (debtor's counsel) naming the customer and the amount.
-                or (doc_id in prelinked and name_in_text(info.cp_tokens, idx.doc_text_tokens[doc_id]))
+                or (doc_id in prelinked and names_party(doc_id, info.entry.counterparty))
             ):
                 amount_hits.setdefault(doc_id, []).append(e)
+    # A document management cites that states the entry's exact amount and is about the same property as a
+    # document already tied to the entry (a broker's opinion of market rent for the leased premises, beside
+    # the lease) is about the entry too, though it never names the entry's party.
+    subject_hits: dict[str, list[tuple[str, str, str]]] = {}
+    for e in claimed:
+        info = idx.by_id[e]
+        tied = [d for d, hits in amount_hits.items() if e in hits and idx.doc_subjects.get(d)]
+        if not tied:
+            continue
+        for doc_id, _amt in dict.fromkeys(idx.docs_with_amount(info.amount)):
+            if doc_id not in support_docs or e in amount_hits.get(doc_id, []) or other_entry(doc_id, e) or other_matter(doc_id, e):
+                continue
+            for d2 in tied:
+                shared = sorted(idx.doc_subjects.get(doc_id, frozenset()) & idx.doc_subjects[d2])
+                if shared and d2 != doc_id:
+                    subject_hits.setdefault(doc_id, []).append((e, shared[0], d2))
+                    break
     # Correspondence that cites a claimed entry's doc number discusses that entry. Short
     # numbers ("1001") also occur in addresses, so only distinctive ones count.
     for e in claimed:
@@ -1822,6 +2335,11 @@ def _associate_documents(t: AdjustmentTrace) -> None:
         basis = "amount" if len(hits) == 1 else "amount_multi"
         for e in hits:
             t.associate(doc_id, e, basis, DW_ENTRY_AMOUNT, "States the amount of linked GL entries for the same party")
+    for doc_id, hits in subject_hits.items():
+        basis = "amount" if len(hits) == 1 else "amount_multi"
+        for e, subject, other in hits:
+            t.associate(doc_id, e, basis, DW_ENTRY_AMOUNT,
+                        f"States the amount of linked GL entries; about the same property ({subject}) as {other}")
     # A document stating a group's total (an engagement fee paid in installments) supports every entry in it.
     claimed_set = set(claimed)
     for g, all_members in t.groups.items():
@@ -1829,7 +2347,10 @@ def _associate_documents(t: AdjustmentTrace) -> None:
         if not members:
             continue
         # The document may state the whole engagement (all installments) even when only some are claimed.
-        totals = {sum((t.amount(e) for e in all_members), ZERO), sum((t.amount(e) for e in members), ZERO)}
+        # A total is made of two or more entries: one entry's amount is that entry's own bill, not a total.
+        totals = {sum((t.amount(e) for e in all_members), ZERO)}
+        if len(members) > 1:
+            totals.add(sum((t.amount(e) for e in members), ZERO))
         for lbl in t.claimed_labels():
             part = [e for e in members if e in t.claimed.get(lbl, [])]
             if len(part) > 1:
@@ -1860,13 +2381,42 @@ def _associate_documents(t: AdjustmentTrace) -> None:
             continue
         subject = _event_words(info.theme)
         for doc_id in sorted(prelinked):
-            if not name_in_text(info.cp_tokens, idx.doc_text_tokens[doc_id]):
+            if not names_party(doc_id, info.entry.counterparty):
                 continue
             doc_words = _event_words(idx.doc_text_tokens[doc_id] | frozenset(norm_text(doc_id).split()))
             if len(subject & doc_words) >= MIN_EVENT_WORDS and not other_entry(doc_id, e) and not other_matter(doc_id, e):
                 t.associate(doc_id, e, "event", DW_ENTRY_NAMED, f"Names {info.entry.counterparty} and the entry's subject")
             else:
                 t.associate(doc_id, e, "named", DW_ENTRY_NAMED, f"Names {info.entry.counterparty}")
+    # A journal entry with no counterparty (a write-off, a reserve, an accrual) has no outside bill: its
+    # source document is the company's own calculation. When a company-authored document that is not
+    # correspondence (a memorandum, a calculation, a schedule, an analysis, board minutes) states the
+    # entry's amount, the outside documents management cites for the claim (a supplier's notice, a
+    # disposal certificate, a court filing) are the evidence of the event the entry records, and
+    # support it. Emails never pin an entry this way, and an outside document that is already another
+    # claimed entry's own bill (tied to it by number or amount) is that entry's support, not this one's.
+    outside = t.outside_corroboration()
+    for e in claimed:
+        if idx.by_id[e].cp_tokens or not outside:
+            continue
+        memos = [d for d in t.entry_docs_by_basis(e, ("number", "amount", "amount_multi", "group")) if _company_authored(t, d)]
+        if memos:
+            for d in outside:
+                other_bill = any(
+                    x != e and x in claimed_set and b in ("number", "amount", "amount_multi", "group")
+                    for x, b in t.doc_links[d].entry_basis.items()
+                )
+                if other_bill:
+                    continue
+                t.associate(d, e, "event", DW_ENTRY_NAMED, f"Outside evidence of the event {memos[0]} records")
+            t.add_fact(
+                Fact(
+                    text=f"{t.describe(e)} is a journal entry with no outside bill; {memos[0]} states its amount and "
+                    f"{join_limited(outside, 1)} {'corroborate' if len(outside) > 1 else 'corroborates'} the event.",
+                    entry_ids=[e],
+                ),
+                key=f"journal:{e}",
+            )
     for info in t.doc_links.values():
         n = sum(1 for b in info.entry_basis.values() if b in ENTRY_ABOUT_BASES)
         if n and not info.prelinked:
@@ -1883,6 +2433,8 @@ def _fit_flags(t: AdjustmentTrace) -> None:
     if not t.claimed_labels():
         return
     if not t.candidates:
+        if t.is_normalization and set(t.claimed_labels()) <= t.cost_free_labels():
+            return  # an arrangement that costs nothing has no GL entries to find; the level is the normalization
         t.add_flag(
             Flag(
                 code=FlagCode.NO_GL_SUPPORT,
@@ -1904,14 +2456,32 @@ def _fit_flags(t: AdjustmentTrace) -> None:
         chosen = t.claimed.get(lbl, [])
         traced = t.traced(lbl)
         others = [e for e in t.candidates if idx.by_id[e].month in idx.label_months[lbl] and e not in chosen]
-        excess = sum((t.amount(e) for e in others), ZERO)
+        # Activity running against the claim (credits beside an expense claim, revenue beside a cost) is
+        # not part of what exceeds it: it is reported apart, never netted into the excess.
+        same = [e for e in others if s * t.amount(e) > 0]
+        against = [e for e in others if s * t.amount(e) < 0]
+        excess = sum((t.amount(e) for e in same), ZERO)
+        linked_same = traced + excess
+        against_txt = (
+            f" {entries_word(len(against))} running the other way ({money(sum((t.amount(e) for e in against), ZERO))}) "
+            f"{plural(len(against), 'is', 'are')} context only too."
+            if against else ""
+        )
         if fit.method in ("groups", "entries"):
             groups = list(dict.fromkeys(t.group_of[e] for e in chosen))
             what = t.items_text(chosen, 1) if len(groups) == 1 else f"{len(groups)} groups"
-            msg = (
-                f"{lbl}: linked GL activity of {money(fit.linked_total)} exceeds the {money(claim)} claim, which ties "
-                f"to the cent to {entries_word(len(chosen))} ({what}); the other {money(excess)} is context only."
-            )
+            how = "to the cent" if fit.diff_cents == 0 else f"within the {money(idx.tolerance)} tolerance"
+            if s * (linked_same - claim) > 0:
+                msg = (
+                    f"{lbl}: linked GL activity of {money(linked_same)} exceeds the {money(claim)} claim, which ties "
+                    f"{how} to {entries_word(len(chosen))} ({what}); the other {money(excess)} is context only."
+                    + against_txt
+                )
+            else:
+                msg = (
+                    f"{lbl}: the {money(claim)} claim ties {how} to {entries_word(len(chosen))} ({what})."
+                    + against_txt
+                )
             span = month_span(idx.by_id[e].month for e in chosen)
             if fit.ties > 1:
                 msg += f" {fit.ties:,} fits rank equal, so the earliest entries ({span}) were taken."
@@ -1941,7 +2511,7 @@ def _fit_flags(t: AdjustmentTrace) -> None:
                         code=FlagCode.EXCESS_GL_ACTIVITY,
                         severity=Severity.INFO,
                         message=_short_sentence(
-                            f"{lbl}: linked GL activity of {money(fit.linked_total)} exceeds the {money(claim)} claim "
+                            f"{lbl}: linked GL activity of {money(traced + excess)} exceeds the {money(claim)} claim "
                             f"and no combination of linked entries ties to it. The {entries_word(len(chosen))} with "
                             f"strong links ({money(traced)}) are treated as claimed, capped at the claim."
                         ),
@@ -1957,19 +2527,93 @@ def _fit_flags(t: AdjustmentTrace) -> None:
                 continue
         if s * (claim - traced) > tol:
             gap = traced - claim
+            # A related document that states the missing amount (an estimate in management's own
+            # build-up of the claim) explains the gap; cite it so the reviewer sees what was never booked.
+            explains = _documents_stating(t, abs(gap))
+            if not explains:
+                _echo_judgment(t, lbl, abs(gap), s)
+            why = f" {explains[0][0]} states the same {money(abs(gap))}." if explains else ""
             t.add_flag(
                 Flag(
                     code=FlagCode.PARTIAL_GL_SUPPORT,
                     severity=Severity.WARNING,
-                    message=(
+                    message=_short_sentence(
                         f"{lbl}: GL entries linked to this adjustment total {money(traced)} against the "
-                        f"{money(claim)} claim, so {money(abs(gap))} of the claim is not found in the GL."
+                        f"{money(claim)} claim, so {money(abs(gap))} of the claim is not found in the GL.{why}"
                     ),
                     period_label=lbl,
                     amount_impact=fmt(gap),
                     entry_ids=idx.sort_ids(chosen),
+                    doc_ids=sorted({d for d, _ in explains}),
+                    quotes=[q for _, q in explains][:2],
                 )
             )
+
+
+def _echo_judgment(t: AdjustmentTrace, label: str, gap: Decimal, s: int) -> None:
+    """Routine entries held as context (their memo only restates the account name) that tie to a claim's gap:
+    they may be part of the claimed event after all, so the reviewer decides rather than the tool dropping them."""
+    idx = t.index
+    months = idx.label_months[label]
+    pool = [e for e in t.echo_context if idx.by_id[e].month in months and s * idx.by_id[e].amount > 0]
+    if not pool:
+        return
+    pick = find_subset([s * cents(t.amount(e)) for e in pool], cents(gap), cents(idx.tolerance))
+    if pick is None:
+        return
+    tied = [pool[i] for i in pick]
+    accounts = sorted({f"{idx.by_id[e].entry.account} {idx.by_id[e].entry.account_name}" for e in tied})
+    t.add_judgment(
+        f"{label}: {entries_word(len(tied))} in {join_limited(accounts, 1)} whose memo only restates the account name "
+        f"({t.describe_many(tied, 2)}) total the {money(gap)} the linked entries fall short of the claim. Are they "
+        "part of the claimed event, or routine activity left out of it?",
+        key=f"echo:{label}",
+    )
+
+
+# Document types that are never the company's own calculation of a book entry: agreements and bills are
+# the other side's documents, correspondence is a representation, a payroll register is the source of
+# routine wages rather than of an event, and a benchmark is a third party's view of market.
+_NOT_CALCULATION_TYPES = AGREEMENT_DOC_TYPES | CORRESPONDENCE_DOC_TYPES.difference({"memo"}) | frozenset(
+    {"invoice", "payroll", "benchmark", "insurance"}
+)
+
+
+def _company_authored(t: AdjustmentTrace, doc_id: str) -> bool:
+    """The document is the company's own calculation (a memorandum, a schedule, an analysis, minutes): not an
+    agreement, bill, correspondence or payroll register, and either an internal memorandum, or with no outside
+    party, or with the company as its party, or on the company's letterhead (its name heads the first lines)."""
+    idx = t.index
+    dtype = t.doc_type(doc_id)
+    if dtype in _NOT_CALCULATION_TYPES:
+        return False
+    if dtype == "memo":
+        return True
+    cp = idx.doc_cp.get(doc_id, frozenset())
+    company = idx.company_tokens
+    if not cp or (company and names_match(cp, company)):
+        return True
+    doc = idx.docs.get(doc_id)
+    if doc is None or not doc.pages or not company:
+        return False
+    head = [line for line in doc.pages[0].text.splitlines() if line.strip()][:3]
+    return any(name_in_text(company, frozenset(norm_text(line).split())) for line in head)
+
+
+def _documents_stating(t: AdjustmentTrace, amount: Decimal) -> list[tuple[str, EvidenceQuote]]:
+    """(doc_id, quote) for documents related to the adjustment that state ``amount``."""
+    out: list[tuple[str, EvidenceQuote]] = []
+    for doc_id, info in sorted(t.doc_links.items()):
+        if not info.prelinked:
+            continue
+        for a in t.index.facts[doc_id].amounts:
+            try:
+                if abs(abs(D(a.amount)) - amount) <= t.index.tolerance:
+                    out.append((doc_id, a.quote))
+                    break
+            except (ValueError, ArithmeticError):
+                continue
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -1990,11 +2634,42 @@ def trace_adjustment(
         # A savings claim names positions or contracts, not accounts, so it cannot earn the
         # account signal; the bar drops by exactly that weight.
         threshold -= W_ACCOUNT
+    echoes: list[tuple[EntryInfo, float, list[str], bool]] = []
     for info in index.entries:
-        score, reasons = _score_entry(info, ctx, index)
+        score, reasons, party, echo = _score_entry(info, ctx, index)
         if score >= threshold:
-            t.links[info.entry_id] = LinkInfo(entry_id=info.entry_id, score=round(score, 2), reasons=reasons)
+            t.links[info.entry_id] = LinkInfo(
+                entry_id=info.entry_id, score=round(score, 2), reasons=reasons, party=party
+            )
             t.candidates.append(info.entry_id)
+        elif echo and score + echo >= threshold:
+            echoes.append((info, score + echo, reasons, party))
+    # Entries that link only because their memo repeats the account name ('repair' in a repairs
+    # account) are routine activity in that account. When other entries in the same account and period
+    # link on independent evidence (a party, a reference, a document, a distinctive word), the event is
+    # identified by those, and the routine entries are context: surfaced, never claimed (a gap they could
+    # close is raised as a judgment, see _fit_flags). When nothing more specific links in that account
+    # and period, the account-name match is all the evidence there is (a dedicated severance or bad-debt
+    # account), so those entries stay candidates.
+    independent: dict[str, set[str]] = {}
+    for e in t.candidates:
+        info = index.by_id[e]
+        independent.setdefault(info.entry.account, set()).update(index.labels_of(info.month) or {"*"})
+    promoted: list[str] = []
+    for info, score, reasons, party in echoes:
+        if independent.get(info.entry.account, set()) & (set(index.labels_of(info.month)) or {"*"}):
+            t.links[info.entry_id] = LinkInfo(
+                entry_id=info.entry_id,
+                score=round(score, 2),
+                reasons=reasons + ["Context only: same account, and the memo only restates the account name"],
+                group=_group_display(info),
+                context=True,
+            )
+            t.echo_context.append(info.entry_id)
+        else:
+            t.links[info.entry_id] = LinkInfo(entry_id=info.entry_id, score=round(score, 2), reasons=reasons, party=party)
+            promoted.append(info.entry_id)
+    t.candidates = index.sort_ids(t.candidates + promoted)
     _assign_groups(t, ctx)
     _fit_claims(t)
     _associate_documents(t)

@@ -6,6 +6,10 @@ What counts as a contradiction (examples, not a complete list):
 - Management says an event has happened, but the document only describes it as planned or targeted.
 - A normalization uses a level that differs from the one the supporting agreement states.
 Payment mechanics are NOT recurrence: severance or settlement paid in installments is still one-time.
+These are NOT contradictions either:
+- A statement that names routine or recurring activity only to say it is not part of the claimed item ("annual maintenance visits are not part of this remediation project"). A qualifier on a recurring term ("renews each year other than as provided in Section 9", "billed monthly, excluding the setup fee") does not set the recurrence apart: it still conflicts with a one-time claim.
+- A document about a different engagement or matter of the same vendor (a firm's audit engagement letter, when the claim is its tax-compliance project's bills).
+- The one-time part of a contract that prices a one-time fee separately from a recurring one: a recurring clause contradicts only the recurring charges, not the fee the same contract itself calls one-time (a device placement fee beside per-test reagent charges). List only the recurring entries in entry_ids.
 
 BOUNDARY (non-negotiable)
 - Never compute amounts and never propose a treatment or an adjusted figure. Code applies the effect and a human reviewer decides.

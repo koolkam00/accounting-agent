@@ -826,6 +826,21 @@ def test_discover_deals_and_paths(tmp_path, monkeypatch):
     assert ui.workpapers_root() == ui.PROJECT_ROOT / "workpapers"
 
 
+def test_workpaper_paths_never_use_a_raw_deal_id(tmp_path):
+    # deal.yaml is input: its deal_id may carry '/' or '..'; the folder is one safe component under the root.
+    paths = ui.workpaper_paths("../../etc/x", base=tmp_path)
+    assert paths.root.parent == tmp_path and paths.root.name == ui.deal_dir_name("../../etc/x")
+    assert "/" not in paths.root.name and not paths.root.name.startswith(".")
+    assert paths.xlsx.parent == paths.root and "/" not in paths.xlsx.name
+    engine = pytest.importorskip("qoe.engine")
+    if hasattr(engine, "deal_dir_name"):  # the same folder qoe.engine.save_workpaper writes
+        assert paths.root.name == engine.deal_dir_name("../../etc/x")
+    assert ui._local_deal_dir_name("../../etc/x") == "_.._etc_x"
+    with pytest.raises(ValueError):
+        ui.workpaper_paths("../", base=tmp_path)
+    assert ui.deal_file_token("../") == "deal" and ui.deal_file_token("alpha_co") == "alpha_co"
+
+
 def test_bridge_tables(wp):
     summary = ui.bridge_summary_rows(wp.bridge)
     assert [r["Line"] for r in summary][:4] == [label for _, label in ui.BRIDGE_SUMMARY_KEYS]

@@ -2,13 +2,22 @@
 
 from __future__ import annotations
 
+import pytest
+
 import re
 from typing import Iterable
 
 from qoe.ai_base import AdjustmentIntent, EntryClassification
 from qoe.challenge import ChallengeContext, run_challenges
 from qoe.money import fmt
-from qoe.propose import assess_confidence, compute_proposed, decide_treatment, propose, propose_duplicate_items
+from qoe.propose import (
+    assess_confidence,
+    compute_proposed,
+    decide_treatment,
+    propose,
+    propose_duplicate_items,
+    propose_reporting_items,
+)
 from qoe.schemas import (
     Account,
     AdjustmentCategory,
@@ -29,6 +38,7 @@ from qoe.schemas import (
     ManagementPL,
     ManagementSchedule,
     PeriodDef,
+    ReconciliationItem,
     ReconciliationResult,
     Severity,
     SourceDocument,
@@ -421,9 +431,19 @@ def test_a_posting_management_already_carries_is_not_reversed_again():
     reversed_ids = [x.entry_id for x in item.gl_links if x.supports_claim]
     assert reversed_ids and not set(reversed_ids) & set(carried)
     assert item.proposed == amounts(0, 18400, 0)
-    assert any("already carried in M-1" in f.text for f in item.facts)
-    # Management claims both postings: nothing is left to reverse.
-    items, _ = _items([first, second], [[first, second]], adj=claim("M-1", [0, 36800, 0], ["6200"]))
+    assert any("already carried in management's adjustment M-1" in f.text for f in item.facts)
+    # Management claims both postings (SPEC §5.7): its item keeps the first and the diligence item
+    # reverses the second, so the bill is added back once and the extra posting reversed once.
+    (item,), traces = _items([first, second], [[first, second]], adj=claim("M-1", [0, 36800, 0], ["6200"]))
+    assert traces[0].supporting_ids() == [first.entry_id]
+    assert [x.entry_id for x in item.gl_links if x.supports_claim] == [second.entry_id]
+    assert item.proposed == amounts(0, 18400, 0)
+
+
+def test_postings_of_one_day_under_one_number_are_not_reversed_as_a_duplicate():
+    # Two identical lines of one bill post together: no mechanical reversal, the question stays with reconciliation.
+    first, second = _dup(40, "2025-05-07"), _dup(41, "2025-05-07")
+    items, _ = _items([first, second], [[first, second]])
     assert items == []
 
 
@@ -439,3 +459,143 @@ def test_only_doc_number_groups_inside_ebitda_become_items_numbered_by_first_row
     # Management already uses D-1, so numbering continues; order follows each group's first GL row.
     assert [i.adj_id for i in items] == ["D-2", "D-3"]
     assert items[0].proposed == amounts(700, 0, 0) and items[1].proposed == amounts(0, 0, 500)
+
+
+# ---------------------------------------------------------------------------
+# Diligence-identified items (SPEC §5.7): supported reporting differences
+# ---------------------------------------------------------------------------
+
+
+def _recon(items: list[tuple[str, str, object]], missing: tuple[str, ...] = ()) -> ReconciliationResult:
+    rows = [ReconciliationItem(month=m, account=a, account_name=ACCOUNTS[a].name, gl_amount="0.00", pl_amount=fmt(v),
+                               variance=fmt(v), within_tolerance=False) for m, a, v in items]
+    issues = [DataQualityIssue(code=DataQualityCode.MISSING_PERIOD, severity=Severity.WARNING, message="gap", month=m)
+              for m in missing]
+    return ReconciliationResult(items=rows, issues=issues, gl_ebitda={}, mgmt_reported_ebitda={}, months_compared=0,
+                                accounts_compared=0, variance_count=len(rows))
+
+
+def _bonus_case(signed, reverses: bool = True,
+                text: str = "FY2025 bonus plan.\nTotal awards: $50,000.00.\nApproved by the Board.",
+                accrual: str = "2025-12", paid: str = "2026-03", pay_date: str = "2026-03-13", doc_date=None,
+                account: str = "6010"):
+    payout = entry(70, pay_date, account, 50000, "", "Management bonus payout - FY2025 plan")
+    texts = {"1.4 Bonus calculation - approved.txt": text}
+    facts = [DocFacts(doc_id="1.4 Bonus calculation - approved.txt", doc_type="other", is_signed=signed, doc_date=doc_date,
+                      amounts=[AmountFact(label="total_due", amount="50000", quote=EvidenceQuote(
+                          doc_id="1.4 Bonus calculation - approved.txt", page=1, quote="Total awards: $50,000.00."))])]
+    pkg = package([payout], claim("M-1", [0, 0, 0], ["6150"]), texts)
+    index = build_index(pkg, facts)
+    variances = [(accrual, account, 50000)] + ([(paid, account, -50000)] if reverses else [])
+    return propose_reporting_items(index, _recon(variances), taken_ids=["M-1", "D-1"]), payout
+
+
+def test_a_supported_top_side_accrual_is_kept_as_a_diligence_item():
+    # Management accrues a bonus in December (FY2025) and reverses it in March when the GL books the payout.
+    (item,), payout = _bonus_case(signed=True)
+    assert item.adj_id == "D-2" and item.source == "diligence" and item.treatment == Treatment.REVISE
+    # FY2025 holds the accrual month but not the payout: the cost moves in. TTM Jun-26 holds both: no change.
+    assert item.proposed == amounts(0, -50000, 0)
+    (link,) = item.gl_links
+    assert link.entry_id == payout.entry_id and link.supports_claim and link.role == "moved"
+    # Traced where the GL books it (Mar 2026, TTM only); the flag moves it to December.
+    assert item.traced_gl == amounts(0, 0, 50000)
+    assert item.flags[0].effects == {FY25: "-50000.00", TTM: "-50000.00"}
+    assert item.doc_links[0].doc_id == "1.4 Bonus calculation - approved.txt"
+
+
+def test_a_top_side_without_approved_support_or_reversal_stays_reversed_to_the_gl():
+    assert _bonus_case(signed=False)[0] == []  # the calculation is marked unsigned
+    assert _bonus_case(signed=None, text="FY2025 bonus plan. Total awards: $50,000.00. Proposed pool.")[0] == []
+    assert len(_bonus_case(signed=None)[0]) == 1  # an approval recorded without a signature block is enough
+    assert _bonus_case(signed=True, reverses=False)[0] == []  # never booked in the GL: unsupported
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "FY2025 Bonus Pool - proposed; not approved by the owner.\nTotal awards: $50,000.00.",
+        "FY2025 bonus plan.\nTotal awards: $50,000.00.\nApproved by: ________",
+        "FY2025 bonus plan.\nTotal awards: $50,000.00, subject to the Board's approval.\nApproved vendor: Acme",
+        "FY2025 bonus plan.\nTotal awards: $50,000.00. Pending approval by the owner.",
+        "FY2025 bonus plan.\nTotal awards: $50,000.00.\nApproved vendor: Acme",
+    ],
+)
+def test_an_approval_word_that_records_no_approval_does_not_support_a_top_side(text):
+    assert _bonus_case(signed=None, text=text)[0] == []
+
+
+def test_a_signed_document_that_says_the_amount_is_not_approved_is_not_support():
+    text = "FY2025 bonus pool proposal - not approved.\nTotal awards: $50,000.00.\n/s/ P. Raman, Controller"
+    assert _bonus_case(signed=True, text=text)[0] == []
+
+
+def test_a_cost_deferred_to_a_later_month_is_not_a_supported_accrual():
+    # The GL books the cost in March; management's P&L moves it to June. That raises March's period and is not
+    # cash-to-accrual: the difference stays reversed to the GL whatever the documents say.
+    items, _ = _bonus_case(signed=True, accrual="2025-06", paid="2025-03", pay_date="2025-03-13",
+                           text="FY2025 bonus plan. Total awards: $50,000.00. Approved by the Board.")
+    assert items == []
+
+
+def test_a_top_side_is_supported_only_by_a_document_about_that_accrual():
+    # A signed document dated after the accrual month that names neither the period nor the account (a
+    # vendor contract stating the same amount) is not evidence that the cost was earned in the accrual month.
+    text = "Master Services Agreement with Acme Corp.\nContract value: $50,000.00.\nSigned: /s/ J. Doe"
+    assert _bonus_case(signed=True, text=text, doc_date="2026-02-10")[0] == []
+    # Dated no later than the accrual month, the executed document shows the obligation existed by then.
+    assert len(_bonus_case(signed=True, text=text, doc_date="2025-11-20")[0]) == 1
+    # A calculation dated after year-end that names the plan year (a range holding the accrual month) supports it.
+    text = "Bonus calculation. Plan Year January 1, 2025 - December 31, 2025.\nTotal awards: $50,000.00."
+    assert len(_bonus_case(signed=True, text=text, doc_date="2026-02-10")[0]) == 1
+
+
+GAP_EMAIL = ("The August 2024 GL batch was exported with the wrong saved search, so it only has a few accounts. "
+             "The August income statement and trial balance are complete and the management P&L ties to them.")
+
+
+def _gap_case(text: str):
+    texts = {"1.1 Admin email - GL export.txt": text}
+    pkg = package([entry(80, "2024-08-15", "6150", 100, "Vendor", "Repairs")], claim("M-1", [0, 0, 0], ["6150"]), texts)
+    index = build_index(pkg, [DocFacts(doc_id="1.1 Admin email - GL export.txt", doc_type="correspondence")])
+    variances = [("2024-08", "6150", 12000), ("2024-08", "6600", 3500.5), ("2024-08", "8100", 900)]
+    return propose_reporting_items(index, _recon(variances, missing=("2024-08",)))
+
+
+def test_a_documented_gl_export_gap_keeps_managements_pl_for_the_month():
+    (item,) = _gap_case(GAP_EMAIL)
+    # EBITDA accounts only: interest (8100) is below EBITDA.
+    assert item.proposed == amounts(-15500.5, 0, 0) and item.gl_links == []
+    assert item.flags[0].effects == {FY24: "-15500.50"} and item.support_refs == ["1.1 Admin email - GL export.txt"]
+    assert item.open_questions and "trial balance" in item.open_questions[0].text
+
+
+def test_a_missing_month_without_an_explanation_is_not_kept():
+    assert _gap_case("We are looking into the August numbers.") == []
+    assert _gap_case("The August 2024 batch was exported from the wrong saved search.") == []  # no TB tie stated
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        # Month, an export word and a trial-balance word all appear, but nothing says the export is defective
+        # or that the books are complete.
+        "Attached is the August 2024 data request list. Please export the AR aging. The trial balance will follow.",
+        # A batch of claims and a TB in the same document: no export defect for the month.
+        "The August 2024 claims batch was submitted late. The trial balance is complete.",
+        # The defect is stated for another month than the one missing.
+        "The July 2024 export only has a few accounts. The August 2024 trial balance is complete.",
+        # The books themselves are said to be incomplete: that is not an export problem.
+        "The August 2024 export is missing accounts because the August 2024 books are not complete.",
+    ],
+)
+def test_an_export_gap_needs_a_stated_defect_and_complete_books_for_the_month(text):
+    assert _gap_case(text) == []
+
+
+def test_the_export_gap_states_the_share_of_accounts_missing():
+    (item,) = _gap_case(GAP_EMAIL)
+    assert "most" not in item.rationale
+    # Both EBITDA accounts in the month's P&L have no GL activity (interest is below EBITDA and not counted).
+    assert "no activity for 2 of 2 EBITDA accounts" in item.flags[0].message
+    assert "2 of the 2 EBITDA accounts" in item.rationale

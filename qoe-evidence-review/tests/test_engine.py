@@ -449,11 +449,19 @@ def test_run_review_wires_ingest_reconcile_and_the_default_ai(monkeypatch, tmp_p
 
 
 @pytest.mark.skipif(not (MERIDIAN / "deal.yaml").exists(), reason="dev deal package not generated")
-def test_meridian_dev_deal_runs_end_to_end_and_the_bridge_ties(tmp_path):
+@pytest.mark.parametrize("deal_dir", [MERIDIAN, REPO / "data" / "dev" / "tidewell_distribution"], ids=lambda p: p.name)
+def test_dev_deals_run_end_to_end_and_the_bridge_ties(tmp_path, deal_dir):
     pytest.importorskip("qoe.ingest")
     pytest.importorskip("qoe.reconcile")
     pytest.importorskip("qoe.ai")
-    wp = run_review(MERIDIAN, **RUN)
+    if not (deal_dir / "deal.yaml").is_file():
+        pytest.skip(f"{deal_dir.name} is not generated")
+    wp = run_review(deal_dir, **RUN)
+    for a in wp.assessments:
+        for link in a.gl_links:
+            # GLLink.claimed_in names exactly the periods whose claim includes the entry.
+            assert bool(link.claimed_in) == link.claimed, (a.adj_id, link.entry_id)
+            assert all(D(a.claimed[lbl]) != 0 for lbl in link.claimed_in)
     assert len(wp.assessments) == len({a.adj_id for a in wp.assessments}) > 0
     rows = {r.key: r for r in wp.bridge.rows}
     for lbl in wp.bridge.period_labels:
@@ -472,3 +480,47 @@ def test_meridian_dev_deal_runs_end_to_end_and_the_bridge_ties(tmp_path):
         assert len(a.rationale) <= 600, a.rationale
     path = save_workpaper(wp, tmp_path)
     assert load_workpaper(path) == wp
+
+
+def test_engine_code_and_prompts_name_no_dev_deal_party_or_document():
+    """The engine's rules, comments and prompts must not carry the dev deals' own names (parties, document
+    titles): a rule written around one deal's wording is overfitted. Held-out data is never read here."""
+    import csv
+    import re as _re
+
+    from qoe.trace import _GENERIC_NAME_TOKENS, _LEGAL_TOKENS, norm_text
+
+    deals = sorted(p for p in (REPO / "data" / "dev").glob("*") if (p / "gl").is_dir())
+    if not deals:
+        pytest.skip("no generated dev deals")
+    engine = ["trace.py", "challenge.py", "propose.py", "bridge.py", "engine.py", "ai.py"]
+    sources = [(REPO / "qoe" / f) for f in engine] + sorted((REPO / "prompts").glob("*.txt"))
+    haystack = " ".join(norm_text(p.read_text()) for p in sources)
+
+    # Words of document kinds and accounting subjects: a phrase made of these ("separation agreement", "term
+    # loan") is vocabulary, not a name.
+    vocabulary = _GENERIC_NAME_TOKENS | frozenset(
+        """agreement lease separation term loan invoice letter engagement email memo notice statement report schedule
+        calculation plan opinion market rent order form certificate claim payment award final executed approved draft
+        controller admin employment executive benchmark pay settlement termination release incentive management bonus
+        payoff debt issuance cost amortization premium installment expense proof official chapter write off write-off
+        inventory customer payroll register extract census purchasing reduction force transaction sell side quality
+        earnings""".split()
+    )
+
+    def phrase(text: str) -> str:
+        words = [w for w in norm_text(text).split() if w not in _LEGAL_TOKENS and not w.isdigit()]
+        return " ".join(words) if len([w for w in words if w not in vocabulary and len(w) > 2]) >= 2 else ""
+
+    names: set[str] = set()
+    for deal in deals:
+        with open(deal / "gl" / "general_ledger.csv", encoding="utf-8", errors="ignore") as fh:
+            rows = list(csv.reader(fh))
+        header = [h.strip().lower() for h in rows[0]]
+        cols = [i for i, h in enumerate(header) if h in ("name", "counterparty", "contact")] or [4]
+        names |= {phrase(r[i]) for r in rows[1:] for i in cols if i < len(r)}
+        for f in (deal / "documents").rglob("*.*"):
+            stem = _re.sub(r"^[\d.]+\s+", "", f.stem)
+            names |= {phrase(part) for part in _re.split(r"\s+-\s+|\(|\)", stem)}
+    leaks = sorted(n for n in names if n and f" {n} " in f" {haystack} ")
+    assert not leaks, leaks

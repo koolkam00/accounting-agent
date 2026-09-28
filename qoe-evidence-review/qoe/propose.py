@@ -27,6 +27,8 @@ from qoe.schemas import (
     EBITDA_EXCLUDED_CLASSES,
     AdjustmentAssessment,
     AdjustmentCategory,
+    DataQualityCode,
+    ReconciliationResult,
     DocLink,
     EvidenceQuote,
     Fact,
@@ -40,17 +42,21 @@ from qoe.schemas import (
 from qoe.trace import (
     MAX_RATIONALE,
     ROLE_CONTEXT,
+    ROLE_MOVED,
     ROLE_SUPPORTING,
     AdjustmentTrace,
     DealIndex,
     _short_sentence,
     entries_word,
+    is_repeated_bill,
     join_limited,
     money,
     month_label,
     month_span,
+    norm_text,
     periods_text,
     plural,
+    vouch_tick,
 )
 
 # Flags whose effect is already in the proposed amount (or that set the
@@ -150,14 +156,19 @@ def flag_effects(t: AdjustmentTrace, proposed: Optional[dict[str, Decimal]] = No
        links are capped at the claim, the cap absorbs the excess, so there is no gap.
     2. Removals, in the order the challenges made them. Each belongs to the flag that removed the
        entry first; a later flag on the same entries corroborates it and has no effect.
-    3. Out-of-period moves: the entry leaves its booking period, then returns pro rata by service month.
-    4. Offsetting recoveries, in the periods received.
+    3. Unclaimed entries carried under the EXCESS_GL_ACTIVITY rule, on that period's WARNING flag.
+    4. Out-of-period moves: the entry leaves its booking period, then returns pro rata by service month.
+    5. Offsetting recoveries, in the periods received.
+
+    For a normalization item: removals, then the change in level when a benchmark sets a level
+    other than management's (on the flag that set it), then any gap in the actual cost (on the
+    period's PARTIAL_GL_SUPPORT flag).
 
     Differences no flag carries (returned, and noted on the trace when above the tolerance):
     a GL gap within the tolerance, or one a period move offsets so that PARTIAL_GL_SUPPORT is
-    dropped; and for a normalization item the difference between the normalized level
-    management's claim implies and the level used. EXCESS_GL_ACTIVITY never has an effect:
-    its amount is unclaimed context activity.
+    dropped; and for a normalization item without such flags the difference between the level
+    management's claim implies and the level used. An INFO EXCESS_GL_ACTIVITY flag never has an
+    effect: its amount is unclaimed context activity.
     """
     proposed = compute_proposed(t) if proposed is None else proposed
     labels = t.labels
@@ -186,6 +197,7 @@ def flag_effects(t: AdjustmentTrace, proposed: Optional[dict[str, Decimal]] = No
                     return f
         return next((f for f in t.flags if f.code == FlagCode.NO_GL_SUPPORT), None)
 
+    norm = t.normalization
     for lbl in labels:
         claim = t.claim(lbl)
         claimed_here = set(t.claimed.get(lbl, []))
@@ -194,6 +206,15 @@ def flag_effects(t: AdjustmentTrace, proposed: Optional[dict[str, Decimal]] = No
                 if e in claimed_here:
                     credit(owner(r.code, e, r.flag), lbl, -t.amount(e))
             rest = proposed.get(lbl, ZERO) - claim - total[lbl]
+            # A level set by a benchmark instead of management's moves the number by the level difference;
+            # that change belongs to the flag that set the level. What remains is a gap in the actual cost.
+            if (
+                norm is not None and norm.level_flag is not None and id(norm.level_flag) in held
+                and norm.mgmt_level is not None and norm.level is not None and lbl in t.claimed_labels()
+            ):
+                level_part = q2((norm.mgmt_level - norm.level) * len(t.index.label_months[lbl]) / 12)
+                credit(norm.level_flag, lbl, level_part)
+                rest -= level_part
             credit(next((f for f in t.flags if f.code == FlagCode.PARTIAL_GL_SUPPORT and f.period_label == lbl), None),
                    lbl, rest)
             continue
@@ -206,6 +227,14 @@ def flag_effects(t: AdjustmentTrace, proposed: Optional[dict[str, Decimal]] = No
                 now = _capped(t, lbl, running)
                 credit(owner(r.code, e, r.flag), lbl, now - carried)
                 carried = now
+        # Unclaimed entries carried under the EXCESS_GL_ACTIVITY rule (the rest of a fixed-fee engagement).
+        carry_flag = next(
+            (f for f in t.flags if f.code == FlagCode.EXCESS_GL_ACTIVITY and f.period_label == lbl
+             and f.severity != Severity.INFO), None,
+        )
+        for e in t.carried.get(lbl, []):
+            if e not in t.removals and e not in claimed_here:
+                credit(carry_flag, lbl, t.amount(e))
         for e in t.index.sort_ids(t.moved):
             moves = [x for x in t.effects if x.entry_id == e and x.code == FlagCode.OUT_OF_PERIOD]
             flag = owner(FlagCode.OUT_OF_PERIOD, e, next((x.flag for x in moves if x.flag is not None), None))
@@ -292,15 +321,22 @@ _CAUSE = {
     FlagCode.PARTIAL_GL_SUPPORT: "claims larger than the GL activity",
     FlagCode.SIGN_ERROR: "a claim whose sign conflicts with the GL",
     FlagCode.EXCESS_GL_ACTIVITY: "a claim no combination of entries ties to",
+    FlagCode.DUPLICATE_GL_ENTRY: "a second posting of the same bill, reversed in a diligence item",
 }
 
 
 def _change_causes(t: AdjustmentTrace) -> str:
     codes = [r.code for r in t.removals.values()] + [x.code for x in t.effects]
     codes += [f.code for f in t.flags if f.code in (FlagCode.PERIOD_MISMATCH, FlagCode.PARTIAL_GL_SUPPORT, FlagCode.SIGN_ERROR)]
+    causes = [_CAUSE[c] for c in dict.fromkeys(codes) if c in _CAUSE]
     if t.capped:
-        codes.append(FlagCode.EXCESS_GL_ACTIVITY)
-    return "; ".join(_CAUSE[c] for c in dict.fromkeys(codes) if c in _CAUSE)
+        causes.append(_CAUSE[FlagCode.EXCESS_GL_ACTIVITY])
+    if t.carried_ids():
+        causes.append("unclaimed bills of the same fixed-fee engagement")
+    n = t.normalization
+    if n is not None and n.benchmark:
+        causes.append("a market benchmark instead of management's level")
+    return "; ".join(dict.fromkeys(causes))
 
 
 def assess_confidence(
@@ -404,7 +440,7 @@ def build_judgments(t: AdjustmentTrace) -> list[str]:
     mechanical: list[str] = []
     overlaps: dict[str, list[str]] = {}
     for e, r in t.removals.items():
-        if r.code == FlagCode.ALREADY_EXCLUDED_FROM_EBITDA:
+        if r.code in (FlagCode.ALREADY_EXCLUDED_FROM_EBITDA, FlagCode.DUPLICATE_GL_ENTRY):
             mechanical.append(e)
         elif r.code == FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT:
             overlaps.setdefault(r.note, []).append(e)
@@ -467,10 +503,17 @@ def build_judgments(t: AdjustmentTrace) -> list[str]:
         accounts = join_limited(sorted({f"{t.index.by_id[e].entry.account} {t.index.by_id[e].entry.account_name}"
                                         for e in mechanical}), 1)
         what = _groups(t, mechanical, 2)
-        out.append(_short_sentence(
-            f"{NO_JUDGMENT} on the amount: {what} ({amounts}) {_verb(what, 'sits', 'sit')} in {accounts}, which "
-            f"EBITDA already excludes, so {_verb(what, 'its', 'their')} removal follows a fixed rule."
-        ))
+        excluded = [e for e in mechanical if t.removals[e].code == FlagCode.ALREADY_EXCLUDED_FROM_EBITDA]
+        if excluded:
+            out.append(_short_sentence(
+                f"{NO_JUDGMENT} on the amount: {what} ({amounts}) {_verb(what, 'sits', 'sit')} in {accounts}, which "
+                f"EBITDA already excludes, so {_verb(what, 'its', 'their')} removal follows a fixed rule."
+            ))
+        else:
+            out.append(_short_sentence(
+                f"{NO_JUDGMENT} on the amount: {what} ({amounts}) {_verb(what, 'is', 'are')} a second posting of a bill "
+                "the claim already carries; a separate diligence item reverses it."
+            ))
     return out
 
 
@@ -502,11 +545,13 @@ def _effect_judgments(t: AdjustmentTrace) -> list[str]:
         booked = idx.labels_of(info.month)
         belongs = sorted({lbl for lbl, v in contrib.items() if (v < 0) == (info.amount > 0) and v != 0}, key=order)
         docs = [d for f in t.flags if f.code == FlagCode.OUT_OF_PERIOD and eid in f.entry_ids for d in f.doc_ids]
-        where = join_limited(belongs, 2) or "the months before the analysis periods"
+        if belongs:
+            what = f"be treated as a {join_limited(belongs, 2)} cost per the service period in"
+        else:
+            what = "be spread over its service months per"
         out.append(_short_sentence(
-            f"Should {t.entry_ref(eid)} ({money(info.amount)}) be treated as a {where} cost per the service period in "
-            f"{docs[0] if docs else 'its invoice'}, as proposed, rather than left in "
-            f"{join_limited(booked, 2) or 'the booking month'} where it was booked?"
+            f"Should {t.entry_ref(eid)} ({money(info.amount)}) {what} {docs[0] if docs else 'its invoice'}, as "
+            f"proposed, rather than left in {join_limited(booked, 2) or 'the booking month'} where it was booked?"
         ))
     return out
 
@@ -536,6 +581,8 @@ def _question_texts(t: AdjustmentTrace) -> list[tuple[str, FlagCode, list[Flag]]
             add(f"Please provide the GL detail (account, date, vendor and amount) behind the {title} adjustment "
                 f"({claims}).", code, flags)
         elif code == FlagCode.PARTIAL_GL_SUPPORT:
+            # One question per distinct gap: FY and TTM often show the same shortfall.
+            same: dict[tuple[Decimal, Decimal], list[Flag]] = {}
             for f in flags:
                 lbl = f.period_label
                 if not lbl:
@@ -543,9 +590,21 @@ def _question_texts(t: AdjustmentTrace) -> list[tuple[str, FlagCode, list[Flag]]
                 if t.is_normalization:
                     add(f"Where is the actual {lbl} cost of the normalized item recorded in the GL?", code, [f])
                 else:
-                    gap = abs(t.claim(lbl) - t.traced(lbl))
-                    add(f"For {lbl}, the GL supports {money(t.traced(lbl))} of the {money(t.claim(lbl))} claimed for "
-                        f"{title}; which entries or documents support the remaining {money(gap)}?", code, [f])
+                    same.setdefault((t.traced(lbl), t.claim(lbl)), []).append(f)
+            for (traced, claimed), fs in same.items():
+                where = " and ".join(f.period_label or "" for f in fs)
+                gap = money(abs(claimed - traced))
+                docs = [d for f in fs for d in f.doc_ids]
+                if docs and _states_unbooked(idx, docs[0], abs(claimed - traced)):
+                    add(f"For {where}, the GL supports {money(traced)} of the {money(claimed)} claimed for {title}; "
+                        f"{docs[0]} puts the remaining {gap} down to an amount not booked. Was it incurred, and if so "
+                        "where is it recorded?", code, fs)
+                elif docs:
+                    add(f"For {where}, the GL supports {money(traced)} of the {money(claimed)} claimed for {title}; "
+                        f"{docs[0]} states the same {gap}. What is it, and where is it recorded in the GL?", code, fs)
+                else:
+                    add(f"For {where}, the GL supports {money(traced)} of the {money(claimed)} claimed for {title}; "
+                        f"which entries or documents support the remaining {gap}?", code, fs)
         elif code == FlagCode.EXCESS_GL_ACTIVITY:
             for f in flags:
                 lbl = f.period_label
@@ -603,8 +662,13 @@ def _question_texts(t: AdjustmentTrace) -> list[tuple[str, FlagCode, list[Flag]]
             ids = sorted({e for f in flags for e in f.entry_ids})
             accounts = join_limited(sorted({f"{idx.by_id[e].entry.account} {idx.by_id[e].entry.account_name}" for e in ids}), 1)
             total = sum((t.amount(e) for e in ids), ZERO)
-            add(f"The {money(total)} claimed in {accounts} is already excluded from EBITDA; was any part of "
-                f"{t.adj.adj_id} recorded in operating expenses, or should the adjustment be withdrawn?", code, flags)
+            if t.supporting_ids():
+                add(f"The {money(total)} claimed in {accounts} is already excluded from EBITDA (management's own line "
+                    f"adds it back); please confirm it will be taken out of {t.adj.adj_id}, leaving the part recorded "
+                    "in operating expenses.", code, flags)
+            else:
+                add(f"The {money(total)} claimed in {accounts} is already excluded from EBITDA; was any part of "
+                    f"{t.adj.adj_id} recorded in operating expenses, or should the adjustment be withdrawn?", code, flags)
         elif code == FlagCode.OFFSETTING_RECOVERY:
             for f in flags:
                 info = idx.by_id.get(f.entry_ids[0]) if f.entry_ids else None
@@ -616,6 +680,17 @@ def _question_texts(t: AdjustmentTrace) -> list[tuple[str, FlagCode, list[Flag]]
         elif code == FlagCode.CONTRADICTORY_EVIDENCE:
             docs = list(dict.fromkeys(d for f in flags for d in f.doc_ids))
             ids = sorted({e for f in flags for e in f.entry_ids})
+            norm = t.normalization
+            level_flag = norm.level_flag if norm is not None else None
+            if level_flag is not None and level_flag in flags and norm.level is not None:
+                mgmt = f"the {money(norm.mgmt_level)} a year" if norm.mgmt_level is not None else "the"
+                add(f"What supports {mgmt} level used in {title}, when {norm.supported_by} puts market at "
+                    f"{money(norm.level)} a year, and will the current arrangement continue after closing?", code,
+                    [level_flag])
+                flags = [f for f in flags if f is not level_flag]
+                if not flags:
+                    continue
+                first = flags[0]
             if t.asserts_personal and ids:
                 amounts = periods_text(_removed_by_period(t, ids), t.labels)
                 who = join_limited(docs, 1)
@@ -644,9 +719,43 @@ def _question_texts(t: AdjustmentTrace) -> list[tuple[str, FlagCode, list[Flag]]
         elif code == FlagCode.DUPLICATE_GL_ENTRY:
             for f in flags:
                 e = next((x for x in f.entry_ids if x in idx.by_id), "")
-                add(f"{t.describe(e)} appears to be posted {len(f.entry_ids)} times; was the duplicate reversed, and "
-                    "does the claim include it?", code, [f])
+                if f.effects:
+                    add(f"{t.describe(e)} is posted {len(f.entry_ids)} times and the claim includes each posting; "
+                        "please confirm the bill was incurred once (the extra posting is reversed separately).", code, [f])
+                else:
+                    add(f"{t.describe(e)} appears to be posted {len(f.entry_ids)} times; was the duplicate reversed, "
+                        "and does the claim include it?", code, [f])
     return out
+
+
+# Words with which a document says an amount was estimated or never booked.
+_UNBOOKED = re.compile(
+    r"\bestimat\w*|\bnot (?:yet )?(?:been )?(?:invoiced|booked|billed|recorded|posted|accrued)\b|\baccru\w*"
+    r"|\banticipat\w*|\bto be (?:invoiced|billed|booked)\b|\bpending (?:invoice|bill)\b|\bunbooked\b",
+    re.IGNORECASE,
+)
+_FIGURE = re.compile(r"\$\s?(\d{1,3}(?:,\d{3})+(?:\.\d{2})?|\d+(?:\.\d{2})?)|\b(\d{1,3}(?:,\d{3})+(?:\.\d{2})?)\b")
+
+
+def _states_unbooked(index: DealIndex, doc_id: str, amount: Decimal) -> bool:
+    """A sentence of the document that states ``amount`` also says it was estimated or not booked."""
+    doc = index.docs.get(doc_id)
+    if doc is None:
+        return False
+    for page in doc.pages:
+        text = page.text
+        for m in _FIGURE.finditer(text):
+            try:
+                value = D(m.group(1) or m.group(2))
+            except (ValueError, ArithmeticError):
+                continue
+            if abs(value - amount) > index.tolerance:
+                continue
+            start = max(text.rfind(". ", 0, m.start()), text.rfind("\n\n", 0, m.start()), -1) + 1
+            stop = text.find(". ", m.end())
+            if _UNBOOKED.search(text[start : stop if stop >= 0 else len(text)]):
+                return True
+    return False
 
 
 def build_questions(t: AdjustmentTrace, treatment: Treatment, drivers: list[Flag], ai: Optional[EvidenceAI]) -> list[OpenQuestion]:
@@ -742,7 +851,7 @@ def build_facts(t: AdjustmentTrace) -> list[Fact]:
         if e not in t.moved and not t.is_normalization:
             by_group.setdefault(t.group_label(e), []).append(e)
     for group, ids in by_group.items():
-        per_label = {lbl: sum((t.amount(e) for e in ids if e in t.claimed.get(lbl, [])), ZERO) for lbl in t.labels}
+        per_label = {lbl: sum((t.amount(e) for e in ids if e in t.supporting(lbl)), ZERO) for lbl in t.labels}
         span = month_span(t.index.by_id[e].month for e in ids)
         facts.append(
             Fact(
@@ -802,20 +911,32 @@ def build_rationale(
         traced = {lbl: t.traced(lbl) for lbl in t.labels}
         documented = {lbl: t.documented(lbl) for lbl in t.labels}
         n = len(claimed_ids)
+        supported = sum(1 for e in claimed_ids if t.support_docs(e))
         if t.is_normalization:
-            docs = ""  # the actual cost is payroll; the question is the level, not the invoices
-        elif documented == traced:
-            docs = ", all with supporting documents" if n > 1 else ", with a supporting document"
-        elif not any(documented.values()):
+            docs = ""  # the actual cost is payroll or rent; the question is the level, not the invoices
+        elif documented == traced and any(traced.values()):
+            docs = ", all vouched to their own documents" if n > 1 else ", vouched to its own document"
+        elif supported == n:
+            # Supported (an agreement, a register, outside corroboration of a journal entry) but not every
+            # entry vouched to its own bill: (c) Documented is the vouched part only.
+            docs = (", all with supporting documents" if n > 1 else ", with a supporting document") + (
+                f" (vouched to their own: {'; '.join(f'{lbl} {money(documented[lbl])}' for lbl in claimed_labels)})"
+                if any(documented.values()) else (", none vouched to their own bills" if n > 1 else ", not vouched to its own bill")
+            )
+        elif not supported:
             docs = ", none with a supporting document" if n > 1 else ", without a supporting document"
         else:
-            docs = f", of which documented {'; '.join(f'{lbl} {money(documented[lbl])}' for lbl in claimed_labels)}"
+            docs = f", {supported} of {n} with a supporting document"
         established.append(
             f"{entries_word(n)} {plural(n, 'traces', 'trace')} to "
             f"{'; '.join(f'{lbl} {money(traced[lbl])}' for lbl in claimed_labels)}{docs}."
         )
     elif not t.candidates:
         established.append("No GL entry could be linked to the claim.")
+    norm = t.normalization
+    if t.is_normalization and norm is not None and norm.level is not None and norm.supported_by:
+        mgmt = f" (management: {money(norm.mgmt_level)})" if norm.benchmark and norm.mgmt_level is not None else ""
+        established.append(f"Normalized level {money(norm.level)} a year per {norm.supported_by}{mgmt}.")
     fit_notes = _fit_notes(t)
     established += fit_notes
     keep = len(established)  # the tie-out and how the claimed set was chosen always stay
@@ -929,14 +1050,9 @@ def _duplicate_groups(index: DealIndex) -> list[list[str]]:
         if key in seen:
             continue
         seen.add(key)
-        if not all(e in index.by_id for e in group):
-            continue  # a balance-sheet posting has no EBITDA effect
-        numbers = {index.by_id[e].doc_number for e in group}
-        if len(numbers) != 1 or not next(iter(numbers)):
-            continue
-        if any(index.by_id[e].klass in EBITDA_EXCLUDED_CLASSES for e in group):
-            continue  # below EBITDA: reversing it would not change the bridge
-        out.append(index.sort_ids(group))
+        # One document number, every posting inside EBITDA (a below-EBITDA reversal would not change the bridge).
+        if is_repeated_bill(index, group):
+            out.append(index.sort_ids(group))
     return sorted(out, key=lambda g: min(index.by_id[e].entry.source_row for e in g))
 
 
@@ -1096,7 +1212,8 @@ def _duplicate_item(
             )
         )
     for e in in_mgmt:
-        facts.append(Fact(text=f"GL row {index.by_id[e].entry.source_row} is already carried in {carried[e]}.", entry_ids=[e]))
+        facts.append(Fact(text=f"GL row {index.by_id[e].entry.source_row} is already carried in management's "
+                               f"adjustment {carried[e]}.", entry_ids=[e]))
     documented = {
         lbl: sum((index.by_id[e].amount for e in reverse if docs_by_entry[e] and index.by_id[e].month in index.label_months[lbl]), ZERO)
         for lbl in labels
@@ -1141,5 +1258,529 @@ def _duplicate_item(
         facts=facts,
         judgment_questions=[],
         open_questions=[question],
+        rationale=rationale,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Diligence-identified items (SPEC §5.7): supported reporting differences
+# ---------------------------------------------------------------------------
+
+# How a document explains a month as an export problem rather than a books problem: in one sentence that
+# names the month, an export (the file, extract or search the GL detail came from) and an explicit defect
+# in it; and in one sentence that names the month, the books or trial balance, and that they are complete.
+_EXPORT_NOUN = re.compile(
+    r"\b(?:export(?:ed|s|ing)?|extract(?:ed|s)?|download(?:ed|s)?|data (?:pull|dump|file)|saved search|query|GL detail)\b",
+    re.IGNORECASE,
+)
+_EXPORT_DEFECT = re.compile(
+    r"\b(?:missing|incomplete|dropped|omit(?:s|ted)?|wrong|incorrect|instead|truncated|partial|corrupt(?:ed)?|failed"
+    r"|only (?:has|have|had|includes?|included|contains?|contained|shows?|carries|carried|pulled)|re-?run|re-?export"
+    r"|replacement (?:file|export|extract))\b",
+    re.IGNORECASE,
+)
+_BOOKS = re.compile(
+    r"\btrial balance\b|\bTB\b|\bbooks\b|\bledger\b|\bincome statement\b|\bprofit and loss\b|\bP&L\b"
+    r"|\bmanagement accounts?\b",
+    re.IGNORECASE,
+)
+_COMPLETE = re.compile(
+    r"(?<!in)\b(?:complete|correct|right|accurate|balanced|ties?|agrees?|reconciles?|reconciled)\b", re.IGNORECASE
+)
+_NOT_COMPLETE = re.compile(r"\b(?:not|never|isn't|aren't|wasn't|weren't|doesn't|don't|no longer)\s+(?:\w+\s+){0,2}?"
+                           r"(?:complete|correct|right|accurate|balanced|tie|agree|reconcile)", re.IGNORECASE)
+_SENTENCES = re.compile(r"(?<=[.!?])\s+(?=[A-Z(\"])")
+# An approved calculation or plan need not carry a signature block: a recorded approval makes it
+# more than a management estimate. The approval must be given, not pending or refused, and must say who
+# gave it or when (a name, a signature, a date): "Approved by: ______" records nothing.
+_APPROVAL = re.compile(r"\bapproved\b|\bratified\b|board (?:resolution|consent)", re.IGNORECASE)
+_NO_APPROVAL = re.compile(
+    r"\b(?:not|never|yet to be|not yet|to be|awaiting|pending|without)\s+(?:\w+\s+){0,2}?(?:approv\w*|ratif\w*)"
+    r"|\bunapproved\b|\bsubject to (?:\w+\s+){0,3}?(?:approval|ratification)\b|\bapproval (?:is |remains )?pending\b"
+    r"|\b(?:has|have|had|did) not (?:\w+\s+)?approved\b|\bproposed\b[^.\n]{0,40}\bnot approved\b",
+    re.IGNORECASE,
+)
+_APPROVAL_BLANK = re.compile(r"\bapproved(?: by)?\s*[:\-]?\s*(?:_{2,}|\.{3,}|\[\s*\]|$)", re.IGNORECASE | re.MULTILINE)
+_APPROVER = re.compile(
+    r"/s/|\b(?i:by (?:the )?(?:board|managers|members|directors|shareholders|owners?|sole member|manager))\b"
+    r"|\bby:?\s+[A-Z][a-z]+(?: [A-Z][a-z.]+)+",
+)
+# Accounts whose normal balance is a cost: only a cost accrued before the ledger books it is a
+# supported top-side (cash to accrual); a revenue or income top-side is not this rule.
+_COST_CLASSES = frozenset({"COGS", "OPEX", "OTHER_EXPENSE"})
+_MONTH_NAMES = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october",
+                "november", "december")
+
+
+def _month_pattern(month: str) -> re.Pattern[str]:
+    """A month as documents write it: 'March 2023', 'Mar 2023', 'Mar-23', '2023-03', '03/2023'."""
+    y, m = month.split("-")
+    name = _MONTH_NAMES[int(m) - 1]
+    short = name[:3]
+    return re.compile(
+        rf"\b(?:{name}|{short}\.?)[\s,-]+(?:{y}|'?{y[2:]})\b|\b{y}-{m}\b|\b0?{int(m)}/{y}\b", re.IGNORECASE
+    )
+
+
+def _ebitda_account(index: DealIndex, account: str) -> bool:
+    acct = index.accounts.get(account)
+    if acct is None:
+        return True
+    return acct.ebitda_class not in EBITDA_EXCLUDED_CLASSES and acct.ebitda_class.value != "BALANCE_SHEET"
+
+
+def propose_reporting_items(
+    index: DealIndex,
+    recon: Optional[ReconciliationResult],
+    taken_ids: Iterable[str] = (),
+) -> list[AdjustmentAssessment]:
+    """Supported differences between management's P&L and the GL, kept as diligence items (SPEC §5.7).
+
+    The bridge first reverses every difference between management's reported EBITDA and the GL
+    (``dil_recon``); these items put back the parts the evidence supports, so the identity (GL
+    EBITDA + management finals + diligence items) holds and each supported part is visible:
+
+    - a top-side accrual that the GL books later (cash to accrual), and
+    - a month the GL export is missing, where a document explains the gap as an export defect.
+    """
+    if recon is None:
+        return []
+    taken = set(taken_ids)
+    out: list[AdjustmentAssessment] = []
+    missing = sorted({i.month for i in recon.issues if i.code == DataQualityCode.MISSING_PERIOD and i.month})
+
+    def next_id() -> str:
+        n = 1
+        while f"D-{n}" in taken:
+            n += 1
+        taken.add(f"D-{n}")
+        return f"D-{n}"
+
+    for pair in _reversing_topsides(index, recon, set(missing)):
+        item = _topside_item(index, pair, next_id)
+        if item is not None:
+            out.append(item)
+    for month in missing:
+        item = _export_gap_item(index, recon, month, next_id)
+        if item is not None:
+            out.append(item)
+    return out
+
+
+def _reversing_topsides(
+    index: DealIndex, recon: ReconciliationResult, skip_months: set[str]
+) -> list[tuple[str, str, str, Decimal]]:
+    """(account, P&L month, GL month, amount): a P&L-over-GL variance in one month reversed by an
+    equal and opposite variance in the same account in a later month, inside the data range."""
+    tol = index.tolerance
+    by_account: dict[str, list[tuple[str, Decimal]]] = {}
+    for item in recon.items:
+        if item.within_tolerance or item.month in skip_months or not _cost_account(index, item.account):
+            continue
+        by_account.setdefault(item.account, []).append((item.month, D(item.variance)))
+    out: list[tuple[str, str, str, Decimal]] = []
+    for account in sorted(by_account):
+        rows = sorted(by_account[account])
+        used: set[int] = set()
+        for i, (m1, v1) in enumerate(rows):
+            if i in used or abs(v1) <= tol:
+                continue
+            for j in range(i + 1, len(rows)):
+                m2, v2 = rows[j]
+                if j in used or abs(v1 + v2) > tol:
+                    continue
+                used.update((i, j))
+                # Cash to accrual only: management's P&L carries the cost earlier (P&L above the GL,
+                # debit-positive) and the ledger books it later. The reverse, a cost the P&L defers to a
+                # later month, raises the earlier period's EBITDA; it is not this rule and stays reversed.
+                if v1 > 0:
+                    out.append((account, m1, m2, abs(v1)))
+                break
+    return out
+
+
+def _cost_account(index: DealIndex, account: str) -> bool:
+    acct = index.accounts.get(account)
+    return acct is not None and acct.ebitda_class.value in _COST_CLASSES
+
+
+def _recorded_approval(index: DealIndex, doc_id: str, quote: EvidenceQuote) -> bool:
+    """The page stating the amount records an approval that was given: not negated, pending or blank,
+    and naming who approved it or carrying a signature or a date."""
+    from qoe.challenge import _dates_in
+
+    doc = index.docs.get(doc_id)
+    if doc is None:
+        return False
+    for page in doc.pages:
+        if page.page != quote.page or _NO_APPROVAL.search(page.text):
+            continue
+        lines = page.text.splitlines()
+        for i, line in enumerate(lines):
+            m = _APPROVAL.search(line)
+            if m is None or _APPROVAL_BLANK.search(line):
+                continue
+            tail = line[m.start():] + " " + (lines[i + 1] if i + 1 < len(lines) else "")
+            if _APPROVER.search(tail) or _dates_in(tail):
+                return True
+    return False
+
+
+def _states_non_approval(index: DealIndex, doc_id: str, quote: EvidenceQuote) -> bool:
+    doc = index.docs.get(doc_id)
+    return doc is not None and any(p.page == quote.page and _NO_APPROVAL.search(p.text) for p in doc.pages)
+
+
+def _concerns_accrual(index: DealIndex, doc_id: str, account: str, pl_month: str) -> bool:
+    """The document is about the cost accrued in ``pl_month``: it is dated no later than that month (the
+    obligation existed by then), names a fiscal period or a date range that holds it, or names the account."""
+    from qoe.challenge import _dates_in
+
+    facts = index.facts.get(doc_id)
+    doc = index.docs.get(doc_id)
+    if doc is None:
+        return False
+    text = doc.full_text
+    if facts is not None and facts.doc_date and facts.doc_date[:7] <= pl_month:
+        return True
+    for lbl in index.labels:
+        if pl_month in index.label_months[lbl] and re.search(rf"(?<![\w-]){re.escape(lbl)}(?![\w-])", text, re.I):
+            return True
+    for line in text.splitlines():
+        months = _dates_in(line)
+        if any(a <= pl_month <= b for a, b in zip(months, months[1:]) if a < b):
+            return True
+    acct = index.accounts.get(account)
+    return acct is not None and len(norm_text(acct.name)) >= 6 and f" {norm_text(acct.name)} " in f" {norm_text(text)} "
+
+
+def _topside_item(index: DealIndex, pair: tuple[str, str, str, Decimal], next_id) -> Optional[AdjustmentAssessment]:
+    """A management top-side accrual the evidence supports (SPEC §5.7).
+
+    Practitioner basis: a diligence P&L is on an accrual basis. When management accrues a cost in the
+    period it is earned (a bonus pool at year-end) and the ledger books it only when paid, the accrual
+    is kept, not reversed, provided (1) it reverses in management's P&L when the ledger books the
+    same amount in the same account, so the cost is counted once, and (2) an executed or approved
+    document (a plan, an approved calculation) states that amount. The item moves the ledger entry
+    to the month management accrued it: -amount in each period that holds the accrual month but not
+    the booking month, +amount in each period that holds the booking month but not the accrual month.
+    """
+    account, pl_month, gl_month, amount = pair
+    tol = index.tolerance
+    booked = [
+        i for i in index.entries
+        if i.entry.account == account and i.month == gl_month and abs(abs(i.amount) - amount) <= tol
+    ]
+    if not booked:
+        return None
+    support: list[tuple[str, EvidenceQuote]] = []
+    explain: list[tuple[str, EvidenceQuote]] = []
+    for doc_id in sorted(index.docs):
+        facts = index.facts.get(doc_id)
+        if facts is None or facts.is_draft or facts.is_signed is False:
+            continue
+        quote = next((a.quote for a in facts.amounts if _amount_equal(a.amount, amount, tol)), None)
+        if quote is None:
+            continue
+        dtype = facts.doc_type.strip().lower()
+        if dtype in ("correspondence", "memo", "email"):
+            explain.append((doc_id, quote))
+        elif _states_non_approval(index, doc_id, quote) or not _concerns_accrual(index, doc_id, account, pl_month):
+            continue  # a proposal not yet approved, or a document about something else that states the same amount
+        elif facts.is_signed is True or _recorded_approval(index, doc_id, quote):
+            support.append((doc_id, quote))
+    if not support:
+        return None
+    entry = booked[0]
+    sign = 1 if entry.amount > 0 else -1
+    labels = index.labels
+    proposed: dict[str, Decimal] = {}
+    for lbl in labels:
+        months = index.label_months[lbl]
+        v = ZERO
+        if pl_month in months and gl_month not in months:
+            v -= sign * amount
+        if gl_month in months and pl_month not in months:
+            v += sign * amount
+        proposed[lbl] = v
+    adj_id = next_id()
+    acct = index.accounts.get(account)
+    acct_name = f"{account} {acct.name}" if acct is not None else account
+    effect = periods_text(proposed, labels)
+    support_ids = [d for d, _ in support]
+    related = _same_subject_docs(index, support_ids)
+    doc_links = [
+        DocLink(doc_id=d, relation="agreement", entry_ids=[entry.entry_id], score=2.5,
+                reasons=[f"Executed or approved; states the {money(amount)} amount"], quotes=[q])
+        for d, q in support
+    ] + [
+        DocLink(doc_id=d, relation="other", entry_ids=[], score=1.0,
+                reasons=[f"Same subject as {support_ids[0]}"], quotes=[])
+        for d in related
+    ] + [
+        DocLink(doc_id=d, relation="correspondence", entry_ids=[], score=1.0,
+                reasons=[f"Company correspondence stating the {money(amount)} amount"], quotes=[q])
+        for d, q in explain
+    ]
+    e = entry.entry
+    # The GL entry is traced where it is booked; the flag moves it to the accrual month, like an
+    # out-of-period effect on a management item (the audit trail walks from (b) Traced to (d)).
+    traced = {lbl: (entry.amount if gl_month in index.label_months[lbl] else ZERO) for lbl in labels}
+    vouched = any(
+        vouch_tick(index.facts.get(d), e, entry.amount, tol, index.gl_numbers) == "D" for d in support_ids
+    )
+    flag = Flag(
+        code=FlagCode.OUT_OF_PERIOD,
+        severity=Severity.WARNING,
+        message=_short_sentence(
+            f"Management's P&L accrues {money(amount)} in {acct_name} in {month_label(pl_month)} and reverses it in "
+            f"{month_label(gl_month)}, when the GL books it (GL row {e.source_row}); {support_ids[0]} states the "
+            f"amount. The accrual is kept, so the cost moves to {month_label(pl_month)}. Carried: {effect}."
+        ),
+        effects={lbl: fmt(proposed[lbl] - traced[lbl]) for lbl in labels if proposed[lbl] - traced[lbl]},
+        entry_ids=[entry.entry_id],
+        doc_ids=sorted(set(support_ids + [d for d, _ in explain])),
+        quotes=[q for _, q in support][:2],
+    )
+    facts = [
+        Fact(text=f"Reconciliation: management's P&L exceeds the GL by {money(amount)} in {acct_name} in "
+                  f"{month_label(pl_month)} and falls short of it by the same amount in {month_label(gl_month)}."),
+        Fact(text=f"GL row {e.source_row} books {money(entry.amount)} in {acct_name} on {e.date}"
+                  + (f" ({e.memo})" if e.memo else "") + ".", entry_ids=[entry.entry_id]),
+    ] + [Fact(text=f"{d} states {money(amount)}.", quotes=[q]) for d, q in support + explain]
+    link = GLLink(
+        entry_id=entry.entry_id, period=entry.month, amount=fmt(entry.amount), score=2.5,
+        reasons=[f"Books the {money(amount)} management's P&L accrues in {month_label(pl_month)}",
+                 f"Moved to {month_label(pl_month)}, the month management accrued it"],
+        group=f"{acct_name} · top-side accrual", supports_claim=True, doc_ids=support_ids,
+        role=ROLE_MOVED, claimed=False,
+    )
+    rationale = _short_sentence(
+        f"REVISE: management accrues {money(amount)} in {month_label(pl_month)} as a top-side and the GL books it on "
+        f"payment in {month_label(gl_month)}; {support_ids[0]} states the amount, so the accrual is a supported "
+        f"reporting difference and is kept rather than reversed to the GL. Proposed {_amounts_text(labels, proposed)}. "
+        "Judgment: whether the accrual month is the period the cost was earned, and what the next period accrues.",
+        MAX_RATIONALE,
+    )
+    return AdjustmentAssessment(
+        adj_id=adj_id,
+        title=f"Keep management's accrual: {acct_name}, {month_label(pl_month)}",
+        category=AdjustmentCategory.OTHER,
+        source=DILIGENCE_SOURCE,
+        description=(
+            f"Diligence-identified: a top-side accrual in management's P&L ({month_label(pl_month)}) that reverses "
+            f"when the GL books the same {money(amount)} ({month_label(gl_month)}), supported by {support_ids[0]}."
+        ),
+        gl_accounts=[account],
+        support_refs=support_ids,
+        claimed={lbl: fmt(ZERO) for lbl in labels},
+        traced_gl={lbl: fmt(v) for lbl, v in traced.items()},
+        documented={lbl: fmt(v if vouched else ZERO) for lbl, v in traced.items()},
+        proposed={lbl: fmt(v) for lbl, v in proposed.items()},
+        treatment=Treatment.REVISE,
+        confidence="high",
+        gl_links=[link],
+        doc_links=doc_links,
+        flags=[flag],
+        facts=facts,
+        judgment_questions=[
+            _short_sentence(
+                f"Was the {money(amount)} earned in the period that holds {month_label(pl_month)}, as management's "
+                f"accrual says, and is the next period's cost accrued the same way?"
+            )
+        ],
+        open_questions=[
+            OpenQuestion(
+                q_id=f"Q-{adj_id}-1", adj_id=adj_id, priority="medium", basis=FlagCode.OUT_OF_PERIOD.value,
+                text=_short_sentence(
+                    f"Please confirm the basis for the {money(amount)} accrued in {acct_name} in "
+                    f"{month_label(pl_month)} (approval and period earned) and how the following period's cost "
+                    "is being accrued."
+                ),
+            )
+        ],
+        rationale=rationale,
+    )
+
+
+def _amount_equal(stated: str, amount: Decimal, tol: Decimal) -> bool:
+    try:
+        return abs(abs(D(stated)) - abs(amount)) <= tol
+    except (ValueError, ArithmeticError):
+        return False
+
+
+def _same_subject_docs(index: DealIndex, doc_ids: Sequence[str]) -> list[str]:
+    """Other documents whose title is contained in a supporting document's title (a plan and its calculation)."""
+    titles = {d: norm_text(index.facts[d].title if d in index.facts else "") for d in index.docs}
+    company = index.company_tokens
+    out: list[str] = []
+    for d in doc_ids:
+        mine = titles.get(d, "")
+        for other, t in titles.items():
+            # A letterhead (the company's own name) is every internal document's "title"; it names no subject.
+            if other in doc_ids or other in out or len(set(t.split()) - company) < 3:
+                continue
+            if f" {t} " in f" {mine} ":
+                out.append(other)
+    return sorted(out)
+
+
+def _sentences(text: str) -> list[str]:
+    """Sentences of a text, paragraph by paragraph, with line wraps joined."""
+    out: list[str] = []
+    for para in re.split(r"\n\s*\n", text or ""):
+        flat = " ".join(para.split())
+        out += [x for x in _SENTENCES.split(flat) if x]
+    return out
+
+
+def _export_gap_statements(text: str, month: str) -> Optional[tuple[str, str]]:
+    """(defect sentence, completeness sentence) when the text says the month's export is defective and the
+    month's books are complete; else None. The defect sentence names the month in full ('March 2023'); the
+    completeness sentence names it too, or refers back to it ('the March income statement', 'that month')."""
+    month_rx = _month_pattern(month)
+    name = _MONTH_NAMES[int(month[5:]) - 1]
+    refers = re.compile(rf"\b(?:{name}|{name[:3]}\.?)(?![a-z])|\b(?:that|the|this) month\b", re.IGNORECASE)
+    defect = complete = None
+    for sent in _sentences(text):
+        if defect is None and month_rx.search(sent) and _EXPORT_NOUN.search(sent) and _EXPORT_DEFECT.search(sent):
+            defect = sent
+        if (complete is None and refers.search(sent) and _BOOKS.search(sent) and _COMPLETE.search(sent)
+                and not _NOT_COMPLETE.search(sent)):
+            complete = sent
+    return (defect, complete) if defect and complete else None
+
+
+def _sentence_quote(index: DealIndex, doc_id: str, sentence: str, cue: re.Pattern[str]) -> Optional[EvidenceQuote]:
+    """A verbatim line of the document from ``sentence`` that carries ``cue`` (the quote a reviewer ticks)."""
+    doc = index.docs.get(doc_id)
+    if doc is None:
+        return None
+    flat = " ".join(sentence.split())
+    for page in doc.pages:
+        for line in page.text.splitlines():
+            if len(line.strip()) < 8:
+                continue
+            for m in cue.finditer(line):
+                around = " ".join(line[max(0, m.start() - 20) : m.end() + 20].split())
+                if around in flat:
+                    return EvidenceQuote(doc_id=doc_id, page=page.page, quote=line.strip())
+    return None
+
+
+def _export_gap_item(index: DealIndex, recon: ReconciliationResult, month: str, next_id) -> Optional[AdjustmentAssessment]:
+    """A GL month the export dropped, where a document explains the gap (SPEC §5.7).
+
+    Practitioner basis: diligence EBITDA must rest on complete books. When reconciliation shows a
+    month the GL export is missing (MISSING_PERIOD) and a document explains it as an export defect,
+    with management's P&L tying to the trial balance, the P&L for that month is the better record:
+    reversing it to the incomplete GL would drop a month of costs. The item carries -(P&L - GL,
+    debit-positive) over the EBITDA accounts for the month, in every period that holds it.
+    """
+    docs: list[str] = []
+    statements: dict[str, tuple[str, str]] = {}
+    for doc_id in sorted(index.docs):
+        found = _export_gap_statements(index.docs[doc_id].full_text, month)
+        if found is not None:
+            docs.append(doc_id)
+            statements[doc_id] = found
+    if not docs:
+        return None
+    diff = ZERO
+    accounts: list[tuple[str, Decimal]] = []
+    in_pl = missing = 0
+    for item in recon.items:
+        if item.month != month or not _ebitda_account(index, item.account):
+            continue
+        v = D(item.variance)
+        if D(item.pl_amount) != 0:
+            in_pl += 1
+            missing += D(item.gl_amount) == 0
+        if v != 0:
+            diff += v
+            accounts.append((item.account, v))
+    if abs(diff) <= index.tolerance:
+        return None
+    labels = index.labels
+    proposed = {lbl: (-diff if month in index.label_months[lbl] else ZERO) for lbl in labels}
+    adj_id = next_id()
+    quotes = [
+        q
+        for d in docs
+        for q in [_sentence_quote(index, d, statements[d][1], _BOOKS), _sentence_quote(index, d, statements[d][0], _EXPORT_DEFECT)]
+        if q
+    ]
+    share = f"{missing} of the {in_pl} EBITDA accounts in management's {month_label(month)} P&L"
+    effect = periods_text(proposed, labels)
+    n_acct = len(accounts)
+    flag = Flag(
+        code=FlagCode.PARTIAL_GL_SUPPORT,
+        severity=Severity.WARNING,
+        message=_short_sentence(
+            f"The {month_label(month)} GL export has no activity for {missing} of {in_pl} EBITDA accounts in "
+            f"management's P&L (a {money(diff)} difference); {docs[0]} calls it an export defect and says the books "
+            f"are complete, so the P&L is kept. Effect: {effect}."
+        ),
+        effects={lbl: fmt(v) for lbl, v in proposed.items() if v},
+        doc_ids=docs,
+        quotes=quotes[:2],
+    )
+    top = sorted(accounts, key=lambda x: -abs(x[1]))[:3]
+    facts = [
+        Fact(text=f"Reconciliation: for {month_label(month)} management's P&L exceeds the GL by {money(diff)} over "
+                  f"{n_acct} EBITDA accounts (largest: "
+                  + ", ".join(f"{a} {money(v)}" for a, v in top) + ")."),
+    ] + [Fact(text=f"{d} explains the {month_label(month)} gap as an export defect; the books are complete.",
+              quotes=[q for q in quotes if q.doc_id == d][:2]) for d in docs]
+    rationale = _short_sentence(
+        f"REVISE: the GL export has no {month_label(month)} activity for {share}, and {docs[0]} explains it as an "
+        f"export defect with the month's books complete. Reversing management's {month_label(month)} P&L to the "
+        f"incomplete GL would drop {money(diff)} of net cost, so diligence keeps the P&L amounts. Proposed "
+        f"{_amounts_text(labels, proposed)}. Open: the replacement export, to vouch the month.",
+        MAX_RATIONALE,
+    )
+    return AdjustmentAssessment(
+        adj_id=adj_id,
+        title=f"Keep management's P&L for {month_label(month)} (GL export gap)",
+        category=AdjustmentCategory.OTHER,
+        source=DILIGENCE_SOURCE,
+        description=(
+            f"Diligence-identified: the GL export for {month_label(month)} is missing accounts that management's P&L "
+            "(tied to the trial balance) carries; the P&L amounts are kept."
+        ),
+        gl_accounts=sorted(a for a, _ in accounts),
+        support_refs=docs,
+        claimed={lbl: fmt(ZERO) for lbl in labels},
+        traced_gl={lbl: fmt(ZERO) for lbl in labels},
+        documented={lbl: fmt(ZERO) for lbl in labels},
+        proposed={lbl: fmt(v) for lbl, v in proposed.items()},
+        treatment=Treatment.REVISE,
+        confidence="medium",
+        gl_links=[],
+        doc_links=[
+            DocLink(doc_id=d, relation="correspondence" if (index.facts[d].doc_type if d in index.facts else "") in
+                    ("correspondence", "memo", "email") else "other",
+                    entry_ids=[], score=2.5, reasons=[f"Explains the {month_label(month)} GL export gap"],
+                    quotes=[q for q in quotes if q.doc_id == d][:2])
+            for d in docs
+        ],
+        flags=[flag],
+        facts=facts,
+        judgment_questions=[
+            _short_sentence(
+                f"Is the company's explanation of the {month_label(month)} export gap enough to keep management's P&L "
+                "for the month, or should the replacement GL export be obtained and vouched first?"
+            )
+        ],
+        open_questions=[
+            OpenQuestion(
+                q_id=f"Q-{adj_id}-1", adj_id=adj_id, priority="high", basis="MISSING_PERIOD",
+                text=_short_sentence(
+                    f"Please provide the complete GL detail export for {month_label(month)} and confirm that the "
+                    f"{month_label(month)} P&L agrees to the trial balance."
+                ),
+            )
+        ],
         rationale=rationale,
     )

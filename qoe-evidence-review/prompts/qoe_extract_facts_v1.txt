@@ -7,7 +7,7 @@ BOUNDARY (non-negotiable)
 - If something is not stated, say "not stated" by returning null (or an empty list). Never guess a date, counterparty, reference or amount that is not written in the document.
 
 FIELDS
-- doc_type: invoice | engagement_letter | contract | settlement_agreement | separation_agreement | insurance | correspondence (emails with From/To/Subject headers) | payroll | memo | other.
+- doc_type: invoice | engagement_letter | contract | settlement_agreement | separation_agreement | insurance | correspondence (emails with From/To/Subject headers) | payroll | memo | benchmark (an independent market view: appraisal, broker opinion of market rent, pay or market study) | other.
 - title: the document's own title, subject line or "Re:" line.
 - counterparty: the issuer or other party (law firm, vendor, insurer, lender, employee). Not the company under review when that can be told apart (for example the "Bill To", "Client" or "Company" party). null if not stated.
 - doc_date: the document's own date (letter date, invoice date, email date, "entered into as of" date) as YYYY-MM-DD. Not a due date, service date or date of loss. null if not stated.

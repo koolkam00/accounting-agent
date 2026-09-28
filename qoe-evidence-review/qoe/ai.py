@@ -62,6 +62,7 @@ DOC_TYPES = (
     "correspondence",
     "payroll",
     "memo",
+    "benchmark",
     "other",
 )
 TERM_KINDS = (
@@ -327,8 +328,11 @@ _AUTO_RENEW_RE = _lex(
 )
 _ONGOING_RE = _lex(
     r"until terminated|continu(?:e|es|ing) (?:in effect )?until (?:terminated|cancell?ed)|month-to-month"
-    r"|on an ongoing basis|ongoing (?:services|support|basis)|remain in (?:full force and )?effect until"
-    r"|until (?:either party )?(?:terminates|cancels)",
+    r"|on an ongoing basis|ongoing (?:services|support|basis)"
+    r"|(?:remain|stay)s? in (?:full force and )?(?:effect|place) until"
+    r"|until (?:either party |one of us |one of the parties )?(?:terminates|cancels|ends)"
+    r"|until (?:either|one) (?:party|of us|of the parties) (?:ends|terminates|cancels)"
+    r"|\bno (?:fixed term|end date|expiry date|expiration date)\b",
     re.I,
 )
 _ONE_TIME_RE = _lex(
@@ -345,7 +349,8 @@ _INSTALLMENTS_RE = _lex(
 _TERM_LENGTH_RE = _lex(
     r"(?:(?:\b[a-z]+(?:-[a-z]+)?\s*\(\s*)?\b(?P<n1>\d{1,3}|[a-z]+(?:-[a-z]+)?)\s*\)?[\s-]*(?P<u1>month|year)s?\b"
     r"[^.;]{0,40}?\bterm\b"
-    r"|\bterm(?:\s+of|\s*[:\-])?\s+(?:[a-z]+(?:-[a-z]+)?\s*\(\s*)?(?P<n2>\d{1,3}|[a-z]+(?:-[a-z]+)?)\s*\)?\s*"
+    r"|\bterm(?:\s+of(?:\s+(?:this|the)\s+(?:agreement|lease|contract|engagement|order form))?|\s*[:\-])?"
+    r"(?:\s+(?:is|shall be|will be))?\s+(?:[a-z]+(?:-[a-z]+)?\s*\(\s*)?(?P<n2>\d{1,3}|[a-z]+(?:-[a-z]+)?)\s*\)?\s*"
     r"(?P<u2>month|year)s?\b)"
     r"[^.;]{0,40}?\b(?:commencing|beginning|starting|effective|from)\s+(?:on\s+)?",
     re.I,
@@ -364,7 +369,16 @@ _RECURRENCE_RE = _lex(
     r"|annual (?:subscription|fee|renewal|license|licence|maintenance|contract|service|retainer|charge|count"
     r"|physical|inventory|review|program)"
     r"|renews? automatically|automatically renew|auto-?renew|evergreen|month-to-month|on an ongoing basis"
-    r"|ongoing (?:basis|services?|support)|until terminated|\broutine\b|in the (?:normal|ordinary) course",
+    r"|ongoing (?:basis|services?|support)|until terminated"
+    r"|(?:remain|stay)s? in (?:full force and )?(?:effect|place) until"
+    r"|until (?:either|one) (?:party|of us|of the parties) (?:ends|terminates|cancels)"
+    r"|\bno (?:fixed term|end date)\b|\broutine\b|in the (?:normal|ordinary) course",
+    re.I,
+)
+# A sentence about reviewing or adjusting rates ("Rates are reviewed annually") says how prices change, not
+# that the cost recurs: it is never quoted as recurrence.
+_RATE_REVIEW_RE = _lex(
+    r"\b(?:rates?|prices?|pricing|fees?)\b[^.;]{0,40}\b(?:reviewed|adjusted|revised|increased|updated|reset|escalat\w*)\b",
     re.I,
 )
 _ONE_TIME_STMT_RE = _lex(
@@ -380,15 +394,22 @@ _BUSINESS_PURPOSE_RE = _lex(
     re.I,
 )
 _PLAN_RE = _lex(
-    r"\bwe (?:plan|intend|expect|anticipate) to\b|\btargeting\b|\bplanned\b"
+    r"\bwe (?:plan|intend|expect|anticipate) to\b|\btargeting\b|\bplanned\b|\bplans? (?:is|are|was) to\b"
+    r"|\btarget(?:ed)? (?:is|date|for)\b|\btarget date\b"
+    r"|\b(?:if|assuming|once|subject to|contingent on|depending on)\b[^.;]{0,40}?\b(?:pilot|go-?live|goes live"
+    r"|rollout|roll-out|launch(?:es)?)\b"
     r"|\bwill be (?:eliminated|reduced|implemented)\b"
-    r"|\bprojected\b|\bexpected to (?:save|reduce)\b|\bhave not (?:yet )?(?:started|begun|been)\b|\bnot yet\b",
+    r"|\bprojected\b|\bexpected to (?:save|reduce)\b|\bnot yet\b"
+    r"|\b(?:have|has|had) not (?:yet )?(?:started|begun|been|said|told|announced|communicated|decided)\b"
+    r"|\b(?:haven|hasn|hadn)['’]?t (?:yet )?(?:started|begun|been|said|told|announced|communicated|decided)\b"
+    r"|\bnot (?:yet |been )?decided\b|\bnothing has been decided\b",
     re.I,
 )
 _RECOVERY_RE = _lex(
     r"(?:insurer|carrier) (?:shall|will) (?:pay|fund|reimburse)"
     r"|(?:paid|funded) (?:directly )?by [^.;]{0,60}?\b(?:insurer|carrier|insurance)"
-    r"|on the company'?s behalf|no obligation to fund|net (?:claim )?payment|deductible|proceeds|reimburse",
+    r"|on the company'?s behalf|no obligation to fund|not (?:required|obligated|responsible) to (?:fund|pay)"
+    r"|net (?:claim )?payment|deductible|proceeds|reimburse",
     re.I,
 )
 _PERSONAL_RE = _lex(
@@ -409,6 +430,42 @@ _KEY_STATEMENT_RES = (
 )
 # Recurrence cues that come from payment mechanics rather than from the cost itself.
 _INSTALLMENT_CONTEXT_RE = _lex(r"install?ments?|severance|settlement|separation", re.I)
+# A sentence that names routine activity only to say it is not part of the item ("routine counts are not
+# part of this write-off") supports the claim that the item is unusual. Only a negated inclusion whose
+# object is the claimed item counts: "other than", "excluding" or "apart from" qualify a term ("renews for
+# successive terms other than as provided in Section 9") and never set the recurring activity apart.
+_NEGATED_INCLUSION_RE = _lex(
+    r"\b(?:is|are|was|were)\s+(?:not\s+(?:part\s+of|included\s+in|within)|excluded\s+from)"
+    r"\s+(?:this|the|these|that|such)\s+(?P<obj>[A-Za-z][\w-]*(?:\s+[A-Za-z][\w-]*){0,2})",
+    re.I,
+)
+# Nouns that name a claimed item as such, whatever the adjustment is called.
+_ITEM_NOUNS = frozenset(
+    """write-off write-offs writeoff write-down write-downs writedown adjustment adjustments claim claims project
+    projects matter matters loss losses charge charges program programme remediation restructuring reserve
+    reserves settlement event""".split()
+)
+
+
+def _item_words(adj: AdjustmentClaim, intent: AdjustmentIntent) -> set[str]:
+    """Words that name the claimed item: generic item nouns, management's keywords and the title."""
+    words = set(_ITEM_NOUNS)
+    for text in list(intent.keywords) + [adj.title]:
+        words |= {w for w in re.findall(r"[a-z][a-z-]+", (text or "").lower()) if len(w) >= 4}
+    return words
+
+
+def _sets_apart(sentence: str, cue_at: int, item_words: set[str]) -> bool:
+    """The recurrence cue at ``cue_at`` is the subject of a negated inclusion whose object is the item."""
+    for m in _NEGATED_INCLUSION_RE.finditer(sentence):
+        if m.start() <= cue_at:
+            continue
+        obj = {w.strip("-").lower() for w in m.group("obj").split()}
+        if obj & item_words or any(w.rstrip("s") in item_words for w in obj):
+            return True
+    return False
+
+
 # Statements that state the purpose outright rank ahead of mere mentions of an event.
 _BUSINESS_STRONG_RE = _lex(
     r"business purpose|purpose of (?:the )?(?:visit|trip|travel|attendance)|attending (?:company|organi[sz]ation)"
@@ -416,7 +473,9 @@ _BUSINESS_STRONG_RE = _lex(
 )
 _RECURRENCE_STRONG_RE = _lex(
     r"consistent with (?:the )?(?:prior|previous)|subscription|renews? automatically|automatically renew|monthly fee"
-    r"|until terminated|each year|every year|month \d+ of \d+"
+    r"|until terminated|(?:remain|stay)s? in (?:full force and )?(?:effect|place) until"
+    r"|until (?:either|one) (?:party|of us|of the parties) (?:ends|terminates|cancels)"
+    r"|each year|every year|month \d+ of \d+"
 )
 _BUSINESS_MEMO_RE = _lex(
     r"conference|summit|trade ?show|\bexpo\b|convention|seminar|training|certification|supplier|vendor visit"
@@ -477,6 +536,15 @@ _TYPE_TITLE_RULES: list[tuple[str, re.Pattern[str]]] = [
                       r"|insurance claim|explanation of benefits|certificate of insurance"
                       r"|policy (?:declarations|renewal)"),
         ("payroll", r"payroll (?:register|summary|journal|report)|pay ?stub|earnings statement|pay statement"),
+        # An independent view of market for a normalization: an appraisal, a broker's opinion of market
+        # rent, a pay or market study. Checked before "memo" and "contract" ("opinion of market rent
+        # for a proposed lease" is not the lease).
+        # Keyed on market semantics: "Performance Appraisal" in an HR file is not a view of market.
+        ("benchmark", r"\bbenchmark|opinion of (?:market )?(?:rent|value)|market (?:rent|pay|compensation|value) (?:study"
+                      r"|survey|analysis|opinion|report)|(?:real estate|property|market|rent(?:al)?|equipment|business) "
+                      r"appraisal|appraisal (?:report )?of (?:the )?(?:property|premises|real estate|market)"
+                      r"|appraised (?:market )?value|fair market value|\bFMV\b|valuation opinion|rate study|\bMGMA\b"
+                      r"|compensation (?:survey|study|benchmark|opinion)|salary survey"),
         ("memo", r"\bmemo(?:randum)?\b"),
         ("invoice", r"\binvoice\b|\bbill\b|statement of account|\breceipt\b|billing statement|member statement"
                     r"|account statement"),
@@ -484,6 +552,18 @@ _TYPE_TITLE_RULES: list[tuple[str, re.Pattern[str]]] = [
                      r"|addendum|amendment"),
     )
 ]
+# A title about a person's performance is an HR record, whatever market words it also carries.
+_NOT_BENCHMARK_RE = _lex(r"\b(?:performance|employee|staff|self|annual) ?-?appraisal|performance review", re.IGNORECASE)
+
+
+def _title_type(hay: str) -> Optional[str]:
+    """The document type a title (or file name) names, per ``_TYPE_TITLE_RULES``."""
+    for doc_type, rx in _TYPE_TITLE_RULES:
+        if rx.search(hay) and not (doc_type == "benchmark" and _NOT_BENCHMARK_RE.search(hay)):
+            return doc_type
+    return None
+
+
 _TYPE_BODY_RULES: list[tuple[str, re.Pattern[str]]] = [
     (doc_type, _lex(pattern, re.IGNORECASE))
     for doc_type, pattern in (
@@ -770,6 +850,14 @@ def _cp_match(a: Optional[str], b: Optional[str]) -> bool:
         return False
     overlap = ta & tb
     return bool(overlap) and len(overlap) / min(len(ta), len(tb)) >= 0.5
+
+
+def _same_party(a: Optional[str], b: Optional[str]) -> bool:
+    """Two counterparty names are one party, by the engine's rule (``trace.names_match``): a one-word name
+    must be the other name's only distinctive word, so a city read as a party never ties a hotel's bills."""
+    from qoe.trace import name_tokens, names_match
+
+    return names_match(name_tokens(a), name_tokens(b))
 
 
 def _distinct_tokens(text: str) -> set[str]:
@@ -1092,6 +1180,27 @@ def _label_value_name(value: str) -> Optional[str]:
     return head
 
 
+_STATE_ZIP_RE = re.compile(r"\b[A-Z]{2}\s+\d{5}(?:-\d{4})?\b|\b[A-Z]\d[A-Z]\s?\d[A-Z]\d\b")
+_STREET_LINE_RE = re.compile(
+    r"\b\d{1,6}\s+(?:[A-Z][\w.'-]*\s+){0,4}(?:Road|Rd|Street|St|Avenue|Ave|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way"
+    r"|Parkway|Pkwy|Court|Ct|Place|Pl|Highway|Hwy|Circle|Cir|Terrace|Trail|Loop|Plaza|Square|Suite|Ste)\b\.?"
+    r"(?:\s*,?\s*(?:Suite|Ste\.?|Unit|#)\s*\w+)?\s*$",
+)
+
+
+def _address_fragment(lines: list[str], i: int) -> bool:
+    """The line is part of an address block: it holds a state and ZIP, the next line is only a state and ZIP,
+    or the previous line ends with a street address (a city on a line of its own)."""
+    line = lines[i]
+    if _STATE_ZIP_RE.search(line):
+        return True
+    nxt = lines[i + 1].strip() if i + 1 < len(lines) else ""
+    if nxt and _STATE_ZIP_RE.fullmatch(nxt):
+        return True
+    prev = lines[i - 1].split("|")[-1].strip() if i > 0 else ""
+    return bool(prev and _STREET_LINE_RE.search(prev))
+
+
 def _looks_like_org_line(line: str) -> bool:
     toks = line.split()
     if not 1 <= len(toks) <= 7:
@@ -1223,9 +1332,9 @@ class _DocReader:
         if self.is_email:
             return "correspondence"
         for hay in (self.title, self.stem):
-            for doc_type, rx in _TYPE_TITLE_RULES:
-                if rx.search(hay):
-                    return doc_type
+            found = _title_type(hay)
+            if found is not None:
+                return found
         body = self.doc.full_text
         best, best_count = "other", 1
         for doc_type, rx in _TYPE_BODY_RULES:
@@ -1288,10 +1397,16 @@ class _DocReader:
             if _find_dates(line) or _FIELD_LINE_RE.match(line):
                 break
             ents = _line_entities(line)
+            # A letterhead line often carries the name and the address on one line ("Name | 200 Mill
+            # Road"): the organisation is the segment before the first separator. A city or "ST ZIP" line of
+            # the address block is never a party.
+            head, sep, rest = (x.strip() for x in line.partition("|"))
+            if not sep or not re.match(r"\d{1,6}\s+\S", rest):
+                head = line.strip()  # a tagline ("Brokerage | Springfield - Riverton") is not "name | address"
             if ents:
                 add(7, ents[0][2])
-            elif _looks_like_org_line(line):
-                add(5, line.strip())
+            elif _looks_like_org_line(head) and not _address_fragment(lines, i):
+                add(5, head)
             letterhead_seen += 1
             if letterhead_seen >= 3:
                 break
@@ -1803,13 +1918,23 @@ def _narrative_refs(text: str, gl_accounts: Iterable[str]) -> list[str]:
     return out
 
 
+_QUARTERLY_AFTER_RE = _lex(r"^[ \t]*(?:per quarter|a quarter\b|each quarter|every quarter|quarterly\b)", re.I)
+
+
 def _normalized_amount(text: str) -> Optional[str]:
+    """The annual level the narrative normalizes to. AdjustmentIntent.normalized_amount is annual, so
+    a level written per month ("$20,000 a month") or per quarter is restated as a year: reading the
+    period the narrative states, not estimating one."""
     for cue in _NORMALIZED_CUE_RE.finditer(text):
         sentence_end = re.search(r"[.;](?:\s|$)", text[cue.end() :])
         stop = cue.end() + (sentence_end.start() if sentence_end else len(text) - cue.end())
-        for start, _, value, _ in _money_hits(text, cue.end(), stop):
+        for start, end, value, _ in _money_hits(text, cue.end(), stop):
             lead = text[max(cue.end(), start - 14) : start].lower()
             if re.search(r"\b(?:to|of|at)\b|=", lead) or start - cue.end() <= 6:
+                if _MONTHLY_AFTER_RE.match(text[end:]):
+                    value *= 12
+                elif _QUARTERLY_AFTER_RE.match(text[end:]):
+                    value *= 4
                 return fmt(value)
             break
     return None
@@ -2018,7 +2143,7 @@ def _tie_entries(
     def cp_ok(e: GLEntry) -> Optional[bool]:
         if not fact.counterparty or not e.counterparty:
             return None
-        return _cp_match(fact.counterparty, e.counterparty)
+        return _same_party(fact.counterparty, e.counterparty)
 
     if mode == "fee":
         chosen = list(ref_hits)
@@ -2050,7 +2175,7 @@ def _tie_entries(
         if amount and cp is True:
             chosen.append(e)  # the same amount for the same counterparty
         elif shared >= _SHARED_EVENT_WORDS:
-            chosen.append(e)  # the memo names the document's event ("Dixon plant visit", "SMCS summit")
+            chosen.append(e)  # the memo names the document's event ("supplier plant visit", "trade association summit")
         elif amount and cp is None and not e.counterparty and shared >= 1:
             chosen.append(e)  # a journal entry has no party: its amount plus the document's subject
     return [e.entry_id for e in entries if e in chosen]
@@ -2065,7 +2190,33 @@ _PERSONAL_CONFLICT = "Management describes the cost as a personal (non-business)
 
 
 def _ranked(quotes: list[EvidenceQuote], strong: re.Pattern[str]) -> list[EvidenceQuote]:
-    return sorted(quotes, key=lambda q: 0 if strong.search(q.quote) else 1)
+    """Strong cues first; among equals, a sentence that states an amount before a bare heading
+    ("Subscription fee: $3,000.00 per month" before "ORDER FORM AND SUBSCRIPTION TERMS")."""
+    def heading(q: EvidenceQuote) -> bool:
+        letters = [c for c in q.quote if c.isalpha()]
+        return bool(letters) and sum(c.isupper() for c in letters) / len(letters) > 0.8
+
+    return sorted(
+        quotes,
+        key=lambda q: (0 if strong.search(q.quote) else 1, 1 if heading(q) else 0, 0 if _CUR_MONEY_RE.search(q.quote) else 1),
+    )
+
+
+def _sentence_at(fact: DocFacts, quote: EvidenceQuote, evidence: "_Evidence") -> str:
+    """The quote with the rest of its sentence (a line-based quote can cut a sentence in two)."""
+    doc = evidence.docs.get(fact.doc_id)
+    if doc is None:
+        return quote.quote
+    for page in doc.pages:
+        if page.page != quote.page:
+            continue
+        i = page.text.find(quote.quote)
+        if i < 0:
+            return quote.quote
+        start = max(page.text.rfind(". ", 0, i) + 1, 0)
+        stop = page.text.find(". ", i + len(quote.quote))
+        return page.text[start : stop if stop >= 0 else len(page.text)]
+    return quote.quote
 
 
 def _theme_key(entry: GLEntry) -> tuple[str, str]:
@@ -2116,6 +2267,7 @@ def _find_contradictions_rules(
     seen: set[tuple[str, int, str]] = set()
     facts_by_id = {f.doc_id: f for f in facts}
     narrative = f"{adj.title}\n{adj.description}"
+    item_words = _item_words(adj, intent)
 
     def add(fact: DocFacts, quote: EvidenceQuote, statement: str, conflicts_with: str, entry_ids: list[str]) -> bool:
         key = (quote.doc_id, quote.page, quote.quote)
@@ -2142,6 +2294,11 @@ def _find_contradictions_rules(
                 m = _RECURRENCE_RE.search(q.quote)
                 if not m or _INSTALLMENT_CONTEXT_RE.search(q.quote):
                     continue
+                sentence = _sentence_at(fact, q, evidence)
+                if _RATE_REVIEW_RE.search(sentence) and not _RECURRENCE_STRONG_RE.search(q.quote):
+                    continue  # how rates change, not that the cost recurs
+                if _sets_apart(sentence, max(sentence.find(q.quote), 0) + m.start(), item_words):
+                    continue
                 phrase = _norm_space(m.group())
                 entry_ids = _tie_entries(fact, entries, evidence, "statement")
                 is_term_like = _AUTO_RENEW_RE.search(q.quote) or _ONGOING_RE.search(q.quote)
@@ -2159,6 +2316,9 @@ def _find_contradictions_rules(
                     continue
                 if _INSTALLMENT_CONTEXT_RE.search(term.quote.quote):
                     continue
+                sentence = _sentence_at(fact, term.quote, evidence)
+                if _sets_apart(sentence, max(sentence.find(term.quote.quote), 0), item_words):
+                    continue
                 entry_ids = _tie_entries(fact, entries, evidence, "fee")
                 if add(fact, term.quote, _term_statement(term), _NONRECURRING_CONFLICT, entry_ids):
                     per_doc += 1
@@ -2174,7 +2334,10 @@ def _find_contradictions_rules(
                     per_doc += 1
         if intent.is_normalization and intent.normalized_amount:
             salaries = [a for a in fact.amounts if a.label == "base_salary"]
-            if salaries and not any(within(a.amount, intent.normalized_amount) for a in salaries):
+            # A document that also states management's level (total target cash = base + bonus) supports it;
+            # its base salary is a component of that level, not a different one.
+            states_level = any(within(a.amount, intent.normalized_amount) for a in fact.amounts)
+            if salaries and not states_level and not any(within(a.amount, intent.normalized_amount) for a in salaries):
                 a = salaries[0]
                 add(
                     fact,
@@ -2219,7 +2382,7 @@ def _docs_for_entry(entry: GLEntry, facts: list[DocFacts], primary: dict[str, li
         if (
             _entry_cites(entry, primary.get(f.doc_id, []))
             or memo_refs & {r.lower() for r in f.reference_numbers}
-            or (_cp_match(f.counterparty, entry.counterparty) and _amount_matches(entry, [a.amount for a in f.amounts]))
+            or (_same_party(f.counterparty, entry.counterparty) and _amount_matches(entry, [a.amount for a in f.amounts]))
         ):
             out.append(f.doc_id)
     return out
@@ -2351,7 +2514,7 @@ def _classify_event(
             f for f in facts
             if f.doc_id not in event_doc_ids
             and (_entry_cites(e, primary_by_doc[f.doc_id]) or (
-                _cp_match(f.counterparty, e.counterparty) and _amount_matches(e, _recurring_fee_amounts(f))))
+                _same_party(f.counterparty, e.counterparty) and _amount_matches(e, _recurring_fee_amounts(f))))
         ]
         recurring_doc = next((f for f in tied_docs if any(t.kind in ("retainer", "monthly_fee", "ongoing_services")
                                                           for t in f.terms)), None)
@@ -2471,7 +2634,7 @@ class RuleBasedEvidenceAI:
         self.remember(doc)
         if not doc.pages:
             stem = _filename_title(doc.doc_id)
-            doc_type = next((t for t, rx in _TYPE_TITLE_RULES if rx.search(stem)), "other")
+            doc_type = _title_type(stem) or "other"
             return DocFacts(doc_id=doc.doc_id, doc_type=doc_type, title=stem, extractor=self.name)
         facts = _DocReader(doc).facts()
         return _verify_facts(facts, {doc.doc_id: doc})
@@ -2739,7 +2902,9 @@ def _merge_intent(llm: AdjustmentIntent, rules: AdjustmentIntent) -> AdjustmentI
             "asserts_personal": llm.asserts_personal or rules.asserts_personal,
             "is_pro_forma": llm.is_pro_forma or rules.is_pro_forma,
             "is_normalization": llm.is_normalization or rules.is_normalization,
-            "normalized_amount": llm.normalized_amount or rules.normalized_amount,
+            # The rules read the period a level is stated in ("$20,000 a month" is 240,000 a year); the model
+            # may only copy a figure as written, so its level fills a gap and never overrides the rules'.
+            "normalized_amount": rules.normalized_amount or llm.normalized_amount,
             "event_months": sorted(set(llm.event_months) | set(rules.event_months)),
         }
     )

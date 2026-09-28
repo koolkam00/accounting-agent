@@ -21,6 +21,8 @@ from qoe.export_xlsx import (
     SHEET_RECON,
     SHEET_SUMMARY,
     TICKMARKS,
+    _claimed_periods,
+    _context,
     _fallback_final_amounts,
     _management_text,
     _plain_basis,
@@ -36,12 +38,14 @@ from qoe.export_xlsx import (
     resolve_final_amounts,
     sanitize_sheet_name,
     support_sheet_names,
+    workbook_check_status,
     workbook_filename,
 )
 from qoe.money import D, fmt
-from qoe.review_store import bridge_display_rows
+from qoe.review_store import QuestionLogEntry, apply_question_updates, apply_reviews, bridge_display_rows
 from qoe.periods import add_months, month_range
 from qoe.schemas import (
+    QuestionStatus,
     Account,
     AdjustmentAssessment,
     AmountFact,
@@ -472,9 +476,12 @@ def _meta() -> DealMeta:
     )
 
 
-def make_workpaper(reviews: list[ReviewDecision] | None = None, diligence: bool = False) -> Workpaper:
+def make_workpaper(reviews: list[ReviewDecision] | None = None, diligence: bool = False,
+                   question_log: list[QuestionLogEntry] | None = None) -> Workpaper:
     assessments = _assessments() + ([_diligence_item()] if diligence else [])
     reviews = _reviews() if reviews is None else reviews
+    # As qoe.review_store.apply_reviews leaves them: question updates already on the assessments.
+    apply_question_updates(assessments, reviews, question_log or [])
     wp = Workpaper(
         run_id="run-test-001",
         tool_version="0.1.0",
@@ -1849,3 +1856,105 @@ def test_integration_dev_deal_exports_and_ties(tmp_path):
         for k, p in enumerate(labels):
             got = ws.cell(row=rows[r.label], column=3 + k).value
             assert abs(D(got) - D(r.amounts.get(p))) <= D("0.01"), (r.key, p, got)
+
+
+# -- question log, override rule, claim membership, check statuses ------------
+
+
+def _qlog(q_id: str, adj_id: str, ts: str, **kw) -> QuestionLogEntry:
+    return QuestionLogEntry(kind=kw.pop("kind", "update"), q_id=q_id, adj_id=adj_id, reviewer="m.reyes",
+                            timestamp=ts, **kw)
+
+
+def test_question_updates_are_not_reapplied_over_the_question_log(tmp_path):
+    # The decision closes Q-A-1-2; a later question-log line reopens it with management's reply.
+    closing = ReviewDecision(adj_id="A-2", reviewer="k.osei", timestamp="2026-09-01T10:00:00Z",
+                             treatment=Treatment.ACCEPT, amounts=_pm(0, 30000, 10000), rationale="Agrees.",
+                             tool_treatment=Treatment.ACCEPT, tool_amounts=_pm(0, 30000, 10000),
+                             question_updates={"Q-A-1-2": "CLOSED: covered by the letter"})
+    log = [
+        _qlog("Q-A-1-2", "A-1", "2026-09-02T09:00:00Z", status=QuestionStatus.OPEN,
+              response="Insurer has not confirmed payment yet"),
+        _qlog("Q-A-1-R1", "A-1", "2026-09-02T09:05:00Z", kind="new", status=QuestionStatus.OPEN,
+              text="Provide the =SUM of post-settlement invoices", priority="high"),
+        _qlog("Q-A-1-1", "A-1", "2026-09-02T09:10:00Z", status=QuestionStatus.ANSWERED),
+    ]
+    base = make_workpaper(reviews=[])
+    wp = apply_reviews(base, [closing], schedule=make_package(base).schedule, question_log=log)
+    out = export_workpaper(wp, tmp_path, question_log=log)
+    wb = load_workbook(out)
+    qs = wb[SHEET_QUESTIONS]
+    rows = {qs.cell(row=r, column=1).value: r for r in range(7, qs.max_row + 1) if qs.cell(row=r, column=1).value}
+    assert qs.cell(row=rows["Q-A-1-2"], column=6).value == "OPEN"
+    assert qs.cell(row=rows["Q-A-1-2"], column=7).value == "Insurer has not confirmed payment yet"
+    assert qs.cell(row=rows["Q-A-1-1"], column=6).value == "ANSWERED"
+    assert "Q-A-1-R1" in rows
+    # The Review Log lists the decision, then the question log in its own block, in log order.
+    ws = wb["Review Log"]
+    assert ws.cell(row=8, column=4).value == "A-2"
+    assert ws.cell(row=8, column=_col_by_header(ws, "Question updates")).value == "Q-A-1-2: CLOSED: covered by the letter"
+    head = _row_of(ws, "QUESTION LOG: 3 entries")
+    assert [ws.cell(row=head + 1, column=c).value for c in range(1, 9)] == [
+        "#", "Timestamp", "Reviewer", "Ref", "Q id", "Change", "Status", "Response, or the question raised"]
+    body = [[ws.cell(row=head + 1 + i, column=c).value for c in (1, 4, 5, 6, 7, 8)] for i in (1, 2, 3)]
+    assert body == [
+        [1, "A-1", "Q-A-1-2", "Update", "OPEN", "Insurer has not confirmed payment yet"],
+        [2, "A-1", "Q-A-1-R1", "Question raised", "OPEN", "Provide the =SUM of post-settlement invoices (priority high)"],
+        [3, "A-1", "Q-A-1-1", "Update", "ANSWERED", "(response unchanged)"],
+    ]
+    assert ws.cell(row=head + 3, column=8).data_type == "s"  # formula-like text stays text
+    assert ws.cell(row=head + 2, column=4).hyperlink.location == "'Adj A-1'!A1"
+    # Without a question log the sheet has no such block.
+    assert not any(v.startswith("QUESTION LOG") for v in _values(build_workbook(wp)["Review Log"]))
+
+
+def test_question_log_alone_is_listed_with_no_decisions():
+    log = [_qlog("Q-A-4-1", "A-4", "2026-09-02T09:00:00Z", status=QuestionStatus.ANSWERED, response="")]
+    base = make_workpaper(reviews=[])
+    wp = apply_reviews(base, [], schedule=make_package(base).schedule, question_log=log)
+    ws = build_workbook(wp, question_log=log)["Review Log"]
+    values = _values(ws)
+    assert "No reviewer decisions recorded: every adjustment is UNREVIEWED." in values
+    head = _row_of(ws, "QUESTION LOG: 1 entry")
+    assert ws.cell(row=head + 2, column=8).value == "(response cleared)"
+
+
+def test_status_uses_the_reviewer_app_override_rule():
+    # Accept on a diligence-identified item carries the tool's proposal: the app calls that agreement.
+    accept = ReviewDecision(adj_id="D-1", reviewer="k.osei", timestamp="2026-09-02T10:00:00Z",
+                            treatment=Treatment.ACCEPT, amounts=_pm(0, 18400, 0), rationale="",
+                            tool_treatment=Treatment.REVISE, tool_amounts=_pm(0, 18400, 0))
+    wb = build_workbook(make_workpaper(reviews=[accept], diligence=True))
+    ws = wb[SHEET_SUMMARY]
+    d1 = _find_row(ws, 1, lambda v: v == "D-1")
+    assert ws.cell(row=d1, column=_col_by_header(ws, "Status")).value == "AGREED"
+
+
+def test_claim_membership_prefers_claimed_in():
+    wp = make_workpaper(reviews=[])
+    ctx = _context(wp, None)
+    search = next(a for a in wp.assessments if a.adj_id == "A-2")
+    # Jul 2025 sits in FY2025 and TTM Jun-26; without claimed_in it is inferred into both.
+    assert _claimed_periods(ctx, search, search.gl_links)["GL-R1603"] == ["FY2025", "TTM Jun-26"]
+    links = [lk.model_copy(update={"claimed_in": ["FY2025"]}) if lk.entry_id == "GL-R1603" else lk
+             for lk in search.gl_links]
+    assert _claimed_periods(ctx, search, links)["GL-R1603"] == ["FY2025"]
+    # claimed_in wins over a "Claimed in" reason too.
+    links = [lk.model_copy(update={"claimed_in": ["TTM Jun-26"], "reasons": ["Claimed in FY2025"]})
+             if lk.entry_id == "GL-R1603" else lk for lk in search.gl_links]
+    assert _claimed_periods(ctx, search, links)["GL-R1603"] == ["TTM Jun-26"]
+
+
+def test_workbook_check_status_reads_the_cover(tmp_path):
+    out = export_workpaper(make_workpaper(), tmp_path)
+    # openpyxl never calculates: before a recalculation there is no status value.
+    before = workbook_check_status(out)
+    assert list(before)[0] == "Workbook checks" and set(before.values()) == {None}
+    if find_recalc_script() is None or shutil.which("soffice") is None:
+        pytest.skip("LibreOffice recalc not available")
+    result = recalc_and_check(out, timeout=120)
+    assert result.get("status") == "success", result
+    after = workbook_check_status(out)
+    assert after["Workbook checks"] == "OK"
+    assert set(after) == set(before) and all(v is not None for v in after.values())
+

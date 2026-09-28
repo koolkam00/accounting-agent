@@ -10,7 +10,10 @@ Management's reported EBITDA and adjustments are shown as claimed; the
 diligence rows first reverse any unsupported reporting difference back to the
 GL, then revise each management adjustment to its final amount (or reverse it
 entirely while it is pending information), and finally add the items diligence
-identified itself (SPEC §5.7), such as reversing a duplicate posting.
+identified itself (SPEC §5.7), such as reversing a duplicate posting. A reporting
+difference the evidence supports (a top-side accrual the GL books later, a month the
+GL export dropped) is one of those items: ``dil_recon`` still reverses the whole
+difference, and the item puts the supported part back as its own visible line.
 """
 
 from __future__ import annotations
