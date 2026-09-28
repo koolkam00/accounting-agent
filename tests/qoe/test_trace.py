@@ -403,3 +403,64 @@ def test_documents_link_by_support_ref_and_doc_number_and_count_as_documented():
     gl_links = {x.entry_id: x for x in t.gl_links()}
     assert "3.2 Pinecrest invoice PS-101.txt" in gl_links[inv[0]].doc_ids
     assert any("Doc # PS-101 appears in" in r for r in gl_links[inv[0]].reasons)
+
+
+# ---------------------------------------------------------------------------
+# Behaviours added for real-deal robustness
+# ---------------------------------------------------------------------------
+
+
+def test_keywords_match_stems_but_do_not_restate_the_party():
+    from qoe.trace import keyword_hits
+
+    tokens = frozenset("office payroll dispatch fte".split())
+    assert keyword_hits(["dispatcher"], "office payroll dispatch fte", tokens) == ["dispatcher"]
+    memo = frozenset("hollis crane litigation".split())
+    assert keyword_hits(["hollis", "litigation"], "hollis crane litigation", memo, party=frozenset({"hollis", "crane"})) == ["litigation"]
+
+
+def test_claim_matching_activity_booked_in_another_period_is_not_forced_onto_unrelated_entries():
+    gl = GL()
+    moves = [
+        gl.add("2025-02-10", "6300", 12000, "Swift Movers", "Office relocation - moving", "SM-7"),
+        gl.add("2025-03-22", "6300", 8000, "Keel Build-Out", "Office relocation - build-out", "KB-3"),
+    ]
+    rent = gl.monthly("2025-07", "2026-06", "6300", 9000, "Swift Movers", "Storage relocation fee")
+    pkg = package(gl, [claim("A-1", "Relocation", [0, 20000, 20000], ["6300"])])
+    t = trace_one(pkg, intent("A-1", counterparties=["Swift Movers", "Keel Build-Out"]))
+    fit = t.fits["TTM Jun-26"]
+    assert fit.method == "elsewhere" and t.claimed["TTM Jun-26"] == []
+    assert fit.elsewhere == moves
+    assert all(r in t.links and not t.links[r].context for r in rent)  # still linked, as context
+
+
+def test_normalization_claims_only_the_named_accounts():
+    gl = GL()
+    comp = gl.monthly("2025-01", "2025-12", "6400", 25000, "J. Varga", "Officer payroll - J. Varga")
+    dues = gl.monthly("2025-01", "2025-12", "6300", 500, "Harbor Point Yacht Club", "Club dues - J. Varga compensation")
+    pkg = package(gl, [claim("A-1", "Owner comp", [0, 100000, 0], ["6400"], category=AdjustmentCategory.NORMALIZATION)])
+    t = trace_one(pkg, intent("A-1", counterparties=["J. Varga"], keywords=["compensation"], is_normalization=True))
+    assert all(d in t.links for d in dues)  # linked (party + keyword) but not actual cost of the named account
+    assert t.claimed["FY2025"] == comp and t.traced("FY2025") == Decimal("300000")
+
+
+def test_pro_forma_without_accounts_links_the_cost_base_on_keywords():
+    gl = GL()
+    staff = gl.monthly("2025-07", "2026-06", "6300", 5000, "", "Office payroll - Dispatch team")
+    pkg = package(gl, [claim("A-1", "Dispatch savings", [0, 0, 60000], [], category=AdjustmentCategory.PRO_FORMA)])
+    t = trace_one(pkg, intent("A-1", keywords=["dispatcher"], is_pro_forma=True))
+    assert t.claimed["TTM Jun-26"] == staff
+    # The same keywords do not link an adjustment that names accounts.
+    pkg2 = package(gl, [claim("A-1", "Dispatch savings", [0, 0, 60000], ["6400"], category=AdjustmentCategory.PRO_FORMA)])
+    assert not trace_one(pkg2, intent("A-1", keywords=["dispatcher"], is_pro_forma=True)).links
+
+
+def test_correspondence_citing_a_claimed_invoice_number_is_linked_to_it():
+    gl = GL()
+    e = gl.add("2025-03-05", "6300", 8000, "Nimbus Cloud Systems", "ERP managed services", "NCS-2503")
+    texts = {"6.2 Controller email.txt": "The March invoice (NCS-2503) came in at the usual amount; it is our subscription."}
+    pkg = package(gl, [claim("A-1", "ERP", [0, 8000, 0], ["6300"])], [doc(k, v) for k, v in texts.items()])
+    t = trace_one(pkg, intent("A-1", counterparties=["Nimbus Cloud Systems"]))
+    (link,) = t.doc_link_models()
+    assert link.doc_id == "6.2 Controller email.txt" and link.entry_ids == [e] and link.relation == "other"
+    assert t.doc_links["6.2 Controller email.txt"].entry_basis[e] == "mention"

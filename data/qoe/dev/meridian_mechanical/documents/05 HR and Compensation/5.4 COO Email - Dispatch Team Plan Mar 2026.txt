@@ -1,0 +1,16 @@
+From: Marcus Delgado <mdelgado@meridianmech.example>
+To: Richard Castellano <rcastellano@meridianmech.example>
+Cc: Priya Raman <praman@meridianmech.example>
+Date: Tue, 17 Mar 2026 08:12:44 -0400
+Subject: Dispatch staffing after auto-dispatch go-live
+
+Rick,
+
+Quick update for the buyer model. Brightline says FieldPro auto-dispatch should be ready for a pilot in June. Assuming the pilot goes well, we plan to reduce the dispatch team by three FTEs once FieldPro auto-dispatch is live — targeting Q3 2026. That is about $165K a year in wages before taxes and benefits.
+
+We haven't said anything to the team yet and I don't want to until the pilot is done. Nothing has been decided on severance or on whether we keep one of them on as a scheduler for the install crews.
+
+Marcus
+
+--
+SYNTHETIC — generated for QoE Evidence Review testing

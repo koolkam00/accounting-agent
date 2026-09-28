@@ -1,0 +1,23 @@
+From: Priya Raman <praman@meridianmech.example>
+To: Richard Castellano <rcastellano@meridianmech.example>
+Cc: Marcus Delgado <mdelgado@meridianmech.example>
+Date: Tue, 11 Mar 2025 16:05:31 -0400
+Subject: RE: Brightline invoice coding
+
+Rick,
+
+Brightline's March invoice (BSG-2503) came in at $8,000, same as January and February. I'm coding our FieldPro subscription to 6300 Software & IT Services every month, the same way we coded the old DispatchWorks license. The fee covers licensing, hosting and support for the full 36-month term, so there is nothing to capitalize and nothing that drops off after go-live.
+
+Let me know if you want it presented differently in the lender reporting package.
+
+Priya
+
+-----Original Message-----
+From: Richard Castellano
+Sent: Tuesday, March 11, 2025 2:47 PM
+Subject: Brightline invoice coding
+
+Priya - where are we booking the Brightline charges?
+
+--
+SYNTHETIC — generated for QoE Evidence Review testing

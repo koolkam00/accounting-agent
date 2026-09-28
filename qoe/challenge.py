@@ -279,7 +279,7 @@ def _doc_relates_to_entry(t: AdjustmentTrace, doc_id: str, entry_id: str) -> boo
         return True
     if any(d == doc_id for d, _ in idx.docs_with_amount(info.amount)):
         return True
-    # The memo and the document name the same event ("AHR Expo", "Dixon-Reeve plant visit").
+    # The memo and the document name the same event ("AHR Expo", "supplier plant visit").
     facts = idx.facts.get(doc_id)
     doc_words = idx.doc_text_tokens.get(doc_id, frozenset()) | frozenset(
         norm_text(f"{doc_id} {facts.title if facts else ''}").split()
@@ -372,6 +372,7 @@ def run_challenges(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
     recurring_pattern(t)
     out_of_period(t)
     offsetting_recovery(t, ctx)
+    counterparty_history(t)
     period_mismatch(t)
     sign_error(t)
     duplicate_entries(t)
@@ -960,6 +961,12 @@ def offsetting_recovery(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
             t.effects.append(Effect(lbl, info.amount, FlagCode.OFFSETTING_RECOVERY, eid))
         t.add_context_link(eid, score, "Offsetting recovery: " + "; ".join(reasons))
         quotes: list[EvidenceQuote] = []
+        # The claim / settlement letter behind the recovery: any document stating the reference the memo cites.
+        for n in sorted(info.refs):
+            for d in idx.docs_by_ref.get(n, []) + idx.docs_by_text_ref.get(n, []):
+                if d not in docs:
+                    docs.append(d)
+        docs = sorted(docs)
         for d in docs:
             t.associate(d, eid, "recovery", 0.0, "")
             t.doc_links[d].relation = "recovery"
@@ -986,6 +993,52 @@ def offsetting_recovery(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
                 quotes=quotes[:1],
             )
         )
+
+
+# How far back to look for the other side of a claimed relationship (the billings behind a bad debt).
+COUNTERPARTY_LOOKBACK_MONTHS = 12
+
+
+def counterparty_history(t: AdjustmentTrace) -> None:
+    """Surface earlier opposite-sign activity with a claimed entry's party (the invoices behind a
+    written-off receivable, a vendor's credits). Context only; a fact when it ties to the claim."""
+    idx = t.index
+    claimed = [e for e in t.in_play_ids() if idx.by_id[e].cp_tokens]
+    by_party: dict[str, list[str]] = {}
+    for e in claimed:
+        by_party.setdefault(" ".join(sorted(idx.by_id[e].cp_tokens)), []).append(e)
+    for ids in by_party.values():
+        first = idx.by_id[ids[0]]
+        total = sum((t.amount(e) for e in ids), ZERO)
+        if total == 0:
+            continue
+        lo = add_months(min(idx.by_id[e].month for e in ids), -COUNTERPARTY_LOOKBACK_MONTHS)
+        hi = max(idx.by_id[e].month for e in ids)
+        own = set(t.claimed_ids())
+        history = [
+            info
+            for info in idx.entries
+            if info.entry_id not in own
+            and lo <= info.month <= hi
+            and (info.amount > 0) != (total > 0)
+            and info.amount != 0
+            and names_match(info.cp_tokens, first.cp_tokens)
+        ]
+        if not history:
+            continue
+        who = first.entry.counterparty
+        for info in history:
+            t.add_context_link(info.entry_id, 0.0, f"Earlier activity with {who} (opposite sign to the claim)")
+        pick = find_subset([cents(abs(i.amount)) for i in history], cents(abs(total)), cents(idx.tolerance))
+        if pick is not None:
+            tied = [history[i].entry_id for i in pick]
+            t.add_fact(
+                Fact(
+                    text=f"The {money(abs(total))} claimed for {who} ties to {len(tied)} earlier "
+                    f"entr{'y' if len(tied) == 1 else 'ies'}: {t.describe_many(tied)}.",
+                    entry_ids=tied + ids,
+                )
+            )
 
 
 def period_mismatch(t: AdjustmentTrace) -> None:
@@ -1238,7 +1291,8 @@ def pro_forma(t: AdjustmentTrace) -> None:
         return
     last = idx.data_end
     reasons: list[str] = []
-    continuing = [e for e in t.candidates if idx.by_id[e].month >= last]
+    base = t.in_play_ids() or t.candidates
+    continuing = [e for e in base if idx.by_id[e].month >= last]
     if continuing:
         reasons.append(f"the GL shows the cost continuing through {month_label(last)} ({t.describe_groups(continuing, 2)})")
     executed = [

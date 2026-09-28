@@ -2297,7 +2297,7 @@ schedule:
       category: Owner / discretionary
       description: "Personal expenses of the owner's family run through the Company: country club dues, spouse's vehicle lease and owner travel. These will cease at close."
       accounts: 6600, 6650, 6700
-      support: DR 3.5; DR 3.6; DR 3.1-3.4
+      support: DR 3
       amounts: {FY2024: 0, FY2025: 48000, TTM Jun-26: 48000}
       claim_keys: [club_dues_*, x5_lease_*, owner_travel_*]
       claim_periods: [FY2025, TTM Jun-26]

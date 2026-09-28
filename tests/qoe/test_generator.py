@@ -524,9 +524,35 @@ def test_meridian_truth_matches_catalog(meridian_truth):
         a = got[adj_id]
         assert a.treatment == Treatment(treatment), adj_id
         assert a.amounts == ({} if amounts is None else {l: f"{v}.00" for l, v in zip(LABELS, amounts)}), adj_id
-        assert a.rationale and a.supporting_docs, adj_id
+        assert a.rationale and a.supporting_docs and a.question_topics and a.case_type, adj_id
     assert {f.value for f in got["M-06"].expected_flags} == {"CONTRADICTORY_EVIDENCE", "CONTINUING_OBLIGATION", "RECURRING_PATTERN"}
-    assert got["M-14"].ambiguity == "medium"
+    assert {a for a, e in got.items() if e.ambiguity == "medium"} == {"M-02", "M-09", "M-12", "M-14"}
+    for adj_id, flags in {"M-03": ["RECURRING_PATTERN"], "M-04": ["CONTINUING_OBLIGATION", "RECURRING_PATTERN"],
+                          "M-05": ["RECURRING_PATTERN"], "M-08": ["CONTINUING_OBLIGATION"], "M-14": ["RECURRING_PATTERN"]}.items():
+        assert "Must not fire" in got[adj_id].reviewer_note and all(f in got[adj_id].reviewer_note for f in flags), adj_id
+    # §10.1: the M-03 expense reports are related evidence, not support
+    assert got["M-03"].supporting_docs == ["3.5 Pelican Bay Country Club Member Statement Dec 2025.pdf",
+                                           "3.6 BMW Financial Services Lease Statement X5 Dec 2025.pdf"]
+    (d1,) = meridian_truth.diligence_items
+    assert d1.adj_id == "D-1" and d1.treatment == Treatment.REVISE
+    assert d1.amounts == {"FY2024": "0.00", "FY2025": "18400.00", "TTM Jun-26": "0.00"}
+
+
+@meridian_only
+def test_meridian_expected_totals(meridian_truth):
+    def total(items, pending=False):
+        out = {l: ZERO for l in LABELS}
+        for a in items:
+            if (a.treatment == Treatment.REQUEST_INFO) == pending and a.amounts:
+                for l in LABELS:
+                    out[l] += D(a.amounts[l])
+        return [out[l] for l in LABELS]
+
+    assert [sum((Decimal(c[i]) for c in CLAIMS.values()), ZERO) for i in range(3)] == [418000, 1004000, 1034500]
+    assert total(meridian_truth.adjustments) == [16000, 335700, 244200]
+    assert total(meridian_truth.diligence_items) == [0, 18400, 0]
+    pending = [sum((Decimal(CLAIMS[a][i]) for a in ("M-02", "M-12")), ZERO) for i in range(3)]
+    assert pending == [360000, 360000, 525000]
 
 
 @meridian_only
@@ -534,7 +560,7 @@ def test_meridian_truth_amounts_tie_to_gl_rows(meridian, meridian_rows, meridian
     """Truth amounts are pure pass-throughs of the supporting GL rows, except for
     documented effects: recoveries (M-09 insurance gain) and out-of-period moves (M-10)."""
     with_effects = set()
-    for a in meridian_truth.adjustments:
+    for a in [*meridian_truth.adjustments, *meridian_truth.diligence_items]:
         support = [meridian_rows[n] for n in a.supporting_gl_rows]
         assert len(support) == len(a.supporting_gl_rows) and not set(a.supporting_gl_rows) & set(a.related_gl_rows)
         if a.treatment == Treatment.REQUEST_INFO:
@@ -581,7 +607,8 @@ def test_meridian_reported_ebitda_is_25k_below_gl(meridian, meridian_rows, merid
     sched = read_schedule(deal / "adjustments" / "management_adjusted_ebitda.xlsx", LABELS)
     gap = {l: sched["reported ebitda"][l] - D(meridian_truth.gl_ebitda[l]) for l in LABELS}
     assert gap == {"FY2024": 0, "FY2025": Decimal("-25000"), "TTM Jun-26": Decimal("-25000")}
-    finals = {l: sum((D(a.amounts[l]) for a in meridian_truth.adjustments if a.amounts), ZERO) for l in LABELS}
+    items = [*meridian_truth.adjustments, *meridian_truth.diligence_items]
+    finals = {l: sum((D(a.amounts[l]) for a in items if a.amounts), ZERO) for l in LABELS}
     for l in LABELS:
         assert D(meridian_truth.diligence_adjusted_ebitda[l]) == D(meridian_truth.gl_ebitda[l]) + finals[l]
 
@@ -603,8 +630,27 @@ def test_meridian_planted_duplicate(meridian_rows, meridian_truth):
     first, second = (meridian_rows[n] for n in dq[0].gl_rows)
     assert (first.account, first.amount, first.num, first.counterparty) == (second.account, second.amount, second.num, second.counterparty)
     assert (second.day - first.day).days == 3 and first.counterparty == "Coastal Risk Insurance"
+    assert first.num == "CRI-25-0507" and first.amount == Decimal("18400.00")
     codes = {d.code.value for d in meridian_truth.data_quality}
     assert codes == {"DUPLICATE_GL_ENTRY", "RECON_VARIANCE", "MGMT_EBITDA_DIFFERS_FROM_GL"}
+    (d1,) = meridian_truth.diligence_items
+    assert d1.supporting_gl_rows == [dq[0].gl_rows[1]] and d1.related_gl_rows == [dq[0].gl_rows[0]]
+
+
+@meridian_only
+def test_meridian_generator_constraints(meridian_rows):
+    """SPEC §10.1: no activity in 8050/8200/9000, 8000 holds only the M-09 proceeds,
+    no bonus payments, a single Apex row, dispatch payroll of $13,750 a month."""
+    accounts = {r.account for r in meridian_rows.values()}
+    assert not accounts & {"8050", "8200", "9000"}
+    other_income = [r for r in meridian_rows.values() if r.account == "8000"]
+    assert [(r.counterparty, r.amount) for r in other_income] == [("Sunshine Mutual Insurance", Decimal("-40000.00"))]
+    assert not [r for r in meridian_rows.values() if r.account in ("6000", "6010") and "bonus" in r.memo.lower()]
+    assert len([r for r in meridian_rows.values() if "Apex" in r.counterparty]) == 1
+    dispatch = [r for r in meridian_rows.values() if r.memo == "Payroll – Dispatch"]
+    assert len(dispatch) == 30 and {r.amount for r in dispatch} == {Decimal("13750.00")} and {r.account for r in dispatch} == {"6000"}
+    halvorsen_bad_debt = [r for r in meridian_rows.values() if r.account == "6950" and "Halvorsen" in r.memo]
+    assert len(halvorsen_bad_debt) == 1
 
 
 @meridian_only

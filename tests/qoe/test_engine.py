@@ -272,6 +272,31 @@ def test_same_inputs_give_byte_identical_workpapers(tmp_path, workpaper):
     assert load_workpaper(a) == workpaper
 
 
+_CROSS_PROCESS = """
+import hashlib, sys
+sys.path.insert(0, {tests!r})
+from test_engine import FakeAI, RUN, build_package, gl_recon
+from qoe.engine import review_package, workpaper_json
+pkg = build_package()
+print(hashlib.sha256(workpaper_json(review_package(pkg, FakeAI(), gl_recon(pkg), **RUN)).encode()).hexdigest())
+"""
+
+
+def test_workpaper_bytes_do_not_depend_on_hash_seed(workpaper):
+    """Set iteration order varies between processes; nothing in the output may depend on it."""
+    import hashlib
+    import os
+    import subprocess
+
+    from qoe.engine import workpaper_json
+
+    code = _CROSS_PROCESS.format(tests=str(Path(__file__).parent))
+    env = {**os.environ, "PYTHONHASHSEED": "4242"}
+    out = subprocess.run([sys.executable, "-c", code], cwd=REPO, env=env, capture_output=True, text=True, timeout=60)
+    assert out.returncode == 0, out.stderr
+    assert out.stdout.strip() == hashlib.sha256(workpaper_json(workpaper).encode()).hexdigest()
+
+
 def test_default_run_id_is_content_addressed():
     pkg = build_package()
     assert default_run_id(pkg, "rules") == default_run_id(build_package(), "rules")

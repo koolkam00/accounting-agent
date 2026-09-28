@@ -94,7 +94,7 @@ DW_ENTRY_NAMED = 1.0  # a cited document's text names the entry's counterparty
 DOC_LINK_THRESHOLD = 2.5
 
 # Token overlap needed for two counterparty names to match, measured against
-# the shorter name ("Hollis & Crane" vs "Hollis & Crane LLP" = 1.0).
+# the shorter name ("Marlow & Finch" vs "Marlow & Finch LLP" = 1.0).
 NAME_OVERLAP_MIN = 0.6
 
 AGREEMENT_DOC_TYPES = frozenset(
@@ -121,7 +121,7 @@ _YEAR = re.compile(r"^(?:19|20)\d\d$")
 _INDEX_REF = re.compile(
     r"^\s*(?:dr|data\s*room|vdr|tab|folder|section|ref|index)?\s*[#:]?\s*(\d+(?:\.\d+)*)\s*$", re.IGNORECASE
 )
-# A document reference written into a memo ("Matter 2291", "claim FL-24-88172").
+# A document reference written into a memo ("Matter 7710", "claim AM-77-X").
 _MEMO_REF = re.compile(
     r"\b(matter|contract|agreement|project|claim|case|policy|job|po|sow|engagement|work order)"
     r"\s*(?:no\.?|number|#)?\s*[:#]?\s*([A-Za-z]{0,4}-?\d[A-Za-z0-9\-]*)",
@@ -181,7 +181,7 @@ def name_in_text(name: frozenset[str], text_tokens: frozenset[str]) -> bool:
 
 
 def name_mentioned(name: frozenset[str], text_tokens: frozenset[str]) -> bool:
-    """Most of a party's distinctive name appears in the text ('Dixon-Reeve plant visit' names 'Dixon-Reeve Air Systems')."""
+    """Most of a party's distinctive name appears in the text ('Ridgeway plant visit' names 'Ridgeway Air Systems')."""
     distinctive = name - _GENERIC_NAME_TOKENS
     if not distinctive:
         return False
@@ -225,6 +225,19 @@ def theme_similarity(a: Sequence[str], b: Sequence[str]) -> float:
     return len(sa & sb) / len(sa | sb)
 
 
+_SUFFIXES = ("ations", "ation", "ings", "ing", "ers", "er", "ies", "es", "ed", "s")
+# Short stems match too much: five letters keeps "dispatch" and "repair" but not "rent" or "fee".
+_MIN_STEM = 5
+
+
+def stem(word: str) -> str:
+    """Crude suffix stripping so 'dispatcher' meets 'dispatch' and 'repairs' meets 'repair'."""
+    for suffix in _SUFFIXES:
+        if word.endswith(suffix) and len(word) - len(suffix) >= 4:
+            return word[: -len(suffix)]
+    return word
+
+
 def keyword_list(keywords: Iterable[str]) -> list[str]:
     out: list[str] = []
     for kw in keywords:
@@ -249,6 +262,8 @@ def keyword_hits(
             ok = f" {kw} " in padded
         else:
             ok = kw in tokens or (len(kw) >= 4 and any(t.startswith(kw) for t in tokens))
+            if not ok and len(stem(kw)) >= _MIN_STEM:
+                ok = any(stem(t) == stem(kw) for t in tokens)
         if ok:
             hits.append(kw)
     return hits
@@ -308,7 +323,7 @@ class EntryInfo:
     refs: frozenset[str]  # reference-like tokens in the memo
     doc_number: str  # normalized doc number
     theme: tuple[str, ...]
-    memo_ref: str  # "Matter 2291" when the memo names a document reference
+    memo_ref: str  # "Matter 7710" when the memo names a document reference
     memo_ref_norm: str
 
     @property
@@ -334,6 +349,7 @@ class DealIndex:
     doc_text_tokens: dict[str, frozenset[str]]
     doc_amounts: list[tuple[int, str, Decimal]]  # (cents, doc_id, amount), sorted
     doc_entries: dict[str, frozenset[str]]  # doc_id -> entries whose doc number the document states
+    docs_by_text_ref: dict[str, list[str]]  # reference-like token in a document's text -> doc ids
     label_months: dict[str, frozenset[str]]
     duplicate_groups: dict[str, list[str]]
     _amount_keys: list[int] = field(default_factory=list, repr=False)
@@ -433,6 +449,11 @@ def build_index(
                     hits.add(info.entry_id)
         doc_entries[doc_id] = frozenset(hits)
 
+    docs_by_text_ref: dict[str, list[str]] = {}
+    for doc_id in sorted(docs):
+        for r in sorted(ref_tokens(docs[doc_id].full_text)):
+            docs_by_text_ref.setdefault(r, []).append(doc_id)
+
     duplicates: dict[str, list[str]] = {}
     if recon is not None:
         for issue in recon.issues:
@@ -457,6 +478,7 @@ def build_index(
         doc_text_tokens={d: frozenset(norm_text(docs[d].full_text).split()) for d in docs},
         doc_amounts=doc_amounts,
         doc_entries=doc_entries,
+        docs_by_text_ref=docs_by_text_ref,
         label_months={p.label: frozenset(months_in(p)) for p in meta.periods},
         duplicate_groups=duplicates,
     )
@@ -489,7 +511,8 @@ class DocLinkInfo:
 
 
 # Association bases that tie a document to a specific entry (not just its party name).
-_SPECIFIC_BASES = frozenset({"number", "amount", "amount_multi", "group", "reference"})
+_SPECIFIC_BASES = frozenset({"number", "amount", "amount_multi", "group", "reference", "mention"})
+_MIN_CITED_NUMBER = 5
 # Bases that pin a document to one entry: only these may carry a service period onto it.
 ENTRY_SPECIFIC_BASES = frozenset({"number", "amount", "group"})
 
@@ -725,7 +748,7 @@ class AdjustmentTrace:
     # -- descriptions (for flag messages and questions) --------------------
 
     def describe(self, entry_id: str) -> str:
-        """'Bill 25-0910 (Hollis & Crane LLP, Sep 2025, 21,000; memo cites Matter 2291)'."""
+        """'Bill MF-7710-09 (Marlow & Finch LLP, Sep 2025, 8,000; memo cites Matter 7710)'."""
         info = self.index.by_id.get(entry_id)
         if info is None:
             return entry_id
@@ -740,7 +763,7 @@ class AdjustmentTrace:
         return text + (f"; and {len(ids) - limit} more" if len(ids) > limit else "")
 
     def describe_groups(self, entry_ids: Iterable[str], limit: int = 3) -> str:
-        """'Hollis & Crane LLP · Matter 1004 (19 entries, Jan 2025–Jun 2026, 35,500)'."""
+        """'Marlow & Finch LLP · Matter 3002 (18 entries, Jan 2025–Jun 2026, 22,000)'."""
         by_group: dict[str, list[str]] = {}
         for e in self.index.sort_ids(entry_ids):
             by_group.setdefault(self.group_of.get(e) or _group_display(self.index.by_id[e]), []).append(e)
@@ -860,23 +883,29 @@ _DISPLAY_SEP = re.compile(r"\s*[-–—:|,/]+\s*(?=[-–—:|,/]|$)|^\s*[-–—
 
 def memo_display(memo: str) -> str:
     """The memo as written, without dates, amounts, and invoice numbers: 'Club dues - J. Varga'."""
-    kept = []
+    kept: list[str] = []
+    reopen = False
     for tok in (memo or "").split():
         bare = tok.strip("()[]{}.,;:#").lower()
         if any(c.isdigit() for c in tok) or bare in _MONTH_WORDS:
+            # Keep the bracket a dropped "(3" opened, so "(3 FTE)" reads "(FTE)".
+            reopen = reopen or (tok.startswith("(") and not tok.endswith(")"))
             continue
+        if reopen:
+            tok, reopen = "(" + tok, False
         kept.append(tok)
     text = " ".join(kept)
     for _ in range(3):
         text = _DISPLAY_SEP.sub("", text).strip()
-    text = text.replace("()", "").strip()
     if text.count("(") > text.count(")"):
         text += ")"
-    return text
+    # A bracket left holding only a filler word ("(inv 25-0212)" -> "(inv)") says nothing.
+    return re.sub(r"\s*\((?:inv|invoice|ref|no|#|pmt|payment)?\.?\)", "", text, flags=re.IGNORECASE).strip()
 
 
 def _group_display(info: EntryInfo, ref_display: str = "") -> str:
-    who = info.entry.counterparty.strip() or "No counterparty"
+    # Journal entries often have no party; the account says more than "no counterparty".
+    who = info.entry.counterparty.strip() or f"{info.entry.account} {info.entry.account_name}"
     what = ref_display or memo_display(info.entry.memo) or info.entry.account_name
     return f"{who} · {what}"
 
@@ -1208,8 +1237,16 @@ def _fit_one(t: AdjustmentTrace, label: str, cands: list[str]) -> None:
     vals = {e: s * cents(t.amount(e)) for e in cands}
     linked_total = sum((t.amount(e) for e in cands), ZERO)
     fit = PeriodFit(label, claim, linked_total, "all")
+    if sum(vals.values()) < target - tol and any(v < 0 for v in vals.values()) and any(v > 0 for v in vals.values()):
+        # The claim already exceeds the net activity, so an entry running against it (an
+        # insurance credit linked by the claim number) cannot be part of it; it stays context.
+        # A claim made only of such entries is kept whole: that is a sign error to flag.
+        cands = [e for e in cands if vals[e] > 0]
+        vals = {e: vals[e] for e in cands}
     chosen = list(cands)
-    if sum(vals.values()) > target + tol:
+    if abs(sum(vals.values()) - target) <= tol:
+        pass
+    elif sum(vals.values()) > target + tol:
         already = set(t.claimed_ids())
 
         def units(e: str) -> int:
@@ -1293,6 +1330,13 @@ def _associate_documents(t: AdjustmentTrace) -> None:
             dcp = idx.doc_cp[doc_id]
             if names_match(dcp, info.cp_tokens) or (not info.cp_tokens and doc_id in support_docs):
                 amount_hits.setdefault(doc_id, []).append(e)
+    # Correspondence that cites a claimed entry's doc number discusses that entry. Short
+    # numbers ("1001") also occur in addresses, so only distinctive ones count.
+    for e in claimed:
+        info = idx.by_id[e]
+        if len(info.doc_number) >= _MIN_CITED_NUMBER or (info.doc_number[:1].isalpha() and len(info.doc_number) >= 4):
+            for doc_id in idx.docs_by_text_ref.get(info.doc_number, []):
+                t.associate(doc_id, e, "mention", DW_ENTRY_NUMBER, f"Mentions doc # {info.entry.doc_number}")
     # One matching entry pins the document to it; a monthly fee matching many entries only supports them.
     for doc_id, hits in amount_hits.items():
         basis = "amount" if len(hits) == 1 else "amount_multi"
@@ -1444,9 +1488,14 @@ def trace_adjustment(
     _prelink_documents(t)
     ctx = _link_context(t)
     t.search_terms = _describe_search(t, ctx)
+    threshold = LINK_THRESHOLD
+    if t.is_pro_forma and not adj.gl_accounts:
+        # A savings claim names positions or contracts, not accounts, so it cannot earn the
+        # account signal; the bar drops by exactly that weight.
+        threshold -= W_ACCOUNT
     for info in index.entries:
         score, reasons = _score_entry(info, ctx, index)
-        if score >= LINK_THRESHOLD:
+        if score >= threshold:
             t.links[info.entry_id] = LinkInfo(entry_id=info.entry_id, score=round(score, 2), reasons=reasons)
             t.candidates.append(info.entry_id)
     _assign_groups(t, ctx)

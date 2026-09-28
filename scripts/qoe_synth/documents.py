@@ -182,13 +182,16 @@ def letterhead(p: Party) -> list[Block]:
 
 
 def table(spec_table: dict[str, Any], keep: list[str], where: str) -> Block:
-    """columns: [{title, align, width}] left to right; the first column wraps."""
+    """columns: [{title, align, width}] left to right. The column without a width
+    takes the remaining page width and is the one that wraps."""
     columns = spec_table.get("columns") or []
     if not columns:
         raise GenerationError(f"{where}: table needs columns")
     widths = [float(c.get("width", 0)) for c in columns]
-    fixed = sum(widths[1:])
-    widths[0] = widths[0] or (WIDTH - fixed)
+    flex = next((i for i, w in enumerate(widths) if w == 0), 0)
+    widths[flex] = WIDTH - sum(w for i, w in enumerate(widths) if i != flex)
+    if widths[flex] < 60:
+        raise GenerationError(f"{where}: table columns leave {widths[flex]:.0f}pt for the flexible column")
     xs: list[tuple[float, str]] = []
     left = LEFT
     for col, w in zip(columns, widths):
@@ -201,14 +204,16 @@ def table(spec_table: dict[str, Any], keep: list[str], where: str) -> Block:
     body_rows = [list(r) for r in spec_table.get("rows", [])]
     total_row = spec_table.get("total")
     for i, raw in enumerate([*body_rows, *([total_row] if total_row else [])]):
-        is_total = total_row is not None and i == len(body_rows)
-        font = BOLD if is_total else BODY
+        if len(raw) != len(columns):
+            raise GenerationError(f"{where}: table row has {len(raw)} cells for {len(columns)} columns: {raw!r}")
+        font = BOLD if total_row is not None and i == len(body_rows) else BODY
         cells = [str(v) if v is not None else "" for v in raw]
-        first = wrap(cells[0], widths[0] - 8.0, font, size, keep)
-        rows.append(Row([Cell(xs[0][0], first[0], xs[0][1], font, size)]
-                        + [Cell(x, v, a, font, size) for (x, a), v in zip(xs[1:], cells[1:]) if v], 12.5))
-        for extra in first[1:]:
-            rows.append(Row([Cell(xs[0][0], extra, xs[0][1], font, size)], 12.5))
+        wrapped = wrap(cells[flex], widths[flex] - 8.0, font, size, keep) if cells[flex] else [""]
+        first = list(cells)
+        first[flex] = wrapped[0]
+        rows.append(Row([Cell(x, v, a, font, size) for (x, a), v in zip(xs, first) if v], 12.5))
+        for extra in wrapped[1:]:
+            rows.append(Row([Cell(xs[flex][0], extra, xs[flex][1], font, size)], 12.5))
     rows[-1].height += 8.0
     return Block(rows)
 

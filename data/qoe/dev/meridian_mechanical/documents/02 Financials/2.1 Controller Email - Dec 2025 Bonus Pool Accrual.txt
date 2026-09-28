@@ -1,0 +1,18 @@
+From: Priya Raman <praman@meridianmech.example>
+To: Richard Castellano <rcastellano@meridianmech.example>
+Cc: Laura Pike <lpike@dunmorepike.example>
+Date: Wed, 14 Jan 2026 17:22:09 -0500
+Subject: Dec-25 management P&L - proposed bonus pool accrual
+
+Rick,
+
+For the December management P&L in the Project Cobalt package I added a $25,000 top-side accrual in 6000 Salaries & Wages - Office for the proposed discretionary bonus pool we discussed in December.
+
+To be clear on status: you have not approved the pool, nothing has been communicated to employees and nothing has been paid. It will not be booked in QuickBooks unless and until you approve it, so the QuickBooks GL for December is $25,000 lower in 6000 than the management P&L.
+
+Laura - copying you so the readiness workpapers reflect this.
+
+Priya
+
+--
+SYNTHETIC — generated for QoE Evidence Review testing

@@ -73,7 +73,8 @@ def compute_proposed(t: AdjustmentTrace) -> dict[str, Decimal]:
             if level is None:
                 continue
             months = len(t.index.label_months[lbl])
-            out[lbl] = t.traced(lbl) - q2(level * months / 12)
+            # Actual cost net of entries that belong to another adjustment or sit below EBITDA.
+            out[lbl] = t.supporting_total(lbl) - q2(level * months / 12)
         return out
     out = {}
     for lbl in t.labels:

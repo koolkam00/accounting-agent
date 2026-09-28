@@ -106,7 +106,9 @@ Contents
   {SCHEDULE_REL:<46}management's adjusted EBITDA schedule
   documents/                                    data-room documents ({n_docs} files)
   ground_truth.json                             answer key: evaluation only; the review pipeline must never read it
-{spec.readme_extra.rstrip()}
+
+{spec.readme_extra.strip()}
+
 Regenerate:
   uv run python scripts/qoe_generate_deals.py --spec data/qoe/specs/{spec.deal_id}.yaml --out data/qoe/{spec.split}
 """

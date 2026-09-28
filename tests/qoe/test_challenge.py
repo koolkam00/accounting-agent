@@ -738,3 +738,114 @@ def test_management_move_into_the_service_period_is_accepted():
     assert a.proposed == amounts(-18000, 18000, 0)
     assert a.treatment == Treatment.ACCEPT
     assert FlagCode.PARTIAL_GL_SUPPORT not in codes(a) and FlagCode.PERIOD_MISMATCH not in codes(a)
+
+
+# ---------------------------------------------------------------------------
+# AI proposals are checked by code; cross-adjustment effects happen once
+# ---------------------------------------------------------------------------
+
+
+def test_ai_contradiction_scope_keeps_only_entries_the_document_is_about():
+    texts = {"3.1 Expo registration.txt": "Registration for Harbor Unit Co at AHR Expo. Business purpose: product training."}
+    facts = {"3.1 Expo registration.txt": DocFacts(
+        doc_id="3.1 Expo registration.txt", doc_type="correspondence",
+        key_statements=[q("3.1 Expo registration.txt", "Business purpose: product training.")])}
+    gl = GL()
+    expo = gl.add("2025-02-20", "6600", 4000, "Skyway Travel", "Travel - J. Varga - AHR Expo")
+    lease = gl.add("2025-02-01", "6700", 1500, "Coastal Auto Leasing", "Lease - J. Varga personal vehicle")
+    adj = claim("C-1", "Owner personal", [0, 5500, 0], ["6600", "6700"], ["DR 3"], AdjustmentCategory.OWNER_DISCRETIONARY)
+    pkg = package(gl, [adj], texts)
+    ai = FakeAI(
+        facts=facts,
+        intents={"C-1": AdjustmentIntent(adj_id="C-1", counterparties=["J. Varga"], asserts_personal=True)},
+        # The AI names both February entries; only the trip is what the registration is about.
+        contradictions={"C-1": [Contradiction(doc_id="3.1 Expo registration.txt", statement="Business travel.",
+                                              quote=q("3.1 Expo registration.txt", "Business purpose: product training."),
+                                              conflicts_with="personal expense", entry_ids=[expo, lease])]},
+    )
+    t, a = run(pkg, ai)["C-1"]
+    assert set(t.removals) == {expo}
+    assert a.proposed[FY25] == "1500.00"
+
+
+def test_a_recovery_is_netted_once_and_only_from_documents_about_the_claim():
+    gl = GL()
+    roof = gl.add("2024-10-01", "6150", 30000, "Gulfline Roofing", "Storm damage - roof", "GR-1")
+    gl.add("2024-11-01", "6150", 9000, "Gulfline Roofing", "Storm damage - gutters", "GR-2")
+    moved = gl.add("2025-02-01", "6150", 5000, "Gulfline Roofing", "Storm damage - warehouse roof patch", "GR-3")
+    proceeds = gl.add("2025-03-01", "8000", -20000, "Anchor Mutual Insurance", "Insurance proceeds - claim AM-77-X")
+    texts = {"7.1 Claim letter AM-77-X.txt": "Claim AM-77-X. Net payment of $20,000.00 for storm damage.",
+             "7.2 Gulfline invoice GR-3.txt": "Invoice GR-3. Warehouse roof patch. Claim AM-77-X."}
+    facts = {
+        "7.1 Claim letter AM-77-X.txt": DocFacts(doc_id="7.1 Claim letter AM-77-X.txt", doc_type="insurance",
+                                                 counterparty="Anchor Mutual Insurance", reference_numbers=["AM-77-X"],
+                                                 amounts=[AmountFact(label="net_payment", amount="20000",
+                                                                     quote=q("7.1 Claim letter AM-77-X.txt", "Net payment of $20,000.00"))]),
+        "7.2 Gulfline invoice GR-3.txt": DocFacts(doc_id="7.2 Gulfline invoice GR-3.txt", doc_type="invoice",
+                                                  counterparty="Gulfline Roofing", reference_numbers=["GR-3", "AM-77-X"]),
+    }
+    storm = claim("C-1", "Storm repairs", [39000, 0, 0], ["6150"], ["DR 7.1"])
+    # A second adjustment claims the Feb 2025 patch; its invoice also cites the claim number.
+    patch = claim("C-2", "Warehouse repairs", [0, 5000, 0], ["6150"])
+    pkg = package(gl, [storm, patch], texts)
+    ai = FakeAI(facts=facts, intents={
+        "C-1": AdjustmentIntent(adj_id="C-1", counterparties=["Gulfline Roofing"], keywords=["storm"]),
+        "C-2": AdjustmentIntent(adj_id="C-2", keywords=["warehouse"], reference_numbers=["GR-3"]),
+    })
+    results = run(pkg, ai)
+    t1, a1 = results["C-1"]
+    t2, a2 = results["C-2"]
+    assert roof in t1.claimed_ids() and moved in t2.claimed_ids()
+    netted = [(adj, f) for adj, (_, a) in results.items() for f in a.flags if f.code == FlagCode.OFFSETTING_RECOVERY]
+    assert len(netted) == 1 and netted[0][1].entry_ids == [proceeds]
+    assert t1.effect(FY25) == -20000 and t2.effect(FY25) == 0  # the storm claim (it cites the letter) takes it
+    assert "7.1 Claim letter AM-77-X.txt" in netted[0][1].doc_ids
+
+
+def test_items_lost_to_another_adjustment_are_not_analysed_again():
+    gl = GL()
+    lit = [gl.add(f"2025-{m:02d}-10", "6400", 10000, "Marlow & Finch LLP", "Matter 7710 litigation", f"MF-{m}") for m in (3, 6, 9)]
+    deal_fee = gl.add("2025-10-12", "6400", 22000, "Keystone Advisors", "Sell-side retainer", "KA-1")
+    texts = {"8.1 Keystone engagement.txt": "Keystone Advisors sell-side engagement. Retainer $22,000.00",
+             "2.1 Litigation invoices.txt": "Matter 7710 invoices MF-3, MF-6, MF-9 at $10,000.00 each."}
+    facts = {
+        "8.1 Keystone engagement.txt": DocFacts(doc_id="8.1 Keystone engagement.txt", doc_type="engagement_letter",
+                                                counterparty="Keystone Advisors",
+                                                amounts=[AmountFact(label="retainer", amount="22000",
+                                                                    quote=q("8.1 Keystone engagement.txt", "Retainer $22,000.00"))]),
+        "2.1 Litigation invoices.txt": DocFacts(doc_id="2.1 Litigation invoices.txt", doc_type="invoice",
+                                                counterparty="Marlow & Finch LLP", reference_numbers=["Matter 7710"]),
+    }
+    pkg = package(gl, [claim("D-1", "Litigation", [0, 30000, 10000], ["6400"]),
+                       claim("D-2", "Deal costs", [0, 32000, 32000], ["6400"])], texts)
+    ai = FakeAI(facts=facts, intents={
+        "D-1": AdjustmentIntent(adj_id="D-1", counterparties=["Marlow & Finch"], keywords=["litigation"], asserts_nonrecurring=True),
+        "D-2": AdjustmentIntent(adj_id="D-2", counterparties=["Keystone Advisors"], reference_numbers=["MF-9"], asserts_nonrecurring=True),
+    })
+    _, a2 = run(pkg, ai)["D-2"]
+    assert codes(a2) >= {FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT}
+    # The lost invoice's siblings are D-1's business, not evidence that D-2 recurs.
+    assert FlagCode.RECURRING_PATTERN not in codes(a2)
+    assert a2.proposed == amounts(0, 22000, 22000)
+    assert deal_fee in {x.entry_id for x in a2.gl_links if x.supports_claim}
+    assert lit[2] not in {x.entry_id for x in a2.gl_links if x.supports_claim}
+
+
+def test_a_write_off_is_tied_to_the_customer_billings_behind_it():
+    gl = GL()
+    bills = [gl.add("2025-06-18", "4000", -18400, "Halvorsen Builders", "Progress billing 4", "10972"),
+             gl.add("2025-07-16", "4000", -21350, "Halvorsen Builders", "Progress billing 5", "11011"),
+             gl.add("2025-08-20", "4000", -12250, "Halvorsen Builders", "Change order 2", "11059")]
+    gl.add("2025-08-21", "4000", -9999, "Other Customer", "Service revenue")
+    wo = gl.add("2025-10-31", "6150", 52000, "Halvorsen Builders", "Bad debt write-off - Chapter 7")
+    texts = {"11.1 Bankruptcy notice.txt": "Notice of Chapter 7 filing. Halvorsen Builders. Claim $52,000.00"}
+    facts = {"11.1 Bankruptcy notice.txt": DocFacts(doc_id="11.1 Bankruptcy notice.txt", doc_type="other", counterparty="Halvorsen Builders",
+                                                    amounts=[AmountFact(label="claim", amount="52000", quote=q("11.1 Bankruptcy notice.txt", "Claim $52,000.00"))])}
+    pkg = package(gl, [claim("E-1", "Customer bankruptcy", [0, 52000, 52000], ["6150"])], texts)
+    ai = FakeAI(facts=facts, intents={"E-1": AdjustmentIntent(adj_id="E-1", counterparties=["Halvorsen Builders"])})
+    t, a = run(pkg, ai)["E-1"]
+    assert a.treatment == Treatment.ACCEPT
+    tie = [f for f in a.facts if "ties to 3 earlier entries" in f.text]
+    assert tie and set(tie[0].entry_ids) == set(bills + [wo])
+    context = {x.entry_id for x in a.gl_links if not x.supports_claim}
+    assert set(bills) <= context
