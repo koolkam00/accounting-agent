@@ -1,0 +1,741 @@
+"""Tests for qoe.challenge: every §5.4 challenge on an in-memory deal, through to treatment.
+
+The deal is synthetic and unrelated to the dev deal catalog: one adjustment per
+case type, surrounded by recurring background activity so linking and fitting
+have noise to work through.
+"""
+
+from __future__ import annotations
+
+from decimal import Decimal
+from typing import Iterable, Optional
+
+import pytest
+
+from qoe.ai_base import AdjustmentIntent, Contradiction, EntryClassification
+from qoe.challenge import ChallengeContext, resolve_overlaps, run_challenges
+from qoe.money import fmt
+from qoe.periods import month_range
+from qoe.propose import propose
+from qoe.schemas import (
+    Account,
+    AdjustmentCategory,
+    AdjustmentClaim,
+    AmountFact,
+    DataQualityCode,
+    DataQualityIssue,
+    DealFiles,
+    DealMeta,
+    DealPackage,
+    DocFacts,
+    DocumentPage,
+    EbitdaClass,
+    EvidenceQuote,
+    FlagCode,
+    GLEntry,
+    ManagementPL,
+    ManagementSchedule,
+    PeriodDef,
+    ReconciliationResult,
+    Severity,
+    SourceDocument,
+    TermFact,
+    Treatment,
+)
+from qoe.trace import build_index, trace_adjustment
+
+# ---------------------------------------------------------------------------
+# In-memory fixture kit
+# ---------------------------------------------------------------------------
+
+PERIODS = [
+    PeriodDef(label="FY2024", start="2024-01", end="2024-12"),
+    PeriodDef(label="FY2025", start="2025-01", end="2025-12"),
+    PeriodDef(label="TTM Jun-26", start="2025-07", end="2026-06"),
+]
+LABELS = [p.label for p in PERIODS]
+FY24, FY25, TTM = LABELS
+ACCOUNTS = {
+    n: Account(number=n, name=name, source_type=typ, ebitda_class=cls)
+    for n, name, typ, cls in [
+        ("4000", "Service Revenue", "Income", EbitdaClass.REVENUE),
+        ("5200", "Subcontractors", "Cost of Goods Sold", EbitdaClass.COGS),
+        ("6000", "Salaries & Wages", "Expense", EbitdaClass.OPEX),
+        ("6010", "Officer Compensation", "Expense", EbitdaClass.OPEX),
+        ("6100", "Rent & Occupancy", "Expense", EbitdaClass.OPEX),
+        ("6150", "Repairs & Maintenance", "Expense", EbitdaClass.OPEX),
+        ("6300", "Software & IT", "Expense", EbitdaClass.OPEX),
+        ("6400", "Legal Fees", "Expense", EbitdaClass.OPEX),
+        ("6450", "Recruiting", "Expense", EbitdaClass.OPEX),
+        ("6600", "Travel", "Expense", EbitdaClass.OPEX),
+        ("6700", "Dues & Subscriptions", "Expense", EbitdaClass.OPEX),
+        ("8000", "Other Income", "Other Income", EbitdaClass.OTHER_INCOME),
+        ("8100", "Interest Expense", "Other Expense", EbitdaClass.INTEREST),
+    ]
+}
+
+
+class GL:
+    def __init__(self) -> None:
+        self.rows: list[GLEntry] = []
+
+    def add(self, date: str, account: str, amount: object, cp: str = "", memo: str = "", num: str = "") -> str:
+        row = len(self.rows) + 6
+        self.rows.append(
+            GLEntry(
+                entry_id=f"GL-R{row}",
+                date=date,
+                period=date[:7],
+                account=account,
+                account_name=ACCOUNTS[account].name,
+                txn_type="Bill",
+                doc_number=num,
+                counterparty=cp,
+                memo=memo,
+                amount=fmt(amount),
+                source_file="gl/general_ledger.csv",
+                source_row=row,
+            )
+        )
+        return f"GL-R{row}"
+
+    def monthly(self, start: str, end: str, account: str, amount: object, cp: str, memo: str) -> list[str]:
+        return [self.add(f"{m}-15", account, amount, cp, f"{memo} - {m}") for m in month_range(start, end)]
+
+
+def q(doc_id: str, text: str) -> EvidenceQuote:
+    return EvidenceQuote(doc_id=doc_id, page=1, quote=text)
+
+
+def claim(adj_id: str, title: str, amounts: Iterable[object], accounts: Iterable[str] = (), refs: Iterable[str] = (),
+          category: AdjustmentCategory = AdjustmentCategory.NON_RECURRING) -> AdjustmentClaim:
+    return AdjustmentClaim(
+        adj_id=adj_id,
+        title=title,
+        category=category,
+        gl_accounts=list(accounts),
+        support_refs=list(refs),
+        amounts={lbl: fmt(a) for lbl, a in zip(LABELS, amounts)},
+        source_row=10,
+    )
+
+
+def package(gl: GL, adjustments: list[AdjustmentClaim], texts: dict[str, str]) -> DealPackage:
+    meta = DealMeta(
+        deal_id="challenge_deal",
+        target_name="Harbor Unit Co (SYNTHETIC)",
+        periods=PERIODS,
+        data_start="2024-01",
+        data_end="2026-06",
+        files=DealFiles(gl="gl.csv", chart_of_accounts="coa.csv", monthly_pl="pl.xlsx", adjustments="adj.xlsx"),
+    )
+    docs = [
+        SourceDocument(doc_id=k, relpath=f"documents/{k}", media_type="txt", sha256="0" * 64, pages=[DocumentPage(page=1, text=v)])
+        for k, v in texts.items()
+    ]
+    return DealPackage(
+        deal_dir="(memory)",
+        meta=meta,
+        accounts=ACCOUNTS,
+        gl=gl.rows,
+        pl=ManagementPL(source_file="pl.xlsx", months=[], lines=[]),
+        schedule=ManagementSchedule(source_file="adj.xlsx", period_labels=LABELS, adjustments=adjustments),
+        documents=docs,
+    )
+
+
+def recon(issues: Iterable[DataQualityIssue] = ()) -> ReconciliationResult:
+    return ReconciliationResult(
+        items=[], issues=list(issues), gl_ebitda={}, mgmt_reported_ebitda={}, months_compared=0, accounts_compared=0, variance_count=0
+    )
+
+
+class FakeAI:
+    """EvidenceAI with canned outputs; anything not configured is empty."""
+
+    name = "fake"
+
+    def __init__(self, facts=None, intents=None, contradictions=None, classifications=None, questions=None):
+        self.facts: dict[str, DocFacts] = facts or {}
+        self.intents: dict[str, AdjustmentIntent] = intents or {}
+        self.contradictions: dict[str, list[Contradiction]] = contradictions or {}
+        self.classifications: dict[str, list[EntryClassification]] = classifications or {}
+        self.questions: dict[str, list[str]] = questions or {}
+
+    def extract_facts(self, doc):
+        return self.facts.get(doc.doc_id) or DocFacts(doc_id=doc.doc_id, doc_type="other")
+
+    def parse_intent(self, adj):
+        return self.intents.get(adj.adj_id) or AdjustmentIntent(adj_id=adj.adj_id)
+
+    def find_contradictions(self, adj, intent, facts, entries):
+        return list(self.contradictions.get(adj.adj_id, []))
+
+    def classify_entries(self, adj, intent, entries, facts):
+        return list(self.classifications.get(adj.adj_id, []))
+
+    def draft_questions(self, adj, flags, facts):
+        return list(self.questions.get(adj.adj_id, []))
+
+
+def run(pkg: DealPackage, ai: FakeAI, issues: Iterable[DataQualityIssue] = ()):
+    facts = [ai.extract_facts(d) for d in pkg.documents]
+    index = build_index(pkg, facts, recon(issues))
+    traces = [trace_adjustment(index, adj, ai.parse_intent(adj), order=i) for i, adj in enumerate(pkg.schedule.adjustments)]
+    resolve_overlaps(traces)
+    ctx = ChallengeContext.build(ai, traces)
+    for t in traces:
+        run_challenges(t, ctx)
+    return {t.adj.adj_id: (t, propose(t, ai)) for t in traces}
+
+
+def amounts(*values: object) -> dict[str, str]:
+    return {lbl: fmt(v) for lbl, v in zip(LABELS, values)}
+
+
+def codes(assessment) -> set[FlagCode]:
+    return {f.code for f in assessment.flags}
+
+
+def the_flag(assessment, code: FlagCode):
+    found = [f for f in assessment.flags if f.code == code]
+    assert found, f"{code} not raised on {assessment.adj_id}: {[f.code for f in assessment.flags]}"
+    return found[0]
+
+
+# ---------------------------------------------------------------------------
+# The deal: one adjustment per case type
+# ---------------------------------------------------------------------------
+
+
+def build_deal():
+    gl = GL()
+    ids: dict[str, list[str]] = {}
+    # Background activity the linker has to ignore.
+    gl.monthly("2024-01", "2026-06", "4000", -250000, "Various customers", "Service revenue")
+    gl.monthly("2024-01", "2026-06", "6000", 40000, "", "Payroll - office staff")
+    ids["dispatch"] = gl.monthly("2024-01", "2026-06", "6000", 5000, "", "Payroll - dispatch team")
+    gl.monthly("2024-01", "2026-06", "6100", 9000, "Bayfront Properties", "Warehouse rent")
+    gl.monthly("2024-01", "2026-06", "6150", 600, "Coastal HVAC Service", "Filter service")
+    gl.monthly("2024-01", "2026-06", "6450", 900, "Jobly", "Job board postings")
+    gl.monthly("2024-01", "2026-06", "6600", 700, "Skyway Travel", "Travel - technician training")
+    ids["officer"] = gl.monthly("2024-01", "2026-06", "6010", 25000, "J. Varga", "Officer payroll - J. Varga")
+    ids["interest"] = gl.monthly("2024-01", "2026-06", "8100", 2000, "Bayline Bank", "Interest - Bayline Bank term loan")
+    ids["ridgeway"] = gl.monthly("2024-01", "2026-06", "5200", 5000, "Ridgeway Ductwork LLC", "Ductwork subcontract work")
+
+    # A-01 adequate support: executive search fee in three installments.
+    ids["search"] = [
+        gl.add("2025-04-15", "6450", 10000, "Pinecrest Search Partners", "Executive search - installment 1", "PS-101"),
+        gl.add("2025-05-15", "6450", 10000, "Pinecrest Search Partners", "Executive search - installment 2", "PS-102"),
+        gl.add("2025-08-15", "6450", 10000, "Pinecrest Search Partners", "Executive search - installment 3", "PS-103"),
+    ]
+    # A-02 litigation fees mixed with a general-corporate matter that recurs.
+    ids["lit"] = [
+        gl.add("2025-03-10", "6400", 12000, "Marlow & Finch LLP", "Matter 7710 Reyes v. Harbor - litigation", "MF-7710-03"),
+        gl.add("2025-06-10", "6400", 14000, "Marlow & Finch LLP", "Matter 7710 Reyes v. Harbor - litigation", "MF-7710-06"),
+        gl.add("2025-09-10", "6400", 8000, "Marlow & Finch LLP", "Matter 7710 Reyes v. Harbor - litigation", "MF-7710-09"),
+    ]
+    ids["retainer"] = gl.monthly("2024-01", "2026-06", "6400", 1000, "Marlow & Finch LLP", "Matter 3002 general corporate retainer")
+    ids["adhoc"] = [gl.add("2025-08-20", "6400", 4000, "Marlow & Finch LLP", "Matter 3002 employment policy review", "MF-3002-AH")]
+    # A-03 owner personal expenses; two trips have a documented business purpose.
+    ids["dues"] = gl.monthly("2025-01", "2026-06", "6700", 500, "Harbor Point Yacht Club", "Club dues - J. Varga")
+    ids["expo"] = [gl.add("2025-02-20", "6600", 4000, "Skyway Travel", "Travel - J. Varga - AHR Expo")]
+    ids["vacation"] = [gl.add("2025-07-10", "6600", 8000, "Skyway Travel", "Travel - J. Varga - family vacation")]
+    ids["supplier"] = [gl.add("2025-10-05", "6600", 4000, "Skyway Travel", "Travel - J. Varga - supplier plant visit")]
+    # A-04 transaction costs; management also included litigation invoice MF-7710-09 (already in A-02).
+    ids["keystone"] = [gl.add("2025-10-12", "6400", 22000, "Keystone Advisors", "Sell-side advisory retainer", "KA-1")]
+    # A-05 refinancing costs booked to interest expense.
+    ids["refi"] = [
+        gl.add("2025-06-30", "8100", 6000, "Bayline Bank", "Write-off unamortized loan fees - Bayline Bank", "JE-601"),
+        gl.add("2025-06-30", "8100", 3000, "Bayline Bank", "Prepayment penalty - Bayline Bank", "JE-602"),
+    ]
+    # A-06 a "one-time" implementation that is a monthly subscription.
+    ids["nimbus"] = gl.monthly("2025-01", "2026-06", "6300", 3000, "Nimbus Cloud Systems", "ERP managed services")
+    # A-07 flood repairs with an unadjusted insurance recovery.
+    ids["flood"] = [
+        gl.add("2024-09-20", "6150", 15000, "Gulfline Roofing", "Flood damage - roof replacement", "GR-88"),
+        gl.add("2024-10-12", "6150", 10000, "Tidewater Restoration", "Flood damage - water extraction", "TR-12"),
+    ]
+    ids["insurance"] = [gl.add("2025-03-05", "8000", -12000, "Anchor Mutual Insurance", "Insurance proceeds - flood claim AM-2291-X")]
+    # A-08 prior-year subcontractor true-up booked in 2025.
+    ids["trueup"] = [gl.add("2025-03-18", "5200", 18000, "Ridgeway Ductwork LLC", "Project closeout true-up - 2024 projects", "RD-5501")]
+    # A-09 relocation costs all in Feb-Mar 2025, claimed in TTM as well.
+    ids["relocation"] = [
+        gl.add("2025-02-10", "6100", 12000, "Swift Movers", "Office relocation - moving services", "SM-7"),
+        gl.add("2025-03-22", "6150", 8000, "Keel Build-Out", "Office relocation - build-out", "KB-3"),
+    ]
+
+    adjustments = [
+        claim("A-01", "Executive search fee", [0, 30000, 10000], ["6450"], ["DR 1"]),
+        claim("A-02", "Reyes litigation legal fees", [0, 50000, 24000], ["6400"], ["DR 2"]),
+        claim("A-03", "Owner personal expenses", [0, 22000, 18000], ["6600", "6700"], ["DR 3"], AdjustmentCategory.OWNER_DISCRETIONARY),
+        claim("A-04", "Transaction costs", [0, 30000, 30000], ["6400"], ["DR 4"]),
+        claim("A-05", "Refinancing costs", [0, 9000, 0], ["8100"]),
+        claim("A-06", "ERP implementation (one-time)", [0, 36000, 18000], ["6300"], ["DR 6"]),
+        claim("A-07", "Flood damage repairs", [25000, 0, 0], ["6150"], ["DR 7"]),
+        claim("A-08", "Prior-year subcontractor true-up", [0, 18000, 0], ["5200"], ["DR 8"], AdjustmentCategory.OUT_OF_PERIOD),
+        claim("A-09", "Office relocation", [0, 20000, 20000], ["6100", "6150"], ["DR 9"]),
+        claim("A-10", "Pro forma dispatch savings", [0, 0, 60000], [], ["DR 10"], AdjustmentCategory.PRO_FORMA),
+        claim("A-11", "Owner compensation normalization", [100000, 100000, 100000], ["6010"], ["DR 11"], AdjustmentCategory.NORMALIZATION),
+    ]
+
+    texts = {
+        "1.1 Pinecrest engagement letter.txt": "Retained search. Fee of $30,000 payable in three installments of $10,000.",
+        "1.2 Pinecrest invoice PS-101.txt": "Invoice PS-101. Total due $10,000.00",
+        "1.3 Pinecrest invoice PS-102.txt": "Invoice PS-102. Total due $10,000.00",
+        "1.4 Pinecrest invoice PS-103.txt": "Invoice PS-103. Total due $10,000.00",
+        "2.1 Marlow Finch litigation engagement.txt": "Engagement for Matter 7710, Reyes v. Harbor. Fees billed hourly.",
+        "2.2 Marlow Finch general engagement 2023.txt": "Matter 3002. Retainer of $1,000 per month, continuing until terminated by either party.",
+        "2.3 Marlow Finch invoice MF-7710-09.txt": "Invoice MF-7710-09 for Matter 7710. Total due $8,000.00",
+        "4.1 Keystone engagement letter.txt": "Keystone Advisors sell-side engagement. Retainer of $22,000 due on signing.",
+        "3.1 AHR Expo registration.txt": "Registration confirmed for Harbor Unit Co. Attendee: J. Varga. Purpose: HVAC product training.",
+        "3.2 Supplier visit agenda.txt": "Supplier plant visit agenda for Harbor Unit Co purchasing review.",
+        "6.1 Nimbus managed services agreement.txt": (
+            "Managed Services Agreement with Nimbus Cloud Systems. Monthly fee of $3,000 per month. "
+            "This agreement renews automatically for successive terms."
+        ),
+        "6.2 Controller email.txt": "From: Controller\nSubject: ERP\nOur Nimbus subscription renews next month.",
+        "7.1 Gulfline invoice GR-88.txt": "Invoice GR-88. Flood damage roof replacement. Total due $15,000.00",
+        "7.2 Tidewater invoice TR-12.txt": "Invoice TR-12. Water extraction. Total due $10,000.00",
+        "7.3 Anchor Mutual claim letter.txt": "Claim AM-2291-X. Net payment of $12,000.00 after deductible.",
+        "8.1 Ridgeway invoice RD-5501.txt": (
+            "Invoice RD-5501. Service period: July 1, 2024 - December 31, 2024. Amount due $18,000.00"
+        ),
+        "9.1 Swift Movers invoice SM-7.txt": "Invoice SM-7. Office move. Total due $12,000.00",
+        "9.2 Keel invoice KB-3.txt": "Invoice KB-3. Office build-out. Total due $8,000.00",
+        "10.1 COO email.txt": "We plan to reduce the dispatch team by two FTEs once auto-dispatch is live - targeting Q3 2026.",
+        "11.1 Draft employment agreement.txt": "DRAFT - Employment Agreement. Base salary of $200,000 per year.",
+    }
+
+    def invoice(doc_id: str, cp: str, ref: str, amount: str) -> DocFacts:
+        return DocFacts(
+            doc_id=doc_id,
+            doc_type="invoice",
+            counterparty=cp,
+            reference_numbers=[ref],
+            amounts=[AmountFact(label="total_due", amount=amount, quote=q(doc_id, texts[doc_id].split(". ")[-1]))],
+        )
+
+    facts = {
+        "1.1 Pinecrest engagement letter.txt": DocFacts(
+            doc_id="1.1 Pinecrest engagement letter.txt",
+            doc_type="engagement_letter",
+            counterparty="Pinecrest Search Partners",
+            is_signed=True,
+            amounts=[AmountFact(label="total_fee", amount="30000", quote=q("1.1 Pinecrest engagement letter.txt", "Fee of $30,000"))],
+            # Worded like a monthly fee but finite: must not read as a continuing obligation.
+            terms=[TermFact(kind="monthly_fee", text="$10,000 in three installments",
+                            quote=q("1.1 Pinecrest engagement letter.txt", "payable in three installments of $10,000"))],
+        ),
+        "1.2 Pinecrest invoice PS-101.txt": invoice("1.2 Pinecrest invoice PS-101.txt", "Pinecrest Search Partners", "PS-101", "10000"),
+        "1.3 Pinecrest invoice PS-102.txt": invoice("1.3 Pinecrest invoice PS-102.txt", "Pinecrest Search Partners", "PS-102", "10000"),
+        "1.4 Pinecrest invoice PS-103.txt": invoice("1.4 Pinecrest invoice PS-103.txt", "Pinecrest Search Partners", "PS-103", "10000"),
+        "2.1 Marlow Finch litigation engagement.txt": DocFacts(
+            doc_id="2.1 Marlow Finch litigation engagement.txt",
+            doc_type="engagement_letter",
+            counterparty="Marlow & Finch LLP",
+            reference_numbers=["Matter 7710"],
+            is_signed=True,
+            # A retainer term without periodic language must not cover the litigation matter.
+            terms=[TermFact(kind="retainer", text="fees billed hourly",
+                            quote=q("2.1 Marlow Finch litigation engagement.txt", "Fees billed hourly."))],
+        ),
+        "2.2 Marlow Finch general engagement 2023.txt": DocFacts(
+            doc_id="2.2 Marlow Finch general engagement 2023.txt",
+            doc_type="engagement_letter",
+            counterparty="Marlow & Finch LLP",
+            reference_numbers=["Matter 3002"],
+            is_signed=True,
+            terms=[TermFact(kind="retainer", text="$1,000 per month until terminated",
+                            quote=q("2.2 Marlow Finch general engagement 2023.txt",
+                                    "Retainer of $1,000 per month, continuing until terminated by either party."))],
+        ),
+        "2.3 Marlow Finch invoice MF-7710-09.txt": DocFacts(
+            doc_id="2.3 Marlow Finch invoice MF-7710-09.txt",
+            doc_type="invoice",
+            counterparty="Marlow & Finch LLP",
+            reference_numbers=["MF-7710-09", "Matter 7710"],
+            amounts=[AmountFact(label="total_due", amount="8000", quote=q("2.3 Marlow Finch invoice MF-7710-09.txt", "Total due $8,000.00"))],
+        ),
+        "4.1 Keystone engagement letter.txt": DocFacts(
+            doc_id="4.1 Keystone engagement letter.txt",
+            doc_type="engagement_letter",
+            counterparty="Keystone Advisors",
+            is_signed=True,
+            amounts=[AmountFact(label="retainer", amount="22000", quote=q("4.1 Keystone engagement letter.txt", "Retainer of $22,000 due on signing."))],
+        ),
+        "3.1 AHR Expo registration.txt": DocFacts(
+            doc_id="3.1 AHR Expo registration.txt",
+            doc_type="correspondence",
+            key_statements=[q("3.1 AHR Expo registration.txt", "Registration confirmed for Harbor Unit Co.")],
+        ),
+        "3.2 Supplier visit agenda.txt": DocFacts(
+            doc_id="3.2 Supplier visit agenda.txt",
+            doc_type="memo",
+            key_statements=[q("3.2 Supplier visit agenda.txt", "Supplier plant visit agenda for Harbor Unit Co purchasing review.")],
+        ),
+        "6.1 Nimbus managed services agreement.txt": DocFacts(
+            doc_id="6.1 Nimbus managed services agreement.txt",
+            doc_type="contract",
+            counterparty="Nimbus Cloud Systems",
+            is_signed=True,
+            amounts=[AmountFact(label="monthly_fee", amount="3000", quote=q("6.1 Nimbus managed services agreement.txt", "Monthly fee of $3,000 per month."))],
+            terms=[
+                TermFact(kind="monthly_fee", text="$3,000 per month",
+                         quote=q("6.1 Nimbus managed services agreement.txt", "Monthly fee of $3,000 per month.")),
+                TermFact(kind="auto_renew", text="renews automatically",
+                         quote=q("6.1 Nimbus managed services agreement.txt", "This agreement renews automatically for successive terms.")),
+            ],
+        ),
+        "6.2 Controller email.txt": DocFacts(
+            doc_id="6.2 Controller email.txt",
+            doc_type="correspondence",
+            key_statements=[q("6.2 Controller email.txt", "Our Nimbus subscription renews next month.")],
+        ),
+        "7.1 Gulfline invoice GR-88.txt": invoice("7.1 Gulfline invoice GR-88.txt", "Gulfline Roofing", "GR-88", "15000"),
+        "7.2 Tidewater invoice TR-12.txt": invoice("7.2 Tidewater invoice TR-12.txt", "Tidewater Restoration", "TR-12", "10000"),
+        "7.3 Anchor Mutual claim letter.txt": DocFacts(
+            doc_id="7.3 Anchor Mutual claim letter.txt",
+            doc_type="insurance",
+            counterparty="Anchor Mutual Insurance",
+            reference_numbers=["AM-2291-X"],
+            amounts=[AmountFact(label="net_payment", amount="12000", quote=q("7.3 Anchor Mutual claim letter.txt", "Net payment of $12,000.00"))],
+        ),
+        "8.1 Ridgeway invoice RD-5501.txt": DocFacts(
+            doc_id="8.1 Ridgeway invoice RD-5501.txt",
+            doc_type="invoice",
+            counterparty="Ridgeway Ductwork LLC",
+            reference_numbers=["RD-5501"],
+            service_period_start="2024-07-01",
+            service_period_end="2024-12-31",
+            amounts=[AmountFact(label="total_due", amount="18000", quote=q("8.1 Ridgeway invoice RD-5501.txt", "Amount due $18,000.00"))],
+            key_statements=[q("8.1 Ridgeway invoice RD-5501.txt", "Service period: July 1, 2024 - December 31, 2024.")],
+        ),
+        "9.1 Swift Movers invoice SM-7.txt": invoice("9.1 Swift Movers invoice SM-7.txt", "Swift Movers", "SM-7", "12000"),
+        "9.2 Keel invoice KB-3.txt": invoice("9.2 Keel invoice KB-3.txt", "Keel Build-Out", "KB-3", "8000"),
+        "10.1 COO email.txt": DocFacts(
+            doc_id="10.1 COO email.txt",
+            doc_type="correspondence",
+            key_statements=[q("10.1 COO email.txt", "We plan to reduce the dispatch team by two FTEs")],
+        ),
+        "11.1 Draft employment agreement.txt": DocFacts(
+            doc_id="11.1 Draft employment agreement.txt",
+            doc_type="contract",
+            counterparty="J. Varga",
+            is_draft=True,
+            is_signed=False,
+            amounts=[AmountFact(label="base_salary", amount="200000", quote=q("11.1 Draft employment agreement.txt", "Base salary of $200,000 per year."))],
+            key_statements=[q("11.1 Draft employment agreement.txt", "DRAFT - Employment Agreement.")],
+        ),
+    }
+    intents = {
+        "A-01": AdjustmentIntent(adj_id="A-01", counterparties=["Pinecrest Search"], keywords=["search"], asserts_nonrecurring=True),
+        "A-02": AdjustmentIntent(adj_id="A-02", counterparties=["Marlow & Finch"], keywords=["litigation", "reyes"],
+                                 reference_numbers=["7710"], asserts_nonrecurring=True),
+        "A-03": AdjustmentIntent(adj_id="A-03", counterparties=["Harbor Point Yacht Club", "J. Varga"], asserts_personal=True),
+        "A-04": AdjustmentIntent(adj_id="A-04", counterparties=["Keystone Advisors"], keywords=["sell-side"],
+                                 reference_numbers=["MF-7710-09"], asserts_nonrecurring=True),
+        "A-05": AdjustmentIntent(adj_id="A-05", counterparties=["Bayline Bank"], keywords=["prepayment", "loan fees"], asserts_nonrecurring=True),
+        "A-06": AdjustmentIntent(adj_id="A-06", counterparties=["Nimbus Cloud Systems"], keywords=["implementation"], asserts_nonrecurring=True),
+        "A-07": AdjustmentIntent(adj_id="A-07", counterparties=["Gulfline Roofing", "Tidewater Restoration"], keywords=["flood"],
+                                 asserts_nonrecurring=True),
+        "A-08": AdjustmentIntent(adj_id="A-08", counterparties=["Ridgeway Ductwork"], keywords=["true-up"]),
+        "A-09": AdjustmentIntent(adj_id="A-09", counterparties=["Swift Movers", "Keel Build-Out"], keywords=["relocation"],
+                                 asserts_nonrecurring=True),
+        "A-10": AdjustmentIntent(adj_id="A-10", keywords=["dispatch"], is_pro_forma=True, event_months=["2026-09"]),
+        "A-11": AdjustmentIntent(adj_id="A-11", counterparties=["J. Varga"], is_normalization=True),
+    }
+    contradictions = {
+        "A-06": [
+            Contradiction(
+                doc_id="6.2 Controller email.txt",
+                statement="The controller calls the cost a subscription.",
+                quote=q("6.2 Controller email.txt", "Our Nimbus subscription renews next month."),
+                conflicts_with="description of a one-time implementation",
+            ),
+            # Not verbatim in the email: must be dropped and counted, never used.
+            Contradiction(
+                doc_id="6.2 Controller email.txt",
+                statement="Invented.",
+                quote=q("6.2 Controller email.txt", "This is a permanent monthly cost."),
+                conflicts_with="one-time",
+            ),
+        ]
+    }
+    classifications = {
+        "A-03": [
+            EntryClassification(entry_id=ids["expo"][0], qualifies=False, reason="Registration names the company; business training.",
+                                doc_ids=["3.1 AHR Expo registration.txt"]),
+            EntryClassification(entry_id=ids["supplier"][0], qualifies=False, reason="Supplier visit for company purchasing.",
+                                doc_ids=["3.2 Supplier visit agenda.txt"]),
+            EntryClassification(entry_id=ids["vacation"][0], qualifies=True, reason="Family vacation."),
+            # No document behind it: kept, and left to the reviewer.
+            EntryClassification(entry_id=ids["dues"][0], qualifies=False, reason="Club may be used for client events."),
+        ]
+    }
+    questions = {"A-01": ["Please confirm the search is complete and no further fees are due."]}
+    pkg = package(gl, adjustments, texts)
+    ai = FakeAI(facts=facts, intents=intents, contradictions=contradictions, classifications=classifications, questions=questions)
+    return pkg, ai, ids
+
+
+@pytest.fixture(scope="module")
+def deal():
+    pkg, ai, ids = build_deal()
+    return run(pkg, ai), ids
+
+
+# ---------------------------------------------------------------------------
+# Case types
+# ---------------------------------------------------------------------------
+
+
+def test_adequate_support_is_accepted_with_high_confidence(deal):
+    results, ids = deal
+    t, a = results["A-01"]
+    assert a.treatment == Treatment.ACCEPT
+    assert a.proposed == amounts(0, 30000, 10000)
+    assert a.confidence == "high"
+    assert {x.entry_id for x in a.gl_links if x.supports_claim} == set(ids["search"])
+    assert a.documented == a.traced_gl == amounts(0, 30000, 10000)
+    # "three installments" is a finite fee, not a continuing obligation.
+    assert FlagCode.CONTINUING_OBLIGATION not in codes(a)
+    assert not [f for f in a.flags if f.severity != Severity.INFO]
+
+
+def test_partial_support_recurring_group_is_removed_and_litigation_kept(deal):
+    results, ids = deal
+    t, a = results["A-02"]
+    assert a.treatment == Treatment.REVISE
+    assert a.proposed == amounts(0, 34000, 8000)
+    assert a.traced_gl == amounts(0, 50000, 24000)
+    recurring = the_flag(a, FlagCode.RECURRING_PATTERN)
+    assert "Matter 3002" in recurring.message and "FY2024" in recurring.message
+    assert set(ids["retainer"][:12]) <= set(recurring.entry_ids)  # the 2024 comparables are cited
+    continuing = the_flag(a, FlagCode.CONTINUING_OBLIGATION)
+    assert continuing.doc_ids == ["2.2 Marlow Finch general engagement 2023.txt"]
+    assert continuing.quotes[0].quote.startswith("Retainer of $1,000 per month")
+    # The litigation matter's hourly-fee letter must not remove the litigation invoices.
+    assert all(e in t.supporting_ids() for e in ids["lit"])
+    (obs,) = [r for r in a.recurrence if "Matter 3002" in r.group]
+    assert obs.amounts_by_period[FY24] == "12000.00"
+    assert a.confidence == "medium"
+    assert any("ongoing cost base" in j for j in a.judgment_questions)
+
+
+def test_entry_qualification_removes_business_trips_with_a_verified_basis(deal):
+    results, ids = deal
+    t, a = results["A-03"]
+    assert a.treatment == Treatment.REVISE
+    assert a.proposed == amounts(0, 14000, 14000)
+    flag = the_flag(a, FlagCode.CONTRADICTORY_EVIDENCE)
+    assert set(flag.entry_ids) == set(ids["expo"])
+    removed = {e for e, r in t.removals.items() if r.source == "ai"}
+    assert removed == set(ids["expo"] + ids["supplier"])
+    # The unsupported classification is kept and handed to the reviewer.
+    assert ids["dues"][0] not in t.removals
+    assert any("cited no verifiable document" in j for j in a.judgment_questions)
+    # Personal items rest on GL descriptions: noted, but not a REQUEST_INFO trigger.
+    assert all(f.severity == Severity.INFO for f in a.flags if f.code == FlagCode.NO_DOCUMENT_SUPPORT)
+    assert a.confidence == "low"  # the change rests entirely on an AI classification
+
+
+def test_overlap_goes_to_the_stronger_link_and_revises_the_loser(deal):
+    results, ids = deal
+    _, loser = results["A-04"]
+    _, winner = results["A-02"]
+    assert loser.treatment == Treatment.REVISE
+    assert loser.proposed == amounts(0, 22000, 22000)
+    flag = the_flag(loser, FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT)
+    assert flag.severity == Severity.CRITICAL
+    assert flag.related_adj_ids == ["A-02"]
+    assert flag.entry_ids == [ids["lit"][2]]
+    assert "Bill MF-7710-09 (Marlow & Finch LLP, Sep 2025, 8,000; memo cites Matter 7710)" in flag.message
+    assert "also claimed in A-02" in flag.message
+    assert FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT not in codes(winner)
+    assert any("also claimed in A-04" in f.text for f in winner.facts)
+    assert loser.confidence == "high"  # the overlap sets the amount; nothing else is in doubt
+
+
+def test_costs_already_below_ebitda_are_rejected(deal):
+    results, ids = deal
+    _, a = results["A-05"]
+    assert a.treatment == Treatment.REJECT
+    assert a.proposed == amounts(0, 0, 0)
+    flag = the_flag(a, FlagCode.ALREADY_EXCLUDED_FROM_EBITDA)
+    assert set(flag.entry_ids) == set(ids["refi"])  # monthly interest was never claimed
+    assert "8100 Interest Expense" in flag.message and "INTEREST" in flag.message
+    assert flag.amount_impact == "-9000.00" and flag.period_label == FY25
+
+
+def test_contradicted_subscription_is_rejected_with_all_three_flags(deal):
+    results, ids = deal
+    t, a = results["A-06"]
+    assert a.treatment == Treatment.REJECT
+    assert a.proposed == amounts(0, 0, 0)
+    assert {FlagCode.CONTRADICTORY_EVIDENCE, FlagCode.CONTINUING_OBLIGATION, FlagCode.RECURRING_PATTERN} <= codes(a)
+    contra = the_flag(a, FlagCode.CONTRADICTORY_EVIDENCE)
+    assert contra.quotes[0].quote == "Our Nimbus subscription renews next month."
+    assert t.dropped_quotes == 1  # the invented quote never reaches the workpaper
+    assert all("permanent monthly cost" not in f.message for f in a.flags)
+    assert "failed verification" in a.rationale
+    recurring = the_flag(a, FlagCode.RECURRING_PATTERN)
+    assert "6 months outside the claimed window (Jan 2026–Jun 2026)" in recurring.message
+    assert a.confidence == "medium"
+
+
+def test_unadjusted_recovery_offsets_the_add_back_in_the_period_received(deal):
+    results, ids = deal
+    t, a = results["A-07"]
+    assert a.treatment == Treatment.REVISE
+    assert a.proposed == amounts(25000, -12000, 0)
+    flag = the_flag(a, FlagCode.OFFSETTING_RECOVERY)
+    assert flag.entry_ids == ids["insurance"]
+    assert flag.period_label == FY25 and flag.amount_impact == "-12000.00"
+    assert "AM-2291-X" in flag.message
+    assert flag.quotes and flag.quotes[0].quote == "Net payment of $12,000.00"
+    link = {x.entry_id: x for x in a.gl_links}[ids["insurance"][0]]
+    assert link.supports_claim is False
+    assert {d.doc_id: d.relation for d in a.doc_links}["7.3 Anchor Mutual claim letter.txt"] == "recovery"
+
+
+def test_out_of_period_cost_moves_to_its_service_period(deal):
+    results, ids = deal
+    _, a = results["A-08"]
+    assert a.treatment == Treatment.REVISE
+    assert a.proposed == amounts(-18000, 18000, 0)
+    flag = the_flag(a, FlagCode.OUT_OF_PERIOD)
+    assert flag.period_label == FY24 and flag.amount_impact == "-18000.00"
+    assert "service period of Jul 2024–Dec 2024" in flag.message
+    assert flag.quotes[0].quote.startswith("Service period")
+    # The routine monthly subcontract invoices from the same vendor are not part of the claim.
+    assert {x.entry_id for x in a.gl_links if x.supports_claim} == set(ids["trueup"])
+
+
+def test_claim_in_a_period_without_activity_is_a_period_mismatch(deal):
+    results, ids = deal
+    _, a = results["A-09"]
+    assert a.treatment == Treatment.REVISE
+    assert a.proposed == amounts(0, 20000, 0)
+    flag = the_flag(a, FlagCode.PERIOD_MISMATCH)
+    assert flag.period_label == TTM and flag.amount_impact == "-20000.00"
+    assert "booked Feb 2025–Mar 2025, in FY2025" in flag.message
+    assert FlagCode.PARTIAL_GL_SUPPORT not in codes(a)  # the mismatch explains the gap
+
+
+def test_pro_forma_not_realized_requests_information(deal):
+    results, _ = deal
+    _, a = results["A-10"]
+    assert a.treatment == Treatment.REQUEST_INFO
+    assert a.proposed == {}
+    flag = the_flag(a, FlagCode.PRO_FORMA_NOT_REALIZED)
+    assert flag.severity == Severity.CRITICAL
+    assert "no executed document" in flag.message and "Sep 2026" in flag.message
+    assert flag.quotes[0].doc_id == "10.1 COO email.txt"
+    assert any(oq.priority == "high" and oq.basis == "PRO_FORMA_NOT_REALIZED" for oq in a.open_questions)
+
+
+def test_normalization_on_a_draft_agreement_requests_information(deal):
+    results, ids = deal
+    _, a = results["A-11"]
+    assert a.treatment == Treatment.REQUEST_INFO
+    assert a.proposed == {}
+    assert {FlagCode.UNSIGNED_OR_DRAFT_SUPPORT, FlagCode.NORMALIZATION_BENCHMARK_MISSING} <= codes(a)
+    assert a.traced_gl == amounts(300000, 300000, 300000)  # actual officer compensation
+    assert "200,000" in the_flag(a, FlagCode.NORMALIZATION_BENCHMARK_MISSING).message
+    assert "Provisional" in a.rationale and "FY2025 100,000" in a.rationale
+
+
+def test_every_flag_message_reads_as_a_sentence(deal):
+    results, _ = deal
+    for _, a in results.values():
+        for f in a.flags:
+            assert f.message[0].isupper() or f.message[:1].isdigit(), f.message
+            assert f.message.rstrip()[-1] in ".)", f.message
+            assert "None" not in f.message
+
+
+# ---------------------------------------------------------------------------
+# Smaller cases
+# ---------------------------------------------------------------------------
+
+
+def _small(entries, adjustment, texts=None, facts=None, intent=None, issues=()):
+    gl = GL()
+    ids = [gl.add(*e) for e in entries]
+    pkg = package(gl, [adjustment], texts or {})
+    ai = FakeAI(facts=facts or {}, intents={adjustment.adj_id: intent or AdjustmentIntent(adj_id=adjustment.adj_id)})
+    return run(pkg, ai, issues)[adjustment.adj_id], ids
+
+
+def test_sign_error_when_an_add_back_is_made_of_credits():
+    texts = {"5.1 Credit memo CM-5.txt": "Credit memo CM-5. Warranty refund $5,000.00"}
+    facts = {"5.1 Credit memo CM-5.txt": DocFacts(
+        doc_id="5.1 Credit memo CM-5.txt", doc_type="invoice", counterparty="Coastal HVAC Service", reference_numbers=["CM-5"])}
+    (t, a), ids = _small(
+        [("2025-05-01", "6150", -5000, "Coastal HVAC Service", "Vendor refund - warranty repair", "CM-5")],
+        claim("B-1", "Warranty repair", [0, 5000, 0], ["6150"]),
+        texts, facts, AdjustmentIntent(adj_id="B-1", counterparties=["Coastal HVAC"]),
+    )
+    flag = the_flag(a, FlagCode.SIGN_ERROR)
+    assert flag.period_label == FY25 and "net to (5,000) (credits)" in flag.message
+    assert FlagCode.PARTIAL_GL_SUPPORT not in codes(a)
+    assert a.proposed[FY25] == "-5000.00" and a.treatment == Treatment.REVISE
+
+
+def test_duplicate_posting_inside_the_claim_raises_a_question():
+    entries = [
+        ("2025-05-02", "6150", 7000, "Gulfline Roofing", "Roof repair", "GR-9"),
+        ("2025-05-05", "6150", 7000, "Gulfline Roofing", "Roof repair", "GR-9"),
+    ]
+    issue = DataQualityIssue(code=DataQualityCode.DUPLICATE_GL_ENTRY, severity=Severity.WARNING, message="dup",
+                             entry_ids=["GL-R6", "GL-R7"])
+    (t, a), ids = _small(entries, claim("B-2", "Roof repair", [0, 14000, 0], ["6150"]),
+                         intent=AdjustmentIntent(adj_id="B-2", counterparties=["Gulfline Roofing"]), issues=[issue])
+    flag = the_flag(a, FlagCode.DUPLICATE_GL_ENTRY)
+    assert flag.entry_ids == ids and "2 of the 2 postings are in the claimed set" in flag.message
+    assert any(oq.basis == "DUPLICATE_GL_ENTRY" for oq in a.open_questions)
+
+
+def test_document_total_that_differs_from_the_gl_entry():
+    texts = {"4.1 Invoice PS-9.txt": "Invoice PS-9. Total due $10,500.00"}
+    facts = {"4.1 Invoice PS-9.txt": DocFacts(
+        doc_id="4.1 Invoice PS-9.txt", doc_type="invoice", counterparty="Pinecrest Search Partners", reference_numbers=["PS-9"],
+        amounts=[AmountFact(label="total_due", amount="10500", quote=q("4.1 Invoice PS-9.txt", "Total due $10,500.00"))])}
+    (t, a), _ = _small(
+        [("2025-05-01", "6450", 10000, "Pinecrest Search Partners", "Search fee", "PS-9")],
+        claim("B-3", "Search fee", [0, 10000, 0], ["6450"]),
+        texts, facts, AdjustmentIntent(adj_id="B-3", counterparties=["Pinecrest Search"]),
+    )
+    flag = the_flag(a, FlagCode.DOC_GL_AMOUNT_MISMATCH)
+    assert "total due of 10,500" in flag.message and "difference (500)" in flag.message
+    assert flag.quotes[0].quote == "Total due $10,500.00"
+
+
+def test_undocumented_claim_above_25_percent_requests_information():
+    (t, a), _ = _small(
+        [("2025-05-01", "6150", 9000, "Tidewater Restoration", "Mold remediation"),
+         ("2025-06-01", "6150", 1000, "Tidewater Restoration", "Mold remediation")],
+        claim("B-4", "Mold remediation", [0, 10000, 0], ["6150"]),
+        intent=AdjustmentIntent(adj_id="B-4", counterparties=["Tidewater Restoration"]),
+    )
+    flag = the_flag(a, FlagCode.NO_DOCUMENT_SUPPORT)
+    assert flag.severity == Severity.WARNING and "100% of the claim" in flag.message
+    assert a.treatment == Treatment.REQUEST_INFO and a.proposed == {}
+    assert "Provisional amount the evidence would support: FY2024 0 / FY2025 10,000 / TTM Jun-26 0" in a.rationale
+
+
+def test_management_move_into_the_service_period_is_accepted():
+    """Management already moved the cost: -18,000 in FY2024 is explained by the service period."""
+    texts = {"8.1 Ridgeway invoice RD-5501.txt": "Invoice RD-5501. Service period: July 1, 2024 - December 31, 2024."}
+    facts = {"8.1 Ridgeway invoice RD-5501.txt": DocFacts(
+        doc_id="8.1 Ridgeway invoice RD-5501.txt", doc_type="invoice", counterparty="Ridgeway Ductwork LLC",
+        reference_numbers=["RD-5501"], service_period_start="2024-07-01", service_period_end="2024-12-31")}
+    (t, a), _ = _small(
+        [("2025-03-18", "5200", 18000, "Ridgeway Ductwork LLC", "Project closeout true-up", "RD-5501")],
+        claim("B-5", "True-up", [-18000, 18000, 0], ["5200"], category=AdjustmentCategory.OUT_OF_PERIOD),
+        texts, facts, AdjustmentIntent(adj_id="B-5", counterparties=["Ridgeway Ductwork"]),
+    )
+    assert a.proposed == amounts(-18000, 18000, 0)
+    assert a.treatment == Treatment.ACCEPT
+    assert FlagCode.PARTIAL_GL_SUPPORT not in codes(a) and FlagCode.PERIOD_MISMATCH not in codes(a)

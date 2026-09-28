@@ -888,10 +888,12 @@ def test_draft_questions_one_per_flag_and_specific(ai_and_facts):
     assert "$40,000" in recovery and "FY2025" in recovery and "A-18" in recovery
     assert "monthly fee of $8,000.00" in contra
     assert "executed version" in draft and "Executive Employment Agreement" in draft
+    assert "marked as a draft and is not signed" in draft
     assert "backfill" not in pro_forma and "replaced" in pro_forma
-    assert "A-1" in overlap and "counted twice" in overlap
-    assert "renews automatically" in obligation and "2027-12-31" in obligation
-    assert "settlement" in settlement.lower() and "2025-11-14" in settlement
+    assert "adjustment A-1" in overlap and "counted twice" in overlap and overlap.startswith("One ledger entry")
+    assert "automatic renewal" in obligation and "December 31, 2027" in obligation
+    assert "a monthly fee of $8,000.00" in obligation
+    assert "settlement" in settlement.lower() and "November 14, 2025" in settlement
     for q in questions:
         assert "?" in q or "Please" in q
         assert "FlagCode" not in q and "_" not in q.replace("_" * 3, "")

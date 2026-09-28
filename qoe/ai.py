@@ -115,6 +115,9 @@ AMOUNT_LABELS = (
 # Term kinds that describe a cost that keeps coming back.
 RECURRING_TERM_KINDS = frozenset({"monthly_fee", "retainer", "auto_renew", "ongoing_services", "term_end"})
 
+_SIGNABLE_TYPES = frozenset(
+    {"contract", "engagement_letter", "settlement_agreement", "separation_agreement", "other"}
+)
 _MAX_QUOTE = 320
 _MAX_KEY_STATEMENTS = 30
 _DATE_WINDOW_DAYS = 45
@@ -144,7 +147,14 @@ _GENERIC_WORDS = frozenset(
     acct various certain professional operating operations item items entry entries represents represent associated
     primarily pursuant reported net gross former new prior current other misc miscellaneous general ledger schedule
     basis based claimed claim claims owner owners services service savings level market rate actual actuals portion
-    expected full due relates relating incurred remainder see note notes adjust
+    expected full due relates relating incurred remainder see note notes adjust agreement agreements signed executed
+    invoice invoices invoiced document documents documented letter support supporting sales tax taxes
+    """.split()
+)
+_STREET_WORDS = frozenset(
+    """
+    street st avenue ave boulevard blvd road rd drive dr way lane ln parkway pkwy highway hwy suite ste court ct place
+    pl circle cir plaza floor
     """.split()
 )
 # Account-category nouns: fine for linking, too broad to separate one event from another.
@@ -175,6 +185,11 @@ _HARD_SUFFIXES = frozenset(
 _SOFT_SUFFIXES = frozenset(
     {"company", "partners", "partnership", "group", "holdings", "associates", "advisors", "advisers", "consultants",
      "cpas", "bank", "insurance", "mutual", "trust", "club", "foundation", "association", "society"}
+)
+# Organisation suffixes that say nothing about the event ("Club" and "Insurance" do, so they stay keywords).
+_NAME_SUFFIX_KEYWORDS = frozenset(
+    {"partners", "partnership", "group", "holdings", "associates", "advisors", "advisers", "consultants", "cpas",
+     "company", "bank", "mutual", "trust"}
 )
 _ENTITY_FORM_WORDS = frozenset(
     {"llp", "llc", "pllc", "inc", "incorporated", "corp", "corporation", "co", "company", "ltd", "limited", "lp",
@@ -337,6 +352,7 @@ _TERM_EXPIRY_RE = _lex(
     re.I,
 )
 
+_TERM_WORD_RE = re.compile(r"\b(?:initial |renewal |lease |agreement |contract )?term\b(?! of payment)(?!s\b)", re.I)
 _RECURRENCE_RE = _lex(
     r"consistent with (?:the )?(?:prior|previous) (?:years?|periods?)|as in (?:prior|previous) (?:years|periods)"
     r"|(?:each|every) (?:year|quarter)|year after year|\bannually\b|\brecurring\b|\brecurs\b|subscription"
@@ -413,7 +429,7 @@ _REF_RE = re.compile(
     r"(?P<val>(?=[A-Z0-9/.:-]*\d)[A-Z0-9][A-Z0-9/.:-]*[A-Z0-9]|\d)",
     re.IGNORECASE,
 )
-_CODE_RE = re.compile(r"\b[A-Z]{1,6}-\d{2,}(?:-[A-Z0-9]+)*\b")
+_CODE_RE = re.compile(r"\b[A-Z]{2,6}-\d{2,}(?:-[A-Z0-9]+)*\b")
 _REF_KIND = {
     "invoice": "invoice", "inv": "invoice", "inv.": "invoice", "bill": "invoice", "statement": "invoice",
     "matter": "matter", "claim": "claim", "policy": "policy", "case": "case", "file": "case",
@@ -674,7 +690,7 @@ def _number(word: str) -> Optional[int]:
 
 
 def _money_hits(text: str, pos: int = 0, endpos: Optional[int] = None, *, bare: bool = False):
-    """Yield (start, end, magnitude) for currency amounts; bare 2-dp numbers only when asked."""
+    """Yield (start, end, magnitude, has_currency) for money; bare 2-dp numbers only when asked."""
     end_limit = len(text) if endpos is None else endpos
     for m in _CUR_MONEY_RE.finditer(text, pos, end_limit):
         value = D(m.group("num"))
@@ -1441,6 +1457,12 @@ class _DocReader:
                     if hits and hits[0].start == s + m.end():
                         add("term_end", f"term ends {hits[0].iso}", page.quote(s + m.start(), hits[0].end))
                         break
+                if _TERM_WORD_RE.search(sent):
+                    hits = _find_dates(text, s, e)
+                    for a, b in zip(hits, hits[1:]):
+                        if _RANGE_SEP_RE.match(text[a.end : b.start]) and a.iso < b.iso:
+                            add("term_end", f"term ends {b.iso} (term from {a.iso})", page.quote(a.start, b.end))
+                            break
         return out
 
     # -- execution status and statements -----------------------------------
@@ -1455,7 +1477,9 @@ class _DocReader:
 
     def is_signed(self) -> Optional[bool]:
         text = self.doc.full_text
-        if self.doc_type == "correspondence":
+        # Execution status only means something for agreements; a blank "authorized signature" line on an
+        # invoice is not an unsigned contract.
+        if self.doc_type not in _SIGNABLE_TYPES:
             return None
         if _UNSIGNED_RE.search(text):
             return False
@@ -1593,7 +1617,8 @@ def _narrative_counterparties(title: str, description: str) -> list[str]:
     for m in _CAP_RUN_RE.finditer(description):
         words = m.group().split()
         if any(w.lower() in _STOPWORDS or w.lower() in _GENERIC_WORDS or w.lower() in _ROLE_WORDS
-               or w.lower() in _MONTH_WORDS or w.lower() in _WEAK_KEYWORDS for w in words):
+               or w.lower() in _MONTH_WORDS or w.lower() in _WEAK_KEYWORDS or w.lower() in _STREET_WORDS
+               for w in words):
             continue
         prefix = description[: m.start()].rstrip()
         if prefix.endswith(("&", " and", " of")):
@@ -1622,6 +1647,9 @@ def _narrative_keywords(title: str, description: str, limit: int = 15) -> list[s
                     or cand in _STOPWORDS
                     or cand in _GENERIC_WORDS
                     or cand in _MONTH_WORDS
+                    or cand in _STREET_WORDS
+                    or cand in _ENTITY_FORM_WORDS
+                    or cand in _NAME_SUFFIX_KEYWORDS
                     or cand.isdigit()
                     or re.fullmatch(r"(?:fy|q[1-4]|h[12])\d*", cand)
                 ):
@@ -2229,8 +2257,8 @@ def _classify_event(
 
 
 def _claim_summary(adj: AdjustmentClaim) -> str:
-    parts = [f"{label}: {_usd(v)}" for label, v in adj.amounts.items() if D(v) != 0]
-    return "; ".join(parts) if parts else "no amount claimed"
+    parts = [f"{label} {_usd(v)}" for label, v in adj.amounts.items() if D(v) != 0]
+    return _join_words(parts) if parts else "no amount"
 
 
 def _docs_phrase(flag: Flag, docs: dict[str, DocFacts], default: str = "The supporting document") -> str:
@@ -2244,86 +2272,139 @@ def _docs_phrase(flag: Flag, docs: dict[str, DocFacts], default: str = "The supp
     return text[:1].upper() + text[1:]
 
 
+def _long_date(iso: Optional[str]) -> str:
+    """'2024-07-01' -> 'July 1, 2024' for text written to management."""
+    try:
+        d = date.fromisoformat(iso or "")
+    except ValueError:
+        return iso or ""
+    return f"{d.strftime('%B')} {d.day}, {d.year}"
+
+
+def _term_phrase(term: TermFact) -> str:
+    if term.kind in ("monthly_fee", "retainer"):
+        return f"a {term.text}"
+    if term.kind == "auto_renew":
+        return "automatic renewal"
+    if term.kind == "ongoing_services":
+        return "services that continue until terminated"
+    if term.kind == "term_end":
+        m = re.search(r"\d{4}-\d{2}-\d{2}", term.text)
+        return f"a term running to {_long_date(m.group())}" if m else term.text
+    return term.text
+
+
+def _join_words(items: list[str]) -> str:
+    if len(items) <= 1:
+        return "".join(items)
+    return ", ".join(items[:-1]) + " and " + items[-1]
+
+
+_COUNT_WORDS = ("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
+
+
+def _entries_phrase(n: int) -> str:
+    count = _COUNT_WORDS[n] if 0 <= n < len(_COUNT_WORDS) else str(n)
+    return f"{count} ledger entr{'y' if n == 1 else 'ies'}"
+
+
 def _question_for(adj: AdjustmentClaim, flag: Flag, docs: dict[str, DocFacts]) -> str:
     ref = f"adjustment {adj.adj_id} ({adj.title})"
+    ref_cap = ref[:1].upper() + ref[1:]
     period = flag.period_label
     in_period = f" in {period}" if period else ""
-    claimed_p = ""
-    if period and period in adj.amounts and D(adj.amounts[period]) != 0:
-        claimed_p = f" ({_usd(adj.amounts[period])} claimed)"
-    impact = f" of {_usd(flag.amount_impact)}" if flag.amount_impact and D(flag.amount_impact) != 0 else ""
+    claimed = adj.amounts.get(period or "", "")
+    claimed_txt = f"the {_usd(claimed)} claimed" if claimed and D(claimed) != 0 else "the amount claimed"
+    impact = _usd(flag.amount_impact) if flag.amount_impact and D(flag.amount_impact) != 0 else ""
     docs_txt = _docs_phrase(flag, docs)
     n_entries = len(flag.entry_ids)
-    entries_txt = f" ({n_entries} ledger entr{'y' if n_entries == 1 else 'ies'})" if n_entries else ""
     code = flag.code
 
     if code == FlagCode.NO_GL_SUPPORT:
-        return (f"We could not find the costs behind {ref} ({_claim_summary(adj)}) in the general ledger. "
+        return (f"We could not find the costs behind {ref} in the general ledger (management claims "
+                f"{_claim_summary(adj)}). "
                 f"Please send the ledger detail (account, date, vendor and amount) for the entries that make up "
                 f"this adjustment.")
     if code == FlagCode.PARTIAL_GL_SUPPORT:
-        gap = f"{_usd(flag.amount_impact)} " if flag.amount_impact else ""
-        return (f"For {ref}, the ledger activity we could tie to this item{in_period} is {gap}less than the amount "
-                f"claimed{claimed_p}. Please send the entries that make up the full amount, or revise the adjustment.")
+        gap = f"{impact} " if impact else ""
+        return (f"For {ref}, the ledger activity we could tie to this item{in_period} is {gap}less than "
+                f"{claimed_txt}. Please send the entries that make up the full amount, or revise the adjustment.")
     if code == FlagCode.EXCESS_GL_ACTIVITY:
-        return (f"The ledger shows more activity related to {ref}{in_period} than the amount claimed{claimed_p}. "
-                f"Please confirm which invoices management included and why the remaining entries were left out.")
+        return (f"The ledger shows more activity related to {ref}{in_period} than {claimed_txt}. Please confirm "
+                f"which invoices management included and why the remaining entries were left out.")
     if code == FlagCode.NO_DOCUMENT_SUPPORT:
-        return (f"We have not received invoices or agreements for part of {ref}{in_period}{impact}. "
+        portion = f"{impact} of" if impact else "part of"
+        return (f"We have not received invoices or agreements supporting {portion} {ref}{in_period}. "
                 f"Please provide the supporting documents for these costs.")
     if code == FlagCode.DOC_GL_AMOUNT_MISMATCH:
-        return (f"{docs_txt} shows a different amount from the related ledger entry{entries_txt} for {ref}. "
-                f"Please explain the difference (for example a partial payment, a credit memo or a second invoice).")
+        which = f"the {_entries_phrase(n_entries)}" if n_entries > 1 else "the ledger entry"
+        return (f"{docs_txt} shows a different amount from {which} it supports in {ref}. Please explain the "
+                f"difference (for example a partial payment, a credit memo or a second invoice).")
     if code == FlagCode.PERIOD_MISMATCH:
-        return (f"{ref[:1].upper() + ref[1:]} claims an amount{in_period}{claimed_p}, but the related ledger "
-                f"activity was recorded in a different period. Please confirm when these costs were incurred and "
-                f"update the schedule if the timing is wrong.")
+        amount = f" {_usd(claimed)}" if claimed and D(claimed) != 0 else " an amount"
+        return (f"{ref_cap} claims{amount}{in_period}, but the related ledger activity was recorded in a "
+                f"different period. Please confirm when these costs were incurred and update the schedule if the "
+                f"timing is wrong.")
     if code == FlagCode.OUT_OF_PERIOD:
-        span = ""
         for doc_id in flag.doc_ids:
             fact = docs.get(doc_id)
             if fact and fact.service_period_start and fact.service_period_end:
-                span = f" covers services from {fact.service_period_start} to {fact.service_period_end}, but it"
-                break
-        subject = docs_txt if span else f"The cost in {ref}"
-        return (f"{subject}{span} was recorded{in_period}. Please confirm the service period and explain how "
-                f"management reflected the portion that relates to an earlier period.")
+                return (f"{_docs_phrase(flag.model_copy(update={'doc_ids': [doc_id]}), docs)} covers services "
+                        f"from {_long_date(fact.service_period_start)} to {_long_date(fact.service_period_end)}, "
+                        f"but the cost was recorded{in_period}. Please confirm the service period and explain how "
+                        f"management reflected the portion that relates to an earlier period.")
+        return (f"The costs in {ref} appear to relate to a different period from the one in which they were "
+                f"recorded{in_period}. Please confirm the service period of the underlying invoices.")
     if code == FlagCode.RECURRING_PATTERN:
-        return (f"We see similar costs in periods not covered by {ref}{impact}. Please explain why management "
-                f"considers this cost non-recurring and whether you expect it to continue after closing.")
+        amount = f"of {impact} " if impact else ""
+        return (f"We see comparable costs {amount}in periods that {ref} does not cover. Please explain why "
+                f"management considers this cost non-recurring and whether you expect it to continue after closing.")
     if code == FlagCode.CONTINUING_OBLIGATION:
-        terms: list[str] = []
+        phrases: list[str] = []
         for doc_id in flag.doc_ids:
             fact = docs.get(doc_id)
-            if fact:
-                terms.extend(t.text for t in fact.terms if t.kind in RECURRING_TERM_KINDS and t.text not in terms)
-        what = "; ".join(terms[:3]) if terms else "an ongoing commitment"
+            for term in fact.terms if fact else []:
+                phrase = _term_phrase(term)
+                if term.kind in RECURRING_TERM_KINDS and phrase not in phrases:
+                    phrases.append(phrase)
+        what = _join_words(phrases[:3]) if phrases else "an ongoing commitment"
         return (f"{docs_txt} provides for {what}. Please confirm whether this arrangement is still in place, what "
                 f"it will cost after closing, and whether it can be terminated.")
     if code == FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT:
-        related = ", ".join(flag.related_adj_ids) if flag.related_adj_ids else "another adjustment"
-        return (f"Some of the entries in {ref}{entries_txt} are also included in {related}. Please confirm which "
-                f"adjustment should carry them so they are not counted twice.")
+        related = _join_words([f"adjustment {r}" for r in flag.related_adj_ids]) or "another adjustment"
+        subject = _entries_phrase(n_entries).capitalize() if n_entries else "Some of the entries"
+        return (f"{subject} in {ref} {'is' if n_entries == 1 else 'are'} also included in {related}. Please "
+                f"confirm which adjustment should carry them so they are not counted twice.")
     if code == FlagCode.ALREADY_EXCLUDED_FROM_EBITDA:
         return (f"The costs in {ref} are recorded in interest, tax, depreciation or amortization accounts, which "
                 f"EBITDA already excludes. Please confirm whether any portion was recorded in operating expenses; "
                 f"otherwise the adjustment counts these costs twice.")
     if code == FlagCode.OFFSETTING_RECOVERY:
-        return (f"We noted a related recovery{impact}{in_period} (for example insurance proceeds) that is not "
-                f"reflected in {ref}. Please confirm the amount and timing of all recoveries and whether any further "
-                f"amounts are expected.")
+        amount = f" of {impact}" if impact else ""
+        return (f"The ledger shows a related recovery{amount}{in_period} (for example insurance proceeds) that "
+                f"{ref} does not net off. Please confirm the amount and timing of all recoveries and whether any "
+                f"further amounts are expected.")
     if code == FlagCode.CONTRADICTORY_EVIDENCE:
         if flag.quotes:
-            excerpt = _quote_excerpt(flag.quotes[0].quote)
+            excerpt = _quote_excerpt(flag.quotes[0].quote).rstrip(".")
             source = _docs_phrase(flag.model_copy(update={"doc_ids": [flag.quotes[0].doc_id]}), docs)
             return (f"{source} states \"{excerpt}\", which appears inconsistent with how management describes "
                     f"{ref}. Please explain how management reconciled this with the basis for the adjustment.")
         return (f"The documents for {ref} appear inconsistent with management's description of the item. "
                 f"Please explain the basis for the adjustment.")
     if code == FlagCode.UNSIGNED_OR_DRAFT_SUPPORT:
-        subject = docs_txt if flag.doc_ids else "The agreement supporting " + ref
-        return (f"{subject} we received is an unsigned draft. Please provide the executed version, or confirm the "
-                f"agreed terms and when they take effect.")
+        fact = next((docs[d] for d in flag.doc_ids if d in docs), None)
+        if fact is not None and fact.is_draft and fact.is_signed is False:
+            status = "is marked as a draft and is not signed"
+        elif fact is not None and fact.is_draft:
+            status = "is marked as a draft"
+        elif fact is not None and fact.is_signed is False:
+            status = "is not signed"
+        else:
+            status = "is unsigned or in draft form"
+        subject = f"The copy of {docs_txt[:1].lower() + docs_txt[1:]}" if flag.doc_ids else f"The agreement supporting {ref}"
+        return (f"{subject} we received {status}. Please provide the executed version, or confirm the agreed "
+                f"terms and when they take effect.")
     if code == FlagCode.NORMALIZATION_BENCHMARK_MISSING:
         return (f"Please provide the basis for the normalized level used in {ref} (for example a compensation "
                 f"survey or a signed agreement), and explain how payroll taxes and benefits were treated.")
@@ -2335,11 +2416,13 @@ def _question_for(adj: AdjustmentClaim, flag: Flag, docs: dict[str, DocFacts]) -
     if code == FlagCode.SIGN_ERROR:
         total = sum((D(v) for v in adj.amounts.values()), Decimal("0"))
         direction = "an add-back that increases EBITDA" if total >= 0 else "a deduction that reduces EBITDA"
-        return (f"{ref[:1].upper() + ref[1:]} is presented as {direction}, but the underlying ledger "
-                f"entries{entries_txt} point the other way. Please confirm the direction of this adjustment.")
+        entries = f"the {_entries_phrase(n_entries)} behind it" if n_entries else "the underlying ledger entries"
+        return (f"{ref_cap} is presented as {direction}, but {entries} point the other way. Please confirm the "
+                f"direction of this adjustment.")
     if code == FlagCode.DUPLICATE_GL_ENTRY:
-        return (f"Entries included in {ref}{entries_txt} appear to have been posted twice. Please confirm whether "
-                f"this is a duplicate and, if so, when and how it was reversed.")
+        subject = f"{_entries_phrase(n_entries).capitalize()} included in {ref}" if n_entries else f"Entries in {ref}"
+        return (f"{subject} appear to have been posted twice. Please confirm whether this is a duplicate and, if "
+                f"so, when and how it was reversed.")
     return f"Please explain the following point on {ref}: {flag.message}"
 
 
@@ -2347,7 +2430,7 @@ def _fact_questions(adj: AdjustmentClaim, facts: list[DocFacts]) -> list[str]:
     out: list[str] = []
     for fact in facts:
         if fact.doc_type == "settlement_agreement":
-            dated = f" dated {fact.doc_date}" if fact.doc_date else ""
+            dated = f" dated {_long_date(fact.doc_date)}" if fact.doc_date else ""
             out.append(
                 f"The {_doc_label(fact)}{dated} resolves the matter behind adjustment {adj.adj_id} ({adj.title}). "
                 f"Please confirm who funded the settlement (and that any insurer payment was received in full), and "
@@ -2536,11 +2619,14 @@ def _amount_in_quote(amount: str, quote: str) -> bool:
     for _, _, value, _ in _money_hits(quote, bare=True):
         if value == target:
             return True
-    digits = re.sub(r"[^\d.]", "", fmt(target))
-    whole = digits[:-3] if digits.endswith(".00") else digits
-    return re.search(rf"(?<![\d,]){re.escape(f'{int(target):,}')}(?![\d,])", quote) is not None or (
-        whole.isdigit() and re.search(rf"(?<![\d,.]){whole}(?![\d,])", quote) is not None
-    )
+    if target != target.to_integral_value():
+        return False
+    whole = str(int(target))
+    for written in (f"{int(target):,}", whole):
+        # a whole amount may be written without cents ("300,000"), but not as the start of "300,000.50"
+        if re.search(rf"(?<![\d,.]){re.escape(written)}(?![\d,]|\.\d*[1-9])", quote):
+            return True
+    return False
 
 
 def _require_keys(data: Any, schema: dict[str, Any]) -> dict[str, Any]:

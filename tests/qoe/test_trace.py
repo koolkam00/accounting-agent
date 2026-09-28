@@ -197,7 +197,7 @@ def test_find_subset_prefers_fewest_entries_and_exact_sums():
     pick = find_subset(values, 7_500_00)
     assert pick == [3]  # one entry beats 5,000 + 2,500
     # Exact to the cent beats a closer-count approximate match within tolerance.
-    assert find_subset([10_000_00, 4_999_50, 5_000_50], 10_000_50, tolerance=100) == [1, 2]
+    assert find_subset([10_000_00, 4_999_50, 5_001_00], 10_000_50, tolerance=100) == [1, 2]
     assert find_subset([300_00, 700_00], 555_00) is None
 
 

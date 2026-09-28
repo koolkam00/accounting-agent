@@ -132,9 +132,15 @@ def heading(text: str, size: float = 10.5, after: float = 4.0) -> Block:
     return Block([Row([Cell(LEFT, text, "left", BOLD, size)], 14.0 + after)], keep=True)
 
 
-def kv_rows(pairs: list[list[str]], x: float = LEFT, size: float = 10.0, leading: float = 13.0) -> list[Row]:
+def kv_rows(pairs: list[list[str]], keep: list[str], x: float = LEFT, size: float = 10.0, leading: float = 13.0) -> list[Row]:
     # Label and value share one string so extraction keeps "Invoice No.: 25-0212" intact.
-    return [Row([Cell(x, f"{label}: {value}" if label else str(value), "left", BODY, size)], leading) for label, value in pairs]
+    rows: list[Row] = []
+    for label, value in pairs:
+        text = f"{label}: {value}" if label else str(value)
+        lines = wrap(text, RIGHT - x, BODY, size, keep)
+        rows.append(Row([Cell(x, lines[0], "left", BODY, size)], leading))
+        rows += [Row([Cell(x + 12.0, extra, "left", BODY, size)], leading) for extra in lines[1:]]
+    return rows
 
 
 def _party(spec: DealSpec, ref: Any, where: str) -> Optional[Party]:
@@ -234,7 +240,7 @@ def body_items(items: list[Any], keep: list[str], where: str) -> list[Block]:
         elif "heading" in item:
             blocks.append(heading(str(item["heading"])))
         elif "kv" in item:
-            rows = kv_rows(item["kv"])
+            rows = kv_rows(item["kv"], keep)
             rows[-1].height += 7.0
             blocks.append(Block(rows, keep=True))
         elif "table" in item:
@@ -276,7 +282,7 @@ def _invoice(spec: DealSpec, doc: DocumentSpec, f: dict[str, Any], keep: list[st
     blocks.append(Block([Row([Cell(LEFT, str(f.get("title", "INVOICE")), "left", BOLD, 18.0)], 26.0)], keep=True))
     left_col = [Row([Cell(LEFT, str(f.get("bill_to_label", "Bill To:")), "left", BOLD, 10.0)], 13.0)]
     left_col += line_rows(_address_lines(spec, f.get("bill_to"), where))
-    right_col = kv_rows(f.get("meta", []), x=LEFT + 270.0)
+    right_col = kv_rows(f.get("meta", []), keep, x=LEFT + 250.0, size=9.5, leading=12.5)
     blocks.append(Block(columns=[left_col, right_col]))
     blocks.append(spacer(14.0))
     for text in f.get("intro", []) or []:
@@ -410,7 +416,7 @@ def _memo(spec: DealSpec, doc: DocumentSpec, f: dict[str, Any], keep: list[str])
     blocks: list[Block] = letterhead(issuer) if issuer else []
     blocks.append(Block([Row([Cell(LEFT, str(f.get("title", "MEMORANDUM")), "left", BOLD, 16.0)], 26.0)], keep=True))
     pairs = [[label, f[key]] for key, label in (("to", "TO"), ("from", "FROM"), ("cc", "CC"), ("date", "DATE"), ("re", "RE")) if f.get(key)]
-    rows = kv_rows(pairs)
+    rows = kv_rows(pairs, keep)
     rows[-1].rule_below = True
     rows[-1].height += 14.0
     blocks.append(Block(rows, keep=True))
@@ -427,7 +433,7 @@ def _form(spec: DealSpec, doc: DocumentSpec, f: dict[str, Any], keep: list[str])
     rows[-1].height += 10.0
     blocks.append(Block(rows, keep=True))
     if f.get("meta"):
-        meta = kv_rows(f["meta"])
+        meta = kv_rows(f["meta"], keep)
         meta[-1].height += 10.0
         blocks.append(Block(meta, keep=True))
     blocks += body_items(f.get("body", []), keep, where)

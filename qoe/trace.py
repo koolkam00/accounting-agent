@@ -446,7 +446,7 @@ class DocLinkInfo:
     doc_id: str
     score: float = 0.0
     reasons: list[str] = field(default_factory=list)
-    entry_basis: dict[str, str] = field(default_factory=dict)  # entry_id -> number | amount | group | named | recovery
+    entry_basis: dict[str, str] = field(default_factory=dict)  # entry_id -> number|amount|group|reference|named|recovery
     relation: str = ""  # set by a challenge to override the doc-type default
     prelinked: bool = False  # related to the adjustment before any GL entry was considered
     cited: bool = False  # named in management's support references
@@ -771,10 +771,15 @@ _MAX_DOC_QUOTES = 4
 
 
 def _doc_quotes(facts: Optional[DocFacts], trace: AdjustmentTrace, info: DocLinkInfo) -> list[EvidenceQuote]:
-    """The quotes a reviewer needs from a linked document: matching amounts, terms, key statements."""
+    """The quotes a reviewer needs from a linked document: amounts that tie to the
+    linked entries (singly or in total), then terms, then key statements."""
     if facts is None:
         return []
-    amounts = {abs(trace.amount(e)) for e in info.entry_basis if e in trace.index.by_id}
+    ids = [e for e in info.entry_basis if e in trace.index.by_id]
+    targets = {abs(trace.amount(e)) for e in ids}
+    targets.add(abs(sum((trace.amount(e) for e in ids), ZERO)))
+    for g in {trace.group_of.get(e, "") for e in ids}:
+        targets.add(abs(sum((trace.amount(e) for e in ids if trace.group_of.get(e, "") == g), ZERO)))
     tol = trace.index.tolerance
     picked: list[EvidenceQuote] = []
 
@@ -787,7 +792,7 @@ def _doc_quotes(facts: Optional[DocFacts], trace: AdjustmentTrace, info: DocLink
             amt = abs(D(a.amount))
         except (ValueError, ArithmeticError):
             continue
-        if any(abs(amt - x) <= tol for x in amounts):
+        if any(abs(amt - x) <= tol for x in targets):
             add(a.quote)
     for t in facts.terms:
         add(t.quote)
@@ -1189,6 +1194,15 @@ def _associate_documents(t: AdjustmentTrace) -> None:
                 if names_match(idx.doc_cp[doc_id], g_cp) or (not g_cp and doc_id in support_docs):
                     for e in members:
                         t.associate(doc_id, e, "group", DW_ENTRY_AMOUNT, f"States the {money(abs(total))} total of {g}")
+    # A document for the group's matter / contract (an engagement letter for Matter 7710) supports its entries.
+    for g, ref in t.group_ref.items():
+        for doc_id in idx.docs_by_ref.get(ref, []):
+            dcp = idx.doc_cp[doc_id]
+            g_cp = idx.by_id[t.groups[g][0]].cp_tokens
+            if dcp and g_cp and not names_match(dcp, g_cp):
+                continue
+            for e in t.groups[g]:
+                t.associate(doc_id, e, "reference", DW_ENTRY_NUMBER, f"States reference {ref} of {g}")
     for info in t.doc_links.values():
         n = len(info.entry_basis)
         if n and not info.prelinked:
