@@ -49,6 +49,7 @@ raises a `GenerationError` naming the YAML item to fix.
 | `split_defaults` | The QBO `Split` column for each generic transaction type. |
 | `txn_types` | Overrides for transaction-type labels: `{bill: {netsuite_csv: "Vendor Bill"}}`. |
 | `default_dimensions`, `netsuite_internal_id_start` | NetSuite Subsidiary, Department, Class, and Location, and the first Internal ID. |
+| `distinct_amount_days` | Optional (default 0, off). See "Repeated amounts" under Background streams. |
 | `parties` | Reusable letterheads and address blocks for documents. |
 | `background` | Recurring activity streams. |
 | `planted` | Explicit rows with stable keys. |
@@ -126,6 +127,14 @@ A list value picks one entry per row, which plants tagging noise such as a blank
 mis-tagged Class: `dimensions: {Department: [Sales, Sales, ""]}`. The picks come from their own RNG,
 so adding noise never changes amounts.
 
+**Repeated amounts.** In allocate mode, rows whose integer weights happen to be equal get the same
+amount to the cent, which reads as a duplicate posting. Set the top-level `distinct_amount_days: 7` to
+prevent it: an allocate-mode stream then never repeats an exact row amount within a month, or for the
+same counterparty within 7 days across months. A clashing row's weight is redrawn from a dedicated RNG,
+so monthly totals and every other draw are unchanged. The generator also rejects any GL pair with the
+same account, counterparty and amount within the window, other than a planted duplicate. Leave it unset
+for specs whose committed packages must stay byte-identical.
+
 **Numbers.** A counterparty's `num` format takes precedence. Otherwise the stream's
 `num: {format, sequence | start, step}` applies. A named `sequence` is shared with every
 other stream that uses it and increases in date order. Planted numbers are never reused.
@@ -144,7 +153,8 @@ Memos, keys, numbers, and planted counterparties can use these placeholders:
 
 - `{yyyy}` `{yy}` `{mm}` `{dd}` `{mon}` (Jan) `{month}` (January) `{q}` `{n}`;
 - `{mdy}` (MM/DD/YYYY) and `{date}` (ISO);
-- `{prev_mon}` `{prev_month}` `{prev_yyyy}` `{prev_month_end_mdy}` `{last_yyyy}`;
+- `{prev_mon}` `{prev_month}` `{prev_yyyy}` `{prev_month_end_mdy}` `{last_yyyy}`, and `{prev_q}` (the calendar
+  quarter of the previous month, for a quarterly credit booked the month after quarter-end);
 - `{job}` (`YY-NNNN`), `{seq}` (number formats only), and any `choices` name.
 
 `{n}` is the slot index within the month, starting at 1. For a repeated planted row it is
@@ -251,8 +261,8 @@ net income through reported EBITDA, the adjustments, the total, and adjusted EBI
 - **`claim_keys`** checks a pass-through claim. The claimed amount in each of
   `claim_periods` (all periods by default) must equal the debit-positive sum of those rows.
 - **`total_excludes`** plants a schedule that does not foot: the listed refs are printed but left
-  out of the total-adjustments row (a SUM range that stops short), and adjusted EBITDA is built from
-  that total. `arithmetic_note` is appended to the answer key's `MGMT_SCHEDULE_ARITHMETIC` entry.
+  out of the total-adjustments row, and adjusted EBITDA is built from that total. The workbook holds
+  values, not formulas. `arithmetic_note` is appended to the answer key's `MGMT_SCHEDULE_ARITHMETIC` entry.
 
 ## Ground truth
 
@@ -302,6 +312,9 @@ Optional terms extend the rule:
   forma presented in TTM only whose rows also fall in another period where the carried amount is 0.
 - **`related_docs`** lists document ids surfaced as context or evidence against the claim; they are
   written to `ExpectedAdjustment.related_docs` as filenames.
+- **`{row:KEY}`** in `rationale`, `reviewer_note`, `question_topics` or `ground_truth.notes` is replaced
+  with that key's GL source row, so prose that cites a row never drifts when rows move. The key must be
+  exact (no glob) and in the GL.
 
 `gl_ebitda` is computed from the generated GL using SPEC §6, and `diligence_adjusted_ebitda`
 is `gl_ebitda` plus every non-REQUEST_INFO amount, including diligence items. You never type
@@ -396,6 +409,8 @@ formats.
 - Every account exists and is a P&L account.
 - No field contains a newline, so a CSV source row is its physical line number.
 - There are no unplanned duplicate groups.
+- With `distinct_amount_days` set, no two GL rows share account, counterparty and amount within the
+  window, other than a planted duplicate.
 - Each Xero contact name is free of `" - "`.
 - Every key glob matches at least one row.
 - Every `claim_keys` claim ties to its rows.

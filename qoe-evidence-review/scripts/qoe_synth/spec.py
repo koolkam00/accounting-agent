@@ -312,8 +312,8 @@ class ScheduleSpec(SpecModel):
     labels: ScheduleLabels = Field(default_factory=ScheduleLabels)
     basis: Literal["pl", "gl"] = "pl"  # management builds reported EBITDA from its P&L
     adjustments: list[ScheduleAdjustment]
-    # Planted MGMT_SCHEDULE_ARITHMETIC: refs left out of the printed total row (a SUM range that
-    # stops short of the last rows). Adjusted EBITDA is then built from the wrong total, as in Excel.
+    # Planted MGMT_SCHEDULE_ARITHMETIC: refs left out of the printed total row (the workbook holds
+    # values, not formulas). Adjusted EBITDA is then built from the wrong total.
     total_excludes: list[str] = Field(default_factory=list)
     arithmetic_note: str = ""
 
@@ -385,6 +385,12 @@ class DealSpec(SpecModel):
     split_defaults: dict[str, str] = Field(default_factory=dict)  # generic txn type -> QBO Split
     default_dimensions: dict[str, str] = Field(default_factory=dict)
     netsuite_internal_id_start: int = 100001
+    # When > 0, an allocate-mode stream never repeats an exact row amount within a month, or for the same
+    # counterparty within this many days across months (clashing weights are redrawn from a dedicated RNG, so
+    # monthly totals and every other draw are unchanged), and
+    # the generator rejects any GL pair with the same account, counterparty and amount within the window
+    # other than a planted duplicate. 0 keeps the original draws.
+    distinct_amount_days: int = 0
     sequences: dict[str, int] = Field(default_factory=dict)
     parties: dict[str, Party] = Field(default_factory=dict)
     accounts: list[AccountSpec]

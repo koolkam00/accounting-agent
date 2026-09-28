@@ -6,7 +6,7 @@ Subject: RE: VDR 1 - GL detail export for the buyer (Project Marlin)
 
 Nadia,
 
-I pulled the GL detail for the data room in monthly batches from the "GL Detail - All Accounts" saved search. I just noticed the August 2024 batch was exported with the 16-account flash report saved search instead (the one we use for the weekly flash to Wade), so that month only has the sales, cost of sales, freight, wage, officer, rent and legal accounts. Every other month is the full export.
+I pulled the GL detail for the data room in monthly batches from the "GL Detail - All Accounts" saved search. I just noticed the August 2024 batch was exported with the 16-account flash report saved search instead (the one we use for the weekly flash to Wade), so that month only has the sales, product cost, freight, wage, officer, rent and legal accounts. Every other month is the full export.
 
 The August 2024 income statement and trial balance in NetSuite are complete - the management P&L in the data room ties to them. Nothing is wrong in the books; it is only the export. I can re-run August from the correct search tonight if the buyer wants the replacement file.
 

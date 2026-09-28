@@ -13,60 +13,60 @@
         "TTM Jun-26": "540000.00"
       },
       "supporting_gl_rows": [
-        119,
-        228,
-        337,
-        462,
-        573,
-        672,
-        798,
-        915,
-        999,
-        1076,
-        1188,
-        1303,
-        1413,
-        1536,
-        1656,
-        1748,
-        1868,
-        1987,
-        2096,
-        2205,
-        2311,
-        2421,
-        2530,
-        2643,
-        2763,
-        2866,
-        2975,
-        3077,
-        3210,
-        3323,
-        3430,
-        3557,
-        3669,
-        3766,
-        3891,
-        4005,
-        4126,
-        4236,
-        4344,
-        4442,
-        4568,
-        4686,
-        4809,
-        4907,
-        5026,
-        5128,
-        5245,
-        5367,
-        5484,
-        5588,
-        5704,
-        5792,
-        5925,
-        6028
+        120,
+        232,
+        341,
+        466,
+        575,
+        673,
+        800,
+        920,
+        1004,
+        1081,
+        1190,
+        1305,
+        1416,
+        1542,
+        1662,
+        1754,
+        1872,
+        1990,
+        2100,
+        2212,
+        2318,
+        2428,
+        2535,
+        2647,
+        2768,
+        2874,
+        2983,
+        3085,
+        3217,
+        3328,
+        3436,
+        3566,
+        3678,
+        3775,
+        3899,
+        4011,
+        4133,
+        4245,
+        4353,
+        4451,
+        4576,
+        4692,
+        4816,
+        4916,
+        5035,
+        5137,
+        5253,
+        5373,
+        5491,
+        5597,
+        5713,
+        5801,
+        5932,
+        6034
       ],
       "related_gl_rows": [],
       "supporting_docs": [
@@ -95,36 +95,36 @@
       },
       "supporting_gl_rows": [
         16,
-        242,
-        469,
-        699,
-        926,
-        1085,
-        1317,
-        1553,
-        1766,
-        2002,
-        2212,
-        2428,
-        2658,
-        2880,
-        3095,
-        3337,
-        3573,
-        3794,
-        4019,
-        4243,
-        4466,
-        4702,
-        4925,
-        5143,
-        5381,
-        5601,
-        5815
+        246,
+        473,
+        700,
+        931,
+        1090,
+        1319,
+        1559,
+        1772,
+        2005,
+        2219,
+        2435,
+        2662,
+        2888,
+        3103,
+        3342,
+        3582,
+        3803,
+        4025,
+        4252,
+        4475,
+        4708,
+        4934,
+        5152,
+        5387,
+        5610,
+        5824
       ],
       "related_gl_rows": [
-        1637,
-        4342
+        1643,
+        4351
       ],
       "supporting_docs": [
         "2.3 Lease Agreement - 410 Grange Road (Pooler Industrial Holdings).pdf",
@@ -135,14 +135,14 @@
         "CONTRADICTORY_EVIDENCE"
       ],
       "question_topics": [
-        "Terms of the post-close lease with Pooler Industrial Holdings (rent, escalations, term)",
+        "Whether the 2019 lease is terminated and replaced at closing, and the executed rent, escalations and term",
         "Basis for management's $20,000 a month market rent",
         "Landlord costs the Company pays under the NNN lease (property taxes, insurance, roof and structure)",
         "Other related-party arrangements with the Carrow family"
       ],
       "rationale": "Tidewell pays $24.0k a month ($288.0k a year; $6.00/SF NNN, flat since 2019) to Pooler Industrial Holdings, which the CEO controls. Management adds back $48.0k, saying the rent is above a $20.0k market level, but gives no support for that level. The only benchmark in the data room is Marsh Point's signed opinion (2/10/26; four 2024-25 Pooler comparables at $6.95-7.60/SF): market rent is $7.25/SF NNN, $348.0k a year, and the letter states the contract rent is below market. The Company already pays the property taxes, so the NNN basis is like for like. Normalizing to market reduces EBITDA: $288.0k less $348.0k = -$60.0k per period. Revised from +$48.0k to -$60.0k.",
-      "ambiguity": "low",
-      "reviewer_note": "Normalization whose sign flips. Must not fire: NORMALIZATION_BENCHMARK_MISSING (a signed independent broker opinion exists), UNSIGNED_OR_DRAFT_SUPPORT, RECURRING_PATTERN. SIGN_ERROR is not the right code: the GL rows are ordinary rent debits and the direction change comes from the benchmark. A post-close lease at $7.25/SF with 3% escalations raises run-rate rent further in later years (buyer model)."
+      "ambiguity": "medium",
+      "reviewer_note": "Normalization whose sign flips. Must not fire: NORMALIZATION_BENCHMARK_MISSING (a signed independent broker opinion exists), UNSIGNED_OR_DRAFT_SUPPORT, RECURRING_PATTERN. SIGN_ERROR is not the right code: the GL rows are ordinary rent debits and the direction change comes from the benchmark. Pre-registered alternative: REJECT 0/0/0. The executed 2019 lease (VDR 2.3) binds the Company at $24,000 a month, flat, through 3/31/2029, with renewals at fair market rent. No post-close lease has been executed; Marsh Point prices a proposed new lease at closing. On that view management's +48,000 is rejected and the $5,000-a-month step-up to market is a buyer pro forma and lease-negotiation item. Also not carried: straight-line rent on the proposed 5-year lease with 3% escalations (ASC 842) is about $369,516 a year, or -81,516 per period. The key uses year-1 market rent, the usual run-rate basis."
     },
     {
       "adj_id": "3",
@@ -160,11 +160,12 @@
         "Where the $60,000 of family-office support is recorded in the GL, if anywhere",
         "Whether Carrow Family Holdings invoices or is reimbursed by the Company (management fee, expense reports)",
         "Nature and hours of the accounting, HR and IT support provided",
-        "Standalone cost to replace the services after closing (a negative adjustment if they are provided free)"
+        "Standalone cost to replace the services after closing (a buyer consideration, not carried, if they are provided free)",
+        "Whether Company employees, assets or funds serve the family office or the Carrow family (the reverse direction, which would support an add-back)"
       ],
-      "rationale": "Management adds back $60.0k a year (its estimate of $5.0k a month) for accounting, HR and IT support from Carrow Family Holdings, the owner's family office. There is no GL activity with Carrow Family Holdings in any account and no invoice, agreement or management-fee entry; the schedule cites a management estimate only. An add-back needs a cost inside EBITDA. Pending until management shows where the cost is recorded; provisional supported amount 0 / 0 / 0. If the family office provides the services without charge, the adjustment runs the other way as a standalone cost.",
+      "rationale": "Management adds back $60.0k a year (its estimate of $5.0k a month) for accounting, HR and IT support from Carrow Family Holdings, the owner's family office. There is no GL activity with Carrow Family Holdings in any account and no invoice, agreement or management-fee entry; the schedule cites a management estimate only. An add-back needs a cost inside EBITDA. Management's own commentary says the family office provides the support to the Company and that it ends at closing, and the GL has no Carrow Family Holdings activity in any account. On that description nothing is expensed, so the add-back has nothing to remove and runs the wrong way: losing free services at closing is a standalone cost of up to about $60,000 a year. That is a buyer consideration and is not carried. The item stays pending only in case management shows the cost is recorded somewhere; provisional supported amount 0 / 0 / 0.",
       "ambiguity": "medium",
-      "reviewer_note": "Pre-registered alternative: REJECT 0 / 0 / 0 (nothing in the GL to add back). If the family office provides the services free of charge, a standalone-cost adjustment would reduce EBITDA; that is a buyer diligence item, not management's add-back. Must not fire: RECURRING_PATTERN. There is no document to link; NO_DOCUMENT_SUPPORT on the claimed set is acceptable as INFO."
+      "reviewer_note": "Pre-registered alternative: REJECT 0 / 0 / 0 (nothing in the GL to add back). REQUEST_INFO stays primary: EBITDA is the same either way, and the D1 case list specifies REQUEST_INFO for this NO_GL_SUPPORT case. Not pre-registered: REVISE -60,000 in each period. If the family office provides the services free of charge, a standalone cost built on management's unsupported $5,000-a-month estimate is a buyer consideration, not a diligence amount. Must not fire: RECURRING_PATTERN. There is no document to link; NO_DOCUMENT_SUPPORT on the claimed set is acceptable as INFO."
     },
     {
       "adj_id": "4",
@@ -176,23 +177,23 @@
         "TTM Jun-26": "88230.18"
       },
       "supporting_gl_rows": [
-        3425,
-        3544,
-        3662,
-        3760,
-        3885,
-        3992,
-        4120,
-        4221,
-        4338,
-        4436,
-        4561,
-        4674,
-        4801,
-        4901
+        3431,
+        3553,
+        3671,
+        3769,
+        3893,
+        3998,
+        4127,
+        4230,
+        4347,
+        4445,
+        4569,
+        4680,
+        4808,
+        4910
       ],
       "related_gl_rows": [
-        5027
+        5036
       ],
       "supporting_docs": [
         "3.1 HR Memo - Charleston Order Desk Reduction in Force.pdf",
@@ -208,11 +209,12 @@
         "Employer payroll taxes and benefits on the eliminated wages (not claimed)",
         "Whether Savannah customer service overtime or headcount rose after the transfer",
         "The February 2026 severance ($11,850), a separate one-time cost management did not claim",
-        "B2B portal adoption and service levels for Charleston customers"
+        "B2B portal adoption and service levels for Charleston customers",
+        "Incremental B2B portal platform, support or marketing costs to net against the order-desk savings"
       ],
       "rationale": "Realized headcount reduction. The three Charleston order desk roles were eliminated 1/30/26 (HR memo; separation agreements signed 2/2-2/4/26; COO email confirms no backfill after orders moved to the B2B portal and the Savannah team). The cost center's payroll in 6030 stops after the 1/30/26 run. The $88,230.18 claim equals the fourteen order desk payrolls from Jul-25 to Jan-26 in the GL, which agree to the payroll register extract. Accept for TTM; management correctly claims nothing in FY2025 or FY2026.",
       "ambiguity": "low",
-      "reviewer_note": "Realized pro forma positive control. Must not fire: PRO_FORMA_NOT_REALIZED (separation agreements signed, payroll stops after the 1/30/26 run, COO confirms no backfill), RECURRING_PATTERN, EXCESS_GL_ACTIVITY. The Feb-26 severance in 6030 is not part of the run-rate savings; folding it in as an unclaimed same-event entry would be wrong. Unclaimed upside: employer taxes on the wages (about 7.65% x 88,230 = 6,750). Savannah customer service payroll shows no step-up after February."
+      "reviewer_note": "Realized pro forma positive control. Must not fire: PRO_FORMA_NOT_REALIZED (separation agreements signed, payroll stops after the 1/30/26 run, COO confirms no backfill), RECURRING_PATTERN. EXCESS_GL_ACTIVITY may be raised at INFO for FY2026 (the claim is 0 by presentation, and 125,801.84 of order-desk payroll from Apr-25 to Jan-26 sits in FY2026), but it must not change any amount. Run-rate savings are presented in TTM only, and the Feb-26 severance (row 5036, $11,850, a one-time cost of a different nature) must not be folded in. Unclaimed upside: employer taxes on the wages (about 7.65% x 88,230 = 6,750). Savannah customer service payroll shows no step-up after February."
     },
     {
       "adj_id": "5",
@@ -224,18 +226,18 @@
         "TTM Jun-26": "43200.00"
       },
       "supporting_gl_rows": [
-        3431,
-        3558,
-        3670,
-        3767,
-        3892,
-        4006,
-        4127,
-        4237,
-        4345,
-        4443,
-        4569,
-        4687
+        3437,
+        3567,
+        3679,
+        3776,
+        3900,
+        4012,
+        4134,
+        4246,
+        4354,
+        4452,
+        4577,
+        4693
       ],
       "related_gl_rows": [],
       "supporting_docs": [
@@ -255,7 +257,7 @@
       ],
       "rationale": "The Purchasing Manager retired 12/31/25 and the role is eliminated (agreement signed 12/5/25; the Purchasing payroll line in 6040 stops after the 12/31/25 run). Management priced the savings at the December census 2026 salary: $96.0k x 6/12 = $48.0k. That rate never took effect. The agreement states his current base of $86.4k, and the GL shows twelve semi-monthly payrolls of $3.6k from Jul to Dec-25, $43.2k. Revised to GL actual.",
       "ambiguity": "low",
-      "reviewer_note": "Contract-salary variant of the realized pro forma. Must not fire: PRO_FORMA_NOT_REALIZED (retirement agreement signed; payroll stops after the 12/31/25 run). The census $96,000 is a 2026 merit rate that was never paid; carry GL actual. Unclaimed upside: employer taxes on $43,200."
+      "reviewer_note": "Contract-salary variant of the realized pro forma. Must not fire: PRO_FORMA_NOT_REALIZED (retirement agreement signed; payroll stops after the 12/31/25 run). The census $96,000 is a 2026 merit rate that was never paid; carry GL actual. Unclaimed upside: employer taxes on $43,200. EXCESS_GL_ACTIVITY at INFO for FY2026 is acceptable; FY2026 stays 0."
     },
     {
       "adj_id": "6",
@@ -267,7 +269,7 @@
         "TTM Jun-26": "90000.00"
       },
       "supporting_gl_rows": [
-        5246
+        5254
       ],
       "related_gl_rows": [],
       "supporting_docs": [
@@ -296,11 +298,11 @@
         "TTM Jun-26": "42000.00"
       },
       "supporting_gl_rows": [
-        3713,
-        3927
+        3722,
+        3935
       ],
       "related_gl_rows": [
-        5686
+        5695
       ],
       "supporting_docs": [
         "6.1 Coastal Empire Restoration Invoice CER-25-3318.pdf",
@@ -318,11 +320,12 @@
       "question_topics": [
         "Support for the $28,000 estimate (never invoiced; repaired in-house)",
         "Deductible and betterment borne by the Company ($42,000) and whether any further recovery is expected",
-        "Condition of the fire protection system and any capex still needed"
+        "Condition of the fire protection system and any capex still needed",
+        "Capex treatment of the $17,000 seismic re-anchoring betterment and the replacement uprights and beams"
       ],
-      "rationale": "Sprinkler line break at the Savannah DC (8/11/25). Coastal Empire ($38.5k, Aug-25) and Lowcountry Rack ($33.5k, Sep-25) are booked in 6220 and supported by invoices citing claim PSM-25-40718: $72.0k, non-recurring. Management's $100.0k adds a $28.0k estimate for ceiling and drywall work that was never invoiced or booked; the COO confirms the repair was done in-house with stock materials. Palmetto State paid $30.0k in May-26 (letter 4/30/26), credited to 6220, and management did not net it. FY2026: $72.0k (the credit falls after 3/31/26). TTM: $72.0k less the $30.0k recovery = $42.0k.",
+      "rationale": "Sprinkler line break at the Savannah DC (8/11/25). Coastal Empire ($38.5k, Aug-25) and Lowcountry Rack ($33.5k, Sep-25) are booked in 6220 and supported by both invoices; Coastal Empire's cites claim PSM-25-40718, and Palmetto State's 4/30/26 settlement letter itemizes CER-25-3318 and LRS-7742: $72.0k, non-recurring. Management's $100.0k adds a $28.0k estimate for ceiling and drywall work that was never invoiced or booked; the COO confirms the repair was done in-house with stock materials. Palmetto State paid $30.0k in May-26 (letter 4/30/26), credited to 6220, and management did not net it. FY2026: $72.0k (the credit falls after 3/31/26). TTM: $72.0k less the $30.0k recovery = $42.0k.",
       "ambiguity": "low",
-      "reviewer_note": "Combines PARTIAL_GL_SUPPORT (an estimated accrual never booked) with a contra-expense recovery that lands in TTM only. Must not fire: RECURRING_PATTERN (routine 6220 repairs are small and unrelated). The recovery is a credit in 6220 in May-26: inside TTM, after FY2026. Accruing the recovery back to FY2026 as probable at 3/31/26 is not supported, because the claim was open and unquantified until the 4/30/26 letter."
+      "reviewer_note": "Combines PARTIAL_GL_SUPPORT (an estimated accrual never booked) with a contra-expense recovery that lands in TTM only. Must not fire: RECURRING_PATTERN (routine 6220 repairs are small and unrelated). The recovery is a credit in 6220 in May-26: inside TTM, after FY2026. The amounts do not depend on recovery timing. Whether the $30,000 is accrued at 3/31/26 as a probable recovery (the 4/30/26 letter is a recognized subsequent event if it precedes issuance) or taken when received in May-26, removing the whole event (cost and recovery) gives FY2026 +72,000 against the GL as booked, and TTM +42,000."
     },
     {
       "adj_id": "8",
@@ -334,11 +337,11 @@
         "TTM Jun-26": "148600.00"
       },
       "supporting_gl_rows": [
-        4688
+        4694
       ],
       "related_gl_rows": [
-        2645,
-        5368
+        2649,
+        5374
       ],
       "supporting_docs": [
         "6.2 Inventory Write-off Memo - PFAS-Treated Molded Fiber Dec 2025.pdf",
@@ -366,38 +369,38 @@
         "TTM Jun-26": "34200.00"
       },
       "supporting_gl_rows": [
-        3192,
-        3650,
-        4134
+        3199,
+        3659,
+        4141
       ],
       "related_gl_rows": [
         17,
-        243,
-        470,
-        700,
-        927,
-        1086,
-        1318,
-        1554,
-        1767,
-        2003,
-        2213,
-        2429,
-        2659,
-        2881,
-        3096,
-        3338,
-        3574,
-        3795,
-        4020,
-        4244,
-        4467,
-        4703,
-        4926,
-        5144,
-        5382,
-        5602,
-        5816
+        247,
+        474,
+        701,
+        932,
+        1091,
+        1320,
+        1560,
+        1773,
+        2006,
+        2220,
+        2436,
+        2663,
+        2889,
+        3104,
+        3343,
+        3583,
+        3804,
+        4026,
+        4253,
+        4476,
+        4709,
+        4935,
+        5153,
+        5388,
+        5611,
+        5825
       ],
       "supporting_docs": [
         "4.2 Brannock Vail Engagement Letter - Brightfield Arbitration (Matter 2025-014).pdf",
@@ -429,20 +432,20 @@
         "TTM Jun-26": "64000.00"
       },
       "supporting_gl_rows": [
-        3380,
-        4040
+        3385,
+        4046
       ],
       "related_gl_rows": [
-        4043,
-        4078,
-        4272,
-        4506,
-        4728,
-        4963,
-        5182,
-        5404,
-        5619,
-        5858
+        4049,
+        4084,
+        4281,
+        4514,
+        4734,
+        4972,
+        5191,
+        5410,
+        5628,
+        5866
       ],
       "supporting_docs": [
         "5.1 Kestrel Systems Order Form KS-OF-2025-061.pdf",
@@ -455,6 +458,7 @@
       ],
       "expected_flags": [
         "CONTINUING_OBLIGATION",
+        "CONTRADICTORY_EVIDENCE",
         "DUPLICATE_GL_ENTRY"
       ],
       "question_topics": [
@@ -464,7 +468,7 @@
       ],
       "rationale": "The KestrelWMS order form (6/20/25) separates a one-time $64.0k implementation fee (milestones of $32.0k at kickoff, Jul-25, and go-live, Oct-25) from a $5.4k monthly subscription that starts at go-live, runs 36 months and renews automatically. Management labeled all Kestrel activity one-time: $128.4k in FY2026 and $144.6k in TTM, including six (FY2026) and nine (TTM) subscription months and a second posting of go-live bill KS-10442. The subscription is the continuing cost of the new WMS and stays in EBITDA; the second KS-10442 posting is a duplicate (see D-1). Revised to the implementation fee: $64.0k in FY2026 and TTM.",
       "ambiguity": "low",
-      "reviewer_note": "Mixed contract with a duplicate posting inside the claim. The duplicate second posting of KS-10442 is carried by D-1, not here: this item keeps the first posting only, so nothing is counted twice. Must not fire: RECURRING_PATTERN on the implementation milestones. The $5,400 monthly subscription (36-month term, auto-renew) is a go-forward cost. Buyer note: the StockPilot overlap ($2,950 a month, Oct-Dec 2025) is a possible further add-back management did not claim."
+      "reviewer_note": "Mixed contract with a duplicate posting inside the claim. The duplicate second posting of KS-10442 is carried by D-1, not here: this item keeps the first posting only, so nothing is counted twice. Must not fire: RECURRING_PATTERN on the implementation milestones. The $5,400 monthly subscription (36-month term, auto-renew) is a go-forward cost. CONTRADICTORY_EVIDENCE is expected: management's schedule calls all Kestrel activity a 'One-time cost of implementing', while KS-SUB-2511 reads 'Recurring monthly subscription per Order Form KS-OF-2025-061' and the order form sets $5,400.00 a month for 36 months with auto-renewal (the SPEC 5.4 example trigger; D1 M-06 analog). Buyer note: the StockPilot overlap ($2,950 a month, Oct-Dec 2025) is a possible further add-back management did not claim. GAAP minority view (ASC 350-40 as amended by ASU 2018-15): capitalize the configuration and integration portion of the implementation fee and amortize it over the 36-month hosting term in the same opex line as the subscription, so the amortization stays inside EBITDA. On the full $64,000 that gives 0 / 53,333.33 / 48,000 ($1,777.78 a month from the Oct-25 go-live: 6 months in FY2026, 9 in TTM). Not pre-registered: the invoices do not split capitalizable configuration and integration from expensed data migration and training, the Company expenses implementation costs, and QoE practice adds back implementation fees expensed as incurred. The capitalization-policy question stays open."
     },
     {
       "adj_id": "11",
@@ -476,9 +480,9 @@
         "TTM Jun-26": "84000.00"
       },
       "supporting_gl_rows": [
-        4092,
-        4549,
-        5081
+        4098,
+        4557,
+        5090
       ],
       "related_gl_rows": [],
       "supporting_docs": [
@@ -497,8 +501,8 @@
         "Any further Ridgeline work after the final report"
       ],
       "rationale": "Ridgeline's engagement letter (9/22/25) prices the distribution network study as one project at a fixed $84.0k in three phases. All three phase invoices are in 6420: $30.0k Oct-25, $24.0k Dec-25 and $30.0k Feb-26 (final report delivered 2/13/26). Management claimed only the first two ($54.0k) although its support reference cites the phase 3 invoice. The study is a one-time strategic project; the routine SafePoint EHS audits in 6420 are correctly excluded. Revised up to $84.0k in FY2026 and TTM.",
-      "ambiguity": "low",
-      "reviewer_note": "Upward revision: carry the unclaimed invoice from the same engagement. Management's own support reference cites the phase 3 invoice (VDR 6.4.3) and the letter fixes one $84,000 fee for one project. Must not fire: RECURRING_PATTERN, PARTIAL_GL_SUPPORT. The routine SafePoint EHS quarterly audits in 6420 are a different vendor and theme and must not be pulled in."
+      "ambiguity": "medium",
+      "reviewer_note": "Upward revision: carry the unclaimed invoice from the same engagement. Management's own support reference cites the phase 3 invoice (VDR 6.4.3) and the letter fixes one $84,000 fee for one project. This meets every condition of the SPEC 5.4 EXCESS_GL_ACTIVITY carry rule: a non-recurring item, one fixed-fee engagement covering the claimed and unclaimed invoices, the unclaimed invoice cited in the support refs, and a period management claimed; the flag is WARNING when carried. Must not fire: RECURRING_PATTERN, PARTIAL_GL_SUPPORT. The routine SafePoint EHS quarterly audits in 6420 are a different vendor and theme and must not be pulled in. Pre-registered alternative: ACCEPT at management's 54,000, with phase 3 noted as unclaimed upside. It understates EBITDA by 30,000, so it is not a false accept in substance. Claimed-set fit: phases 1 and 3 are both $30,000 and the support ref cites all three invoices (VDR 6.4; 6.4.1; 6.4.2; 6.4.3), so {RSC-2291, RSC-2344} and {RSC-2403, RSC-2344} both fit 54,000. The earliest-entries tie-break selects phases 1 and 2. The final 84,000 does not depend on which set is chosen."
     },
     {
       "adj_id": "12",
@@ -510,7 +514,7 @@
         "TTM Jun-26": "-46500.00"
       },
       "supporting_gl_rows": [
-        4289
+        4298
       ],
       "related_gl_rows": [],
       "supporting_docs": [
@@ -527,7 +531,7 @@
       ],
       "rationale": "Sunmeadow paid a one-time $46.5k termination fee (agreement 10/28/25) to end Tidewell's exclusive distribution agreement early; it was received 11/7/25 and credited to 8000 Other Income, which is inside EBITDA. Management presents it as a +$46.5k add-back. Removing a non-recurring gain reduces EBITDA, so the adjustment is -$46.5k in FY2026 and TTM. Revised to the negative amount.",
       "ambiguity": "low",
-      "reviewer_note": "Must not fire: RECURRING_PATTERN (small monthly recycling rebates in 8000 are unrelated). The fee is a gain inside EBITDA (8000 Other Income); removing a one-time gain reduces EBITDA. The lost Sunmeadow line is a separate buyer run-rate question."
+      "reviewer_note": "Must not fire: RECURRING_PATTERN (small monthly recycling rebates in 8000 are unrelated). The fee is a gain inside EBITDA (8000 Other Income); removing a one-time gain reduces EBITDA. The lost Sunmeadow line is a separate buyer run-rate question. Reachable without a special rule: proposed is the debit-positive sum of row 4298 (-46,500); SIGN_ERROR adds a question and removes nothing."
     },
     {
       "adj_id": "13",
@@ -539,7 +543,7 @@
         "TTM Jun-26": "19200.00"
       },
       "supporting_gl_rows": [
-        4346
+        4355
       ],
       "related_gl_rows": [],
       "supporting_docs": [
@@ -556,7 +560,7 @@
       ],
       "rationale": "Altamaha bill AFL-TU-25-118 ($38.4k, booked 11/14/25 in 5400) recovers fuel surcharge underbilled on shipments from April to September 2025, $6.4k a month; it is a cost of those months. FY2026 contains both the booking and all six service months, so there is no FY2026 adjustment. TTM (Jul-25 to Jun-26) contains the booking but only three service months, so the $19.2k for Apr-Jun 2025 belongs before the TTM and is added back. Revised FY2026 to 0 and TTM to $19.2k.",
       "ambiguity": "low",
-      "reviewer_note": "Straddles the FY2026 / TTM overlap. Must not fire: RECURRING_PATTERN (routine Altamaha LTL bills in 5400 are ordinary freight; this is the only true-up). FY2026 contains the booking month and all six service months, so management's FY2026 claim is wrong in full; TTM keeps only the Apr-Jun 2025 half (3/6 x 38,400)."
+      "reviewer_note": "Straddles the FY2026 / TTM overlap. Must not fire: RECURRING_PATTERN (routine Altamaha LTL bills in 5400 are ordinary freight; this is the only true-up). FY2026 contains the booking month and all six service months, so management's FY2026 claim is wrong in full; TTM keeps only the Apr-Jun 2025 half (3/6 x 38,400). OUT_OF_PERIOD fires on the TTM label only."
     },
     {
       "adj_id": "14",
@@ -568,10 +572,10 @@
         "TTM Jun-26": "42000.00"
       },
       "supporting_gl_rows": [
-        4818
+        4825
       ],
       "related_gl_rows": [
-        4920
+        4929
       ],
       "supporting_docs": [
         "7.1 Marlowe Capital Advisors Engagement Letter - Debt Placement.pdf",
@@ -586,7 +590,8 @@
       "question_topics": [
         "Other fees on the Coastal Trust facility and how they were recorded",
         "Whether the Coastal Trust facility will be repaid at closing",
-        "Any other financing-related charges inside operating expenses"
+        "Any other financing-related charges inside operating expenses",
+        "Use of the Coastal Trust proceeds beyond the Ogeechee payoff ($3.2M term loan drawn against a $925k term loan plus the revolver) and any distributions to members before closing (net debt and debt-like items)"
       ],
       "rationale": "The Jan-26 refinancing claim combines Marlowe's $42.0k placement fee (1.0% of $4.2M of committed facilities, 6400) and the $27.6k write-off of unamortized Ogeechee debt issuance costs (8100). The write-off sits in Interest Expense; management's interest line equals GL 8100 including it, so reported EBITDA already adds it back and claiming it again double counts. The Marlowe fee is a financing cost inside operating expenses, supported by the engagement letter and invoice. Revised to $42.0k in FY2026 and TTM.",
       "ambiguity": "low",
@@ -602,7 +607,7 @@
         "TTM Jun-26": "18500.00"
       },
       "supporting_gl_rows": [
-        4908
+        4917
       ],
       "related_gl_rows": [],
       "supporting_docs": [
@@ -628,9 +633,9 @@
         "TTM Jun-26": "95000.00"
       },
       "supporting_gl_rows": [
-        4382,
-        4596,
-        5110
+        4391,
+        4604,
+        5119
       ],
       "related_gl_rows": [],
       "supporting_docs": [
@@ -648,7 +653,7 @@
       ],
       "rationale": "Project Marlin sell-side costs: Cordell Harbor's one-time $35.0k retainer (6400, Nov-25; payable on signing and creditable against the 3% success fee) and Whitlock & Rowe's sell-side quality of earnings, a $60.0k fixed fee billed in two $30.0k installments (6410, Dec-25 and Feb-26). All tie to engagement letters and invoices. Pemberton Lyle's quarterly and annual accounting fees in 6410 recur and are correctly left out. Accept $95.0k in FY2026 and TTM.",
       "ambiguity": "low",
-      "reviewer_note": "False-reject trap: a one-time retainer creditable against a success fee plus two installments of one fixed fee. Must not fire: CONTINUING_OBLIGATION, RECURRING_PATTERN (Pemberton Lyle's routine 6410 fees are a different firm and unclaimed). This is the row management's total formula leaves out (see the MGMT_SCHEDULE_ARITHMETIC data-quality entry); the adjustment itself is sound."
+      "reviewer_note": "False-reject trap: a one-time retainer creditable against a success fee plus two installments of one fixed fee. Must not fire: CONTINUING_OBLIGATION, RECURRING_PATTERN (Pemberton Lyle's routine 6410 fees are a different firm and unclaimed). This is the row management's printed total leaves out (see the MGMT_SCHEDULE_ARITHMETIC data-quality entry); the adjustment itself is sound."
     }
   ],
   "data_quality": [
@@ -657,10 +662,10 @@
       "month": "2025-10",
       "account": "6600",
       "gl_rows": [
-        4040,
-        4078
+        4046,
+        4084
       ],
-      "note": "Kestrel Systems go-live milestone bill KS-10442 ($32,000.00, 6600) was entered twice in NetSuite, on 10/03/2025 and again on 10/09/2025 (AP inbox and vendor portal). Management's P&L and its Ref 10 claim include both postings; the Kestrel statement shows the second payment sitting as an unapplied credit."
+      "note": "Kestrel Systems go-live milestone bill KS-10442 ($32,000.00, 6600) was entered twice in NetSuite, on 10/03/2025 and again on 10/09/2025. Management's P&L and its Ref 10 claim include both postings; the Kestrel statement shows the second payment sitting as an unapplied credit."
     },
     {
       "code": "RECON_VARIANCE",
@@ -695,7 +700,7 @@
       "month": null,
       "account": null,
       "gl_rows": [],
-      "note": "The total-adjustments row omits ref(s) 16; printed total less the sum of the listed adjustments: FY2025 0.00; FY2026 -95000.00; TTM Jun-26 -95000.00. Management's SUM range for the total row ends at ref 15; ref 16 (sale-process fees, added last) is listed but not totaled, so the printed total and adjusted EBITDA are understated by 95,000 in FY2026 and TTM."
+      "note": "The total-adjustments row omits ref(s) 16; printed total less the sum of the listed adjustments: FY2025 0.00; FY2026 -95000.00; TTM Jun-26 -95000.00. The printed total equals the sum of refs 1-15; ref 16 (sale-process fees, listed last) is not included. The schedule holds values, not formulas. The printed total and adjusted EBITDA are therefore understated by 95,000 in FY2026 and TTM."
     }
   ],
   "diligence_items": [
@@ -709,10 +714,10 @@
         "TTM Jun-26": "32000.00"
       },
       "supporting_gl_rows": [
-        4078
+        4084
       ],
       "related_gl_rows": [
-        4040
+        4046
       ],
       "supporting_docs": [
         "5.1.2 Kestrel Systems Invoice KS-10442.pdf",
@@ -724,7 +729,7 @@
       ],
       "question_topics": [
         "Refund of the $32,000 unapplied credit or its application to later Kestrel invoices",
-        "AP controls over bills received both by email and through vendor portals"
+        "AP duplicate-invoice controls (KS-10442 was entered twice under one document number and paid twice, on 10/24 and 10/31/25, per the Kestrel statement)"
       ],
       "rationale": "Kestrel go-live bill KS-10442 ($32.0k) is posted twice in 6600 (10/3/25 and 10/9/25, same document number). The invoice shows one $32.0k charge, and Kestrel's statement shows the second payment held as an unapplied $32.0k credit. Reverse the second posting: +$32.0k in FY2026 and TTM.",
       "ambiguity": "low",
@@ -740,7 +745,7 @@
         "TTM Jun-26": "0.00"
       },
       "supporting_gl_rows": [
-        5908
+        5915
       ],
       "related_gl_rows": [],
       "supporting_docs": [
@@ -751,12 +756,12 @@
       "related_docs": [],
       "expected_flags": [],
       "question_topics": [
-        "FY2027 MIP targets and the run-rate bonus cost",
+        "FY2027 MIP adoption, targets and the Apr-Jun 2026 accrual",
         "Whether FY2025 would have carried a bonus cost had the plan existed (buyer run-rate)"
       ],
-      "rationale": "Management's P&L accrues the FY2026 Management Incentive Plan ($186.0k) as a top-side in Mar-26 and reverses it when paid in Jun-26; NetSuite records the bonus only when paid (6/12/26, 6040). The plan (adopted 4/8/25) earns awards on the last day of the plan year (3/31/26), and the approved calculation (4/24/26) ties to the payout. The accrual is a supported reporting difference, so keep it: FY2026 carries the cost (-$186.0k against GL), TTM already carries it once through the Jun-26 payment (0), and FY2025 had no plan (0).",
+      "rationale": "Management's P&L accrues the FY2026 Management Incentive Plan ($186.0k) as a top-side in Mar-26 and reverses it when paid in Jun-26; NetSuite records the bonus only when paid (6/12/26, 6040). The plan (adopted 4/8/25) earns awards on the last day of the plan year (3/31/26), and the calculation the Board of Managers approved (4/24/26) ties to the payout. The Board adopted the FY2027 plan on the same terms on 4/7/26. The accrual is a supported reporting difference, so keep it: FY2026 carries the cost (-$186.0k against GL), TTM already carries it once through the Jun-26 payment (0), and FY2025 had no plan (0).",
       "ambiguity": "low",
-      "reviewer_note": "Supported management top-side (SPEC 5.7): it offsets the dil_recon reversal, so diligence EBITDA follows accrual accounting (FY2026 = GL - 186,000; TTM = GL, which already holds the Jun-26 payment once). RECON_VARIANCE fires on 6040 in 2026-03 (+186,000) and 2026-06 (-186,000). Not an add-back, and not part of ref 6."
+      "reviewer_note": "Supported management top-side (SPEC 5.7): it offsets the dil_recon reversal. Management's year-end accrual is kept: FY2026 = GL - 186,000. TTM = GL carries one full plan-year award (the Jun-26 payment), which equals a ratable accrual: 9/12 of FY2026 (139,500) plus 3/12 of the FY2027 plan at the same level (46,500). FY2025 has no incentive cost because no plan existed; that is a buyer run-rate point, not a diligence adjustment. RECON_VARIANCE fires on 6040 in 2026-03 (+186,000) and 2026-06 (-186,000). Not an add-back, and not part of ref 6."
     },
     {
       "adj_id": "D-3",
@@ -780,18 +785,18 @@
       ],
       "rationale": "The Aug-2024 GL batch was exported with the 16-account flash-report search (NetSuite administrator's email), so 23 accounts with August activity are missing from the GL, while management's P&L, which agrees to the trial balance, has them. Using the GL alone would drop a month of operating costs (benefits, payroll taxes, commissions, insurance, fleet, IT and others) and overstate FY2025 EBITDA. Keep management's August amounts: -$363.6k in FY2025, no effect on FY2026 or TTM. Request the replacement export to close the point.",
       "ambiguity": "low",
-      "reviewer_note": "Not a SPEC 5.7 v1 item type: it has no GL rows, because its rows are the ones missing from the export, so it can only be scored on amount. A tool that reverses the August difference to the incomplete GL overstates FY2025 EBITDA by the same amount. Only EBITDA accounts count; the missing 7000, 7050 and 8100 rows are below EBITDA."
+      "reviewer_note": "A documented GL-export gap (SPEC 5.7, other supported reporting differences): reconciliation raises MISSING_PERIOD for 2024-08, the NetSuite administrator's email explains it as an export defect, and the management P&L ties to the trial balance. It has no GL rows, because its rows are the ones missing from the export, so SPEC 9 matches it to a tool diligence item with no GL links and the same non-zero period labels (FY2025 only). Only EBITDA accounts count (20 accounts, from 5300 3,866.00 to 8000 -806.41); the missing 7000, 7050 and 8100 rows are below EBITDA. A practitioner bridge built from the TB-based management P&L would never show this line; it exists because this bridge starts from the GL export. Reversing to the incomplete GL overstates FY2025 by 363,586.47. Until evaluate.py implements the SPEC 9 no-GL-row matching rule, report FY2025 ebitda_error with and without D-3."
     }
   ],
   "gl_ebitda": {
-    "FY2025": "8022682.75",
-    "FY2026": "7496760.71",
-    "TTM Jun-26": "7517054.01"
+    "FY2025": "8021818.36",
+    "FY2026": "7418030.47",
+    "TTM Jun-26": "7443814.59"
   },
   "diligence_adjusted_ebitda": {
-    "FY2025": "8139096.28",
-    "FY2026": "8441360.71",
-    "TTM Jun-26": "8751484.19"
+    "FY2025": "8138231.89",
+    "FY2026": "8362630.47",
+    "TTM Jun-26": "8678244.77"
   },
-  "notes": "SYNTHETIC. Fiscal years end March 31; FY2026 and TTM Jun-26 overlap in Jul 2025 - Mar 2026. supporting_gl_rows are the GL rows behind the diligence amount (for the normalizations, the actual cost the benchmark level is netted against); related_gl_rows are rows a good review surfaces that do not support the amount (unclaimed same-vendor retainers, duplicate postings, subscription months, recoveries, routine same-account entries). supporting_docs support the amount carried; related_docs are context or evidence against the claim. Flags that must not fire are recorded in reviewer_note. Amounts are EBITDA-signed. ADEQUATE items: refs 1, 4, 6, 8, 9, 15, 16 (7 of 16). Expected totals (FY2025 / FY2026 / TTM Jun-26): claims 648,000.00 / 1,488,000.00 / 1,623,630.18 (management's printed total omits ref 16: 648,000.00 / 1,393,000.00 / 1,528,630.18); management finals 480,000.00 / 1,098,600.00 / 1,202,430.18; pending (ref 3) 60,000 in each period; diligence items D-1 0 / 32,000 / 32,000, D-2 0 / -186,000 / 0, D-3 -363,586.47 / 0 / 0."
+  "notes": "SYNTHETIC. Fiscal years end March 31; FY2026 and TTM Jun-26 overlap in Jul 2025 - Mar 2026. supporting_gl_rows are the GL rows behind the diligence amount (for the normalizations, the actual cost the benchmark level is netted against); related_gl_rows are rows a good review surfaces that do not support the amount (unclaimed same-vendor retainers, duplicate postings, subscription months, recoveries, routine same-account entries). supporting_docs support the amount carried; related_docs are context or evidence against the claim. Flags that must not fire are recorded in reviewer_note. Amounts are EBITDA-signed. ADEQUATE items: refs 1, 4, 6, 8, 9, 15, 16 (7 of 16). Expected totals (FY2025 / FY2026 / TTM Jun-26): claims 648,000.00 / 1,488,000.00 / 1,623,630.18 (management's printed total omits ref 16: 648,000.00 / 1,393,000.00 / 1,528,630.18); management finals 480,000.00 / 1,098,600.00 / 1,202,430.18; pending (ref 3) 60,000 in each period; diligence items D-1 0 / 32,000 / 32,000, D-2 0 / -186,000 / 0, D-3 -363,586.47 / 0 / 0. Unclaimed-entry rule used in this key: an unclaimed entry is carried only for a non-recurring item, only when it is billed under the same fixed-fee engagement as the claimed entries, its document is cited in management's support refs, and it falls in a period management claimed (ref 11). Pro forma and normalization items are never extended to periods management left at 0 (refs 4 and 5). Derived costs such as employer payroll taxes (refs 1, 4 and 5) and costs of a different nature such as RIF severance (ref 4) are noted as unclaimed upside only. A row replaced by its OUT_OF_PERIOD effect stays in supporting_gl_rows (ref 13, as D1 M-10)."
 }

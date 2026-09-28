@@ -496,7 +496,7 @@ class Workpaper(StrictModel):
 
 class ExpectedAdjustment(StrictModel):
     adj_id: str
-    case_type: str  # ADEQUATE | PARTIAL | OVERLAP | EBITDA_EXCLUDED | CONTRADICTED | RECURRING | RECOVERY_OFFSET | OUT_OF_PERIOD | WRONG_PERIOD | NEEDS_INFO
+    case_type: str  # ADEQUATE | PARTIAL | OVERLAP | EBITDA_EXCLUDED | CONTRADICTED | RECURRING | RECOVERY_OFFSET | OUT_OF_PERIOD | WRONG_PERIOD | NEEDS_INFO | UNDERSTATED | SIGN_ERROR | DUPLICATE_POSTING | SUPPORTED_TOPSIDE | MISSING_GL_MONTH
     treatment: Treatment
     amounts: dict[str, str] = Field(default_factory=dict)  # final diligence amounts; empty for REQUEST_INFO
     supporting_gl_rows: list[int] = Field(default_factory=list)  # GL source rows that support the claim

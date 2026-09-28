@@ -12,7 +12,7 @@ resemblance to real businesses or people is coincidental.
 
 Contents
   deal.yaml                                     deal metadata (periods, file map)
-  gl/general_ledger.csv                         general ledger export (netsuite_csv, 6027 rows, P&L accounts only)
+  gl/general_ledger.csv                         general ledger export (netsuite_csv, 6033 rows, P&L accounts only)
   gl/chart_of_accounts.csv                      chart of accounts
   financials/monthly_pl.xlsx                    management's monthly P&L
   adjustments/management_adjusted_ebitda.xlsx   management's adjusted EBITDA schedule

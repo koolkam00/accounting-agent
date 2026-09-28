@@ -20,6 +20,7 @@ diligence_adjusted_ebitda.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from decimal import Decimal
 
@@ -40,6 +41,19 @@ from .ledger import GenerationError, Ledger, Txn, resolve_keys
 from .spec import DealSpec, TruthAdjustment
 
 TOLERANCE = Decimal("0.005")
+ROW_REF = re.compile(r"\{row:([^{}]+)\}")
+
+
+def row_refs(text: str, key_rows: dict[str, int], where: str) -> str:
+    """Replace {row:KEY} with the key's GL source row, so answer-key prose never drifts from the GL."""
+
+    def sub(m: re.Match[str]) -> str:
+        key = m.group(1)
+        if key not in key_rows:
+            raise GenerationError(f"{where}: {{row:{key}}} names no GL row")
+        return str(key_rows[key])
+
+    return ROW_REF.sub(sub, text)
 
 
 @dataclass
@@ -161,10 +175,10 @@ def build_ground_truth(
             supporting_docs=[doc_filenames[d] for d in t.supporting_docs],
             related_docs=[doc_filenames[d] for d in t.related_docs],
             expected_flags=[FlagCode(f) for f in t.expected_flags],
-            question_topics=list(t.question_topics),
-            rationale=t.rationale.strip(),
+            question_topics=[row_refs(q, key_rows, where) for q in t.question_topics],
+            rationale=row_refs(t.rationale.strip(), key_rows, where),
             ambiguity=t.ambiguity,
-            reviewer_note=t.reviewer_note.strip(),
+            reviewer_note=row_refs(t.reviewer_note.strip(), key_rows, where),
         )
 
     adjustments = [expected(t) for t in spec.ground_truth.adjustments]
@@ -178,7 +192,7 @@ def build_ground_truth(
         diligence_items=diligence_items,
         gl_ebitda={l: fmt(gl_ebitda[l]) for l in labels},
         diligence_adjusted_ebitda={l: fmt(gl_ebitda[l] + total_final[l]) for l in labels},
-        notes=spec.ground_truth.notes.strip(),
+        notes=row_refs(spec.ground_truth.notes.strip(), key_rows, "ground_truth notes"),
     )
     return truth, effects
 

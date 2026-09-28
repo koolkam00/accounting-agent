@@ -124,6 +124,7 @@ def date_context(d: date, n: int = 1) -> dict[str, object]:
         "prev_mon": MONTH_ABBR[prev.month - 1],
         "prev_month": MONTH_NAME[prev.month - 1],
         "prev_yyyy": f"{prev.year:04d}",
+        "prev_q": (prev.month - 1) // 3 + 1,
         "prev_month_end_mdy": prev.strftime("%m/%d/%Y"),
     }
 
@@ -207,6 +208,51 @@ def _active(cps: list[Counterparty], month: str) -> list[Counterparty]:
     return [c for c in cps if (c.start or "0000-00") <= month <= (c.end or "9999-99")]
 
 
+def _amount_clash(
+    dates: list[date], names: list[str], parts: list[Decimal], history: list[tuple[date, str, Decimal]], window: int
+) -> Optional[int]:
+    """Index of the first row that repeats an exact amount: of another row in the same month (the rows passed
+    in), or of an earlier month's row for the same counterparty within the window."""
+    for i, (d, name, amount) in enumerate(zip(dates, names, parts)):
+        if amount in parts[:i]:
+            return i
+        for hd, hname, hamount in history:
+            if hname == name and hamount == amount and abs((d - hd).days) <= window:
+                return i
+    return None
+
+
+def _separate_amounts(
+    spec: DealSpec,
+    stream: Stream,
+    month: str,
+    dates: list[date],
+    picks: list[Optional[Counterparty]],
+    weights: list[int],
+    total: Decimal,
+    history: list[tuple[date, str, Decimal]],
+) -> list[Decimal]:
+    """Split a month's total so no row repeats an exact amount within the month, or for the same
+    counterparty within spec.distinct_amount_days of an earlier month's row.
+
+    Equal integer weights give equal amounts, which reads as a duplicate posting. A clashing row's
+    weight is redrawn from a dedicated RNG, so the stream's own draws (counterparties, memos, later
+    months) and the month's total are unchanged.
+    """
+    window = spec.distinct_amount_days
+    names = [cp.name if cp else "" for cp in picks]
+    spread = max(int(D(stream.amount.spread) * 1000), 50)
+    fix_rng = sub_rng(spec.seed, "distinct", stream.id, month)
+    weights = list(weights)
+    for _ in range(200):
+        parts = _split_total(total, weights)
+        clash = _amount_clash(dates, names, parts, history, window)
+        if clash is None:
+            return parts
+        weights[clash] = fix_rng.randint(1000 - spread, 1000 + spread)
+    raise GenerationError(f"stream {stream.id}: cannot separate repeated amounts in {month}; widen amount.spread")
+
+
 class _Builder:
     def __init__(self, spec: DealSpec, accounts: dict[str, AccountInfo]):
         self.spec = spec
@@ -239,6 +285,7 @@ class _Builder:
         memos = [stream.memo] if isinstance(stream.memo, str) else list(stream.memo)
         # List-valued dimensions draw from their own RNG so tagging noise never moves amounts.
         dim_rng = sub_rng(spec.seed, "dims", stream.id)
+        history: list[tuple[date, str, Decimal]] = []  # (date, counterparty, amount) of earlier rows
         for month in month_range(first, last):
             y, m = _ym(month)
             if stream.schedule.months and m not in stream.schedule.months:
@@ -258,8 +305,13 @@ class _Builder:
                 total = round_to(D(a.monthly) * season[m - 1] * growth * (1 + noise), D(a.round))
                 spread = int(D(a.spread) * 1000)
                 weights = [rng.randint(1000 - spread, 1000 + spread) for _ in dates]
-                for d, part in zip(dates, _split_total(total, weights)):
-                    rows.append((d, _weighted_pick(active, rng) if active else None, part))
+                parts = _split_total(total, weights)
+                picks = [_weighted_pick(active, rng) if active else None for _ in dates]
+                if spec.distinct_amount_days > 0:
+                    parts = _separate_amounts(spec, stream, month, dates, picks, weights, total, history)
+                rows.extend(zip(dates, picks, parts))
+            if spec.distinct_amount_days > 0:
+                history.extend((d, cp.name if cp else "", amount) for d, cp, amount in rows)
             for n, (d, cp, amount) in enumerate(rows, start=1):
                 if amount <= 0:
                     raise GenerationError(f"stream {stream.id}: non-positive row amount in {month}; reduce spread or noise")
@@ -451,6 +503,19 @@ def _validate(spec: DealSpec, ledger: Ledger) -> None:
                 "unplanned duplicate GL rows (vary memo/amount or add a date to the memo): "
                 + ", ".join(t.key for t in group)
             )
+    window = spec.distinct_amount_days
+    if window > 0:
+        same: dict[tuple[str, str, Decimal], list[Txn]] = defaultdict(list)
+        for t in ledger.gl_txns():
+            same[(t.account, t.counterparty, t.amount)].append(t)
+        for group in same.values():
+            group.sort(key=lambda t: (t.date, t.seq))
+            for a, b in zip(group, group[1:]):
+                if (b.date - a.date).days <= window and not {a.key, b.key} <= planted_dupes:
+                    raise GenerationError(
+                        f"GL rows {a.key} and {b.key} repeat {a.account} {a.counterparty!r} {b.amount} within "
+                        f"{window} days (distinct_amount_days); vary the planted amount or the stream"
+                    )
 
 
 def pl_by_month(ledger: Ledger, accounts: dict[str, AccountInfo], include_topside: bool = True, gl_only: bool = False) -> dict[str, dict[str, Decimal]]:
