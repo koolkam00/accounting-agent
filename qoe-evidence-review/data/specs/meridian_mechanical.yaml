@@ -1,0 +1,2652 @@
+# Dev deal 1: Meridian Mechanical Services, LLC (SYNTHETIC). Catalog: docs/SPEC.md §10.
+# Format reference: scripts/qoe_synth/SPEC_FORMAT.md
+# Regenerate: uv run python scripts/qoe_generate_deals.py --spec data/specs/meridian_mechanical.yaml --out data/dev
+#
+# Amount conventions: planted `amount` is debit-positive (expenses +, income and credits -).
+# Background streams give magnitudes; the sign follows the account's normal balance
+# unless `direction` says otherwise.
+
+deal_id: meridian_mechanical
+split: dev
+seed: 20260715
+package_date: "2026-07-15"
+company:
+  name: Meridian Mechanical Services, LLC
+  short_name: Meridian
+  industry: Commercial and residential HVAC / plumbing services
+periods:
+  - {label: "FY2024", start: "2024-01", end: "2024-12"}
+  - {label: "FY2025", start: "2025-01", end: "2025-12"}
+  - {label: "TTM Jun-26", start: "2025-07", end: "2026-06"}
+data_start: "2024-01"
+data_end: "2026-06"
+gl_format: qbo_gl_csv
+deal_yaml_gl_format: auto
+tolerance: "1.00"
+readme_extra: |
+  Scenario: Florida HVAC and plumbing contractor, FY Dec. QuickBooks Online exports.
+  Analysis periods FY2024, FY2025 and TTM Jun-26; the GL covers Jan 2024 - Jun 2026.
+
+split_defaults:
+  check: Operating Checking - Gulfstream Bank
+  deposit: Operating Checking - Gulfstream Bank
+  expense: Business Credit Card
+  payroll: Payroll Clearing
+  sales_receipt: Undeposited Funds
+
+sequences:
+  ar_invoice: 10231
+  credit_memo: 2201
+
+# ---------------------------------------------------------------------------
+# Chart of accounts (QBO export order). The GL carries P&L accounts only.
+# ---------------------------------------------------------------------------
+accounts:
+  - {number: "1000", name: Operating Checking - Gulfstream Bank, type: Bank, detail_type: Checking}
+  - {number: "1010", name: Payroll Checking - Gulfstream Bank, type: Bank, detail_type: Checking}
+  - {number: "1100", name: Undeposited Funds, type: Other Current Assets, detail_type: Undeposited Funds}
+  - {number: "1200", name: Accounts Receivable (A/R), type: Accounts receivable (A/R), detail_type: Accounts Receivable (A/R)}
+  - {number: "1300", name: Inventory - Parts & Equipment, type: Other Current Assets, detail_type: Inventory}
+  - {number: "1400", name: Prepaid Expenses, type: Other Current Assets, detail_type: Prepaid Expenses}
+  - {number: "1500", name: Vehicles & Equipment, type: Fixed Assets, detail_type: Vehicles}
+  - {number: "1510", name: Accumulated Depreciation, type: Fixed Assets, detail_type: Accumulated Depreciation}
+  - {number: "1600", name: Customer List (net), type: Other Assets, detail_type: Intangible Assets}
+  - {number: "2000", name: Accounts Payable (A/P), type: Accounts payable (A/P), detail_type: Accounts Payable (A/P)}
+  - {number: "2100", name: Business Credit Card, type: Credit Card, detail_type: Credit Card}
+  - {number: "2200", name: Payroll Clearing, type: Other Current Liabilities, detail_type: Payroll Clearing}
+  - {number: "2300", name: Deferred Revenue - Comfort Club, type: Other Current Liabilities, detail_type: Other Current Liabilities}
+  - {number: "2500", name: Term Loan, type: Long Term Liabilities, detail_type: Notes Payable}
+  - {number: "3000", name: Members' Equity, type: Equity, detail_type: Owner's Equity}
+  - {number: "4000", name: Service Revenue - Commercial, type: Income, detail_type: Service/Fee Income}
+  - {number: "4010", name: Service Revenue - Residential, type: Income, detail_type: Service/Fee Income}
+  - {number: "4100", name: Maintenance Agreement Revenue, type: Income, detail_type: Service/Fee Income}
+  - {number: "4900", name: Sales Discounts, type: Income, detail_type: Discounts/Refunds Given}
+  - {number: "5000", name: Materials & Equipment, type: Cost of Goods Sold, detail_type: Supplies & Materials - COGS}
+  - {number: "5100", name: Direct Labor - Technicians, type: Cost of Goods Sold, detail_type: Cost of labor - COS}
+  - {number: "5200", name: Subcontractors, type: Cost of Goods Sold, detail_type: Other Costs of Services - COS}
+  - {number: "5300", name: Vehicle & Fuel - Field, type: Cost of Goods Sold, detail_type: Other Costs of Services - COS}
+  - {number: "5400", name: Inventory Adjustments & Write-offs, type: Cost of Goods Sold, detail_type: Supplies & Materials - COGS}
+  - {number: "6000", name: Salaries & Wages - Office, type: Expense, detail_type: Payroll Expenses}
+  - {number: "6010", name: Officer Compensation, type: Expense, detail_type: Payroll Expenses}
+  - {number: "6050", name: Payroll Taxes & Benefits, type: Expense, detail_type: Payroll Expenses}
+  - {number: "6100", name: Rent & Occupancy, type: Expense, detail_type: Rent or Lease of Buildings}
+  - {number: "6150", name: Repairs & Maintenance - Facilities, type: Expense, detail_type: Repair & Maintenance}
+  - {number: "6200", name: Insurance, type: Expense, detail_type: Insurance}
+  - {number: "6300", name: Software & IT Services, type: Expense, detail_type: Office/General Administrative Expenses}
+  - {number: "6400", name: Legal & Professional Fees, type: Expense, detail_type: Legal & Professional Fees}
+  - {number: "6410", name: Accounting & Advisory Fees, type: Expense, detail_type: Legal & Professional Fees}
+  - {number: "6450", name: Recruiting & HR, type: Expense, detail_type: Other Miscellaneous Service Cost}
+  - {number: "6500", name: Advertising & Marketing, type: Expense, detail_type: Advertising/Promotional}
+  - {number: "6600", name: "Travel, Meals & Entertainment", type: Expense, detail_type: Travel}
+  - {number: "6650", name: Auto Expense - Admin, type: Expense, detail_type: Auto}
+  - {number: "6700", name: Dues & Subscriptions, type: Expense, detail_type: Dues & subscriptions}
+  - {number: "6800", name: Bank & Merchant Fees, type: Expense, detail_type: Bank Charges}
+  - {number: "6900", name: Office & General, type: Expense, detail_type: Office/General Administrative Expenses}
+  - {number: "6950", name: Bad Debt Expense, type: Expense, detail_type: Bad Debts}
+  - {number: "7000", name: Depreciation Expense, type: Expense, detail_type: Depreciation}
+  - {number: "7050", name: Amortization Expense, type: Expense, detail_type: Amortization}
+  - {number: "8000", name: Other Income, type: Other Income, detail_type: Other Miscellaneous Income}
+  - {number: "8050", name: Gain/Loss on Sale of Assets, type: Other Income, detail_type: Gain/Loss on Sale of Fixed Assets}
+  - {number: "8100", name: Interest Expense, type: Other Expense, detail_type: Other Miscellaneous Expense}
+  - {number: "8200", name: Other Expense, type: Other Expense, detail_type: Other Miscellaneous Expense}
+  - {number: "9000", name: Income Taxes - State, type: Other Expense, detail_type: Other Miscellaneous Expense}
+
+# ---------------------------------------------------------------------------
+# Background activity
+# ---------------------------------------------------------------------------
+background:
+  # --- Revenue -------------------------------------------------------------
+  - id: rev_commercial_service
+    account: "4000"
+    txn_type: invoice
+    schedule: {count: [26, 34]}
+    amount: {monthly: 360000, growth: 0.05, noise: 0.05, spread: 0.8,
+             seasonality: [0.90, 0.88, 0.94, 0.98, 1.06, 1.12, 1.15, 1.14, 1.06, 0.99, 0.90, 0.88]}
+    num: {sequence: ar_invoice}
+    counterparties:
+      - {name: Bayshore Medical Plaza, weight: 5}
+      - {name: Harborview Office Park, weight: 5}
+      - {name: Westshore Commons Retail Center, weight: 4}
+      - {name: Palmetto Ridge Apartments, weight: 4}
+      - {name: Gulf Breeze Hospitality Group, weight: 4}
+      - {name: Sun Coast Charter Schools, weight: 3}
+      - {name: Tarpon Point Senior Living, weight: 3}
+      - {name: Cypress Creek Business Center, weight: 3}
+      - {name: Anclote Marina Restaurants, weight: 2}
+      - {name: Seminole Heights Self Storage, weight: 2}
+      - {name: Channelside Lofts Condominium Assn., weight: 2}
+      - {name: Riverview Industrial Park, weight: 3}
+      - {name: Lutz Family Dental Group, weight: 1}
+      - {name: Brandon Town Center Management, weight: 3}
+      - {name: Coastal Cold Storage, weight: 2, start: "2024-06"}
+    memo:
+      - "HVAC service call – {unit}"
+      - "Compressor replacement – {unit}"
+      - "Plumbing repair – {plumb}"
+      - "Chiller service – compressor diagnostics"
+      - "Emergency service – no cooling, {unit}"
+      - "Backflow preventer testing & certification"
+      - "Water heater replacement – commercial 80 gal"
+      - "Controls repair – BAS thermostats & sensors"
+      - "Condenser coil cleaning & refrigerant recharge – {unit}"
+    choices:
+      unit: [RTU-1, RTU-2, RTU-4, AHU-2, Bldg B, Suite 210, Suite 330, Kitchen exhaust]
+      plumb: [restroom fixtures, grease trap line, domestic water booster pump, sewer lateral]
+
+  - id: rev_commercial_projects
+    account: "4000"
+    txn_type: invoice
+    schedule: {count: [8, 12]}
+    amount: {monthly: 1300000, growth: 0.05, noise: 0.06, spread: 0.7,
+             seasonality: [0.92, 0.90, 0.95, 0.98, 1.04, 1.10, 1.12, 1.12, 1.06, 1.00, 0.92, 0.89]}
+    num: {sequence: ar_invoice}
+    counterparties:
+      - {name: Bayshore Medical Plaza, weight: 3}
+      - {name: Harborview Office Park, weight: 3}
+      - {name: Westshore Commons Retail Center, weight: 3}
+      - {name: Gulf Breeze Hospitality Group, weight: 2}
+      - {name: Sun Coast Charter Schools, weight: 2}
+      - {name: Tarpon Point Senior Living, weight: 2}
+      - {name: Riverview Industrial Park, weight: 2}
+      - {name: Brandon Town Center Management, weight: 2}
+      - {name: Coastal Cold Storage, weight: 2, start: "2024-06"}
+      - {name: Halvorsen Builders, weight: 3, end: "2025-05",
+         memo: "Progress billing #{pb} – HVAC & plumbing rough-in, {hproj}"}
+    memo:
+      - "Progress billing #{pb} – rooftop unit replacement project ({rtus} units)"
+      - "Progress billing #{pb} – chiller replacement project"
+      - "Progress billing #{pb} – tenant improvement HVAC & plumbing, {suite}"
+      - "Progress billing #{pb} – design-build HVAC retrofit"
+    choices:
+      pb: ["1", "2", "3", "4", "5"]
+      rtus: ["4", "6", "8", "12"]
+      suite: [Suite 120, Suite 210, Suite 330, Building C]
+      hproj: [Lithia Crossing Townhomes, Bloomingdale Commons Retail, Valrico Medical Office]
+
+  - id: rev_residential
+    account: "4010"
+    txn_type: sales_receipt
+    schedule: {weekdays: [0, 1, 2, 3, 4]}
+    amount: {monthly: 1060000, growth: 0.05, noise: 0.04, spread: 0.35,
+             seasonality: [0.80, 0.78, 0.88, 0.97, 1.10, 1.25, 1.32, 1.30, 1.15, 0.98, 0.80, 0.77]}
+    num: {format: "DS-{yy}{mm}{dd}"}
+    counterparties: [Residential Customers]
+    memo: "Residential service & replacement – daily batch {mdy}"
+
+  - id: maint_commercial
+    account: "4100"
+    txn_type: invoice
+    mode: fixed
+    schedule: {days: [1]}
+    amount: {escalate_pct: 0.04}
+    num: {sequence: ar_invoice}
+    counterparties:
+      - {name: Bayshore Medical Plaza, amount: 22000}
+      - {name: Harborview Office Park, amount: 18500}
+      - {name: Gulf Breeze Hospitality Group, amount: 15750}
+      - {name: Westshore Commons Retail Center, amount: 12400}
+      - {name: Tarpon Point Senior Living, amount: 11200}
+      - {name: Sun Coast Charter Schools, amount: 9800}
+      - {name: Cypress Creek Business Center, amount: 8650}
+      - {name: Brandon Town Center Management, amount: 7900}
+      - {name: Riverview Industrial Park, amount: 6500}
+      - {name: Palmetto Ridge Apartments, amount: 5300}
+    memo: "Planned maintenance agreement – {mon} {yyyy}"
+
+  - id: maint_residential
+    account: "4100"
+    txn_type: journal
+    split: Deferred Revenue - Comfort Club
+    schedule: {days: [-1]}
+    amount: {monthly: 150000, growth: 0.08, noise: 0.01}
+    memo: "Comfort Club memberships – revenue recognized – {mon} {yyyy}"
+
+  - id: sales_discounts
+    account: "4900"
+    txn_type: credit_memo
+    direction: debit
+    schedule: {count: [5, 8]}
+    amount: {monthly: 26000, growth: 0.05, noise: 0.10,
+             seasonality: [0.85, 0.85, 1.0, 1.0, 1.1, 1.15, 1.2, 1.15, 1.05, 0.95, 0.85, 0.85]}
+    num: {sequence: credit_memo, format: "CM-{seq}"}
+    counterparties:
+      - {name: Residential Customers, weight: 8,
+         memo: ["Comfort Club member discount (15%) – {mon} batch", "Senior & military discount – {mon} batch",
+                "Promotional discount – tune-up special", "Service recovery credit – callback"]}
+      - {name: Palmetto Ridge Apartments, memo: "Early payment discount – {mon} {yyyy} invoices"}
+      - {name: Westshore Commons Retail Center, memo: "Service recovery credit – repeat call, {unit}"}
+      - {name: Gulf Breeze Hospitality Group, memo: "Volume pricing adjustment – {mon} {yyyy}"}
+    choices:
+      unit: [RTU-1, RTU-2, AHU-2, Suite 210]
+
+  # --- Cost of goods sold ---------------------------------------------------
+  - id: mat_hvac_equipment
+    account: "5000"
+    txn_type: bill
+    schedule: {count: [10, 14]}
+    amount: {monthly: 392000, growth: 0.05, noise: 0.06,
+             seasonality: [0.82, 0.82, 0.92, 1.0, 1.12, 1.22, 1.25, 1.22, 1.08, 0.95, 0.82, 0.78]}
+    counterparties:
+      - {name: Florida Equipment Distributors, weight: 3, num: "FED-{yy}-{seq}", seq_start: 11020, seq_step: [4, 30]}
+      - {name: Gulf Coast HVAC Supply, weight: 2, num: "GCS-{seq}", seq_start: 418220, seq_step: [8, 60]}
+    memo:
+      - "Equipment – ({qty}) {tons}-ton heat pump split systems – stock"
+      - "Equipment – ({rq}) rooftop units, {rtu} ton – job {job}"
+      - "Equipment – ({qty}) air handlers & coils – stock"
+      - "Equipment – ({qty}) ductless mini-split systems – stock"
+    choices:
+      qty: ["4", "5", "6", "8"]
+      tons: ["2", "2.5", "3", "3.5", "4", "5"]
+      rq: ["2", "3"]
+      rtu: ["7.5", "10", "12.5", "15"]
+
+  - id: mat_hvac_parts
+    account: "5000"
+    txn_type: bill
+    schedule: {weekdays: [4]}
+    amount: {monthly: 150000, growth: 0.05, noise: 0.06, spread: 0.3,
+             seasonality: [0.88, 0.88, 0.95, 1.0, 1.08, 1.15, 1.18, 1.16, 1.05, 0.97, 0.88, 0.84]}
+    counterparties:
+      - {name: Gulf Coast HVAC Supply, num: "GCS-{seq}", seq_start: 418220, seq_step: [8, 60]}
+    memo: "Weekly statement – parts & supplies (branch counter tickets), week ending {mdy}"
+
+  - id: mat_refrigerant
+    account: "5000"
+    txn_type: bill
+    schedule: {count: [2, 4]}
+    amount: {monthly: 50000, growth: 0.05, noise: 0.10,
+             seasonality: [0.80, 0.80, 0.95, 1.05, 1.15, 1.25, 1.25, 1.20, 1.05, 0.95, 0.80, 0.75]}
+    counterparties:
+      - {name: Tampa Bay Refrigerant Supply, num: "RFS-{seq}", seq_start: 55310, seq_step: [3, 20]}
+    memo:
+      - "Refrigerant R-454B ({cyl} cylinders)"
+      - "Refrigerant R-410A ({cyl} cylinders) & recovery cylinder exchange"
+    choices:
+      cyl: ["20", "24", "30", "36"]
+
+  - id: mat_plumbing
+    account: "5000"
+    txn_type: bill
+    schedule: {weekdays: [3]}
+    amount: {monthly: 150000, growth: 0.05, noise: 0.07, spread: 0.3}
+    counterparties:
+      - {name: Suncoast Plumbing Supply Co., num: "SPS{seq}", seq_start: 77104, seq_step: [5, 40]}
+    memo: "Weekly statement – plumbing materials & water heaters, week ending {mdy}"
+
+  - id: mat_sheet_metal
+    account: "5000"
+    txn_type: bill
+    schedule: {count: [2, 4]}
+    amount: {monthly: 52000, growth: 0.05, noise: 0.10}
+    counterparties:
+      - {name: Coastal Sheet Metal Supply, num: "CSM{seq}", seq_start: 20455, seq_step: [4, 25]}
+    memo:
+      - "Ductwork materials – sheet metal & insulation – job {job}"
+      - "Flex duct, registers & grilles – stock"
+
+  - id: mat_electrical
+    account: "5000"
+    txn_type: bill
+    schedule: {days: [-1]}
+    amount: {monthly: 28000, growth: 0.05, noise: 0.12}
+    counterparties:
+      - {name: Bay Area Electrical Distributors, num: "BAED-{seq}", seq_start: 90112, seq_step: [10, 70]}
+    memo: "Electrical supplies – monthly statement {mon} {yyyy}"
+
+  - id: labor_hvac
+    account: "5100"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 425000, growth: 0.045, noise: 0.015, spread: 0.05,
+             seasonality: [0.96, 0.95, 0.97, 0.99, 1.02, 1.05, 1.06, 1.06, 1.02, 0.99, 0.96, 0.97]}
+    memo: "Technician payroll – HVAC service – PPE {mdy}"
+
+  - id: labor_plumbing
+    account: "5100"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 175000, growth: 0.045, noise: 0.015, spread: 0.05}
+    memo: "Technician payroll – Plumbing – PPE {mdy}"
+
+  - id: labor_install
+    account: "5100"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 160000, growth: 0.045, noise: 0.02, spread: 0.05,
+             seasonality: [0.92, 0.92, 0.96, 1.0, 1.04, 1.08, 1.08, 1.08, 1.02, 0.98, 0.96, 0.96]}
+    memo: "Technician payroll – Install crews – PPE {mdy}"
+
+  - id: subcontractors
+    account: "5200"
+    txn_type: bill
+    schedule: {count: [6, 9]}
+    amount: {monthly: 235000, growth: 0.05, noise: 0.12, spread: 0.6}
+    counterparties:
+      - {name: Coastal Air Duct Fabricators, weight: 4, num: "CADF-{seq}", seq_start: 7140, seq_step: [8, 25],
+         memo: ["Ductwork fabrication & install – job {job}", "Duct modifications – {site}"]}
+      - {name: Sunbelt Insulation Services, weight: 2, num: "SIS-{seq}", seq_start: 6120, seq_step: [3, 15],
+         memo: "Duct & pipe insulation – job {job}"}
+      - {name: Precision Controls & BAS LLC, weight: 2, num: "PC{seq}", seq_start: 1402, seq_step: [2, 9],
+         memo: ["BAS programming & commissioning – {site}", "Controls wiring – job {job}"]}
+      - {name: Bayside Electrical Contractors, weight: 2, num: "BEC-{seq}", seq_start: 33081, seq_step: [5, 30],
+         memo: "Electrical rough-in for HVAC equipment – job {job}"}
+      - {name: Tri-County Crane & Rigging, weight: 1, num: "TCR-{seq}", seq_start: 8801, seq_step: [4, 20],
+         memo: "Crane lift – RTU set – {site}"}
+      - {name: Suncoast Test & Balance, weight: 1, num: "STB-{seq}", seq_start: 512, seq_step: [1, 6],
+         memo: "Test & balance report – {site}"}
+    choices:
+      site: [Harborview Office Park, Bayshore Medical Plaza, Westshore Commons, Riverview Industrial Park, Brandon Town Center, Coastal Cold Storage]
+
+  - id: fleet_fuel
+    account: "5300"
+    txn_type: expense
+    schedule: {weekdays: [4]}
+    amount: {monthly: 68000, growth: 0.04, noise: 0.06, spread: 0.15}
+    counterparties: [Gulfline Fleet Fuel Card]
+    memo: "Fleet fuel – field vehicles – week ending {mdy}"
+
+  - id: fleet_maintenance
+    account: "5300"
+    txn_type: bill
+    schedule: {count: [3, 6]}
+    amount: {monthly: 16000, growth: 0.04, noise: 0.30, spread: 0.6}
+    counterparties:
+      - {name: Brandon Fleet Service Center, weight: 3, num: "BFS-{seq}", seq_start: 4410, seq_step: [6, 30],
+         memo: ["Van #{van} – brakes & PM service", "Van #{van} – A/C compressor & alternator", "Van #{van} – transmission service"]}
+      - {name: Sunshine Tire & Auto, weight: 2, num: "STA{seq}", seq_start: 70215, seq_step: [10, 45],
+         memo: ["Tires (4) – van #{van}", "Van #{van} – oil change & inspection"]}
+    choices:
+      van: ["12", "15", "18", "21", "22", "26", "29", "31", "33", "37", "40"]
+
+  - id: fleet_leases
+    account: "5300"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [5]}
+    amount: {by_year: {2024: 36400, 2025: 38950, 2026: 41200}}
+    counterparties:
+      - {name: Harborline Fleet Leasing, num: "HFL-{yy}{mm}-0388"}
+    memo: "Service van fleet lease – {mon} {yyyy}"
+
+  - id: cycle_counts
+    account: "5400"
+    txn_type: journal
+    schedule: {days: [-1], months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]}
+    amount: {monthly: 2400, noise: 0.5}
+    memo: "Cycle count adjustment – {mon} {yyyy}"
+
+  # --- Operating expenses ---------------------------------------------------
+  - id: payroll_admin
+    account: "6000"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 52000, growth: 0.04, noise: 0.01, spread: 0.03}
+    memo: "Office payroll – Administration & accounting – PPE {mdy}"
+
+  - id: payroll_sales
+    account: "6000"
+    txn_type: payroll
+    end: "2026-01"
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 58000, growth: 0.04, noise: 0.01, spread: 0.03}
+    memo: "Office payroll – Sales & estimating – PPE {mdy}"
+
+  - id: payroll_sales_post
+    account: "6000"
+    txn_type: payroll
+    start: "2026-02"
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 46500, growth: 0.04, noise: 0.01, spread: 0.03}
+    memo: "Office payroll – Sales & estimating – PPE {mdy}"
+
+  - id: payroll_ops_mgmt
+    account: "6000"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 72000, growth: 0.04, noise: 0.01, spread: 0.03}
+    memo: "Office payroll – Operations management – PPE {mdy}"
+
+  - id: payroll_taxes
+    account: "6050"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 78000, growth: 0.045, noise: 0.02, spread: 0.05,
+             seasonality: [1.25, 1.15, 1.05, 1.0, 0.98, 0.97, 0.97, 0.95, 0.93, 0.93, 0.92, 0.90]}
+    memo: "Employer payroll taxes – PPE {mdy}"
+
+  - id: benefits_health
+    account: "6050"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [1]}
+    amount: {by_year: {2024: 88400, 2025: 95500, 2026: 103100}}
+    counterparties:
+      - {name: Gulf States Health Plan, num: "GSHP-{yy}{mm}-22318"}
+    memo: "Group medical & dental premium – {mon} {yyyy}"
+
+  - id: benefits_401k
+    account: "6050"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 27000, growth: 0.045, noise: 0.02, spread: 0.05}
+    memo: "401(k) employer match – PPE {mdy}"
+
+  - id: rent_palm_river
+    account: "6100"
+    txn_type: bill
+    mode: fixed
+    end: "2025-02"
+    schedule: {days: [1]}
+    amount: {fixed: 41500, escalate_pct: 0.03}
+    counterparties:
+      - {name: "Palm River Industrial Partners, LLC", num: "PRIP-{yy}{mm}"}
+    memo: "Rent – 5801 Palm River Rd (office & warehouse) – {mon} {yyyy}"
+
+  - id: rent_brandon
+    account: "6100"
+    txn_type: bill
+    mode: fixed
+    start: "2025-03"
+    schedule: {days: [1]}
+    amount: {fixed: 44800, escalate_pct: 0.03, escalate_month: 3}
+    counterparties:
+      - {name: "Brandon Logistics Center, LLC", num: "BLC-{yy}{mm}-114"}
+    memo: "Rent – 1150 Commerce Park Dr (office & warehouse) – {mon} {yyyy}"
+
+  - id: utilities_electric
+    account: "6100"
+    txn_type: bill
+    schedule: {days: [12]}
+    amount: {monthly: 9800, growth: 0.03, noise: 0.05,
+             seasonality: [0.75, 0.72, 0.82, 0.95, 1.10, 1.28, 1.35, 1.35, 1.20, 1.00, 0.80, 0.70]}
+    counterparties:
+      - {name: Bay Area Power & Light, num: "BAPL-{yy}{mm}-7741"}
+    memo: "Electric service – {prev_mon} {prev_yyyy}"
+
+  - id: utilities_water
+    account: "6100"
+    txn_type: bill
+    schedule: {days: [18]}
+    amount: {monthly: 850, noise: 0.15}
+    counterparties:
+      - {name: City of Tampa Water Department, end: "2025-02"}
+      - {name: Hillsborough County Water Resources, start: "2025-03"}
+    memo: "Water & sewer – {prev_mon} {prev_yyyy}"
+
+  - id: utilities_waste
+    account: "6100"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [3]}
+    amount: {fixed: 1380, escalate_pct: 0.04}
+    counterparties: [Suncoast Waste Services]
+    memo: "Dumpster service & recycling – {mon} {yyyy}"
+
+  - id: janitorial
+    account: "6100"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [25]}
+    amount: {fixed: 2650}
+    counterparties: [Spotless Commercial Cleaning]
+    memo: "Janitorial services – {mon} {yyyy}"
+
+  - id: pest_control
+    account: "6150"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [9]}
+    amount: {fixed: 285}
+    counterparties: [Bug Out Pest Services]
+    memo: "Pest control service – {mon} {yyyy}"
+
+  - id: facility_repairs
+    account: "6150"
+    txn_type: bill
+    schedule: {count: [1, 3]}
+    amount: {monthly: 2600, noise: 0.4, spread: 0.6}
+    counterparties:
+      - {name: Hillsborough Door & Dock, memo: ["Dock door repair", "Overhead door spring replacement"]}
+      - {name: Metro Fire Protection, memo: ["Fire extinguisher inspection & tags", "Sprinkler system inspection"]}
+      - {name: Bay Area Handyman Services, memo: ["Office repairs – drywall & paint", "Break room plumbing repair"]}
+
+  - id: property_insurance
+    account: "6200"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [10], months: [1, 4, 7, 10]}
+    amount: {by_year: {2024: 11800, 2025: 14900, 2026: 15600}}
+    counterparties:
+      - {name: Sunshine Mutual Insurance, num: "SMI-{yy}Q{q}-40512"}
+    memo: "Commercial property policy – Q{q} {yyyy} installment"
+
+  - id: workers_comp
+    account: "6200"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [12]}
+    amount: {by_year: {2024: 24500, 2025: 26200, 2026: 27800}}
+    counterparties:
+      - {name: Sunstate Workers' Comp Mutual, num: "SWC-{yy}{mm}-3310"}
+    memo: "Workers' compensation – monthly premium installment – {mon} {yyyy}"
+
+  - id: auto_fleet_insurance
+    account: "6200"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [18]}
+    amount: {by_year: {2024: 9800, 2025: 10600, 2026: 11200}}
+    counterparties:
+      - {name: Gulf Fleet Auto Insurance, num: "GFA-{yy}{mm}-0917"}
+    memo: "Commercial auto fleet policy – monthly premium installment – {mon} {yyyy}"
+
+  - id: it_productivity
+    account: "6300"
+    txn_type: expense
+    mode: fixed
+    schedule: {days: [2]}
+    amount: {fixed: 2860, escalate_pct: 0.05}
+    counterparties: [Nimbus Cloud Software]
+    memo: "Office productivity licenses (72 seats) – {mon} {yyyy}"
+
+  - id: it_managed
+    account: "6300"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [1]}
+    amount: {fixed: 6400}
+    counterparties:
+      - {name: "Gulfcoast Managed IT, LLC", num: "GMIT-{yy}{mm}"}
+    memo: "Managed IT services & help desk – {mon} {yyyy}"
+
+  - id: it_dispatch_legacy
+    account: "6300"
+    txn_type: bill
+    mode: fixed
+    end: "2024-12"
+    schedule: {days: [1]}
+    amount: {fixed: 4150}
+    counterparties:
+      - {name: DispatchWorks Software, num: "DW-{yy}{mm}-5530"}
+    memo: "DispatchWorks dispatch & scheduling license – {mon} {yyyy}"
+
+  - id: it_accounting
+    account: "6300"
+    txn_type: expense
+    mode: fixed
+    schedule: {days: [14]}
+    amount: {fixed: 425}
+    counterparties: [LedgerLine Cloud Accounting]
+    memo: "Accounting software subscription – {mon} {yyyy}"
+
+  - id: it_telematics
+    account: "6300"
+    txn_type: expense
+    mode: fixed
+    schedule: {days: [20]}
+    amount: {fixed: 2080}
+    counterparties: [FleetTrack Telematics]
+    memo: "Vehicle GPS & telematics (42 units) – {mon} {yyyy}"
+
+  - id: lien_notices
+    account: "6400"
+    txn_type: bill
+    schedule: {count: [1, 2]}
+    amount: {monthly: 520, noise: 0.35, spread: 0.4}
+    counterparties:
+      - {name: Sunstate Lien & Notice Services, num: "SLN-{seq}", seq_start: 30118, seq_step: [20, 90]}
+    memo: ["Notice to Owner filings ({njobs} projects)", "Lien release recording & filing fees"]
+    choices:
+      njobs: ["3", "4", "5", "6", "7"]
+
+  - id: cpa_quarterly
+    account: "6410"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [20], months: [1, 4, 7, 10]}
+    amount: {fixed: 6750}
+    counterparties:
+      - {name: "Tolliver Grant CPAs, P.A.", num: "TG-{yy}{mm}-118"}
+    memo: "Quarterly accounting review & tax planning – Q{q} {yyyy}"
+
+  - id: cpa_annual
+    account: "6410"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [28], months: [4]}
+    amount: {by_year: {2024: 24500, 2025: 25800, 2026: 26900}}
+    counterparties:
+      - {name: "Tolliver Grant CPAs, P.A.", num: "TG-{yy}{mm}-240"}
+    memo: "Reviewed financial statements & tax returns – FY{last_yyyy}"
+
+  - id: job_boards
+    account: "6450"
+    txn_type: expense
+    schedule: {days: [3]}
+    amount: {monthly: 1500, noise: 0.2, round: 1}
+    counterparties: [Indeed]
+    memo: "Job postings – technician recruiting – {mon} {yyyy}"
+
+  - id: background_checks
+    account: "6450"
+    txn_type: bill
+    schedule: {count: [1, 2]}
+    amount: {monthly: 380, noise: 0.4, spread: 0.4}
+    counterparties:
+      - {name: ClearCheck Background Screening, num: "CC{seq}", seq_start: 150882, seq_step: [30, 200]}
+    memo: "Pre-employment background checks & drug screens"
+
+  - id: marketing_mgmt
+    account: "6500"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [1]}
+    amount: {fixed: 7500}
+    counterparties:
+      - {name: LeadSpring Digital Marketing, num: "LS-{yy}{mm}-MGT"}
+    memo: "Digital marketing management fee – {mon} {yyyy}"
+
+  - id: marketing_media
+    account: "6500"
+    txn_type: bill
+    schedule: {days: [-1]}
+    amount: {monthly: 21000, growth: 0.06, noise: 0.08,
+             seasonality: [0.80, 0.80, 0.90, 1.00, 1.15, 1.30, 1.30, 1.25, 1.05, 0.90, 0.80, 0.75]}
+    counterparties:
+      - {name: LeadSpring Digital Marketing, num: "LS-{yy}{mm}-MED"}
+    memo: "Paid search & local services ads – {mon} {yyyy}"
+
+  - id: marketing_radio
+    account: "6500"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [6], months: [4, 5, 6, 7, 8]}
+    amount: {fixed: 6200}
+    counterparties:
+      - {name: Bay Area Radio Group, num: "BARG-{yy}{mm}"}
+    memo: "Radio spots – summer AC campaign – {mon} {yyyy}"
+
+  - id: marketing_print
+    account: "6500"
+    txn_type: bill
+    schedule: {days: [11], months: [2, 5, 9, 11]}
+    amount: {monthly: 2400, noise: 0.3}
+    counterparties:
+      - {name: Signworks of Tampa, num: "SW-{seq}", seq_start: 7712, seq_step: [15, 60]}
+    memo: ["Vehicle wraps – 2 service vans", "Yard signs & door hangers"]
+
+  - id: travel_meals
+    account: "6600"
+    txn_type: expense
+    schedule: {count: [4, 7]}
+    amount: {monthly: 5200, noise: 0.25, spread: 0.7}
+    counterparties:
+      - {name: Bayshore Grille, weight: 3, memo: ["Client lunch – property manager", "Team lunch – safety meeting"]}
+      - {name: Harborside Steakhouse, weight: 2, memo: "Client dinner – general contractor relationship"}
+      - {name: Palmetto Corporate Travel, weight: 2, memo: ["Travel – technician certification training, Orlando", "Travel – supplier product training, Atlanta"]}
+      - {name: Crescent Coffee Co., weight: 1, memo: "Breakfast – Saturday technician training"}
+
+  - id: admin_auto_service
+    account: "6650"
+    txn_type: expense
+    schedule: {count: [1, 2]}
+    amount: {monthly: 950, noise: 0.4, spread: 0.5}
+    counterparties: [Sunshine Tire & Auto]
+    memo: ["Admin vehicle service – oil change & tires", "Admin vehicle repair"]
+
+  - id: admin_auto_fuel
+    account: "6650"
+    txn_type: expense
+    schedule: {days: [28]}
+    amount: {monthly: 1150, noise: 0.15}
+    counterparties: [Gulfline Fleet Fuel Card]
+    memo: "Fuel – admin vehicles – {mon} {yyyy}"
+
+  - id: dues_trade
+    account: "6700"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [10], months: [1]}
+    amount: {fixed: 1850}
+    counterparties: [Florida HVAC Contractors Association]
+    memo: "Annual membership dues – {yyyy}"
+
+  - id: dues_chamber
+    account: "6700"
+    txn_type: expense
+    mode: fixed
+    schedule: {days: [4], months: [3]}
+    amount: {fixed: 975}
+    counterparties: [Greater Brandon Chamber of Commerce]
+    memo: "Annual chamber membership – {yyyy}"
+
+  - id: subs_refrigerant_portal
+    account: "6700"
+    txn_type: expense
+    mode: fixed
+    schedule: {days: [15]}
+    amount: {fixed: 295}
+    counterparties: [RefrigTrack Compliance Portal]
+    memo: "Refrigerant tracking & EPA compliance subscription – {mon} {yyyy}"
+
+  - id: subs_news
+    account: "6700"
+    txn_type: expense
+    mode: fixed
+    schedule: {days: [8]}
+    amount: {fixed: 39}
+    counterparties: [Bay Business Weekly]
+    memo: "Digital subscription – {mon} {yyyy}"
+
+  - id: merchant_fees
+    account: "6800"
+    txn_type: expense
+    schedule: {days: [3]}
+    amount: {monthly: 21500, growth: 0.06, noise: 0.03,
+             seasonality: [0.80, 0.78, 0.88, 0.97, 1.10, 1.25, 1.32, 1.30, 1.15, 0.98, 0.80, 0.77]}
+    counterparties: [Coastline Merchant Services]
+    memo: "Card processing fees – {prev_mon} {prev_yyyy}"
+
+  - id: bank_fees
+    account: "6800"
+    txn_type: expense
+    schedule: {days: [-1]}
+    amount: {monthly: 640, noise: 0.15}
+    counterparties:
+      - {name: Gulfstream Bank, end: "2025-06"}
+      - {name: Tidewater Capital Bank, start: "2025-07"}
+    memo: "Account analysis & ACH fees – {mon} {yyyy}"
+
+  - id: office_supplies
+    account: "6900"
+    txn_type: expense
+    schedule: {count: [1, 3]}
+    amount: {monthly: 1650, noise: 0.3, spread: 0.5}
+    counterparties: [Bayline Office Supply]
+    memo: ["Office supplies", "Toner & paper", "Break room supplies"]
+
+  - id: mobile_phones
+    account: "6900"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [22]}
+    amount: {fixed: 3420, escalate_pct: 0.03}
+    counterparties:
+      - {name: Gulf Wireless, num: "GW-{yy}{mm}-60417"}
+    memo: "Mobile phones & data – 58 lines – {mon} {yyyy}"
+
+  - id: uniforms
+    account: "6900"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [7, 21]}
+    amount: {fixed: 1380}
+    counterparties:
+      - {name: Coastal Uniform Service, num: "CUS-{yy}{mm}{dd}"}
+    memo: "Technician uniform rental & laundry – {mdy}"
+
+  - id: postage
+    account: "6900"
+    txn_type: expense
+    schedule: {days: [17]}
+    amount: {monthly: 420, noise: 0.4}
+    counterparties: [Harbor Postage & Shipping]
+    memo: "Postage & overnight shipping – {mon} {yyyy}"
+
+  - id: bad_debt_routine
+    account: "6950"
+    txn_type: journal
+    schedule: {days: [-1]}
+    amount: {monthly: 500, noise: 0.4, round: 1}
+    memo: "Residential accounts written off as uncollectible – {mon} {yyyy}"
+
+  - id: depreciation
+    account: "7000"
+    txn_type: journal
+    mode: fixed
+    split: Accumulated Depreciation
+    schedule: {days: [-1]}
+    amount: {by_year: {2024: 51800, 2025: 55400, 2026: 58900}}
+    memo: "Monthly depreciation – {mon} {yyyy}"
+
+  - id: amortization
+    account: "7050"
+    txn_type: journal
+    mode: fixed
+    split: Customer List (net)
+    schedule: {days: [-1]}
+    amount: {fixed: 3750}
+    memo: "Amortization – customer list (2022 Bayside Plumbing acquisition) – {mon} {yyyy}"
+
+  # --- Other income / expense -------------------------------------------------
+  - id: volume_rebates
+    account: "5000"
+    txn_type: vendor_credit
+    direction: credit
+    schedule: {days: [25], months: [1, 4, 7, 10]}
+    amount: {monthly: 8500, noise: 0.25}
+    counterparties:
+      - {name: Florida Equipment Distributors, num: "FED-VC-{yy}Q{q}"}
+    memo: "Distributor volume rebate credit – quarter ended {prev_month_end_mdy}"
+
+  - id: interest_term_gulfstream
+    account: "8100"
+    txn_type: journal
+    mode: fixed
+    end: "2025-06"
+    schedule: {days: [-1]}
+    amount: {by_year: {2024: 15400, 2025: 13700}}
+    counterparties: [Gulfstream Bank]
+    memo: "Term loan interest – {mon} {yyyy}"
+
+  - id: interest_loc
+    account: "8100"
+    txn_type: journal
+    schedule: {days: [-1]}
+    amount: {monthly: 2900, noise: 0.4}
+    counterparties:
+      - {name: Gulfstream Bank, end: "2025-06"}
+      - {name: Tidewater Capital Bank, start: "2025-07"}
+    memo: "Revolving line of credit interest – {mon} {yyyy}"
+
+  - id: interest_term_tidewater
+    account: "8100"
+    txn_type: journal
+    mode: fixed
+    start: "2025-07"
+    schedule: {days: [-1]}
+    amount: {by_year: {2025: 16800, 2026: 16200}}
+    counterparties: [Tidewater Capital Bank]
+    memo: "Term loan interest – {mon} {yyyy}"
+
+
+# ---------------------------------------------------------------------------
+# Planted transactions (stable keys; the answer key refers to these)
+# ---------------------------------------------------------------------------
+planted:
+  # M-01 Hollis & Crane: Matter 2291 Dawson litigation
+  - {key: hc_lit_0212, date: "2025-02-12", account: "6400", counterparty: Hollis & Crane LLP, num: 25-0212, amount: 14500,
+     memo: "Matter 2291 – Dawson v. Meridian – professional services through 01/31/2025"}
+  - {key: hc_lit_0418, date: "2025-04-18", account: "6400", counterparty: Hollis & Crane LLP, num: 25-0418, amount: 22000,
+     memo: "Matter 2291 – Dawson v. Meridian – professional services through 03/31/2025"}
+  - {key: hc_lit_0615, date: "2025-06-13", account: "6400", counterparty: Hollis & Crane LLP, num: 25-0615, amount: 18000,
+     memo: "Matter 2291 – Dawson v. Meridian – professional services through 05/31/2025"}
+  - {key: hc_lit_0910, date: "2025-09-10", account: "6400", counterparty: Hollis & Crane LLP, num: 25-0910, amount: 21000,
+     memo: "Matter 2291 – Dawson v. Meridian – mediation & professional services through 08/31/2025"}
+  - {key: hc_lit_1120, date: "2025-11-20", account: "6400", counterparty: Hollis & Crane LLP, num: 25-1120, amount: 9000,
+     memo: "Matter 2291 – Dawson v. Meridian – settlement documentation through 11/14/2025"}
+  # M-01 Hollis & Crane: Matter 1004 general corporate retainer and ad hoc work
+  - key: "hc_retainer_{yyyy}{mm}"
+    repeat: {start: "2024-01", end: "2026-06", days: [1]}
+    account: "6400"
+    counterparty: Hollis & Crane LLP
+    num: "{yy}-{mm}01"
+    amount: 2500
+    memo: "Matter 1004 – General corporate & employment – monthly retainer – {mon} {yyyy}"
+  - {key: hc_adhoc_2410, date: "2024-10-22", account: "6400", counterparty: Hollis & Crane LLP, num: 24-1022, amount: 6000,
+     memo: "Matter 1004 – Non-compete & restrictive covenant review"}
+  - {key: hc_adhoc_2508, date: "2025-08-19", account: "6400", counterparty: Hollis & Crane LLP, num: 25-0819, amount: 5500,
+     memo: "Matter 1004 – Employment policy review"}
+
+  # M-02 officer compensation: $660,000 / yr, 24 semi-monthly payrolls
+  - key: "officer_pay_{yyyy}{mm}_{n}"
+    repeat: {start: "2024-01", end: "2026-06", days: [15, -1], adjust: prior}
+    account: "6010"
+    txn_type: payroll
+    amount: 27500
+    memo: "Officer payroll – R. Castellano – PPE {mdy}"
+
+  # M-03 owner items
+  - key: "club_dues_{yyyy}{mm}"
+    repeat: {start: "2025-01", end: "2026-06", days: [5]}
+    account: "6700"
+    txn_type: expense
+    counterparty: Pelican Bay Country Club
+    amount: 1100
+    memo: "Club dues – R. Castellano"
+  - key: "x5_lease_{yyyy}{mm}"
+    repeat: {start: "2025-01", end: "2026-06", days: [20]}
+    account: "6650"
+    txn_type: expense
+    counterparty: BMW Financial Services
+    amount: 1500
+    memo: "Lease – X5 (D. Castellano, personal)"
+  - {key: owner_travel_acca_2025, num: ER-2503-118, date: "2025-03-14", account: "6600", txn_type: bill, counterparty: Richard Castellano, amount: 5600,
+     memo: "Travel – R. Castellano – ACCA 2025 Conference, Nashville – expense report"}
+  - {key: owner_travel_dealer_summit_2025, num: ER-2509-204, date: "2025-09-19", account: "6600", txn_type: bill, counterparty: Richard Castellano, amount: 5600,
+     memo: "Travel – R. Castellano – Carrier Dealer Summit, Indianapolis – expense report"}
+  - {key: owner_travel_plant_visit_2025, num: ER-2511-231, date: "2025-11-21", account: "6600", txn_type: bill, counterparty: Richard Castellano, amount: 5600,
+     memo: "Travel – R. Castellano & M. Delgado – Dixon-Reeve plant visit, Tyler TX – expense report"}
+  - {key: owner_travel_acca_2026, num: ER-2603-077, date: "2026-03-13", account: "6600", txn_type: bill, counterparty: Richard Castellano, amount: 5600,
+     memo: "Travel – R. Castellano – ACCA 2026 Conference, San Antonio – expense report"}
+
+  # M-04 CFO search
+  - {key: barrow_1, date: "2025-04-14", account: "6450", counterparty: Barrow Search Partners, num: BSP-25-0412, amount: 15000,
+     memo: "Retained search – Chief Financial Officer – installment 1 of 3"}
+  - {key: barrow_2, date: "2025-05-15", account: "6450", counterparty: Barrow Search Partners, num: BSP-25-0515, amount: 15000,
+     memo: "Retained search – Chief Financial Officer – installment 2 of 3"}
+  - {key: barrow_3, date: "2025-07-17", account: "6450", counterparty: Barrow Search Partners, num: BSP-25-0717, amount: 15000,
+     memo: "Retained search – Chief Financial Officer – installment 3 of 3 (placement)"}
+
+  # M-05 severance
+  - {key: severance_1, date: "2026-02-13", account: "6000", txn_type: payroll, amount: 25000, memo: "Severance – T. Whitfield"}
+  - {key: severance_2, date: "2026-03-13", account: "6000", txn_type: payroll, amount: 25000, memo: "Severance – T. Whitfield"}
+  - {key: severance_3, date: "2026-04-15", account: "6000", txn_type: payroll, amount: 25000, memo: "Severance – T. Whitfield"}
+
+  # M-06 Brightline FieldPro managed services
+  - key: "brightline_{yyyy}{mm}"
+    repeat: {start: "2025-01", end: "2026-06", days: [1]}
+    account: "6300"
+    counterparty: Brightline Systems Group
+    num: "BSG-{yy}{mm}"
+    amount: 8000
+    memo: "FieldPro managed services – {mon} {yyyy}"
+
+  # M-07 refinancing costs (booked to interest expense)
+  - {key: refi_prepayment_penalty, date: "2025-06-27", account: "8100", txn_type: check, counterparty: Gulfstream Bank, amount: 13000,
+     memo: "Prepayment penalty – Gulfstream Bank term loan payoff"}
+  - {key: refi_fee_writeoff, date: "2025-06-30", account: "8100", txn_type: journal, counterparty: Gulfstream Bank, amount: 22000,
+     memo: "Write-off unamortized loan origination fees – Gulfstream Bank"}
+
+  # M-08 sale-process fees
+  - {key: keel_harbor_retainer, date: "2025-10-06", account: "6400", counterparty: Keel Harbor Advisors, num: KHA-2510-031, amount: 26000,
+     memo: "Sell-side M&A advisory – initial retainer (Project Cobalt)"}
+  - {key: dunmore_pike_readiness, date: "2025-11-12", account: "6410", counterparty: Dunmore & Pike CPAs, num: DP-25-1107, amount: 15000,
+     memo: "Sell-side financial readiness – fixed fee (Project Cobalt)"}
+
+  # M-09 storm damage and the unadjusted insurance recovery
+  - {key: storm_restoration, date: "2024-10-16", account: "6150", counterparty: Tampa Bay Restoration, num: TBR-24-10417, amount: 20000,
+     memo: "Emergency water mitigation & drying – Palm River warehouse (hurricane damage)"}
+  - {key: storm_roof, date: "2024-12-12", account: "6150", counterparty: Gulf Coast Roofing, num: GCR-5602, amount: 38000,
+     memo: "Roof repair – Palm River warehouse storm damage"}
+  - {key: storm_insurance_proceeds, date: "2025-02-18", account: "8000", txn_type: deposit, counterparty: Sunshine Mutual Insurance, amount: -40000,
+     memo: "Insurance proceeds – storm claim FL-24-88172"}
+
+  # M-10 subcontractor true-up for 2024 work
+  - {key: apex_trueup, date: "2025-03-14", account: "5200", counterparty: Apex Ductwork LLC, num: AD-3391, amount: 42000,
+     memo: "Project closeout true-up – 2024 projects"}
+
+  # M-11 warehouse relocation (all in Feb-Apr 2025)
+  - {key: reloc_movers, date: "2025-02-21", account: "6100", counterparty: Suncoast Movers, num: SM-25-0214, amount: 32000,
+     memo: "Warehouse relocation – Palm River Rd to Brandon Logistics Center"}
+  - {key: reloc_buildout_1, date: "2025-03-20", account: "6150", counterparty: Brandon Build-Out Contractors, num: BBC-1147, amount: 24000,
+     memo: "Warehouse build-out – progress billing 1 of 2"}
+  - {key: reloc_buildout_2, date: "2025-04-24", account: "6150", counterparty: Brandon Build-Out Contractors, num: BBC-1162, amount: 24000,
+     memo: "Warehouse build-out – final billing 2 of 2"}
+
+  # M-12 dispatch team (3 x $55,000) still on payroll through Jun 2026
+  - key: "dispatch_pay_{yyyy}{mm}"
+    repeat: {start: "2024-01", end: "2026-06", days: [-1], adjust: prior}
+    account: "6000"
+    txn_type: payroll
+    amount: 13750
+    memo: "Payroll – Dispatch"
+
+  # M-13 year-end physical count adjustments (same entry both years)
+  - {key: inventory_ye_2024, date: "2024-12-31", account: "5400", txn_type: journal, amount: 58500,
+     memo: "Year-end physical count adjustment – obsolete & shrink"}
+  - {key: inventory_ye_2025, date: "2025-12-31", account: "5400", txn_type: journal, amount: 64000,
+     memo: "Year-end physical count adjustment – obsolete & shrink"}
+
+  # M-14 customer bankruptcy: the three unpaid Jun-Aug 2025 invoices, then the write-off
+  - {key: halvorsen_inv_1, date: "2025-06-18", account: "4000", txn_type: invoice, counterparty: Halvorsen Builders,
+     num_sequence: ar_invoice, amount: -18400, memo: "Progress billing #4 – HVAC & plumbing rough-in, Valrico Medical Office"}
+  - {key: halvorsen_inv_2, date: "2025-07-16", account: "4000", txn_type: invoice, counterparty: Halvorsen Builders,
+     num_sequence: ar_invoice, amount: -21350, memo: "Progress billing #5 – HVAC & plumbing trim-out, Valrico Medical Office"}
+  - {key: halvorsen_inv_3, date: "2025-08-20", account: "4000", txn_type: invoice, counterparty: Halvorsen Builders,
+     num_sequence: ar_invoice, amount: -12250, memo: "Change order #2 – additional VAV boxes, Valrico Medical Office"}
+  - {key: halvorsen_writeoff, date: "2025-10-31", account: "6950", txn_type: journal, counterparty: Halvorsen Builders, amount: 52000,
+     memo: "Bad debt – Halvorsen Builders (Chapter 7)"}
+
+  # Coastal Risk general liability premium installments (May 2025 is posted twice; see data_quality)
+  - key: "coastal_prem_{yyyy}{mm}"
+    repeat: {start: "2024-01", end: "2024-12", days: [7]}
+    account: "6200"
+    counterparty: Coastal Risk Insurance
+    num: "CRI-{yy}-{mm}07"
+    amount: 16900
+    memo: "Commercial general liability & umbrella – monthly premium installment – {mon} {yyyy}"
+  - key: "coastal_prem_{yyyy}{mm}"
+    repeat: {start: "2025-01", end: "2025-12", days: [7]}
+    account: "6200"
+    counterparty: Coastal Risk Insurance
+    num: "CRI-{yy}-{mm}07"
+    amount: 18400
+    memo: "Commercial general liability & umbrella – monthly premium installment – {mon} {yyyy}"
+  - key: "coastal_prem_{yyyy}{mm}"
+    repeat: {start: "2026-01", end: "2026-06", days: [7]}
+    account: "6200"
+    counterparty: Coastal Risk Insurance
+    num: "CRI-{yy}-{mm}07"
+    amount: 19600
+    memo: "Commercial general liability & umbrella – monthly premium installment – {mon} {yyyy}"
+
+# ---------------------------------------------------------------------------
+# Planted data-quality issues
+# ---------------------------------------------------------------------------
+data_quality:
+  duplicates:
+    - key: coastal_prem_202505_dup
+      of: coastal_prem_202505
+      days_later: 3
+      note: >-
+        Coastal Risk Insurance May 2025 premium installment CRI-25-0507 ($18,400.00) was entered twice,
+        on 05/07/2025 and again on 05/10/2025. Management's P&L includes both postings.
+  topside:
+    - month: "2025-12"
+      account: "6000"
+      amount: 25000
+      note: >-
+        Management's Dec 2025 P&L carries a $25,000 top-side accrual in 6000 for a proposed discretionary
+        bonus pool. The owner has not approved it, nothing was communicated or paid, and it was never
+        booked in QuickBooks (see the Jan 2026 controller email in the financials folder).
+
+# ---------------------------------------------------------------------------
+# Letterheads and address blocks reused by the documents
+# ---------------------------------------------------------------------------
+parties:
+  meridian:
+    name: Meridian Mechanical Services, LLC
+    address: [1150 Commerce Park Drive, "Brandon, FL 33511"]
+    phone: (813) 555-0100
+    web: www.meridianmech.example
+  meridian_palm_river:
+    name: Meridian Mechanical Services, LLC
+    address: [5801 Palm River Road, "Tampa, FL 33619"]
+    phone: (813) 555-0100
+    web: www.meridianmech.example
+  hollis_crane:
+    name: Hollis & Crane LLP
+    tagline: Attorneys at Law
+    address: ["One Harbour Place, Suite 1800", "Tampa, Florida 33602"]
+    phone: (813) 555-0142
+    web: www.holliscrane.example
+  barrow:
+    name: Barrow Search Partners
+    tagline: Executive Search | Finance & Operations Leadership
+    address: ["220 Channelside Way, Suite 900", "Tampa, FL 33602"]
+    phone: (813) 555-0177
+    web: www.barrowsearch.example
+  brightline:
+    name: Brightline Systems Group, Inc.
+    tagline: FieldPro | Field service management, delivered as a service
+    address: ["3100 Innovation Parkway, Suite 400", "Orlando, FL 32826"]
+    phone: (407) 555-0190
+    email: billing@brightlinesg.example
+  gulfstream_bank:
+    name: Gulfstream Bank, N.A.
+    tagline: Commercial Loan Servicing
+    address: [200 Bayshore Center, "Tampa, FL 33606"]
+    phone: (813) 555-0120
+  keel_harbor:
+    name: Keel Harbor Advisors, LLC
+    tagline: Mergers & Acquisitions Advisory
+    address: ["One Harbour Plaza, 27th Floor", "Tampa, FL 33602"]
+    phone: (813) 555-0133
+  dunmore_pike:
+    name: Dunmore & Pike CPAs, P.A.
+    tagline: Transaction Advisory Services
+    address: ["1900 Harbor Point Drive, Suite 500", "Tampa, FL 33607"]
+    phone: (813) 555-0165
+  sunshine_mutual:
+    name: Sunshine Mutual Insurance Company
+    tagline: Commercial Property Claims
+    address: [PO Box 22817, "Jacksonville, FL 32241"]
+    phone: (904) 555-0110
+  tampa_bay_restoration:
+    name: Tampa Bay Restoration, LLC
+    tagline: 24/7 Water, Fire & Storm Damage Restoration
+    address: [3215 Riverview Commerce Drive, "Riverview, FL 33578"]
+    phone: (813) 555-0158
+  gulf_coast_roofing:
+    name: Gulf Coast Roofing, Inc.
+    tagline: Commercial Roofing | State Certified Roofing Contractor
+    address: [7420 Causeway Industrial Blvd, "Tampa, FL 33619"]
+    phone: (813) 555-0149
+  apex:
+    name: Apex Ductwork LLC
+    tagline: HVAC Sheet Metal Fabrication & Installation
+    address: [9105 Sheet Metal Way, "Plant City, FL 33563"]
+    phone: (813) 555-0188
+  suncoast_movers:
+    name: Suncoast Movers, Inc.
+    tagline: Commercial & Industrial Relocation
+    address: [4455 Transfer Street, "Tampa, FL 33610"]
+    phone: (813) 555-0139
+  brandon_buildout:
+    name: Brandon Build-Out Contractors, LLC
+    tagline: Commercial Interiors & Tenant Improvements
+    address: [812 Builders Row, "Brandon, FL 33511"]
+    phone: (813) 555-0161
+  coastal_risk:
+    name: Coastal Risk Insurance Company
+    tagline: Commercial Lines Billing
+    address: [PO Box 44120, "Orlando, FL 32802"]
+    phone: (407) 555-0122
+  palmetto_travel:
+    name: Palmetto Corporate Travel
+    tagline: Business Travel & Event Registration Services
+    address: ["101 Travel Plaza, Suite 210", "Tampa, FL 33609"]
+    phone: (813) 555-0126
+  dixon_reeve:
+    name: Dixon-Reeve Air Systems, Inc.
+    tagline: Dealer Development Program
+    address: [4400 Industrial Loop, "Tyler, TX 75703"]
+    phone: (903) 555-0104
+  pelican_bay:
+    name: Pelican Bay Country Club
+    tagline: Member Services
+    address: [1 Clubhouse Lane, "Tampa, FL 33626"]
+    phone: (813) 555-0171
+  bmw_fs:
+    name: BMW Financial Services
+    tagline: Lease Billing Statement
+    address: [Customer Service Center, PO Box 90710]
+  brandt_loewy:
+    name: Brandt & Loewy, P.A.
+    tagline: Bankruptcy & Creditors' Rights
+    address: ["77 Courthouse Square, Suite 400", "Tampa, FL 33602"]
+    phone: (813) 555-0153
+
+# ---------------------------------------------------------------------------
+# Data room. doc_id = filename. `supports` lists the planted keys a document
+# evidences; invoice totals are checked against those rows.
+# ---------------------------------------------------------------------------
+documents:
+  # --- 02 Financials (top-side accrual) ------------------------------------------
+  - id: bonus_pool_email
+    filename: 2.1 Controller Email - Dec 2025 Bonus Pool Accrual.txt
+    folder: 02 Financials
+    template: email
+    key_phrases:
+      - "you have not approved the pool"
+      - "nothing has been communicated to employees and nothing has been paid"
+      - "It will not be booked in QuickBooks"
+    fields:
+      from: Priya Raman <praman@meridianmech.example>
+      to: Richard Castellano <rcastellano@meridianmech.example>
+      cc: Laura Pike <lpike@dunmorepike.example>
+      date: Wed, 14 Jan 2026 17:22:09 -0500
+      subject: Dec-25 management P&L - proposed bonus pool accrual
+      body: |
+        Rick,
+
+        For the December management P&L in the Project Cobalt package I added a $25,000 top-side accrual in 6000 Salaries & Wages - Office for the proposed discretionary bonus pool we discussed in December.
+
+        To be clear on status: you have not approved the pool, nothing has been communicated to employees and nothing has been paid. It will not be booked in QuickBooks unless and until you approve it, so the QuickBooks GL for December is $25,000 lower in 6000 than the management P&L.
+
+        Laura - copying you so the readiness workpapers reflect this.
+
+        Priya
+
+  # --- 03 Owner expenses (M-03) ---------------------------------------------
+  - id: expense_report_acca_2025
+    filename: 3.1 Expense Report ER-2503-118 ACCA 2025 Conference.pdf
+    folder: 03 Owner Expenses
+    template: form
+    supports: [owner_travel_acca_2025]
+    key_phrases:
+      - "Report No.: ER-2503-118"
+      - "Business purpose: Contractor management sessions & manufacturer training"
+    fields:
+      issuer: meridian
+      title: Employee Expense Report
+      subtitle: [Travel & conference expenses - reimbursable]
+      meta:
+        - [Report No., ER-2503-118]
+        - [Employee, "Richard Castellano, Chief Executive Officer"]
+        - [Company, "Meridian Mechanical Services, LLC"]
+        - [Trip, "ACCA 2025 Conference & Expo - Nashville, TN"]
+        - [Travel dates, "March 9-12, 2025"]
+        - [Business purpose, Contractor management sessions & manufacturer training]
+      body:
+        - table:
+            columns: [{title: Date, width: 80}, {title: Item}, {title: Amount, align: right, width: 90}]
+            rows:
+              - ["02/14/2025", Conference registration - contractor pass incl. pre-conference workshop, "1,895.00"]
+              - ["02/14/2025", Airfare - TPA/BNA round trip, "842.00"]
+              - ["03/12/2025", Conference hotel - 3 nights incl. taxes, "2,863.00"]
+            total: ["", Total reimbursable, "5,600.00"]
+        - kv:
+            - [Submitted, "March 14, 2025 by Richard Castellano"]
+            - [Approved, "March 14, 2025 by Priya Raman, Controller"]
+        - "Receipts attached. Reimbursed through accounts payable."
+
+  - id: expense_report_dealer_summit_2025
+    filename: 3.2 Expense Report ER-2509-204 Carrier Dealer Summit.pdf
+    folder: 03 Owner Expenses
+    template: form
+    supports: [owner_travel_dealer_summit_2025]
+    key_phrases:
+      - "Report No.: ER-2509-204"
+      - "Business purpose: Dealer program review, 2026 product launch & pricing"
+    fields:
+      issuer: meridian
+      title: Employee Expense Report
+      subtitle: [Travel & conference expenses - reimbursable]
+      meta:
+        - [Report No., ER-2509-204]
+        - [Employee, "Richard Castellano, Chief Executive Officer"]
+        - [Company, "Meridian Mechanical Services, LLC"]
+        - [Trip, "Carrier Dealer Summit 2025 - Indianapolis, IN"]
+        - [Travel dates, "September 15-18, 2025"]
+        - [Business purpose, "Dealer program review, 2026 product launch & pricing"]
+      body:
+        - table:
+            columns: [{title: Date, width: 80}, {title: Item}, {title: Amount, align: right, width: 90}]
+            rows:
+              - ["07/28/2025", Summit registration incl. pre-summit technical training day, "2,695.00"]
+              - ["07/28/2025", Airfare - TPA/IND round trip, "718.00"]
+              - ["09/18/2025", Downtown convention hotel - 3 nights incl. taxes, "2,187.00"]
+            total: ["", Total reimbursable, "5,600.00"]
+        - kv:
+            - [Submitted, "September 19, 2025 by Richard Castellano"]
+            - [Approved, "September 19, 2025 by Priya Raman, Controller"]
+        - "Receipts attached. Reimbursed through accounts payable."
+
+  - id: expense_report_plant_visit_2025
+    filename: 3.3 Expense Report ER-2511-231 Dixon-Reeve Plant Visit.pdf
+    folder: 03 Owner Expenses
+    template: form
+    supports: [owner_travel_plant_visit_2025]
+    key_phrases:
+      - "Report No.: ER-2511-231"
+      - "Business purpose: Factory training on variable-speed systems and 2026 dealer program review"
+    fields:
+      issuer: meridian
+      title: Employee Expense Report
+      subtitle: [Travel & training expenses - reimbursable]
+      meta:
+        - [Report No., ER-2511-231]
+        - [Employee, "Richard Castellano, Chief Executive Officer (travelers: R. Castellano, M. Delgado)"]
+        - [Company, "Meridian Mechanical Services, LLC"]
+        - [Trip, "Dixon-Reeve Air Systems plant visit - Tyler, TX"]
+        - [Travel dates, "November 17-19, 2025"]
+        - [Business purpose, Factory training on variable-speed systems and 2026 dealer program review]
+      body:
+        - table:
+            columns: [{title: Date, width: 80}, {title: Item}, {title: Amount, align: right, width: 90}]
+            rows:
+              - ["10/30/2025", "Dealer factory training registration (2 attendees)", "1,200.00"]
+              - ["10/30/2025", Airfare - TPA/TYR round trip (2 travelers), "1,436.00"]
+              - ["11/19/2025", Hotel - 2 rooms x 2 nights incl. taxes, "2,964.00"]
+            total: ["", Total reimbursable, "5,600.00"]
+        - kv:
+            - [Submitted, "November 21, 2025 by Richard Castellano"]
+            - [Approved, "November 21, 2025 by Priya Raman, Controller"]
+        - "Receipts and plant visit agenda attached. Reimbursed through accounts payable."
+
+  - id: expense_report_acca_2026
+    filename: 3.4 Expense Report ER-2603-077 ACCA 2026 Conference.pdf
+    folder: 03 Owner Expenses
+    template: form
+    supports: [owner_travel_acca_2026]
+    key_phrases:
+      - "Report No.: ER-2603-077"
+      - "Business purpose: Contractor management sessions & manufacturer training"
+    fields:
+      issuer: meridian
+      title: Employee Expense Report
+      subtitle: [Travel & conference expenses - reimbursable]
+      meta:
+        - [Report No., ER-2603-077]
+        - [Employee, "Richard Castellano, Chief Executive Officer"]
+        - [Company, "Meridian Mechanical Services, LLC"]
+        - [Trip, "ACCA 2026 Conference & Expo - San Antonio, TX"]
+        - [Travel dates, "March 8-11, 2026"]
+        - [Business purpose, Contractor management sessions & manufacturer training]
+      body:
+        - table:
+            columns: [{title: Date, width: 80}, {title: Item}, {title: Amount, align: right, width: 90}]
+            rows:
+              - ["01/20/2026", Conference registration - contractor pass incl. pre-conference workshop, "1,945.00"]
+              - ["01/20/2026", Airfare - TPA/SAT round trip, "796.00"]
+              - ["03/11/2026", Conference hotel - 3 nights incl. taxes, "2,859.00"]
+            total: ["", Total reimbursable, "5,600.00"]
+        - kv:
+            - [Submitted, "March 13, 2026 by Richard Castellano"]
+            - [Approved, "March 13, 2026 by Priya Raman, Controller"]
+        - "Receipts attached. Reimbursed through accounts payable."
+
+  - id: club_statement
+    filename: 3.5 Pelican Bay Country Club Member Statement Dec 2025.pdf
+    folder: 03 Owner Expenses
+    template: invoice
+    supports: [club_dues_202512]
+    key_phrases: ["Member: Richard Castellano", "Membership Class: Individual - Full Golf", "Member Since: January 2025"]
+    fields:
+      issuer: pelican_bay
+      title: MEMBER STATEMENT
+      bill_to_label: "Member:"
+      bill_to: [Richard Castellano, 14 Bayshore Palms Court, "Tampa, FL 33629"]
+      meta:
+        - [Statement No., PBCC-2512-20931]
+        - [Statement Date, "December 5, 2025"]
+        - [Member, Richard Castellano]
+        - [Member No., M-20931]
+        - [Membership Class, Individual - Full Golf]
+        - [Member Since, January 2025]
+        - [Payment, Corporate card on file (Meridian Mechanical Services)]
+      lines:
+        - {description: Monthly dues - Individual Full Golf membership, amount: 1100}
+      total_label: Amount Charged to Card on File
+      notes:
+        - "Dining minimums, guest fees and pro shop charges are billed separately to the member's house account."
+
+  - id: x5_lease_statement
+    filename: 3.6 BMW Financial Services Lease Statement X5 Dec 2025.pdf
+    folder: 03 Owner Expenses
+    template: invoice
+    supports: [x5_lease_202512]
+    key_phrases: ["Lessee: Diane Castellano", "Vehicle: 2025 BMW X5 xDrive40i"]
+    fields:
+      issuer: bmw_fs
+      title: LEASE BILLING STATEMENT
+      bill_to_label: "Lessee:"
+      bill_to: [Diane Castellano, 14 Bayshore Palms Court, "Tampa, FL 33629"]
+      meta:
+        - [Account No., 7700-219-5563]
+        - [Statement Date, "November 28, 2025"]
+        - [Lessee, Diane Castellano]
+        - [Vehicle, 2025 BMW X5 xDrive40i]
+        - [Payment Method, Recurring ACH - Meridian Mechanical Services operating account]
+      lines:
+        - {description: "Monthly lease payment - due December 20, 2025", amount: 1500}
+      total_label: Amount Due
+      notes:
+        - "Lease term: 36 months beginning January 2025. Garaging address on file: 14 Bayshore Palms Court, Tampa, FL 33629 (residential). Primary driver: Diane Castellano."
+
+  - id: plant_visit_agenda
+    filename: 3.7 Dixon-Reeve Plant Visit Agenda Nov 2025.pdf
+    folder: 03 Owner Expenses
+    template: form
+    key_phrases:
+      - "Visiting company: Meridian Mechanical Services, LLC"
+      - "Purpose of visit: Factory training on variable-speed systems and 2026 dealer program review"
+    fields:
+      issuer: dixon_reeve
+      title: Dealer Plant Visit - Agenda
+      subtitle: ["November 18-19, 2025 | Tyler, Texas manufacturing campus"]
+      meta:
+        - [Visiting company, "Meridian Mechanical Services, LLC"]
+        - [Attendees, "Richard Castellano (CEO); Marcus Delgado (COO)"]
+        - [Purpose of visit, Factory training on variable-speed systems and 2026 dealer program review]
+        - [Host, "Janet Kowalski, Regional Sales Manager - Southeast"]
+      body:
+        - heading: Tuesday, November 18
+        - table:
+            columns: [{title: Time, width: 90}, {title: Session}]
+            rows:
+              - ["8:00 AM", Welcome breakfast and safety briefing]
+              - ["8:30 AM", "Plant tour - coil, compressor and final assembly lines"]
+              - ["10:30 AM", "Variable-speed heat pump systems: installation and commissioning (hands-on lab)"]
+              - ["1:00 PM", "Warranty processing and parts logistics for Florida dealers"]
+              - ["3:00 PM", Service agreement programs and dealer marketing support]
+        - heading: Wednesday, November 19
+        - table:
+            columns: [{title: Time, width: 90}, {title: Session}]
+            rows:
+              - ["8:30 AM", 2026 dealer program terms and volume rebate tiers]
+              - ["10:00 AM", "Commercial rooftop product roadmap (7.5-25 ton)"]
+              - ["11:30 AM", Wrap-up and departures]
+        - "Travel and lodging are arranged and paid by the visiting dealer. Dixon-Reeve provides meals during scheduled sessions."
+
+  # --- 04 Legal (M-01, M-08) ---------------------------------------------------
+  - id: hc_el_1004
+    filename: 4.1 Hollis Crane Engagement Letter - Matter 1004.pdf
+    folder: 04 Legal
+    template: letter
+    key_phrases: ["$2,500 per month", "continuing until terminated by either party", "Matter 1004 (General Corporate & Employment)"]
+    fields:
+      issuer: hollis_crane
+      date: "March 6, 2023"
+      to: [Mr. Richard Castellano, Chief Executive Officer, "Meridian Mechanical Services, LLC", 5801 Palm River Road, "Tampa, FL 33619"]
+      re: [Engagement Letter - General Corporate & Employment Counsel, Client-Matter No. 20417-1004]
+      salutation: "Dear Rick:"
+      body:
+        - "Thank you for selecting Hollis & Crane LLP to serve as general corporate and employment counsel to Meridian Mechanical Services, LLC (the \"Company\"). This letter confirms the scope of our engagement and the basis on which we will be compensated."
+        - heading: Scope of Services
+        - "We will provide routine general corporate and employment advice, including contract review, entity maintenance, wage-and-hour and personnel questions, and attendance at management meetings on request. We have opened this engagement as Matter 1004 (General Corporate & Employment)."
+        - heading: Fees
+        - "For the services described above, the Company will pay a fixed monthly retainer of $2,500 per month, billed on the first business day of each month and continuing until terminated by either party on thirty (30) days' written notice. Projects outside the retainer scope, such as policy rewrites, restrictive-covenant reviews, transactions or litigation, will be billed separately at our standard hourly rates and, where appropriate, opened as separate matters."
+        - "Our current standard hourly rates are $525 for partners, $325 for associates and $175 for paralegals. Rates are reviewed annually."
+        - heading: Term
+        - "This engagement has no fixed term. It will remain in effect, and the monthly retainer will continue to be billed, until either party terminates it in writing."
+        - "If these terms are acceptable, please countersign and return a copy of this letter. We appreciate the opportunity to work with you."
+      closing: Very truly yours,
+      signatures:
+        - {party: HOLLIS & CRANE LLP, name: Evelyn R. Hollis, title: Partner, signed: true}
+      countersign:
+        heading: "ACKNOWLEDGED AND AGREED:"
+        signatures:
+          - {party: "MERIDIAN MECHANICAL SERVICES, LLC", name: Richard Castellano, title: Chief Executive Officer, signed: true, date: "March 9, 2023"}
+
+  - id: hc_el_2291
+    filename: 4.2 Hollis Crane Engagement Letter - Matter 2291 Dawson.pdf
+    folder: 04 Legal
+    template: letter
+    key_phrases: ["Matter 2291 (Dawson v. Meridian)", "defense of this action through final resolution", "alleging property damage from a water heater failure"]
+    fields:
+      issuer: hollis_crane
+      date: "January 8, 2025"
+      to: [Mr. Richard Castellano, Chief Executive Officer, "Meridian Mechanical Services, LLC", 5801 Palm River Road, "Tampa, FL 33619"]
+      re: ["Engagement Letter - Dawson v. Meridian Mechanical Services, LLC", Hillsborough County Circuit Court Case No. 24-CA-008815, Client-Matter No. 20417-2291]
+      salutation: "Dear Rick:"
+      body:
+        - "This letter confirms that Hollis & Crane LLP will represent Meridian Mechanical Services, LLC (the \"Company\") in the lawsuit filed by Carla Dawson, a residential customer, alleging property damage from a water heater failure following a 2023 installation by the Company. We have opened this engagement as Matter 2291 (Dawson v. Meridian), separate from our general corporate retainer under Matter 1004."
+        - heading: Scope
+        - "Our engagement is limited to the defense of this action through final resolution, whether by dismissal, settlement or judgment, including any mediation. It does not include appeals or unrelated employment matters, which remain under Matter 1004."
+        - heading: Fees and Billing
+        - "Litigation services will be billed monthly at our standard hourly rates ($525 partner, $325 associate, $175 paralegal), plus out-of-pocket costs such as court reporter, filing and mediator fees. No retainer deposit is required."
+        - "The Company has tendered the claim to its commercial general liability insurer, Coastal Risk Insurance. Defense costs fall within the Company's $100,000 self-insured retention and are the Company's responsibility; the insurer has agreed to fund any settlement within policy limits."
+        - heading: Conclusion of the Engagement
+        - "Our representation in Matter 2291 will end when the action is finally resolved. We do not expect further fees after resolution other than for settlement documentation and closing the file."
+      closing: Very truly yours,
+      signatures:
+        - {party: HOLLIS & CRANE LLP, name: Evelyn R. Hollis, title: Partner, signed: true}
+      countersign:
+        heading: "ACKNOWLEDGED AND AGREED:"
+        signatures:
+          - {party: "MERIDIAN MECHANICAL SERVICES, LLC", name: Richard Castellano, title: Chief Executive Officer, signed: true, date: "January 10, 2025"}
+
+  - id: hc_inv_0212
+    filename: 4.2.1 Hollis Crane Invoice 25-0212.pdf
+    folder: 04 Legal
+    template: invoice
+    supports: [hc_lit_0212]
+    key_phrases: ["Invoice No.: 25-0212", "Matter: 2291 - Dawson v. Meridian", "Total Due This Invoice: $14,500.00"]
+    fields: &hc_lit_invoice
+      issuer: hollis_crane
+      bill_to: [Accounts Payable, "Meridian Mechanical Services, LLC", 5801 Palm River Road, "Tampa, FL 33619"]
+      meta:
+        - [Invoice No., 25-0212]
+        - [Invoice Date, "February 12, 2025"]
+        - [Client-Matter, 20417-2291]
+        - [Matter, 2291 - Dawson v. Meridian]
+        - [Billing Period, "January 1 - 31, 2025"]
+        - [Terms, Net 30]
+      intro:
+        - "For professional services rendered in Dawson v. Meridian Mechanical Services, LLC (Hillsborough County Case No. 24-CA-008815), customer property-damage claim, through January 31, 2025."
+      columns: {qty: Hours, rate: Rate}
+      lines:
+        - {description: "E. Hollis, Partner - case assessment; answer and affirmative defenses", qty: 12.0, rate: 525}
+        - {description: "J. Park, Associate - pleadings, initial disclosures, document collection", qty: 22.0, rate: 325}
+        - {description: "M. Ortiz, Paralegal - document review and production log", qty: 6.0, rate: 175}
+      total_label: Total Due This Invoice
+      remit: [Hollis & Crane LLP - ACH and wire instructions provided on request, Please reference the invoice number with payment.]
+      terms: "Payment is due within 30 days. Questions about this invoice may be directed to billing@holliscrane.example."
+
+  - id: hc_inv_0418
+    filename: 4.2.2 Hollis Crane Invoice 25-0418.pdf
+    folder: 04 Legal
+    template: invoice
+    supports: [hc_lit_0418]
+    key_phrases: ["Invoice No.: 25-0418", "Matter: 2291 - Dawson v. Meridian", "Total Due This Invoice: $22,000.00"]
+    fields:
+      <<: *hc_lit_invoice
+      bill_to: [Accounts Payable, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      meta:
+        - [Invoice No., 25-0418]
+        - [Invoice Date, "April 18, 2025"]
+        - [Client-Matter, 20417-2291]
+        - [Matter, 2291 - Dawson v. Meridian]
+        - [Billing Period, "February 1 - March 31, 2025"]
+        - [Terms, Net 30]
+      intro:
+        - "For professional services rendered in Dawson v. Meridian Mechanical Services, LLC (Hillsborough County Case No. 24-CA-008815) through March 31, 2025."
+      lines:
+        - {description: "E. Hollis, Partner - discovery strategy; deposition of plaintiff", qty: 16.0, rate: 525}
+        - {description: "J. Park, Associate - written discovery; deposition preparation", qty: 36.0, rate: 325}
+        - {description: "M. Ortiz, Paralegal - document production; deposition exhibits", qty: 10.0, rate: 175}
+        - {description: "Court reporter - deposition of C. Dawson", amount: 150}
+
+  - id: hc_inv_0615
+    filename: 4.2.3 Hollis Crane Invoice 25-0615.pdf
+    folder: 04 Legal
+    template: invoice
+    supports: [hc_lit_0615]
+    key_phrases: ["Invoice No.: 25-0615", "Matter: 2291 - Dawson v. Meridian", "Total Due This Invoice: $18,000.00"]
+    fields:
+      <<: *hc_lit_invoice
+      bill_to: [Accounts Payable, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      meta:
+        - [Invoice No., 25-0615]
+        - [Invoice Date, "June 13, 2025"]
+        - [Client-Matter, 20417-2291]
+        - [Matter, 2291 - Dawson v. Meridian]
+        - [Billing Period, "April 1 - May 31, 2025"]
+        - [Terms, Net 30]
+      intro:
+        - "For professional services rendered in Dawson v. Meridian Mechanical Services, LLC (Hillsborough County Case No. 24-CA-008815) through May 31, 2025."
+      lines:
+        - {description: "E. Hollis, Partner - summary judgment strategy; defense of corporate deposition", qty: 14.0, rate: 525}
+        - {description: "J. Park, Associate - motion for summary judgment research and drafting", qty: 28.0, rate: 325}
+        - {description: "M. Ortiz, Paralegal - record citations and filing", qty: 8.0, rate: 175}
+        - {description: Filing and service fees, amount: 150}
+
+  - id: hc_inv_0910
+    filename: 4.2.4 Hollis Crane Invoice 25-0910.pdf
+    folder: 04 Legal
+    template: invoice
+    supports: [hc_lit_0910]
+    key_phrases: ["Invoice No.: 25-0910", "Matter: 2291 - Dawson v. Meridian", "Total Due This Invoice: $21,000.00"]
+    fields:
+      <<: *hc_lit_invoice
+      bill_to: [Accounts Payable, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      meta:
+        - [Invoice No., 25-0910]
+        - [Invoice Date, "September 10, 2025"]
+        - [Client-Matter, 20417-2291]
+        - [Matter, 2291 - Dawson v. Meridian]
+        - [Billing Period, "June 1 - August 31, 2025"]
+        - [Terms, Net 30]
+      intro:
+        - "For professional services rendered in Dawson v. Meridian Mechanical Services, LLC (Hillsborough County Case No. 24-CA-008815) through August 31, 2025, including court-ordered mediation held August 21, 2025."
+      lines:
+        - {description: "E. Hollis, Partner - mediation preparation and attendance", qty: 20.0, rate: 525}
+        - {description: "J. Park, Associate - mediation statement; damages analysis", qty: 26.0, rate: 325}
+        - {description: "M. Ortiz, Paralegal - mediation binders", qty: 6.0, rate: 175}
+        - {description: "Mediator fee - Company's 50% share", amount: 1000}
+
+  - id: hc_inv_1120
+    filename: 4.2.5 Hollis Crane Invoice 25-1120.pdf
+    folder: 04 Legal
+    template: invoice
+    supports: [hc_lit_1120]
+    key_phrases: ["Invoice No.: 25-1120", "Matter: 2291 - Dawson v. Meridian", "Total Due This Invoice: $9,000.00"]
+    fields:
+      <<: *hc_lit_invoice
+      bill_to: [Accounts Payable, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      meta:
+        - [Invoice No., 25-1120]
+        - [Invoice Date, "November 20, 2025"]
+        - [Client-Matter, 20417-2291]
+        - [Matter, 2291 - Dawson v. Meridian]
+        - [Billing Period, "September 1 - November 14, 2025"]
+        - [Terms, Net 30]
+      intro:
+        - "For professional services rendered in Dawson v. Meridian Mechanical Services, LLC (Hillsborough County Case No. 24-CA-008815) through November 14, 2025. Final invoice: the matter will be closed upon filing of the stipulated dismissal."
+      lines:
+        - {description: "E. Hollis, Partner - settlement negotiations; settlement agreement", qty: 8.0, rate: 525}
+        - {description: "J. Park, Associate - settlement agreement and dismissal papers", qty: 12.0, rate: 325}
+        - {description: "M. Ortiz, Paralegal - closing the file", qty: 3.0, rate: 175}
+        - {description: Courier and recording fees, amount: 375}
+
+  - id: dawson_settlement
+    filename: 4.2.6 Dawson Settlement Agreement.pdf
+    folder: 04 Legal
+    template: agreement
+    key_phrases:
+      - "shall be paid by the Company's commercial general liability insurer"
+      - "The Company shall have no obligation to fund any portion of the Settlement Payment."
+      - "$100,000 self-insured retention"
+    fields:
+      title: CONFIDENTIAL SETTLEMENT AGREEMENT AND MUTUAL RELEASE
+      subtitle: ["Dawson v. Meridian Mechanical Services, LLC", Hillsborough County Circuit Court Case No. 24-CA-008815]
+      preamble: "This Confidential Settlement Agreement and Mutual Release (the \"Agreement\") is entered into as of November 14, 2025 (the \"Effective Date\") by and between Carla Dawson (\"Plaintiff\") and Meridian Mechanical Services, LLC (the \"Company\")."
+      recitals:
+        - "Plaintiff filed the above-captioned action alleging that a water heater installed by the Company at Plaintiff's residence in 2023 failed and caused water damage to the property (the \"Action\")."
+        - "The Company denies all liability. The parties wish to resolve the Action fully and finally to avoid the expense and uncertainty of further litigation."
+      recitals_close: "NOW, THEREFORE, in consideration of the mutual promises below, the parties agree as follows:"
+      sections:
+        - heading: Settlement Payment.
+          body:
+            - "In full settlement of the Action, Plaintiff shall receive the gross sum of $185,000.00 (the \"Settlement Payment\"). The Settlement Payment shall be paid by the Company's commercial general liability insurer, Coastal Risk Insurance, on the Company's behalf within thirty (30) days after the Effective Date. The Company shall have no obligation to fund any portion of the Settlement Payment."
+        - heading: Defense Costs.
+          body:
+            - "The Company acknowledges that its defense costs in the Action fall within its $100,000 self-insured retention under the Coastal Risk Insurance policy and that no reimbursement of defense costs is due from the insurer."
+        - heading: Dismissal.
+          body: ["Within five (5) business days after receipt of the Settlement Payment, Plaintiff shall file a stipulation of dismissal of the Action with prejudice."]
+        - heading: Mutual Release.
+          body: ["Each party releases the other, and the Company's members, managers, officers and employees, from all claims arising out of the installation, the water damage and the Action, known or unknown, through the Effective Date."]
+        - heading: No Admission of Liability.
+          body: ["This Agreement is a compromise of disputed claims and is not an admission of liability or wrongdoing by any party."]
+        - heading: Attorneys' Fees and Costs.
+          body: ["Each party shall bear its own attorneys' fees and costs incurred in connection with the Action."]
+        - heading: Confidentiality and Non-Disparagement.
+          body: ["The parties shall keep the terms of this Agreement confidential, except as required by law or for tax, accounting or insurance purposes, and shall not disparage one another."]
+        - heading: Governing Law.
+          body: ["This Agreement is governed by the laws of the State of Florida."]
+      witness: "IN WITNESS WHEREOF, the parties have executed this Agreement as of the Effective Date."
+      signatures:
+        - {party: PLAINTIFF, name: Carla Dawson, title: Individually, signed: true, date: "November 13, 2025"}
+        - {party: "MERIDIAN MECHANICAL SERVICES, LLC", name: Richard Castellano, title: Chief Executive Officer, signed: true, date: "November 14, 2025"}
+
+  - id: hc_inv_0701
+    filename: 4.3.1 Hollis Crane Invoice 25-0701 Matter 1004 Retainer.pdf
+    folder: 04 Legal
+    template: invoice
+    supports: [hc_retainer_202507]
+    key_phrases: ["Invoice No.: 25-0701", "Matter: 1004 - General Corporate & Employment", "Monthly retainer - general corporate & employment counsel (July 2025)"]
+    fields:
+      issuer: hollis_crane
+      bill_to: [Accounts Payable, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      meta:
+        - [Invoice No., 25-0701]
+        - [Invoice Date, "July 1, 2025"]
+        - [Client-Matter, 20417-1004]
+        - [Matter, 1004 - General Corporate & Employment]
+        - [Billing Period, July 2025]
+        - [Terms, Due on receipt]
+      lines:
+        - {description: Monthly retainer - general corporate & employment counsel (July 2025), amount: 2500}
+      total_label: Total Due This Invoice
+      notes:
+        - "Retainer billed monthly under our engagement letter dated March 6, 2023. Work outside the retainer scope is billed separately."
+
+  - id: hc_inv_0819
+    filename: 4.3.2 Hollis Crane Invoice 25-0819 Matter 1004.pdf
+    folder: 04 Legal
+    template: invoice
+    supports: [hc_adhoc_2508]
+    key_phrases: ["Invoice No.: 25-0819", "Matter: 1004 - General Corporate & Employment", "Total Due This Invoice: $5,500.00"]
+    fields:
+      issuer: hollis_crane
+      bill_to: [Accounts Payable, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      meta:
+        - [Invoice No., 25-0819]
+        - [Invoice Date, "August 19, 2025"]
+        - [Client-Matter, 20417-1004]
+        - [Matter, 1004 - General Corporate & Employment]
+        - [Billing Period, "July 1 - August 15, 2025"]
+        - [Terms, Net 30]
+      intro:
+        - "Employment policy review and employee handbook update (outside the scope of the monthly retainer)."
+      columns: {qty: Hours, rate: Rate}
+      lines:
+        - {description: "E. Hollis, Partner - policy review; wage-and-hour and leave policies", qty: 6.0, rate: 525}
+        - {description: "J. Park, Associate - handbook revisions", qty: 4.0, rate: 325}
+        - {description: "M. Ortiz, Paralegal - acknowledgment forms; conforming edits", qty: 6.0, rate: 175}
+      total_label: Total Due This Invoice
+
+  # --- 05 HR & compensation (M-02, M-04, M-05, M-12) ---------------------------
+  - id: castellano_draft_ea
+    filename: 5.1 Castellano Executive Employment Agreement DRAFT.pdf
+    folder: 05 HR and Compensation
+    template: agreement
+    draft: true
+    key_phrases: ["annual base salary of $300,000", "Draft of February 18, 2026"]
+    fields:
+      title: EXECUTIVE EMPLOYMENT AGREEMENT
+      subtitle: ["Draft of February 18, 2026 - subject to buyer review"]
+      preamble: "This Executive Employment Agreement (the \"Agreement\") is made as of [Closing Date] between Meridian Mechanical Services, LLC (the \"Company\") and Richard Castellano (the \"Executive\"), to take effect upon the closing of the sale of the Company (the \"Closing\")."
+      sections:
+        - heading: Position and Duties.
+          body: ["The Executive shall serve as President of the Company, reporting to the Board of Managers, with the duties customary for that position."]
+        - heading: Term.
+          body: ["The term begins on the Closing and continues for two (2) years unless terminated earlier under Section 6."]
+        - heading: Base Salary.
+          body: ["The Company shall pay the Executive an annual base salary of $300,000, payable in accordance with the Company's regular payroll practices."]
+        - heading: Annual Bonus.
+          body: ["The Executive shall be eligible for an annual bonus of up to [__]% of base salary based on targets set by the Board. [Buyer to confirm bonus structure.]"]
+        - heading: Benefits.
+          body: ["The Executive may participate in the Company's benefit plans on the same terms as other senior employees."]
+        - heading: Termination.
+          body: ["[Severance terms to conform to the purchase agreement.]"]
+        - heading: Restrictive Covenants.
+          body: ["[Non-competition and non-solicitation terms to conform to the purchase agreement.]"]
+      signatures:
+        - {party: "MERIDIAN MECHANICAL SERVICES, LLC", name: "", title: "", signed: false}
+        - {party: EXECUTIVE, name: Richard Castellano, title: "", signed: false}
+
+  - id: barrow_el
+    filename: 5.2 Barrow Search Partners Engagement Letter - CFO Search.pdf
+    folder: 05 HR and Compensation
+    template: letter
+    key_phrases: ["one-third (33 1/3%) of the first-year cash compensation", "$135,000", "three installments of $15,000"]
+    fields:
+      issuer: barrow
+      date: "April 7, 2025"
+      to: [Mr. Richard Castellano, Chief Executive Officer, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      re: [Retained Search - Chief Financial Officer]
+      salutation: "Dear Rick:"
+      body:
+        - "Thank you for engaging Barrow Search Partners to conduct a retained search for a Chief Financial Officer for Meridian Mechanical Services, LLC (the \"Company\")."
+        - heading: Fee
+        - "Our fee is one-third (33 1/3%) of the first-year cash compensation of the placed candidate. Based on an estimated first-year cash compensation of $135,000, the fee is $45,000, payable in three installments of $15,000: the first upon execution of this letter, the second thirty days thereafter, and the third upon the candidate's acceptance of an offer."
+        - "Installments are earned when invoiced and are not contingent on a placement. If final first-year cash compensation differs from the estimate, the third installment will be adjusted accordingly."
+        - heading: Guarantee
+        - "If the placed candidate leaves within six months of the start date, we will conduct one replacement search for no additional fee, excluding expenses."
+        - "This engagement covers this search only."
+      closing: Sincerely,
+      signatures:
+        - {party: BARROW SEARCH PARTNERS, name: Graham Barrow, title: Managing Partner, signed: true}
+      countersign:
+        heading: "ACCEPTED:"
+        signatures:
+          - {party: "MERIDIAN MECHANICAL SERVICES, LLC", name: Richard Castellano, title: Chief Executive Officer, signed: true, date: "April 9, 2025"}
+
+  - id: barrow_inv_1
+    filename: 5.2.1 Barrow Search Partners Invoice BSP-25-0412.pdf
+    folder: 05 HR and Compensation
+    template: invoice
+    supports: [barrow_1]
+    key_phrases: ["Invoice No.: BSP-25-0412", "Retained search - Chief Financial Officer - installment 1 of 3"]
+    fields: &barrow_invoice
+      issuer: barrow
+      bill_to: [Attn: Richard Castellano, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      meta:
+        - [Invoice No., BSP-25-0412]
+        - [Invoice Date, "April 14, 2025"]
+        - [Engagement, CFO retained search]
+        - [Terms, Due on receipt]
+      lines:
+        - {description: "Retained search - Chief Financial Officer - installment 1 of 3 (upon engagement)", amount: 15000}
+      total_label: Amount Due
+
+  - id: barrow_inv_2
+    filename: 5.2.2 Barrow Search Partners Invoice BSP-25-0515.pdf
+    folder: 05 HR and Compensation
+    template: invoice
+    supports: [barrow_2]
+    key_phrases: ["Invoice No.: BSP-25-0515", "Retained search - Chief Financial Officer - installment 2 of 3"]
+    fields:
+      <<: *barrow_invoice
+      meta:
+        - [Invoice No., BSP-25-0515]
+        - [Invoice Date, "May 15, 2025"]
+        - [Engagement, CFO retained search]
+        - [Terms, Due on receipt]
+      lines:
+        - {description: "Retained search - Chief Financial Officer - installment 2 of 3 (30 days)", amount: 15000}
+
+  - id: barrow_inv_3
+    filename: 5.2.3 Barrow Search Partners Invoice BSP-25-0717.pdf
+    folder: 05 HR and Compensation
+    template: invoice
+    supports: [barrow_3]
+    key_phrases: ["Invoice No.: BSP-25-0717", "Retained search - Chief Financial Officer - installment 3 of 3"]
+    fields:
+      <<: *barrow_invoice
+      meta:
+        - [Invoice No., BSP-25-0717]
+        - [Invoice Date, "July 17, 2025"]
+        - [Engagement, CFO retained search]
+        - [Terms, Due on receipt]
+      lines:
+        - {description: "Retained search - Chief Financial Officer - installment 3 of 3 (offer accepted July 11, 2025)", amount: 15000}
+
+  - id: whitfield_separation
+    filename: 5.3 Whitfield Separation Agreement.pdf
+    folder: 05 HR and Compensation
+    template: agreement
+    key_phrases: ["severance totaling $75,000", "three equal monthly installments of $25,000"]
+    fields:
+      title: SEPARATION AGREEMENT AND GENERAL RELEASE
+      preamble: "This Separation Agreement and General Release (the \"Agreement\") is entered into on January 9, 2026 between Meridian Mechanical Services, LLC (the \"Company\") and Todd Whitfield (\"Employee\")."
+      sections:
+        - heading: Separation.
+          body: ["Employee's employment as Vice President of Sales ended effective January 9, 2026 (the \"Separation Date\")."]
+        - heading: Severance.
+          body: ["Provided Employee signs and does not revoke this Agreement, the Company will pay Employee severance totaling $75,000, payable in three equal monthly installments of $25,000 through regular payroll in February, March and April 2026, less applicable withholdings."]
+        - heading: Final Pay and Benefits.
+          body: ["Employee will receive final wages and accrued paid time off through the Separation Date. Group health coverage ends January 31, 2026, subject to COBRA continuation at Employee's expense."]
+        - heading: General Release.
+          body: ["Employee releases the Company and its members, managers, officers and employees from all claims arising out of Employee's employment or its termination through the date Employee signs this Agreement."]
+        - heading: Return of Property; Confidentiality.
+          body: ["Employee has returned all Company property and will keep Company confidential information confidential."]
+        - heading: Governing Law.
+          body: ["This Agreement is governed by the laws of the State of Florida."]
+      signatures:
+        - {party: "MERIDIAN MECHANICAL SERVICES, LLC", name: Richard Castellano, title: Chief Executive Officer, signed: true, date: "January 9, 2026"}
+        - {party: EMPLOYEE, name: Todd Whitfield, title: Individually, signed: true, date: "January 9, 2026"}
+
+  - id: coo_email
+    filename: 5.4 COO Email - Dispatch Team Plan Mar 2026.txt
+    folder: 05 HR and Compensation
+    template: email
+    key_phrases: ["we plan to reduce the dispatch team by three FTEs once FieldPro auto-dispatch is live — targeting Q3 2026"]
+    fields:
+      from: Marcus Delgado <mdelgado@meridianmech.example>
+      to: Richard Castellano <rcastellano@meridianmech.example>
+      cc: Priya Raman <praman@meridianmech.example>
+      date: Tue, 17 Mar 2026 08:12:44 -0400
+      subject: Dispatch staffing after auto-dispatch go-live
+      body: |
+        Rick,
+
+        Quick update for the buyer model. Brightline says FieldPro auto-dispatch should be ready for a pilot in June. Assuming the pilot goes well, we plan to reduce the dispatch team by three FTEs once FieldPro auto-dispatch is live — targeting Q3 2026. That is about $165K a year in wages before taxes and benefits.
+
+        We haven't said anything to the team yet and I don't want to until the pilot is done. Nothing has been decided on severance or on whether we keep one of them on as a scheduler for the install crews.
+
+        Marcus
+
+  # --- 06 IT & systems (M-06) ---------------------------------------------------
+  - id: brightline_msa
+    filename: 6.1 Brightline Managed Services Agreement.pdf
+    folder: 06 IT and Systems
+    template: agreement
+    key_phrases:
+      - "36-month initial term commencing January 1, 2025"
+      - "monthly fee of $8,000"
+      - "renews automatically"
+      - "Implementation and onboarding are included in the monthly fee"
+    fields:
+      issuer: brightline
+      title: MANAGED SERVICES AGREEMENT
+      subtitle: [FieldPro Field Service Platform, Agreement No. BSG-MSA-2024-117]
+      preamble: "This Managed Services Agreement (the \"Agreement\") is entered into as of December 16, 2024 by and between Brightline Systems Group, Inc. (\"Brightline\") and Meridian Mechanical Services, LLC (\"Customer\")."
+      sections:
+        - heading: Services.
+          body:
+            - "Brightline will provide Customer with the FieldPro field service management platform as a managed service, including software licensing for up to 60 users, cloud hosting, implementation and data migration, routine configuration changes, and 24/7 technical support (collectively, the \"Services\")."
+            - "Implementation and onboarding are included in the monthly fee; no separate implementation fee applies."
+        - heading: Term and Renewal.
+          body: ["This Agreement has a 36-month initial term commencing January 1, 2025. Thereafter it renews automatically for successive twelve (12) month renewal terms unless either party gives written notice of non-renewal at least ninety (90) days before the end of the then-current term."]
+        - heading: Fees.
+          body: ["Customer shall pay a monthly fee of $8,000, invoiced on the first day of each month in advance, covering licensing, hosting and support. Fees are fixed for the initial term and may increase by up to 5% upon any renewal."]
+        - heading: Early Termination.
+          body: ["Customer may terminate for convenience on ninety (90) days' notice upon payment of the remaining monthly fees for the initial term."]
+        - heading: Customer Data.
+          body: ["Customer owns its data. On termination Brightline will provide an export of Customer data in a standard format within thirty (30) days."]
+        - heading: Governing Law.
+          body: ["This Agreement is governed by the laws of the State of Florida."]
+      witness: "IN WITNESS WHEREOF, the parties have executed this Agreement by their authorized representatives."
+      signatures:
+        - {party: "BRIGHTLINE SYSTEMS GROUP, INC.", name: Nathan Okafor, title: "Vice President, Client Services", signed: true, date: "December 16, 2024"}
+        - {party: "MERIDIAN MECHANICAL SERVICES, LLC", name: Richard Castellano, title: Chief Executive Officer, signed: true, date: "December 17, 2024"}
+
+  - id: brightline_inv_2503
+    filename: 6.1.1 Brightline Invoice BSG-2503.pdf
+    folder: 06 IT and Systems
+    template: invoice
+    supports: [brightline_202503]
+    key_phrases: ["Invoice No.: BSG-2503", "FieldPro managed services - March 2025"]
+    fields:
+      issuer: brightline
+      bill_to: [Accounts Payable, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      meta:
+        - [Invoice No., BSG-2503]
+        - [Invoice Date, "March 1, 2025"]
+        - [Agreement No., BSG-MSA-2024-117]
+        - [Service Period, "March 1 - 31, 2025"]
+        - [Terms, Net 15]
+      lines:
+        - {description: "FieldPro managed services - March 2025 (licensing, hosting & support)", amount: 8000}
+      total_label: Amount Due
+      notes: ["Monthly fee per Managed Services Agreement No. BSG-MSA-2024-117 (month 3 of 36)."]
+
+  - id: controller_email
+    filename: 6.2 Controller Email - FieldPro Subscription Mar 2025.txt
+    folder: 06 IT and Systems
+    template: email
+    key_phrases: ["our FieldPro subscription", "nothing that drops off after go-live"]
+    fields:
+      from: Priya Raman <praman@meridianmech.example>
+      to: Richard Castellano <rcastellano@meridianmech.example>
+      cc: Marcus Delgado <mdelgado@meridianmech.example>
+      date: Tue, 11 Mar 2025 16:05:31 -0400
+      subject: "RE: Brightline invoice coding"
+      body: |
+        Rick,
+
+        Brightline's March invoice (BSG-2503) came in at $8,000, same as January and February. I'm coding our FieldPro subscription to 6300 Software & IT Services every month, the same way we coded the old DispatchWorks license. The fee covers licensing, hosting and support for the full 36-month term, so there is nothing to capitalize and nothing that drops off after go-live.
+
+        Let me know if you want it presented differently in the lender reporting package.
+
+        Priya
+
+        -----Original Message-----
+        From: Richard Castellano
+        Sent: Tuesday, March 11, 2025 2:47 PM
+        Subject: Brightline invoice coding
+
+        Priya - where are we booking the Brightline charges?
+
+  # --- 07 Debt (M-07) ------------------------------------------------------------
+  - id: gulfstream_payoff
+    filename: 7.1 Gulfstream Bank Payoff Letter - Term Loan.pdf
+    folder: 07 Debt
+    template: letter
+    supports: [refi_prepayment_penalty]
+    key_phrases: ["Prepayment premium (Section 2.6 of the Term Loan Agreement)", "Term Loan No. 4410-2203"]
+    fields:
+      issuer: gulfstream_bank
+      date: "June 20, 2025"
+      to: [Ms. Priya Raman, Controller, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      re: [Payoff Statement - Term Loan No. 4410-2203, "Borrower: Meridian Mechanical Services, LLC"]
+      salutation: "Dear Ms. Raman:"
+      body:
+        - "As requested, the following amounts are required to repay Term Loan No. 4410-2203 in full on June 27, 2025 (the \"Payoff Date\"):"
+        - table:
+            columns: [{title: Item}, {title: Amount, align: right, width: 110}]
+            rows:
+              - [Outstanding principal balance, "2,140,000.00"]
+              - ["Accrued interest through June 26, 2025", "9,870.00"]
+              - [Prepayment premium (Section 2.6 of the Term Loan Agreement), "13,000.00"]
+              - [Lien release and recording fees, "125.00"]
+            total: [Total payoff amount, "2,162,995.00"]
+        - "Per diem interest after the Payoff Date is $297.22. The prepayment premium applies because the loan is being repaid before the third anniversary of its funding date."
+        - "Upon receipt of the payoff amount in immediately available funds, the Bank will release its liens and terminate the related UCC financing statements."
+      closing: Sincerely,
+      signatures:
+        - {party: "GULFSTREAM BANK, N.A.", name: Allison Brooks, title: "Vice President, Commercial Loan Servicing", signed: true}
+
+  # --- 08 Transaction costs (M-08) -------------------------------------------------
+  - id: keel_harbor_el
+    filename: 8.1 Keel Harbor Advisors Engagement Letter.pdf
+    folder: 08 Transaction Costs
+    template: letter
+    key_phrases: ["one-time retainer of $26,000 payable on signing, creditable against the success fee", "Project Cobalt"]
+    fields:
+      issuer: keel_harbor
+      date: "September 29, 2025"
+      to: [Mr. Richard Castellano, Chief Executive Officer, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      re: [Engagement as Exclusive Financial Advisor - Project Cobalt]
+      salutation: "Dear Rick:"
+      body:
+        - "This letter confirms the engagement of Keel Harbor Advisors, LLC (\"Keel Harbor\") as exclusive financial advisor to Meridian Mechanical Services, LLC and its members (together, the \"Company\") in connection with a possible sale of the Company (the \"Transaction\", code-named Project Cobalt)."
+        - heading: Fees
+        - "(a) Retainer. A one-time retainer of $26,000 payable on signing, creditable against the success fee."
+        - "(b) Success Fee. Upon closing of a Transaction, a fee equal to 2.5% of Transaction Value, payable at closing."
+        - "(c) Expenses. Reasonable out-of-pocket expenses, capped at $15,000 without the Company's prior approval."
+        - heading: Term
+        - "This engagement continues for twelve months and may be terminated by either party on thirty days' written notice. The Success Fee survives termination for twelve months as to parties contacted by Keel Harbor."
+      closing: Very truly yours,
+      signatures:
+        - {party: "KEEL HARBOR ADVISORS, LLC", name: Stephen Aldana, title: Managing Director, signed: true}
+      countersign:
+        heading: "AGREED AND ACCEPTED:"
+        signatures:
+          - {party: "MERIDIAN MECHANICAL SERVICES, LLC", name: Richard Castellano, title: Chief Executive Officer, signed: true, date: "September 30, 2025"}
+
+  - id: keel_harbor_inv
+    filename: 8.1.1 Keel Harbor Advisors Invoice KHA-2510-031.pdf
+    folder: 08 Transaction Costs
+    template: invoice
+    supports: [keel_harbor_retainer]
+    key_phrases: ["Invoice No.: KHA-2510-031", "Total Due: $26,000.00"]
+    fields:
+      issuer: keel_harbor
+      bill_to: [Attn: Richard Castellano, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      meta:
+        - [Invoice No., KHA-2510-031]
+        - [Invoice Date, "October 6, 2025"]
+        - [Engagement, Project Cobalt - sell-side advisory]
+        - [Terms, Due on receipt]
+      lines:
+        - {description: "Retainer per engagement letter dated September 29, 2025 - Project Cobalt", amount: 26000}
+
+  - id: dunmore_pike_el
+    filename: 8.2 Dunmore Pike Engagement Letter - Sell-Side Readiness.pdf
+    folder: 08 Transaction Costs
+    template: letter
+    key_phrases: ["fixed fee of $15,000", "Project Cobalt"]
+    fields:
+      issuer: dunmore_pike
+      date: "October 20, 2025"
+      to: [Ms. Priya Raman, Controller, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      re: [Sell-Side Financial Readiness - Project Cobalt]
+      salutation: "Dear Priya:"
+      body:
+        - "We are pleased to assist Meridian Mechanical Services, LLC (the \"Company\") in preparing for a buyer's financial due diligence in connection with Project Cobalt."
+        - heading: Scope
+        - "Our procedures will include a review of the monthly close process, account reconciliations for FY2024 and FY2025 year to date, and a readiness assessment of the data-room support index. We will report our observations to management."
+        - heading: Fees
+        - "Our fee for this engagement is a fixed fee of $15,000, billed upon delivery of our observations. This engagement is separate from, and does not constitute, an audit or review of the Company's financial statements."
+      closing: Sincerely,
+      signatures:
+        - {party: "DUNMORE & PIKE CPAS, P.A.", name: "Laura Pike, CPA", title: Partner, signed: true}
+      countersign:
+        heading: "ACCEPTED:"
+        signatures:
+          - {party: "MERIDIAN MECHANICAL SERVICES, LLC", name: Richard Castellano, title: Chief Executive Officer, signed: true, date: "October 22, 2025"}
+
+  - id: dunmore_pike_inv
+    filename: 8.2.1 Dunmore Pike Invoice DP-25-1107.pdf
+    folder: 08 Transaction Costs
+    template: invoice
+    supports: [dunmore_pike_readiness]
+    key_phrases: ["Invoice No.: DP-25-1107", "Total Due: $15,000.00"]
+    fields:
+      issuer: dunmore_pike
+      bill_to: [Attn: Priya Raman, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      meta:
+        - [Invoice No., DP-25-1107]
+        - [Invoice Date, "November 12, 2025"]
+        - [Engagement, Sell-side financial readiness - Project Cobalt]
+        - [Terms, Net 30]
+      lines:
+        - {description: "Sell-side financial readiness - fixed fee per engagement letter dated October 20, 2025", amount: 15000}
+
+  # --- 09 Insurance & casualty (M-09) -----------------------------------------------
+  - id: sunshine_claim_letter
+    filename: 9.1 Sunshine Mutual Claim Settlement Letter FL-24-88172.pdf
+    folder: 09 Insurance and Casualty
+    template: letter
+    supports: [storm_insurance_proceeds]
+    key_phrases: ["Claim No. FL-24-88172", "Payment of $40,000.00", "Less: policy deductible", "This claim is now closed."]
+    fields:
+      issuer: sunshine_mutual
+      date: "February 11, 2025"
+      to: [Mr. Richard Castellano, "Meridian Mechanical Services, LLC", 5801 Palm River Road, "Tampa, FL 33619"]
+      re: [Claim No. FL-24-88172, Policy No. CPP-2231907, "Date of Loss: October 9, 2024 (hurricane)", "Loss Location: 5801 Palm River Road, Tampa, FL 33619"]
+      salutation: "Dear Mr. Castellano:"
+      body:
+        - "We have completed our adjustment of the above claim for wind and water damage to the building at the loss location. Our settlement is summarized below."
+        - table:
+            columns: [{title: Item}, {title: Amount, align: right, width: 100}]
+            rows:
+              - ["Roof repair - Gulf Coast Roofing (invoice GCR-5602)", "38,000.00"]
+              - ["Water mitigation and drying - Tampa Bay Restoration (invoice TBR-24-10417)", "20,000.00"]
+              - [Total loss submitted, "58,000.00"]
+              - ["Less: non-covered - roof repair above the $30,000 roof-surfacing sublimit", "(8,000.00)"]
+              - [Covered loss, "50,000.00"]
+              - ["Less: policy deductible", "(10,000.00)"]
+            total: [Net claim payment, "40,000.00"]
+        - "Payment of $40,000.00 will be issued by electronic funds transfer to the insured's account on file within five business days. This payment is in full and final settlement of the claim. This claim is now closed."
+      closing: Sincerely,
+      signatures:
+        - {name: Kevin Mercer, title: "Senior Property Claims Adjuster, Sunshine Mutual Insurance Company", signed: true}
+
+  - id: tbr_invoice
+    filename: 9.2 Tampa Bay Restoration Invoice TBR-24-10417.pdf
+    folder: 09 Insurance and Casualty
+    template: invoice
+    supports: [storm_restoration]
+    key_phrases: ["Invoice No.: TBR-24-10417", "Insurance Claim: Sunshine Mutual FL-24-88172"]
+    fields:
+      issuer: tampa_bay_restoration
+      bill_to: ["Meridian Mechanical Services, LLC", 5801 Palm River Road, "Tampa, FL 33619"]
+      meta:
+        - [Invoice No., TBR-24-10417]
+        - [Invoice Date, "October 16, 2024"]
+        - [Job Site, 5801 Palm River Rd (warehouse)]
+        - [Date of Loss, "October 9, 2024"]
+        - [Insurance Claim, Sunshine Mutual FL-24-88172]
+      lines:
+        - {description: Emergency water extraction - warehouse and office, amount: 6400}
+        - {description: "Structural drying equipment - dehumidifiers and air movers (7 days)", amount: 5850}
+        - {description: Antimicrobial treatment and mold remediation, amount: 4250}
+        - {description: Wet drywall and insulation removal; debris haul-off, amount: 3500}
+      total_label: Total Due
+
+  - id: gcr_invoice
+    filename: 9.3 Gulf Coast Roofing Invoice GCR-5602.pdf
+    folder: 09 Insurance and Casualty
+    template: invoice
+    supports: [storm_roof]
+    key_phrases: ["Invoice No.: GCR-5602", "Insurance Claim: Sunshine Mutual FL-24-88172", "Total Due: $38,000.00"]
+    fields:
+      issuer: gulf_coast_roofing
+      bill_to: ["Meridian Mechanical Services, LLC", 5801 Palm River Road, "Tampa, FL 33619"]
+      meta:
+        - [Invoice No., GCR-5602]
+        - [Invoice Date, "December 12, 2024"]
+        - [Project, Storm damage roof repair - 5801 Palm River Rd]
+        - [Insurance Claim, Sunshine Mutual FL-24-88172]
+      lines:
+        - {description: Emergency dry-in and tarping (October 2024), amount: 3800}
+        - {description: Tear-off and replacement - 42 squares modified bitumen, amount: 32800}
+        - {description: "Flashing, curbs and roof drains", amount: 1400}
+      total_label: Total Due
+      notes: ["Work complete. Five-year workmanship warranty certificate enclosed."]
+
+  - id: coastal_installment_notice
+    filename: 9.4 Coastal Risk Premium Installment Notice May 2025.pdf
+    folder: 09 Insurance and Casualty
+    template: invoice
+    supports: [coastal_prem_202505]
+    key_phrases: ["Installment No.: CRI-25-0507", "Amount Due: $18,400.00"]
+    fields:
+      issuer: coastal_risk
+      title: PREMIUM INSTALLMENT NOTICE
+      bill_to: [Accounts Payable, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      meta:
+        - [Installment No., CRI-25-0507]
+        - [Notice Date, "May 7, 2025"]
+        - [Policy, CGL-7741906 (general liability & umbrella)]
+        - [Policy Term, "January 1 - December 31, 2025"]
+        - [Due Date, "May 20, 2025"]
+      lines:
+        - {description: "Installment 5 of 12 - commercial general liability & umbrella premium", amount: 18400}
+      total_label: Amount Due
+      notes: ["One installment is due each month. Please pay only the amount shown; duplicate payments will be applied to the next installment."]
+
+  # --- 10 Operations (M-10, M-11, M-13) ------------------------------------------------
+  - id: apex_invoice
+    filename: 10.1 Apex Ductwork Invoice AD-3391.pdf
+    folder: 10 Operations
+    template: invoice
+    supports: [apex_trueup]
+    key_phrases: ["Service period: July 1, 2024 – December 31, 2024", "Invoice No.: AD-3391"]
+    fields:
+      issuer: apex
+      bill_to: [Accounts Payable, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      meta:
+        - [Invoice No., AD-3391]
+        - [Invoice Date, "March 14, 2025"]
+        - [Service period, "July 1, 2024 – December 31, 2024"]
+        - [Reference, Project closeout true-up - 2024 projects]
+        - [Terms, Net 30]
+      intro:
+        - "Closeout billing for approved change orders and extra ductwork performed on Meridian projects between July and December 2024. These items were not previously invoiced."
+      lines:
+        - {description: "Harborview Office Park - RTU replacement ductwork (CO #3, #5)", amount: 14250}
+        - {description: "Westshore Commons - tenant improvement ductwork (CO #2)", amount: 11800}
+        - {description: "Tarpon Point Senior Living - kitchen exhaust modifications", amount: 9450}
+        - {description: "Cypress Creek Business Center - VAV reconfiguration", amount: 6500}
+      total_label: Total Due
+
+  - id: movers_invoice
+    filename: 10.2 Suncoast Movers Invoice SM-25-0214.pdf
+    folder: 10 Operations
+    template: invoice
+    supports: [reloc_movers]
+    key_phrases: ["Invoice No.: SM-25-0214", "Total Due: $32,000.00"]
+    fields:
+      issuer: suncoast_movers
+      bill_to: [Accounts Payable, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      meta:
+        - [Invoice No., SM-25-0214]
+        - [Invoice Date, "February 21, 2025"]
+        - [Move Dates, "February 17-19, 2025"]
+        - [Origin, "5801 Palm River Road, Tampa"]
+        - [Destination, "1150 Commerce Park Drive, Brandon"]
+      lines:
+        - {description: Moving crews - 4 crews x 3 days, amount: 18400}
+        - {description: Trucks and material-handling equipment, amount: 6800}
+        - {description: Pallet racking disassembly and reinstallation, amount: 5200}
+        - {description: Packing materials and crating, amount: 1600}
+      total_label: Total Due
+
+  - id: buildout_invoice_1
+    filename: 10.3 Brandon Build-Out Contractors Invoice BBC-1147.pdf
+    folder: 10 Operations
+    template: invoice
+    supports: [reloc_buildout_1]
+    key_phrases: ["Invoice No.: BBC-1147", "Contract sum: $48,000.00"]
+    fields: &bbc_invoice
+      issuer: brandon_buildout
+      bill_to: [Accounts Payable, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      meta:
+        - [Invoice No., BBC-1147]
+        - [Invoice Date, "March 20, 2025"]
+        - [Project, Warehouse & office build-out - 1150 Commerce Park Dr]
+        - [Contract sum, "$48,000.00"]
+      lines:
+        - {description: "Progress billing 1 of 2 - office partitions, electrical and data cabling, racking anchors (50% complete)", amount: 24000}
+      total_label: Total Due
+
+  - id: buildout_invoice_2
+    filename: 10.4 Brandon Build-Out Contractors Invoice BBC-1162.pdf
+    folder: 10 Operations
+    template: invoice
+    supports: [reloc_buildout_2]
+    key_phrases: ["Invoice No.: BBC-1162", "Contract sum: $48,000.00"]
+    fields:
+      <<: *bbc_invoice
+      meta:
+        - [Invoice No., BBC-1162]
+        - [Invoice Date, "April 24, 2025"]
+        - [Project, Warehouse & office build-out - 1150 Commerce Park Dr]
+        - [Contract sum, "$48,000.00"]
+      lines:
+        - {description: "Final billing 2 of 2 - completion of build-out", amount: 24000}
+      notes: ["Project complete. Certificate of completion issued April 18, 2025."]
+
+  - id: inventory_memo
+    filename: 10.5 Year-End Inventory Count Memo Dec 2025.pdf
+    folder: 10 Operations
+    template: memo
+    supports: [inventory_ye_2025]
+    key_phrases: ["Consistent with prior years, the year-end count adjustment reflects shrink and obsolete parts.", "current-year adjustment of $64,000", "prior-year adjustment at December 31, 2024 was $58,500"]
+    fields:
+      issuer: meridian
+      to: "Richard Castellano, CEO; Marcus Delgado, COO"
+      from: "Priya Raman, Controller"
+      date: "January 9, 2026"
+      re: "Year-end physical inventory count - December 31, 2025"
+      body:
+        - "Warehouse and truck stock were counted on December 30-31, 2025 by two-person teams, with test counts by accounting. Results were reconciled to the perpetual inventory in FieldPro."
+        - table:
+            columns: [{title: Component}, {title: "Dec 31, 2025", align: right, width: 95}, {title: "Dec 31, 2024", align: right, width: 95}]
+            rows:
+              - [Obsolete parts and discontinued equipment, "38,400.00", "35,100.00"]
+              - ["Shrink (unlocated parts, truck stock variances)", "25,600.00", "23,400.00"]
+            total: [Year-end count adjustment, "64,000.00", "58,500.00"]
+        - "Consistent with prior years, the year-end count adjustment reflects shrink and obsolete parts. We recorded the current-year adjustment of $64,000 to 5400 Inventory Adjustments & Write-offs on December 31, 2025. The prior-year adjustment at December 31, 2024 was $58,500."
+        - "Recommendations: move to quarterly truck-stock counts and establish a reserve for slow-moving parts."
+
+  # --- 11 Credit & collections (M-14) ---------------------------------------------------
+  - id: halvorsen_notice
+    filename: 11.1 Halvorsen Builders Chapter 7 Notice.pdf
+    folder: 11 Credit and Collections
+    template: letter
+    supports: [halvorsen_writeoff]
+    key_phrases: ["filed a voluntary petition for relief under Chapter 7", "claim of $52,000.00"]
+    fields:
+      issuer: brandt_loewy
+      date: "October 14, 2025"
+      delivery: VIA U.S. MAIL AND EMAIL
+      to: [Attn: Accounts Receivable, "Meridian Mechanical Services, LLC", 1150 Commerce Park Drive, "Brandon, FL 33511"]
+      re: ["Halvorsen Builders, Inc. - Chapter 7 Bankruptcy", "Case No. 8:25-bk-06214, U.S. Bankruptcy Court, Middle District of Florida"]
+      salutation: "To Whom It May Concern:"
+      body:
+        - "Please be advised that on October 6, 2025, Halvorsen Builders, Inc. (the \"Debtor\") filed a voluntary petition for relief under Chapter 7 of the United States Bankruptcy Code. Your company is listed in the Debtor's schedules as an unsecured creditor with a claim of $52,000.00."
+        - "The automatic stay under 11 U.S.C. § 362 is now in effect. You must immediately cease all collection activity against the Debtor, including calls, letters, liens and lawsuits."
+        - "The Chapter 7 trustee has preliminarily indicated that this appears to be a no-asset case. If assets are later recovered, creditors will receive notice and a deadline to file proofs of claim."
+      closing: Sincerely,
+      signatures:
+        - {party: "BRANDT & LOEWY, P.A.", name: "Hannah Loewy, Esq.", title: Counsel for the Debtor, signed: true}
+
+  - id: halvorsen_proof_of_claim
+    filename: 11.2 Halvorsen Builders Proof of Claim Official Form 410.pdf
+    folder: 11 Credit and Collections
+    template: form
+    key_phrases: ["Official Form 410", "Amount of the claim: $52,000.00", "Case number: 8:25-bk-06214"]
+    fields:
+      title: Official Form 410 - Proof of Claim
+      subtitle: [United States Bankruptcy Court for the Middle District of Florida]
+      meta:
+        - [Debtor, "Halvorsen Builders, Inc."]
+        - [Case number, 8:25-bk-06214]
+        - [Creditor, "Meridian Mechanical Services, LLC"]
+        - [Creditor address, "1150 Commerce Park Drive, Brandon, FL 33511"]
+        - [Amount of the claim, "$52,000.00"]
+        - [Basis for the claim, "Goods sold and services performed - HVAC and plumbing subcontract work"]
+        - [Secured or priority, "No - general unsecured claim"]
+      body:
+        - heading: Part 2 - Attachment A - Unpaid invoices
+        - table:
+            columns: [{title: Invoice No., width: 90}, {title: Invoice date, width: 110}, {title: Description}, {title: Amount, align: right, width: 90}]
+            rows:
+              - ["{num:halvorsen_inv_1}", "{date:halvorsen_inv_1}", "{memo:halvorsen_inv_1}", "{amount:halvorsen_inv_1}"]
+              - ["{num:halvorsen_inv_2}", "{date:halvorsen_inv_2}", "{memo:halvorsen_inv_2}", "{amount:halvorsen_inv_2}"]
+              - ["{num:halvorsen_inv_3}", "{date:halvorsen_inv_3}", "{memo:halvorsen_inv_3}", "{amount:halvorsen_inv_3}"]
+            total: ["", "", Total unpaid, "52,000.00"]
+        - heading: Part 3 - Sign Below
+        - "I have examined the information in this Proof of Claim and have a reasonable belief that the information is true and correct. I declare under penalty of perjury that the foregoing is true and correct."
+        - kv:
+            - [Date filed, "November 3, 2025"]
+            - [Signature, "/s/ Priya Raman"]
+            - [Name and title, "Priya Raman, Controller, Meridian Mechanical Services, LLC"]
+
+# ---------------------------------------------------------------------------
+# Management's adjusted EBITDA schedule (SPEC §3.6). Net income through reported
+# EBITDA are computed from management's P&L (basis: pl), so the Dec-25 top-side
+# accrual flows into management's reported EBITDA.
+# claim_keys: for pass-through claims the generator checks the claim ties to these rows.
+# ---------------------------------------------------------------------------
+schedule:
+  sheet_name: Adj EBITDA
+  title_rows:
+    - Management Adjusted EBITDA
+    - "USD; fiscal years ended December 31 and trailing twelve months ended June 30, 2026 (unaudited)"
+    - Prepared by management for Project Cobalt. SYNTHETIC — generated for QoE Evidence Review testing
+  basis: pl
+  adjustments:
+    - ref: M-01
+      title: Dawson litigation legal fees
+      category: Non-recurring
+      description: "Hollis & Crane LLP fees for the defense of Dawson v. Meridian (customer property-damage claim). Case settled November 2025; the insurer funded the settlement. Non-recurring."
+      accounts: "6400"
+      support: DR 4.2
+      amounts: {FY2024: 0, FY2025: 120000, TTM Jun-26: 65500}
+      claim_keys: [hc_lit_*, hc_retainer_*, hc_adhoc_*]
+      claim_periods: [FY2025, TTM Jun-26]
+    - ref: M-02
+      title: Owner compensation normalization
+      category: Normalization
+      description: "Normalize owner/CEO compensation (R. Castellano) to the $300,000 base salary in the post-close employment agreement. Actual officer payroll is $660,000 per year."
+      accounts: "6010"
+      support: DR 5.1
+      amounts: {FY2024: 360000, FY2025: 360000, TTM Jun-26: 360000}
+    - ref: M-03
+      title: Owner personal expenses
+      category: Owner / discretionary
+      description: "Personal expenses of the owner's family run through the Company: country club dues, spouse's vehicle lease and owner travel. These will cease at close."
+      accounts: 6600, 6650, 6700
+      support: DR 3
+      amounts: {FY2024: 0, FY2025: 48000, TTM Jun-26: 48000}
+      claim_keys: [club_dues_*, x5_lease_*, owner_travel_*]
+      claim_periods: [FY2025, TTM Jun-26]
+    - ref: M-04
+      title: CFO search fee
+      category: Non-recurring
+      description: "Retained search fee paid to Barrow Search Partners to recruit the Company's first CFO. One-time."
+      accounts: "6450"
+      support: DR 5.2
+      amounts: {FY2024: 0, FY2025: 45000, TTM Jun-26: 15000}
+      claim_keys: [barrow_*]
+    - ref: M-05
+      title: Severance - former VP Sales
+      category: Non-recurring
+      description: "Severance paid to former VP Sales T. Whitfield under the separation agreement dated January 9, 2026."
+      accounts: "6000"
+      support: DR 5.3
+      amounts: {FY2024: 0, FY2025: 0, TTM Jun-26: 75000}
+      claim_keys: [severance_*]
+    - ref: M-06
+      title: FieldPro implementation (one-time)
+      category: Non-recurring
+      description: "One-time costs to implement the FieldPro field service platform (Brightline Systems Group). Implementation costs will not recur once the system is fully deployed."
+      accounts: "6300"
+      support: DR 6.1
+      amounts: {FY2024: 0, FY2025: 96000, TTM Jun-26: 48000}
+      claim_keys: [brightline_*]
+      claim_periods: [FY2024, FY2025]
+    - ref: M-07
+      title: Refinancing costs
+      category: Non-recurring
+      description: "Costs of the June 2025 refinancing of the Gulfstream Bank term loan: prepayment penalty and write-off of unamortized loan origination fees."
+      accounts: "8100"
+      support: DR 7.1
+      amounts: {FY2024: 0, FY2025: 35000, TTM Jun-26: 0}
+      claim_keys: [refi_*]
+    - ref: M-08
+      title: Transaction-related professional fees
+      category: Non-recurring
+      description: "Professional fees for the sale process (Project Cobalt): sell-side advisor retainer (Keel Harbor Advisors), sell-side accounting readiness (Dunmore & Pike CPAs) and Hollis & Crane transaction counsel."
+      accounts: 6400, 6410
+      support: DR 8.1; DR 8.2; DR 4.2.4
+      amounts: {FY2024: 0, FY2025: 62000, TTM Jun-26: 62000}
+      claim_keys: [keel_harbor_retainer, dunmore_pike_readiness, hc_lit_0910]
+    - ref: M-09
+      title: Storm damage repairs
+      category: Non-recurring
+      description: "Repairs to the Palm River facility after the October 2024 hurricane (Gulf Coast Roofing; Tampa Bay Restoration). Non-recurring casualty event."
+      accounts: "6150"
+      support: DR 9.2; DR 9.3
+      amounts: {FY2024: 58000, FY2025: 0, TTM Jun-26: 0}
+      claim_keys: [storm_restoration, storm_roof]
+    - ref: M-10
+      title: Prior-year subcontractor true-up
+      category: Out-of-period
+      description: "Apex Ductwork true-up invoice for 2024 projects recorded in March 2025. Removed from FY2025 as a prior-period cost."
+      accounts: "5200"
+      support: DR 10.1
+      amounts: {FY2024: 0, FY2025: 42000, TTM Jun-26: 0}
+      claim_keys: [apex_trueup]
+    - ref: M-11
+      title: Warehouse relocation
+      category: Non-recurring
+      description: "One-time costs of relocating the warehouse from Palm River Road to Brandon: movers and build-out of the new facility."
+      accounts: 6100, 6150
+      support: DR 10.2; DR 10.3; DR 10.4
+      amounts: {FY2024: 0, FY2025: 80000, TTM Jun-26: 80000}
+      claim_keys: [reloc_*]
+      claim_periods: [FY2024, FY2025]
+    - ref: M-12
+      title: Pro forma dispatcher savings
+      category: Pro forma
+      description: "Run-rate savings from eliminating three dispatcher positions once FieldPro auto-dispatch is live."
+      accounts: ""
+      support: DR 5.4
+      amounts: {FY2024: 0, FY2025: 0, TTM Jun-26: 165000}
+      claim_keys: [dispatch_pay_*]
+      claim_periods: [TTM Jun-26]
+    - ref: M-13
+      title: Inventory write-off (one-time)
+      category: Non-recurring
+      description: "One-time write-off of obsolete inventory identified in the December 2025 physical count."
+      accounts: "5400"
+      support: DR 10.5
+      amounts: {FY2024: 0, FY2025: 64000, TTM Jun-26: 64000}
+      claim_keys: [inventory_ye_2025]
+    - ref: M-14
+      title: Customer bankruptcy write-off
+      category: Non-recurring
+      description: "Bad debt write-off for Halvorsen Builders following its Chapter 7 bankruptcy filing. Customer-specific; non-recurring."
+      accounts: "6950"
+      support: DR 11.1
+      amounts: {FY2024: 0, FY2025: 52000, TTM Jun-26: 52000}
+      claim_keys: [halvorsen_writeoff]
+
+# ---------------------------------------------------------------------------
+# Answer key (SPEC §10 and the binding §10.1 review amendments). Keys and globs
+# resolve to GL source rows. Non-REQUEST_INFO amounts are verified: supporting
+# rows + recoveries - period moves must equal them.
+# ---------------------------------------------------------------------------
+ground_truth:
+  authored_by: QoE Evidence Review build team; answer key per docs/SPEC.md §10 and §10.1 panel review
+  notes: >-
+    SYNTHETIC. supporting_gl_rows are the GL rows behind the diligence amount; for REQUEST_INFO items they are
+    the GL cost base management's claim is computed from. related_gl_rows are rows a good review surfaces that do
+    not support the amount: claimed-but-rejected rows, prior-period comparables, recoveries and overlapping
+    entries. supporting_docs: for ACCEPT and REVISE items, the documents that support the amount carried
+    (documents about removed rows, such as the M-03 expense reports, the Matter 1004 retainer papers and the
+    H&C 25-0910 invoice for M-08, are related evidence and are not listed); for REJECT and REQUEST_INFO items,
+    the documents that drive the conclusion. Flags that must not fire are recorded in reviewer_note. Amounts are
+    EBITDA-signed (+ increases EBITDA). Expected totals: claims 418,000 / 1,004,000 / 1,034,500; management
+    finals 16,000 / 335,700 / 244,200; D-1 0 / 18,400 / 0; pending (M-02, M-12) 360,000 / 360,000 / 525,000.
+  adjustments:
+    - adj_id: M-01
+      case_type: RECURRING
+      treatment: REVISE
+      amounts: {FY2024: 0, FY2025: 84500, TTM Jun-26: 30000}
+      supporting: [hc_lit_*]
+      related: [hc_retainer_*, hc_adhoc_*]
+      supporting_docs: [hc_el_2291, hc_inv_0212, hc_inv_0418, hc_inv_0615, hc_inv_0910, hc_inv_1120, dawson_settlement]
+      expected_flags: [RECURRING_PATTERN, CONTINUING_OBLIGATION]
+      question_topics:
+        - Post-settlement legal fees or continuing obligations under the Dawson settlement
+        - Confirmation that the insurer paid the Dawson settlement with no Company funding
+        - Defense cost coverage and the $100,000 self-insured retention
+        - Nature of the Dawson claim (customer property damage) and any similar claims
+        - Post-close status of the Matter 1004 general corporate retainer
+      rationale: >-
+        Tied H&C 6400 activity to invoices. Matter 2291 (Dawson v. Meridian, a customer property-damage claim from
+        a failed water heater) is five invoices totaling $84.5k in FY25, of which $30.0k (25-0910, 25-1120) falls in
+        TTM. That portion is supportable as non-recurring: the case settled 11/14/25 and the CGL insurer funded the
+        settlement. Defense costs sit within the $100k self-insured retention, so no reimbursement of the $84.5k is
+        expected. Management's figure also sweeps in Matter 1004: the $2.5k/month general corporate retainer (2023
+        engagement letter, continuing until terminated by either party) and the Aug-25 employment policy review
+        ($5.5k). Matter 1004 ran $36.0k in FY24 ($30.0k retainer plus $6.0k ad hoc), so it is part of the ongoing
+        cost base and stays in EBITDA. Revised to the litigation invoices only.
+    - adj_id: M-02
+      case_type: NEEDS_INFO
+      treatment: REQUEST_INFO
+      supporting: [officer_pay_*]
+      supporting_docs: [castellano_draft_ea]
+      expected_flags: [UNSIGNED_OR_DRAFT_SUPPORT, NORMALIZATION_BENCHMARK_MISSING]
+      ambiguity: medium
+      question_topics:
+        - Executed post-close employment agreement for R. Castellano
+        - Market compensation benchmark supporting a $300k normalized salary
+        - Payroll tax and benefits effect of the compensation normalization
+      rationale: >-
+        Officer payroll to R. Castellano is $660.0k a year (24 semi-monthly payrolls of $27.5k) and ties to 6010.
+        The only support for the $300k normalized level is an unsigned draft employment agreement watermarked DRAFT
+        and marked subject to buyer review; it is silent on club dues and vehicles. There is no executed agreement
+        and no market compensation benchmark, so the $360k add-back cannot be carried yet. Provisional amount if
+        supported: $360.0k per period, about $365.2k including employer Medicare (1.45%) on the salary reduction.
+    - adj_id: M-03
+      case_type: CONTRADICTED
+      treatment: REVISE
+      amounts: {FY2024: 0, FY2025: 31200, TTM Jun-26: 31200}
+      supporting: [club_dues_*, x5_lease_*]
+      related: [owner_travel_*]
+      supporting_docs: [club_statement, x5_lease_statement]
+      expected_flags: [CONTRADICTORY_EVIDENCE]
+      question_topics:
+        - Business purpose of the owner travel management treated as personal
+        - Confirmation that the club membership and X5 lease end at close
+      reviewer_note: "Must not fire: RECURRING_PATTERN (owner items recur by nature). The four expense reports are related evidence, not support."
+      rationale: >-
+        Pelican Bay club dues ($1.1k/month, 6700; individual membership of R. Castellano since Jan-25) and the X5
+        lease for D. Castellano ($1.5k/month, 6650) are personal and supportable: $31.2k in both FY25 and TTM. The
+        $16.8k of travel in 6600 is not. Each trip has a $5.6k expense report (report number = GL Num) that
+        itemizes registration, airfare and hotel and states a business purpose (ACCA conference, dealer summit,
+        supplier plant visit). Business travel stays in EBITDA. Revised to club dues and the lease.
+    - adj_id: M-04
+      case_type: ADEQUATE
+      treatment: ACCEPT
+      amounts: {FY2024: 0, FY2025: 45000, TTM Jun-26: 15000}
+      supporting: [barrow_*]
+      supporting_docs: [barrow_el, barrow_inv_1, barrow_inv_2, barrow_inv_3]
+      question_topics:
+        - Any further search fees, including replacement-search costs under the guarantee
+      reviewer_note: "Must not fire: CONTINUING_OBLIGATION, RECURRING_PATTERN. 'Retained search' is a fee arrangement for one search, not a retainer."
+      rationale: >-
+        Barrow Search Partners retained CFO search. The engagement letter sets the fee at one-third of $135k
+        estimated first-year cash compensation ($45.0k), billed in three $15.0k installments (Apr, May and Jul-25);
+        all three tie to 6450. One-time search. Routine Indeed job-board spend in 6450 is correctly left out.
+        Accept.
+    - adj_id: M-05
+      case_type: ADEQUATE
+      treatment: ACCEPT
+      amounts: {FY2024: 0, FY2025: 0, TTM Jun-26: 75000}
+      supporting: [severance_*]
+      supporting_docs: [whitfield_separation]
+      question_topics:
+        - Whether the VP Sales role will be backfilled and at what cost
+      reviewer_note: "Must not fire: RECURRING_PATTERN (three installments of one severance)."
+      rationale: >-
+        Separation agreement with T. Whitfield (signed 1/9/26) provides $75.0k of severance in three equal monthly
+        installments of $25.0k; the Feb, Mar and Apr-26 payroll entries in 6000 tie. Accept.
+    - adj_id: M-06
+      case_type: CONTRADICTED
+      treatment: REJECT
+      amounts: {FY2024: 0, FY2025: 0, TTM Jun-26: 0}
+      related: [brightline_*]
+      supporting_docs: [brightline_msa, brightline_inv_2503, controller_email]
+      expected_flags: [CONTRADICTORY_EVIDENCE, CONTINUING_OBLIGATION, RECURRING_PATTERN]
+      question_topics:
+        - Basis for describing the Brightline managed-services fee as a one-time implementation cost
+      rationale: >-
+        Brightline bills $8.0k every month from Jan-25 for FieldPro managed services. Management's FY25 claim is
+        all twelve invoices; its TTM 48,000 equals the Jul-Dec 2025 invoices, the claimed set under the tie-break.
+        The MSA (signed Dec-24) is a 36-month managed service with a $8,000 monthly fee covering licensing, hosting
+        and support, implementation included, renewing automatically. The controller's Mar-25 email calls it "our
+        FieldPro subscription". This is the ongoing cost of the field service platform, which replaced the
+        DispatchWorks license, not a one-time implementation. Reject.
+    - adj_id: M-07
+      case_type: EBITDA_EXCLUDED
+      treatment: REJECT
+      amounts: {FY2024: 0, FY2025: 0, TTM Jun-26: 0}
+      related: [refi_*]
+      supporting_docs: [gulfstream_payoff]
+      expected_flags: [ALREADY_EXCLUDED_FROM_EBITDA]
+      question_topics:
+        - Classification of refinancing costs and the new Tidewater facility's fees
+      rationale: >-
+        The $35.0k (Gulfstream prepayment penalty $13.0k and write-off of unamortized origination fees $22.0k) is
+        booked in 8100 Interest Expense. Management's interest expense line equals GL 8100 including the $35.0k,
+        so reported EBITDA already adds it back. Adding it back again double counts. Reject.
+    - adj_id: M-08
+      case_type: OVERLAP
+      treatment: REVISE
+      amounts: {FY2024: 0, FY2025: 41000, TTM Jun-26: 41000}
+      supporting: [keel_harbor_retainer, dunmore_pike_readiness]
+      related: [hc_lit_0910]
+      supporting_docs: [keel_harbor_el, keel_harbor_inv, dunmore_pike_el, dunmore_pike_inv]
+      expected_flags: [OVERLAP_WITH_OTHER_ADJUSTMENT]
+      question_topics:
+        - Transaction fees incurred but not yet billed or recorded (success fee, legal)
+      reviewer_note: "Must not fire: CONTINUING_OBLIGATION (the Keel Harbor retainer is one-time, creditable against the success fee)."
+      rationale: >-
+        Keel Harbor sell-side retainer ($26.0k, Oct-25, 6400; one-time, payable on signing and creditable against
+        the success fee) and Dunmore & Pike sell-side readiness ($15.0k, Nov-25, 6410) are transaction costs
+        supported by engagement letters and invoices. The remaining $21.0k is Hollis & Crane invoice 25-0910, which
+        is Matter 2291 Dawson litigation already added back in M-01, not transaction counsel. Removed the overlap.
+        Revised to $41.0k in FY25 and TTM.
+    - adj_id: M-09
+      case_type: RECOVERY_OFFSET
+      treatment: REVISE
+      amounts: {FY2024: 58000, FY2025: -40000, TTM Jun-26: 0}
+      supporting: [storm_restoration, storm_roof]
+      recoveries: [storm_insurance_proceeds]
+      supporting_docs: [sunshine_claim_letter, tbr_invoice, gcr_invoice]
+      expected_flags: [OFFSETTING_RECOVERY]
+      ambiguity: medium
+      question_topics:
+        - Further insurance recoveries expected on claim FL-24-88172
+      reviewer_note: "Pre-registered alternative: 40,000 / -40,000 / 0 (add back only the insured portion net of deductible)."
+      rationale: >-
+        Oct-Dec 2024 storm repairs ($38.0k Gulf Coast Roofing, $20.0k Tampa Bay Restoration, both citing claim
+        FL-24-88172) are non-recurring and supported. Sunshine Mutual paid $40.0k in Feb-25; it is booked as a gain
+        in 8000 Other Income and management left it in FY25 EBITDA. The settlement letter itemizes a $58.0k loss,
+        $8.0k non-covered above a sublimit, $50.0k covered, a $10.0k deductible and $40.0k paid, claim closed.
+        Remove the recovery: FY24 +$58.0k, FY25 -$40.0k, no TTM effect.
+    - adj_id: M-10
+      case_type: OUT_OF_PERIOD
+      treatment: REVISE
+      amounts: {FY2024: -42000, FY2025: 42000, TTM Jun-26: 0}
+      supporting: [apex_trueup]
+      period_moves:
+        - {keys: [apex_trueup], service_start: "2024-07", service_end: "2024-12"}
+      supporting_docs: [apex_invoice]
+      expected_flags: [OUT_OF_PERIOD]
+      question_topics:
+        - Other 2024 costs billed or recorded in 2025
+        - Whether closeout true-ups recur each year
+      rationale: >-
+        Apex invoice AD-3391 ($42.0k, booked Mar-25) states a service period of July 1 - December 31, 2024. It is a
+        2024 cost: remove it from FY25 (+$42.0k) and record it in FY24 (-$42.0k). No TTM effect. There are no other
+        Apex or closeout true-ups in the GL. Management made only the FY25 half of the adjustment.
+    - adj_id: M-11
+      case_type: WRONG_PERIOD
+      treatment: REVISE
+      amounts: {FY2024: 0, FY2025: 80000, TTM Jun-26: 0}
+      supporting: [reloc_*]
+      supporting_docs: [movers_invoice, buildout_invoice_1, buildout_invoice_2]
+      expected_flags: [PERIOD_MISMATCH]
+      question_topics:
+        - Basis for including relocation costs in TTM Jun-26
+      rationale: >-
+        Relocation costs (Suncoast Movers $32.0k Feb-25; Brandon Build-Out $24.0k Mar-25 and $24.0k Apr-25) are
+        supported and non-recurring: $80.0k in FY25. Nothing was incurred Jul-25 to Jun-26, so the $80.0k TTM claim
+        has no GL support. Revised TTM to zero.
+    - adj_id: M-12
+      case_type: NEEDS_INFO
+      treatment: REQUEST_INFO
+      supporting: ["dispatch_pay_20250[7-9]", "dispatch_pay_20251[0-2]", "dispatch_pay_2026*"]
+      supporting_docs: [coo_email]
+      expected_flags: [PRO_FORMA_NOT_REALIZED]
+      ambiguity: medium
+      question_topics:
+        - Evidence that the dispatch headcount reduction has occurred
+        - Severance and transition costs of the reduction
+        - Whether the dispatch roles will be backfilled or retained as schedulers
+      reviewer_note: "Pre-registered alternative: REJECT 0 / 0 / 0 (savings not realized)."
+      rationale: >-
+        Pro forma savings of $165.0k for three dispatcher positions. The GL shows the dispatch team (3 x $55.0k,
+        $13.75k a month in 6000, memo "Payroll - Dispatch") still paid through Jun-26. The only support is a Mar-26
+        COO email describing a plan targeting Q3 2026, contingent on an auto-dispatch pilot; there are no separation
+        agreements and nothing has been communicated to the team. The event has not occurred. Pending until
+        management evidences the reduction and its one-time costs.
+    - adj_id: M-13
+      case_type: RECURRING
+      treatment: REJECT
+      amounts: {FY2024: 0, FY2025: 0, TTM Jun-26: 0}
+      related: [inventory_ye_2025, inventory_ye_2024]
+      supporting_docs: [inventory_memo]
+      expected_flags: [RECURRING_PATTERN, CONTRADICTORY_EVIDENCE]
+      question_topics:
+        - Inventory reserve methodology and history of year-end count adjustments
+      rationale: >-
+        Dec-25 physical count adjustment of $64.0k in 5400. Dec-24 carries the same entry ($58.5k), and the count
+        memo states both adjustments and says the adjustment is "consistent with prior years" and reflects shrink
+        and obsolete parts. This is a recurring cost of running the business. Reject.
+    - adj_id: M-14
+      case_type: ADEQUATE
+      treatment: ACCEPT
+      amounts: {FY2024: 0, FY2025: 52000, TTM Jun-26: 52000}
+      supporting: [halvorsen_writeoff]
+      related: [halvorsen_inv_*]
+      supporting_docs: [halvorsen_notice, halvorsen_proof_of_claim]
+      ambiguity: medium
+      question_topics:
+        - Other customer credit exposure similar to Halvorsen Builders
+      reviewer_note: "Must not fire: RECURRING_PATTERN. Pre-registered alternative: normalize 6950 to its 30-month average."
+      rationale: >-
+        Halvorsen Builders filed Chapter 7 on 10/6/25 (debtor's counsel notice lists our $52.0k claim; trustee
+        expects a no-asset case). Meridian's proof of claim lists the three unpaid Jun-Aug 2025 invoices totaling
+        $52.0k, which tie to the Oct-25 write-off in 6950. Routine write-offs run about $0.3-0.7k a month.
+        Customer-specific loss; accept in full.
+  diligence_items:
+    - adj_id: D-1
+      case_type: DUPLICATE_POSTING
+      treatment: REVISE
+      amounts: {FY2024: 0, FY2025: 18400, TTM Jun-26: 0}
+      supporting: [coastal_prem_202505_dup]
+      related: [coastal_prem_202505]
+      supporting_docs: [coastal_installment_notice]
+      expected_flags: [DUPLICATE_GL_ENTRY]
+      question_topics:
+        - Whether the duplicate May 2025 Coastal Risk installment was paid twice, refunded or applied to a later installment
+      rationale: >-
+        Coastal Risk installment CRI-25-0507 ($18.4k) is posted twice in 6200 (05/07 and 05/10/2025); the
+        installment notice shows one $18,400 installment due. Reverse the second posting: +$18.4k in FY25, no
+        FY24 or TTM effect.

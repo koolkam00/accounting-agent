@@ -1,38 +1,33 @@
 [project]
-name = "accounting-agent"
+name = "qoe-evidence-review"
 version = "0.1.0"
-description = "Deterministic accounts-payable three-way-match prototype"
+description = "Quality-of-earnings evidence review: verify seller-proposed EBITDA adjustments against the general ledger and source documents"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "pydantic>=2.0",
-    "openai>=1.0",
     "pypdf>=4.0",
     "reportlab>=4.0",
-    "pytest>=8.0",
-    "pytest-asyncio>=0.23",
-    "httpx>=0.27",
+    "openpyxl>=3.1",
     "pyyaml>=6.0",
-    "sqlalchemy>=2.0",
-    "pandas>=2.0",
+    "openai>=1.0",
     "streamlit>=1.30",
-    "python-dotenv>=1.0",
+    "pandas>=2.0",
 ]
 
-[project.optional-dependencies]
-dev = ["pytest", "pytest-asyncio"]
+[dependency-groups]
+dev = ["pytest>=8.0"]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["app"]
+packages = ["qoe"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-asyncio_mode = "auto"
 
 [tool.uv]
 package = true

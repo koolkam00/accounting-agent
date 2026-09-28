@@ -1,4 +1,4 @@
-.PHONY: qoe-generate qoe-run qoe-eval qoe-eval-holdout qoe-ui qoe-test qoe-commercial setup generate-data generate-difficulty test run-local run-ui evaluate-accuracy evaluate-determinism report init-db capture-env
+.PHONY: setup generate-data generate-difficulty test run-local run-ui evaluate-accuracy evaluate-determinism report init-db capture-env
 
 setup:
 	uv python install 3.12
@@ -39,26 +39,3 @@ capture-env:
 
 report: capture-env
 	uv run python scripts/build_report.py
-
-# --- QoE Evidence Review -----------------------------------------------------
-qoe-generate:
-	uv run python scripts/qoe_generate_deals.py --all
-
-qoe-run:
-	uv run python scripts/qoe_run.py --deal data/qoe/dev/meridian_mechanical --xlsx
-
-qoe-eval:
-	uv run python scripts/qoe_evaluate.py --split dev
-
-# Run only after development is frozen; see docs/qoe/benchmark_protocol.md.
-qoe-eval-holdout:
-	uv run python scripts/qoe_evaluate.py --split holdout
-
-qoe-ui:
-	uv run streamlit run qoe/ui.py
-
-qoe-test:
-	uv run pytest -q tests/qoe
-
-qoe-commercial:
-	uv run python scripts/qoe_commercial_model.py

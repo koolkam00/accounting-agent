@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+# Review runs (workpaper json, review logs, timing, exports) are local working state.
+workpapers/
