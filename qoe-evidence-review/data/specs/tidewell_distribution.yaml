@@ -1,0 +1,1102 @@
+# Dev deal 2: Tidewell Distribution Group, LLC (SYNTHETIC). Catalog and reasoning:
+# docs/deal_notes/tidewell_distribution_author_notes.md. Format: scripts/qoe_synth/SPEC_FORMAT.md
+# Regenerate: uv run python scripts/qoe_generate_deals.py --spec data/specs/tidewell_distribution.yaml --out data/dev
+#
+# Fiscal year ends March 31. FY2025 = Apr 2024 - Mar 2025; FY2026 = Apr 2025 - Mar 2026;
+# TTM Jun-26 = Jul 2025 - Jun 2026 (overlaps FY2026 in Jul 2025 - Mar 2026).
+# Planted `amount` is debit-positive (expenses +, income and credits -). Background streams give
+# magnitudes; the sign follows the account's normal balance unless `direction` says otherwise.
+
+deal_id: tidewell_distribution
+split: dev
+seed: 20260810
+package_date: "2026-08-10"
+company:
+  name: Tidewell Distribution Group, LLC
+  short_name: Tidewell
+  industry: Specialty distribution - foodservice packaging and janitorial & sanitation supplies
+periods:
+  - {label: "FY2025", start: "2024-04", end: "2025-03"}
+  - {label: "FY2026", start: "2025-04", end: "2026-03"}
+  - {label: "TTM Jun-26", start: "2025-07", end: "2026-06"}
+data_start: "2024-04"
+data_end: "2026-06"
+gl_format: netsuite_csv
+deal_yaml_gl_format: auto
+tolerance: "1.00"
+netsuite_internal_id_start: 2481007
+readme_extra: |
+  Scenario: Southeast US specialty distributor of foodservice packaging and janitorial &
+  sanitation supplies (Savannah GA distribution center; Jacksonville and Charleston branches).
+  LLC taxed as an S corporation with a Georgia pass-through entity tax election. NetSuite
+  saved-search GL export. Fiscal years end March 31. Analysis periods FY2025, FY2026 and
+  TTM Jun-26; the GL covers Apr 2024 - Jun 2026. Project Marlin is the sale process.
+
+default_dimensions:
+  Subsidiary: Tidewell Distribution Group, LLC
+  Department: G&A
+  Class: Shared
+  Location: Savannah DC
+
+sequences:
+  inv: 318440
+  cm: 20511
+  je: 60120
+
+# ---------------------------------------------------------------------------
+# Chart of accounts (NetSuite account list export). The GL carries P&L accounts only.
+# ---------------------------------------------------------------------------
+accounts:
+  - {number: "1000", name: Operating Account - Ogeechee National Bank, type: Bank, description: Closed February 2026}
+  - {number: "1010", name: Operating Account - Coastal Trust Bank, type: Bank}
+  - {number: "1100", name: Accounts Receivable, type: Accounts Receivable}
+  - {number: "1200", name: Inventory, type: Other Current Asset}
+  - {number: "1300", name: Prepaid Expenses, type: Other Current Asset}
+  - {number: "1400", name: Other Receivables, type: Other Current Asset}
+  - {number: "1500", name: Warehouse Equipment & Racking, type: Fixed Asset}
+  - {number: "1510", name: Vehicles, type: Fixed Asset}
+  - {number: "1590", name: Accumulated Depreciation, type: Fixed Asset}
+  - {number: "1600", name: Customer Relationships (net), type: Other Asset}
+  - {number: "2000", name: Accounts Payable, type: Accounts Payable}
+  - {number: "2100", name: Accrued Liabilities, type: Other Current Liability}
+  - {number: "2150", name: Accrued Payroll & Bonus, type: Other Current Liability}
+  - {number: "2200", name: Revolving Line of Credit, type: Other Current Liability}
+  - {number: "2500", name: Term Loan, type: Long Term Liability}
+  - {number: "3000", name: Members' Equity, type: Equity}
+  - {number: "4000", name: Sales - Foodservice Packaging, type: Income}
+  - {number: "4100", name: Sales - Janitorial & Sanitation, type: Income}
+  - {number: "4200", name: Freight Billed to Customers, type: Income}
+  - {number: "4900", name: Sales Returns & Allowances, type: Income}
+  - {number: "4950", name: Customer Rebates & GPO Fees, type: Income}
+  - {number: "5000", name: Cost of Goods Sold, type: Cost of Goods Sold}
+  - {number: "5100", name: Freight In, type: Cost of Goods Sold}
+  - {number: "5200", name: Vendor Rebates, type: Cost of Goods Sold}
+  - {number: "5300", name: Inventory Adjustments & Write-offs, type: Cost of Goods Sold}
+  - {number: "5400", name: Freight Out - Common Carrier, type: Cost of Goods Sold}
+  - {number: "6000", name: Wages - Warehouse & Distribution, type: Expense}
+  - {number: "6010", name: Wages - Drivers, type: Expense}
+  - {number: "6020", name: Wages - Sales, type: Expense}
+  - {number: "6030", name: Wages - Customer Service, type: Expense}
+  - {number: "6040", name: Wages - General & Administrative, type: Expense}
+  - {number: "6050", name: Officer Compensation, type: Expense}
+  - {number: "6060", name: Sales Commissions, type: Expense}
+  - {number: "6100", name: Payroll Taxes, type: Expense}
+  - {number: "6110", name: Employee Benefits, type: Expense}
+  - {number: "6200", name: Rent & Occupancy, type: Expense}
+  - {number: "6210", name: Utilities & Telecom, type: Expense}
+  - {number: "6220", name: Repairs & Maintenance - Facilities, type: Expense}
+  - {number: "6300", name: Fleet Fuel, type: Expense}
+  - {number: "6310", name: Fleet Repairs & Maintenance, type: Expense}
+  - {number: "6320", name: Fleet Leases, type: Expense}
+  - {number: "6400", name: Legal & Professional Fees, type: Expense}
+  - {number: "6410", name: Accounting & Tax Fees, type: Expense}
+  - {number: "6420", name: Consulting Fees, type: Expense}
+  - {number: "6500", name: Insurance, type: Expense}
+  - {number: "6600", name: Software & IT, type: Expense}
+  - {number: "6700", name: Marketing & Trade Shows, type: Expense}
+  - {number: "6710", name: Travel & Entertainment, type: Expense}
+  - {number: "6800", name: Bank & Merchant Fees, type: Expense}
+  - {number: "6810", name: Bad Debt Expense, type: Expense}
+  - {number: "6900", name: Office & Administrative, type: Expense}
+  - {number: "6910", name: Recruiting & Training, type: Expense}
+  - {number: "6950", name: Warehouse Supplies, type: Expense}
+  - {number: "7000", name: Depreciation Expense, type: Expense}
+  - {number: "7050", name: Amortization - Customer Relationships, type: Expense}
+  - {number: "8000", name: Other Income, type: Other Income}
+  - {number: "8050", name: Gain/Loss on Disposal of Assets, type: Other Income}
+  - {number: "8100", name: Interest Expense, type: Other Expense}
+  - {number: "8200", name: Other Expense, type: Other Expense}
+  - {number: "9000", name: Income Taxes - State (PTET), type: Other Expense}
+
+# ---------------------------------------------------------------------------
+# Background activity. List-valued dimensions are NetSuite tagging noise (blank or
+# inconsistent Department / Class / Location on some lines).
+# ---------------------------------------------------------------------------
+background:
+  # --- Revenue ----------------------------------------------------------------
+  - id: rev_pkg_acct
+    account: "4000"
+    txn_type: invoice
+    schedule: {count: [16, 22]}
+    amount: {monthly: 1850000, growth: 0.05, noise: 0.03, spread: 0.7,
+             seasonality: [0.92, 0.92, 0.99, 1.02, 1.08, 1.12, 1.10, 1.06, 1.00, 0.97, 0.92, 0.90]}
+    num: {sequence: inv, format: "INV{seq}"}
+    counterparties:
+      - {name: Lowcountry Hospitality Group, weight: 5}
+      - {name: Coastal Kitchen Co., weight: 4}
+      - {name: Savannah Harbor Hotels, weight: 3}
+      - {name: Golden Isles Food Service, weight: 3}
+      - {name: First Coast Cafe Group, weight: 3}
+      - {name: Magnolia Health System, weight: 3}
+      - {name: Palmetto Quick Stop Stores, weight: 4}
+      - {name: Riverwalk Catering Co., weight: 2}
+      - {name: Island Grill Franchise Group, weight: 2}
+      - {name: Bluffton Bakery & Deli, weight: 1}
+      - {name: Chatham County School Nutrition, weight: 2}
+    memo: "Sales order SO-{job} – {cat}"
+    choices:
+      cat: [hot cups & lids, cold cups & straws, hinged containers, deli containers, foil & film, carryout bags, portion cups, napkins & wraps]
+    dimensions:
+      Department: [Sales, Sales, Sales, Sales, Sales, ""]
+      Class: [Foodservice Packaging, Foodservice Packaging, Foodservice Packaging, Foodservice Packaging, Foodservice Packaging, Foodservice Packaging, Foodservice Packaging, Foodservice Packaging, Foodservice Packaging, Foodservice Packaging, Foodservice Packaging, Janitorial & Sanitation]
+      Location: [Savannah DC, Savannah DC, Jacksonville Branch, Charleston Branch]
+
+  - id: rev_pkg_route
+    account: "4000"
+    txn_type: invoice
+    schedule: {weekdays: [0, 1, 2, 3, 4]}
+    amount: {monthly: 1600000, growth: 0.05, noise: 0.03, spread: 0.3,
+             seasonality: [0.92, 0.92, 0.99, 1.02, 1.08, 1.12, 1.10, 1.06, 1.00, 0.97, 0.92, 0.90]}
+    num: {format: "DIR-{yy}{mm}{dd}-P"}
+    counterparties: [Route & Will-Call Customers]
+    memo: "Daily invoice register – route & will-call – packaging – {mdy}"
+    dimensions:
+      Department: Sales
+      Class: Foodservice Packaging
+      Location: [Savannah DC, Savannah DC, Jacksonville Branch, Charleston Branch, ""]
+
+  - id: rev_jan_acct
+    account: "4100"
+    txn_type: invoice
+    schedule: {count: [12, 18]}
+    amount: {monthly: 1300000, growth: 0.05, noise: 0.03, spread: 0.7,
+             seasonality: [1.00, 0.98, 1.00, 0.99, 0.99, 1.01, 1.03, 1.08, 1.05, 1.00, 0.95, 0.92]}
+    num: {sequence: inv, format: "INV{seq}"}
+    counterparties:
+      - {name: Magnolia Health System, weight: 5}
+      - {name: Chatham County Schools Facilities, weight: 3}
+      - {name: Brightway Contract Cleaning, weight: 4}
+      - {name: Southern Shine Janitorial, weight: 3}
+      - {name: Savannah Harbor Hotels, weight: 2}
+      - {name: Coastal Georgia Medical Offices, weight: 2}
+      - {name: Glynn County Facilities, weight: 2}
+      - {name: Lowcountry Property Services, weight: 3}
+      - {name: Duval Facility Solutions, weight: 3}
+    memo: "Sales order SO-{job} – {jcat}"
+    choices:
+      jcat: [can liners, towel & tissue, hand soap & sanitizer, floor care chemicals, disinfectants, mops & janitorial tools, dispensers]
+    dimensions:
+      Department: [Sales, Sales, Sales, Sales, ""]
+      Class: [Janitorial & Sanitation, Janitorial & Sanitation, Janitorial & Sanitation, Janitorial & Sanitation, Janitorial & Sanitation, Janitorial & Sanitation, Janitorial & Sanitation, Janitorial & Sanitation, Janitorial & Sanitation, Foodservice Packaging, ""]
+      Location: [Savannah DC, Savannah DC, Jacksonville Branch, Charleston Branch]
+
+  - id: rev_jan_route
+    account: "4100"
+    txn_type: invoice
+    schedule: {weekdays: [0, 1, 2, 3, 4]}
+    amount: {monthly: 1150000, growth: 0.05, noise: 0.03, spread: 0.3,
+             seasonality: [1.00, 0.98, 1.00, 0.99, 0.99, 1.01, 1.03, 1.08, 1.05, 1.00, 0.95, 0.92]}
+    num: {format: "DIR-{yy}{mm}{dd}-J"}
+    counterparties: [Route & Will-Call Customers]
+    memo: "Daily invoice register – route & will-call – janitorial – {mdy}"
+    dimensions:
+      Department: Sales
+      Class: Janitorial & Sanitation
+      Location: [Savannah DC, Savannah DC, Jacksonville Branch, Charleston Branch, ""]
+
+  - id: freight_billed
+    account: "4200"
+    txn_type: journal
+    schedule: {days: [-1]}
+    amount: {monthly: 90000, growth: 0.05, noise: 0.06}
+    num: {sequence: je, format: "JE{seq}"}
+    memo: "Freight & fuel surcharge billed to customers – {mon} {yyyy}"
+    dimensions: {Department: Sales, Class: Shared}
+
+  - id: returns
+    account: "4900"
+    txn_type: credit_memo
+    direction: debit
+    schedule: {count: [3, 6]}
+    amount: {monthly: 40000, growth: 0.04, noise: 0.15, spread: 0.6}
+    num: {sequence: cm, format: "CM{seq}"}
+    counterparties:
+      - {name: Lowcountry Hospitality Group, weight: 3}
+      - {name: Palmetto Quick Stop Stores, weight: 2}
+      - {name: Brightway Contract Cleaning, weight: 2}
+      - {name: Magnolia Health System, weight: 2}
+      - {name: Route & Will-Call Customers, weight: 3}
+    memo: ["Return – damaged in transit", "Return – mis-pick", "Pricing credit – contract price correction", "Return – overstock (restocking fee applied)"]
+    dimensions:
+      Department: [Sales, Customer Service]
+      Class: [Foodservice Packaging, Janitorial & Sanitation, ""]
+
+  - id: cust_rebates
+    account: "4950"
+    txn_type: journal
+    direction: debit
+    schedule: {days: [-1]}
+    amount: {monthly: 55000, growth: 0.05, noise: 0.08}
+    num: {sequence: je, format: "JE{seq}"}
+    memo: "Customer rebate & GPO administrative fee accrual – {mon} {yyyy}"
+    dimensions: {Department: Sales, Class: Shared}
+
+  # --- Cost of sales -------------------------------------------------------------
+  - id: cogs_pkg
+    account: "5000"
+    txn_type: Item Fulfillment
+    schedule: {weekdays: [0, 1, 2, 3, 4]}
+    amount: {monthly: 2440000, growth: 0.05, noise: 0.03, spread: 0.3,
+             seasonality: [0.92, 0.92, 0.99, 1.02, 1.08, 1.12, 1.10, 1.06, 1.00, 0.97, 0.92, 0.90]}
+    num: {format: "IF-{yy}{mm}{dd}-P"}
+    memo: "Item fulfillment – standard cost – packaging – {mdy}"
+    dimensions:
+      Department: Warehouse & Distribution
+      Class: Foodservice Packaging
+      Location: [Savannah DC, Savannah DC, Jacksonville Branch, Charleston Branch]
+
+  - id: cogs_jan
+    account: "5000"
+    txn_type: Item Fulfillment
+    schedule: {weekdays: [0, 1, 2, 3, 4]}
+    amount: {monthly: 1700000, growth: 0.05, noise: 0.03, spread: 0.3,
+             seasonality: [1.00, 0.98, 1.00, 0.99, 0.99, 1.01, 1.03, 1.08, 1.05, 1.00, 0.95, 0.92]}
+    num: {format: "IF-{yy}{mm}{dd}-J"}
+    memo: "Item fulfillment – standard cost – janitorial – {mdy}"
+    dimensions:
+      Department: Warehouse & Distribution
+      Class: Janitorial & Sanitation
+      Location: [Savannah DC, Savannah DC, Jacksonville Branch, Charleston Branch]
+
+  - id: freight_in
+    account: "5100"
+    txn_type: bill
+    schedule: {count: [6, 9]}
+    amount: {monthly: 75000, growth: 0.04, noise: 0.12, spread: 0.6}
+    counterparties:
+      - {name: Southern Pines Trucking, weight: 3, num: "SPT-{seq}", seq_start: 40112, seq_step: [4, 30]}
+      - {name: Blue Marsh Intermodal, weight: 2, num: "BMI{seq}", seq_start: 7710, seq_step: [2, 12]}
+      - {name: Keystone LTL, weight: 2, num: "KLTL-{seq}", seq_start: 551020, seq_step: [10, 90]}
+    memo: "Inbound freight – {origin} – PO {po}"
+    choices:
+      origin: [Charlotte NC mill, Atlanta GA converter, Monterrey MX plant, Memphis TN DC, Greenville SC plant]
+      po: ["PO-4471", "PO-4488", "PO-4502", "PO-4519", "PO-4533", "PO-4540", "PO-4556"]
+    dimensions: {Department: Warehouse & Distribution, Class: [Foodservice Packaging, Janitorial & Sanitation]}
+
+  - id: vendor_rebates
+    account: "5200"
+    txn_type: vendor_credit
+    direction: credit
+    schedule: {count: [3, 3], months: [3, 6, 9, 12]}
+    amount: {monthly: 165000, growth: 0.04, noise: 0.15, spread: 0.5}
+    num: {format: "VRC-{seq}", start: 4101, step: [1, 3]}
+    counterparties:
+      - {name: Atlantic Cup Company, weight: 3}
+      - {name: Pinnacle Can Liner Corp., weight: 2}
+      - {name: Sanigard Chemical, weight: 2}
+      - {name: Greenleaf Molded Fiber, weight: 1, end: "2025-09"}
+    memo: "Volume rebate – calendar Q{q} {yyyy} purchases"
+    dimensions: {Department: Warehouse & Distribution, Class: Shared}
+
+  - id: cycle_counts
+    account: "5300"
+    txn_type: Inventory Adjustment
+    schedule: {days: [-1], months: [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12]}
+    amount: {monthly: 3200, noise: 0.5, round: 1}
+    num: {format: "IA-{yy}{mm}-CC"}
+    memo: "Cycle count adjustment – {mon} {yyyy}"
+    dimensions: {Department: Warehouse & Distribution, Class: Shared}
+
+  - id: freight_out
+    account: "5400"
+    txn_type: bill
+    schedule: {count: [8, 12]}
+    amount: {monthly: 120000, growth: 0.04, noise: 0.10, spread: 0.5}
+    counterparties:
+      - {name: "Altamaha Freight Lines, Inc.", weight: 4, num: "AFL-{seq}", seq_start: 88210, seq_step: [3, 15]}
+      - {name: Coastal Plain Express, weight: 2, num: "CPX{seq}", seq_start: 30155, seq_step: [2, 11]}
+      - {name: Sea Island Delivery Co., weight: 1, num: "SIDC-{seq}", seq_start: 1140, seq_step: [1, 5]}
+    memo: "Outbound LTL – {lane} – week of {mdy}"
+    choices:
+      lane: [Savannah-Atlanta, Savannah-Columbia, Jacksonville-Tallahassee, Charleston-Myrtle Beach, Savannah-Macon]
+    dimensions: {Department: Warehouse & Distribution, Class: [Foodservice Packaging, Janitorial & Sanitation, Shared]}
+
+  # --- Payroll and benefits ------------------------------------------------------
+  - id: pay_whse
+    account: "6000"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 178000, growth: 0.04, noise: 0.01, spread: 0.03}
+    memo: "Payroll – warehouse & distribution – PPE {mdy}"
+    dimensions: {Department: Warehouse & Distribution, Location: [Savannah DC, Savannah DC, ""]}
+
+  - id: pay_drivers
+    account: "6010"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 118000, growth: 0.04, noise: 0.015, spread: 0.03}
+    memo: "Payroll – route drivers – PPE {mdy}"
+    dimensions: {Department: Fleet}
+
+  - id: pay_sales
+    account: "6020"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 86000, growth: 0.04, noise: 0.01, spread: 0.03}
+    memo: "Payroll – outside sales – PPE {mdy}"
+    dimensions: {Department: Sales}
+
+  - id: pay_cs
+    account: "6030"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 38000, growth: 0.04, noise: 0.01, spread: 0.03}
+    memo: "Payroll – customer service (Savannah) – PPE {mdy}"
+    dimensions: {Department: Customer Service}
+
+  - id: chs_order_desk
+    account: "6030"
+    txn_type: payroll
+    end: "2026-01"
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 12600, noise: 0.02, spread: 0.02}
+    memo: "Payroll – Charleston order desk (3 FTE) – PPE {mdy}"
+    dimensions: {Department: Customer Service, Location: Charleston Branch}
+
+  - id: pay_ga
+    account: "6040"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 64000, growth: 0.04, noise: 0.01, spread: 0.03}
+    memo: "Payroll – finance, HR & administration – PPE {mdy}"
+    dimensions: {Department: G&A}
+
+  - id: commissions
+    account: "6060"
+    txn_type: payroll
+    schedule: {days: [20], adjust: prior}
+    amount: {monthly: 48000, growth: 0.05, noise: 0.12}
+    memo: "Sales commissions – {prev_mon} {prev_yyyy} gross margin"
+    dimensions: {Department: Sales, Class: [Shared, ""]}
+
+  - id: payroll_tax
+    account: "6100"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 47000, growth: 0.04, noise: 0.02, spread: 0.05,
+             seasonality: [1.22, 1.12, 1.04, 1.00, 0.98, 0.97, 0.96, 0.95, 0.94, 0.94, 0.94, 0.94]}
+    memo: "Employer payroll taxes – PPE {mdy}"
+    dimensions: {Department: [G&A, G&A, ""]}
+
+  - id: health_premium
+    account: "6110"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [1]}
+    amount: {by_year: {2024: 41800, 2025: 44900, 2026: 48300}}
+    counterparties:
+      - {name: Peach State Health Plan, num: "PSHP-{yy}{mm}-7704"}
+    memo: "Group medical & dental premium – {mon} {yyyy}"
+
+  - id: match_401k
+    account: "6110"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 11500, growth: 0.04, noise: 0.03, spread: 0.05}
+    memo: "401(k) safe-harbor match – PPE {mdy}"
+
+  # --- Occupancy -------------------------------------------------------------------
+  - id: rent_jax
+    account: "6200"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [1]}
+    amount: {fixed: 18400, escalate_pct: 0.03, escalate_month: 7}
+    counterparties:
+      - {name: "Northbank Industrial Partners, LP", num: "NIP-{yy}{mm}-JAX"}
+    memo: "Rent – Jacksonville branch, 2250 Commerce Blvd – {mon} {yyyy}"
+    dimensions: {Department: Warehouse & Distribution, Location: Jacksonville Branch}
+
+  - id: rent_chs
+    account: "6200"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [1]}
+    amount: {fixed: 14250, escalate_pct: 0.03, escalate_month: 1}
+    counterparties:
+      - {name: "Cooper River Logistics Park, LLC", num: "CRLP-{yy}{mm}"}
+    memo: "Rent – Charleston branch, 7 Palmetto Commerce Pkwy – {mon} {yyyy}"
+    dimensions: {Department: Warehouse & Distribution, Location: Charleston Branch}
+
+  - id: prop_tax
+    account: "6200"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [14], months: [11]}
+    amount: {by_year: {2024: 38600, 2025: 40100}}
+    counterparties: [Chatham County Tax Commissioner]
+    memo: "Property taxes – 410 Grange Road (Savannah DC) – {yyyy} tax year (tenant-paid, NNN)"
+    dimensions: {Department: Warehouse & Distribution}
+
+  - id: util_power
+    account: "6210"
+    txn_type: bill
+    schedule: {days: [12]}
+    amount: {monthly: 9800, growth: 0.03, noise: 0.05,
+             seasonality: [0.85, 0.82, 0.85, 0.92, 1.05, 1.22, 1.30, 1.28, 1.15, 0.98, 0.84, 0.84]}
+    counterparties:
+      - {name: Coastal Electric Membership Corp., num: "CEMC-{yy}{mm}-5518"}
+    memo: "Electric service – all locations – {prev_mon} {prev_yyyy}"
+
+  - id: util_telecom
+    account: "6210"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [8]}
+    amount: {fixed: 2450, escalate_pct: 0.03, escalate_month: 4}
+    counterparties:
+      - {name: Lowcountry Fiber Networks, num: "LFN-{yy}{mm}-0212"}
+    memo: "Fiber internet, SIP trunks & MPLS (3 sites) – {mon} {yyyy}"
+
+  - id: util_water
+    account: "6210"
+    txn_type: bill
+    schedule: {days: [19]}
+    amount: {monthly: 640, noise: 0.18}
+    counterparties: [City of Pooler Utilities]
+    memo: "Water & sewer – {prev_mon} {prev_yyyy}"
+
+  - id: fac_repairs
+    account: "6220"
+    txn_type: bill
+    schedule: {count: [1, 3]}
+    amount: {monthly: 4200, noise: 0.4, spread: 0.6}
+    counterparties:
+      - {name: Pooler Door & Dock Service, memo: ["Dock leveler repair – door {door}", "Overhead door service – door {door}"]}
+      - {name: Guardian Fire Protection, memo: ["Fire protection system inspection", "Fire extinguisher inspection & tags"]}
+      - {name: Hostess City Electric, memo: ["Warehouse LED fixture repair", "Battery charger circuit repair"]}
+    choices:
+      door: ["3", "7", "11", "14", "18"]
+    dimensions: {Department: Warehouse & Distribution, Location: [Savannah DC, Jacksonville Branch, Charleston Branch]}
+
+  - id: forklift_pm
+    account: "6220"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [24]}
+    amount: {fixed: 2150}
+    counterparties:
+      - {name: Southeast Forklift Service, num: "SFS-{yy}{mm}-PM"}
+    memo: "Forklift planned maintenance (14 units) – {mon} {yyyy}"
+    dimensions: {Department: Warehouse & Distribution}
+
+  # --- Fleet -----------------------------------------------------------------------
+  - id: fleet_fuel
+    account: "6300"
+    txn_type: expense
+    schedule: {weekdays: [4]}
+    amount: {monthly: 42000, growth: 0.03, noise: 0.06, spread: 0.15}
+    counterparties: [Coastal Fleet Fuel Card]
+    memo: "Fleet fuel – route trucks – week ending {mdy}"
+    dimensions: {Department: Fleet}
+
+  - id: fleet_repairs
+    account: "6310"
+    txn_type: bill
+    schedule: {count: [3, 6]}
+    amount: {monthly: 11000, growth: 0.03, noise: 0.3, spread: 0.6}
+    counterparties:
+      - {name: Savannah Truck & Trailer Repair, weight: 3, num: "STT-{seq}", seq_start: 20881, seq_step: [4, 25],
+         memo: ["Truck #{truck} – brakes & PM service", "Truck #{truck} – liftgate repair", "Truck #{truck} – reefer unit service"]}
+      - {name: Big Oak Tire Center, weight: 2, num: "BOT{seq}", seq_start: 61190, seq_step: [6, 40],
+         memo: ["Tires (6) – truck #{truck}", "Truck #{truck} – alignment & DOT inspection"]}
+    choices:
+      truck: ["104", "107", "111", "115", "118", "122", "126", "131"]
+    dimensions: {Department: Fleet}
+
+  - id: fleet_leases
+    account: "6320"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [5]}
+    amount: {by_year: {2024: 25600, 2025: 26900, 2026: 28100}}
+    counterparties:
+      - {name: Marsh Harbor Truck Leasing, num: "MHTL-{yy}{mm}"}
+    memo: "Tractor & box truck leases (22 units) – {mon} {yyyy}"
+    dimensions: {Department: Fleet}
+
+  # --- Professional fees ---------------------------------------------------------------
+  - id: cpa_quarterly
+    account: "6410"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [20], months: [2, 5, 8, 11]}
+    amount: {fixed: 7250}
+    counterparties:
+      - {name: "Pemberton Lyle, CPAs", num: "PL-{yy}{mm}-Q"}
+    memo: "Quarterly accounting review & tax planning – {mon} {yyyy} billing"
+
+  - id: cpa_annual
+    account: "6410"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [28], months: [7]}
+    amount: {by_year: {2024: 31500, 2025: 33000}}
+    counterparties:
+      - {name: "Pemberton Lyle, CPAs", num: "PL-{yy}{mm}-A"}
+    memo: "Reviewed financial statements & S corporation return – FYE 3/31/{yyyy}"
+
+  - id: ehs_consulting
+    account: "6420"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [9], months: [1, 4, 7, 10]}
+    amount: {fixed: 2850}
+    counterparties:
+      - {name: SafePoint EHS Consulting, num: "SEHS-{yy}Q{q}"}
+    memo: "Quarterly OSHA & DOT compliance audit – Q{q} {yyyy}"
+
+  # --- Insurance -------------------------------------------------------------------------
+  - id: ins_gl
+    account: "6500"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [10]}
+    amount: {by_year: {2024: 9400, 2025: 10100, 2026: 10800}}
+    counterparties:
+      - {name: Tidewater Mutual Casualty, num: "TMC-{yy}{mm}-3390"}
+    memo: "General liability & umbrella – monthly premium installment – {mon} {yyyy}"
+
+  - id: ins_property
+    account: "6500"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [10]}
+    amount: {by_year: {2024: 6200, 2025: 6650, 2026: 7400}}
+    counterparties:
+      - {name: Palmetto State Mutual Insurance Co., num: "PSM-{yy}{mm}-P"}
+    memo: "Commercial property & inland marine – monthly premium installment – {mon} {yyyy}"
+
+  - id: ins_wc
+    account: "6500"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [15]}
+    amount: {by_year: {2024: 14800, 2025: 15600, 2026: 16300}}
+    counterparties:
+      - {name: Peachtree Comp Mutual, num: "PCM-{yy}{mm}"}
+    memo: "Workers' compensation – monthly premium installment – {mon} {yyyy}"
+
+  - id: ins_auto
+    account: "6500"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [18]}
+    amount: {by_year: {2024: 8600, 2025: 9200, 2026: 9900}}
+    counterparties:
+      - {name: Coastal Commercial Auto, num: "CCA-{yy}{mm}-22"}
+    memo: "Commercial auto fleet – monthly premium installment – {mon} {yyyy}"
+    dimensions: {Department: Fleet}
+
+  # --- Software & IT -----------------------------------------------------------------------
+  - id: erp_subscription
+    account: "6600"
+    txn_type: journal
+    mode: fixed
+    schedule: {days: [-1]}
+    amount: {fixed: 4150, escalate_pct: 0.05, escalate_month: 4}
+    counterparties: [Cloudline ERP Partners]
+    memo: "NetSuite subscription – prepaid amortization – {mon} {yyyy}"
+
+  - id: managed_it
+    account: "6600"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [1]}
+    amount: {fixed: 5800}
+    counterparties:
+      - {name: "Harborline Tech Services, LLC", num: "HTS-{yy}{mm}"}
+    memo: "Managed IT services & help desk – {mon} {yyyy}"
+
+  - id: edi
+    account: "6600"
+    txn_type: expense
+    mode: fixed
+    schedule: {days: [6]}
+    amount: {fixed: 1450}
+    counterparties: [TrueLink EDI]
+    memo: "EDI VAN & trading-partner mapping – {mon} {yyyy}"
+
+  - id: office_suite
+    account: "6600"
+    txn_type: expense
+    mode: fixed
+    schedule: {days: [3]}
+    amount: {fixed: 1980, escalate_pct: 0.05, escalate_month: 1}
+    counterparties: [Nimbus Cloud Software]
+    memo: "Email & office productivity licenses (88 seats) – {mon} {yyyy}"
+
+  - id: legacy_wms
+    account: "6600"
+    txn_type: bill
+    mode: fixed
+    end: "2025-12"
+    schedule: {days: [1]}
+    amount: {fixed: 2950}
+    counterparties:
+      - {name: StockPilot Software, num: "SP-{yy}{mm}-118"}
+    memo: "StockPilot WMS license & support – {mon} {yyyy}"
+
+  - id: route_software
+    account: "6600"
+    txn_type: expense
+    mode: fixed
+    schedule: {days: [11]}
+    amount: {fixed: 1200}
+    counterparties: [RouteWise Mobile]
+    memo: "Route planning & proof-of-delivery app (24 drivers) – {mon} {yyyy}"
+    dimensions: {Department: Fleet}
+
+  # --- Sales & marketing, T&E -------------------------------------------------------------------
+  - id: mktg_digital
+    account: "6700"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [2]}
+    amount: {fixed: 2200}
+    counterparties:
+      - {name: Harbor Digital Marketing, num: "HDM-{yy}{mm}"}
+    memo: "B2B web store SEO & email campaigns – {mon} {yyyy}"
+    dimensions: {Department: Sales}
+
+  - id: mktg_expo
+    account: "6700"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [16], months: [9]}
+    amount: {by_year: {2024: 14500, 2025: 15200}}
+    counterparties: [Southeast Foodservice & Facility Expo]
+    memo: "Booth, freight & registration – {yyyy} Southeast Foodservice & Facility Expo"
+    dimensions: {Department: Sales}
+
+  - id: mktg_catalog
+    account: "6700"
+    txn_type: bill
+    schedule: {days: [13], months: [2, 8]}
+    amount: {monthly: 6800, noise: 0.15}
+    counterparties:
+      - {name: Coastal Print Group, num: "CPG-{seq}", seq_start: 9120, seq_step: [20, 80]}
+    memo: "Product catalog & price sheet printing – {mon} {yyyy} edition"
+    dimensions: {Department: Sales}
+
+  - id: travel
+    account: "6710"
+    txn_type: expense
+    schedule: {count: [4, 8]}
+    amount: {monthly: 7000, noise: 0.25, spread: 0.7}
+    counterparties:
+      - {name: River Street Grill, weight: 3, memo: ["Customer lunch – account review", "Team lunch – sales meeting"]}
+      - {name: Tybee Coastal Travel, weight: 2, memo: ["Travel – supplier plant visit, Charlotte", "Travel – branch visit, Jacksonville & Charleston"]}
+      - {name: Harbourside Inn Savannah, weight: 1, memo: "Lodging – supplier line review"}
+    dimensions: {Department: [Sales, Sales, G&A, Executive]}
+
+  # --- Financial & admin ------------------------------------------------------------------
+  - id: merchant_fees
+    account: "6800"
+    txn_type: expense
+    schedule: {days: [3]}
+    amount: {monthly: 12500, growth: 0.05, noise: 0.05}
+    counterparties: [Southpoint Payment Processing]
+    memo: "Card processing fees – {prev_mon} {prev_yyyy}"
+
+  - id: bank_fees
+    account: "6800"
+    txn_type: expense
+    schedule: {days: [-1]}
+    amount: {monthly: 850, noise: 0.15}
+    counterparties:
+      - {name: Ogeechee National Bank, end: "2026-01"}
+      - {name: Coastal Trust Bank, start: "2026-02"}
+    memo: "Account analysis, lockbox & ACH fees – {mon} {yyyy}"
+
+  - id: bad_debt_small
+    account: "6810"
+    txn_type: journal
+    schedule: {days: [-1]}
+    amount: {monthly: 2600, noise: 0.5, round: 1}
+    num: {sequence: je, format: "JE{seq}"}
+    memo: "Small-balance accounts written off – {mon} {yyyy}"
+
+  - id: office_supplies
+    account: "6900"
+    txn_type: expense
+    schedule: {count: [1, 3]}
+    amount: {monthly: 2100, noise: 0.3, spread: 0.5}
+    counterparties: [Bayline Office Supply]
+    memo: ["Office supplies", "Toner & paper", "Break room supplies"]
+
+  - id: phones
+    account: "6900"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [22]}
+    amount: {fixed: 3350, escalate_pct: 0.03, escalate_month: 1}
+    counterparties:
+      - {name: Coastal Wireless, num: "CW-{yy}{mm}-80155"}
+    memo: "Mobile phones & driver handhelds – 61 lines – {mon} {yyyy}"
+
+  - id: job_board
+    account: "6910"
+    txn_type: expense
+    schedule: {days: [4]}
+    amount: {monthly: 1400, noise: 0.25, round: 1}
+    counterparties: [HireHarbor Job Board]
+    memo: "Job postings – drivers & warehouse – {mon} {yyyy}"
+
+  - id: screening
+    account: "6910"
+    txn_type: bill
+    schedule: {count: [1, 2]}
+    amount: {monthly: 900, noise: 0.4, spread: 0.4}
+    counterparties:
+      - {name: ClearPath Screening, num: "CPS{seq}", seq_start: 330112, seq_step: [25, 180]}
+    memo: "Pre-employment screening, DOT drug tests & MVRs"
+
+  - id: whse_supplies
+    account: "6950"
+    txn_type: bill
+    schedule: {count: [2, 4]}
+    amount: {monthly: 12000, growth: 0.04, noise: 0.15, spread: 0.5}
+    counterparties:
+      - {name: Southern Pallet Co., weight: 2, num: "SPC-{seq}", seq_start: 5530, seq_step: [3, 18], memo: "Pallets – GMA #1 and #2 recycled"}
+      - {name: Coastline Packaging Supply, weight: 3, num: "CLP{seq}", seq_start: 71002, seq_step: [5, 35],
+         memo: ["Stretch film & strapping – warehouse use", "Shipping labels & thermal ribbons", "Corner boards & dunnage"]}
+    dimensions: {Department: Warehouse & Distribution, Class: Shared}
+
+  # --- D&A, other income, interest, taxes ------------------------------------------------------
+  - id: depreciation
+    account: "7000"
+    txn_type: journal
+    mode: fixed
+    schedule: {days: [-1]}
+    amount: {by_year: {2024: 58000, 2025: 61500, 2026: 64000}}
+    memo: "Monthly depreciation – {mon} {yyyy}"
+
+  - id: amort_intangibles
+    account: "7050"
+    txn_type: journal
+    mode: fixed
+    schedule: {days: [-1]}
+    amount: {fixed: 9500}
+    memo: "Amortization – customer relationships (2021 Coastal Janitorial Supply acquisition) – {mon} {yyyy}"
+
+  - id: recycling_rebates
+    account: "8000"
+    txn_type: deposit
+    schedule: {days: [20]}
+    amount: {monthly: 1150, noise: 0.3}
+    counterparties: [Southern Fiber Recovery]
+    memo: "OCC & stretch-film recycling rebate – {prev_mon} {prev_yyyy}"
+
+  - id: int_term_ogeechee
+    account: "8100"
+    txn_type: journal
+    mode: fixed
+    end: "2026-01"
+    schedule: {days: [-1]}
+    amount: {by_year: {2024: 9850, 2025: 8600, 2026: 7900}}
+    counterparties: [Ogeechee National Bank]
+    memo: "Term loan interest – {mon} {yyyy}"
+
+  - id: int_revolver
+    account: "8100"
+    txn_type: journal
+    schedule: {days: [-1]}
+    amount: {monthly: 3100, noise: 0.4}
+    counterparties:
+      - {name: Ogeechee National Bank, end: "2026-01"}
+      - {name: Coastal Trust Bank, start: "2026-02"}
+    memo: "Revolving line of credit interest – {mon} {yyyy}"
+
+  - id: dic_amort
+    account: "8100"
+    txn_type: journal
+    mode: fixed
+    end: "2026-01"
+    schedule: {days: [-1]}
+    amount: {fixed: 1150}
+    counterparties: [Ogeechee National Bank]
+    memo: "Amortization of debt issuance costs – Ogeechee term loan – {mon} {yyyy}"
+
+  - id: int_term_coastal
+    account: "8100"
+    txn_type: journal
+    mode: fixed
+    start: "2026-02"
+    schedule: {days: [-1]}
+    amount: {fixed: 20650}
+    counterparties: [Coastal Trust Bank]
+    memo: "Term loan interest – {mon} {yyyy}"
+
+  - id: ptet
+    account: "9000"
+    txn_type: check
+    mode: fixed
+    schedule: {days: [15], months: [4, 6, 9, 12]}
+    amount: {by_year: {2024: 62000, 2025: 66000, 2026: 70000}}
+    counterparties: [Georgia Department of Revenue]
+    memo: "Pass-through entity tax (PTET) estimated payment – {mon} {yyyy}"
+
+# ---------------------------------------------------------------------------
+# Planted transactions (stable keys; the answer key refers to these)
+# ---------------------------------------------------------------------------
+planted:
+  # Ref 1 - owner / CEO salary: $900,000 a year as 24 semi-monthly payrolls
+  - key: "owner_pay_{yyyy}{mm}_{n}"
+    repeat: {start: "2024-04", end: "2026-06", days: [15, -1], adjust: prior}
+    account: "6050"
+    txn_type: payroll
+    amount: 37500
+    memo: "Officer salary – W. Carrow (CEO) – PPE {mdy}"
+    dimensions: {Department: Executive}
+
+  # Ref 2 - Savannah DC rent paid to the owner's real-estate entity (flat since 2019)
+  - key: "pih_rent_{yyyy}{mm}"
+    repeat: {start: "2024-04", end: "2026-06", days: [1]}
+    account: "6200"
+    counterparty: "Pooler Industrial Holdings, LLC"
+    num: "PIH-{yy}{mm}"
+    amount: 24000
+    memo: "Rent – 410 Grange Road, Pooler (Savannah DC) – {mon} {yyyy}"
+    dimensions: {Department: Warehouse & Distribution}
+
+  # Ref 4 - Charleston order desk: payroll is the background stream chs_order_desk (ends Jan 2026)
+  - {key: chs_severance, date: "2026-02-13", account: "6030", txn_type: payroll, amount: 11850,
+     memo: "Severance – Charleston order desk RIF (Alvarez, Brooks, Nguyen) per separation agreements",
+     dimensions: {Department: Customer Service, Location: Charleston Branch}}
+
+  # Ref 5 - purchasing manager, $86,400 a year, last payroll Dec 2025
+  - key: "purch_pay_{yyyy}{mm}_{n}"
+    repeat: {start: "2024-04", end: "2025-12", days: [15, -1], adjust: prior}
+    account: "6040"
+    txn_type: payroll
+    amount: 3600
+    memo: "Payroll – purchasing (1 FTE) – PPE {mdy}"
+    dimensions: {Department: Purchasing}
+
+  # Ref 6 - transaction bonus paid on LOI execution
+  - {key: txn_bonus, date: "2026-03-13", account: "6040", txn_type: payroll, amount: 90000,
+     memo: "Transaction bonus – Project Marlin plan – LOI execution payment (4 participants)",
+     dimensions: {Department: Executive}}
+
+  # FY2026 management incentive plan: accrued top-side in the Mar-26 management P&L, paid Jun-26 (D-2)
+  - {key: mip_payout, date: "2026-06-12", account: "6040", txn_type: payroll, amount: 186000,
+     memo: "FY2026 Management Incentive Plan payout – per approved calculation (6 participants)",
+     dimensions: {Department: G&A}}
+
+  # Ref 7 - sprinkler line break at the Savannah DC; contra-expense insurance recovery in May 2026
+  - {key: sprinkler_mitigation, date: "2025-08-22", account: "6220", counterparty: "Coastal Empire Restoration, LLC", num: CER-25-3318,
+     amount: 38500, memo: "Emergency water extraction & drying – sprinkler line break, Savannah DC (claim PSM-25-40718)",
+     dimensions: {Department: Warehouse & Distribution}}
+  - {key: sprinkler_racking, date: "2025-09-19", account: "6220", counterparty: "Lowcountry Rack & Storage, Inc.", num: LRS-7742,
+     amount: 33500, memo: "Racking inspection, repair & re-anchoring – sprinkler water damage, Savannah DC",
+     dimensions: {Department: Warehouse & Distribution}}
+  - {key: sprinkler_recovery, date: "2026-05-14", account: "6220", txn_type: deposit, counterparty: Palmetto State Mutual Insurance Co.,
+     amount: -30000, memo: "Insurance reimbursement – claim PSM-25-40718 (sprinkler water damage)",
+     dimensions: {Department: Warehouse & Distribution}}
+
+  # Ref 8 - PFAS-treated molded fiber write-off; routine cycle counts are the background stream
+  - {key: pfas_writeoff, date: "2025-12-31", account: "5300", txn_type: Inventory Adjustment, num: IA-2512-044, amount: 148600,
+     memo: "Write-off – PFAS-treated molded fiber SKUs (customer PFAS-free mandate; supplier line discontinued, returns refused)",
+     dimensions: {Department: Warehouse & Distribution, Class: Foodservice Packaging}}
+  - {key: phys_count_2025, date: "2025-03-31", account: "5300", txn_type: Inventory Adjustment, num: IA-2503-PI, amount: 8940,
+     memo: "Annual physical inventory adjustment – FYE 3/31/2025", dimensions: {Department: Warehouse & Distribution}}
+  - {key: phys_count_2026, date: "2026-03-31", account: "5300", txn_type: Inventory Adjustment, num: IA-2603-PI, amount: 10420,
+     memo: "Annual physical inventory adjustment – FYE 3/31/2026", dimensions: {Department: Warehouse & Distribution}}
+
+  # Ref 9 - Brannock & Vail: Brightfield arbitration (one matter) and the unclaimed general counsel retainer
+  - key: "bv_retainer_{yyyy}{mm}"
+    repeat: {start: "2024-04", end: "2026-06", days: [1]}
+    account: "6400"
+    counterparty: Brannock & Vail LLP
+    num: "BV-{yy}{mm}-R"
+    amount: 3500
+    memo: "Matter 100 – general counsel services – monthly retainer – {mon} {yyyy}"
+  - {key: bv_arb_1, date: "2025-06-12", account: "6400", counterparty: Brannock & Vail LLP, num: BV-25-0611, amount: 16800,
+     memo: "Matter 2025-014 – Brightfield Converting v. Tidewell (arbitration) – services Apr 1 – May 31, 2025"}
+  - {key: bv_arb_2, date: "2025-08-14", account: "6400", counterparty: Brannock & Vail LLP, num: BV-25-0813, amount: 21450,
+     memo: "Matter 2025-014 – Brightfield Converting v. Tidewell (arbitration) – services Jul 1 – Jul 31, 2025"}
+  - {key: bv_arb_3, date: "2025-10-16", account: "6400", counterparty: Brannock & Vail LLP, num: BV-25-1015, amount: 12750,
+     memo: "Matter 2025-014 – Brightfield Converting v. Tidewell (arbitration) – hearing & final award, Aug 1 – Sep 30, 2025"}
+
+  # Ref 10 - KestrelWMS: one-time implementation (two milestones; milestone 2 posted twice) plus a monthly subscription
+  - {key: kestrel_impl_1, date: "2025-07-08", account: "6600", counterparty: "Kestrel Systems, Inc.", num: KS-10311, amount: 32000,
+     memo: "KestrelWMS implementation – milestone 1 of 2 (kickoff & solution design)"}
+  - {key: kestrel_impl_2, date: "2025-10-03", account: "6600", counterparty: "Kestrel Systems, Inc.", num: KS-10442, amount: 32000,
+     memo: "KestrelWMS implementation – milestone 2 of 2 (go-live)"}
+  - key: "kestrel_sub_{yyyy}{mm}"
+    repeat: {start: "2025-10", end: "2026-06", days: [5]}
+    account: "6600"
+    counterparty: "Kestrel Systems, Inc."
+    num: "KS-SUB-{yy}{mm}"
+    amount: 5400
+    memo: "KestrelWMS Cloud subscription – {mon} {yyyy}"
+
+  # Ref 11 - distribution network study: three phase invoices; management claimed the first two
+  - {key: ridgeline_1, date: "2025-10-10", account: "6420", counterparty: "Ridgeline Supply Chain Partners, LLC", num: RSC-2291, amount: 30000,
+     memo: "Distribution network study – phase 1 (data collection & baseline)"}
+  - {key: ridgeline_2, date: "2025-12-12", account: "6420", counterparty: "Ridgeline Supply Chain Partners, LLC", num: RSC-2344, amount: 24000,
+     memo: "Distribution network study – phase 2 (scenario modeling)"}
+  - {key: ridgeline_3, date: "2026-02-20", account: "6420", counterparty: "Ridgeline Supply Chain Partners, LLC", num: RSC-2403, amount: 30000,
+     memo: "Distribution network study – phase 3 (final recommendations)"}
+
+  # Ref 12 - supplier termination fee received (a one-time gain inside EBITDA)
+  - {key: sunmeadow_termination_fee, date: "2025-11-07", account: "8000", txn_type: deposit, counterparty: "Sunmeadow Brands, Inc.",
+     amount: -46500, memo: "Termination fee – early termination of Sunmeadow exclusive distribution agreement"}
+
+  # Ref 13 - carrier fuel-surcharge true-up for Apr-Sep 2025 shipments, billed Nov 2025
+  - {key: altamaha_trueup, date: "2025-11-14", account: "5400", counterparty: "Altamaha Freight Lines, Inc.", num: AFL-TU-25-118,
+     amount: 38400, memo: "Fuel surcharge & accessorial true-up – shipments Apr–Sep 2025",
+     dimensions: {Department: Warehouse & Distribution}}
+
+  # Refs 14 and 15 - January 2026 refinancing (Ogeechee National Bank -> Coastal Trust Bank)
+  - {key: marlowe_fee, date: "2026-01-16", account: "6400", counterparty: "Marlowe Capital Advisors, LLC", num: MCA-2026-004, amount: 42000,
+     memo: "Debt placement advisory fee – Coastal Trust Bank term loan & revolver refinancing"}
+  - {key: dic_writeoff, date: "2026-01-31", account: "8100", txn_type: journal, counterparty: Ogeechee National Bank, amount: 27600,
+     memo: "Write-off of unamortized debt issuance costs – Ogeechee term loan (refinanced)"}
+  - {key: ogeechee_prepay, date: "2026-01-30", account: "8200", txn_type: check, counterparty: Ogeechee National Bank, amount: 18500,
+     memo: "Prepayment premium – Ogeechee National Bank term loan payoff (2% of principal prepaid)"}
+
+  # Ref 16 - Project Marlin sell-side costs
+  - {key: cordell_retainer, date: "2025-11-20", account: "6400", counterparty: "Cordell Harbor Partners, LLC", num: CHP-1125-07, amount: 35000,
+     memo: "Project Marlin – sell-side advisory retainer (one-time; creditable against success fee)"}
+  - {key: whitlock_qoe_1, date: "2025-12-18", account: "6410", counterparty: Whitlock & Rowe LLP, num: WR-25-3381, amount: 30000,
+     memo: "Project Marlin – sell-side quality of earnings – installment 1 of 2"}
+  - {key: whitlock_qoe_2, date: "2026-02-26", account: "6410", counterparty: Whitlock & Rowe LLP, num: WR-26-0412, amount: 30000,
+     memo: "Project Marlin – sell-side quality of earnings – installment 2 of 2 (report delivered)"}
+
+# ---------------------------------------------------------------------------
+# Planted data-quality issues
+# ---------------------------------------------------------------------------
+data_quality:
+  duplicates:
+    - key: kestrel_impl_2_dup
+      of: kestrel_impl_2
+      days_later: 6
+      note: >-
+        Kestrel Systems go-live milestone bill KS-10442 ($32,000.00, 6600) was entered twice in NetSuite, on
+        10/03/2025 and again on 10/09/2025 (AP inbox and vendor portal). Management's P&L and its Ref 10 claim
+        include both postings; the Kestrel statement shows the second payment sitting as an unapplied credit.
+  topside:
+    - month: "2026-03"
+      account: "6040"
+      amount: 186000
+      note: >-
+        Management's Mar-2026 P&L accrues the FY2026 Management Incentive Plan pool ($186,000) as a top-side
+        entry in 6040; NetSuite has no accrual. The plan was adopted in April 2025 and the bonus calculation was
+        approved in April 2026.
+    - month: "2026-06"
+      account: "6040"
+      amount: -186000
+      note: >-
+        Management's Jun-2026 P&L reverses the Mar-2026 top-side accrual when the $186,000 MIP payout runs
+        through NetSuite payroll on 06/12/2026, so the bonus is expensed once, in FY2026.
+  missing_gl_months:
+    - month: "2024-08"
+      keep_accounts: ["4000", "4100", "4200", "4900", "4950", "5000", "5100", "5400", "6000", "6010", "6020", "6030", "6040", "6050", "6200", "6400"]
+      note: >-
+        The Aug-2024 GL batch was exported with the 16-account flash-report saved search, so 23 of the 39
+        accounts with August activity are missing from the GL (all of them are in management's P&L). See the
+        NetSuite administrator's email in 01 Financial Information.
+  mgmt_ebitda_note: >-
+    Two causes, both supported: the Aug-2024 GL export omits 23 accounts (FY2025), and management's P&L carries
+    the FY2026 MIP accrual in Mar-2026 and reverses it on payment in Jun-2026 (FY2026; nets to zero in TTM).
+    Diligence keeps both differences through diligence items D-2 and D-3 rather than reversing to the GL.
+
+# ---------------------------------------------------------------------------
+# Letterheads and address blocks
+# ---------------------------------------------------------------------------
+parties:
+  tidewell:
+    name: Tidewell Distribution Group, LLC
+    tagline: Foodservice packaging | Janitorial & sanitation supplies
+    address: [410 Grange Road, "Pooler, GA 31322"]
+    phone: (912) 555-0140
+    web: www.tidewelldist.example
+  holloway:
+    name: Holloway Compensation Advisors
+    tagline: Executive & Board Compensation Consulting
+    address: ["1100 Peachtree Street NE, Suite 2200", "Atlanta, GA 30309"]
+    phone: (404) 555-0188
+    web: www.hollowaycomp.example
+  pooler_holdings:
+    name: Pooler Industrial Holdings, LLC
+    address: [c/o 12 Wormsloe Bluff Drive, "Savannah, GA 31406"]
+  marsh_point:
+    name: Marsh Point Commercial Advisors
+    tagline: Industrial & Logistics Brokerage | Savannah - Charleston - Jacksonville
+    address: ["2 East Bryan Street, Suite 600", "Savannah, GA 31401"]
+    phone: (912) 555-0176
+    web: www.marshpointcre.example
+  brannock_vail:
+    name: Brannock & Vail LLP
+    tagline: Attorneys and Counselors
+    address: ["33 Bull Street, Suite 400", "Savannah, Georgia 31401"]
+    phone: (912) 555-0123
+    web: www.brannockvail.example
+  cdrc:
+    name: Coastal Dispute Resolution Center
+    tagline: Commercial Arbitration Tribunal
+    address: ["100 West Oglethorpe Avenue", "Savannah, GA 31401"]
+  sunmeadow:
+    name: Sunmeadow Brands, Inc.
+    tagline: Compostable foodservice packaging
+    address: [8800 Innovation Way, "Raleigh, NC 27617"]
+    phone: (919) 555-0164
+  kestrel:
+    name: Kestrel Systems, Inc.
+    tagline: KestrelWMS Cloud | Warehouse management for distributors
+    address: ["4100 Perimeter Center Place, Suite 300", "Atlanta, GA 30346"]
+    phone: (770) 555-0119
+    email: ar@kestrelsystems.example
+  coastal_empire:
+    name: Coastal Empire Restoration, LLC
+    tagline: 24/7 Water, Fire & Storm Restoration
+    address: [55 Industry Drive, "Savannah, GA 31415"]
+    phone: (912) 555-0131
+  lowcountry_rack:
+    name: Lowcountry Rack & Storage, Inc.
+    tagline: Pallet racking inspection, repair & installation
+    address: [1901 Dessau Road, "Garden City, GA 31408"]
+    phone: (912) 555-0197
+  palmetto_state:
+    name: Palmetto State Mutual Insurance Co.
+    tagline: Commercial Property Claims
+    address: [PO Box 11840, "Columbia, SC 29211"]
+    phone: (803) 555-0150
+  greenleaf:
+    name: Greenleaf Molded Fiber
+    tagline: A division of Greenleaf Packaging Industries
+    address: [300 Mill Race Road, "Rock Hill, SC 29730"]
+    phone: (803) 555-0107
+  altamaha:
+    name: Altamaha Freight Lines, Inc.
+    tagline: LTL & Truckload | Georgia - Carolinas - Florida
+    address: [7 Transport Way, "Brunswick, GA 31520"]
+    phone: (912) 555-0169
+  ridgeline:
+    name: Ridgeline Supply Chain Partners, LLC
+    tagline: Distribution network strategy & warehouse design
+    address: ["1201 Main Street, Suite 1500", "Columbia, SC 29201"]
+    phone: (803) 555-0181
+  marlowe:
+    name: Marlowe Capital Advisors, LLC
+    tagline: Debt Advisory & Capital Markets
+    address: ["3344 Peachtree Road NE, Suite 1600", "Atlanta, GA 30326"]
+    phone: (404) 555-0115
+  ogeechee:
+    name: Ogeechee National Bank
+    tagline: Commercial Banking | Loan Operations
+    address: [22 Barnard Street, "Savannah, GA 31401"]
+    phone: (912) 555-0105
+  cordell:
+    name: Cordell Harbor Partners, LLC
+    tagline: Middle-Market M&A Advisory
+    address: ["171 Church Street, Suite 350", "Charleston, SC 29401"]
+    phone: (843) 555-0128
+  whitlock:
+    name: Whitlock & Rowe LLP
+    tagline: Transaction Advisory Services
+    address: ["191 Peachtree Street NE, Suite 3900", "Atlanta, GA 30303"]
+    phone: (404) 555-0147
+

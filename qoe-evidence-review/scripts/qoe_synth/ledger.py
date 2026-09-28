@@ -196,6 +196,13 @@ def _fixed_amount(stream: Stream, cp: Optional[Counterparty], d: date, data_star
     return q2(base)
 
 
+def _row_dimensions(dims: dict[str, object], rng: random.Random) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for name, value in dims.items():
+        out[name] = value[rng.randrange(len(value))] if isinstance(value, list) else value
+    return out
+
+
 def _active(cps: list[Counterparty], month: str) -> list[Counterparty]:
     return [c for c in cps if (c.start or "0000-00") <= month <= (c.end or "9999-99")]
 
@@ -230,6 +237,8 @@ class _Builder:
         first = max(spec.data_start, stream.start or spec.data_start)
         last = min(spec.data_end, stream.end or spec.data_end)
         memos = [stream.memo] if isinstance(stream.memo, str) else list(stream.memo)
+        # List-valued dimensions draw from their own RNG so tagging noise never moves amounts.
+        dim_rng = sub_rng(spec.seed, "dims", stream.id)
         for month in month_range(first, last):
             y, m = _ym(month)
             if stream.schedule.months and m not in stream.schedule.months:
@@ -281,7 +290,7 @@ class _Builder:
                         memo=memo,
                         amount=sign * amount,
                         split=stream.split,
-                        dimensions=dict(stream.dimensions),
+                        dimensions=_row_dimensions(stream.dimensions, dim_rng),
                         origin="background",
                         seq=self.next_seq(),
                         num_req=num_req,

@@ -175,6 +175,7 @@ def generate_deal(spec: DealSpec | Path | str, out_root: Path | str) -> Generati
         {d.id: d.filename for d in spec.documents},
         {l: gl_comp[l]["ebitda"] for l in labels},
         mgmt["reported_ebitda"],
+        accounts,
     )
     (deal_dir / "ground_truth.json").write_text(truth.model_dump_json(indent=2) + "\n", encoding="utf-8")
 

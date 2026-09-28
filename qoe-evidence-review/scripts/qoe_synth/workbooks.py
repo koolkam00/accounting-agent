@@ -233,7 +233,8 @@ def write_schedule(
     total = {l: ZERO for l in labels}
     for adj in sch.adjustments:
         amounts = claims[adj.ref]
-        total = {l: total[l] + amounts[l] for l in labels}
+        if adj.ref not in sch.total_excludes:  # planted mis-foot: the SUM range stops short of these rows
+            total = {l: total[l] + amounts[l] for l in labels}
         emit([adj.ref, adj.title, adj.category, adj.description, adj.accounts, adj.support], amounts)
     emit(["", lab.total_adjustments, "", "", "", ""], total, bold, top=True)
     adjusted = {l: reported[l] + total[l] for l in labels}

@@ -26,6 +26,7 @@ from decimal import Decimal
 from qoe.money import ZERO, D, fmt, q2
 from qoe.periods import labels_for_month, month_range
 from qoe.schemas import (
+    EBITDA_EXCLUDED_CLASSES,
     DataQualityCode,
     ExpectedAdjustment,
     ExpectedDataQuality,
@@ -47,6 +48,8 @@ class TruthEffects:
 
     recovery_rows: list[int] = field(default_factory=list)
     moves: list[tuple[list[int], str, str]] = field(default_factory=list)  # (rows, service_start, service_end)
+    normalized: dict[str, Decimal] = field(default_factory=dict)  # period -> benchmark level subtracted
+    restored: dict[str, Decimal] = field(default_factory=dict)  # period -> ledger-only activity kept (EBITDA-signed)
 
 
 def _period_sums(txns: list[Txn], periods: list[PeriodDef]) -> dict[str, Decimal]:
@@ -76,6 +79,7 @@ def build_ground_truth(
     doc_filenames: dict[str, str],
     gl_ebitda: dict[str, Decimal],
     mgmt_reported: dict[str, Decimal],
+    accounts: dict | None = None,
 ) -> tuple[GroundTruth, dict[str, TruthEffects]]:
     periods = [PeriodDef(label=p.label, start=p.start, end=p.end) for p in spec.periods]
     labels = [p.label for p in periods]
@@ -114,6 +118,25 @@ def build_ground_truth(
                 eff.moves.append((rows(moved), move.service_start, move.service_end))
                 for label, delta in _move_effect([by_key[k] for k in moved], move.service_start, move.service_end, periods).items():
                     computed[label] += delta
+            if t.normalized_level is not None:
+                lvl = t.normalized_level
+                window = month_range(lvl.start or spec.data_start, lvl.end or spec.data_end)
+                for p in periods:
+                    level = q2(D(lvl.monthly) * sum(1 for m in window if p.start <= m <= p.end))
+                    eff.normalized[p.label] = level
+                    computed[p.label] -= level
+            for month in t.restore_missing_months:
+                if accounts is None:
+                    raise GenerationError(f"{where}: restore_missing_months needs the chart of accounts")
+                dropped = [
+                    x for x in ledger.txns
+                    if not x.in_gl and x.month == month and accounts[x.account].ebitda_class not in EBITDA_EXCLUDED_CLASSES
+                ]
+                if not dropped:
+                    raise GenerationError(f"{where}: no ledger rows were dropped from the GL in {month}")
+                for label, total in _period_sums(dropped, periods).items():
+                    eff.restored[label] = eff.restored.get(label, ZERO) - total
+                    computed[label] -= total
             if t.verify_amounts:
                 for l in labels:
                     if abs(computed[l] - declared[l]) > TOLERANCE:
@@ -133,6 +156,7 @@ def build_ground_truth(
             supporting_gl_rows=rows(supporting),
             related_gl_rows=rows(related),
             supporting_docs=[doc_filenames[d] for d in t.supporting_docs],
+            related_docs=[doc_filenames[d] for d in t.related_docs],
             expected_flags=[FlagCode(f) for f in t.expected_flags],
             question_topics=list(t.question_topics),
             rationale=t.rationale.strip(),
@@ -193,11 +217,26 @@ def _data_quality(
     diffs = {l: mgmt_reported[l] - gl_ebitda[l] for l in gl_ebitda if mgmt_reported[l] != gl_ebitda[l]}
     if diffs:
         detail = "; ".join(f"{l} {fmt(v)}" for l, v in diffs.items())
+        why = spec.data_quality.mgmt_ebitda_note.strip() or (
+            "The difference is the planted P&L-only entries above; the GL is the diligence starting point."
+        )
         out.append(
             ExpectedDataQuality(
                 code=DataQualityCode.MGMT_EBITDA_DIFFERS_FROM_GL,
-                note=f"Management's reported EBITDA less GL-derived EBITDA: {detail}. "
-                "The difference is the planted P&L-only entries above; the GL is the diligence starting point.",
+                note=f"Management's reported EBITDA less GL-derived EBITDA: {detail}. {why}",
+            )
+        )
+    if spec.schedule.total_excludes:
+        labels = [p.label for p in spec.periods]
+        left_out = {l: sum((D(a.amounts[l]) for a in spec.schedule.adjustments if a.ref in spec.schedule.total_excludes), ZERO)
+                    for l in labels}
+        detail = "; ".join(f"{l} {fmt(-left_out[l])}" for l in labels)
+        refs = ", ".join(spec.schedule.total_excludes)
+        out.append(
+            ExpectedDataQuality(
+                code=DataQualityCode.MGMT_SCHEDULE_ARITHMETIC,
+                note=f"The total-adjustments row omits ref(s) {refs}; printed total less the sum of the listed "
+                f"adjustments: {detail}. {spec.schedule.arithmetic_note.strip()}".strip(),
             )
         )
     return out

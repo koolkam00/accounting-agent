@@ -145,7 +145,8 @@ class Stream(SpecModel):
     memo: Union[str, list[str]] = ""
     num: Optional[NumSpec] = None
     choices: dict[str, list[str]] = Field(default_factory=dict)
-    dimensions: dict[str, str] = Field(default_factory=dict)
+    # A list value picks one entry per row (NetSuite dimension noise); a string applies to every row.
+    dimensions: dict[str, Union[str, list[str]]] = Field(default_factory=dict)
 
     _acct = field_validator("account", mode="before")(_as_str)
 
@@ -224,6 +225,8 @@ class DataQualitySpec(SpecModel):
     duplicates: list[Duplicate] = Field(default_factory=list)
     topside: list[Topside] = Field(default_factory=list)
     missing_gl_months: list[MissingMonth] = Field(default_factory=list)
+    # Replaces the default explanation on the MGMT_EBITDA_DIFFERS_FROM_GL answer-key entry.
+    mgmt_ebitda_note: str = ""
 
 
 class DocumentSpec(SpecModel):
@@ -309,12 +312,24 @@ class ScheduleSpec(SpecModel):
     labels: ScheduleLabels = Field(default_factory=ScheduleLabels)
     basis: Literal["pl", "gl"] = "pl"  # management builds reported EBITDA from its P&L
     adjustments: list[ScheduleAdjustment]
+    # Planted MGMT_SCHEDULE_ARITHMETIC: refs left out of the printed total row (a SUM range that
+    # stops short of the last rows). Adjusted EBITDA is then built from the wrong total, as in Excel.
+    total_excludes: list[str] = Field(default_factory=list)
+    arithmetic_note: str = ""
 
 
 class PeriodMove(SpecModel):
     keys: list[str]
     service_start: str  # YYYY-MM
     service_end: str
+
+
+class NormalizedLevel(SpecModel):
+    """A normalization's benchmark level: amount[p] = supporting rows in p - monthly x months of p in [start, end]."""
+
+    monthly: Number
+    start: Optional[str] = None  # YYYY-MM; default data_start
+    end: Optional[str] = None  # YYYY-MM; default data_end
 
 
 class TruthAdjustment(SpecModel):
@@ -326,8 +341,13 @@ class TruthAdjustment(SpecModel):
     related: list[str] = Field(default_factory=list)
     recoveries: list[str] = Field(default_factory=list)  # rows whose EBITDA effect is part of the amount
     period_moves: list[PeriodMove] = Field(default_factory=list)
+    normalized_level: Optional[NormalizedLevel] = None  # normalizations: subtract the benchmark level
+    # Keep P&L activity that a planted missing GL month dropped from the export (EBITDA accounts only):
+    # amount[p] -= the debit-positive total of those ledger rows in p.
+    restore_missing_months: list[str] = Field(default_factory=list)
     verify_amounts: bool = True
     supporting_docs: list[str] = Field(default_factory=list)  # document ids
+    related_docs: list[str] = Field(default_factory=list)  # document ids surfaced as context / evidence against
     expected_flags: list[str] = Field(default_factory=list)
     question_topics: list[str] = Field(default_factory=list)
     rationale: str
@@ -396,12 +416,15 @@ class DealSpec(SpecModel):
         truth_ids = {a.adj_id for a in self.ground_truth.adjustments}
         if refs != truth_ids:
             raise ValueError(f"ground_truth adj ids {sorted(truth_ids)} do not match schedule refs {sorted(refs)}")
+        stray = set(self.schedule.total_excludes) - refs
+        if stray:
+            raise ValueError(f"schedule.total_excludes names unknown refs {sorted(stray)}")
         clash = refs & {t.adj_id for t in self.ground_truth.diligence_items}
         if clash:
             raise ValueError(f"diligence item ids clash with schedule refs: {sorted(clash)}")
         known_docs = set(doc_ids)
         for t in [*self.ground_truth.adjustments, *self.ground_truth.diligence_items]:
-            unknown = [d for d in t.supporting_docs if d not in known_docs]
+            unknown = [d for d in [*t.supporting_docs, *t.related_docs] if d not in known_docs]
             if unknown:
                 raise ValueError(f"ground_truth {t.adj_id}: unknown document ids {unknown}")
         return self
