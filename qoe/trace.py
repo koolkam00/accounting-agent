@@ -1,0 +1,1335 @@
+"""Per-adjustment tracing (SPEC §5.2-5.3): link GL entries and documents to a
+management adjustment, group the linked activity, and fit the claimed set.
+
+The output is a mutable ``AdjustmentTrace``. challenge.py removes entries from
+it and records amount effects; propose.py turns it into an
+``AdjustmentAssessment``. Link scores are additive evidence weights, not
+probabilities, and every signal that fired is written to the link's reasons in
+words a reviewer can check against the GL.
+
+Sign conventions: GL amounts are debit-positive, adjustment amounts are
+EBITDA-signed. Removing an entry from the P&L changes EBITDA by
+``+entry.amount`` whatever its class, so the EBITDA effect of claiming an
+entry is simply its GL amount.
+"""
+
+from __future__ import annotations
+
+import re
+import unicodedata
+from bisect import bisect_left, bisect_right
+from dataclasses import dataclass, field
+from decimal import Decimal
+from pathlib import PurePosixPath
+from typing import Iterable, Optional, Sequence
+
+from qoe.ai_base import AdjustmentIntent
+from qoe.money import ZERO, D, fmt, q2
+from qoe.periods import month_range, months_in
+from qoe.schemas import (
+    Account,
+    AdjustmentCategory,
+    AdjustmentClaim,
+    DataQualityCode,
+    DealPackage,
+    DocFacts,
+    DocLink,
+    EbitdaClass,
+    EvidenceQuote,
+    Fact,
+    Flag,
+    FlagCode,
+    GLEntry,
+    GLLink,
+    PeriodDef,
+    ReconciliationResult,
+    RecurrenceObservation,
+    Severity,
+    SourceDocument,
+)
+
+# ---------------------------------------------------------------------------
+# Scoring weights and thresholds (SPEC §5.2)
+# ---------------------------------------------------------------------------
+
+# Management names whole accounts, and an account usually holds unrelated
+# activity too, so the account signal alone must stay below the threshold.
+W_ACCOUNT = 1.0
+# A named vendor is strong, but vendors bill for more than one thing (a law
+# firm's monthly retainer and its litigation matter), so it needs one more signal.
+W_COUNTERPARTY = 1.5
+# Keywords come from management's narrative. They are cheap to match and easy
+# to over-match, so the first hit counts fully and extra hits add little.
+W_KEYWORD = 1.0
+W_KEYWORD_EXTRA = 0.25
+W_KEYWORD_EXTRA_CAP = 0.5
+# A matter / claim / contract number is specific enough to link on its own.
+W_REFERENCE = 2.5
+# So is a document that names the entry's own document number, or that shows
+# the same amount for the same counterparty.
+W_DOCUMENT = 2.5
+LINK_THRESHOLD = 2.0
+# When no exact subset explains a claim, only entries with two independent
+# signals (or a reference) are treated as claimed.
+STRONG_LINK = 3.0
+# Meet-in-the-middle over 2 x 15 items is ~65k subsets: exact and fast.
+MAX_SUBSET_ITEMS = 30
+# Prefer entries already claimed in an overlapping period (FY vs TTM) so the
+# two fits describe the same activity. In score hundredths, below any real
+# signal so it only breaks ties.
+_OVERLAP_PERIOD_PREFERENCE = 10
+
+# Document-to-adjustment weights.
+DW_SUPPORT_REF = 3.0  # management cited the document (data-room index or name)
+DW_COUNTERPARTY = 2.0
+DW_REFERENCE = 2.5
+DW_TITLE_KEYWORD = 1.0  # per keyword in the document title, capped below
+DW_TITLE_KEYWORD_CAP = 2.0
+DW_ENTRY_NUMBER = 2.5  # document states a linked entry's doc number
+DW_ENTRY_AMOUNT = 2.0  # same amount and counterparty as a linked entry
+DW_ENTRY_NAMED = 1.0  # a cited document's text names the entry's counterparty
+DOC_LINK_THRESHOLD = 2.0
+
+# Token overlap needed for two counterparty names to match, measured against
+# the shorter name ("Hollis & Crane" vs "Hollis & Crane LLP" = 1.0).
+NAME_OVERLAP_MIN = 0.6
+
+AGREEMENT_DOC_TYPES = frozenset(
+    {
+        "engagement_letter",
+        "contract",
+        "settlement_agreement",
+        "separation_agreement",
+        "agreement",
+        "employment_agreement",
+        "lease",
+        "insurance",
+    }
+)
+CORRESPONDENCE_DOC_TYPES = frozenset({"correspondence", "memo", "email"})
+
+# ---------------------------------------------------------------------------
+# Text normalization
+# ---------------------------------------------------------------------------
+
+_NON_ALNUM = re.compile(r"[^0-9a-z]+")
+_REF_TOKEN = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9\-]*[A-Za-z0-9])?")
+_YEAR = re.compile(r"^(?:19|20)\d\d$")
+_INDEX_REF = re.compile(
+    r"^\s*(?:dr|data\s*room|vdr|tab|folder|section|ref|index)?\s*[#:]?\s*(\d+(?:\.\d+)*)\s*$", re.IGNORECASE
+)
+# A document reference written into a memo ("Matter 2291", "claim FL-24-88172").
+_MEMO_REF = re.compile(
+    r"\b(matter|contract|agreement|project|claim|case|policy|job|po|sow|engagement|work order)"
+    r"\s*(?:no\.?|number|#)?\s*[:#]?\s*([A-Za-z]{0,4}-?\d[A-Za-z0-9\-]*)",
+    re.IGNORECASE,
+)
+
+_LEGAL_TOKENS = frozenset(
+    "llc inc ltd llp lp co corp corporation company pllc pc plc the and of na dba".split()
+)
+# Words that appear in many unrelated names; a match needs something more distinctive.
+_GENERIC_NAME_TOKENS = frozenset(
+    """services service systems solutions group partners partner associates consulting holdings
+    international enterprises management financial insurance bank construction supply supplies
+    contractors contractor builders advisors advisory capital global national american mutual
+    technologies technology industries professional professionals law firm office""".split()
+)
+_WEAK_KEYWORDS = frozenset(
+    """fee fees cost costs expense expenses payment payments service services one time one-time non
+    nonrecurring non-recurring recurring adjustment adjustments total other misc general amount
+    invoice invoices vendor account""".split()
+)
+_MONTH_WORDS = frozenset(
+    """jan january feb february mar march apr april may jun june jul july aug august sep sept
+    september oct october nov november dec december""".split()
+)
+_THEME_STOP = frozenset(
+    """and the of for to a an in on at by per re inv invoice bill no ref num payment pmt paid fy ytd
+    qtr q1 q2 q3 q4 dated from thru through""".split()
+)
+_MONTH_ABBR = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+
+def norm_text(value: Optional[str]) -> str:
+    """Lowercase ASCII words separated by single spaces ('&' becomes 'and')."""
+    s = unicodedata.normalize("NFKD", value or "").lower().replace("&", " and ")
+    return " ".join(_NON_ALNUM.sub(" ", s).split())
+
+
+def name_tokens(name: Optional[str]) -> frozenset[str]:
+    """Distinctive tokens of a party name: no legal suffixes, initials, or numbers."""
+    return frozenset(t for t in norm_text(name).split() if len(t) > 1 and t not in _LEGAL_TOKENS and not t.isdigit())
+
+
+def names_match(a: frozenset[str], b: frozenset[str]) -> bool:
+    if not a or not b:
+        return False
+    shared = a & b
+    if not (shared - _GENERIC_NAME_TOKENS):
+        return False
+    return len(shared) / min(len(a), len(b)) >= NAME_OVERLAP_MIN
+
+
+def name_in_text(name: frozenset[str], text_tokens: frozenset[str]) -> bool:
+    """Every distinctive token of the name appears in the text."""
+    distinctive = name - _GENERIC_NAME_TOKENS
+    return bool(distinctive) and distinctive <= text_tokens
+
+
+def ref_norm(value: str) -> str:
+    return re.sub(r"[^0-9A-Za-z]", "", value or "").upper()
+
+
+def _valid_ref(norm: str) -> bool:
+    return len(norm) >= 3 and any(c.isdigit() for c in norm) and not _YEAR.match(norm) and norm.strip("0") != ""
+
+
+def ref_tokens(text: Optional[str]) -> frozenset[str]:
+    """Normalized reference-like tokens (containing a digit) in free text."""
+    out = set()
+    for tok in _REF_TOKEN.findall(text or ""):
+        n = ref_norm(tok)
+        if _valid_ref(n):
+            out.add(n)
+    return frozenset(out)
+
+
+def theme_tokens(memo: str, drop: frozenset[str] = frozenset()) -> tuple[str, ...]:
+    """Memo with dates, amounts, invoice numbers, month names, and the party name stripped."""
+    seen: list[str] = []
+    for t in norm_text(memo).split():
+        if len(t) < 2 or any(c.isdigit() for c in t) or t in _MONTH_WORDS or t in _THEME_STOP or t in drop:
+            continue
+        if t not in seen:
+            seen.append(t)
+    return tuple(seen)
+
+
+def theme_similarity(a: Sequence[str], b: Sequence[str]) -> float:
+    sa, sb = set(a), set(b)
+    if not sa or not sb:
+        return 0.0
+    return len(sa & sb) / len(sa | sb)
+
+
+def keyword_list(keywords: Iterable[str]) -> list[str]:
+    out: list[str] = []
+    for kw in keywords:
+        n = norm_text(kw)
+        if len(n) < 3 or n in _WEAK_KEYWORDS or n in out:
+            continue
+        out.append(n)
+    return out
+
+
+def keyword_hits(keywords: Sequence[str], text_norm: str, tokens: frozenset[str]) -> list[str]:
+    hits: list[str] = []
+    padded = f" {text_norm} "
+    for kw in keywords:
+        if " " in kw:
+            ok = f" {kw} " in padded
+        else:
+            ok = kw in tokens or (len(kw) >= 4 and any(t.startswith(kw) for t in tokens))
+        if ok:
+            hits.append(kw)
+    return hits
+
+
+# ---------------------------------------------------------------------------
+# Display helpers (shared by challenge.py and propose.py)
+# ---------------------------------------------------------------------------
+
+
+def money(value: object) -> str:
+    """Deals-style amount: thousands separators, no '.00', negatives in parentheses."""
+    d = q2(D(value))
+    neg = d < 0
+    s = f"{abs(d):,.2f}"
+    if s.endswith(".00"):
+        s = s[:-3]
+    return f"({s})" if neg else s
+
+
+def month_label(month: str) -> str:
+    try:
+        y, m = month.split("-")
+        return f"{_MONTH_ABBR[int(m) - 1]} {y}"
+    except (ValueError, IndexError):
+        return month
+
+
+def month_span(months: Iterable[str]) -> str:
+    ms = sorted(set(months))
+    if not ms:
+        return ""
+    if len(ms) == 1:
+        return month_label(ms[0])
+    return f"{month_label(ms[0])}–{month_label(ms[-1])}"
+
+
+def cents(value: Decimal) -> int:
+    return int(q2(value) * 100)
+
+
+# ---------------------------------------------------------------------------
+# Deal-wide index (built once per run)
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class EntryInfo:
+    entry: GLEntry
+    pos: int  # position in date order; the stable sort key for entry ids
+    klass: EbitdaClass
+    amount: Decimal
+    month: str
+    cp_tokens: frozenset[str]
+    memo_norm: str
+    memo_tokens: frozenset[str]
+    refs: frozenset[str]  # reference-like tokens in the memo
+    doc_number: str  # normalized doc number
+    theme: tuple[str, ...]
+    memo_ref: str  # "Matter 2291" when the memo names a document reference
+    memo_ref_norm: str
+
+    @property
+    def entry_id(self) -> str:
+        return self.entry.entry_id
+
+
+@dataclass
+class DealIndex:
+    labels: list[str]
+    periods: list[PeriodDef]
+    tolerance: Decimal
+    data_start: str
+    data_end: str
+    accounts: dict[str, Account]
+    entries: list[EntryInfo]
+    by_id: dict[str, EntryInfo]
+    docs: dict[str, SourceDocument]
+    facts: dict[str, DocFacts]
+    doc_refs: dict[str, frozenset[str]]
+    docs_by_ref: dict[str, list[str]]
+    doc_cp: dict[str, frozenset[str]]
+    doc_text_tokens: dict[str, frozenset[str]]
+    doc_amounts: list[tuple[int, str, Decimal]]  # (cents, doc_id, amount), sorted
+    label_months: dict[str, frozenset[str]]
+    duplicate_groups: dict[str, list[str]]
+    _amount_keys: list[int] = field(default_factory=list, repr=False)
+
+    def __post_init__(self) -> None:
+        self._amount_keys = [k for k, _, _ in self.doc_amounts]
+
+    def labels_of(self, month: str) -> list[str]:
+        return [lbl for lbl in self.labels if month in self.label_months[lbl]]
+
+    def docs_with_amount(self, amount: Decimal) -> list[tuple[str, Decimal]]:
+        """Documents stating ``abs(amount)`` within the tie-out tolerance."""
+        c, tol = cents(abs(amount)), cents(self.tolerance)
+        lo, hi = bisect_left(self._amount_keys, c - tol), bisect_right(self._amount_keys, c + tol)
+        return [(doc_id, amt) for _, doc_id, amt in self.doc_amounts[lo:hi]]
+
+    def sort_ids(self, ids: Iterable[str]) -> list[str]:
+        return sorted(set(ids), key=lambda e: (self.by_id[e].pos if e in self.by_id else 1 << 30, e))
+
+
+def _entry_info(entry: GLEntry, pos: int, klass: EbitdaClass) -> EntryInfo:
+    cp = name_tokens(entry.counterparty)
+    memo_norm = norm_text(entry.memo)
+    m = _MEMO_REF.search(entry.memo or "")
+    memo_ref, memo_ref_norm = "", ""
+    if m and _valid_ref(ref_norm(m.group(2))):
+        memo_ref, memo_ref_norm = f"{m.group(1)} {m.group(2)}", ref_norm(m.group(2))
+    return EntryInfo(
+        entry=entry,
+        pos=pos,
+        klass=klass,
+        amount=D(entry.amount),
+        month=entry.period or entry.date[:7],
+        cp_tokens=cp,
+        memo_norm=memo_norm,
+        memo_tokens=frozenset(memo_norm.split()),
+        refs=ref_tokens(entry.memo),
+        doc_number=ref_norm(entry.doc_number),
+        theme=theme_tokens(entry.memo, cp),
+        memo_ref=memo_ref,
+        memo_ref_norm=memo_ref_norm,
+    )
+
+
+def build_index(
+    pkg: DealPackage, facts: Iterable[DocFacts], recon: Optional[ReconciliationResult] = None
+) -> DealIndex:
+    """Precompute per-entry and per-document features used by every adjustment."""
+    meta = pkg.meta
+    ordered = sorted(pkg.gl, key=lambda e: (e.date, e.source_row, e.entry_id))
+    entries: list[EntryInfo] = []
+    for e in ordered:
+        acct = pkg.accounts.get(e.account)
+        # An account missing from the chart is treated as P&L so it can still be traced.
+        klass = acct.ebitda_class if acct is not None else EbitdaClass.OPEX
+        if klass == EbitdaClass.BALANCE_SHEET:
+            continue
+        entries.append(_entry_info(e, len(entries), klass))
+
+    docs = {d.doc_id: d for d in pkg.documents}
+    facts_by_id = {f.doc_id: f for f in facts if f.doc_id in docs}
+    for doc_id in docs:
+        facts_by_id.setdefault(doc_id, DocFacts(doc_id=doc_id, doc_type="other"))
+
+    doc_refs: dict[str, frozenset[str]] = {}
+    docs_by_ref: dict[str, list[str]] = {}
+    doc_amounts: list[tuple[int, str, Decimal]] = []
+    for doc_id in sorted(docs):
+        f = facts_by_id[doc_id]
+        refs: set[str] = set()
+        for r in f.reference_numbers:
+            refs |= ref_tokens(r)
+        doc_refs[doc_id] = frozenset(refs)
+        for r in sorted(refs):
+            docs_by_ref.setdefault(r, []).append(doc_id)
+        for a in f.amounts:
+            try:
+                amt = abs(D(a.amount))
+            except (ValueError, ArithmeticError):
+                continue
+            if amt > 0:
+                doc_amounts.append((cents(amt), doc_id, amt))
+    doc_amounts.sort(key=lambda x: (x[0], x[1]))
+
+    duplicates: dict[str, list[str]] = {}
+    if recon is not None:
+        for issue in recon.issues:
+            if issue.code == DataQualityCode.DUPLICATE_GL_ENTRY and len(issue.entry_ids) > 1:
+                for eid in issue.entry_ids:
+                    duplicates[eid] = list(issue.entry_ids)
+
+    return DealIndex(
+        labels=[p.label for p in meta.periods],
+        periods=list(meta.periods),
+        tolerance=D(meta.tolerance),
+        data_start=meta.data_start,
+        data_end=meta.data_end,
+        accounts=dict(pkg.accounts),
+        entries=entries,
+        by_id={i.entry_id: i for i in entries},
+        docs=docs,
+        facts=facts_by_id,
+        doc_refs=doc_refs,
+        docs_by_ref=docs_by_ref,
+        doc_cp={d: name_tokens(facts_by_id[d].counterparty) for d in docs},
+        doc_text_tokens={d: frozenset(norm_text(docs[d].full_text).split()) for d in docs},
+        doc_amounts=doc_amounts,
+        label_months={p.label: frozenset(months_in(p)) for p in meta.periods},
+        duplicate_groups=duplicates,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Trace state
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class LinkInfo:
+    entry_id: str
+    score: float
+    reasons: list[str]
+    group: str = ""
+    context: bool = False  # surfaced by a challenge (recovery, comparable), not by scoring
+
+
+@dataclass
+class DocLinkInfo:
+    doc_id: str
+    score: float = 0.0
+    reasons: list[str] = field(default_factory=list)
+    entry_basis: dict[str, str] = field(default_factory=dict)  # entry_id -> number | amount | group | named | recovery
+    relation: str = ""  # set by a challenge to override the doc-type default
+    prelinked: bool = False  # related to the adjustment before any GL entry was considered
+    cited: bool = False  # named in management's support references
+
+
+# Association bases that tie a document to a specific entry (not just its party name).
+_SPECIFIC_BASES = frozenset({"number", "amount", "group"})
+
+
+@dataclass
+class Removal:
+    code: FlagCode
+    note: str
+    source: str = "code"  # "ai" when an AI entry classification drove it
+
+
+@dataclass
+class Effect:
+    label: str
+    amount: Decimal
+    code: FlagCode
+    entry_id: str
+
+
+@dataclass
+class PeriodFit:
+    label: str
+    claim: Decimal
+    linked_total: Decimal  # EBITDA-signed total of linked entries in the period
+    method: str  # all | groups | entries | strong | normalization | none
+    bounded: bool = False
+    note: str = ""
+
+
+@dataclass
+class NormalizationInfo:
+    actual: dict[str, Decimal]
+    level: Optional[Decimal] = None  # annual normalized level the evidence supports
+    level_candidates: list[Decimal] = field(default_factory=list)
+    supported_by: Optional[str] = None
+    draft_docs: list[str] = field(default_factory=list)
+
+
+@dataclass
+class AdjustmentTrace:
+    adj: AdjustmentClaim
+    intent: AdjustmentIntent
+    order: int
+    index: DealIndex
+    links: dict[str, LinkInfo] = field(default_factory=dict)
+    candidates: list[str] = field(default_factory=list)  # linked by score, date order
+    groups: dict[str, list[str]] = field(default_factory=dict)  # group label -> linked entry ids
+    group_of: dict[str, str] = field(default_factory=dict)
+    group_ref: dict[str, str] = field(default_factory=dict)  # group label -> normalized reference
+    claimed: dict[str, list[str]] = field(default_factory=dict)  # period label -> claimed entry ids
+    fits: dict[str, PeriodFit] = field(default_factory=dict)
+    capped: set[str] = field(default_factory=set)
+    doc_links: dict[str, DocLinkInfo] = field(default_factory=dict)
+    flags: list[Flag] = field(default_factory=list)
+    facts: list[Fact] = field(default_factory=list)
+    judgments: list[str] = field(default_factory=list)
+    removals: dict[str, Removal] = field(default_factory=dict)
+    moved: set[str] = field(default_factory=set)  # out-of-period entries; effects carry their amount
+    effects: list[Effect] = field(default_factory=list)
+    recurrence: list[RecurrenceObservation] = field(default_factory=list)
+    normalization: Optional[NormalizationInfo] = None
+    notes: list[str] = field(default_factory=list)
+    dropped_quotes: int = 0  # AI quotes (contradictions) that failed verification
+    search_terms: str = ""
+
+    # -- classification ----------------------------------------------------
+
+    @property
+    def is_normalization(self) -> bool:
+        return self.intent.is_normalization or self.adj.category == AdjustmentCategory.NORMALIZATION
+
+    @property
+    def is_pro_forma(self) -> bool:
+        return self.intent.is_pro_forma or self.adj.category == AdjustmentCategory.PRO_FORMA
+
+    @property
+    def asserts_nonrecurring(self) -> bool:
+        """Recurrence and continuing terms only undercut a 'non-recurring' claim."""
+        if self.is_normalization or self.is_pro_forma:
+            return False
+        if self.adj.category == AdjustmentCategory.NON_RECURRING:
+            return True
+        return self.adj.category == AdjustmentCategory.OTHER and self.intent.asserts_nonrecurring
+
+    @property
+    def asserts_personal(self) -> bool:
+        return self.intent.asserts_personal or self.adj.category == AdjustmentCategory.OWNER_DISCRETIONARY
+
+    # -- amounts -----------------------------------------------------------
+
+    @property
+    def labels(self) -> list[str]:
+        return self.index.labels
+
+    def claim(self, label: str) -> Decimal:
+        return D(self.adj.amounts.get(label))
+
+    def claimed_labels(self) -> list[str]:
+        return [lbl for lbl in self.labels if self.claim(lbl) != 0]
+
+    def amount(self, entry_id: str) -> Decimal:
+        return self.index.by_id[entry_id].amount
+
+    def claimed_ids(self) -> list[str]:
+        ids: set[str] = set()
+        for v in self.claimed.values():
+            ids.update(v)
+        return self.index.sort_ids(ids)
+
+    def supporting(self, label: str) -> list[str]:
+        return [e for e in self.claimed.get(label, []) if e not in self.removals]
+
+    def supporting_ids(self) -> list[str]:
+        return [e for e in self.claimed_ids() if e not in self.removals]
+
+    def traced(self, label: str) -> Decimal:
+        return sum((self.amount(e) for e in self.claimed.get(label, [])), ZERO)
+
+    def documented(self, label: str) -> Decimal:
+        return sum((self.amount(e) for e in self.claimed.get(label, []) if self.entry_docs(e)), ZERO)
+
+    def effect(self, label: str) -> Decimal:
+        return sum((x.amount for x in self.effects if x.label == label), ZERO)
+
+    def supporting_total(self, label: str) -> Decimal:
+        """Supporting entries in the period, without out-of-period entries (effects carry those)."""
+        return sum((self.amount(e) for e in self.supporting(label) if e not in self.moved), ZERO)
+
+    def labels_claiming(self, entry_id: str) -> list[str]:
+        return [lbl for lbl in self.labels if entry_id in self.claimed.get(lbl, [])]
+
+    def impact_of_removing(self, entry_ids: Iterable[str]) -> dict[str, Decimal]:
+        ids = set(entry_ids)
+        return {lbl: -sum((self.amount(e) for e in self.claimed.get(lbl, []) if e in ids), ZERO) for lbl in self.labels}
+
+    # -- documents ---------------------------------------------------------
+
+    def entry_docs(self, entry_id: str) -> list[str]:
+        return sorted(d for d, info in self.doc_links.items() if entry_id in info.entry_basis)
+
+    def entry_docs_by_basis(self, entry_id: str, bases: Iterable[str]) -> list[str]:
+        wanted = set(bases)
+        return sorted(d for d, info in self.doc_links.items() if info.entry_basis.get(entry_id) in wanted)
+
+    def associate(self, doc_id: str, entry_id: str, basis: str, weight: float, reason: str) -> None:
+        info = self.doc_links.setdefault(doc_id, DocLinkInfo(doc_id=doc_id))
+        if entry_id in info.entry_basis:
+            return
+        info.entry_basis[entry_id] = basis
+        if reason and reason not in info.reasons:
+            info.reasons.append(reason)
+            info.score += weight
+
+    def groups_for_doc(self, doc_id: str) -> list[str]:
+        """Groups a document speaks to.
+
+        Entry-specific ties (doc number, amount, stated total) and a shared
+        matter / contract reference come first. Only when there are none does a
+        party-name match count, because one vendor can bill several matters.
+        """
+        idx = self.index
+        dl = self.doc_links.get(doc_id)
+        refs = idx.doc_refs.get(doc_id, frozenset())
+        specific: list[str] = []
+        for g, members in self.groups.items():
+            tied = dl is not None and any(dl.entry_basis.get(e) in _SPECIFIC_BASES for e in members)
+            if tied or (self.group_ref.get(g) and self.group_ref[g] in refs):
+                specific.append(g)
+        if specific:
+            return specific
+        cp = idx.doc_cp.get(doc_id, frozenset())
+        if not cp:
+            return []
+        return [g for g, members in self.groups.items() if any(names_match(idx.by_id[e].cp_tokens, cp) for e in members)]
+
+    # -- mutation ----------------------------------------------------------
+
+    def remove(self, entry_ids: Iterable[str], code: FlagCode, note: str, source: str = "code") -> list[str]:
+        newly: list[str] = []
+        for e in self.index.sort_ids(entry_ids):
+            if e not in self.removals:
+                self.removals[e] = Removal(code=code, note=note, source=source)
+                newly.append(e)
+        return newly
+
+    def add_flag(self, flag: Flag) -> None:
+        key = (flag.code, flag.period_label, tuple(flag.entry_ids), tuple(flag.doc_ids), flag.message)
+        for f in self.flags:
+            if (f.code, f.period_label, tuple(f.entry_ids), tuple(f.doc_ids), f.message) == key:
+                return
+        self.flags.append(flag)
+
+    def drop_flags(self, code: FlagCode, label: Optional[str] = None) -> None:
+        self.flags = [f for f in self.flags if not (f.code == code and (label is None or f.period_label == label))]
+
+    def has_flag(self, *codes: FlagCode) -> bool:
+        return any(f.code in codes for f in self.flags)
+
+    def add_context_link(self, entry_id: str, score: float, reason: str) -> None:
+        link = self.links.get(entry_id)
+        if link is None:
+            info = self.index.by_id[entry_id]
+            self.links[entry_id] = LinkInfo(
+                entry_id=entry_id, score=round(score, 2), reasons=[reason], group=_group_display(info), context=True
+            )
+        elif reason not in link.reasons:
+            link.reasons.append(reason)
+
+    def add_judgment(self, text: str) -> None:
+        if text and text not in self.judgments:
+            self.judgments.append(text)
+
+    def add_fact(self, fact: Fact) -> None:
+        if all(f.text != fact.text for f in self.facts):
+            self.facts.append(fact)
+
+    # -- descriptions (for flag messages and questions) --------------------
+
+    def describe(self, entry_id: str) -> str:
+        """'Bill 25-0910 (Hollis & Crane LLP, Sep 2025, 21,000; memo cites Matter 2291)'."""
+        info = self.index.by_id.get(entry_id)
+        if info is None:
+            return entry_id
+        e = info.entry
+        head = f"{e.txn_type or 'Doc'} {e.doc_number}" if e.doc_number else f"GL row {e.source_row}"
+        tail = f"; memo cites {info.memo_ref}" if info.memo_ref else ""
+        return f"{head} ({e.counterparty or e.account_name}, {month_label(info.month)}, {money(info.amount)}{tail})"
+
+    def describe_many(self, entry_ids: Iterable[str], limit: int = 3) -> str:
+        ids = self.index.sort_ids(entry_ids)
+        text = "; ".join(self.describe(e) for e in ids[:limit])
+        return text + (f"; and {len(ids) - limit} more" if len(ids) > limit else "")
+
+    def describe_groups(self, entry_ids: Iterable[str], limit: int = 3) -> str:
+        """'Hollis & Crane LLP · Matter 1004 (19 entries, Jan 2025–Jun 2026, 35,500)'."""
+        by_group: dict[str, list[str]] = {}
+        for e in self.index.sort_ids(entry_ids):
+            by_group.setdefault(self.group_of.get(e) or _group_display(self.index.by_id[e]), []).append(e)
+        parts = []
+        for g, ids in list(by_group.items())[:limit]:
+            total = sum((self.amount(e) for e in ids), ZERO)
+            span = month_span(self.index.by_id[e].month for e in ids)
+            parts.append(f"{g} ({len(ids)} entr{'y' if len(ids) == 1 else 'ies'}, {span}, {money(total)})")
+        more = len(by_group) - limit
+        return "; ".join(parts) + (f"; and {more} more group(s)" if more > 0 else "")
+
+    # -- output ------------------------------------------------------------
+
+    def gl_links(self) -> list[GLLink]:
+        claimed = set(self.claimed_ids())
+        out: list[GLLink] = []
+        for eid in self.index.sort_ids(self.links):
+            link = self.links[eid]
+            info = self.index.by_id[eid]
+            reasons = list(link.reasons)
+            removal = self.removals.get(eid)
+            if removal is not None:
+                reasons.append(f"Removed ({removal.code.value}): {removal.note}")
+            elif eid in claimed:
+                reasons.append("Claimed in " + ", ".join(self.labels_claiming(eid)))
+            elif not link.context:
+                reasons.append(self._context_reason(info))
+            out.append(
+                GLLink(
+                    entry_id=eid,
+                    period=info.month,
+                    amount=fmt(info.amount),
+                    score=round(link.score, 2),
+                    reasons=reasons,
+                    group=link.group,
+                    supports_claim=eid in claimed and removal is None,
+                    doc_ids=self.entry_docs(eid),
+                )
+            )
+        return out
+
+    def _context_reason(self, info: EntryInfo) -> str:
+        in_labels = self.index.labels_of(info.month)
+        claimed_in = [lbl for lbl in in_labels if self.claim(lbl) != 0]
+        if not claimed_in:
+            where = ", ".join(in_labels) if in_labels else "outside the analysis periods"
+            return f"Context only: no claim in {where}; kept for recurrence and period analysis"
+        return "Context only: not needed to tie the claim in " + ", ".join(claimed_in)
+
+    def doc_link_models(self) -> list[DocLink]:
+        out: list[DocLink] = []
+        for doc_id, info in self.doc_links.items():
+            if not info.prelinked and not info.entry_basis:
+                continue
+            facts = self.index.facts.get(doc_id)
+            out.append(
+                DocLink(
+                    doc_id=doc_id,
+                    relation=info.relation or _default_relation(facts, info),
+                    entry_ids=self.index.sort_ids(info.entry_basis),
+                    score=round(info.score, 2),
+                    reasons=list(info.reasons),
+                    quotes=_doc_quotes(facts, self, info),
+                )
+            )
+        out.sort(key=lambda d: (-d.score, d.doc_id))
+        return out
+
+
+def _default_relation(facts: Optional[DocFacts], info: DocLinkInfo) -> str:
+    doc_type = (facts.doc_type if facts else "other").lower()
+    if doc_type == "invoice" or "number" in info.entry_basis.values():
+        return "invoice_for_entry"
+    if doc_type in AGREEMENT_DOC_TYPES:
+        return "agreement"
+    if doc_type in CORRESPONDENCE_DOC_TYPES:
+        return "correspondence"
+    return "other"
+
+
+_MAX_DOC_QUOTES = 4
+
+
+def _doc_quotes(facts: Optional[DocFacts], trace: AdjustmentTrace, info: DocLinkInfo) -> list[EvidenceQuote]:
+    """The quotes a reviewer needs from a linked document: matching amounts, terms, key statements."""
+    if facts is None:
+        return []
+    amounts = {abs(trace.amount(e)) for e in info.entry_basis if e in trace.index.by_id}
+    tol = trace.index.tolerance
+    picked: list[EvidenceQuote] = []
+
+    def add(q: EvidenceQuote) -> None:
+        if len(picked) < _MAX_DOC_QUOTES and all(q.quote != p.quote or q.page != p.page for p in picked):
+            picked.append(q)
+
+    for a in facts.amounts:
+        try:
+            amt = abs(D(a.amount))
+        except (ValueError, ArithmeticError):
+            continue
+        if any(abs(amt - x) <= tol for x in amounts):
+            add(a.quote)
+    for t in facts.terms:
+        add(t.quote)
+    for q in facts.key_statements:
+        add(q)
+    return picked
+
+
+def _group_display(info: EntryInfo, ref_display: str = "") -> str:
+    who = info.entry.counterparty.strip() or "No counterparty"
+    what = ref_display or " ".join(info.theme) or info.entry.account_name
+    return f"{who} · {what}"
+
+
+# ---------------------------------------------------------------------------
+# Subset search (SPEC §5.3)
+# ---------------------------------------------------------------------------
+
+
+def _half_sums(items: Sequence[tuple[int, int, int]]) -> dict[int, tuple[int, int, int]]:
+    """Every subset of ``items`` keyed by sum, keeping the best (weight, -score, -mask).
+
+    Item i sets bit (len - 1 - i), so between equally good subsets the larger
+    mask is the one holding the earliest items.
+    """
+    h = len(items)
+    subsets: list[tuple[int, int, int, int]] = [(0, 0, 0, 0)]
+    for i, (value, weight, score) in enumerate(items):
+        bit = 1 << (h - 1 - i)
+        subsets += [(s + value, w + weight, sc + score, m | bit) for s, w, sc, m in subsets]
+    best: dict[int, tuple[int, int, int]] = {}
+    for s, w, sc, m in subsets:
+        key = (w, -sc, -m)
+        cur = best.get(s)
+        if cur is None or key < cur:
+            best[s] = key
+    return best
+
+
+def find_subset(
+    values: Sequence[int],
+    target: int,
+    tolerance: int = 0,
+    *,
+    weights: Optional[Sequence[int]] = None,
+    scores: Optional[Sequence[int]] = None,
+    max_items: int = MAX_SUBSET_ITEMS,
+) -> Optional[list[int]]:
+    """Indices of the non-empty subset whose sum is closest to ``target``, within ``tolerance``.
+
+    Values are integer cents. Ranking: exact before approximate, then the
+    smallest total weight (entries count as 1; a group weighs its entry
+    count), then the highest total score, then the earliest items. The search
+    is exact meet-in-the-middle over at most ``max_items`` items; with more,
+    only the ``max_items`` highest-scoring items are considered.
+    """
+    n = len(values)
+    weights = list(weights) if weights is not None else [1] * n
+    scores = list(scores) if scores is not None else [0] * n
+    order = list(range(n))
+    if n > max_items:
+        order = sorted(order, key=lambda i: (-scores[i], i))[:max_items]
+        order.sort()
+    items = [(values[i], weights[i], scores[i]) for i in order]
+    mid = len(items) // 2
+    n_right = len(items) - mid
+    left, right = _half_sums(items[:mid]), _half_sums(items[mid:])
+    right_sums = sorted(right)
+    best: Optional[tuple[tuple[int, int, int, int], int]] = None
+    for lsum, (lw, lsc, lm) in left.items():
+        lo = bisect_left(right_sums, target - tolerance - lsum)
+        hi = bisect_right(right_sums, target + tolerance - lsum)
+        for rsum in right_sums[lo:hi]:
+            rw, rsc, rm = right[rsum]
+            mask = ((-lm) << n_right) | -rm
+            if mask == 0:
+                continue
+            key = (abs(lsum + rsum - target), lw + rw, lsc + rsc, -mask)
+            if best is None or key < best[0]:
+                best = (key, mask)
+    if best is None:
+        return None
+    mask = best[1]
+    total = len(items)
+    return [order[i] for i in range(total) if mask >> (total - 1 - i) & 1]
+
+
+# ---------------------------------------------------------------------------
+# Linking
+# ---------------------------------------------------------------------------
+
+
+_MGMT = "named by management"
+
+
+@dataclass
+class _LinkContext:
+    accounts: frozenset[str]
+    intent_names: list[tuple[str, frozenset[str]]]
+    doc_names: list[tuple[str, str, frozenset[str]]]  # (doc_id, party name, tokens)
+    keywords: list[str]
+    refs: dict[str, tuple[str, str]]  # normalized ref -> (display, source)
+    doc_numbers: dict[str, list[str]]  # normalized ref -> related doc ids stating it
+    prelinked: frozenset[str]
+    cited: frozenset[str]
+
+
+def support_ref_matches(ref: str, doc: SourceDocument, facts: Optional[DocFacts] = None) -> bool:
+    """Does management's support reference ('DR 4.2', a file name, an invoice number) cite this document?"""
+    ref = (ref or "").strip()
+    if not ref:
+        return False
+    parts = [doc.doc_id] + list(PurePosixPath(doc.relpath.replace("\\", "/")).parts)
+    m = _INDEX_REF.match(ref)
+    if m:
+        idx = m.group(1)
+        for part in parts:
+            if part.startswith(idx) and (len(part) == len(idx) or part[len(idx)] in " ._-"):
+                return True
+        return False
+    n = norm_text(ref)
+    if len(n) >= 4:
+        hay = [norm_text(p) for p in parts] + ([norm_text(facts.title)] if facts and facts.title else [])
+        if any(n in h for h in hay):
+            return True
+    tokens = ref_tokens(ref)
+    if tokens and facts is not None:
+        refs: set[str] = set()
+        for r in facts.reference_numbers:
+            refs |= ref_tokens(r)
+        return bool(tokens & refs)
+    return False
+
+
+def _prelink_documents(t: AdjustmentTrace) -> None:
+    """Documents that relate to the adjustment before any GL entry is considered."""
+    idx, adj, intent = t.index, t.adj, t.intent
+    intent_names = [(n, name_tokens(n)) for n in intent.counterparties if name_tokens(n)]
+    intent_refs: set[str] = set()
+    for r in intent.reference_numbers:
+        intent_refs |= ref_tokens(r)
+    keywords = keyword_list(intent.keywords)
+    for doc_id in sorted(idx.docs):
+        doc, facts = idx.docs[doc_id], idx.facts[doc_id]
+        score, reasons = 0.0, []
+        cited = [r for r in adj.support_refs if support_ref_matches(r, doc, facts)]
+        if cited:
+            score += DW_SUPPORT_REF
+            reasons.append(f"Cited by management's support reference '{cited[0]}'")
+        cp = idx.doc_cp[doc_id]
+        for name, toks in intent_names:
+            if names_match(cp, toks):
+                score += DW_COUNTERPARTY
+                reasons.append(f"Counterparty '{facts.counterparty}' matches '{name}' named by management")
+                break
+        shared = sorted(intent_refs & idx.doc_refs[doc_id])
+        if shared:
+            score += DW_REFERENCE
+            reasons.append(f"States reference {', '.join(shared)} named by management")
+        title_norm = norm_text(f"{facts.title} {doc_id}")
+        hits = keyword_hits(keywords, title_norm, frozenset(title_norm.split()))
+        if hits:
+            score += min(DW_TITLE_KEYWORD * len(hits), DW_TITLE_KEYWORD_CAP)
+            reasons.append("Title mentions " + ", ".join(f"'{h}'" for h in hits))
+        if score >= DOC_LINK_THRESHOLD:
+            t.doc_links[doc_id] = DocLinkInfo(
+                doc_id=doc_id, score=score, reasons=reasons, prelinked=True, cited=bool(cited)
+            )
+
+
+def _link_context(t: AdjustmentTrace) -> _LinkContext:
+    idx, intent = t.index, t.intent
+    refs: dict[str, tuple[str, str]] = {}
+    for r in intent.reference_numbers:
+        for n in sorted(ref_tokens(r)):
+            refs.setdefault(n, (r.strip(), _MGMT))
+    doc_names: list[tuple[str, str, frozenset[str]]] = []
+    doc_numbers: dict[str, list[str]] = {}
+    for doc_id in sorted(t.doc_links):
+        facts = idx.facts[doc_id]
+        if idx.doc_cp[doc_id]:
+            doc_names.append((doc_id, facts.counterparty or "", idx.doc_cp[doc_id]))
+        for raw in facts.reference_numbers:
+            for n in sorted(ref_tokens(raw)):
+                refs.setdefault(n, (raw.strip(), f"from {doc_id}"))
+                if doc_id not in doc_numbers.setdefault(n, []):
+                    doc_numbers[n].append(doc_id)
+    return _LinkContext(
+        accounts=frozenset(t.adj.gl_accounts),
+        intent_names=[(n, name_tokens(n)) for n in intent.counterparties if name_tokens(n)],
+        doc_names=doc_names,
+        keywords=keyword_list(intent.keywords),
+        refs=refs,
+        doc_numbers=doc_numbers,
+        prelinked=frozenset(t.doc_links),
+        cited=frozenset(d for d, info in t.doc_links.items() if info.cited),
+    )
+
+
+def _score_entry(info: EntryInfo, ctx: _LinkContext, idx: DealIndex) -> tuple[float, list[str]]:
+    e = info.entry
+    score, reasons = 0.0, []
+    if e.account in ctx.accounts:
+        score += W_ACCOUNT
+        reasons.append(f"Account {e.account} {e.account_name} is named in management's schedule")
+
+    cp_reason = ""
+    for name, toks in ctx.intent_names:
+        if names_match(info.cp_tokens, toks):
+            cp_reason = f"Counterparty '{e.counterparty}' matches '{name}' named by management"
+        elif name_in_text(toks, info.memo_tokens):
+            cp_reason = f"Memo names '{name}', named by management"
+        if cp_reason:
+            break
+    if not cp_reason:
+        for doc_id, name, toks in ctx.doc_names:
+            if names_match(info.cp_tokens, toks):
+                cp_reason = f"Counterparty '{e.counterparty}' matches the party in {doc_id}"
+                break
+    if cp_reason:
+        score += W_COUNTERPARTY
+        reasons.append(cp_reason)
+
+    hits = keyword_hits(ctx.keywords, info.memo_norm, info.memo_tokens)
+    if hits:
+        score += W_KEYWORD + min(W_KEYWORD_EXTRA * (len(hits) - 1), W_KEYWORD_EXTRA_CAP)
+        reasons.append("Memo mentions " + ", ".join(f"'{h}'" for h in hits))
+
+    # A document stating the entry's own doc number is the Document signal, not a Reference.
+    ref_reason = ""
+    for n in sorted(info.refs):
+        hit = ctx.refs.get(n)
+        if hit is None or (n == info.doc_number and hit[1] != _MGMT):
+            continue
+        ref_reason = f"Memo cites {hit[0]} ({hit[1]})"
+        break
+    if not ref_reason and info.doc_number:
+        hit = ctx.refs.get(info.doc_number)
+        if hit is not None and hit[1] == _MGMT:
+            ref_reason = f"Doc # {e.doc_number} is named by management"
+    if ref_reason:
+        score += W_REFERENCE
+        reasons.append(ref_reason)
+
+    doc_reason = ""
+    if info.doc_number and info.doc_number in ctx.doc_numbers:
+        doc_reason = f"Doc # {e.doc_number} appears in {ctx.doc_numbers[info.doc_number][0]}"
+    else:
+        for doc_id, _amt in idx.docs_with_amount(info.amount):
+            if doc_id not in ctx.prelinked:
+                continue
+            if names_match(info.cp_tokens, idx.doc_cp[doc_id]) or (not info.cp_tokens and doc_id in ctx.cited):
+                doc_reason = f"Amount {money(abs(info.amount))} and party match {doc_id}"
+                break
+    if doc_reason:
+        score += W_DOCUMENT
+        reasons.append(doc_reason)
+    return score, reasons
+
+
+def _assign_groups(t: AdjustmentTrace, ctx: _LinkContext) -> None:
+    """Group linked entries by counterparty plus memo theme; a document reference wins over the theme."""
+    idx = t.index
+    ref_freq: dict[str, int] = {}
+    own_numbers = {idx.by_id[e].doc_number for e in t.candidates}
+    for e in t.candidates:
+        for n in idx.by_id[e].refs:
+            if n in ctx.refs and n not in own_numbers:
+                ref_freq[n] = ref_freq.get(n, 0) + 1
+    shared_refs = {n for n, c in ref_freq.items() if c >= 2}
+
+    keys: dict[str, str] = {}  # normalized key -> display label (first entry wins)
+    for e in t.candidates:
+        info = idx.by_id[e]
+        cp_key = " ".join(sorted(info.cp_tokens)) or "-"
+        ref, ref_display = info.memo_ref_norm, info.memo_ref
+        if not ref:
+            found = sorted((n for n in info.refs if n in shared_refs), key=lambda n: (-ref_freq[n], n))
+            if found:
+                ref, ref_display = found[0], f"ref {ctx.refs[found[0]][0]}"
+        key = f"{cp_key}|ref:{ref}" if ref else f"{cp_key}|{' '.join(info.theme) or info.entry.account}"
+        label = keys.setdefault(key, _group_display(info, ref_display))
+        t.groups.setdefault(label, []).append(e)
+        t.group_of[e] = label
+        t.links[e].group = label
+        if ref:
+            t.group_ref[label] = ref
+
+
+# ---------------------------------------------------------------------------
+# Claimed-set fit
+# ---------------------------------------------------------------------------
+
+
+def _fit_claims(t: AdjustmentTrace) -> None:
+    idx = t.index
+    tol = idx.tolerance
+    cands_by_label = {
+        lbl: [e for e in t.candidates if idx.by_id[e].month in idx.label_months[lbl]] for lbl in t.claimed_labels()
+    }
+    if t.is_normalization:
+        # The claim is actual cost less a normalized level, so every linked entry is actual cost.
+        for lbl, cands in cands_by_label.items():
+            t.claimed[lbl] = list(cands)
+            t.fits[lbl] = PeriodFit(lbl, t.claim(lbl), sum((t.amount(e) for e in cands), ZERO), "normalization")
+        return
+    pending: list[str] = []
+    for lbl, cands in cands_by_label.items():
+        total = sum((t.amount(e) for e in cands), ZERO)
+        if abs(total - t.claim(lbl)) <= tol:
+            t.claimed[lbl] = list(cands)
+            t.fits[lbl] = PeriodFit(lbl, t.claim(lbl), total, "all")
+        else:
+            pending.append(lbl)
+    for lbl in pending:
+        _fit_one(t, lbl, cands_by_label[lbl])
+
+
+def _fit_one(t: AdjustmentTrace, label: str, cands: list[str]) -> None:
+    idx = t.index
+    claim = t.claim(label)
+    s = 1 if claim > 0 else -1
+    target, tol = cents(abs(claim)), cents(idx.tolerance)
+    vals = {e: s * cents(t.amount(e)) for e in cands}
+    linked_total = sum((t.amount(e) for e in cands), ZERO)
+    fit = PeriodFit(label, claim, linked_total, "all")
+    chosen = list(cands)
+    if sum(vals.values()) > target + tol:
+        already = set(t.claimed_ids())
+
+        def units(e: str) -> int:
+            return int(round(t.links[e].score * 100)) + (_OVERLAP_PERIOD_PREFERENCE if e in already else 0)
+
+        group_keys = list(dict.fromkeys(t.group_of[e] for e in cands))
+        members = {g: [e for e in cands if t.group_of[e] == g] for g in group_keys}
+        pick = find_subset(
+            [sum(vals[e] for e in members[g]) for g in group_keys],
+            target,
+            tol,
+            weights=[len(members[g]) for g in group_keys],
+            scores=[sum(units(e) for e in members[g]) for g in group_keys],
+        )
+        if pick is not None:
+            chosen = [e for e in cands if t.group_of[e] in {group_keys[i] for i in pick}]
+            fit.method = "groups"
+        else:
+            pick = find_subset([vals[e] for e in cands], target, tol, scores=[units(e) for e in cands])
+            fit.bounded = len(cands) > MAX_SUBSET_ITEMS
+            if pick is not None:
+                chosen = [cands[i] for i in pick]
+                fit.method = "entries"
+            else:
+                strong = [e for e in cands if t.links[e].score >= STRONG_LINK]
+                chosen = strong or list(cands)
+                fit.method = "strong"
+    t.claimed[label] = chosen
+    t.fits[label] = fit
+
+
+# ---------------------------------------------------------------------------
+# Document association (after the fit, anchored on linked entries)
+# ---------------------------------------------------------------------------
+
+
+def _associate_documents(t: AdjustmentTrace) -> None:
+    idx = t.index
+    prelinked = {d for d, info in t.doc_links.items() if info.prelinked}
+    support_docs = {d for d, info in t.doc_links.items() if info.cited}
+    for e in t.candidates:
+        info = idx.by_id[e]
+        entry = info.entry
+        if info.doc_number:
+            for doc_id in idx.docs_by_ref.get(info.doc_number, []):
+                dcp = idx.doc_cp[doc_id]
+                # A bare number can collide across vendors; require the party to agree when both are known.
+                if dcp and info.cp_tokens and not names_match(dcp, info.cp_tokens):
+                    continue
+                t.associate(doc_id, e, "number", DW_ENTRY_NUMBER, "States the doc # of linked GL entries")
+        for doc_id, _amt in idx.docs_with_amount(info.amount):
+            dcp = idx.doc_cp[doc_id]
+            if names_match(dcp, info.cp_tokens) or (not info.cp_tokens and doc_id in support_docs):
+                t.associate(doc_id, e, "amount", DW_ENTRY_AMOUNT, "States the amount of linked GL entries for the same party")
+        if info.cp_tokens:
+            for doc_id in sorted(prelinked):
+                if name_in_text(info.cp_tokens, idx.doc_text_tokens[doc_id]):
+                    t.associate(doc_id, e, "named", DW_ENTRY_NAMED, f"Names {entry.counterparty}")
+    # A document stating a group's total (an engagement fee paid in installments) supports every entry in it.
+    for g, members in t.groups.items():
+        totals = {sum((t.amount(e) for e in members), ZERO)}
+        for lbl in t.claimed_labels():
+            part = [e for e in members if e in t.claimed.get(lbl, [])]
+            if len(part) > 1:
+                totals.add(sum((t.amount(e) for e in part), ZERO))
+        g_cp = idx.by_id[members[0]].cp_tokens
+        for total in sorted(totals):
+            if len(members) < 2 or total == 0:
+                continue
+            for doc_id, _amt in idx.docs_with_amount(total):
+                if names_match(idx.doc_cp[doc_id], g_cp) or (not g_cp and doc_id in support_docs):
+                    for e in members:
+                        t.associate(doc_id, e, "group", DW_ENTRY_AMOUNT, f"States the {money(abs(total))} total of {g}")
+    for info in t.doc_links.values():
+        n = len(info.entry_basis)
+        if n and not info.prelinked:
+            info.reasons.append(f"Linked through {n} GL entr{'y' if n == 1 else 'ies'}")
+
+
+# ---------------------------------------------------------------------------
+# Fit flags (SPEC §5.3)
+# ---------------------------------------------------------------------------
+
+
+def _fit_flags(t: AdjustmentTrace) -> None:
+    idx = t.index
+    if not t.claimed_labels():
+        return
+    if not t.candidates:
+        t.add_flag(
+            Flag(
+                code=FlagCode.NO_GL_SUPPORT,
+                severity=Severity.CRITICAL,
+                message=f"No GL entries link to this adjustment in any period (searched {t.search_terms}).",
+            )
+        )
+        return
+    if t.is_normalization:
+        return
+    tol = idx.tolerance
+    for lbl in t.claimed_labels():
+        fit = t.fits[lbl]
+        claim = fit.claim
+        s = 1 if claim > 0 else -1
+        chosen = t.claimed.get(lbl, [])
+        traced = t.traced(lbl)
+        others = [e for e in t.candidates if idx.by_id[e].month in idx.label_months[lbl] and e not in chosen]
+        excess = sum((t.amount(e) for e in others), ZERO)
+        if fit.method in ("groups", "entries"):
+            groups = list(dict.fromkeys(t.group_of[e] for e in chosen))
+            msg = (
+                f"{lbl}: linked GL activity of {money(fit.linked_total)} exceeds the claim of {money(claim)}. "
+                f"The claim ties to the cent to {len(chosen)} entr{'y' if len(chosen) == 1 else 'ies'} "
+                f"({'; '.join(groups[:4])}{' and others' if len(groups) > 4 else ''}); "
+                f"the other {len(others)} linked entries ({money(excess)}) are context only."
+            )
+            if fit.bounded:
+                msg += f" The search considered the {MAX_SUBSET_ITEMS} strongest links only."
+            t.add_flag(
+                Flag(
+                    code=FlagCode.EXCESS_GL_ACTIVITY,
+                    severity=Severity.INFO,
+                    message=msg,
+                    period_label=lbl,
+                    amount_impact=fmt(excess),
+                    entry_ids=idx.sort_ids(others),
+                )
+            )
+        elif fit.method == "strong":
+            if s * (traced - claim) > tol:
+                t.capped.add(lbl)
+                t.add_flag(
+                    Flag(
+                        code=FlagCode.EXCESS_GL_ACTIVITY,
+                        severity=Severity.INFO,
+                        message=(
+                            f"{lbl}: linked GL activity of {money(fit.linked_total)} exceeds the claim of "
+                            f"{money(claim)} and no combination of linked entries ties to it. The "
+                            f"{len(chosen)} strongly linked entries ({money(traced)}) are treated as claimed; "
+                            f"the proposal is capped at the claim. Which entries management included is unresolved."
+                        ),
+                        period_label=lbl,
+                        amount_impact=fmt(traced - claim),
+                        entry_ids=idx.sort_ids(chosen),
+                    )
+                )
+                t.add_judgment(
+                    f"Which GL entries make up management's {lbl} claim of {money(claim)}? No combination of the "
+                    f"linked entries ties to it; {len(chosen)} strongly linked entries total {money(traced)}."
+                )
+                continue
+        if s * (claim - traced) > tol:
+            gap = traced - claim
+            t.add_flag(
+                Flag(
+                    code=FlagCode.PARTIAL_GL_SUPPORT,
+                    severity=Severity.WARNING,
+                    message=(
+                        f"{lbl}: GL entries linked to this adjustment total {money(traced)} against a claim of "
+                        f"{money(claim)}; {money(abs(gap))} of the claim is not found in the GL."
+                    ),
+                    period_label=lbl,
+                    amount_impact=fmt(gap),
+                    entry_ids=idx.sort_ids(chosen),
+                )
+            )
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
+
+def trace_adjustment(
+    index: DealIndex, adj: AdjustmentClaim, intent: AdjustmentIntent, order: int = 0
+) -> AdjustmentTrace:
+    """Link, group, and fit one adjustment. Flags: NO_GL_SUPPORT, PARTIAL_GL_SUPPORT, EXCESS_GL_ACTIVITY."""
+    t = AdjustmentTrace(adj=adj, intent=intent, order=order, index=index)
+    _prelink_documents(t)
+    ctx = _link_context(t)
+    t.search_terms = _describe_search(t, ctx)
+    for info in index.entries:
+        score, reasons = _score_entry(info, ctx, index)
+        if score >= LINK_THRESHOLD:
+            t.links[info.entry_id] = LinkInfo(entry_id=info.entry_id, score=round(score, 2), reasons=reasons)
+            t.candidates.append(info.entry_id)
+    _assign_groups(t, ctx)
+    _fit_claims(t)
+    _associate_documents(t)
+    _fit_flags(t)
+    return t
+
+
+def _describe_search(t: AdjustmentTrace, ctx: _LinkContext) -> str:
+    parts = []
+    if ctx.accounts:
+        parts.append("accounts " + ", ".join(sorted(ctx.accounts)))
+    if ctx.intent_names:
+        parts.append("parties " + ", ".join(n for n, _ in ctx.intent_names))
+    if ctx.keywords:
+        parts.append("keywords " + ", ".join(ctx.keywords))
+    refs = [d for d, src in ctx.refs.values() if src == "named by management"]
+    if refs:
+        parts.append("references " + ", ".join(refs))
+    if t.doc_links:
+        parts.append(f"{len(t.doc_links)} related document(s)")
+    return "; ".join(parts) or "no accounts, parties, keywords, or references"
+
+
+def month_range_safe(start: Optional[str], end: Optional[str]) -> list[str]:
+    """Months covered by an ISO date range; [] when either end is missing or malformed."""
+    if not start or not end:
+        return []
+    s, e = start[:7], end[:7]
+    if not (re.match(r"^\d{4}-\d{2}$", s) and re.match(r"^\d{4}-\d{2}$", e)) or s > e:
+        return []
+    return month_range(s, e)

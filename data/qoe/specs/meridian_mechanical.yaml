@@ -1,0 +1,1019 @@
+# Dev deal 1: Meridian Mechanical Services, LLC (SYNTHETIC). Catalog: docs/qoe/SPEC.md §10.
+# Format reference: scripts/qoe_synth/SPEC_FORMAT.md
+# Regenerate: uv run python scripts/qoe_generate_deals.py --spec data/qoe/specs/meridian_mechanical.yaml --out data/qoe/dev
+#
+# Amount conventions: planted `amount` is debit-positive (expenses +, income and credits -).
+# Background streams give magnitudes; the sign follows the account's normal balance
+# unless `direction` says otherwise.
+
+deal_id: meridian_mechanical
+split: dev
+seed: 20260715
+package_date: "2026-07-15"
+company:
+  name: Meridian Mechanical Services, LLC
+  short_name: Meridian
+  industry: Commercial and residential HVAC / plumbing services
+periods:
+  - {label: "FY2024", start: "2024-01", end: "2024-12"}
+  - {label: "FY2025", start: "2025-01", end: "2025-12"}
+  - {label: "TTM Jun-26", start: "2025-07", end: "2026-06"}
+data_start: "2024-01"
+data_end: "2026-06"
+gl_format: qbo_gl_csv
+deal_yaml_gl_format: auto
+tolerance: "1.00"
+readme_extra: |
+  Scenario: Florida HVAC and plumbing contractor, FY Dec. QuickBooks Online exports.
+  Analysis periods FY2024, FY2025 and TTM Jun-26; the GL covers Jan 2024 - Jun 2026.
+
+split_defaults:
+  check: Operating Checking - Gulfstream Bank
+  deposit: Operating Checking - Gulfstream Bank
+  expense: Business Credit Card
+  payroll: Payroll Clearing
+  sales_receipt: Undeposited Funds
+
+sequences:
+  ar_invoice: 10231
+  credit_memo: 2201
+
+# ---------------------------------------------------------------------------
+# Chart of accounts (QBO export order). The GL carries P&L accounts only.
+# ---------------------------------------------------------------------------
+accounts:
+  - {number: "1000", name: Operating Checking - Gulfstream Bank, type: Bank, detail_type: Checking}
+  - {number: "1010", name: Payroll Checking - Gulfstream Bank, type: Bank, detail_type: Checking}
+  - {number: "1100", name: Undeposited Funds, type: Other Current Assets, detail_type: Undeposited Funds}
+  - {number: "1200", name: Accounts Receivable (A/R), type: Accounts receivable (A/R), detail_type: Accounts Receivable (A/R)}
+  - {number: "1300", name: Inventory - Parts & Equipment, type: Other Current Assets, detail_type: Inventory}
+  - {number: "1400", name: Prepaid Expenses, type: Other Current Assets, detail_type: Prepaid Expenses}
+  - {number: "1500", name: Vehicles & Equipment, type: Fixed Assets, detail_type: Vehicles}
+  - {number: "1510", name: Accumulated Depreciation, type: Fixed Assets, detail_type: Accumulated Depreciation}
+  - {number: "1600", name: Customer List (net), type: Other Assets, detail_type: Intangible Assets}
+  - {number: "2000", name: Accounts Payable (A/P), type: Accounts payable (A/P), detail_type: Accounts Payable (A/P)}
+  - {number: "2100", name: Business Credit Card, type: Credit Card, detail_type: Credit Card}
+  - {number: "2200", name: Payroll Clearing, type: Other Current Liabilities, detail_type: Payroll Clearing}
+  - {number: "2300", name: Deferred Revenue - Comfort Club, type: Other Current Liabilities, detail_type: Other Current Liabilities}
+  - {number: "2500", name: Term Loan, type: Long Term Liabilities, detail_type: Notes Payable}
+  - {number: "3000", name: Members' Equity, type: Equity, detail_type: Owner's Equity}
+  - {number: "4000", name: Service Revenue - Commercial, type: Income, detail_type: Service/Fee Income}
+  - {number: "4010", name: Service Revenue - Residential, type: Income, detail_type: Service/Fee Income}
+  - {number: "4100", name: Maintenance Agreement Revenue, type: Income, detail_type: Service/Fee Income}
+  - {number: "4900", name: Sales Discounts, type: Income, detail_type: Discounts/Refunds Given}
+  - {number: "5000", name: Materials & Equipment, type: Cost of Goods Sold, detail_type: Supplies & Materials - COGS}
+  - {number: "5100", name: Direct Labor - Technicians, type: Cost of Goods Sold, detail_type: Cost of labor - COS}
+  - {number: "5200", name: Subcontractors, type: Cost of Goods Sold, detail_type: Other Costs of Services - COS}
+  - {number: "5300", name: Vehicle & Fuel - Field, type: Cost of Goods Sold, detail_type: Other Costs of Services - COS}
+  - {number: "5400", name: Inventory Adjustments & Write-offs, type: Cost of Goods Sold, detail_type: Supplies & Materials - COGS}
+  - {number: "6000", name: Salaries & Wages - Office, type: Expense, detail_type: Payroll Expenses}
+  - {number: "6010", name: Officer Compensation, type: Expense, detail_type: Payroll Expenses}
+  - {number: "6050", name: Payroll Taxes & Benefits, type: Expense, detail_type: Payroll Expenses}
+  - {number: "6100", name: Rent & Occupancy, type: Expense, detail_type: Rent or Lease of Buildings}
+  - {number: "6150", name: Repairs & Maintenance - Facilities, type: Expense, detail_type: Repair & Maintenance}
+  - {number: "6200", name: Insurance, type: Expense, detail_type: Insurance}
+  - {number: "6300", name: Software & IT Services, type: Expense, detail_type: Office/General Administrative Expenses}
+  - {number: "6400", name: Legal & Professional Fees, type: Expense, detail_type: Legal & Professional Fees}
+  - {number: "6410", name: Accounting & Advisory Fees, type: Expense, detail_type: Legal & Professional Fees}
+  - {number: "6450", name: Recruiting & HR, type: Expense, detail_type: Other Miscellaneous Service Cost}
+  - {number: "6500", name: Advertising & Marketing, type: Expense, detail_type: Advertising/Promotional}
+  - {number: "6600", name: "Travel, Meals & Entertainment", type: Expense, detail_type: Travel}
+  - {number: "6650", name: Auto Expense - Admin, type: Expense, detail_type: Auto}
+  - {number: "6700", name: Dues & Subscriptions, type: Expense, detail_type: Dues & subscriptions}
+  - {number: "6800", name: Bank & Merchant Fees, type: Expense, detail_type: Bank Charges}
+  - {number: "6900", name: Office & General, type: Expense, detail_type: Office/General Administrative Expenses}
+  - {number: "6950", name: Bad Debt Expense, type: Expense, detail_type: Bad Debts}
+  - {number: "7000", name: Depreciation Expense, type: Expense, detail_type: Depreciation}
+  - {number: "7050", name: Amortization Expense, type: Expense, detail_type: Amortization}
+  - {number: "8000", name: Other Income, type: Other Income, detail_type: Other Miscellaneous Income}
+  - {number: "8050", name: Gain/Loss on Sale of Assets, type: Other Income, detail_type: Gain/Loss on Sale of Fixed Assets}
+  - {number: "8100", name: Interest Expense, type: Other Expense, detail_type: Other Miscellaneous Expense}
+  - {number: "8200", name: Other Expense, type: Other Expense, detail_type: Other Miscellaneous Expense}
+  - {number: "9000", name: Income Taxes - State, type: Other Expense, detail_type: Other Miscellaneous Expense}
+
+# ---------------------------------------------------------------------------
+# Background activity
+# ---------------------------------------------------------------------------
+background:
+  # --- Revenue -------------------------------------------------------------
+  - id: rev_commercial
+    account: "4000"
+    txn_type: invoice
+    schedule: {count: [22, 30]}
+    amount: {monthly: 1680000, growth: 0.05, noise: 0.04, spread: 0.6,
+             seasonality: [0.92, 0.90, 0.95, 0.98, 1.04, 1.10, 1.12, 1.12, 1.06, 1.00, 0.92, 0.89]}
+    num: {sequence: ar_invoice}
+    counterparties:
+      - {name: Bayshore Medical Plaza, weight: 5}
+      - {name: Harborview Office Park, weight: 5}
+      - {name: Westshore Commons Retail Center, weight: 4}
+      - {name: Palmetto Ridge Apartments, weight: 4}
+      - {name: Gulf Breeze Hospitality Group, weight: 4}
+      - {name: Sun Coast Charter Schools, weight: 3}
+      - {name: Tarpon Point Senior Living, weight: 3}
+      - {name: Cypress Creek Business Center, weight: 3}
+      - {name: Anclote Marina Restaurants, weight: 2}
+      - {name: Seminole Heights Self Storage, weight: 2}
+      - {name: Channelside Lofts Condominium Assn., weight: 2}
+      - {name: Riverview Industrial Park, weight: 3}
+      - {name: Lutz Family Dental Group, weight: 1}
+      - {name: Brandon Town Center Management, weight: 3}
+      - {name: Halvorsen Builders, weight: 3, end: "2025-08"}
+      - {name: Coastal Cold Storage, weight: 2, start: "2024-06"}
+    memo:
+      - "HVAC service call – {unit}"
+      - "Rooftop unit replacement – {unit}"
+      - "Preventive maintenance visit – quarterly"
+      - "Plumbing repair – {plumb}"
+      - "Chiller service – compressor diagnostics"
+      - "Emergency service – no cooling, {unit}"
+      - "Tenant improvement – HVAC ductwork & diffusers"
+      - "Backflow preventer testing & certification"
+      - "Water heater replacement – commercial 80 gal"
+      - "Controls upgrade – BAS thermostats"
+    choices:
+      unit: [RTU-1, RTU-2, RTU-4, AHU-2, Bldg B, Suite 210, Suite 330, Kitchen exhaust]
+      plumb: [restroom fixtures, grease trap line, domestic water booster pump, sewer lateral]
+
+  - id: rev_residential
+    account: "4010"
+    txn_type: sales_receipt
+    schedule: {weekdays: [0, 1, 2, 3, 4]}
+    amount: {monthly: 1060000, growth: 0.05, noise: 0.04, spread: 0.35,
+             seasonality: [0.80, 0.78, 0.88, 0.97, 1.10, 1.25, 1.32, 1.30, 1.15, 0.98, 0.80, 0.77]}
+    num: {format: "DS-{yy}{mm}{dd}"}
+    counterparties: [Residential Customers]
+    memo: "Residential service & replacement – daily batch {mdy}"
+
+  - id: maint_commercial
+    account: "4100"
+    txn_type: invoice
+    mode: fixed
+    schedule: {days: [1]}
+    amount: {escalate_pct: 0.04}
+    num: {sequence: ar_invoice}
+    counterparties:
+      - {name: Bayshore Medical Plaza, amount: 22000}
+      - {name: Harborview Office Park, amount: 18500}
+      - {name: Gulf Breeze Hospitality Group, amount: 15750}
+      - {name: Westshore Commons Retail Center, amount: 12400}
+      - {name: Tarpon Point Senior Living, amount: 11200}
+      - {name: Sun Coast Charter Schools, amount: 9800}
+      - {name: Cypress Creek Business Center, amount: 8650}
+      - {name: Brandon Town Center Management, amount: 7900}
+      - {name: Riverview Industrial Park, amount: 6500}
+      - {name: Palmetto Ridge Apartments, amount: 5300}
+    memo: "Planned maintenance agreement – {mon} {yyyy}"
+
+  - id: maint_residential
+    account: "4100"
+    txn_type: journal
+    split: Deferred Revenue - Comfort Club
+    schedule: {days: [-1]}
+    amount: {monthly: 150000, growth: 0.08, noise: 0.01}
+    memo: "Comfort Club memberships – revenue recognized – {mon} {yyyy}"
+
+  - id: sales_discounts
+    account: "4900"
+    txn_type: credit_memo
+    direction: debit
+    schedule: {count: [5, 8]}
+    amount: {monthly: 26000, growth: 0.05, noise: 0.10,
+             seasonality: [0.85, 0.85, 1.0, 1.0, 1.1, 1.15, 1.2, 1.15, 1.05, 0.95, 0.85, 0.85]}
+    num: {sequence: credit_memo, format: "CM-{seq}"}
+    counterparties:
+      - {name: Residential Customers, weight: 8}
+      - {name: Palmetto Ridge Apartments, weight: 1}
+      - {name: Westshore Commons Retail Center, weight: 1}
+      - {name: Gulf Breeze Hospitality Group, weight: 1}
+    memo:
+      - "Comfort Club member discount (15%)"
+      - "Senior & military discount"
+      - "Service recovery credit – callback"
+      - "Promotional discount – tune-up special"
+      - "Early payment discount"
+
+  # --- Cost of goods sold ---------------------------------------------------
+  - id: mat_hvac_equipment
+    account: "5000"
+    txn_type: bill
+    schedule: {count: [6, 9]}
+    amount: {monthly: 392000, growth: 0.05, noise: 0.06,
+             seasonality: [0.82, 0.82, 0.92, 1.0, 1.12, 1.22, 1.25, 1.22, 1.08, 0.95, 0.82, 0.78]}
+    counterparties:
+      - {name: Florida Equipment Distributors, weight: 3, num: "FED-{yy}-{seq}", seq_start: 11020, seq_step: [4, 30]}
+      - {name: Gulf Coast HVAC Supply, weight: 2, num: "GCS-{seq}", seq_start: 418220, seq_step: [8, 60]}
+    memo:
+      - "Equipment – {tons}-ton heat pump split system – job {job}"
+      - "Equipment – rooftop unit ({rtu} ton) – job {job}"
+      - "Equipment – air handler & coil – job {job}"
+      - "Equipment – ductless mini-split system – job {job}"
+    choices:
+      tons: ["2", "2.5", "3", "3.5", "4", "5"]
+      rtu: ["7.5", "10", "12.5", "15"]
+
+  - id: mat_hvac_parts
+    account: "5000"
+    txn_type: bill
+    schedule: {count: [6, 9]}
+    amount: {monthly: 200000, growth: 0.05, noise: 0.06,
+             seasonality: [0.88, 0.88, 0.95, 1.0, 1.08, 1.15, 1.18, 1.16, 1.05, 0.97, 0.88, 0.84]}
+    counterparties:
+      - {name: Gulf Coast HVAC Supply, weight: 4, num: "GCS-{seq}", seq_start: 418220, seq_step: [8, 60]}
+      - {name: Tampa Bay Refrigerant Supply, weight: 2, num: "RFS-{seq}", seq_start: 55310, seq_step: [3, 20]}
+    memo:
+      - "Parts – capacitors, contactors & motors – stock"
+      - "Refrigerant R-454B (10 cyl)"
+      - "Refrigerant R-410A reclaim & recharge stock"
+      - "Materials – copper line sets & fittings – job {job}"
+      - "Thermostats & controls – stock replenishment"
+      - "Filters & belts – PM stock"
+
+  - id: mat_plumbing
+    account: "5000"
+    txn_type: bill
+    schedule: {count: [4, 6]}
+    amount: {monthly: 150000, growth: 0.05, noise: 0.07}
+    counterparties:
+      - {name: Suncoast Plumbing Supply Co., num: "SPS{seq}", seq_start: 77104, seq_step: [5, 40]}
+    memo:
+      - "Plumbing materials – PEX, valves & fittings – job {job}"
+      - "Water heaters – stock replenishment"
+      - "Fixtures & trim – job {job}"
+      - "Backflow assemblies & repair kits"
+
+  - id: mat_sheet_metal
+    account: "5000"
+    txn_type: bill
+    schedule: {count: [2, 4]}
+    amount: {monthly: 52000, growth: 0.05, noise: 0.10}
+    counterparties:
+      - {name: Coastal Sheet Metal Supply, num: "CSM{seq}", seq_start: 20455, seq_step: [4, 25]}
+    memo:
+      - "Ductwork materials – sheet metal & insulation – job {job}"
+      - "Flex duct, registers & grilles – stock"
+
+  - id: mat_electrical
+    account: "5000"
+    txn_type: bill
+    schedule: {count: [1, 3]}
+    amount: {monthly: 28000, growth: 0.05, noise: 0.12}
+    counterparties:
+      - {name: Bay Area Electrical Distributors, num: "BAED-{seq}", seq_start: 90112, seq_step: [10, 70]}
+    memo: "Electrical – disconnects, whips & breakers – job {job}"
+
+  - id: labor_hvac
+    account: "5100"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 425000, growth: 0.045, noise: 0.015, spread: 0.05,
+             seasonality: [0.96, 0.95, 0.97, 0.99, 1.02, 1.05, 1.06, 1.06, 1.02, 0.99, 0.96, 0.97]}
+    memo: "Technician payroll – HVAC service – PPE {mdy}"
+
+  - id: labor_plumbing
+    account: "5100"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 175000, growth: 0.045, noise: 0.015, spread: 0.05}
+    memo: "Technician payroll – Plumbing – PPE {mdy}"
+
+  - id: labor_install
+    account: "5100"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 160000, growth: 0.045, noise: 0.02, spread: 0.05,
+             seasonality: [0.92, 0.92, 0.96, 1.0, 1.04, 1.08, 1.08, 1.08, 1.02, 0.98, 0.96, 0.96]}
+    memo: "Technician payroll – Install crews – PPE {mdy}"
+
+  - id: subcontractors
+    account: "5200"
+    txn_type: bill
+    schedule: {count: [4, 7]}
+    amount: {monthly: 225000, growth: 0.05, noise: 0.12, spread: 0.6}
+    counterparties:
+      - {name: Apex Ductwork LLC, weight: 4, num: "AD-{seq}", seq_start: 2980, seq_step: [8, 25],
+         memo: ["Ductwork fabrication & install – job {job}", "Duct modifications – {site}"]}
+      - {name: Sunbelt Insulation Services, weight: 2, num: "SIS-{seq}", seq_start: 6120, seq_step: [3, 15],
+         memo: "Duct & pipe insulation – job {job}"}
+      - {name: Precision Controls & BAS LLC, weight: 2, num: "PC{seq}", seq_start: 1402, seq_step: [2, 9],
+         memo: ["BAS programming & commissioning – {site}", "Controls wiring – job {job}"]}
+      - {name: Bayside Electrical Contractors, weight: 2, num: "BEC-{seq}", seq_start: 33081, seq_step: [5, 30],
+         memo: "Electrical rough-in for HVAC equipment – job {job}"}
+      - {name: Tri-County Crane & Rigging, weight: 1, num: "TCR-{seq}", seq_start: 8801, seq_step: [4, 20],
+         memo: "Crane lift – RTU set – {site}"}
+      - {name: Suncoast Test & Balance, weight: 1, num: "STB-{seq}", seq_start: 512, seq_step: [1, 6],
+         memo: "Test & balance report – {site}"}
+    choices:
+      site: [Harborview Office Park, Bayshore Medical Plaza, Westshore Commons, Riverview Industrial Park, Brandon Town Center, Coastal Cold Storage]
+
+  - id: fleet_fuel
+    account: "5300"
+    txn_type: expense
+    schedule: {weekdays: [4]}
+    amount: {monthly: 68000, growth: 0.04, noise: 0.06, spread: 0.15}
+    counterparties: [Gulfline Fleet Fuel Card]
+    memo: "Fleet fuel – field vehicles – week ending {mdy}"
+
+  - id: fleet_maintenance
+    account: "5300"
+    txn_type: bill
+    schedule: {count: [3, 6]}
+    amount: {monthly: 16000, growth: 0.04, noise: 0.30, spread: 0.6}
+    counterparties:
+      - {name: Brandon Fleet Service Center, weight: 3, num: "BFS-{seq}", seq_start: 4410, seq_step: [6, 30],
+         memo: ["Van #{van} – brakes & PM service", "Van #{van} – A/C compressor & alternator", "Van #{van} – transmission service"]}
+      - {name: Sunshine Tire & Auto, weight: 2, num: "STA{seq}", seq_start: 70215, seq_step: [10, 45],
+         memo: ["Tires (4) – van #{van}", "Van #{van} – oil change & inspection"]}
+    choices:
+      van: ["12", "15", "18", "21", "22", "26", "29", "31", "33", "37", "40"]
+
+  - id: fleet_leases
+    account: "5300"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [5]}
+    amount: {by_year: {2024: 36400, 2025: 38950, 2026: 41200}}
+    counterparties:
+      - {name: Harborline Fleet Leasing, num: "HFL-{yy}{mm}-0388"}
+    memo: "Service van fleet lease – {mon} {yyyy}"
+
+  - id: cycle_counts
+    account: "5400"
+    txn_type: journal
+    schedule: {days: [-1], months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]}
+    amount: {monthly: 2400, noise: 0.5}
+    memo: "Cycle count adjustment – {mon} {yyyy}"
+
+  # --- Operating expenses ---------------------------------------------------
+  - id: payroll_admin
+    account: "6000"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 52000, growth: 0.04, noise: 0.01, spread: 0.03}
+    memo: "Office payroll – Administration & accounting – PPE {mdy}"
+
+  - id: payroll_sales
+    account: "6000"
+    txn_type: payroll
+    end: "2026-01"
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 58000, growth: 0.04, noise: 0.01, spread: 0.03}
+    memo: "Office payroll – Sales & estimating – PPE {mdy}"
+
+  - id: payroll_sales_post
+    account: "6000"
+    txn_type: payroll
+    start: "2026-02"
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 46500, growth: 0.04, noise: 0.01, spread: 0.03}
+    memo: "Office payroll – Sales & estimating – PPE {mdy}"
+
+  - id: payroll_ops_mgmt
+    account: "6000"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 72000, growth: 0.04, noise: 0.01, spread: 0.03}
+    memo: "Office payroll – Operations management – PPE {mdy}"
+
+  - id: payroll_taxes
+    account: "6050"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 78000, growth: 0.045, noise: 0.02, spread: 0.05,
+             seasonality: [1.25, 1.15, 1.05, 1.0, 0.98, 0.97, 0.97, 0.95, 0.93, 0.93, 0.92, 0.90]}
+    memo: "Employer payroll taxes – PPE {mdy}"
+
+  - id: benefits_health
+    account: "6050"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [1]}
+    amount: {by_year: {2024: 88400, 2025: 95500, 2026: 103100}}
+    counterparties:
+      - {name: Gulf States Health Plan, num: "GSHP-{yy}{mm}-22318"}
+    memo: "Group medical & dental premium – {mon} {yyyy}"
+
+  - id: benefits_401k
+    account: "6050"
+    txn_type: payroll
+    schedule: {days: [15, -1], adjust: prior}
+    amount: {monthly: 27000, growth: 0.045, noise: 0.02, spread: 0.05}
+    memo: "401(k) employer match – PPE {mdy}"
+
+  - id: rent_palm_river
+    account: "6100"
+    txn_type: bill
+    mode: fixed
+    end: "2025-02"
+    schedule: {days: [1]}
+    amount: {fixed: 41500, escalate_pct: 0.03}
+    counterparties:
+      - {name: "Palm River Industrial Partners, LLC", num: "PRIP-{yy}{mm}"}
+    memo: "Rent – 5801 Palm River Rd (office & warehouse) – {mon} {yyyy}"
+
+  - id: rent_brandon
+    account: "6100"
+    txn_type: bill
+    mode: fixed
+    start: "2025-03"
+    schedule: {days: [1]}
+    amount: {fixed: 44800, escalate_pct: 0.03, escalate_month: 3}
+    counterparties:
+      - {name: "Brandon Logistics Center, LLC", num: "BLC-{yy}{mm}-114"}
+    memo: "Rent – 1150 Commerce Park Dr (office & warehouse) – {mon} {yyyy}"
+
+  - id: utilities_electric
+    account: "6100"
+    txn_type: bill
+    schedule: {days: [12]}
+    amount: {monthly: 9800, growth: 0.03, noise: 0.05,
+             seasonality: [0.75, 0.72, 0.82, 0.95, 1.10, 1.28, 1.35, 1.35, 1.20, 1.00, 0.80, 0.70]}
+    counterparties:
+      - {name: Bay Area Power & Light, num: "BAPL-{yy}{mm}-7741"}
+    memo: "Electric service – {prev_mon} {prev_yyyy}"
+
+  - id: utilities_water
+    account: "6100"
+    txn_type: bill
+    schedule: {days: [18]}
+    amount: {monthly: 850, noise: 0.15}
+    counterparties:
+      - {name: City of Tampa Water Department, end: "2025-02"}
+      - {name: Hillsborough County Water Resources, start: "2025-03"}
+    memo: "Water & sewer – {prev_mon} {prev_yyyy}"
+
+  - id: utilities_waste
+    account: "6100"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [3]}
+    amount: {fixed: 1380, escalate_pct: 0.04}
+    counterparties: [Suncoast Waste Services]
+    memo: "Dumpster service & recycling – {mon} {yyyy}"
+
+  - id: janitorial
+    account: "6100"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [25]}
+    amount: {fixed: 2650}
+    counterparties: [Spotless Commercial Cleaning]
+    memo: "Janitorial services – {mon} {yyyy}"
+
+  - id: pest_control
+    account: "6150"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [9]}
+    amount: {fixed: 285}
+    counterparties: [Bug Out Pest Services]
+    memo: "Pest control service – {mon} {yyyy}"
+
+  - id: facility_repairs
+    account: "6150"
+    txn_type: bill
+    schedule: {count: [1, 3]}
+    amount: {monthly: 2600, noise: 0.4, spread: 0.6}
+    counterparties:
+      - {name: Hillsborough Door & Dock, memo: ["Dock door repair", "Overhead door spring replacement"]}
+      - {name: Metro Fire Protection, memo: ["Fire extinguisher inspection & tags", "Sprinkler system inspection"]}
+      - {name: Bay Area Handyman Services, memo: ["Office repairs – drywall & paint", "Break room plumbing repair"]}
+
+  - id: property_insurance
+    account: "6200"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [10], months: [1, 4, 7, 10]}
+    amount: {by_year: {2024: 11800, 2025: 14900, 2026: 15600}}
+    counterparties:
+      - {name: Sunshine Mutual Insurance, num: "SMI-{yy}Q{q}-40512"}
+    memo: "Commercial property policy – Q{q} {yyyy} installment"
+
+  - id: it_productivity
+    account: "6300"
+    txn_type: expense
+    mode: fixed
+    schedule: {days: [2]}
+    amount: {fixed: 2860, escalate_pct: 0.05}
+    counterparties: [Nimbus Cloud Software]
+    memo: "Office productivity licenses (72 seats) – {mon} {yyyy}"
+
+  - id: it_managed
+    account: "6300"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [1]}
+    amount: {fixed: 6400}
+    counterparties:
+      - {name: "Gulfcoast Managed IT, LLC", num: "GMIT-{yy}{mm}"}
+    memo: "Managed IT services & help desk – {mon} {yyyy}"
+
+  - id: it_dispatch_legacy
+    account: "6300"
+    txn_type: bill
+    mode: fixed
+    end: "2024-12"
+    schedule: {days: [1]}
+    amount: {fixed: 4150}
+    counterparties:
+      - {name: DispatchWorks Software, num: "DW-{yy}{mm}-5530"}
+    memo: "DispatchWorks dispatch & scheduling license – {mon} {yyyy}"
+
+  - id: it_accounting
+    account: "6300"
+    txn_type: expense
+    mode: fixed
+    schedule: {days: [14]}
+    amount: {fixed: 425}
+    counterparties: [LedgerLine Cloud Accounting]
+    memo: "Accounting software subscription – {mon} {yyyy}"
+
+  - id: it_telematics
+    account: "6300"
+    txn_type: expense
+    mode: fixed
+    schedule: {days: [20]}
+    amount: {fixed: 2080}
+    counterparties: [FleetTrack Telematics]
+    memo: "Vehicle GPS & telematics (42 units) – {mon} {yyyy}"
+
+  - id: lien_notices
+    account: "6400"
+    txn_type: bill
+    schedule: {count: [1, 2]}
+    amount: {monthly: 520, noise: 0.35, spread: 0.4}
+    counterparties:
+      - {name: Sunstate Lien & Notice Services, num: "SLN-{seq}", seq_start: 30118, seq_step: [20, 90]}
+    memo: ["Notice to Owner filings ({njobs} projects)", "Lien release recording & filing fees"]
+    choices:
+      njobs: ["3", "4", "5", "6", "7"]
+
+  - id: cpa_quarterly
+    account: "6410"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [20], months: [1, 4, 7, 10]}
+    amount: {fixed: 6750}
+    counterparties:
+      - {name: "Tolliver Grant CPAs, P.A.", num: "TG-{yy}{mm}-118"}
+    memo: "Quarterly accounting review & tax planning – Q{q} {yyyy}"
+
+  - id: cpa_annual
+    account: "6410"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [28], months: [4]}
+    amount: {by_year: {2024: 24500, 2025: 25800, 2026: 26900}}
+    counterparties:
+      - {name: "Tolliver Grant CPAs, P.A.", num: "TG-{yy}{mm}-240"}
+    memo: "Reviewed financial statements & tax returns – FY{last_yyyy}"
+
+  - id: job_boards
+    account: "6450"
+    txn_type: expense
+    schedule: {days: [3]}
+    amount: {monthly: 1500, noise: 0.2, round: 1}
+    counterparties: [Indeed]
+    memo: "Job postings – technician recruiting – {mon} {yyyy}"
+
+  - id: background_checks
+    account: "6450"
+    txn_type: bill
+    schedule: {count: [1, 2]}
+    amount: {monthly: 380, noise: 0.4, spread: 0.4}
+    counterparties:
+      - {name: ClearCheck Background Screening, num: "CC{seq}", seq_start: 150882, seq_step: [30, 200]}
+    memo: "Pre-employment background checks & drug screens"
+
+  - id: marketing_mgmt
+    account: "6500"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [1]}
+    amount: {fixed: 7500}
+    counterparties:
+      - {name: LeadSpring Digital Marketing, num: "LS-{yy}{mm}-MGT"}
+    memo: "Digital marketing management fee – {mon} {yyyy}"
+
+  - id: marketing_media
+    account: "6500"
+    txn_type: bill
+    schedule: {days: [-1]}
+    amount: {monthly: 21000, growth: 0.06, noise: 0.08,
+             seasonality: [0.80, 0.80, 0.90, 1.00, 1.15, 1.30, 1.30, 1.25, 1.05, 0.90, 0.80, 0.75]}
+    counterparties:
+      - {name: LeadSpring Digital Marketing, num: "LS-{yy}{mm}-MED"}
+    memo: "Paid search & local services ads – {mon} {yyyy}"
+
+  - id: marketing_radio
+    account: "6500"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [6], months: [4, 5, 6, 7, 8]}
+    amount: {fixed: 6200}
+    counterparties:
+      - {name: Bay Area Radio Group, num: "BARG-{yy}{mm}"}
+    memo: "Radio spots – summer AC campaign – {mon} {yyyy}"
+
+  - id: marketing_print
+    account: "6500"
+    txn_type: bill
+    schedule: {days: [11], months: [2, 5, 9, 11]}
+    amount: {monthly: 2400, noise: 0.3}
+    counterparties:
+      - {name: Signworks of Tampa, num: "SW-{seq}", seq_start: 7712, seq_step: [15, 60]}
+    memo: ["Vehicle wraps – 2 service vans", "Yard signs & door hangers"]
+
+  - id: travel_meals
+    account: "6600"
+    txn_type: expense
+    schedule: {count: [4, 7]}
+    amount: {monthly: 5200, noise: 0.25, spread: 0.7}
+    counterparties:
+      - {name: Bayshore Grille, weight: 3, memo: ["Client lunch – property manager", "Team lunch – safety meeting"]}
+      - {name: Harborside Steakhouse, weight: 2, memo: "Client dinner – general contractor relationship"}
+      - {name: Palmetto Corporate Travel, weight: 2, memo: ["Travel – technician certification training, Orlando", "Travel – supplier product training, Atlanta"]}
+      - {name: Crescent Coffee Co., weight: 1, memo: "Breakfast – Saturday technician training"}
+
+  - id: admin_auto_service
+    account: "6650"
+    txn_type: expense
+    schedule: {count: [1, 2]}
+    amount: {monthly: 950, noise: 0.4, spread: 0.5}
+    counterparties: [Sunshine Tire & Auto]
+    memo: ["Admin vehicle service – oil change & tires", "Admin vehicle repair"]
+
+  - id: admin_auto_fuel
+    account: "6650"
+    txn_type: expense
+    schedule: {days: [28]}
+    amount: {monthly: 1150, noise: 0.15}
+    counterparties: [Gulfline Fleet Fuel Card]
+    memo: "Fuel – admin vehicles – {mon} {yyyy}"
+
+  - id: dues_trade
+    account: "6700"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [10], months: [1]}
+    amount: {fixed: 1850}
+    counterparties: [Florida HVAC Contractors Association]
+    memo: "Annual membership dues – {yyyy}"
+
+  - id: dues_chamber
+    account: "6700"
+    txn_type: expense
+    mode: fixed
+    schedule: {days: [4], months: [3]}
+    amount: {fixed: 975}
+    counterparties: [Greater Brandon Chamber of Commerce]
+    memo: "Annual chamber membership – {yyyy}"
+
+  - id: subs_refrigerant_portal
+    account: "6700"
+    txn_type: expense
+    mode: fixed
+    schedule: {days: [15]}
+    amount: {fixed: 295}
+    counterparties: [RefrigTrack Compliance Portal]
+    memo: "Refrigerant tracking & EPA compliance subscription – {mon} {yyyy}"
+
+  - id: subs_news
+    account: "6700"
+    txn_type: expense
+    mode: fixed
+    schedule: {days: [8]}
+    amount: {fixed: 39}
+    counterparties: [Bay Business Weekly]
+    memo: "Digital subscription – {mon} {yyyy}"
+
+  - id: merchant_fees
+    account: "6800"
+    txn_type: expense
+    schedule: {days: [3]}
+    amount: {monthly: 21500, growth: 0.06, noise: 0.03,
+             seasonality: [0.80, 0.78, 0.88, 0.97, 1.10, 1.25, 1.32, 1.30, 1.15, 0.98, 0.80, 0.77]}
+    counterparties: [Coastline Merchant Services]
+    memo: "Card processing fees – {prev_mon} {prev_yyyy}"
+
+  - id: bank_fees
+    account: "6800"
+    txn_type: expense
+    schedule: {days: [-1]}
+    amount: {monthly: 640, noise: 0.15}
+    counterparties:
+      - {name: Gulfstream Bank, end: "2025-06"}
+      - {name: Tidewater Capital Bank, start: "2025-07"}
+    memo: "Account analysis & ACH fees – {mon} {yyyy}"
+
+  - id: office_supplies
+    account: "6900"
+    txn_type: expense
+    schedule: {count: [1, 3]}
+    amount: {monthly: 1650, noise: 0.3, spread: 0.5}
+    counterparties: [Bayline Office Supply]
+    memo: ["Office supplies", "Toner & paper", "Break room supplies"]
+
+  - id: mobile_phones
+    account: "6900"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [22]}
+    amount: {fixed: 3420, escalate_pct: 0.03}
+    counterparties:
+      - {name: Gulf Wireless, num: "GW-{yy}{mm}-60417"}
+    memo: "Mobile phones & data – 58 lines – {mon} {yyyy}"
+
+  - id: uniforms
+    account: "6900"
+    txn_type: bill
+    mode: fixed
+    schedule: {days: [7, 21]}
+    amount: {fixed: 1380}
+    counterparties:
+      - {name: Coastal Uniform Service, num: "CUS-{yy}{mm}{dd}"}
+    memo: "Technician uniform rental & laundry – {mdy}"
+
+  - id: postage
+    account: "6900"
+    txn_type: expense
+    schedule: {days: [17]}
+    amount: {monthly: 420, noise: 0.4}
+    counterparties: [Harbor Postage & Shipping]
+    memo: "Postage & overnight shipping – {mon} {yyyy}"
+
+  - id: bad_debt_routine
+    account: "6950"
+    txn_type: journal
+    schedule: {days: [-1]}
+    amount: {monthly: 500, noise: 0.4, round: 1}
+    memo: "Bad debt write-off – uncollectible residential balances – {mon} {yyyy}"
+
+  - id: depreciation
+    account: "7000"
+    txn_type: journal
+    mode: fixed
+    split: Accumulated Depreciation
+    schedule: {days: [-1]}
+    amount: {by_year: {2024: 51800, 2025: 55400, 2026: 58900}}
+    memo: "Monthly depreciation – {mon} {yyyy}"
+
+  - id: amortization
+    account: "7050"
+    txn_type: journal
+    mode: fixed
+    split: Customer List (net)
+    schedule: {days: [-1]}
+    amount: {fixed: 3750}
+    memo: "Amortization – customer list (2022 Bayside Plumbing acquisition) – {mon} {yyyy}"
+
+  # --- Other income / expense -------------------------------------------------
+  - id: scrap_sales
+    account: "8000"
+    txn_type: deposit
+    schedule: {count: [1, 2]}
+    amount: {monthly: 2300, noise: 0.35, spread: 0.4}
+    counterparties: [Gulf Coast Metal Recyclers]
+    memo: "Scrap copper & aluminum sales"
+
+  - id: volume_rebates
+    account: "8000"
+    txn_type: deposit
+    schedule: {days: [25], months: [1, 4, 7, 10]}
+    amount: {monthly: 8500, noise: 0.25}
+    counterparties: [Florida Equipment Distributors]
+    memo: "Distributor volume rebate – quarter ended {prev_month_end_mdy}"
+
+  - id: interest_term_gulfstream
+    account: "8100"
+    txn_type: journal
+    mode: fixed
+    end: "2025-06"
+    schedule: {days: [-1]}
+    amount: {by_year: {2024: 15400, 2025: 13700}}
+    counterparties: [Gulfstream Bank]
+    memo: "Term loan interest – {mon} {yyyy}"
+
+  - id: interest_loc
+    account: "8100"
+    txn_type: journal
+    schedule: {days: [-1]}
+    amount: {monthly: 2900, noise: 0.4}
+    counterparties:
+      - {name: Gulfstream Bank, end: "2025-06"}
+      - {name: Tidewater Capital Bank, start: "2025-07"}
+    memo: "Revolving line of credit interest – {mon} {yyyy}"
+
+  - id: interest_term_tidewater
+    account: "8100"
+    txn_type: journal
+    mode: fixed
+    start: "2025-07"
+    schedule: {days: [-1]}
+    amount: {by_year: {2025: 16800, 2026: 16200}}
+    counterparties: [Tidewater Capital Bank]
+    memo: "Term loan interest – {mon} {yyyy}"
+
+  - id: charitable
+    account: "8200"
+    txn_type: check
+    mode: fixed
+    schedule: {days: [14], months: [11]}
+    amount: {fixed: 2500}
+    counterparties: [Tampa Bay Youth Baseball League]
+    memo: "Charitable sponsorship – youth baseball league {yyyy}"
+
+  - id: state_income_tax
+    account: "9000"
+    txn_type: check
+    mode: fixed
+    schedule: {days: [15], months: [4, 6, 9, 12], adjust: prior}
+    amount: {by_year: {2024: 31500, 2025: 36000, 2026: 38500}}
+    counterparties: [Florida Department of Revenue]
+    memo: "Estimated state income tax payment – {month} {yyyy}"
+
+# ---------------------------------------------------------------------------
+# Planted transactions (stable keys; the answer key refers to these)
+# ---------------------------------------------------------------------------
+planted:
+  # M-01 Hollis & Crane: Matter 2291 Dawson litigation
+  - {key: hc_lit_0212, date: "2025-02-12", account: "6400", counterparty: Hollis & Crane LLP, num: 25-0212, amount: 14500,
+     memo: "Matter 2291 – Dawson v. Meridian – professional services through 01/31/2025"}
+  - {key: hc_lit_0418, date: "2025-04-18", account: "6400", counterparty: Hollis & Crane LLP, num: 25-0418, amount: 22000,
+     memo: "Matter 2291 – Dawson v. Meridian – professional services through 03/31/2025"}
+  - {key: hc_lit_0615, date: "2025-06-13", account: "6400", counterparty: Hollis & Crane LLP, num: 25-0615, amount: 18000,
+     memo: "Matter 2291 – Dawson v. Meridian – professional services through 05/31/2025"}
+  - {key: hc_lit_0910, date: "2025-09-10", account: "6400", counterparty: Hollis & Crane LLP, num: 25-0910, amount: 21000,
+     memo: "Matter 2291 – Dawson v. Meridian – mediation & professional services through 08/31/2025"}
+  - {key: hc_lit_1120, date: "2025-11-20", account: "6400", counterparty: Hollis & Crane LLP, num: 25-1120, amount: 9000,
+     memo: "Matter 2291 – Dawson v. Meridian – settlement documentation through 11/14/2025"}
+  # M-01 Hollis & Crane: Matter 1004 general corporate retainer and ad hoc work
+  - key: "hc_retainer_{yyyy}{mm}"
+    repeat: {start: "2024-01", end: "2026-06", days: [1]}
+    account: "6400"
+    counterparty: Hollis & Crane LLP
+    num: "{yy}-{mm}01"
+    amount: 2500
+    memo: "Matter 1004 – General corporate & employment – monthly retainer – {mon} {yyyy}"
+  - {key: hc_adhoc_2410, date: "2024-10-22", account: "6400", counterparty: Hollis & Crane LLP, num: 24-1022, amount: 6000,
+     memo: "Matter 1004 – Non-compete & restrictive covenant review"}
+  - {key: hc_adhoc_2508, date: "2025-08-19", account: "6400", counterparty: Hollis & Crane LLP, num: 25-0819, amount: 5500,
+     memo: "Matter 1004 – Employment policy review"}
+
+  # M-02 officer compensation: $660,000 / yr, 24 semi-monthly payrolls
+  - key: "officer_pay_{yyyy}{mm}_{n}"
+    repeat: {start: "2024-01", end: "2026-06", days: [15, -1], adjust: prior}
+    account: "6010"
+    txn_type: payroll
+    amount: 27500
+    memo: "Officer payroll – R. Castellano – PPE {mdy}"
+
+  # M-03 owner items
+  - key: "club_dues_{yyyy}{mm}"
+    repeat: {start: "2025-01", end: "2026-06", days: [5]}
+    account: "6700"
+    txn_type: expense
+    counterparty: Pelican Bay Country Club
+    amount: 1100
+    memo: "Club dues – R. Castellano"
+  - key: "x5_lease_{yyyy}{mm}"
+    repeat: {start: "2025-01", end: "2026-06", days: [20]}
+    account: "6650"
+    txn_type: expense
+    counterparty: BMW Financial Services
+    amount: 1500
+    memo: "Lease – X5 (D. Castellano, personal)"
+  - {key: travel_acca_2025, date: "2025-03-14", account: "6600", txn_type: expense, counterparty: Palmetto Corporate Travel, amount: 5600,
+     memo: "Travel – R. Castellano – ACCA 2025 Conference, Orlando (registration, air & hotel)"}
+  - {key: travel_dealer_summit_2025, date: "2025-09-19", account: "6600", txn_type: expense, counterparty: Palmetto Corporate Travel, amount: 5600,
+     memo: "Travel – R. Castellano – Carrier Dealer Summit, Indianapolis (registration, air & hotel)"}
+  - {key: travel_plant_visit_2025, date: "2025-11-21", account: "6600", txn_type: expense, counterparty: Palmetto Corporate Travel, amount: 5600,
+     memo: "Travel – R. Castellano & M. Delgado – Dixon-Reeve plant visit, Tyler TX (air & hotel)"}
+  - {key: travel_acca_2026, date: "2026-03-13", account: "6600", txn_type: expense, counterparty: Palmetto Corporate Travel, amount: 5600,
+     memo: "Travel – R. Castellano – ACCA 2026 Conference, Las Vegas (registration, air & hotel)"}
+
+  # M-04 CFO search
+  - {key: barrow_1, date: "2025-04-14", account: "6450", counterparty: Barrow Search Partners, num: BSP-25-0412, amount: 15000,
+     memo: "Retained search – Chief Financial Officer – installment 1 of 3"}
+  - {key: barrow_2, date: "2025-05-15", account: "6450", counterparty: Barrow Search Partners, num: BSP-25-0515, amount: 15000,
+     memo: "Retained search – Chief Financial Officer – installment 2 of 3"}
+  - {key: barrow_3, date: "2025-07-17", account: "6450", counterparty: Barrow Search Partners, num: BSP-25-0717, amount: 15000,
+     memo: "Retained search – Chief Financial Officer – installment 3 of 3 (placement)"}
+
+  # M-05 severance
+  - {key: severance_1, date: "2026-02-13", account: "6000", txn_type: payroll, amount: 25000, memo: "Severance – T. Whitfield"}
+  - {key: severance_2, date: "2026-03-13", account: "6000", txn_type: payroll, amount: 25000, memo: "Severance – T. Whitfield"}
+  - {key: severance_3, date: "2026-04-15", account: "6000", txn_type: payroll, amount: 25000, memo: "Severance – T. Whitfield"}
+
+  # M-06 Brightline FieldPro managed services
+  - key: "brightline_{yyyy}{mm}"
+    repeat: {start: "2025-01", end: "2026-06", days: [1]}
+    account: "6300"
+    counterparty: Brightline Systems Group
+    num: "BSG-{yy}{mm}"
+    amount: 8000
+    memo: "FieldPro managed services – {mon} {yyyy}"
+
+  # M-07 refinancing costs (booked to interest expense)
+  - {key: refi_prepayment_penalty, date: "2025-06-27", account: "8100", txn_type: check, counterparty: Gulfstream Bank, amount: 13000,
+     memo: "Prepayment penalty – Gulfstream Bank term loan payoff"}
+  - {key: refi_fee_writeoff, date: "2025-06-30", account: "8100", txn_type: journal, counterparty: Gulfstream Bank, amount: 22000,
+     memo: "Write-off unamortized loan origination fees – Gulfstream Bank"}
+
+  # M-08 sale-process fees
+  - {key: keel_harbor_retainer, date: "2025-10-06", account: "6400", counterparty: Keel Harbor Advisors, num: KHA-2510-031, amount: 26000,
+     memo: "Sell-side M&A advisory – initial retainer (Project Cobalt)"}
+  - {key: dunmore_pike_readiness, date: "2025-11-12", account: "6410", counterparty: Dunmore & Pike CPAs, num: DP-25-1107, amount: 15000,
+     memo: "Sell-side financial readiness – fixed fee (Project Cobalt)"}
+
+  # M-09 storm damage and the unadjusted insurance recovery
+  - {key: storm_restoration, date: "2024-10-16", account: "6150", counterparty: Tampa Bay Restoration, num: TBR-24-10417, amount: 20000,
+     memo: "Emergency water mitigation & drying – Palm River warehouse (hurricane damage)"}
+  - {key: storm_roof_progress, date: "2024-11-08", account: "6150", counterparty: Gulf Coast Roofing, num: GCR-5518, amount: 24500,
+     memo: "Roof repair – Palm River warehouse storm damage – progress billing"}
+  - {key: storm_roof_final, date: "2024-12-12", account: "6150", counterparty: Gulf Coast Roofing, num: GCR-5602, amount: 13500,
+     memo: "Roof repair – Palm River warehouse storm damage – final billing"}
+  - {key: storm_insurance_proceeds, date: "2025-02-18", account: "8000", txn_type: deposit, counterparty: Sunshine Mutual Insurance, amount: -40000,
+     memo: "Insurance proceeds – storm claim FL-24-88172"}
+
+  # M-10 subcontractor true-up for 2024 work
+  - {key: apex_trueup, date: "2025-03-14", account: "5200", counterparty: Apex Ductwork LLC, num: AD-3391, amount: 42000,
+     memo: "Project closeout true-up – 2024 projects"}
+
+  # M-11 warehouse relocation (all in Feb-Apr 2025)
+  - {key: reloc_movers, date: "2025-02-21", account: "6100", counterparty: Suncoast Movers, num: SM-25-0214, amount: 32000,
+     memo: "Warehouse relocation – Palm River Rd to Brandon Logistics Center"}
+  - {key: reloc_buildout_1, date: "2025-03-20", account: "6150", counterparty: Brandon Build-Out Contractors, num: BBC-1147, amount: 24000,
+     memo: "Warehouse build-out – progress billing 1 of 2"}
+  - {key: reloc_buildout_2, date: "2025-04-24", account: "6150", counterparty: Brandon Build-Out Contractors, num: BBC-1162, amount: 24000,
+     memo: "Warehouse build-out – final billing 2 of 2"}
+
+  # M-12 dispatch team (3 FTE) still on payroll through Jun 2026
+  - key: "dispatch_pay_{yyyy}{mm}_{n}"
+    repeat: {start: "2024-01", end: "2026-06", days: [15, -1], adjust: prior}
+    account: "6000"
+    txn_type: payroll
+    amount: 6875
+    memo: "Office payroll – Dispatch (3 FTE) – PPE {mdy}"
+
+  # M-13 year-end physical count adjustments (same entry both years)
+  - {key: inventory_ye_2024, date: "2024-12-31", account: "5400", txn_type: journal, amount: 58500,
+     memo: "Year-end physical count adjustment – obsolete & shrink"}
+  - {key: inventory_ye_2025, date: "2025-12-31", account: "5400", txn_type: journal, amount: 64000,
+     memo: "Year-end physical count adjustment – obsolete & shrink"}
+
+  # M-14 customer bankruptcy
+  - {key: halvorsen_writeoff, date: "2025-10-31", account: "6950", txn_type: journal, counterparty: Halvorsen Builders, amount: 52000,
+     memo: "Bad debt write-off – Halvorsen Builders (Chapter 7)"}
+
+  # Coastal Risk premium installments (one is posted twice; see data_quality)
+  - key: "coastal_prem_{yyyy}{mm}"
+    repeat: {start: "2024-01", end: "2024-12", days: [5]}
+    account: "6200"
+    counterparty: Coastal Risk Insurance
+    num: "CRI-{yy}{mm}-4471"
+    amount: 48200
+    memo: "Commercial package, auto fleet & workers' comp – premium installment – {mon} {yyyy}"
+  - key: "coastal_prem_{yyyy}{mm}"
+    repeat: {start: "2025-01", end: "2025-12", days: [5]}
+    account: "6200"
+    counterparty: Coastal Risk Insurance
+    num: "CRI-{yy}{mm}-4471"
+    amount: 52900
+    memo: "Commercial package, auto fleet & workers' comp – premium installment – {mon} {yyyy}"
+  - key: "coastal_prem_{yyyy}{mm}"
+    repeat: {start: "2026-01", end: "2026-06", days: [5]}
+    account: "6200"
+    counterparty: Coastal Risk Insurance
+    num: "CRI-{yy}{mm}-4471"
+    amount: 55600
+    memo: "Commercial package, auto fleet & workers' comp – premium installment – {mon} {yyyy}"
+
+  # Fleet disposals (other income)
+  - {key: van_sale_2405, date: "2024-05-17", account: "8050", txn_type: deposit, counterparty: Suncoast Auto Auction, amount: -4850,
+     memo: "Gain on sale – 2016 service van #7"}
+  - {key: van_sale_2411, date: "2024-11-08", account: "8050", txn_type: deposit, counterparty: Suncoast Auto Auction, amount: -3200,
+     memo: "Gain on sale – 2017 service van #11"}
+  - {key: van_sale_2506, date: "2025-06-13", account: "8050", txn_type: deposit, counterparty: Suncoast Auto Auction, amount: -5600,
+     memo: "Gain on sale – 2018 service van #14"}
+  - {key: truck_disposal_2602, date: "2026-02-20", account: "8050", txn_type: journal, counterparty: Suncoast Auto Auction, amount: 1150,
+     memo: "Loss on disposal – 2015 box truck #3 (scrapped)"}
+
+# ---------------------------------------------------------------------------
+# Planted data-quality issues
+# ---------------------------------------------------------------------------
+data_quality:
+  duplicates:
+    - key: coastal_prem_202505_dup
+      of: coastal_prem_202505
+      days_later: 3
+      note: >-
+        Coastal Risk Insurance May 2025 premium bill CRI-2505-4471 ($52,900) was entered twice,
+        on 05/05/2025 and again on 05/08/2025. Management's P&L includes both postings.
+  topside:
+    - month: "2025-12"
+      account: "6000"
+      amount: 25000
+      note: >-
+        Management's Dec 2025 P&L carries a $25,000 top-side year-end bonus accrual in 6000
+        that was never posted to the GL.
