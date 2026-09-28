@@ -11,7 +11,7 @@
 deal_id: kinetic_ridge_pt
 split: holdout
 seed: 20260724
-package_date: "2026-07-24"
+package_date: "2026-06-05"
 company:
   name: Kinetic Ridge Physical Therapy Partners, LLC
   short_name: Kinetic Ridge
@@ -443,7 +443,7 @@ background:
     amount: {by_year: {2024: 4600, 2025: 4950, 2026: 5300}}
     counterparties:
       - {name: Prairie State Mutual Insurance Company, num: "PSM-{yy}{mm}-88410"}
-    memo: "Business owners package (property & business income) – {mon} {yyyy}"
+    memo: "Business owners package (property & business income; incl. Zionsville & Noblesville buildings) – {mon} {yyyy}"
 
   - id: ins_workers_comp
     account: "6200"
@@ -776,12 +776,34 @@ planted:
     num: "KFR-N-{yy}{mm}"
     amount: 6000
     memo: "Rent – 940 Conner Street, Noblesville clinic – {mon} {yyyy}"
+  # Absolute-net leases: the Company pays the two KFR buildings' real property tax directly (6800, May/Nov
+  # installments; Indiana bills in arrears, so the "2024 installment" is the 2023-pay-2024 bill).
+  - {key: retax_zville_202405, date: "2024-05-08", account: "6800", counterparty: Boone County Treasurer, num: BCT-2405-1850,
+     amount: 29684.37, memo: "Real property tax – 1850 Oak Ridge Pkwy, Zionsville – 2024 installment (May)"}
+  - {key: retax_zville_202411, date: "2024-11-08", account: "6800", counterparty: Boone County Treasurer, num: BCT-2411-1850,
+     amount: 29684.37, memo: "Real property tax – 1850 Oak Ridge Pkwy, Zionsville – 2024 installment (Nov)"}
+  - {key: retax_zville_202505, date: "2025-05-08", account: "6800", counterparty: Boone County Treasurer, num: BCT-2505-1850,
+     amount: 30212.56, memo: "Real property tax – 1850 Oak Ridge Pkwy, Zionsville – 2025 installment (May)"}
+  - {key: retax_zville_202511, date: "2025-11-08", account: "6800", counterparty: Boone County Treasurer, num: BCT-2511-1850,
+     amount: 30212.56, memo: "Real property tax – 1850 Oak Ridge Pkwy, Zionsville – 2025 installment (Nov)"}
+  - {key: retax_zville_202605, date: "2026-05-08", account: "6800", counterparty: Boone County Treasurer, num: BCT-2605-1850,
+     amount: 30948.18, memo: "Real property tax – 1850 Oak Ridge Pkwy, Zionsville – 2026 installment (May)"}
+  - {key: retax_nobles_202405, date: "2024-05-08", account: "6800", counterparty: Hamilton County Treasurer, num: HCT-2405-940,
+     amount: 8862.14, memo: "Real property tax – 940 Conner St, Noblesville – 2024 installment (May)"}
+  - {key: retax_nobles_202411, date: "2024-11-08", account: "6800", counterparty: Hamilton County Treasurer, num: HCT-2411-940,
+     amount: 8862.14, memo: "Real property tax – 940 Conner St, Noblesville – 2024 installment (Nov)"}
+  - {key: retax_nobles_202505, date: "2025-05-08", account: "6800", counterparty: Hamilton County Treasurer, num: HCT-2505-940,
+     amount: 9047.90, memo: "Real property tax – 940 Conner St, Noblesville – 2025 installment (May)"}
+  - {key: retax_nobles_202511, date: "2025-11-08", account: "6800", counterparty: Hamilton County Treasurer, num: HCT-2511-940,
+     amount: 9047.90, memo: "Real property tax – 940 Conner St, Noblesville – 2025 installment (Nov)"}
+  - {key: retax_nobles_202605, date: "2026-05-08", account: "6800", counterparty: Hamilton County Treasurer, num: HCT-2605-940,
+     amount: 9215.62, memo: "Real property tax – 940 Conner St, Noblesville – 2026 installment (May)"}
 
   # A-3 Brownsburg closure: costs outside the background streams
   - {key: bburg_legal, date: "2026-03-12", account: "6400", counterparty: Tate Whitcomb LLP, num: TW-26-0312, amount: 4350,
      memo: "Matter 4471 – Brownsburg lease termination – negotiation & termination agreement"}
   - {key: bburg_termination_fee, date: "2026-03-02", account: "6100", counterparty: "Eagle Creek Commercial Properties, LLC",
-     num: ECCP-TERM-0302, amount: 38000,
+     num: ECCP-TERM-0302, amount: 38250,
      memo: "Lease termination fee – Brownsburg clinic (Suite 110) – termination agreement dated 03/02/2026"}
   - {key: bburg_move, date: "2026-03-06", account: "6150", counterparty: "Hoosier Relocation Services, Inc.", num: HRS-26-0306,
      amount: 3200, memo: "Brownsburg closure – equipment move to Avon clinic & furniture disposal"}
@@ -1361,7 +1383,7 @@ documents:
               - ["Carmel storage", "Hoosier Relocation Services (Carmel storage)", "Month to month", "1,150.00"]
               - [Brownsburg, "Eagle Creek Commercial Properties, LLC", "Terminated 03/31/2026", "-"]
               - ["Carmel (Main St)", "Carmel Arts & Design Holdings, LLC", "Expired 07/31/2025", "-"]
-        - "All clinic leases are on a net basis (tenant pays its share of taxes, insurance and CAM through the monthly charge). The two Kowalczyk Family Realty leases have signed amendments resetting rent to market at closing (VDR 2.2 and 2.5)."
+        - "Third-party clinic leases are net: the tenant pays its share of taxes, insurance and CAM through the monthly charge. The two Kowalczyk Family Realty leases are absolute net: the Company pays real estate taxes (account 6800), building insurance and all maintenance directly. Both have signed amendments resetting rent to market at closing (VDR 2.2 and 2.5)."
 
   # --- 03 Brownsburg closure (A-3, A-15) ------------------------------------------------
   - id: bburg_memo
@@ -1395,7 +1417,7 @@ documents:
     filename: 3.2 Lease Termination Agreement - Brownsburg Clinic (Eagle Creek).pdf
     folder: 03 Brownsburg Closure
     template: agreement
-    key_phrases: ["Termination Fee of $38,000.00", "the Termination Date shall be March 31, 2026"]
+    key_phrases: ["Termination Fee of $38,250.00", "the Termination Date shall be March 31, 2026"]
     fields:
       title: LEASE TERMINATION AGREEMENT
       subtitle: ["Suite 110, 1025 E Main Street, Brownsburg, Indiana 46112"]
@@ -1404,7 +1426,7 @@ documents:
         - heading: Termination.
           body: ["The Lease terminates early, and the Termination Date shall be March 31, 2026. Tenant shall surrender the premises broom clean with its equipment removed on or before the Termination Date."]
         - heading: Termination Fee.
-          body: ["In consideration of Landlord's agreement to terminate the Lease before its scheduled expiration on May 31, 2029, Tenant shall pay Landlord a Termination Fee of $38,000.00 upon execution of this Agreement."]
+          body: ["In consideration of Landlord's agreement to terminate the Lease before its scheduled expiration on May 31, 2029, Tenant shall pay Landlord a Termination Fee of $38,250.00 upon execution of this Agreement."]
         - heading: Rent Through Termination.
           body: ["Tenant shall pay Base Rent and CAM for March 2026 ($9,400.00) in the ordinary course. No rent is due for any period after the Termination Date."]
         - heading: Release.
@@ -1421,7 +1443,7 @@ documents:
     folder: 03 Brownsburg Closure
     template: invoice
     supports: [bburg_termination_fee]
-    key_phrases: ["Invoice No.: ECCP-TERM-0302", "Amount Due: $38,000.00"]
+    key_phrases: ["Invoice No.: ECCP-TERM-0302", "Amount Due: $38,250.00"]
     fields:
       issuer: eccp
       bill_to: ["Attn: Brent Oyelaran", "Kinetic Ridge Physical Therapy Partners, LLC", 1850 Oak Ridge Parkway, "Zionsville, IN 46077"]
@@ -1431,14 +1453,14 @@ documents:
         - [Premises, "Suite 110, Brownsburg"]
         - [Terms, Due upon receipt]
       lines:
-        - {description: "Lease termination fee per Lease Termination Agreement dated March 2, 2026", amount: 38000}
+        - {description: "Lease termination fee per Lease Termination Agreement dated March 2, 2026", amount: 38250}
       total_label: Amount Due
 
   - id: bburg_results
     filename: 3.4 Brownsburg Clinic Operating Results and Closure Costs.pdf
     folder: 03 Brownsburg Closure
     template: form
-    key_phrases: ["$115,966.19 (FY2024), $177,787.29 (FY2025) and $213,222.46 (TTM May-26)"]
+    key_phrases: ["$115,966.19 (FY2024), $177,787.29 (FY2025) and $213,472.46 (TTM May-26)"]
     fields:
       issuer: kinetic
       title: Brownsburg Clinic - Operating Results and Closure Costs
@@ -1454,12 +1476,12 @@ documents:
               - ["Rent and CAM, Suite 110 (6100)", "112,800.00", "112,800.00", "94,000.00"]
               - ["Utilities, incl. final bill (6120)", "14,111.38", "13,458.95", "12,230.03"]
               - ["Operating loss", "115,966.19", "177,787.29", "160,822.46"]
-              - ["Lease termination fee (6100)", "-", "-", "38,000.00"]
+              - ["Lease termination fee (6100)", "-", "-", "38,250.00"]
               - ["Legal – Tate Whitcomb Matter 4471 (6400)", "-", "-", "4,350.00"]
               - ["Equipment move to Avon (6150)", "-", "-", "3,200.00"]
               - ["Final pay and PTO payout (5000)", "-", "-", "6,850.00"]
-            total: ["Net loss removed (A-3)", "115,966.19", "177,787.29", "213,222.46"]
-        - "Adjustment A-3 removes a net loss of $115,966.19 (FY2024), $177,787.29 (FY2025) and $213,222.46 (TTM May-26)."
+            total: ["Net loss removed (A-3)", "115,966.19", "177,787.29", "213,472.46"]
+        - "Adjustment A-3 removes a net loss of $115,966.19 (FY2024), $177,787.29 (FY2025) and $213,472.46 (TTM May-26)."
         - "Revenue is the monthly posting from the legacy billing system (commercial 4000, Medicare 4010). Costs are the Brownsburg payroll journals (5000), rent and CAM for Suite 110 (6100), Brownsburg utilities (6120) and the closure costs. Stranded costs that continue after the closure are not included (see VDR 3.1)."
 
   - id: bburg_move_invoice
@@ -1637,7 +1659,7 @@ documents:
     key_phrases: ["opened this engagement as Matter 4468", "billed in addition to, the monthly general counsel retainer under Matter 1102"]
     fields:
       issuer: tw
-      date: "October 20, 2025"
+      date: "January 5, 2026"
       to: [Mr. Brent Oyelaran, Chief Financial Officer, "Kinetic Ridge Physical Therapy Partners, LLC", 1850 Oak Ridge Parkway, "Zionsville, IN 46077"]
       re: [Project Sycamore - Sell-Side Transaction Counsel]
       salutation: "Dear Brent:"
@@ -1661,7 +1683,7 @@ documents:
       meta:
         - [Invoice No., TW-26-0312]
         - [Invoice Date, "March 12, 2026"]
-        - [Billing Period, "Oct 20, 2025 – Feb 28, 2026"]
+        - [Billing Period, "Jan 5 – Mar 6, 2026"]
         - [Terms, Net 30]
       intro:
         - "This invoice covers two matters, billed separately below: Matter 4468 (Project Sycamore sell-side counsel) and Matter 4471 (Brownsburg lease termination)."
@@ -2270,10 +2292,10 @@ schedule:
     - ref: A-3
       title: Brownsburg clinic closure
       category: Pro forma - closed clinic
-      description: "The Brownsburg clinic closed on February 27, 2026 and its lease was terminated effective March 31, 2026 for a $38,000 termination fee. Removes the clinic's operating results (legacy-billing revenue less clinic payroll, rent and utilities) and its closure costs (lease termination fee, legal, equipment move, final pay). Stranded shared costs (regional director, EMR enterprise license, billing office, employer taxes and benefits) are excluded."
+      description: "The Brownsburg clinic closed on February 27, 2026 and its lease was terminated effective March 31, 2026 for a $38,250 termination fee. Removes the clinic's operating results (legacy-billing revenue less clinic payroll, rent and utilities) and its closure costs (lease termination fee, legal, equipment move, final pay). Stranded shared costs (regional director, EMR enterprise license, billing office, employer taxes and benefits) are excluded."
       accounts: 4000, 4010, 5000, 6100, 6120, 6150, 6400
       support: VDR 3.1; VDR 3.2; VDR 3.3; VDR 3.4; VDR 3.5; VDR 5.7
-      amounts: {FY2024: 115966.19, FY2025: 177787.29, TTM May-26: 213222.46}
+      amounts: {FY2024: 115966.19, FY2025: 177787.29, TTM May-26: 213472.46}
       claim_keys: ["bburg_*"]
     - ref: A-4
       title: Owner family payroll - T. Kowalczyk
@@ -2366,10 +2388,10 @@ schedule:
     - ref: A-15
       title: Brownsburg lease termination fee
       category: Non-recurring
-      description: "Lease termination fee paid to Eagle Creek Commercial Properties under the March 2, 2026 lease termination agreement for the Brownsburg clinic ($38,000)."
+      description: "Lease termination fee paid to Eagle Creek Commercial Properties under the March 2, 2026 lease termination agreement for the Brownsburg clinic ($38,250)."
       accounts: "6100"
       support: VDR 3.2; VDR 3.3
-      amounts: {FY2024: 0, FY2025: 0, TTM May-26: 38000}
+      amounts: {FY2024: 0, FY2025: 0, TTM May-26: 38250}
       claim_keys: [bburg_termination_fee]
     - ref: A-16
       title: Pro forma - Wabash Valley Sports Rehab acquisition
@@ -2398,17 +2420,21 @@ ground_truth:
     REQUEST_INFO, the documents that drive the conclusion. related_docs are context or evidence against (the continuing
     Tate Whitcomb retainer, the monthly Carmel storage bills, the claim-status email). Must-not flags are in
     reviewer_note.
-    Totals (FY2024 / FY2025 / TTM May-26): claims 254,446.19 / 599,063.29 / 1,151,548.46; management-item finals
-    171,206.19 / 432,961.29 / 543,146.46; diligence item D-1 (supported cut-off top-side) -21,436.80 / 21,436.80 / 0;
-    pending REQUEST_INFO (A-4, A-9, A-16) 51,000 / 109,000 / 521,000. Planted data-quality issues the generator cannot
-    yet encode in this key (see AUTHOR_NOTES.md): UNMAPPED_ACCOUNT on 6750 (type "Overhead"), PL_ACCOUNT_NOT_IN_GL on
-    6995, GL_ACCOUNT_NOT_IN_PL on 6305. The company is an LLC taxed as a partnership; there is no income tax line.
+    Totals (FY2024 / FY2025 / TTM May-26): claims 254,446.19 / 599,063.29 / 1,152,048.46; management-item finals
+    171,206.19 / 432,961.29 / 543,396.46; diligence item D-1 (supported cut-off top-side) -21,436.80 / 21,436.80 / 0;
+    pending REQUEST_INFO (A-4, A-9, A-16) 51,000 / 109,000 / 521,000. gl_ebitda assumes 6750 (type Overhead) maps to
+    OPEX under the §3.4 fallback. Planted data-quality issues the generator cannot yet encode in this key (panel
+    decision: the generator's data-quality derivation should emit them; see AUTHOR_NOTES.md): UNMAPPED_ACCOUNT on 6750
+    (type "Overhead"), PL_ACCOUNT_NOT_IN_GL on 6995, GL_ACCOUNT_NOT_IN_PL on 6305. Buyer run-rate, not a QoE
+    adjustment: Stridewise ($2,150/month in 6305 from Apr-2026, two months in TTM) understates annual run-rate cost by
+    about $21.5k. The company is an LLC taxed as a partnership; there is no income tax line.
   adjustments:
     - adj_id: A-1
       case_type: ADEQUATE
       treatment: ACCEPT
       amounts: {FY2024: 90000, FY2025: 90000, TTM May-26: 90000}
       supporting: ["kfr_zville_*"]
+      related: ["retax_zville_*"]
       normalized_level: {monthly: 24500}
       supporting_docs: [zville_lease, zville_amendment, zville_bov]
       related_docs: [lease_schedule]
@@ -2422,18 +2448,25 @@ ground_truth:
         landlord). The executed 2021 lease fixes rent at $32.0k a month, absolute net, no escalation. Northfield's
         opinion of market rent (no interest in the property, fee not contingent) concludes $19.60/RSF absolute net on
         15,000 RSF, i.e. $294.0k a year ($24.5k a month), and the landlord has signed an amendment resetting rent to
-        $24.5k at closing. Normalization = $384.0k - $294.0k = $90.0k in each period. Executed lease plus an
-        independent benchmark: accept.
+        $24.5k at closing. Normalization = $384.0k - $294.0k = $90.0k in each period. The Company pays the
+        building's real estate taxes directly (6800, May/Nov installments), consistent with the absolute-net lease
+        and benchmark, so the rents compare like for like. Executed lease plus an independent benchmark: accept.
       ambiguity: low
       reviewer_note: >-
         Normalization positive control (D1 made every normalization REQUEST_INFO). Must not fire:
         NORMALIZATION_BENCHMARK_MISSING, UNSIGNED_OR_DRAFT_SUPPORT, RECURRING_PATTERN (recurrence is the premise),
-        OVERLAP_WITH_OTHER_ADJUSTMENT (the KFR-N Noblesville rows belong to A-2).
+        OVERLAP_WITH_OTHER_ADJUSTMENT (the KFR-N Noblesville rows belong to A-2). Normalized to year-1 market cash
+        rent per the Northfield opinion (standard QoE practice). The amendment extends the term 10 years from
+        closing with 2.5% escalators; straight-line expense would be about $329.4k a year (normalization about
+        $54.6k on that basis). That is a buyer GAAP run-rate consideration, not pre-registered. The benchmark is a
+        seller-commissioned SIOR broker opinion (no interest in the property, fee not contingent), which the D1 case
+        list accepts for this control.
     - adj_id: A-2
       case_type: ADEQUATE
       treatment: ACCEPT
       amounts: {FY2024: -39000, FY2025: -39000, TTM May-26: -39000}
       supporting: ["kfr_nobles_*"]
+      related: ["retax_nobles_*"]
       normalized_level: {monthly: 9250}
       supporting_docs: [nobles_lease, nobles_amendment, nobles_appraisal]
       related_docs: [lease_schedule]
@@ -2445,7 +2478,9 @@ ground_truth:
         executed 2019 lease fixes rent at $6.0k a month, absolute net, and says it was set to help open the clinic,
         not by survey. Brightwater's MAI appraisal (effective 2/1/26, no interest, fee not contingent) concludes
         $18.50/SF absolute net on 6,000 SF, i.e. $111.0k a year ($9.25k a month), and the signed amendment resets
-        rent to $9.25k at closing. Normalization = $72.0k - $111.0k = -$39.0k in each period. Management's own
+        rent to $9.25k at closing. Normalization = $72.0k - $111.0k = -$39.0k in each period. The Company pays the
+        building's real estate taxes directly (6800, May/Nov installments), consistent with the absolute-net lease
+        and benchmark, so the rents compare like for like. Management's own
         EBITDA-reducing adjustment is supported by an appraisal and an executed amendment: accept the negative
         amount.
       ambiguity: low
@@ -2456,12 +2491,12 @@ ground_truth:
     - adj_id: A-3
       case_type: ADEQUATE
       treatment: ACCEPT
-      amounts: {FY2024: 115966.19, FY2025: 177787.29, TTM May-26: 213222.46}
+      amounts: {FY2024: 115966.19, FY2025: 177787.29, TTM May-26: 213472.46}
       supporting: ["bburg_*"]
       supporting_docs: [bburg_memo, bburg_termination, eccp_invoice, bburg_results, bburg_move_invoice, tw_invoice_0312]
       related_docs: [bburg_patient_letter, lease_schedule]
       question_topics:
-        - Patient and revenue retention at the Avon clinic after the closure (revenue that did not go away)
+        - Payroll of the two clinicians transferred to Avon (Metro South & West clinical payroll up about $17k/month from March 2026) and Brownsburg patient visits and revenue retained at Avon since March 2026
         - Stranded costs left in EBITDA (regional director, EMR enterprise subscription, billing office) and whether any end after closing
         - Employer payroll taxes and benefits for Brownsburg staff, excluded from the claim (seller upside)
         - Post-closure Brownsburg receivable collections, the $9,400 security deposit refund and any remaining lease obligations
@@ -2469,9 +2504,9 @@ ground_truth:
         Brownsburg (acquired 2022) posts revenue monthly from its legacy billing system (4000/4010) and has its own
         payroll journals (5000), Suite 110 rent (6100) and utility account (6120), so its results are identifiable in
         the GL. Net loss per the GL: FY24 $116.0k, FY25 $177.8k; TTM $160.8k operating loss (Jun-25 to the April 2026
-        final utility bill) plus $52.4k of closure costs (termination fee $38.0k under the executed 3/2/26
+        final utility bill) plus $52.65k of closure costs (termination fee $38.25k under the executed 3/2/26
         agreement, Tate Whitcomb Matter 4471 $4.35k on split invoice TW-26-0312, equipment move $3.2k, final pay and
-        PTO $6.85k) = $213.2k. The closure has happened: last patient day 2/27/26, lease terminated 3/31/26, no
+        PTO $6.85k) = $213.5k. The closure has happened: last patient day 2/27/26, lease terminated 3/31/26, no
         Brownsburg-coded postings after the final bill. Shared costs that continue (regional director, EMR enterprise
         fee, billing office, central supplies, employer taxes and benefits) are correctly left in EBITDA.
         Management's amounts tie to the GL: accept. The termination fee is carried here, not in A-15.
@@ -2479,9 +2514,16 @@ ground_truth:
       reviewer_note: >-
         Realized pro forma positive control. Must not fire: PRO_FORMA_NOT_REALIZED (Brownsburg activity stops),
         SIGN_ERROR (revenue credits inside a net-loss add-back), RECURRING_PATTERN, OVERLAP_WITH_OTHER_ADJUSTMENT on
-        A-3 (A-3 keeps the termination fee under the schedule-order tie-break; the Matter 4471 row of TW-26-0312 is a
-        different GL row from A-5's Matter 4468 row). Minority view, not pre-registered: credit revenue retained at
-        Avon against the add-back. Unclaimed employer taxes on Brownsburg wages (about $41k a year) are seller upside.
+        A-3 (A-3 keeps the termination fee: A-15's entire claim is inside A-3, so A-15 is the duplicate; the Matter
+        4471 row of TW-26-0312 is a different GL row from A-5's Matter 4468 row). Two of five Brownsburg clinicians
+        moved to Avon on 3/2/26 with their patients (3.6). Metro South & West clinical payroll is about $17k/month
+        higher from Mar-26 (trend-adjusted). The full-P&L removal assumes the revenue those clinicians and the other
+        retained patients generate at Avon (R) covers their continuing cost (C): pro forma = reported + A-3 + R - C.
+        At Brownsburg's revenue-to-clinical-payroll ratio (about 0.9), R - C for the two clinicians is about
+        -$1.5k/month, and Brownsburg patients absorbed by Avon's existing therapists add revenue without cost. The
+        sign is uncertain and the size small, so no alternative amount is registered. Joint alternative with A-15:
+        see A-15. Unclaimed employer taxes and benefits on the three eliminated positions (about $25k a year; the two
+        transferred clinicians' taxes continue) are seller upside.
     - adj_id: A-4
       case_type: NEEDS_INFO
       treatment: REQUEST_INFO
@@ -2493,6 +2535,7 @@ ground_truth:
         - Whether the marketing coordinator role exists and must be backfilled after closing
         - Employer payroll taxes and benefits on the $51,000 (not claimed)
         - Other family members or related parties on payroll
+        - Confirm the payee from the payroll register and W-2 (the payroll memo reads only "T. Kowalczyk"; KFR's managing member is Thomas Kowalczyk)
       rationale: >-
         Payroll to T. Kowalczyk ($2,125 semi-monthly, $51.0k a year, 6000) ties to the GL in all three periods. The
         only support is the CEO's email saying he is a full-time student who does not work in the business and that
@@ -2503,6 +2546,8 @@ ground_truth:
       reviewer_note: >-
         Family member on payroll with only a management representation. Must not ACCEPT on the email alone. No
         pre-registered alternative: carrying $51.0k on the representation is the false accept this item tests.
+        Reachable under the §5.4 management-representation rule: the CEO e-mail links by name and amount but is not
+        support.
     - adj_id: A-5
       case_type: ADEQUATE
       treatment: ACCEPT
@@ -2564,15 +2609,17 @@ ground_truth:
       related_docs: [claim_status_email]
       question_topics:
         - Status and timing of the $31,850 insurance recovery on claim PSM-26-004417 (after the $10,000 deductible)
-        - Treatment of the insurance receivable in closing working capital, and exclusion of the future gain from post-close EBITDA
+        - Treatment of the $31,850 insurance receivable (probable at May 31, 2026 but unrecorded) in closing working capital, and exclusion of the cash recovery from post-close EBITDA
         - Revenue lost while the Fishers clinic was closed (January 26 to February 6, 2026) and any business income claim
       rationale: >-
         Burst-pipe damage at Fishers on 1/24/26: Circle City Restoration $24.6k (Feb-26) and Hamilton County Flooring
         & Drywall $17.25k (Mar-26), both citing claim PSM-26-004417, tie to 6150. Casualty repair, non-recurring: add
-        back $41.85k in TTM. Prairie State Mutual has confirmed coverage and estimates a $31.85k payment, but at
-        5/31/26 nothing had been received or booked (claim open per the insurer; facilities email of 5/28/26). There
-        is no recovery in the GL to offset; when it arrives it will be a gain after the analysis period and should be
-        excluded from EBITDA then. Accept unchanged; the recovery is an open question.
+        back $41.85k in TTM. Prairie State Mutual confirmed coverage on 4/8/26 and estimates a $31.85k payment after
+        the $10k deductible; the sworn proof of loss was filed 5/12/26 and payment is expected in June. The recovery
+        was probable at 5/31/26, so an accrual close could have recognized a $31.85k receivable in TTM, but nothing is
+        recorded in the GL. Relative to the GL the full $41.85k is added back; accruing the recovery (+$31.85k) and
+        adding back only the $10k net loss gives the same TTM EBITDA. The unrecorded receivable is a working-capital
+        item. Accept unchanged.
       ambiguity: low
       reviewer_note: >-
         Pending-recovery trap. Must not fire: OFFSETTING_RECOVERY (no recovery is in the GL), RECURRING_PATTERN.
@@ -2615,11 +2662,16 @@ ground_truth:
         Three Copperline Creative Studio bills in 6500 (Aug-Oct 2025: $18.5k, $22.0k, $17.5k = $58.0k) tie to the
         claim in FY25 and TTM. The only support in the data room is the CEO's email calling it a one-time rebrand and
         saying there was no SOW. The GL ties, but there is no invoice, proposal or deliverable, so the nature and
-        non-recurrence rest on management's word. Pending; provisional amount if supported $58.0k in FY25 and TTM.
+        non-recurrence rest on management's word. Pending. If invoices and an SOW are produced the provisional amount
+        is up to $58.0k in FY25 and TTM; the Oct-25 signage and launch-campaign bill ($17.5k) may be ordinary launch
+        marketing or capitalizable signage, so $58.0k is a ceiling.
       ambiguity: medium
       reviewer_note: >-
         Clean NO_DOCUMENT_SUPPORT test: the GL ties 100% and the documents are a management representation only. Must
-        not ACCEPT. Must not fire: RECURRING_PATTERN (no Copperline activity in other periods).
+        not ACCEPT. Must not fire: RECURRING_PATTERN (no Copperline activity in other periods). Reachable under the
+        §5.4 management-representation rule: the CEO e-mail links by name and amount but is not support. The GL
+        corroborates the vendor and timing (no other Copperline activity; 6500 ex-Copperline flat), but accepting on
+        that basis is the false accept this item tests; not pre-registered.
     - adj_id: A-10
       case_type: NON_OPERATING
       treatment: REVISE
@@ -2627,6 +2679,7 @@ ground_truth:
       supporting: [fa_loss_2025]
       recoveries: [fa_gain_2024, fa_gain_2026]
       supporting_docs: [fa_disposals, van_bill_of_sale]
+      expected_flags: [OFFSETTING_RECOVERY]
       question_topics:
         - Further disposals planned (remaining vehicles or equipment) and the disposal policy
         - Mileage reimbursement that replaced the van fleet (run-rate cost of the home and onsite program)
@@ -2638,9 +2691,10 @@ ground_truth:
         +$27.6k, TTM +$27.6k - $4.9k = +$22.7k.
       ambiguity: low
       reviewer_note: >-
-        Non-operating item inside EBITDA with gains ignored in other periods. Must not fire: RECURRING_PATTERN
-        (disposal results are removed as non-operating, not rejected as recurring). The two gains are carried as
-        recoveries (related rows). Accepting $27.6k in TTM misses the April 2026 gain.
+        Non-operating item inside EBITDA with gains ignored in other periods. The two gains are removed as offsetting
+        recoveries (the Mar-24 van gain shares the buyer and account; the Apr-26 dynamometer gain is on the same
+        disposal schedule, VDR 9.1). Must not fire: RECURRING_PATTERN. Accepting $27.6k in TTM misses the April 2026
+        gain.
     - adj_id: A-11
       case_type: OUT_OF_PERIOD
       treatment: REVISE
@@ -2655,6 +2709,7 @@ ground_truth:
         - Use tax on 2025 and 2026 out-of-state purchases (is the Company now self-assessing?) and any further exposure
         - Payment or protest of the assessment and any tax indemnity in the purchase agreement
         - Whether penalty abatement was requested
+        - Split of the $340,571.43 audited purchases between capitalized equipment and furniture and expensed supplies (use tax on capital items is capitalized)
       rationale: >-
         The notice of proposed assessment covers purchases from 1/1/24 to 12/31/24: tax $23,840, 10% negligence
         penalty $2,384 and interest $1,652, all booked 11/18/25. The tax is a 2024 cost booked in FY25: remove it from
@@ -2662,10 +2717,14 @@ ground_truth:
         non-recurring: add back in FY25 and TTM. The interest ($1.652k) sits in 8100 Interest Expense, which reported
         EBITDA already excludes; adding it back double counts. Revised: FY24 -$23.84k, FY25 +$26.224k, TTM
         +$26.224k.
-      ambiguity: low
+      ambiguity: medium
       reviewer_note: >-
         Two-sided out-of-period tax, an in-EBITDA penalty and already-excluded interest in one assessment. Must not
-        fire: RECURRING_PATTERN. The ongoing use-tax exposure on 2025-2026 purchases is a question, not an amount.
+        fire: RECURRING_PATTERN. Only the tax row moves to FY2024: the penalty is a non-recurring charge of the
+        November 2025 assessment and is added back where booked (FY2024 -26,224 is wrong). FY2024 -23,840 is an upper
+        bound: use tax on capitalized equipment and furniture belongs in asset cost, not FY2024 opex. No use-tax
+        self-assessment appears in 2025-26, so unassessed 2025-26 use tax (about $24k a year at the 2024 rate) is a
+        debt-like, indemnity and run-rate item, not quantifiable from the package.
     - adj_id: A-12
       case_type: OUT_OF_PERIOD
       treatment: ACCEPT
@@ -2686,7 +2745,9 @@ ground_truth:
       ambiguity: low
       reviewer_note: >-
         One-sided out-of-period (over-adjustment trap). Must not carry a negative amount in any period. Must not fire:
-        RECURRING_PATTERN (Crossfield has no other activity; routine per diem staffing is a different vendor).
+        RECURRING_PATTERN. Contract therapy labour recurs (Summit Allied per diem continues, including Lafayette
+        coverage of $20,980.18 in FY2025), but the claim is a cut-off correction, not a non-recurrence claim, so
+        recurrence is no ground to reject (§5.4 exemption for OUT_OF_PERIOD items).
     - adj_id: A-13
       case_type: ADEQUATE
       treatment: ACCEPT
@@ -2725,8 +2786,13 @@ ground_truth:
       ambiguity: medium
       reviewer_note: >-
         False-reject trap: one large write-off among small routine entries in the same account. Must not fire:
-        RECURRING_PATTERN. Alternatives not carried: normalize 6950 to its 29-month average; removing Midstate's
-        $46,350 of TTM revenue is a buyer run-rate item.
+        RECURRING_PATTERN. The >=50% other-fiscal-period leg must be judged on theme, not account: FY2024 6950 is
+        $32,503 (70% of the claim) but is entirely patient balances sent to collections, a different theme from an
+        employer customer's receivership. The >=3-month leg fails the 25% floor. Pre-registered alternative: REVISE
+        -19,240.17 / +26,101.83 / +27,521.83 (6950 at its 29-month average, $51,743.17 a year). Buyer view, not
+        registered: the Jun-Aug 2025 Midstate revenue ($46,350, rows 921/927/933) never converted to cash and the
+        customer ceased operations on 9/19/25, so accepting the add-back leaves $46,350 of uncollected revenue from a
+        defunct customer in TTM. This is a lost-customer run-rate item for the buyer's model.
     - adj_id: A-15
       case_type: OVERLAP
       treatment: REJECT
@@ -2736,37 +2802,42 @@ ground_truth:
       related_docs: [bburg_memo, bburg_results]
       expected_flags: [OVERLAP_WITH_OTHER_ADJUSTMENT]
       question_topics:
-        - Confirmation that the $38,000 termination fee is counted once (it is inside A-3)
+        - Confirmation that the $38,250 termination fee is counted once (it is inside A-3)
       rationale: >-
-        The $38.0k Eagle Creek termination fee (Mar-26, 6100; executed agreement and invoice ECCP-TERM-0302) is a
-        valid one-time closure cost, but A-3 already claims every Brownsburg-coded row, this one included. A-3 and
-        A-15 cite the same agreement, invoice and account, so the links are equal and the schedule-order tie-break
-        keeps the fee in A-3. Carrying it here too would count it twice. Reject.
-      ambiguity: low
+        The $38.25k Eagle Creek termination fee (Mar-26, 6100; executed agreement and invoice ECCP-TERM-0302) is a
+        valid one-time closure cost, and A-3 cites the same agreement, invoice and account. A-15's entire claim (row
+        2251) is inside A-3, which claims every Brownsburg-coded row; the fee is counted once, kept in A-3, and the
+        standalone duplicate is rejected.
+      ambiguity: medium
       reviewer_note: >-
-        Overlap settled by the schedule-order tie-break (equal link scores by design: both cite VDR 3.2 and 3.3 and
-        account 6100). Total EBITDA is the same if a tool keeps the fee in A-15 and strips it from A-3, but both items
-        then score wrong against this key.
+        Duplicate listing. Joint alternative (pre-registered): A-15 ACCEPT 0 / 0 / 38,250 together with A-3 REVISE
+        115,966.19 / 177,787.29 / 175,222.46 + OVERLAP_WITH_OTHER_ADJUSTMENT; same total EBITDA. Scored as a pair:
+        A-15 ACCEPT with A-3 unrevised is a double count.
     - adj_id: A-16
       case_type: NEEDS_INFO
       treatment: REQUEST_INFO
       supporting_docs: [wv_apa, wv_seller_pl, wv_email]
       expected_flags: [NO_GL_SUPPORT, PRO_FORMA_NOT_REALIZED]
       question_topics:
-        - Closing status and outstanding conditions (Medicare enrollment, payer credentialing, landlord consent)
+        - Closing status and outstanding conditions (Medicare enrollment, payer credentialing, landlord consent, buyer financing)
         - Diligence on the seller's cash-basis TTM figures, and the period mismatch (TTM March 2026 against TTM May 2026)
         - Owner compensation, integration costs and synergies within the $412,000
         - Purchase price, financing and whether the buyer's model already includes the acquisition
       rationale: >-
         Management adds $412.0k of seller TTM EBITDA for Wabash Valley Sports Rehab. There is no GL activity: the APA
         was signed 4/22/26, but closing is set for 7/1/26 (after the TTM) and depends on Medicare enrollment, payer
-        credentialing and landlord consents that the CFO's 5/29/26 email says are outstanding. The only earnings
+        credentialing and landlord consents that the CFO's 5/29/26 email says are outstanding. APA §4(c) also
+        conditions closing on the Buyer obtaining financing on satisfactory terms, which the CFO email does not
+        address. The only earnings
         support is a seller-prepared, unaudited cash-basis summary for the twelve months to March 2026. Pending;
         provisional amount 0 until the deal closes and the seller's earnings are diligenced.
       ambiguity: medium
       reviewer_note: >-
         Pro forma tuck-in with a signed APA and no GL. Pre-registered alternative: REJECT 0/0/0 (the acquisition did
-        not occur in the analysis period); the EBITDA effect is the same. Must not ACCEPT on a signed APA.
+        not occur in the analysis period); the EBITDA effect is the same. Must not ACCEPT on a signed APA. No
+        information makes this a TTM May-26 adjustment; if it closes before the Sycamore closing it is a separate pro
+        forma needing its own QoE (cash-basis seller figures, owner role after closing, TTM Mar-26 vs May-26
+        mismatch).
   diligence_items:
     - adj_id: D-1
       case_type: SUPPORTED_TOPSIDE
@@ -2778,6 +2849,7 @@ ground_truth:
       supporting_docs: [lrc_invoice_2412, cutoff_email]
       question_topics:
         - Other December 2024 invoices posted in January 2025, and December 2025 invoices posted in January 2026 (cut-off search)
+        - Consistent one-month lag on utilities, merchant fees and outsourced close fees (December costs booked in January each year; net annual effect immaterial); confirm the accrual convention
       rationale: >-
         Cut-off misposting across the FY24/FY25 year-end: Lakeshore invoice LRC-2412 (services December 1-31, 2024,
         dated 12/31/24) was entered in Xero on 1/8/25, so the GL has two Lakeshore invoices in January 2025 and none in

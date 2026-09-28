@@ -2072,16 +2072,19 @@ def _extend_by_theme(entry_ids: list[str], entries: list[GLEntry]) -> list[str]:
 
 
 def _term_statement(term: TermFact) -> str:
-    """What the term says, as a clause that completes '<document> ...' (the engine names the document)."""
+    """What the term says, as a clause that completes '<document> ...' (the engine names the document).
+
+    Only what the document states: whether that makes the cost part of the ongoing cost base is
+    the reviewer's call, which the engine asks as a judgment question (SPEC §5.5)."""
     if term.kind == "monthly_fee":
-        return f"provides for a recurring {term.text}, not a one-time cost."
+        return f"provides for a {term.text}."
     if term.kind == "retainer":
-        return f"sets a standing {term.text}, an ongoing cost rather than a one-time charge."
+        return f"sets a standing {term.text}."
     if term.kind == "auto_renew":
-        return "renews automatically, so the cost continues past the claim period."
+        return "states that the agreement renews automatically."
     if term.kind == "ongoing_services":
         return "provides for services that continue until terminated."
-    return f"commits the company to a multi-period term ({term.text})."
+    return f"sets a multi-period term ({term.text})."
 
 
 def _is_multi_period_term(term: TermFact) -> bool:
@@ -2136,7 +2139,7 @@ def _find_contradictions_rules(
                     entry_ids = _tie_entries(fact, entries, evidence, "fee")
                 # a statement that the cost recurs covers the whole series, not just the entries near its date
                 entry_ids = _extend_by_theme(entry_ids, entries)
-                statement = f"describes the cost as recurring (\"{phrase}\"), not one-time."
+                statement = f"describes the cost as recurring (\"{phrase}\")."
                 if add(fact, q, statement, _NONRECURRING_CONFLICT, entry_ids):
                     per_doc += 1
             for term in fact.terms:
@@ -2156,7 +2159,7 @@ def _find_contradictions_rules(
                 if not _BUSINESS_PURPOSE_RE.search(q.quote) or _PERSONAL_RE.search(q.quote):
                     continue
                 entry_ids = _tie_entries(fact, entries, evidence, "business")
-                statement = "records a business purpose for the expense, so it is not a personal cost."
+                statement = "records a business purpose for the expense."
                 if add(fact, q, statement, _PERSONAL_CONFLICT, entry_ids):
                     per_doc += 1
         if intent.is_normalization and intent.normalized_amount:

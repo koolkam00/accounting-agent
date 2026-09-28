@@ -21,19 +21,36 @@ the parts of the schedule the bridge uses reconstructed from the workpaper
 itself (see ``schedule_from_workpaper``). That keeps the review path free of
 file I/O on the deal package and works for a workpaper whose deal directory
 has moved.
+
+Questions for management have their own append-only log,
+``<workpaper_dir>/question_log.jsonl`` (``QuestionLogEntry``: a status/response
+update, or a question the reviewer raised). A question update is not a
+decision: it never re-signs, re-dates or creates a ``ReviewDecision``, so a
+management answer can be logged on an unreviewed adjustment without marking it
+reviewed. ``apply_reviews(..., question_log=...)`` replays it together with the
+``question_updates`` older decision lines carry, in time order.
+
+Appends can be conditional (``expected_token``): the log is re-read under the
+file lock and the write is refused with ``ConflictError`` when the latest
+decision for the adjustment is not the one the reviewer's form was built from,
+so a stale page cannot silently overwrite a colleague's newer decision.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
 import statistics
 from datetime import datetime, timezone
+from decimal import Decimal
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Callable, Iterable, Literal, Mapping, Optional, Sequence
 
-from qoe.money import D, ZERO, fmt, period_map
+from pydantic import BaseModel, ConfigDict
+
+from qoe.money import D, ZERO, fmt, period_map, q2
 from qoe.schemas import (
     TOOL_ERROR_CORRECTIONS,
     AdjustmentAssessment,
@@ -54,7 +71,13 @@ except ImportError:  # pragma: no cover - non-POSIX
     fcntl = None  # type: ignore[assignment]
 
 REVIEW_LOG_NAME = "review_log.jsonl"
+QUESTION_LOG_NAME = "question_log.jsonl"
 TIMING_LOG_NAME = "timing.jsonl"
+
+# Token of "no decision / no question update yet" for conditional appends.
+NO_ENTRY_TOKEN = "none"
+# Largest amount a reviewer may enter; anything bigger is a typo, not an EBITDA adjustment.
+MAX_AMOUNT = Decimal("1e15")
 
 STATUS_UNREVIEWED = "Unreviewed"
 STATUS_AGREED = "Agreed"
@@ -66,13 +89,30 @@ STATUS_OVERRIDDEN = "Overridden"
 # ---------------------------------------------------------------------------
 
 
-def _append_jsonl(path: Path, record: Mapping[str, Any]) -> None:
-    line = json.dumps(record, sort_keys=True, ensure_ascii=False).encode("utf-8")
+def _append_jsonl(
+    path: Path,
+    record: Mapping[str, Any] | Callable[[bytes], Mapping[str, Any]],
+    check: Optional[Callable[[bytes], None]] = None,
+) -> Mapping[str, Any]:
+    """Append one JSON line under an exclusive lock.
+
+    ``check`` sees the file's current bytes (read under the same lock) and may
+    raise to refuse the write. ``record`` may be a callable of those bytes, for
+    records whose content depends on what is already logged (a new question id).
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "a+b") as fh:
         if fcntl is not None:
             fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
         try:
+            if check is not None or callable(record):
+                fh.seek(0)
+                existing = fh.read()
+                if check is not None:
+                    check(existing)
+                if callable(record):
+                    record = record(existing)
+            line = json.dumps(record, sort_keys=True, ensure_ascii=False).encode("utf-8")
             fh.seek(0, os.SEEK_END)
             size = fh.tell()
             prefix = b""
@@ -88,17 +128,104 @@ def _append_jsonl(path: Path, record: Mapping[str, Any]) -> None:
         finally:
             if fcntl is not None:
                 fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+    return record
+
+
+def _split_lines(data: bytes) -> list[tuple[int, bytes]]:
+    """(1-based line number, raw bytes) for every non-blank line of ``data``."""
+    return [(i, chunk) for i, chunk in enumerate(data.split(b"\n"), 1) if chunk.strip()]
 
 
 def _read_jsonl_lines(path: Path) -> list[tuple[int, bytes]]:
     """(1-based line number, raw bytes) for every non-blank line."""
     if not path.exists():
         return []
-    out: list[tuple[int, bytes]] = []
-    for i, chunk in enumerate(path.read_bytes().split(b"\n"), 1):
-        if chunk.strip():
-            out.append((i, chunk))
-    return out
+    return _split_lines(path.read_bytes())
+
+
+def _parse_decisions(data: bytes) -> tuple[list[ReviewDecision], list[int]]:
+    out: list[ReviewDecision] = []
+    skipped: list[int] = []
+    for lineno, raw in _split_lines(data):
+        try:
+            out.append(ReviewDecision.model_validate_json(raw))
+        except ValueError:  # pydantic ValidationError and UnicodeDecodeError are ValueErrors
+            skipped.append(lineno)
+    return out, skipped
+
+
+def _token(record: Mapping[str, Any]) -> str:
+    return hashlib.sha256(json.dumps(record, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:16]
+
+
+def decision_token(decision: Optional[ReviewDecision]) -> str:
+    """Identifies the decision a review form was built from (``NO_ENTRY_TOKEN`` for none)."""
+    return NO_ENTRY_TOKEN if decision is None else _token(decision.model_dump(mode="json"))
+
+
+class ConflictError(RuntimeError):
+    """A conditional append found a newer entry than the one the caller's page showed."""
+
+    def __init__(self, message: str, current: Any = None) -> None:
+        super().__init__(message)
+        self.current = current
+
+
+# ---------------------------------------------------------------------------
+# Question log
+# ---------------------------------------------------------------------------
+
+
+class QuestionLogEntry(BaseModel):
+    """One line of ``question_log.jsonl``.
+
+    ``kind="update"``: a status and/or response change to an existing question
+    (``response=None`` leaves the response as it was, ``""`` clears it).
+    ``kind="new"``: a question the reviewer raised for management, OPEN.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["update", "new"]
+    q_id: str
+    adj_id: str
+    reviewer: str
+    timestamp: str
+    status: Optional[QuestionStatus] = None
+    response: Optional[str] = None
+    text: str = ""
+    priority: str = "medium"
+
+
+def _parse_question_entries(data: bytes) -> tuple[list[QuestionLogEntry], list[int]]:
+    out: list[QuestionLogEntry] = []
+    skipped: list[int] = []
+    for lineno, raw in _split_lines(data):
+        try:
+            out.append(QuestionLogEntry.model_validate_json(raw))
+        except ValueError:
+            skipped.append(lineno)
+    return out, skipped
+
+
+def question_token(entries: Iterable[QuestionLogEntry], q_id: str) -> str:
+    """Identifies the latest logged change to ``q_id`` (``NO_ENTRY_TOKEN`` for none)."""
+    last = None
+    for e in entries:
+        if e.q_id == q_id:
+            last = e
+    return NO_ENTRY_TOKEN if last is None else _token(last.model_dump(mode="json"))
+
+
+_REVIEWER_QID = re.compile(r"-R(\d+)$")
+
+
+def next_reviewer_question_id(adj_id: str, existing_ids: Iterable[str]) -> str:
+    """``Q-<adj_id>-R<n>``: reviewer-raised questions are numbered apart from the tool's
+    ``Q-<adj_id>-<n>`` so a re-run that adds tool questions cannot collide with them."""
+    prefix = f"Q-{adj_id}-R"
+    used = [int(m.group(1)) for q in existing_ids if q.startswith(prefix) and (m := _REVIEWER_QID.search(q))]
+    return f"{prefix}{max(used, default=0) + 1}"
 
 
 # ---------------------------------------------------------------------------
@@ -107,31 +234,38 @@ def _read_jsonl_lines(path: Path) -> list[tuple[int, bytes]]:
 
 
 class ReviewStore:
-    """Append-only JSONL log of reviewer decisions."""
+    """Append-only JSONL logs of reviewer decisions and of question updates."""
 
-    def __init__(self, path: Path) -> None:
+    def __init__(self, path: Path, question_path: Optional[Path] = None) -> None:
         self.path = Path(path)
+        self.question_path = Path(question_path) if question_path is not None else self.path.with_name(QUESTION_LOG_NAME)
         # Line numbers that failed to parse on the last read (a torn trailing write,
         # or a hand-edited line). They are skipped, never repaired or removed.
         self.skipped_lines: list[int] = []
+        self.skipped_question_lines: list[int] = []
 
     @classmethod
     def for_workpaper_dir(cls, workpaper_dir: Path) -> "ReviewStore":
         return cls(Path(workpaper_dir) / REVIEW_LOG_NAME)
 
-    def append(self, decision: ReviewDecision) -> None:
-        _append_jsonl(self.path, decision.model_dump(mode="json"))
+    def append(self, decision: ReviewDecision, expected_token: Optional[str] = None) -> None:
+        """Append a decision. With ``expected_token`` (see ``decision_token``) the write
+        is refused with ``ConflictError`` unless the latest logged decision for the
+        adjustment is still the one the caller's form was built from."""
+        check = None
+        if expected_token is not None:
+
+            def check(existing: bytes) -> None:
+                current = latest_by_adj(_parse_decisions(existing)[0]).get(decision.adj_id)
+                if decision_token(current) != expected_token:
+                    raise ConflictError(_decision_conflict_message(decision.adj_id, current), current)
+
+        _append_jsonl(self.path, decision.model_dump(mode="json"), check)
 
     def all(self) -> list[ReviewDecision]:
         """Every decision in log order."""
-        skipped: list[int] = []
-        out: list[ReviewDecision] = []
-        for lineno, raw in _read_jsonl_lines(self.path):
-            try:
-                out.append(ReviewDecision.model_validate_json(raw))
-            except ValueError:  # pydantic ValidationError and UnicodeDecodeError are ValueErrors
-                skipped.append(lineno)
-        self.skipped_lines = skipped
+        data = self.path.read_bytes() if self.path.exists() else b""
+        out, self.skipped_lines = _parse_decisions(data)
         return out
 
     def latest(self) -> dict[str, ReviewDecision]:
@@ -139,6 +273,80 @@ class ReviewStore:
 
     def history(self, adj_id: str) -> list[ReviewDecision]:
         return [d for d in self.all() if d.adj_id == adj_id]
+
+    # -- questions ---------------------------------------------------------
+
+    def questions(self) -> list[QuestionLogEntry]:
+        """Every question-log entry in log order."""
+        data = self.question_path.read_bytes() if self.question_path.exists() else b""
+        out, self.skipped_question_lines = _parse_question_entries(data)
+        return out
+
+    def append_question(self, entry: QuestionLogEntry, expected_token: Optional[str] = None) -> None:
+        """Append a question update. With ``expected_token`` (see ``question_token``) the
+        write is refused with ``ConflictError`` if the question changed since the caller read it."""
+        if entry.kind != "update":
+            raise ValueError("use add_question() to raise a new question")
+        check = None
+        if expected_token is not None:
+
+            def check(existing: bytes) -> None:
+                entries = _parse_question_entries(existing)[0]
+                if question_token(entries, entry.q_id) != expected_token:
+                    last = [e for e in entries if e.q_id == entry.q_id][-1]
+                    raise ConflictError(
+                        f"{entry.q_id} was updated by {last.reviewer or 'another reviewer'} at {last.timestamp} "
+                        "after this page loaded. Review the current status, then record again.",
+                        last,
+                    )
+
+        _append_jsonl(self.question_path, entry.model_dump(mode="json"), check)
+
+    def add_question(
+        self,
+        *,
+        adj_id: str,
+        text: str,
+        reviewer: str,
+        priority: str = "medium",
+        existing_ids: Iterable[str] = (),
+        timestamp: Optional[str] = None,
+    ) -> QuestionLogEntry:
+        """Log a question the reviewer raised for management. The id (``Q-<adj>-R<n>``) is
+        allotted under the log lock, so two reviewers adding questions at once get distinct ids."""
+        problems = question_entry_problems(reviewer=reviewer, text=text)
+        if problems:
+            raise DecisionError(problems)
+        known = list(existing_ids)
+        built: dict[str, QuestionLogEntry] = {}
+
+        def record(existing: bytes) -> Mapping[str, Any]:
+            logged = [e.q_id for e in _parse_question_entries(existing)[0] if e.adj_id == adj_id]
+            entry = QuestionLogEntry(
+                kind="new",
+                q_id=next_reviewer_question_id(adj_id, [*known, *logged]),
+                adj_id=adj_id,
+                reviewer=reviewer.strip(),
+                timestamp=timestamp or utc_now_iso(),
+                status=QuestionStatus.OPEN,
+                text=" ".join(text.split()),
+                priority=priority if priority in ("high", "medium", "low") else "medium",
+            )
+            built["entry"] = entry
+            return entry.model_dump(mode="json")
+
+        _append_jsonl(self.question_path, record)
+        return built["entry"]
+
+
+def _decision_conflict_message(adj_id: str, current: Optional[ReviewDecision]) -> str:
+    if current is None:
+        return f"The decision this form was built from for {adj_id} is no longer the latest. Reload and review again."
+    return (
+        f"{adj_id} was decided by {current.reviewer or 'another reviewer'} at {current.timestamp} "
+        f"({current.treatment.value}) after this form was opened. Review that decision first; "
+        "your draft is kept."
+    )
 
 
 def latest_by_adj(decisions: Iterable[ReviewDecision]) -> dict[str, ReviewDecision]:
@@ -241,6 +449,7 @@ def apply_reviews(
     wp: Workpaper,
     reviews: Iterable[ReviewDecision],
     schedule: Optional[ManagementSchedule] = None,
+    question_log: Optional[Iterable[QuestionLogEntry]] = None,
 ) -> Workpaper:
     """A new workpaper with ``reviews`` recorded, question updates applied, and the
     bridge rebuilt on final amounts. The input workpaper is not modified.
@@ -249,14 +458,16 @@ def apply_reviews(
     the latest decision per adj id sets the final amount, for management and
     diligence-identified items alike. Pass the deal package's ``schedule`` when
     available; otherwise ``wp.schedule`` is used, and failing that the schedule
-    is reconstructed from ``wp``.
+    is reconstructed from ``wp``. ``question_log`` (``ReviewStore.questions()``)
+    adds the question updates and reviewer-raised questions logged apart from
+    decisions.
     """
     from qoe.bridge import build_bridge  # lazy: the bridge is owned by the engine module
 
     decisions = list(reviews.values()) if isinstance(reviews, Mapping) else list(reviews)
     out = wp.model_copy(deep=True)
     out.reviews = decisions
-    apply_question_updates(out.assessments, decisions)
+    apply_question_updates(out.assessments, decisions, question_log or ())
     finals = final_amounts(out, latest_by_adj(decisions))
     sched = schedule_for(wp, schedule)
     out.bridge = build_bridge(out.deal, out.reconciliation, sched, out.assessments, final_amounts=finals)
@@ -369,30 +580,152 @@ def parse_question_update(value: str) -> tuple[Optional[QuestionStatus], Optiona
     return None, (text or None)
 
 
+def _parse_time(ts: str) -> datetime:
+    try:
+        t = datetime.fromisoformat(ts)
+    except (TypeError, ValueError):
+        return datetime.min.replace(tzinfo=timezone.utc)
+    return t if t.tzinfo is not None else t.replace(tzinfo=timezone.utc)
+
+
+def merge_logs(
+    decisions: Sequence[ReviewDecision], entries: Sequence[QuestionLogEntry]
+) -> list[ReviewDecision | QuestionLogEntry]:
+    """Decisions and question-log entries in one time line. Each log keeps its own
+    order (log order, not timestamps, decides within a log); the two are merged by
+    timestamp, a decision first on a tie."""
+    out: list[ReviewDecision | QuestionLogEntry] = []
+    i = j = 0
+    while i < len(decisions) and j < len(entries):
+        if _parse_time(entries[j].timestamp) < _parse_time(decisions[i].timestamp):
+            out.append(entries[j])
+            j += 1
+        else:
+            out.append(decisions[i])
+            i += 1
+    out.extend(decisions[i:])
+    out.extend(entries[j:])
+    return out
+
+
+def reviewer_question(entry: QuestionLogEntry) -> OpenQuestion:
+    return OpenQuestion(
+        q_id=entry.q_id,
+        adj_id=entry.adj_id,
+        text=entry.text,
+        priority=entry.priority,
+        basis=f"Raised by reviewer {entry.reviewer}".strip(),
+        status=QuestionStatus.OPEN,
+    )
+
+
 def apply_question_updates(
-    assessments: list[AdjustmentAssessment], decisions: Iterable[ReviewDecision]
+    assessments: list[AdjustmentAssessment],
+    decisions: Iterable[ReviewDecision],
+    question_log: Iterable[QuestionLogEntry] = (),
 ) -> list[str]:
-    """Replay every decision's question updates in log order onto ``assessments``
-    (mutated in place). Updates are cumulative: a later decision that does not
-    mention a question leaves its earlier update in force. Returns unknown q_ids."""
+    """Replay question updates onto ``assessments`` (mutated in place): the
+    ``question_updates`` carried by decision lines and the question log, merged in
+    time order (``merge_logs``). Updates are cumulative: a later line that does not
+    mention a question leaves its earlier update in force. A reviewer-raised
+    question is added to its adjustment once. Returns unknown q_ids."""
     by_qid: dict[str, OpenQuestion] = {}
+    by_adj = {a.adj_id: a for a in assessments}
     for a in assessments:
         for q in a.open_questions:
             by_qid[q.q_id] = q
     unknown: list[str] = []
-    for d in decisions:
-        for q_id, value in d.question_updates.items():
+
+    def note_unknown(q_id: str) -> None:
+        if q_id not in unknown:
+            unknown.append(q_id)
+
+    for item in merge_logs(list(decisions), list(question_log)):
+        if isinstance(item, ReviewDecision):
+            changes = [(q_id, *parse_question_update(v)) for q_id, v in item.question_updates.items()]
+        elif item.kind == "new":
+            a = by_adj.get(item.adj_id)
+            if a is None:
+                note_unknown(item.q_id)
+            elif item.q_id not in by_qid:
+                q = reviewer_question(item)
+                a.open_questions.append(q)
+                by_qid[q.q_id] = q
+            continue
+        else:
+            changes = [(item.q_id, item.status, item.response)]
+        for q_id, status, response in changes:
             q = by_qid.get(q_id)
             if q is None:
-                if q_id not in unknown:
-                    unknown.append(q_id)
+                note_unknown(q_id)
                 continue
-            status, response = parse_question_update(value)
             if status is not None:
                 q.status = status
             if response is not None:
                 q.response = response
     return unknown
+
+
+def questions_after(
+    questions: Iterable[OpenQuestion],
+    updates: Optional[Mapping[str, str]] = None,
+    new_texts: Iterable[str] = (),
+) -> list[OpenQuestion]:
+    """The questions as they would stand after a form's edits: ``updates`` in the
+    ``question_updates`` encoding, plus a new OPEN question for every non-blank text."""
+    out = [q.model_copy() for q in questions]
+    for q in out:
+        value = (updates or {}).get(q.q_id)
+        if value is None:
+            continue
+        status, response = parse_question_update(value)
+        if status is not None:
+            q.status = status
+        if response is not None:
+            q.response = response
+    for i, text in enumerate(t for t in new_texts if t.strip()):
+        out.append(OpenQuestion(q_id=f"(new {i + 1})", text=text.strip()))
+    return out
+
+
+def question_entry_problems(*, reviewer: str, text: Optional[str] = None) -> list[str]:
+    """Errors that block logging a question update (``text=None``) or a new question."""
+    errors = []
+    if not reviewer.strip():
+        errors.append("Enter the reviewer's name.")
+    if text is not None and not text.strip():
+        errors.append("Enter the question for management.")
+    return errors
+
+
+def make_question_update(
+    question: OpenQuestion,
+    *,
+    adj_id: str,
+    status: QuestionStatus,
+    response: str,
+    reviewer: str,
+    timestamp: Optional[str] = None,
+) -> Optional[QuestionLogEntry]:
+    """A question-log update for a changed status and/or response, or None when nothing
+    changed. Raises DecisionError when the reviewer is not named: an update is signed by
+    whoever makes it, never by the reviewer of an earlier decision."""
+    problems = question_entry_problems(reviewer=reviewer)
+    if problems:
+        raise DecisionError(problems)
+    new_response = response.strip()
+    response_changed = new_response != question.response.strip()
+    if status == question.status and not response_changed:
+        return None
+    return QuestionLogEntry(
+        kind="update",
+        q_id=question.q_id,
+        adj_id=question.adj_id or adj_id,
+        reviewer=reviewer.strip(),
+        timestamp=timestamp or utc_now_iso(),
+        status=status,
+        response=new_response if response_changed else None,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -412,6 +745,15 @@ def differs_from_tool(
     tool_amounts: Mapping[str, str],
     tolerance: object = "1.00",
 ) -> bool:
+    """True when the decision is an override of the tool's proposal.
+
+    ACCEPT carrying exactly the tool's REVISE amounts agrees with the tool: that is
+    what Accept means on a diligence-identified item (it carries the tool's
+    proposal, see ``resolve_amounts``). On a management item Accept carries the
+    claim, which differs from a REVISE proposal, so it stays an override.
+    """
+    if treatment == Treatment.ACCEPT and tool_treatment == Treatment.REVISE:
+        return _differs(amounts, tool_amounts, tolerance)
     if treatment != tool_treatment:
         return True
     if treatment == Treatment.REQUEST_INFO:
@@ -443,21 +785,48 @@ def review_status(
     return STATUS_OVERRIDDEN if decision_is_override(decision, tolerance) else STATUS_AGREED
 
 
+def accept_carries_proposal(assessment: AdjustmentAssessment) -> bool:
+    """Accept on a diligence-identified item accepts the tool's adjustment: management
+    claimed nothing, so accepting "the claim" would silently remove the item."""
+    return is_diligence_item(assessment)
+
+
 def resolve_amounts(
     assessment: AdjustmentAssessment,
     treatment: Treatment,
     amounts: Mapping[str, object],
     labels: list[str],
 ) -> dict[str, str]:
-    """The amounts a treatment carries: ACCEPT is management's claim as presented,
-    REJECT is zero, REQUEST_INFO is pending ({}), REVISE is what the reviewer entered."""
+    """The amounts a treatment carries: ACCEPT is management's claim as presented (for a
+    diligence-identified item, the tool's proposed amount), REJECT is zero,
+    REQUEST_INFO is pending ({}), REVISE is what the reviewer entered."""
     if treatment == Treatment.REQUEST_INFO:
         return {}
     if treatment == Treatment.REJECT:
         return period_map({}, labels)
     if treatment == Treatment.ACCEPT:
+        if accept_carries_proposal(assessment):
+            return period_map(assessment.proposed, labels)
         return period_map(assessment.claimed, labels)
     return period_map(amounts, labels)
+
+
+def amount_problem(value: object) -> Optional[str]:
+    """Why a reviewer-entered amount cannot be used, or None. NaN, Infinity and
+    values too large to carry to the cent are rejected rather than crashing later."""
+    try:
+        d = D(value)
+    except (TypeError, ValueError, ArithmeticError):
+        return "not a number"
+    if not d.is_finite():
+        return "not a number"
+    try:
+        q2(d)
+    except ArithmeticError:
+        return "out of range"
+    if abs(d) >= MAX_AMOUNT:
+        return "out of range"
+    return None
 
 
 def decision_problems(
@@ -470,22 +839,34 @@ def decision_problems(
     correction_type: CorrectionType,
     labels: list[str],
     tolerance: object = "1.00",
+    questions: Optional[Iterable[OpenQuestion]] = None,
+    previous: Optional[ReviewDecision] = None,
 ) -> tuple[list[str], list[str]]:
-    """(errors, warnings) for a proposed decision. Errors block recording."""
+    """(errors, warnings) for a proposed decision. Errors block recording.
+
+    ``questions`` are the adjustment's questions as they will stand once the form's
+    question edits are logged (``questions_after``; default: as they are now): a
+    REQUEST_INFO decision needs at least one of them OPEN, so a pending item always
+    carries a request to management. ``previous`` is the decision being replaced: a
+    different decision cannot reuse its rationale word for word.
+    """
     errors: list[str] = []
     warnings: list[str] = []
     if not reviewer.strip():
         errors.append("Enter the reviewer's name.")
     if treatment == Treatment.REVISE:
-        bad = []
+        bad: dict[str, list[str]] = {}
         for label in labels:
-            try:
-                D(amounts.get(label))
-            except ValueError:
-                bad.append(label)
+            problem = amount_problem(amounts.get(label))
+            if problem is not None:
+                bad.setdefault(problem, []).append(label)
         if bad:
-            errors.append(f"Amount is not a number for: {', '.join(bad)}.")
+            for problem, which in bad.items():
+                errors.append(f"Amount is {problem} for: {', '.join(which)}.")
             return errors, warnings
+    if treatment == Treatment.ACCEPT and accept_carries_proposal(assessment) and not assessment.proposed:
+        errors.append("The tool proposed no amount for this diligence item, so Accept has nothing to carry; use Revise.")
+        return errors, warnings
     final = resolve_amounts(assessment, treatment, amounts, labels)
     tool_amounts = period_map(assessment.proposed, labels) if assessment.proposed else {}
     override = differs_from_tool(treatment, final, assessment.treatment, tool_amounts, tolerance)
@@ -495,6 +876,23 @@ def decision_problems(
         errors.append("Select a correction type: the decision differs from the tool's proposal.")
     if not override and correction_type != CorrectionType.NONE and not rationale.strip():
         errors.append("Explain the correction in the rationale.")
+    if (
+        previous is not None
+        and rationale.strip()
+        and " ".join(rationale.split()) == " ".join(previous.rationale.split())
+        and (previous.treatment != treatment or _differs(final, previous.amounts, tolerance))
+    ):
+        errors.append(
+            f"This rationale was written for the previous decision ({previous.treatment.value} by "
+            f"{previous.reviewer or 'another reviewer'}); explain this decision."
+        )
+    if treatment == Treatment.REQUEST_INFO:
+        current = list(assessment.open_questions if questions is None else questions)
+        if not any(q.status == QuestionStatus.OPEN for q in current):
+            errors.append(
+                "Request info leaves the item pending: add a question for management "
+                "(or reopen one) so the request says what is needed."
+            )
     if not override and correction_type in (CorrectionType.JUDGMENT_DIFFERENCE, CorrectionType.NEW_INFORMATION):
         warnings.append("The decision matches the tool's proposal; this correction type only applies to an override.")
     if treatment == Treatment.REVISE:
@@ -527,8 +925,18 @@ def make_decision(
     question_updates: Optional[Mapping[str, str]] = None,
     tolerance: object = "1.00",
     timestamp: Optional[str] = None,
+    questions: Optional[Iterable[OpenQuestion]] = None,
+    previous: Optional[ReviewDecision] = None,
 ) -> ReviewDecision:
-    """Validate and build a decision; raises DecisionError listing every problem."""
+    """Validate and build a decision; raises DecisionError listing every problem.
+
+    ``question_updates`` are stored on the decision line (older logs did this; the
+    app now logs question changes in the question log). ``questions`` and
+    ``previous``: see ``decision_problems``; when ``questions`` is omitted, the
+    stored ``question_updates`` are taken into account.
+    """
+    if questions is None and question_updates:
+        questions = questions_after(assessment.open_questions, question_updates)
     errors, _ = decision_problems(
         assessment,
         treatment=treatment,
@@ -538,6 +946,8 @@ def make_decision(
         correction_type=correction_type,
         labels=labels,
         tolerance=tolerance,
+        questions=questions,
+        previous=previous,
     )
     if errors:
         raise DecisionError(errors)
@@ -552,28 +962,6 @@ def make_decision(
         tool_amounts=period_map(assessment.proposed, labels) if assessment.proposed else {},
         correction_type=correction_type,
         question_updates=dict(question_updates or {}),
-    )
-
-
-def carry_forward_decision(
-    previous: ReviewDecision,
-    *,
-    reviewer: str,
-    question_updates: Mapping[str, str],
-    timestamp: Optional[str] = None,
-) -> ReviewDecision:
-    """Re-record the latest decision unchanged, carrying only new question updates.
-
-    Question status is recorded on a decision line (the contract has no separate
-    question log), so a status change made after the decision re-affirms it.
-    """
-    return previous.model_copy(
-        update={
-            "reviewer": reviewer.strip() or previous.reviewer,
-            "timestamp": timestamp or utc_now_iso(),
-            "question_updates": dict(question_updates),
-        },
-        deep=True,
     )
 
 

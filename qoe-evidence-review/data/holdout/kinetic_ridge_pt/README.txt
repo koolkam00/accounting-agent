@@ -12,7 +12,7 @@ resemblance to real businesses or people is coincidental.
 
 Contents
   deal.yaml                                     deal metadata (periods, file map)
-  gl/general_ledger.xlsx                        general ledger export (xero_xlsx, 3768 rows, P&L accounts only)
+  gl/general_ledger.xlsx                        general ledger export (xero_xlsx, 3778 rows, P&L accounts only)
   gl/chart_of_accounts.csv                      chart of accounts
   financials/monthly_pl.xlsx                    management's monthly P&L
   adjustments/management_adjusted_ebitda.xlsx   management's adjusted EBITDA schedule

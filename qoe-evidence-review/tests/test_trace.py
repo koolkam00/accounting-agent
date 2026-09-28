@@ -344,7 +344,10 @@ def test_excess_activity_is_fitted_by_whole_groups_first():
     assert [f.period_label for f in excess] == ["FY2025", "TTM Jun-26"]
     assert all(f.severity == Severity.INFO for f in excess)
     assert "ties to the cent to 3 entries" in excess[0].message
-    assert excess[0].amount_impact == "16000.00"
+    # The excess is unclaimed context activity, not an EBITDA effect: it is stated in the message
+    # only, never as amount_impact / effects (review findings excel-flag-impact-column, ui-08).
+    assert "the other 16,000 is context only" in excess[0].message
+    assert all(f.amount_impact is None and f.effects == {} for f in excess)
     assert {x.entry_id for x in t.gl_links() if x.supports_claim} == set(lit)
 
 

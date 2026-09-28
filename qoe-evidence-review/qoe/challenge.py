@@ -36,6 +36,7 @@ from qoe.schemas import (
 )
 from qoe.trace import (
     AGREEMENT_DOC_TYPES,
+    ENTRY_ABOUT_BASES,
     ENTRY_SPECIFIC_BASES,
     W_COUNTERPARTY,
     W_KEYWORD,
@@ -116,8 +117,8 @@ _PERIODIC = re.compile(
 )
 # "payable in three installments" describes a finite fee, not a continuing obligation.
 _FINITE = re.compile(
-    r"\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d{1,2})\s+(?:equal\s+)?"
-    r"(?:monthly\s+)?(?:installments?|instalments?|payments?)\b",
+    r"\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d{1,2})\s+(?:\(\d{1,2}\)\s+)?"
+    r"(?:equal\s+)?(?:consecutive\s+)?(?:monthly\s+)?(?:installments?|instalments?|payments?)\b",
     re.IGNORECASE,
 )
 # A retainer or fee tied to one transaction or one search ends with it (SPEC §5.4).
@@ -151,7 +152,14 @@ _MONTH_NAMES = {
 _ISO_DATE = re.compile(r"\b(\d{4})-(\d{2})(?:-(\d{2}))?\b")
 _US_DATE = re.compile(r"\b(\d{1,2})/(\d{1,2})/(\d{4})\b")
 _LONG_DATE = re.compile(r"\b([A-Za-z]{3,9})\.?\s+(\d{1,2}),?\s+(\d{4})\b")
-_TERM_MONTHS = re.compile(r"\b(\d{1,3})[- ]month", re.IGNORECASE)
+# A term length as documents write it: "36-month", "thirty-six (36) months", "3-year", "twelve months".
+_TERM_LENGTH = re.compile(
+    r"\b(\d{1,3}|[a-z]+(?:-[a-z]+)?)\s*(?:\(\s*(\d{1,3})\s*\))?[\s-]*(month|year)s?\b", re.IGNORECASE
+)
+_LENGTH_WORDS = {
+    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+    "eleven": 11, "twelve": 12, "eighteen": 18, "twenty-four": 24, "thirty-six": 36, "forty-eight": 48, "sixty": 60,
+}
 _TERM_START = re.compile(r"(?:commenc\w*|beginning|effective|starting|from)\s+(?:on\s+)?", re.IGNORECASE)
 _VALID_MONTH = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
 
@@ -229,8 +237,7 @@ def _flag(
         quotes=picked,
         related_adj_ids=sorted(set(related)),
     )
-    t.add_flag(flag)
-    return flag
+    return t.add_flag(flag)
 
 
 def _plural(n: int, one: str, many: str) -> str:
@@ -263,6 +270,52 @@ def _effect(t: AdjustmentTrace, impact: Optional[dict[str, Decimal]], removed: I
     if removed:
         return f" Removed {t.items_text(removed)}: {periods_text(impact, t.labels)}."
     return f" Effect: {periods_text(impact, t.labels)}."
+
+
+# How a flag that finds its entries already gone names the earlier removal.
+_REMOVED_AS = {
+    FlagCode.ALREADY_EXCLUDED_FROM_EBITDA: "as already below EBITDA",
+    FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT: "as claimed in another adjustment",
+    FlagCode.CONTRADICTORY_EVIDENCE: "as contradicted by the documents",
+    FlagCode.CONTINUING_OBLIGATION: "as a continuing obligation",
+    FlagCode.RECURRING_PATTERN: "as recurring",
+}
+
+
+def _removal_tail(t: AdjustmentTrace, scope: Sequence[str], newly: Sequence[str]) -> str:
+    """What a removing flag takes out of the proposal, stated only once per entry.
+
+    The first challenge to remove an entry carries its effect (``AdjustmentTrace.remove``);
+    a later flag over the same entries corroborates it, and says so instead of repeating
+    an amount that would count twice in the walk from claimed to proposed."""
+    new_set = set(newly)
+    already = [e for e in scope if e not in new_set]
+    text = _effect(t, t.impact_of_removing(newly), newly) if newly else ""
+    if already:
+        causes = " and ".join(dict.fromkeys(_REMOVED_AS.get(t.removals[e].code, "on other grounds") for e in already))
+        if newly:
+            subject = t.items_text(already)
+            text += f" {subject} {'were' if ' and ' in subject else 'was'} already removed {causes}."
+        else:
+            text += f" Already removed {causes}; no further effect."
+    return text
+
+
+def _removal_flag(
+    t: AdjustmentTrace,
+    code: FlagCode,
+    severity: Severity,
+    message: str,
+    scope: Sequence[str],
+    newly: Sequence[str],
+    corroborating: Sequence[str] = (),
+    **kwargs,
+) -> Flag:
+    """Raise a removing flag (message + the removal tail) and record it as the owner of ``newly``."""
+    text = _with_corroboration(message, corroborating, _removal_tail(t, scope, newly))
+    flag = _flag(t, code, severity, text, entry_ids=scope, impact=t.impact_of_removing(newly), **kwargs)
+    t.attach(newly, flag)
+    return flag
 
 def _doc_says(doc_id: str, statement: str, facts: Optional[DocFacts] = None) -> str:
     """'<doc> <what it says>.', naming the document once.
@@ -301,6 +354,33 @@ def _groups_text(t: AdjustmentTrace, entry_ids: Iterable[str], limit: int = 1) -
 
 def _has_verified_content(facts: Optional[DocFacts]) -> bool:
     return bool(facts and (facts.key_statements or facts.amounts or facts.terms))
+
+
+def _adapter_drops(ai: Optional[EvidenceAI]) -> int:
+    """Quotes the AI adapter has rejected so far (an LLM adapter counts them; the rules do not)."""
+    value = getattr(ai, "dropped_quotes", 0)
+    return value if isinstance(value, int) else 0
+
+
+_REASON_STOP = frozenset(
+    """the and for with this that from were was are not does its their into than because under which
+    entry entries cost costs expense expenses document basis management claim claimed""".split()
+)
+
+
+def _content_words(text: str) -> set[str]:
+    return {w[:6] for w in norm_text(text).split() if len(w) >= 4 and w not in _REASON_STOP}
+
+
+def _reason_quote(facts: DocFacts, reason: str) -> Optional[EvidenceQuote]:
+    """The document's verified quote that best matches a classification reason, if any shares its words."""
+    words = _content_words(reason)
+    best: Optional[tuple[int, EvidenceQuote]] = None
+    for q in list(facts.key_statements) + [x.quote for x in facts.terms] + [a.quote for a in facts.amounts]:
+        shared = len(words & _content_words(q.quote))
+        if shared and (best is None or shared > best[0]):
+            best = (shared, q)
+    return best[1] if best else None
 
 
 def _first_statement(facts: Optional[DocFacts], pattern: Optional[re.Pattern[str]] = None) -> Optional[EvidenceQuote]:
@@ -383,10 +463,12 @@ def resolve_overlaps(traces: Sequence[AdjustmentTrace]) -> None:
         n = len(eids)
         it = _plural(n, "it", "them")
         why = f"links {it} more strongly" if ws != ls else "comes first in the schedule (the links are equally strong)"
-        impact = loser.impact_of_removing(eids)
         docs = sorted({d for e in eids for d in loser.entry_docs(e) + winner.entry_docs(e)})
-        loser.remove(eids, FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT, f"also claimed in {winner.adj.adj_id}", doc_ids=docs)
-        _flag(
+        newly = loser.remove(
+            eids, FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT, f"also claimed in {winner.adj.adj_id}, which {why}", doc_ids=docs
+        )
+        impact = loser.impact_of_removing(newly)
+        flag = _flag(
             loser,
             FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT,
             Severity.CRITICAL,
@@ -398,6 +480,7 @@ def resolve_overlaps(traces: Sequence[AdjustmentTrace]) -> None:
             related=[winner.adj.adj_id],
             impact=impact,
         )
+        loser.attach(newly, flag)
         winner.add_fact(
             Fact(
                 text=(
@@ -446,12 +529,12 @@ def already_excluded(t: AdjustmentTrace) -> None:
     for acct, eids in sorted(by_account.items()):
         info = idx.by_id[eids[0]]
         klass = info.klass.value
-        impact = t.impact_of_removing(eids)
         docs = sorted({d for e in eids for d in t.entry_docs(e)})
-        t.remove(eids, FlagCode.ALREADY_EXCLUDED_FROM_EBITDA, f"{acct} is {klass}, already below EBITDA", doc_ids=docs)
+        newly = t.remove(eids, FlagCode.ALREADY_EXCLUDED_FROM_EBITDA, f"{acct} is {klass}, already below EBITDA", doc_ids=docs)
+        impact = t.impact_of_removing(newly)
         total = sum((t.amount(e) for e in eids), ZERO)
         n = len(eids)
-        _flag(
+        flag = _flag(
             t,
             FlagCode.ALREADY_EXCLUDED_FROM_EBITDA,
             Severity.CRITICAL,
@@ -462,6 +545,7 @@ def already_excluded(t: AdjustmentTrace) -> None:
             doc_ids=docs,
             impact=impact,
         )
+        t.attach(newly, flag)
         account = idx.accounts.get(acct)
         basis = f" ({account.mapping_basis})" if account is not None and account.mapping_basis else ""
         t.add_fact(Fact(text=f"Account {acct} {info.entry.account_name} maps to {klass}{basis}.", entry_ids=eids))
@@ -496,11 +580,14 @@ def contradictions(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
     claimed = t.in_play_ids()
     if not claimed or not facts:
         return
+    before = _adapter_drops(ctx.ai)
     try:
         found = ctx.ai.find_contradictions(t.adj, t.intent, facts, [idx.by_id[e].entry for e in claimed])
     except Exception as exc:  # an AI failure must not stop the review; it is recorded
         t.notes.append(f"find_contradictions failed: {exc}")
         return
+    finally:
+        t.ai_dropped_quotes += max(0, _adapter_drops(ctx.ai) - before)
     by_doc: dict[str, list] = {}
     for c in found:
         if c.quote.doc_id != c.doc_id or not verify_quote(c.quote, idx.docs):
@@ -534,29 +621,30 @@ def contradictions(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
         quotes = [q for _, qs, _ in docs for q in qs][:3]
         lead, _, statement = docs[0]
         msg = _doc_says(lead, statement, idx.facts.get(lead))
-        impact = None
-        tail = ""
         if scope and removable:
-            impact = t.impact_of_removing(scope)
-            t.remove(scope, FlagCode.CONTRADICTORY_EVIDENCE, f"contradicted by {lead}", doc_ids=doc_ids)
-            tail = _effect(t, impact, scope)
-        elif not scope:
-            tail = " It could not be tied to specific GL entries, so nothing was removed."
-            t.add_judgment(
-                f"Does {lead} undermine the {t.adj.title} adjustment as a whole? It could not be tied to specific "
-                "GL entries, so nothing was removed.",
-                key=f"doc:{lead}",
+            newly = t.remove(scope, FlagCode.CONTRADICTORY_EVIDENCE, f"contradicted by {lead}", doc_ids=doc_ids)
+            _removal_flag(
+                t, FlagCode.CONTRADICTORY_EVIDENCE, Severity.WARNING, msg, scope, newly,
+                corroborating=doc_ids[1:], doc_ids=doc_ids, quotes=quotes,
             )
-        _flag(
-            t,
-            FlagCode.CONTRADICTORY_EVIDENCE,
-            Severity.WARNING,
-            _with_corroboration(msg, doc_ids[1:], tail),
-            entry_ids=scope,
-            doc_ids=doc_ids,
-            quotes=quotes,
-            impact=impact,
-        )
+        else:
+            tail = ""
+            if not scope:
+                tail = " It could not be tied to specific GL entries, so nothing was removed."
+                t.add_judgment(
+                    f"Does {lead} undermine the {t.adj.title} adjustment as a whole? It could not be tied to specific "
+                    "GL entries, so nothing was removed.",
+                    key=f"doc:{lead}",
+                )
+            _flag(
+                t,
+                FlagCode.CONTRADICTORY_EVIDENCE,
+                Severity.WARNING,
+                _with_corroboration(msg, doc_ids[1:], tail),
+                entry_ids=scope,
+                doc_ids=doc_ids,
+                quotes=quotes,
+            )
         for doc_id, qs, stmt in docs:
             t.add_fact(Fact(text=_doc_says(doc_id, stmt, idx.facts.get(doc_id)), entry_ids=scope, quotes=qs), key=f"doc:{doc_id}")
 
@@ -571,11 +659,14 @@ def entry_qualification(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
     if not remaining:
         return
     facts = [idx.facts[d] for d in t.evidence_docs() if d in idx.facts]
+    before = _adapter_drops(ctx.ai)
     try:
         results = ctx.ai.classify_entries(t.adj, t.intent, [idx.by_id[e].entry for e in remaining], facts)
     except Exception as exc:  # an AI failure must not stop the review; it is recorded
         t.notes.append(f"classify_entries failed: {exc}")
         return
+    finally:
+        t.ai_dropped_quotes += max(0, _adapter_drops(ctx.ai) - before)
     remaining_set = set(remaining)
     # Recurrence is the premise of owner and normalization items, so it is never the removal code there.
     recurrence_applies = not _recurrence_is_premise(t)
@@ -598,14 +689,16 @@ def entry_qualification(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
         code = FlagCode.RECURRING_PATTERN if recurring else FlagCode.CONTRADICTORY_EVIDENCE
         buckets.setdefault((code, " ".join(c.reason.split()), tuple(docs)), []).append(c.entry_id)
     for (code, reason, docs), eids in sorted(buckets.items(), key=lambda kv: idx.by_id[kv[1][0]].pos):
-        impact = t.impact_of_removing(eids)
-        t.remove(eids, code, f"does not fit management's basis per {docs[0]}", source="ai", doc_ids=docs)
+        newly = t.remove(eids, code, f"does not fit management's basis per {docs[0]}", source="ai", doc_ids=docs)
+        impact = t.impact_of_removing(newly)
         for d in docs:
             for e in eids:
                 t.associate(d, e, "classification", 0.0, "")
-        quotes = [q for d in docs for q in idx.facts[d].key_statements[:1]]
+        # Cite the passage the reason rests on, not whatever the document happens to say first.
+        quotes = [q for d in docs if (q := _reason_quote(idx.facts[d], reason)) is not None]
+        quotes = quotes or [q for d in docs for q in idx.facts[d].key_statements[:1]]
         n = len(eids)
-        _flag(
+        flag = _flag(
             t,
             code,
             Severity.WARNING,
@@ -616,6 +709,7 @@ def entry_qualification(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
             quotes=quotes,
             impact=impact,
         )
+        t.attach(newly, flag)
     if unverified:
         t.add_judgment(
             f"The AI suggested that {t.describe_many(unverified, 2)} may not fit management's basis but cited no "
@@ -624,15 +718,26 @@ def entry_qualification(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
         )
 
 
+def _money_in(text: str) -> list[Decimal]:
+    out: list[Decimal] = []
+    for m in _MONEY.finditer(text or ""):
+        try:
+            out.append(D(m.group(1)))
+        except ValueError:
+            continue
+    return out
+
+
 def _term_fee(term: TermFact) -> Optional[Decimal]:
-    for text in (term.text, term.quote.quote):
-        m = _MONEY.search(text or "")
-        if m:
-            try:
-                return D(m.group(1))
-            except ValueError:
-                continue
-    return None
+    """The fee a term states, read from its verified quote.
+
+    ``term.text`` is the extractor's own description (free text when an LLM wrote it), so it
+    may only pick which of the quote's amounts is the fee, never supply an amount itself."""
+    in_quote = _money_in(term.quote.quote)
+    for amount in _money_in(term.text):
+        if amount in in_quote:
+            return amount
+    return in_quote[0] if in_quote else None
 
 
 def _dates_in(text: str) -> list[str]:
@@ -651,14 +756,26 @@ def _dates_in(text: str) -> list[str]:
     return [month for _, month in sorted(found)]
 
 
+def _term_months(text: str) -> Optional[int]:
+    """The first term length the text states, in months."""
+    for m in _TERM_LENGTH.finditer(text):
+        raw = m.group(2) or m.group(1)
+        n = int(raw) if raw.isdigit() else _LENGTH_WORDS.get(raw.lower())
+        if n:
+            return n * 12 if m.group(3).lower() == "year" else n
+    return None
+
+
 def _term_end_month(term: TermFact, facts: DocFacts) -> Optional[str]:
-    text = f"{term.text} {term.quote.quote}"
-    n = _TERM_MONTHS.search(text)
+    # Lengths and dates come from the verified quote only: the extractor's description of the
+    # term (free text when an LLM wrote it) is not evidence of when the obligation ends.
+    text = term.quote.quote
+    n = _term_months(text)
     start = _TERM_START.search(text)
     if n and start:
         after = _dates_in(text[start.end() :])
         if after:
-            return add_months(after[0], int(n.group(1)) - 1)
+            return add_months(after[0], n - 1)
     dates = _dates_in(text)
     if dates:
         return max(dates)
@@ -699,15 +816,17 @@ def continuing_obligation(t: AdjustmentTrace) -> None:
             continue
         # A letter that frames its retainer as one-time or creditable against a success fee
         # describes a single engagement, even where a term on its own reads as a retainer.
+        # Only verified quotes decide: a term's description is the extractor's paraphrase (an LLM's
+        # free text in LLM mode), so "one-time" or "three installments" written there proves nothing.
         doc_one_off = any(_one_off(q.quote) for q in facts.key_statements) or any(
-            _one_off(f"{x.text} {x.quote.quote}") for x in facts.terms
+            _one_off(x.quote.quote) for x in facts.terms
         )
         terms: list[TermFact] = []
         fees: list[Decimal] = []
         feeless = False
         for term in facts.terms:
             kind = term.kind.strip().lower()
-            text = f"{term.text} {term.quote.quote}"
+            text = term.quote.quote
             if _FINITE.search(text):
                 continue
             if kind in ("auto_renew", "ongoing_services"):
@@ -758,19 +877,12 @@ def continuing_obligation(t: AdjustmentTrace) -> None:
         scope = list(scope_key)
         doc_ids = [d for d, _ in docs]
         lead, lead_terms = docs[0]
-        impact = t.impact_of_removing(scope)
-        t.remove(scope, FlagCode.CONTINUING_OBLIGATION, f"{lead} sets a continuing obligation", doc_ids=doc_ids)
+        newly = t.remove(scope, FlagCode.CONTINUING_OBLIGATION, f"{lead} sets a continuing obligation", doc_ids=doc_ids)
         described = "; ".join(dict.fromkeys(_term_brief(term) for term in lead_terms[:2]))
         msg = f"{lead} sets a continuing obligation ({described}) that runs past the last claimed month ({month_label(last)})."
-        _flag(
-            t,
-            FlagCode.CONTINUING_OBLIGATION,
-            Severity.WARNING,
-            _with_corroboration(msg, doc_ids[1:], _effect(t, impact, scope)),
-            entry_ids=scope,
-            doc_ids=doc_ids,
-            quotes=[term.quote for _, ts in docs for term in ts][:3],
-            impact=impact,
+        _removal_flag(
+            t, FlagCode.CONTINUING_OBLIGATION, Severity.WARNING, msg, scope, newly,
+            corroborating=doc_ids[1:], doc_ids=doc_ids, quotes=[term.quote for _, ts in docs for term in ts][:3],
         )
         for doc_id, ts in docs:
             t.add_fact(
@@ -888,16 +1000,16 @@ def recurring_pattern(t: AdjustmentTrace) -> None:
             )
         )
         if recurring:
-            impact = t.impact_of_removing(g_claimed)
-            t.remove(g_claimed, FlagCode.RECURRING_PATTERN, "comparable activity outside the claimed window")
-            _flag(
+            newly = t.remove(g_claimed, FlagCode.RECURRING_PATTERN, "comparable activity outside the claimed window")
+            flag = _flag(
                 t,
                 FlagCode.RECURRING_PATTERN,
                 Severity.WARNING,
-                f"{t.items_text(g_claimed, 1)} recurs: {'; '.join(parts)}." + _effect(t, impact),
+                f"{t.items_text(g_claimed, 1)} recurs: {'; '.join(parts)}." + _removal_tail(t, g_claimed, newly),
                 entry_ids=g_claimed + comp_ids,
-                impact=impact,
+                impact=t.impact_of_removing(newly),
             )
+            t.attach(newly, flag)
         elif any(by_label[lbl] for lbl in uncovered):
             below = ", ".join(f"{lbl} {money(by_label[lbl])}" for lbl in uncovered if by_label[lbl])
             t.add_judgment(
@@ -951,9 +1063,8 @@ def out_of_period(t: AdjustmentTrace) -> None:
                 contrib[lbl] = plus - minus
                 realloc[lbl] = contrib[lbl] - (info.amount if e in t.claimed.get(lbl, []) else ZERO)
             t.moved.add(e)
-            for lbl, v in contrib.items():
-                if v:
-                    t.effects.append(Effect(lbl, v, FlagCode.OUT_OF_PERIOD, e))
+            moves = [Effect(lbl, v, FlagCode.OUT_OF_PERIOD, e) for lbl, v in contrib.items() if v]
+            t.effects.extend(moves)
             quote = _service_quote(facts, s_months)
             order = t.labels.index
             belongs = ", ".join(sorted(svc_labels, key=order)) or "months before the analysis periods"
@@ -967,7 +1078,7 @@ def out_of_period(t: AdjustmentTrace) -> None:
                     f" {len(outside)} service {_plural(len(outside), 'month falls', 'months fall')} outside the "
                     "analysis periods, so no negative side is carried for them."
                 )
-            _flag(
+            flag = _flag(
                 t,
                 FlagCode.OUT_OF_PERIOD,
                 Severity.WARNING,
@@ -977,6 +1088,8 @@ def out_of_period(t: AdjustmentTrace) -> None:
                 quotes=[quote],
                 impact=realloc,
             )
+            for x in moves:
+                x.flag = flag
             t.add_fact(
                 Fact(
                     text=f"{doc_id} states a service period of {month_span(s_months)} for {t.describe(e)}.",
@@ -1063,8 +1176,8 @@ def offsetting_recovery(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
     for eid, score, reasons, docs in ctx.recoveries.get(t.adj.adj_id, []):
         info = idx.by_id[eid]
         labels_in = idx.labels_of(info.month)
-        for lbl in labels_in:
-            t.effects.append(Effect(lbl, info.amount, FlagCode.OFFSETTING_RECOVERY, eid))
+        offsets = [Effect(lbl, info.amount, FlagCode.OFFSETTING_RECOVERY, eid) for lbl in labels_in]
+        t.effects.extend(offsets)
         t.add_context_link(eid, score, "Offsetting recovery: " + "; ".join(reasons))
         quotes: list[EvidenceQuote] = []
         # The claim / settlement letter behind the recovery: any document stating the reference the memo cites.
@@ -1073,14 +1186,23 @@ def offsetting_recovery(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
                 if d not in docs:
                     docs.append(d)
         docs = sorted(docs)
+        claimed_set = set(t.claimed_ids())
         for d in docs:
-            t.associate(d, eid, "recovery", 0.0, "")
-            t.doc_links[d].relation = "recovery"
-            quotes += [a.quote for a in idx.facts[d].amounts if _amount_is(a.amount, info.amount, idx.tolerance)]
+            stated = [a.quote for a in idx.facts[d].amounts if _amount_is(a.amount, info.amount, idx.tolerance)]
+            quotes += stated
+            dl = t.doc_links.get(d)
+            # A cost invoice that cites the claim number ties the credit to the event (it stays in the
+            # flag's documents) but is the invoice for its own entry, not a document about the recovery.
+            tied_to_claim = dl is not None and any(
+                b in ENTRY_ABOUT_BASES for e, b in dl.entry_basis.items() if e in claimed_set
+            )
+            if stated or not tied_to_claim:
+                t.associate(d, eid, "recovery", 0.0, "")
+                t.doc_links[d].relation = "recovery"
         e = info.entry
         who = f" from {e.counterparty}" if e.counterparty else ""
         impact = {lbl: info.amount for lbl in labels_in}
-        _flag(
+        flag = _flag(
             t,
             FlagCode.OFFSETTING_RECOVERY,
             Severity.WARNING,
@@ -1092,6 +1214,8 @@ def offsetting_recovery(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
             quotes=quotes,
             impact=impact,
         )
+        for x in offsets:
+            x.flag = flag
         t.add_fact(
             Fact(
                 text=f"A recovery of {money(abs(info.amount))}{who} was booked in {month_label(info.month)} to "

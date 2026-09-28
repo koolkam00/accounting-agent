@@ -12,17 +12,31 @@ duplicate posting) are reviewed exactly like management's items. The queue
 lists them as their own group after management's items, and the bridge shows
 their rows after the diligence revisions to management's items.
 
-Decisions go to ``<workpapers>/<deal_id>/review_log.jsonl`` (append-only) and
-time on task to ``timing.jsonl`` beside it. The top half of this module is pure
-helpers (table builders, formatting, the time tracker) that are unit-tested;
-Streamlit rendering lives below and only runs under ``streamlit run``.
+Decisions go to ``<workpapers>/<deal_id>/review_log.jsonl`` (append-only),
+question status changes, management responses and reviewer-raised questions to
+``question_log.jsonl``, and time on task to ``timing.jsonl`` beside them. A
+question update is signed by whoever makes it and never re-records a decision.
+The top half of this module is pure helpers (table builders, formatting, the
+time tracker) that are unit-tested; Streamlit rendering lives below and only
+runs under ``streamlit run``.
+
+Access: the app has no authentication and shows confidential deal data, so it
+binds to 127.0.0.1 (``make ui`` passes ``--server.address 127.0.0.1`` and
+``.streamlit/config.toml`` sets the same default). Only widen the bind address
+behind an authenticating proxy. Held-out deal packages (``data/holdout``) are
+not listed, and a holdout path is refused, unless ``QOE_SHOW_HOLDOUT=1`` is set
+for a benchmark session (docs/benchmark_protocol.md).
 """
 
 from __future__ import annotations
 
+import hashlib
 import html
 import io
+import json
 import os
+import re
+import string
 import sys
 import traceback
 from dataclasses import dataclass
@@ -49,30 +63,38 @@ except ImportError:  # pragma: no cover
 from qoe import TOOL_VERSION
 from qoe.money import CENT, D, period_map
 from qoe.review_store import (
+    QUESTION_LOG_NAME,
     STATUS_AGREED,
     STATUS_OVERRIDDEN,
     STATUS_UNREVIEWED,
     TIMING_LOG_NAME,
+    ConflictError,
     DecisionError,
-    is_diligence_item,
-    is_item_row,
+    QuestionLogEntry,
     ReviewStore,
+    accept_carries_proposal,
     append_timing,
     apply_question_updates,
     apply_reviews,
     bridge_display_rows,
     bridge_row_adj_id,
     bridge_ties,
-    carry_forward_decision,
     check_bridge_identity,
     corrections_summary,
     decision_is_stale,
     decision_problems,
+    decision_token,
     encode_question_update,
     final_amounts,
+    is_diligence_item,
+    is_item_row,
     latest_by_adj,
     load_timing,
     make_decision,
+    make_question_update,
+    merge_logs,
+    question_token,
+    questions_after,
     resolve_amounts,
     review_status,
     timing_summary,
@@ -88,8 +110,12 @@ from qoe.schemas import (
     EvidenceQuote,
     Fact,
     Flag,
+    FlagCode,
     GLEntry,
+    GLLink,
     ManagementSchedule,
+    OpenQuestion,
+    PeriodDef,
     QuestionStatus,
     ReconciliationResult,
     ReviewDecision,
@@ -98,8 +124,12 @@ from qoe.schemas import (
     Workpaper,
 )
 
+EXPORT_STAMP_NAME = "export_build.json"
 DATA_ROOT = PROJECT_ROOT / "data"
-DEAL_SPLITS = ("dev", "holdout")
+DEV_SPLIT = "dev"
+HOLDOUT_SPLIT = "holdout"
+DEAL_SPLITS = (DEV_SPLIT,)  # holdout is opt-in: see show_holdout()
+SHOW_HOLDOUT_ENV = "QOE_SHOW_HOLDOUT"
 
 PAGES = ("Overview", "Adjustment queue", "Adjustment detail", "Open questions", "Export")
 
@@ -195,12 +225,21 @@ class WorkpaperPaths:
         return self.root / "review_log.jsonl"
 
     @property
+    def question_log(self) -> Path:
+        return self.root / QUESTION_LOG_NAME
+
+    @property
     def timing(self) -> Path:
         return self.root / TIMING_LOG_NAME
 
     @property
     def xlsx(self) -> Path:
         return self.root / f"QoE_Evidence_Review_{self.deal_id}.xlsx"
+
+    @property
+    def export_stamp(self) -> Path:
+        """What the workbook on disk was built from (see ``export_status``)."""
+        return self.root / EXPORT_STAMP_NAME
 
 
 def workpaper_paths(deal_id: str, base: Optional[Path] = None) -> WorkpaperPaths:
@@ -233,9 +272,30 @@ def read_deal_header(deal_dir: Path) -> tuple[str, str]:
     return str(data.get("deal_id") or name), str(data.get("target_name") or name)
 
 
-def discover_deals(root_dir: Optional[Path] = None, splits: Iterable[str] = DEAL_SPLITS) -> list[DealOption]:
+def show_holdout() -> bool:
+    """Held-out packages are listed only in a benchmark session that opts in with
+    QOE_SHOW_HOLDOUT=1: the developer must not see them before code freeze."""
+    return os.environ.get(SHOW_HOLDOUT_ENV, "").strip() == "1"
+
+
+def deal_splits() -> tuple[str, ...]:
+    return DEAL_SPLITS + ((HOLDOUT_SPLIT,) if show_holdout() else ())
+
+
+def is_holdout_path(path: Path, root_dir: Optional[Path] = None) -> bool:
+    """True for a directory inside ``<data root>/holdout`` (after resolving symlinks)."""
+    holdout = (Path(root_dir or data_root()) / HOLDOUT_SPLIT).resolve()
+    try:
+        Path(path).resolve().relative_to(holdout)
+    except ValueError:
+        return False
+    return True
+
+
+def discover_deals(root_dir: Optional[Path] = None, splits: Optional[Iterable[str]] = None) -> list[DealOption]:
+    """Deal packages under the data root, dev only unless holdout is opted into."""
     out: list[DealOption] = []
-    for split in splits:
+    for split in splits if splits is not None else deal_splits():
         root = Path(root_dir or data_root()) / split
         if not root.is_dir():
             continue
@@ -320,6 +380,45 @@ def _esc(text: object) -> str:
     return html.escape(str(text), quote=True).replace("$", "&#36;")
 
 
+_MD_SPECIAL = re.compile("([" + re.escape(string.punctuation) + "])")
+
+
+def md(text: object) -> str:
+    """Text made inert for Streamlit's Markdown (st.success / caption / warning / title and
+    widget labels): every ASCII punctuation character is backslash-escaped, so seller- or
+    model-written text (an adjustment Ref, a question, an exception message) cannot render
+    links, images, colour directives, emoji codes or LaTeX. Newlines become spaces."""
+    return _MD_SPECIAL.sub(r"\\\1", " ".join(str(text).split()))
+
+
+# First characters that make Excel / LibreOffice / Sheets read a CSV cell as a formula
+# (and their full-width forms, which some spreadsheet apps normalize).
+_FORMULA_TRIGGERS = ("=", "+", "-", "@", "\t", "\r", "\n", "\uff1d", "\uff0b", "\uff0d", "\uff20")
+
+
+def csv_safe(value: object) -> object:
+    """A CSV cell that cannot be evaluated as a formula: text whose first (non-blank)
+    character is a formula trigger gets a leading apostrophe (OWASP CSV injection)."""
+    if not isinstance(value, str):
+        return value
+    head = value.lstrip(" ")
+    if value.startswith(_FORMULA_TRIGGERS) or head.startswith(_FORMULA_TRIGGERS):
+        return "'" + value
+    return value
+
+
+def csv_bytes(rows: Iterable[Mapping[str, Any]], columns: list[str]) -> bytes:
+    """UTF-8 CSV of ``columns`` with every cell passed through ``csv_safe``."""
+    import csv
+
+    buf = io.StringIO()
+    writer = csv.writer(buf, lineterminator="\n")
+    writer.writerow([csv_safe(c) for c in columns])
+    for r in rows:
+        writer.writerow([csv_safe(r.get(c, "")) for c in columns])
+    return buf.getvalue().encode("utf-8")
+
+
 # ---------------------------------------------------------------------------
 # HTML fragments (rendered with st.html)
 # ---------------------------------------------------------------------------
@@ -379,12 +478,36 @@ def sorted_flags(flags: Iterable[Flag]) -> list[Flag]:
     return sorted(flags, key=lambda f: (SEVERITY_ORDER.get(f.severity, 9), f.code.value, f.period_label or ""))
 
 
-def flag_html(f: Flag) -> str:
+# What a flag's ``amount_impact`` measures when the flag does not move the proposed
+# amount (its ``effects`` are empty). Only ``Flag.effects`` is shown as an EBITDA effect.
+FLAG_AMOUNT_LABELS = {
+    FlagCode.EXCESS_GL_ACTIVITY: "Context activity (not claimed)",
+    FlagCode.PARTIAL_GL_SUPPORT: "GL shortfall",
+}
+FLAG_AMOUNT_DEFAULT_LABEL = "Amount at issue"
+
+
+def flag_amount_notes(f: Flag, labels: Optional[Iterable[str]] = None) -> list[str]:
+    """Amount chips for a flag: "EBITDA effect <period> <amount>" for each period whose
+    proposed amount the flag changes (``Flag.effects``), else the flag's ``amount_impact``
+    under a label that says what it measures (context activity is not an EBITDA effect)."""
+    order = list(labels or [])
+    effects = {k: v for k, v in f.effects.items() if D(v) != 0}
+    if effects:
+        keys = [k for k in order if k in effects] + [k for k in effects if k not in order]
+        return [f"EBITDA effect {k} {fmt_amount(effects[k])}" for k in keys]
+    if f.amount_impact in (None, "") or D(f.amount_impact) == 0:
+        return []
+    label = FLAG_AMOUNT_LABELS.get(f.code, FLAG_AMOUNT_DEFAULT_LABEL)
+    return [f"{label} {fmt_amount(f.amount_impact)}"]
+
+
+def flag_html(f: Flag, labels: Optional[Iterable[str]] = None) -> str:
     head = [severity_chip(f.severity), f"<b>{_esc(humanize_code(f.code))}</b>"]
     if f.period_label:
         head.append(f'<span class="qoe-src">{_esc(f.period_label)}</span>')
-    if f.amount_impact not in (None, ""):
-        head.append(f'<span class="qoe-src">EBITDA effect {_esc(fmt_amount(f.amount_impact))}</span>')
+    for note in flag_amount_notes(f, labels):
+        head.append(f'<span class="qoe-src">{_esc(note)}</span>')
     meta = []
     if f.entry_ids:
         meta.append(gl_rows_text(f.entry_ids))
@@ -504,11 +627,31 @@ def _open_question_count(a: AdjustmentAssessment) -> int:
     return sum(1 for q in a.open_questions if q.status == QuestionStatus.OPEN)
 
 
-def queue_columns(labels: list[str]) -> list[str]:
+def queue_columns(labels: list[str], all_columns: bool = True) -> list[str]:
+    """Queue columns. The compact set (the default view) keeps what a reviewer scans:
+    the item, the treatments, where it stands, the final amounts, flags and questions."""
+    if not all_columns:
+        return ["Ref", "Title", "Tool", "Reviewer", "Status", "Bridge", *(f"Final {p}" for p in labels), "Top flags", "Open Qs"]
     cols = ["Ref", "Title", "Category", "Tool", "Reviewer", "Status", "Bridge"]
     for prefix in ("Claimed", "Proposed", "Final"):
         cols.extend(f"{prefix} {p}" for p in labels)
-    return cols + ["Top flags", "Confidence", "GL links", "Docs", "Open Qs"]
+    return cols + ["Top flags", "Confidence", "GL links", "Supporting GL links", "Docs", "Open Qs"]
+
+
+BRIDGE_EXCLUDED = "Excluded (pending)"
+BRIDGE_AT_ZERO = "Carried at 0"
+BRIDGE_CARRIED = "Carried"
+DRAFT_SUFFIX = " (unsent draft)"
+
+
+def bridge_status(final: Mapping[str, str]) -> str:
+    """How the item reaches diligence adjusted EBITDA: excluded while pending, carried at
+    zero (rejected), or carried at an amount."""
+    if not final:
+        return BRIDGE_EXCLUDED
+    if all(D(v) == 0 for v in final.values()):
+        return BRIDGE_AT_ZERO
+    return BRIDGE_CARRIED
 
 
 def queue_rows(
@@ -516,8 +659,11 @@ def queue_rows(
     latest: Mapping[str, ReviewDecision],
     finals: Mapping[str, dict[str, str]],
     tolerance: object = "1.00",
+    drafts: Iterable[str] = (),
 ) -> list[dict[str, Any]]:
+    """One row per adjustment. ``drafts`` are adj ids with unsent form edits."""
     labels = [p.label for p in wp.deal.periods]
+    drafted = set(drafts)
     out = []
     for a in wp.assessments:
         d = latest.get(a.adj_id)
@@ -525,6 +671,8 @@ def queue_rows(
         status = review_status(a, d, tolerance)
         if d is not None and decision_is_stale(a, d, tolerance):
             status += " (tool proposal changed since review)"
+        if a.adj_id in drafted:
+            status += DRAFT_SUFFIX
         rec: dict[str, Any] = {
             "_group": GROUP_DILIGENCE if is_diligence_item(a) else GROUP_MANAGEMENT,
             "Ref": a.adj_id,
@@ -533,7 +681,7 @@ def queue_rows(
             "Tool": TREATMENT_LABELS[a.treatment],
             "Reviewer": TREATMENT_LABELS[d.treatment] if d is not None else "",
             "Status": status,
-            "Bridge": "Included" if final else "Pending",
+            "Bridge": bridge_status(final),
         }
         for p in labels:
             rec[f"Claimed {p}"] = fmt_amount(a.claimed.get(p, "0"))
@@ -543,7 +691,9 @@ def queue_rows(
             rec[f"Final {p}"] = fmt_amount(final.get(p)) if final else "pending"
         rec["Top flags"] = top_flags(a)
         rec["Confidence"] = a.confidence
-        rec["GL links"] = sum(1 for g in a.gl_links if g.supports_claim)
+        # Same two counts, and labels, as the workbook's Adjustment Summary.
+        rec["GL links"] = len(a.gl_links)
+        rec["Supporting GL links"] = sum(1 for g in a.gl_links if link_role(g)[0] in CARRIED_ROLES)
         rec["Docs"] = len(a.doc_links)
         rec["Open Qs"] = _open_question_count(a)
         out.append(rec)
@@ -631,12 +781,91 @@ def flags_by_entry(a: AdjustmentAssessment) -> dict[str, list[str]]:
     return out
 
 
+ROLE_SUPPORTING = "supporting"
+ROLE_MOVED = "moved"
+ROLE_REMOVED = "removed"
+ROLE_RECOVERY = "recovery"
+ROLE_CONTEXT = "context"
+ROLE_ORDER = {ROLE_SUPPORTING: 0, ROLE_MOVED: 1, ROLE_REMOVED: 2, ROLE_RECOVERY: 3, ROLE_CONTEXT: 4}
+CLAIMED_ROLES = (ROLE_SUPPORTING, ROLE_MOVED, ROLE_REMOVED)
+CARRIED_ROLES = (ROLE_SUPPORTING, ROLE_MOVED)  # claimed and still carried: the workbook's "supporting"
+_REMOVED_REASON = re.compile(r"^Removed \(([A-Z_]+)\)")
+
+
+def link_role(link: GLLink) -> tuple[str, Optional[FlagCode]]:
+    """(role, removing flag) of a GL link: ``GLLink.role`` / ``removed_by`` when the engine
+    set them; for an older workpaper, inferred from ``supports_claim`` and the
+    "Removed (<FLAG>): ..." reason the engine writes on a claimed entry it took out."""
+    if link.role:
+        return link.role, link.removed_by
+    if link.supports_claim:
+        return ROLE_SUPPORTING, None
+    for reason in link.reasons:
+        m = _REMOVED_REASON.match(reason)
+        if m:
+            try:
+                return ROLE_REMOVED, FlagCode(m.group(1))
+            except ValueError:
+                return ROLE_REMOVED, None
+    return ROLE_CONTEXT, None
+
+
+def link_is_claimed(link: GLLink) -> bool:
+    """Management's claimed amount includes this entry (whether or not the tool carried it)."""
+    return link.claimed or link_role(link)[0] in CLAIMED_ROLES
+
+
+def role_label(role: str, removed_by: Optional[FlagCode] = None) -> str:
+    if role == ROLE_SUPPORTING:
+        return "Supporting (claimed, carried)"
+    if role == ROLE_MOVED:
+        return "Claimed, carried in another period"
+    if role == ROLE_REMOVED:
+        return f"Claimed, removed by {humanize_code(removed_by)}" if removed_by is not None else "Claimed, removed by a challenge"
+    if role == ROLE_RECOVERY:
+        return "Recovery (offsets the claim)"
+    if role == ROLE_CONTEXT:
+        return "Context (not part of the claim)"
+    return humanize_code(role.upper())
+
+
+def gl_role_counts(a: AdjustmentAssessment) -> dict[str, int]:
+    """Role label -> number of linked entries, in role order."""
+    out: dict[str, int] = {}
+    for link in sorted(a.gl_links, key=lambda g: ROLE_ORDER.get(link_role(g)[0], 9)):
+        label = role_label(*link_role(link))
+        out[label] = out.get(label, 0) + 1
+    return out
+
+
+def _month_in(month: str, period: PeriodDef) -> bool:
+    return period.start <= month[:7] <= period.end
+
+
+def claimed_link_tieout(a: AdjustmentAssessment, periods: Iterable[PeriodDef]) -> list[dict[str, Any]]:
+    """The GL listing's claimed entries (supporting, moved and removed) summed by GL month
+    into each period, against the tie-out's "Traced to GL", so the table ties."""
+    periods = list(periods)
+    labels = [p.label for p in periods]
+    listed = {p.label: sum((D(g.amount) for g in a.gl_links if link_is_claimed(g) and _month_in(g.period, p)), D(0)) for p in periods}
+    carried = {
+        p.label: sum((D(g.amount) for g in a.gl_links if link_role(g)[0] in CARRIED_ROLES and _month_in(g.period, p)), D(0))
+        for p in periods
+    }
+    return [
+        {"Line": "Claimed entries listed (by GL month)", **{p: fmt_amount(listed[p]) for p in labels}},
+        {"Line": "of which still carried", **{p: fmt_amount(carried[p]) for p in labels}, "_class": "memo"},
+        {"Line": "Traced to GL (tie-out)", **{p: fmt_amount(a.traced_gl.get(p, "0")) for p in labels}, "_class": "subtotal"},
+        {"Line": "Difference", **{p: fmt_amount(listed[p] - D(a.traced_gl.get(p))) for p in labels}, "_class": "memo"},
+    ]
+
+
 def gl_link_rows(a: AdjustmentAssessment, gl_by_id: Mapping[str, GLEntry]) -> list[dict[str, Any]]:
     challenged = flags_by_entry(a)
 
-    def sort_key(link: Any) -> tuple:
+    def sort_key(link: GLLink) -> tuple:
         e = gl_by_id.get(link.entry_id)
-        return (not link.supports_claim, e.date if e else link.period, link.entry_id)
+        return (ROLE_ORDER.get(link_role(link)[0], 9), e.date if e else link.period, link.entry_id)
 
     out = []
     for link in sorted(a.gl_links, key=sort_key):
@@ -650,7 +879,7 @@ def gl_link_rows(a: AdjustmentAssessment, gl_by_id: Mapping[str, GLEntry]) -> li
                 "Doc #": e.doc_number if e is not None else "",
                 "Memo": e.memo if e is not None else "",
                 "Amount": fmt_amount(link.amount, cents=True),
-                "Supports claim": "Yes" if link.supports_claim else "No (context)",
+                "Role": role_label(*link_role(link)),
                 "Challenged by": ", ".join(challenged.get(link.entry_id, [])),
                 "Group": link.group,
                 "Score": f"{link.score:.2f}",
@@ -713,10 +942,15 @@ def doc_facts_line(df: Optional[DocFacts]) -> str:
     return " | ".join(parts)
 
 
-def question_rows(wp: Workpaper) -> list[dict[str, Any]]:
+def question_rows(wp: Workpaper, question_log: Iterable[QuestionLogEntry] = ()) -> list[dict[str, Any]]:
+    """Every question for management; "Last update" names who last changed it in the question log."""
+    last: dict[str, QuestionLogEntry] = {}
+    for e in question_log:
+        last[e.q_id] = e
     out = []
     for a in wp.assessments:
         for q in a.open_questions:
+            e = last.get(q.q_id)
             out.append(
                 {
                     "Q id": q.q_id,
@@ -726,9 +960,38 @@ def question_rows(wp: Workpaper) -> list[dict[str, Any]]:
                     "Basis": q.basis,
                     "Status": q.status.value,
                     "Response": q.response,
+                    "Last update": f"{e.reviewer}, {e.timestamp}" if e is not None else "",
                 }
             )
     return out
+
+
+# The information request list sent to management: no internal basis (flag codes,
+# "ai:..." provenance) and no reviewer names.
+REQUEST_LIST_COLUMNS = ["Q id", "Ref", "Question", "Priority", "Status", "Response"]
+
+
+def filter_question_rows(
+    rows: Iterable[Mapping[str, Any]],
+    statuses: Iterable[str] = (),
+    priorities: Iterable[str] = (),
+    refs: Iterable[str] = (),
+) -> list[dict[str, Any]]:
+    """Rows matching every non-empty filter, high priority first. An empty result stays
+    empty: it never falls back to the unfiltered list."""
+    st_, pr_, rf_ = set(statuses), set(priorities), set(refs)
+    shown = [
+        dict(r)
+        for r in rows
+        if (not st_ or r["Status"] in st_) and (not pr_ or r["Priority"] in pr_) and (not rf_ or r["Ref"] in rf_)
+    ]
+    shown.sort(key=lambda r: PRIORITY_ORDER.get(r["Priority"], 9))
+    return shown
+
+
+def request_list_csv(rows: Iterable[Mapping[str, Any]]) -> bytes:
+    """The management-facing CSV: exactly ``rows``, request columns only, formula-safe."""
+    return csv_bytes(rows, REQUEST_LIST_COLUMNS)
 
 
 def issue_rows(recon: ReconciliationResult) -> list[dict[str, Any]]:
@@ -794,14 +1057,53 @@ def status_counts(
         "stale": sum(
             1 for a in wp.assessments if a.adj_id in latest and decision_is_stale(a, latest[a.adj_id], tolerance)
         ),
+        # Pending items with nothing asked of management (e.g. from a log written before
+        # Request info required a question): the request list would never unblock them.
+        "pending_without_question": [
+            a.adj_id for a in wp.assessments if not finals.get(a.adj_id) and not _open_question_count(a)
+        ],
     }
 
 
-def decision_history_rows(decisions: Iterable[ReviewDecision], labels: list[str]) -> list[dict[str, Any]]:
+KIND_DECISION = "Decision"
+KIND_QUESTION_UPDATE = "Question update"
+KIND_QUESTION_ADDED = "Question added"
+
+
+def question_entry_text(e: QuestionLogEntry) -> str:
+    if e.kind == "new":
+        return f"{e.q_id} ({e.priority}): {e.text}"
+    parts = [e.status.value if e.status is not None else "response"]
+    if e.response is not None:
+        parts.append(f"response {e.response!r}" if e.response else "response cleared")
+    return f"{e.q_id}: " + ", ".join(parts)
+
+
+def decision_history_rows(
+    decisions: Iterable[ReviewDecision], labels: list[str], question_log: Iterable[QuestionLogEntry] = ()
+) -> list[dict[str, Any]]:
+    """Decisions and question-log lines in one time line; question lines are labelled as
+    such (they are not decisions and carry no treatment or amounts)."""
     out = []
-    for d in decisions:
-        rec: dict[str, Any] = {
+    for item in merge_logs(list(decisions), list(question_log)):
+        if isinstance(item, QuestionLogEntry):
+            rec: dict[str, Any] = {
+                "When (UTC)": item.timestamp,
+                "Kind": KIND_QUESTION_ADDED if item.kind == "new" else KIND_QUESTION_UPDATE,
+                "Reviewer": item.reviewer,
+                "Treatment": "",
+                "Tool": "",
+                **{p: "" for p in labels},
+                "Correction": "",
+                "Rationale": "",
+                "Question updates": question_entry_text(item),
+            }
+            out.append(rec)
+            continue
+        d = item
+        rec = {
             "When (UTC)": d.timestamp,
+            "Kind": KIND_DECISION,
             "Reviewer": d.reviewer,
             "Treatment": TREATMENT_LABELS[d.treatment],
             "Tool": TREATMENT_LABELS[d.tool_treatment],
@@ -826,6 +1128,35 @@ def form_defaults(
     return a.treatment, period_map(a.proposed or a.claimed, labels)
 
 
+def form_seed(a: AdjustmentAssessment, decision: Optional[ReviewDecision], labels: list[str]) -> dict[str, Any]:
+    """Initial review-form values by field name. Treatment and amounts start from the
+    latest decision (else the tool's proposal); rationale and correction type always
+    start blank, so a re-review cannot pass validation on reasons written for a
+    different decision (the previous ones are shown read-only beside the form)."""
+    treatment, amounts = form_defaults(a, decision, labels)
+    seed: dict[str, Any] = {
+        "treatment": treatment,
+        "rationale": "",
+        "correction": CorrectionType.NONE,
+        "newq": "",
+        "newq_prio": "high",
+    }
+    for p in labels:
+        seed[f"amt:{p}"] = amounts.get(p, "0.00")
+    for q in a.open_questions:
+        seed[f"q:{q.q_id}:status"] = q.status
+        seed[f"q:{q.q_id}:response"] = q.response
+    return seed
+
+
+def form_is_dirty(state: Mapping[str, Any], adj_id: str) -> bool:
+    """True when the review form for ``adj_id`` holds edits that were not recorded."""
+    defaults = state.get(f"fd:{adj_id}") or {}
+    return any(
+        f"f:{adj_id}:{name}" in state and state[f"f:{adj_id}:{name}"] != default for name, default in defaults.items()
+    )
+
+
 def question_update_values(
     current: Iterable[Any], edits: Mapping[str, tuple[QuestionStatus, str]]
 ) -> dict[str, str]:
@@ -841,6 +1172,64 @@ def question_update_values(
                 value = f"{status.value}:"  # explicit clear of an earlier response
             out[q.q_id] = value
     return out
+
+
+# ---------------------------------------------------------------------------
+# Export freshness
+# ---------------------------------------------------------------------------
+
+EXPORT_MISSING = "missing"
+EXPORT_CURRENT = "current"
+EXPORT_STALE = "stale"
+EXPORT_UNKNOWN = "unknown"
+
+
+def _file_digest(path: Path) -> str:
+    try:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return "missing"
+
+
+def review_state_signature(paths: WorkpaperPaths, has_pkg: bool) -> str:
+    """Fingerprint of everything the workbook is built from: the tool's run, the review
+    log, the question log, and whether the deal package (GL detail) was loaded."""
+    h = hashlib.sha256()
+    for part in (paths.workpaper, paths.review_log, paths.question_log):
+        h.update(f"{part.name}={_file_digest(part)};".encode())
+    h.update(b"pkg=1" if has_pkg else b"pkg=0")
+    return h.hexdigest()[:24]
+
+
+def write_export_stamp(paths: WorkpaperPaths, signature: str, built_at: str) -> None:
+    stat = paths.xlsx.stat()
+    stamp = {
+        "xlsx": paths.xlsx.name,
+        "built_at": built_at,
+        "signature": signature,
+        "xlsx_size": stat.st_size,
+        "xlsx_mtime_ns": stat.st_mtime_ns,
+    }
+    paths.export_stamp.write_text(json.dumps(stamp, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def export_status(paths: WorkpaperPaths, signature: str) -> tuple[str, Optional[str]]:
+    """(status, built_at) of the workbook on disk: missing; current (built by this app
+    from the decisions and questions logged now); stale (built before a later change);
+    unknown (no build record, or the file was rewritten outside the app)."""
+    if not paths.xlsx.is_file():
+        return EXPORT_MISSING, None
+    try:
+        stamp = json.loads(paths.export_stamp.read_text(encoding="utf-8"))
+        stat = paths.xlsx.stat()
+    except (OSError, ValueError):
+        return EXPORT_UNKNOWN, None
+    built_at = stamp.get("built_at")
+    if stamp.get("xlsx_size") != stat.st_size or stamp.get("xlsx_mtime_ns") != stat.st_mtime_ns:
+        return EXPORT_UNKNOWN, built_at
+    if stamp.get("signature") != signature:
+        return EXPORT_STALE, built_at
+    return EXPORT_CURRENT, built_at
 
 
 # ---------------------------------------------------------------------------
@@ -935,37 +1324,81 @@ def read_document_pages(deal_dir: Path, doc_id: str, documents_dir: str = "docum
     return [canonicalize_page_text(path.read_text(encoding="utf-8", errors="replace"))]
 
 
+def selected_ref(refs: list[str], event: Any) -> Optional[str]:
+    """The adjustment a single-row dataframe selection points at (None when nothing is
+    selected). ``event`` is the dataframe's selection state (dict- or attribute-style)."""
+    if event is None:
+        return None
+    selection = event.get("selection") if isinstance(event, Mapping) else getattr(event, "selection", None)
+    if selection is None:
+        return None
+    rows = selection.get("rows") if isinstance(selection, Mapping) else getattr(selection, "rows", None)
+    if not rows:
+        return None
+    i = rows[0]
+    return refs[i] if isinstance(i, int) and 0 <= i < len(refs) else None
+
+
+def treatment_labels_for(a: AdjustmentAssessment) -> dict[Treatment, str]:
+    """Treatment option labels for the review form; on a diligence-identified item they
+    say what each option carries (management claimed nothing there)."""
+    if accept_carries_proposal(a):
+        return {
+            Treatment.ACCEPT: "Accept (carry the tool's amount)",
+            Treatment.REVISE: "Revise",
+            Treatment.REJECT: "Reject (do not carry)",
+            Treatment.REQUEST_INFO: "Request info",
+        }
+    return dict(TREATMENT_LABELS)
+
+
 # ---------------------------------------------------------------------------
 # Streamlit app
 # ---------------------------------------------------------------------------
 
-_CSS = """
+# Contrast (WCAG 2.1): white on #3A6EA5 is 5.3:1 and #3A6EA5 is 3.6:1 against the dark
+# theme's background (Streamlit's default red is 3.3:1 with white). Captions carry
+# guidance, so they use the body text colour at reduced opacity (>= 4.5:1 in both
+# themes) instead of the default grey (3.7:1 on white). The diligence heading row
+# inherits the theme's text colour.
+PRIMARY_COLOR = "#3A6EA5"
+PRIMARY_HOVER = "#2E5A88"
+
+_CSS = f"""
 <style>
-.qoe-banner{background:#FFF4E5;border:1px solid #E0A458;color:#7A4B00;padding:6px 12px;border-radius:4px;
-  font-weight:600;letter-spacing:.03em;font-size:.85rem;margin-bottom:.5rem}
-.qoe-chip{display:inline-block;padding:1px 8px;border-radius:10px;font-size:.78rem;font-weight:600;
-  margin-right:6px;border:1px solid rgba(0,0,0,.08);white-space:nowrap}
-table.qoe{border-collapse:collapse;width:100%;font-size:.88rem;margin:.25rem 0 .75rem 0}
-table.qoe th{text-align:left;border-bottom:2px solid rgba(128,128,128,.55);padding:4px 8px;font-weight:600}
-table.qoe td{padding:3px 8px;border-bottom:1px solid rgba(128,128,128,.18)}
-table.qoe .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-table.qoe tr.subtotal td{font-weight:600;border-top:1px solid rgba(128,128,128,.6)}
-table.qoe tr.memo td{font-style:italic;opacity:.75}
-table.qoe tr.group td{font-weight:600;color:#1F3864;background:rgba(91,122,153,.10)}
+.qoe-banner{{background:#FFF4E5;border:1px solid #E0A458;color:#7A4B00;padding:6px 12px;border-radius:4px;
+  font-weight:600;letter-spacing:.03em;font-size:.85rem;margin-bottom:.5rem}}
+.qoe-chip{{display:inline-block;padding:1px 8px;border-radius:10px;font-size:.78rem;font-weight:600;
+  margin-right:6px;border:1px solid rgba(0,0,0,.08);white-space:nowrap}}
+table.qoe{{border-collapse:collapse;width:100%;font-size:.88rem;margin:.25rem 0 .75rem 0}}
+table.qoe th{{text-align:left;border-bottom:2px solid rgba(128,128,128,.55);padding:4px 8px;font-weight:600}}
+table.qoe td{{padding:3px 8px;border-bottom:1px solid rgba(128,128,128,.18);vertical-align:top}}
+table.qoe .num{{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}}
+table.qoe tr.subtotal td{{font-weight:600;border-top:1px solid rgba(128,128,128,.6)}}
+table.qoe tr.memo td{{font-style:italic;opacity:.8}}
+table.qoe tr.group td{{font-weight:600;color:inherit;background:rgba(91,122,153,.18);border-top:2px solid #5B7A99}}
 table.qoe tr.component td:first-child,table.qoe tr.mgmt_adjustment td:first-child,
-table.qoe tr.diligence_adjustment td:first-child{padding-left:22px}
-.qoe-item{padding:6px 0 8px 0;border-bottom:1px solid rgba(128,128,128,.15)}
-.qoe-quote{border-left:3px solid rgba(128,128,128,.55);padding:2px 10px;margin:4px 0 2px 0;font-family:Georgia,serif}
-.qoe-src{font-size:.78rem;opacity:.72;margin-right:8px}
-.qoe-muted{opacity:.7;font-size:.88rem}
-.qoe-evidence{border-left:4px solid #5B8C5A;padding-left:12px}
-.qoe-judgment{border-left:4px solid #C9A227;padding-left:12px}
-.qoe-ask{border-left:4px solid #5B7A99;padding-left:12px}
-.qoe-page{white-space:pre-wrap;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;line-height:1.35;
-  max-height:460px;overflow:auto;border:1px solid rgba(128,128,128,.3);padding:8px;border-radius:4px}
-.qoe-page mark{background:#FFE58F;color:#000;padding:0 1px}
+table.qoe tr.diligence_adjustment td:first-child{{padding-left:22px}}
+.qoe-item{{padding:6px 0 8px 0;border-bottom:1px solid rgba(128,128,128,.15)}}
+.qoe-quote{{border-left:3px solid rgba(128,128,128,.55);padding:2px 10px;margin:4px 0 2px 0;font-family:Georgia,serif}}
+.qoe-src{{font-size:.78rem;opacity:.8;margin-right:8px}}
+.qoe-muted{{opacity:.8;font-size:.88rem}}
+.qoe-evidence{{border-left:4px solid #5B8C5A;padding-left:12px}}
+.qoe-judgment{{border-left:4px solid #C9A227;padding-left:12px}}
+.qoe-ask{{border-left:4px solid #5B7A99;padding-left:12px}}
+.qoe-page{{white-space:pre-wrap;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;line-height:1.35;
+  max-height:460px;overflow:auto;border:1px solid rgba(128,128,128,.3);padding:8px;border-radius:4px}}
+.qoe-page mark{{background:#FFE58F;color:#000;padding:0 1px}}
+[data-testid="stCaptionContainer"]{{color:inherit !important;opacity:.85}}
+[data-testid="stBaseButton-primary"]{{background-color:{PRIMARY_COLOR};border-color:{PRIMARY_COLOR};color:#FFFFFF}}
+[data-testid="stBaseButton-primary"]:hover{{background-color:{PRIMARY_HOVER};border-color:{PRIMARY_HOVER};color:#FFFFFF}}
 </style>
 """
+
+# Widget keys whose values must survive runs in which their widget is not drawn:
+# review-form drafts (f:<adj>:...), question-page edits and filters (oq_...), and queue
+# filters (qf_...). Streamlit otherwise drops them, silently losing unsent input.
+PRESERVED_KEY_PREFIXES = ("f:", "oq_", "qf_")
 
 
 @dataclass
@@ -980,6 +1413,8 @@ class ReviewContext:
     deal_dir: Optional[Path]
     pkg: Optional[DealPackage]
     notes: list[str]
+    question_log: list[QuestionLogEntry]
+    signature: str  # review_state_signature when the logs were read
 
     @property
     def tolerance(self) -> str:
@@ -1028,12 +1463,13 @@ def _flash(kind: str, text: str) -> None:
 
 
 def _show_flash() -> None:
+    # Flash text carries adjustment refs and question ids from the seller's schedule: inert Markdown.
     for kind, text in st.session_state.pop("flash", []):
-        getattr(st, kind, st.info)(text)
+        getattr(st, kind, st.info)(md(text))
 
 
 def _show_error(title: str, exc: BaseException) -> None:
-    st.error(f"{title}: {type(exc).__name__}: {exc}")
+    st.error(md(f"{title}: {type(exc).__name__}: {exc}"))
     with st.expander("Technical details"):
         st.code("".join(traceback.format_exception(exc)), language="text")
 
@@ -1045,13 +1481,21 @@ def _render_safely(title: str, fn: Any, *args: Any) -> None:
         _show_error(f"{title} could not be displayed", exc)
 
 
+ROW_PX = 35
+
+
 def _table(
     rows: list[dict[str, Any]],
     numeric: Iterable[str] = (),
     color_cols: Iterable[str] = (),
-    height: Any = "auto",
     columns: Optional[list[str]] = None,
+    fit_rows: Optional[int] = 25,
+    key: Optional[str] = None,
+    on_select: Any = None,
 ) -> None:
+    """A dataframe sized to show its rows (up to ``fit_rows``; None = always all), so rows
+    are not hidden behind an inner scrollbar. ``on_select``: a callback for a single-row
+    selection (the grid's selection state is at ``st.session_state[key]``)."""
     import pandas as pd
 
     if not rows:
@@ -1075,17 +1519,31 @@ def _table(
             return f"background-color:{pair[0]};color:{pair[1]};font-weight:600" if pair else ""
 
         data = df.style.map(style, subset=colored)
-    st.dataframe(data, hide_index=True, column_config=config, height=height)
+    height: Any = "content" if fit_rows is None or len(df) <= fit_rows else ROW_PX * (fit_rows + 1) + 3
+    kwargs: dict[str, Any] = {}
+    if on_select is not None:
+        kwargs = {"on_select": on_select, "selection_mode": "single-row", "key": key}
+    st.dataframe(data, hide_index=True, column_config=config, height=height, **kwargs)
 
 
 def _init_state() -> None:
     ss = st.session_state
     ss.setdefault("timer", {})
     ss.setdefault("form_errors", {})
-    # Keep the adjustment selection when the detail page is not rendered (Streamlit
-    # drops state for widgets that are not drawn in a run).
-    if "adj_select" in ss:
-        ss["adj_select"] = ss["adj_select"]
+    # Streamlit drops state for widgets that are not drawn in a run. Re-assigning the keys
+    # turns them into session state that persists: the adjustment selection, unsent
+    # review-form drafts and page filters survive Previous/Next and page switches.
+    for k in [k for k in ss.keys() if isinstance(k, str) and (k == "adj_select" or k.startswith(PRESERVED_KEY_PREFIXES))]:
+        ss[k] = ss[k]
+
+
+def _keep_option(key: str, options: list[Any], default: Any = None) -> None:
+    """Before drawing a selectbox: drop a remembered value that is no longer an option."""
+    ss = st.session_state
+    if key in ss and ss[key] not in options:
+        del ss[key]
+    if key not in ss and default is not None:
+        ss[key] = default
 
 
 def _open_workpaper(deal_dir: Optional[Path], wp_path: Path) -> None:
@@ -1100,10 +1558,16 @@ def _goto(page: str, adj_id: Optional[str] = None) -> None:
         st.session_state["adj_select"] = adj_id
 
 
+HOLDOUT_HIDDEN_NOTE = (
+    "Held-out deal packages are hidden until code freeze (docs/benchmark_protocol.md). "
+    f"Set {SHOW_HOLDOUT_ENV}=1 for a benchmark session."
+)
+
+
 def _sidebar() -> None:
     sb = st.sidebar
     sb.markdown("**QoE Evidence Review**")
-    sb.caption(f"Tool version {TOOL_VERSION}. Deal packages under data are SYNTHETIC.")
+    sb.caption(f"Tool version {md(TOOL_VERSION)}. Deal packages under data are SYNTHETIC.")
     deals = discover_deals()
     source = sb.radio("Deal package", ("Library", "Path"), horizontal=True, key="deal_source")
     deal_dir: Optional[Path] = None
@@ -1112,11 +1576,16 @@ def _sidebar() -> None:
             opt = sb.selectbox("Deal", deals, format_func=lambda o: o.label, key="deal_option")
             deal_dir = opt.path if opt is not None else None
         else:
-            sb.info("No deal packages under data/dev or data/holdout. Enter a path instead.")
+            sb.info("No deal packages under data/dev. Enter a path instead.")
+        if not show_holdout():
+            sb.caption(HOLDOUT_HIDDEN_NOTE)
     else:
         raw = sb.text_input("Deal directory", key="deal_path", placeholder="data/dev/<deal_id>")
         if raw.strip():
             deal_dir = resolve_user_path(raw)
+            if not show_holdout() and is_holdout_path(deal_dir):
+                sb.warning(HOLDOUT_HIDDEN_NOTE)
+                deal_dir = None
     if deal_dir is not None and not (deal_dir / "deal.yaml").is_file():
         sb.warning("That directory has no deal.yaml.")
         deal_dir = None
@@ -1160,7 +1629,7 @@ def _handle_run_request() -> None:
         return
     deal_dir, ai_mode = Path(req[0]), req[1]
     try:
-        with st.spinner(f"Running review on {deal_dir.name} ({ai_mode})..."):
+        with st.spinner(f"Running review on {md(deal_dir.name)} ({md(ai_mode)})..."):
             path = run_and_save(deal_dir, ai_mode, workpapers_root())
     except Exception as exc:  # noqa: BLE001
         _show_error("The review run failed", exc)
@@ -1169,6 +1638,14 @@ def _handle_run_request() -> None:
     shown = path.relative_to(PROJECT_ROOT) if path.is_relative_to(PROJECT_ROOT) else path
     _flash("success", f"Review complete. Workpaper saved to {shown}.")
     st.rerun()  # redraw the sidebar with the view selector for the new run
+
+
+def _file_sig(path: Path) -> Optional[tuple[int, int]]:
+    try:
+        stat = path.stat()
+    except OSError:
+        return None
+    return (stat.st_size, stat.st_mtime_ns)
 
 
 def _build_context() -> ReviewContext:
@@ -1196,26 +1673,35 @@ def _build_context() -> ReviewContext:
     else:
         notes.append("Deal package not found; GL details and management's narrative are not available.")
 
+    # Fingerprint first: a write that lands while the logs are read makes the export look
+    # out of date (safe), never up to date.
+    signature = review_state_signature(paths, pkg is not None)
     store = ReviewStore(paths.review_log)
     decisions = store.all()
+    question_log = store.questions()
     if store.skipped_lines:
         notes.append(
             f"Review log lines {', '.join(map(str, store.skipped_lines))} could not be read and were skipped "
             "(the log is never rewritten; inspect review_log.jsonl)."
         )
+    if store.skipped_question_lines:
+        notes.append(
+            f"Question log lines {', '.join(map(str, store.skipped_question_lines))} could not be read and were "
+            f"skipped (inspect {QUESTION_LOG_NAME})."
+        )
 
-    log_sig = (paths.review_log.stat().st_size, paths.review_log.stat().st_mtime_ns) if paths.review_log.exists() else None
-    key = (str(wp_path), wp_path.stat().st_mtime_ns, log_sig, pkg is not None)
+    key = (str(wp_path), wp_path.stat().st_mtime_ns, _file_sig(paths.review_log), _file_sig(paths.question_log), pkg is not None)
     memo = ss.get("_applied")
     if memo is not None and memo[0] == key:
         wp, err = memo[1], memo[2]
     else:
         try:
-            wp, err = apply_reviews(base, decisions, schedule=pkg.schedule if pkg is not None else None), None
+            wp = apply_reviews(base, decisions, schedule=pkg.schedule if pkg is not None else None, question_log=question_log)
+            err = None
         except Exception as exc:  # noqa: BLE001
             wp = base.model_copy(deep=True)
             wp.reviews = decisions
-            apply_question_updates(wp.assessments, decisions)
+            apply_question_updates(wp.assessments, decisions, question_log)
             err = f"The bridge could not be rebuilt with reviewed amounts ({type(exc).__name__}: {exc}); it shows the tool's proposals."
         ss["_applied"] = (key, wp, err)
     if err:
@@ -1233,7 +1719,14 @@ def _build_context() -> ReviewContext:
         deal_dir=deal_dir,
         pkg=pkg,
         notes=notes,
+        question_log=question_log,
+        signature=signature,
     )
+
+
+def _show_notes(ctx: ReviewContext) -> None:
+    for note in ctx.notes:
+        st.warning(md(note))
 
 
 def _landing() -> None:
@@ -1252,10 +1745,10 @@ def _deal_header(wp: Workpaper) -> None:
     meta = wp.deal
     if meta.synthetic:
         st.html('<div class="qoe-banner">SYNTHETIC DATA: generated for QoE Evidence Review testing. Not a real company.</div>')
-    st.title(meta.target_name)
+    st.title(md(meta.target_name))
     periods = ", ".join(f"{p.label} ({p.start} to {p.end})" for p in meta.periods)
     bits = [meta.industry, f"Deal {meta.deal_id}", periods, f"{meta.currency}", f"Tolerance {meta.tolerance}"]
-    st.caption(" | ".join(_esc(b) for b in bits if b))
+    st.caption(" | ".join(md(b) for b in bits if b))
 
 
 # ----------------------------- Overview -------------------------------------
@@ -1264,11 +1757,8 @@ def _deal_header(wp: Workpaper) -> None:
 def _page_overview(ctx: ReviewContext) -> None:
     wp = ctx.wp
     _deal_header(wp)
-    st.caption(
-        _esc(f"Run {wp.run_id} | created {wp.created_at} | AI {wp.ai_mode} | tool {wp.tool_version}")
-    )
-    for note in ctx.notes:
-        st.warning(note)
+    st.caption(md(f"Run {wp.run_id} | created {wp.created_at} | AI {wp.ai_mode} | tool {wp.tool_version}"))
+    _show_notes(ctx)
 
     st.subheader("EBITDA bridge")
     items = diligence_ids(wp)
@@ -1278,9 +1768,9 @@ def _page_overview(ctx: ReviewContext) -> None:
         if bridge_ties(diffs):
             st.caption("Check: diligence adjusted EBITDA = GL EBITDA + final adjustments (pending excluded). Ties in every period.")
         else:
-            st.error("Bridge does not tie: " + ", ".join(f"{p} off by {fmt_amount(v, cents=True)}" for p, v in diffs.items()))
+            st.error(md("Bridge does not tie: " + ", ".join(f"{p} off by {fmt_amount(v, cents=True)}" for p, v in diffs.items())))
     except ValueError as exc:
-        st.warning(f"Bridge check not available: {exc}")
+        st.warning(md(f"Bridge check not available: {exc}"))
     with st.expander("Full bridge: management adjustments, diligence revisions and diligence-identified items"):
         st.html(html_table(["Line", *ctx.labels], bridge_rows(wp.bridge, items), numeric=ctx.labels))
 
@@ -1320,6 +1810,14 @@ def _page_overview(ctx: ReviewContext) -> None:
                 numeric=["Count"],
             )
         )
+    if counts["pending_without_question"]:
+        st.warning(
+            md(
+                "Pending with no open question to management: "
+                + ", ".join(counts["pending_without_question"])
+                + ". Add a question (Open questions page) so the request list asks for what is needed."
+            )
+        )
 
     st.subheader("Reconciliation and data quality")
     rec = wp.reconciliation
@@ -1345,15 +1843,24 @@ def _page_overview(ctx: ReviewContext) -> None:
 # ----------------------------- Queue ----------------------------------------
 
 
+def _open_selected(key: str, refs: list[str]) -> None:
+    """Dataframe selection callback: open the clicked adjustment."""
+    ref = selected_ref(refs, st.session_state.get(key))
+    if ref is not None:
+        _goto("Adjustment detail", ref)
+
+
 def _page_queue(ctx: ReviewContext) -> None:
     st.subheader("Adjustment queue")
-    for note in ctx.notes:
-        st.warning(note)
-    rows = queue_rows(ctx.wp, ctx.latest, ctx.finals, ctx.tolerance)
-    f1, f2, f3 = st.columns([2, 2, 3])
-    tool_filter = f1.multiselect("Tool treatment", list(TREATMENT_LABELS.values()), key="q_tool")
-    status_filter = f2.multiselect("Status", [STATUS_UNREVIEWED, STATUS_AGREED, STATUS_OVERRIDDEN], key="q_status")
-    text = f3.text_input("Search ref, title or flag", key="q_text").strip().lower()
+    _show_notes(ctx)
+    ss = st.session_state
+    drafts = [a.adj_id for a in ctx.wp.assessments if form_is_dirty(ss, a.adj_id)]
+    rows = queue_rows(ctx.wp, ctx.latest, ctx.finals, ctx.tolerance, drafts=drafts)
+    f1, f2, f3, f4 = st.columns([2, 2, 3, 1])
+    tool_filter = f1.multiselect("Tool treatment", list(TREATMENT_LABELS.values()), key="qf_tool")
+    status_filter = f2.multiselect("Status", [STATUS_UNREVIEWED, STATUS_AGREED, STATUS_OVERRIDDEN], key="qf_status")
+    text = f3.text_input("Search ref, title or flag", key="qf_text").strip().lower()
+    all_columns = f4.toggle("All columns", key="qf_all", help="Show claimed and proposed amounts, category, confidence and link counts.")
     shown = [
         r
         for r in rows
@@ -1361,24 +1868,34 @@ def _page_queue(ctx: ReviewContext) -> None:
         and (not status_filter or r["Status"].split(" (")[0] in status_filter)
         and (not text or text in f"{r['Ref']} {r['Title']} {r['Top flags']}".lower())
     ]
-    amount_cols = [c for c in queue_columns(ctx.labels) if c.split(" ")[0] in ("Claimed", "Proposed", "Final")]
-    for group, group_rows in queue_groups(shown):
+    columns = queue_columns(ctx.labels, all_columns=all_columns)
+    amount_cols = [c for c in columns if c.split(" ")[0] in ("Claimed", "Proposed", "Final")]
+    for n, (group, group_rows) in enumerate(queue_groups(shown)):
         st.markdown(f"**{group}** ({len(group_rows)})")
         if group == GROUP_DILIGENCE:
             st.caption(DILIGENCE_NOTE + " Final = the whole diligence adjustment.")
+        key = f"grid:queue:{n}"
+        refs = [r["Ref"] for r in group_rows]
         _table(
             group_rows,
-            numeric=amount_cols + ["GL links", "Docs", "Open Qs"],
+            numeric=amount_cols + ["GL links", "Supporting GL links", "Docs", "Open Qs"],
             color_cols=["Tool", "Reviewer"],
-            columns=queue_columns(ctx.labels),
+            columns=columns,
+            fit_rows=None,
+            key=key,
+            on_select=lambda key=key, refs=refs: _open_selected(key, refs),
         )
-    st.caption("Final = reviewer's amounts where reviewed, otherwise the tool's proposal. Pending items are excluded from diligence adjusted EBITDA.")
+    st.caption(
+        "Click a row to open it. Final = reviewer's amounts where reviewed, otherwise the tool's proposal. "
+        "Bridge: Carried (in diligence adjusted EBITDA), Carried at 0 (rejected), or Excluded (pending)."
+    )
     ids = [a.adj_id for a in ctx.wp.assessments]
     if ids:
         c1, c2 = st.columns([3, 1])
         titles = {a.adj_id: a.title for a in ctx.wp.assessments}
         tags = {a.adj_id: " (diligence-identified)" if is_diligence_item(a) else "" for a in ctx.wp.assessments}
-        pick = c1.selectbox("Open adjustment", ids, format_func=lambda i: f"{i}: {titles[i]}{tags[i]}", key="q_pick")
+        _keep_option("qf_pick", ids)
+        pick = c1.selectbox("Open adjustment", ids, format_func=lambda i: f"{i}: {titles[i]}{tags[i]}", key="qf_pick")
         c2.button("Open", on_click=_goto, args=("Adjustment detail", pick), type="primary")
 
 
@@ -1419,6 +1936,8 @@ def _page_detail(ctx: ReviewContext) -> None:
     chips.append(chip(status, "#E7E9EC", "#3C4650"))
     if not final:
         chips.append(chip("Pending: excluded from diligence EBITDA", "#DDE3EA", "#2F3E50"))
+    if form_is_dirty(st.session_state, adj_id):
+        chips.append(chip("Unsent draft: not recorded", "#FFF2CC", "#7F6000"))
     st.html(f"<h3 style='margin:0 0 4px 0'>{_esc(a.adj_id)}: {_esc(a.title)}</h3><div>{''.join(chips)}</div>")
     st.caption(f"Time on this adjustment this session: {fmt_duration(elapsed_seconds(st.session_state['timer'], adj_id, now))}")
     if decision is not None and decision_is_stale(a, decision, ctx.tolerance):
@@ -1457,15 +1976,16 @@ def _page_detail(ctx: ReviewContext) -> None:
             st.html(f'<div class="qoe-ask">{qs or "<div class=qoe-muted>None.</div>"}</div>')
 
     st.markdown(f"**Flags ({len(a.flags)})**")
-    st.html("".join(flag_html(f) for f in sorted_flags(a.flags)) or "<div class='qoe-muted'>No flags.</div>")
+    st.html("".join(flag_html(f, ctx.labels) for f in sorted_flags(a.flags)) or "<div class='qoe-muted'>No flags.</div>")
 
     history = [d for d in ctx.decisions if d.adj_id == adj_id]
+    q_history = [e for e in ctx.question_log if e.adj_id == adj_id]
     t_gl, t_docs, t_rec, t_hist = st.tabs(
         [
             f"GL entries ({len(a.gl_links)})",
             f"Documents ({len(a.doc_links)})",
             f"Recurrence ({len(a.recurrence)})",
-            f"Decision history ({len(history)})",
+            f"History ({len(history)} decisions, {len(q_history)} question updates)",
         ]
     )
     with t_gl:
@@ -1475,7 +1995,7 @@ def _page_detail(ctx: ReviewContext) -> None:
     with t_rec:
         _table(recurrence_rows(a, ctx.labels), numeric=ctx.labels + ["Entries"])
     with t_hist:
-        _table(decision_history_rows(history, ctx.labels), numeric=ctx.labels, color_cols=["Treatment", "Tool"])
+        _table(decision_history_rows(history, ctx.labels, q_history), numeric=ctx.labels, color_cols=["Treatment", "Tool"])
 
     st.divider()
     _render_safely("Review form", _review_form, ctx, a, decision)
@@ -1483,7 +2003,7 @@ def _page_detail(ctx: ReviewContext) -> None:
 
 def _detail_claim(ctx: ReviewContext, a: AdjustmentAssessment) -> None:
     info = claim_details(a, ctx.pkg, ctx.wp.schedule)
-    st.markdown(f"**{info['heading']}**")
+    st.markdown(f"**{md(info['heading'])}**")
     if not info["description"] and not info["bits"]:
         st.caption("Management's narrative is not stored in this workpaper and the deal package is not loaded.")
         return
@@ -1498,12 +2018,17 @@ def _detail_gl(ctx: ReviewContext, a: AdjustmentAssessment) -> None:
     gl_by_id = {e.entry_id: e for e in ctx.pkg.gl} if ctx.pkg is not None else {}
     if not gl_by_id:
         st.caption("GL detail (date, account, memo) needs the deal package; showing the links only.")
-    supporting = sum(1 for g in a.gl_links if g.supports_claim)
+    counts = gl_role_counts(a)
     st.caption(
-        f"{supporting} entries support the claim; {len(a.gl_links) - supporting} are linked for context "
-        "(comparables in other periods, excess activity, recoveries). 'Challenged by' names flags that remove or question the entry."
+        md(
+            f"{len(a.gl_links)} linked entries: "
+            + "; ".join(f"{label}: {n}" for label, n in counts.items())
+            + ". Claimed entries are management's; the tool carries the supporting ones and names the flag that "
+            "removed the others. Context entries (comparables, excess activity) are not part of the claim."
+        )
     )
-    _table(gl_link_rows(a, gl_by_id), numeric=["GL row", "Amount", "Score"])
+    st.html(html_table(["Line", *ctx.labels], claimed_link_tieout(a, ctx.wp.deal.periods), numeric=ctx.labels))
+    _table(gl_link_rows(a, gl_by_id), numeric=["GL row", "Amount", "Score"], fit_rows=40)
 
 
 def _detail_docs(ctx: ReviewContext, a: AdjustmentAssessment) -> None:
@@ -1544,36 +2069,93 @@ def _detail_docs(ctx: ReviewContext, a: AdjustmentAssessment) -> None:
                     st.html(f'<div class="qoe-page">{highlight_quotes(text, quoted.get(n, []))}</div>')
 
 
+# ----------------------------- Review form ----------------------------------
+
+
 def _form_key(adj_id: str, name: str) -> str:
     return f"f:{adj_id}:{name}"
 
 
 def _clear_form(adj_id: str) -> None:
+    """Drop the form's draft; the next render starts again from the latest decision."""
+    ss = st.session_state
     prefix = f"f:{adj_id}:"
-    for k in [k for k in st.session_state.keys() if isinstance(k, str) and k.startswith(prefix)]:
-        del st.session_state[k]
+    for k in [k for k in ss.keys() if isinstance(k, str) and k.startswith(prefix)]:
+        del ss[k]
+    ss.pop(f"fd:{adj_id}", None)
+    ss.pop(f"fb:{adj_id}", None)
+
+
+def _rebase_form(adj_id: str, token: str) -> None:
+    """Keep the draft, now based on the newer decision the reviewer has looked at."""
+    st.session_state[f"fb:{adj_id}"] = token
+
+
+def _seed_form(ctx: ReviewContext, a: AdjustmentAssessment, decision: Optional[ReviewDecision]) -> None:
+    """Put the form's initial values in session state (widgets are drawn without their own
+    defaults, so a draft kept in session state is never overwritten). ``fd:<adj>`` holds the
+    values the form started from, ``fb:<adj>`` the decision it was built from."""
+    ss = st.session_state
+    adj = a.adj_id
+    token = decision_token(decision)
+    if f"fd:{adj}" in ss and ss.get(f"fb:{adj}") != token and not form_is_dirty(ss, adj):
+        _clear_form(adj)  # a newer decision arrived and nothing was typed: start from it
+    if f"fd:{adj}" not in ss:
+        seed = form_seed(a, decision, ctx.labels)
+        ss[f"fd:{adj}"] = dict(seed)
+        ss[f"fb:{adj}"] = token
+        for name, value in seed.items():
+            ss[_form_key(adj, name)] = value
+        return
+    defaults = ss[f"fd:{adj}"]
+    for name, value in form_seed(a, decision, ctx.labels).items():
+        key = _form_key(adj, name)
+        if name not in defaults or key not in ss:
+            defaults[name] = value
+            ss[key] = value
+        elif name.startswith("q:") and ss[key] == defaults[name] and defaults[name] != value:
+            # Untouched question field changed elsewhere (question log): show it as it is now,
+            # so recording this form cannot revert a colleague's update.
+            defaults[name] = value
+            ss[key] = value
 
 
 def _collect_form(a: AdjustmentAssessment, labels: list[str]) -> dict[str, Any]:
     ss = st.session_state
-    edits = {}
+    adj = a.adj_id
+    defaults = ss.get(f"fd:{adj}", {})
+    edits: dict[str, tuple[QuestionStatus, str]] = {}
     for q in a.open_questions:
-        status = ss.get(_form_key(a.adj_id, f"q:{q.q_id}:status"), q.status)
-        response = ss.get(_form_key(a.adj_id, f"q:{q.q_id}:response"), q.response)
-        edits[q.q_id] = (QuestionStatus(status), str(response))
+        s_name, r_name = f"q:{q.q_id}:status", f"q:{q.q_id}:response"
+        status = ss.get(_form_key(adj, s_name), q.status)
+        response = str(ss.get(_form_key(adj, r_name), q.response))
+        # Only fields the reviewer changed in this form become question updates.
+        if status != defaults.get(s_name, q.status) or response != defaults.get(r_name, q.response):
+            edits[q.q_id] = (QuestionStatus(status), response)
     return {
-        "treatment": Treatment(ss.get(_form_key(a.adj_id, "treatment"), a.treatment)),
-        "amounts": {p: ss.get(_form_key(a.adj_id, f"amt:{p}"), "") for p in labels},
-        "rationale": str(ss.get(_form_key(a.adj_id, "rationale"), "")),
-        "correction_type": CorrectionType(ss.get(_form_key(a.adj_id, "correction"), CorrectionType.NONE)),
+        "treatment": Treatment(ss.get(_form_key(adj, "treatment"), a.treatment)),
+        "amounts": {p: ss.get(_form_key(adj, f"amt:{p}"), "") for p in labels},
+        "rationale": str(ss.get(_form_key(adj, "rationale"), "")),
+        "correction_type": CorrectionType(ss.get(_form_key(adj, "correction"), CorrectionType.NONE)),
         "reviewer": str(ss.get("reviewer", "")),
+        "question_edits": edits,
         "question_updates": question_update_values(a.open_questions, edits),
+        "new_question": str(ss.get(_form_key(adj, "newq"), "")).strip(),
+        "new_question_priority": str(ss.get(_form_key(adj, "newq_prio"), "high")),
+        "basis": ss.get(f"fb:{adj}"),
     }
 
 
+def _form_questions(a: AdjustmentAssessment, form: Mapping[str, Any]) -> list[OpenQuestion]:
+    return questions_after(a.open_questions, form["question_updates"], [form["new_question"]])
+
+
 def _record_decision(ctx: ReviewContext, a: AdjustmentAssessment) -> None:
-    """Button callback: validate, append to the log, record time on task."""
+    """Button callback: validate, append to the log (refused if a newer decision was
+    recorded since the form was opened), log question edits, record time on task."""
+    ss = st.session_state
     form = _collect_form(a, ctx.labels)
+    previous = ctx.latest.get(a.adj_id)
     try:
         decision = make_decision(
             a,
@@ -1583,20 +2165,51 @@ def _record_decision(ctx: ReviewContext, a: AdjustmentAssessment) -> None:
             reviewer=form["reviewer"],
             labels=ctx.labels,
             correction_type=form["correction_type"],
-            question_updates=form["question_updates"],
             tolerance=ctx.tolerance,
+            questions=_form_questions(a, form),
+            previous=previous,
         )
     except DecisionError as exc:
-        st.session_state["form_errors"][a.adj_id] = exc.errors
+        ss["form_errors"][a.adj_id] = exc.errors
         return
+    except ArithmeticError as exc:  # defensive: amount_problem() should have caught it
+        ss["form_errors"][a.adj_id] = [f"An amount could not be used ({type(exc).__name__}); check the amounts."]
+        return
+    store = ReviewStore(ctx.paths.review_log)
+    basis = form["basis"] if form["basis"] is not None else decision_token(previous)
     try:
-        ReviewStore(ctx.paths.review_log).append(decision)
-    except OSError as exc:
-        st.session_state["form_errors"][a.adj_id] = [f"Could not write the review log: {exc}"]
+        store.append(decision, expected_token=basis)
+    except ConflictError as exc:
+        ss["form_errors"][a.adj_id] = [str(exc)]
         return
-    st.session_state["form_errors"].pop(a.adj_id, None)
+    except OSError as exc:
+        ss["form_errors"][a.adj_id] = [f"Could not write the review log: {exc}"]
+        return
+    ss["form_errors"].pop(a.adj_id, None)
+    # Question edits and a raised question go to the question log, signed by this reviewer.
+    by_id = {q.q_id: q for q in a.open_questions}
+    try:
+        for q_id, (status, response) in form["question_edits"].items():
+            entry = make_question_update(
+                by_id[q_id], adj_id=a.adj_id, status=status, response=response,
+                reviewer=decision.reviewer, timestamp=decision.timestamp,
+            )
+            if entry is not None:
+                store.append_question(entry)
+        if form["new_question"]:
+            added = store.add_question(
+                adj_id=a.adj_id,
+                text=form["new_question"],
+                reviewer=decision.reviewer,
+                priority=form["new_question_priority"],
+                existing_ids=list(by_id),
+                timestamp=decision.timestamp,
+            )
+            _flash("info", f"Question {added.q_id} added for management.")
+    except (OSError, DecisionError) as exc:
+        _flash("warning", f"Decision recorded, but the question changes could not be saved ({exc}). Redo them on the Open questions page.")
     now = datetime.now(timezone.utc)
-    opened, seconds = finish_timing(st.session_state["timer"], a.adj_id, now)
+    opened, seconds = finish_timing(ss["timer"], a.adj_id, now)
     try:
         append_timing(
             ctx.paths.timing,
@@ -1620,65 +2233,108 @@ def _record_decision(ctx: ReviewContext, a: AdjustmentAssessment) -> None:
 
 def _review_form(ctx: ReviewContext, a: AdjustmentAssessment, decision: Optional[ReviewDecision]) -> None:
     st.subheader("Reviewer decision")
+    ss = st.session_state
     labels = ctx.labels
-    default_t, default_amounts = form_defaults(a, decision, labels)
+    adj = a.adj_id
+    _seed_form(ctx, a, decision)
+
+    if decision is not None:
+        correction = CORRECTION_LABELS[decision.correction_type] if decision.correction_type != CorrectionType.NONE else "none"
+        st.html(
+            "<div class='qoe-muted'><b>Current decision</b> "
+            f"({_esc(decision.reviewer)}, {_esc(decision.timestamp)}): {_esc(TREATMENT_LABELS[decision.treatment])}; "
+            f"correction type: {_esc(correction)}. Rationale: {_esc(decision.rationale) or '(none)'}</div>"
+        )
+        st.caption("A re-review starts with a blank rationale and correction type: state the reasons for the decision you record now.")
+    current = decision_token(decision)
+    if ss.get(f"fb:{adj}") != current:
+        who = f"{decision.reviewer} ({TREATMENT_LABELS[decision.treatment]}, {decision.timestamp})" if decision is not None else "another reviewer"
+        st.warning(
+            md(
+                f"{adj} was decided by {who} after you started this draft. Your draft is kept. "
+                "Review that decision, then keep your draft (and record it) or discard it."
+            )
+        )
+        b1, b2 = st.columns(2)
+        b1.button("Keep my draft: I have reviewed the newer decision", on_click=_rebase_form, args=(adj, current))
+        b2.button("Discard my draft", on_click=_clear_form, args=(adj,))
+
     options = list(Treatment)
+    t_labels = treatment_labels_for(a)
     treatment = st.radio(
         "Treatment",
         options,
-        index=options.index(default_t),
-        format_func=lambda t: TREATMENT_LABELS[t],
+        format_func=lambda t: t_labels[t],
         horizontal=True,
-        key=_form_key(a.adj_id, "treatment"),
+        key=_form_key(adj, "treatment"),
     )
     if treatment == Treatment.REVISE:
-        st.caption("Diligence amounts by period (EBITDA-signed: + adds back). Prefilled with " + ("your last decision." if decision else "the tool's proposal."))
+        started = "the decision you are re-reviewing." if decision else "the tool's proposal."
+        st.caption("Diligence amounts by period (EBITDA-signed: + adds back). Prefilled with " + started)
         cols = st.columns(len(labels) or 1)
         for col, p in zip(cols, labels):
-            col.text_input(p, value=default_amounts.get(p, "0.00"), key=_form_key(a.adj_id, f"amt:{p}"))
+            col.text_input(md(p), key=_form_key(adj, f"amt:{p}"))
     else:
         carried = resolve_amounts(a, treatment, {}, labels)
         if treatment == Treatment.REQUEST_INFO:
-            st.caption("Request info: the adjustment is pending and excluded from diligence adjusted EBITDA until resolved.")
+            st.caption(
+                "Request info: the adjustment is pending and excluded from diligence adjusted EBITDA until resolved. "
+                "It needs at least one open question to management: add one below if none is open."
+            )
         else:
-            what = "management's claimed amounts" if treatment == Treatment.ACCEPT else "zero in every period"
-            st.caption(f"{TREATMENT_LABELS[treatment]} carries {what}.")
+            if treatment == Treatment.ACCEPT:
+                what = (
+                    "the tool's proposed diligence amount (management claimed nothing for this item)"
+                    if accept_carries_proposal(a)
+                    else "management's claimed amounts"
+                )
+            else:
+                what = "zero in every period"
+            st.caption(f"{t_labels[treatment]} carries {what}.")
             st.html(html_table(labels, [{p: fmt_amount(carried.get(p)) for p in labels}], numeric=labels))
 
     corrections = list(CorrectionType)
-    default_ct = decision.correction_type if decision is not None else CorrectionType.NONE
     c1, c2 = st.columns([2, 3])
     c1.selectbox(
         "Correction type",
         corrections,
-        index=corrections.index(default_ct),
         format_func=lambda c: CORRECTION_LABELS[c],
-        key=_form_key(a.adj_id, "correction"),
+        key=_form_key(adj, "correction"),
         help="Required when your decision differs from the tool. Tool-error types become regression cases; "
         "judgment differences and new information do not count against the tool.",
     )
     c2.text_area(
         "Rationale",
-        value=decision.rationale if decision is not None else "",
-        key=_form_key(a.adj_id, "rationale"),
+        key=_form_key(adj, "rationale"),
         height=100,
         help="Required when you override the tool or classify a correction.",
     )
 
-    if a.open_questions:
-        with st.expander(f"Update questions for management ({len(a.open_questions)})"):
-            statuses = list(QuestionStatus)
-            for q in a.open_questions:
-                st.html(f"<div class='qoe-src'>{_esc(q.q_id)} | {_esc(q.priority)}</div><div>{_esc(q.text)}</div>")
-                q1, q2 = st.columns([1, 3])
-                q1.selectbox(
-                    "Status",
-                    statuses,
-                    index=statuses.index(q.status),
-                    format_func=lambda s: s.value.capitalize(),
-                    key=_form_key(a.adj_id, f"q:{q.q_id}:status"),
-                )
-                q2.text_input("Response", value=q.response, key=_form_key(a.adj_id, f"q:{q.q_id}:response"))
+    open_count = sum(1 for q in a.open_questions if q.status == QuestionStatus.OPEN)
+    with st.expander(
+        f"Questions for management ({len(a.open_questions)}, {open_count} open)",
+        expanded=treatment == Treatment.REQUEST_INFO,
+    ):
+        statuses = list(QuestionStatus)
+        for q in a.open_questions:
+            st.html(f"<div class='qoe-src'>{_esc(q.q_id)} | {_esc(q.priority)}</div><div>{_esc(q.text)}</div>")
+            q1, q2 = st.columns([1, 3])
+            q1.selectbox(
+                "Status",
+                statuses,
+                format_func=lambda s: s.value.capitalize(),
+                key=_form_key(adj, f"q:{q.q_id}:status"),
+            )
+            q2.text_input("Response", key=_form_key(adj, f"q:{q.q_id}:response"))
+        n1, n2 = st.columns([3, 1])
+        n1.text_area(
+            "New question for management",
+            key=_form_key(adj, "newq"),
+            height=70,
+            help="Logged with the decision as an open request to management (id Q-<ref>-R<n>).",
+        )
+        n2.selectbox("Priority", ["high", "medium", "low"], key=_form_key(adj, "newq_prio"))
+        st.caption(f"Question changes are logged in {QUESTION_LOG_NAME} under your name when you record the decision.")
 
     form = _collect_form(a, labels)
     errors, warnings = decision_problems(
@@ -1690,100 +2346,175 @@ def _review_form(ctx: ReviewContext, a: AdjustmentAssessment, decision: Optional
         correction_type=form["correction_type"],
         labels=labels,
         tolerance=ctx.tolerance,
+        questions=_form_questions(a, form),
+        previous=decision,
     )
     for w in warnings:
-        st.warning(w)
+        st.warning(md(w))
     if errors:
-        st.caption("Before recording: " + " ".join(errors))
-    for e in st.session_state["form_errors"].pop(a.adj_id, []):  # shown once, after a failed submit
-        st.error(e)
+        st.warning(md("Needed before recording: " + " ".join(errors)))
+    for e in ss["form_errors"].pop(adj, []):  # shown once, after a failed submit
+        st.error(md(e))
     st.button("Record decision", type="primary", on_click=_record_decision, args=(ctx, a))
 
 
 # ----------------------------- Questions ------------------------------------
 
 
-def _record_question_update(ctx: ReviewContext, q_id: str, adj_id: str) -> None:
+def _find_question(ctx: ReviewContext, q_id: str) -> tuple[Optional[AdjustmentAssessment], Optional[OpenQuestion]]:
+    for a in ctx.wp.assessments:
+        for q in a.open_questions:
+            if q.q_id == q_id:
+                return a, q
+    return None, None
+
+
+def _record_question_update(ctx: ReviewContext, q_id: str) -> None:
+    """Button callback: log a status / response change as a question update. It is signed
+    by the named reviewer and never records or re-signs a review decision."""
     ss = st.session_state
-    previous = ctx.latest.get(adj_id)
-    question = next((q for a in ctx.wp.assessments for q in a.open_questions if q.q_id == q_id), None)
-    if previous is None or question is None:
+    a, question = _find_question(ctx, q_id)
+    if question is None or a is None:
         return
     status_key, response_key = f"oq_status:{q_id}", f"oq_response:{q_id}"
-    edits = {q_id: (QuestionStatus(ss.get(status_key, question.status)), str(ss.get(response_key, question.response)))}
-    updates = question_update_values([question], edits)
-    if not updates:
+    basis_key, seed_key = f"oq_basis:{q_id}", f"oq_seed:{q_id}"
+    try:
+        entry = make_question_update(
+            question,
+            adj_id=a.adj_id,
+            status=QuestionStatus(ss.get(status_key, question.status)),
+            response=str(ss.get(response_key, question.response)),
+            reviewer=str(ss.get("reviewer", "")),
+        )
+    except DecisionError as exc:
+        ss["oq_errors"] = exc.errors
+        return
+    if entry is None:
         _flash("info", f"No change to {q_id}.")
         return
-    decision = carry_forward_decision(previous, reviewer=str(ss.get("reviewer", "")), question_updates=updates)
+    expected = ss.get(basis_key, question_token(ctx.question_log, q_id))
     try:
-        ReviewStore(ctx.paths.review_log).append(decision)
-    except OSError as exc:
-        _flash("error", f"Could not write the review log: {exc}")
+        ReviewStore(ctx.paths.review_log).append_question(entry, expected_token=expected)
+    except ConflictError as exc:
+        ss["oq_errors"] = [str(exc)]
+        for k in (status_key, response_key, basis_key, seed_key):
+            ss.pop(k, None)
         return
-    for k in (status_key, response_key):
+    except OSError as exc:
+        ss["oq_errors"] = [f"Could not write the question log: {exc}"]
+        return
+    for k in (status_key, response_key, basis_key, seed_key):
         ss.pop(k, None)
-    _flash("success", f"{q_id} updated ({edits[q_id][0].value.capitalize()}).")
+    _flash("success", f"{q_id} updated ({entry.status.value.capitalize() if entry.status else 'response'}) by {entry.reviewer}. No review decision was recorded or changed.")
+
+
+def _add_question(ctx: ReviewContext) -> None:
+    """Button callback: log a question the reviewer raises for management."""
+    ss = st.session_state
+    adj_id = ss.get("oq_new_adj")
+    a = next((x for x in ctx.wp.assessments if x.adj_id == adj_id), None)
+    if a is None:
+        return
+    try:
+        added = ReviewStore(ctx.paths.review_log).add_question(
+            adj_id=a.adj_id,
+            text=str(ss.get("oq_new_text", "")),
+            reviewer=str(ss.get("reviewer", "")),
+            priority=str(ss.get("oq_new_prio", "high")),
+            existing_ids=[q.q_id for q in a.open_questions],
+        )
+    except DecisionError as exc:
+        ss["oq_add_errors"] = exc.errors
+        return
+    except OSError as exc:
+        ss["oq_add_errors"] = [f"Could not write the question log: {exc}"]
+        return
+    ss["oq_new_text"] = ""
+    _flash("success", f"Question {added.q_id} added for {a.adj_id}.")
+
+
+QUESTION_TABLE_COLUMNS = ["Q id", "Ref", "Question", "Priority", "Status", "Response", "Basis", "Last update"]
 
 
 def _page_questions(ctx: ReviewContext) -> None:
     st.subheader("Open questions for management")
-    rows = question_rows(ctx.wp)
-    if not rows:
-        st.info("The tool raised no questions for management.")
-        return
-    f1, f2, f3 = st.columns(3)
-    status_f = f1.multiselect("Status", [s.value for s in QuestionStatus], default=[QuestionStatus.OPEN.value], key="oq_f_status")
-    prio_f = f2.multiselect("Priority", ["high", "medium", "low"], key="oq_f_prio")
-    order = {a.adj_id: i for i, a in enumerate(ctx.wp.assessments)}
-    refs = sorted({r["Ref"] for r in rows}, key=lambda r: (order.get(r, len(order)), r))
-    ref_f = f3.multiselect("Adjustment", refs, key="oq_f_ref")
-    shown = [
-        r
-        for r in rows
-        if (not status_f or r["Status"] in status_f)
-        and (not prio_f or r["Priority"] in prio_f)
-        and (not ref_f or r["Ref"] in ref_f)
-    ]
-    shown.sort(key=lambda r: PRIORITY_ORDER.get(r["Priority"], 9))
-    _table(shown)
-
-    import pandas as pd
-
-    buf = io.StringIO()
-    pd.DataFrame(shown or rows).to_csv(buf, index=False)
-    st.download_button(
-        "Download as CSV (information request list)",
-        data=buf.getvalue().encode("utf-8"),
-        file_name=f"QoE_open_questions_{ctx.wp.deal.deal_id}.csv",
-        mime="text/csv",
-    )
-
-    st.markdown("**Update a question**")
-    q_ids = [r["Q id"] for r in shown] or [r["Q id"] for r in rows]
+    ss = st.session_state
+    rows = question_rows(ctx.wp, ctx.question_log)
     by_id = {r["Q id"]: r for r in rows}
-    q_id = st.selectbox("Question", q_ids, format_func=lambda q: f"{q}: {by_id[q]['Question'][:90]}", key="oq_pick")
-    row = by_id[q_id]
-    c1, c2 = st.columns([1, 3])
-    statuses = list(QuestionStatus)
-    c1.selectbox(
-        "Status",
-        statuses,
-        index=statuses.index(QuestionStatus(row["Status"])),
-        format_func=lambda s: s.value.capitalize(),
-        key=f"oq_status:{q_id}",
-    )
-    c2.text_input("Response", value=row["Response"], key=f"oq_response:{q_id}")
-    adj_id = row["Ref"]
-    if adj_id not in ctx.latest:
-        st.caption(
-            f"{adj_id} has no reviewer decision yet. Question updates are recorded with a decision: "
-            "update this question from the adjustment's review form."
-        )
-        st.button("Open adjustment", on_click=_goto, args=("Adjustment detail", adj_id))
+    if not rows:
+        st.info("No questions for management yet. Add one below.")
     else:
-        st.caption(f"Recorded as a new log line that re-affirms the current decision on {adj_id}.")
-        st.button("Record update", type="primary", on_click=_record_question_update, args=(ctx, q_id, adj_id))
+        f1, f2, f3 = st.columns(3)
+        if "oq_f_status" not in ss:
+            ss["oq_f_status"] = [QuestionStatus.OPEN.value]
+        status_f = f1.multiselect("Status", [s.value for s in QuestionStatus], key="oq_f_status")
+        prio_f = f2.multiselect("Priority", ["high", "medium", "low"], key="oq_f_prio")
+        order = {a.adj_id: i for i, a in enumerate(ctx.wp.assessments)}
+        refs = sorted({r["Ref"] for r in rows}, key=lambda r: (order.get(r, len(order)), r))
+        if "oq_f_ref" in ss:
+            ss["oq_f_ref"] = [r for r in ss["oq_f_ref"] if r in refs]
+        ref_f = f3.multiselect("Adjustment", refs, key="oq_f_ref")
+        shown = filter_question_rows(rows, status_f, prio_f, ref_f)
+        if shown:
+            st.html(html_table(QUESTION_TABLE_COLUMNS, shown))
+        else:
+            st.caption("No questions match the filters.")
+        st.download_button(
+            "Download as CSV (information request list)",
+            data=request_list_csv(shown),
+            file_name=f"QoE_open_questions_{ctx.wp.deal.deal_id}.csv",
+            mime="text/csv",
+            disabled=not shown,
+        )
+        st.caption(
+            f"The CSV holds exactly the {len(shown)} question(s) shown, without the internal Basis column; "
+            "cells that a spreadsheet would read as a formula are prefixed with an apostrophe."
+        )
+
+        st.markdown("**Update a question**")
+        if not shown:
+            st.caption("No question matches the filters above.")
+        else:
+            q_ids = [r["Q id"] for r in shown]
+            _keep_option("oq_pick", q_ids, q_ids[0])
+            q_id = st.selectbox("Question", q_ids, format_func=lambda q: f"{q}: {by_id[q]['Question'][:90]}", key="oq_pick")
+            _, question = _find_question(ctx, q_id)
+            status_key, response_key = f"oq_status:{q_id}", f"oq_response:{q_id}"
+            basis_key, seed_key = f"oq_basis:{q_id}", f"oq_seed:{q_id}"
+            token = question_token(ctx.question_log, q_id)
+            seeded = ss.get(seed_key)
+            untouched = seeded is not None and (ss.get(status_key), ss.get(response_key)) == tuple(seeded)
+            if seeded is None or status_key not in ss or response_key not in ss or (ss.get(basis_key) != token and untouched):
+                # First view, or the question changed elsewhere and nothing was typed: show it as it is now.
+                ss[status_key], ss[response_key] = question.status, question.response
+                ss[seed_key], ss[basis_key] = (question.status, question.response), token
+            c1, c2 = st.columns([1, 3])
+            c1.selectbox("Status", list(QuestionStatus), format_func=lambda s: s.value.capitalize(), key=status_key)
+            c2.text_input("Response", key=response_key)
+            st.caption(
+                md(
+                    f"Logged in {QUESTION_LOG_NAME} under the reviewer named in the sidebar. It does not record or "
+                    f"change a review decision on {by_id[q_id]['Ref']}, reviewed or not."
+                )
+            )
+            for e in ss.pop("oq_errors", []):
+                st.error(md(e))
+            st.button("Record update", type="primary", on_click=_record_question_update, args=(ctx, q_id))
+
+    with st.expander("Add a question for management"):
+        ids = [a.adj_id for a in ctx.wp.assessments]
+        if not ids:
+            st.caption("This workpaper has no adjustments.")
+            return
+        titles = {a.adj_id: a.title for a in ctx.wp.assessments}
+        _keep_option("oq_new_adj", ids, ids[0])
+        st.selectbox("Adjustment", ids, format_func=lambda i: f"{i}: {titles[i]}", key="oq_new_adj")
+        st.text_area("Question", key="oq_new_text", height=80)
+        _keep_option("oq_new_prio", ["high", "medium", "low"], "high")
+        st.selectbox("Priority", ["high", "medium", "low"], key="oq_new_prio")
+        for e in ss.pop("oq_add_errors", []):
+            st.error(md(e))
+        st.button("Add question", on_click=_add_question, args=(ctx,))
 
 
 # ----------------------------- Export ---------------------------------------
@@ -1797,8 +2528,7 @@ def _page_export(ctx: ReviewContext) -> None:
             f"{counts['review'][STATUS_UNREVIEWED]} adjustment(s) are unreviewed. The workpaper carries the tool's "
             "proposal for them and marks them unreviewed."
         )
-    for note in ctx.notes:
-        st.warning(note)
+    _show_notes(ctx)
     if st.button("Build Excel workpaper", type="primary"):
         try:
             import inspect
@@ -1809,17 +2539,35 @@ def _page_export(ctx: ReviewContext) -> None:
             extra = {"pkg": ctx.pkg} if ctx.pkg is not None and "pkg" in inspect.signature(export_workpaper).parameters else {}
             with st.spinner("Writing workbook..."):
                 out = export_workpaper(ctx.wp, ctx.paths.xlsx, **extra)
-            st.success(f"Written to {out}")
+            write_export_stamp(ctx.paths, ctx.signature, _iso(datetime.now(timezone.utc)))
+            st.success(md(f"Written to {out}"))
         except Exception as exc:  # noqa: BLE001
             _show_error("Export failed", exc)
-    if ctx.paths.xlsx.is_file():
+    status, built_at = export_status(ctx.paths, ctx.signature)
+    if status == EXPORT_CURRENT:
+        st.caption(md(f"Workbook built {built_at} from the decisions and questions logged now."))
+    elif status == EXPORT_STALE:
+        st.warning(
+            md(
+                f"The workbook on disk was built {built_at}, before later review changes (a decision, a question "
+                "update or a re-run). Build it again; the download is disabled until then."
+            )
+        )
+    elif status == EXPORT_UNKNOWN:
+        st.warning(
+            "The workbook on disk was not built by this app from the current review state (it may have been "
+            "written from the command line or edited). Build it again; the download is disabled until then."
+        )
+    if status != EXPORT_MISSING:
+        current = status == EXPORT_CURRENT
         st.download_button(
-            f"Download {ctx.paths.xlsx.name}",
-            data=ctx.paths.xlsx.read_bytes(),
+            f"Download {md(ctx.paths.xlsx.name)}",
+            data=ctx.paths.xlsx.read_bytes() if current else b"",
             file_name=ctx.paths.xlsx.name,
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            disabled=not current,
         )
-    c1, c2 = st.columns(2)
+    c1, c2, c3 = st.columns(3)
     c1.download_button(
         "Download reviewed workpaper (JSON)",
         data=ctx.wp.model_dump_json(indent=2).encode("utf-8"),
@@ -1831,6 +2579,13 @@ def _page_export(ctx: ReviewContext) -> None:
             "Download review log (JSONL)",
             data=ctx.paths.review_log.read_bytes(),
             file_name=f"review_log_{ctx.wp.deal.deal_id}.jsonl",
+            mime="application/jsonl",
+        )
+    if ctx.paths.question_log.is_file():
+        c3.download_button(
+            "Download question log (JSONL)",
+            data=ctx.paths.question_log.read_bytes(),
+            file_name=f"question_log_{ctx.wp.deal.deal_id}.jsonl",
             mime="application/jsonl",
         )
 
@@ -1855,9 +2610,9 @@ def _page_export(ctx: ReviewContext) -> None:
         else "<div class='qoe-muted'>No decisions yet.</div>"
     )
     if summary["tool_error_adj_ids"]:
-        st.caption("Tool errors on: " + ", ".join(summary["tool_error_adj_ids"]))
+        st.caption(md("Tool errors on: " + ", ".join(summary["tool_error_adj_ids"])))
     if summary["unclassified_overrides"]:
-        st.warning("Overrides without a correction type: " + ", ".join(summary["unclassified_overrides"]))
+        st.warning(md("Overrides without a correction type: " + ", ".join(summary["unclassified_overrides"])))
 
     st.subheader("Time on task")
     timing = timing_summary(load_timing(ctx.paths.timing))
@@ -1868,7 +2623,7 @@ def _page_export(ctx: ReviewContext) -> None:
     st.caption(
         f"{timing['adjustments']} adjustment(s), {timing['decisions']} decision(s), "
         f"{fmt_duration(timing['total_seconds'])} in total; mean {fmt_duration(avg)} and median "
-        f"{fmt_duration(timing['median_seconds_per_adjustment'])} per adjustment. Stored in {ctx.paths.timing.name}."
+        f"{fmt_duration(timing['median_seconds_per_adjustment'])} per adjustment. Stored in {md(ctx.paths.timing.name)}."
     )
     _table(
         [

@@ -337,7 +337,9 @@ def periods_text(amounts: dict[str, Decimal], labels: Sequence[str]) -> str:
     if not nonzero:
         return "0"
     if len({v for _, v in nonzero}) == 1:
-        return f"{money(nonzero[0][1])} in {' and '.join(lbl for lbl, _ in nonzero)}"
+        names = [lbl for lbl, _ in nonzero]
+        where = names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
+        return f"{money(nonzero[0][1])} in {where}"
     return "; ".join(f"{lbl} {money(v)}" for lbl, v in nonzero)
 
 
@@ -569,9 +571,23 @@ class DocLinkInfo:
 
 # Association bases that tie a document to a specific entry (not just its party name).
 _SPECIFIC_BASES = frozenset({"number", "amount", "amount_multi", "group", "reference", "mention"})
+# Bases on which a document is *about* an entry: it states the entry's doc number, the
+# entry's matter / claim reference, or its amount for the same party (SPEC §5.2), or it is
+# the claim letter behind a recovery. Only these reach DocLink.entry_ids, GLLink.doc_ids and
+# the documented amount. "named" (the document merely names the entry's counterparty) and
+# "classification" (an AI said the removal rests on it) stay document-level: a law firm's
+# litigation invoice names the firm, which does not make it support for the firm's retainer.
+ENTRY_ABOUT_BASES = frozenset({"number", "amount", "amount_multi", "group", "reference", "mention", "recovery"})
 _MIN_CITED_NUMBER = 5
 # Bases that pin a document to one entry: only these may carry a service period onto it.
 ENTRY_SPECIFIC_BASES = frozenset({"number", "amount", "group"})
+
+# GLLink.role values (schemas.GLLink).
+ROLE_SUPPORTING = "supporting"
+ROLE_REMOVED = "removed"
+ROLE_MOVED = "moved"
+ROLE_RECOVERY = "recovery"
+ROLE_CONTEXT = "context"
 
 
 @dataclass
@@ -580,6 +596,7 @@ class Removal:
     note: str
     source: str = "code"  # "ai" when an AI entry classification drove it
     doc_ids: list[str] = field(default_factory=list)  # documents the removal rests on
+    flag: Optional[Flag] = None  # the flag that removed the entry (set by the challenge that raised it)
 
 
 @dataclass
@@ -588,6 +605,7 @@ class Effect:
     amount: Decimal
     code: FlagCode
     entry_id: str
+    flag: Optional[Flag] = None  # the flag whose effect this is
 
 
 @dataclass
@@ -635,7 +653,8 @@ class AdjustmentTrace:
     recurrence: list[RecurrenceObservation] = field(default_factory=list)
     normalization: Optional[NormalizationInfo] = None
     notes: list[str] = field(default_factory=list)
-    dropped_quotes: int = 0  # AI quotes (contradictions) that failed verification
+    dropped_quotes: int = 0  # AI quotes (contradictions) that failed verification here
+    ai_dropped_quotes: int = 0  # AI quotes the AI adapter itself rejected during this adjustment's calls
     search_terms: str = ""
     _judgment_keys: set[str] = field(default_factory=set, repr=False)
     _fact_keys: dict[str, int] = field(default_factory=dict, repr=False)
@@ -729,7 +748,10 @@ class AdjustmentTrace:
         )
 
     def entry_docs(self, entry_id: str) -> list[str]:
-        return sorted(d for d, info in self.doc_links.items() if entry_id in info.entry_basis)
+        """Documents that are about the entry (``ENTRY_ABOUT_BASES``), never a party-name match alone."""
+        return sorted(
+            d for d, info in self.doc_links.items() if info.entry_basis.get(entry_id) in ENTRY_ABOUT_BASES
+        )
 
     def support_docs(self, entry_id: str) -> list[str]:
         """Documents that evidence an entry. The company's own emails and memos are management
@@ -781,6 +803,10 @@ class AdjustmentTrace:
     def remove(
         self, entry_ids: Iterable[str], code: FlagCode, note: str, source: str = "code", doc_ids: Iterable[str] = ()
     ) -> list[str]:
+        """Take entries out of the supporting set; returns the ones not already removed.
+
+        The first challenge to remove an entry owns it: a later flag on the same entries
+        corroborates the removal but has no further effect on the amount."""
         newly: list[str] = []
         for e in self.index.sort_ids(entry_ids):
             if e not in self.removals:
@@ -788,12 +814,21 @@ class AdjustmentTrace:
                 newly.append(e)
         return newly
 
-    def add_flag(self, flag: Flag) -> None:
+    def attach(self, entry_ids: Iterable[str], flag: Flag) -> None:
+        """Record ``flag`` as the flag that removed ``entry_ids`` (see ``remove``)."""
+        for e in entry_ids:
+            removal = self.removals.get(e)
+            if removal is not None and removal.flag is None:
+                removal.flag = flag
+
+    def add_flag(self, flag: Flag) -> Flag:
+        """Add a flag unless an identical one is already raised; returns the flag held by the trace."""
         key = (flag.code, flag.period_label, tuple(flag.entry_ids), tuple(flag.doc_ids), flag.message)
         for f in self.flags:
             if (f.code, f.period_label, tuple(f.entry_ids), tuple(f.doc_ids), f.message) == key:
-                return
+                return f
         self.flags.append(flag)
+        return flag
 
     def drop_flags(self, code: FlagCode, label: Optional[str] = None) -> None:
         self.flags = [f for f in self.flags if not (f.code == code and (label is None or f.period_label == label))]
@@ -881,6 +916,9 @@ class AdjustmentTrace:
         text = "; ".join(self.describe(e) for e in ids[:limit])
         return text + (f"; and {len(ids) - limit} more" if len(ids) > limit else "")
 
+    def group_label(self, entry_id: str) -> str:
+        return self.group_of.get(entry_id) or _group_display(self.index.by_id[entry_id])
+
     def describe_groups(self, entry_ids: Iterable[str], limit: int = 3) -> str:
         """'Marlow & Finch LLP · Matter 3002 (18 entries, Jan 2025–Jun 2026, 22,000)'."""
         by_group: dict[str, list[str]] = {}
@@ -895,6 +933,16 @@ class AdjustmentTrace:
         return "; ".join(parts) + (f"; and {more} more group(s)" if more > 0 else "")
 
     # -- output ------------------------------------------------------------
+
+    def role_of(self, entry_id: str) -> str:
+        """The entry's audit-trail role in this adjustment (GLLink.role)."""
+        if entry_id in self.removals:
+            return ROLE_REMOVED
+        if any(entry_id in ids for ids in self.claimed.values()):
+            return ROLE_MOVED if entry_id in self.moved else ROLE_SUPPORTING
+        if any(x.entry_id == entry_id and x.code == FlagCode.OFFSETTING_RECOVERY for x in self.effects):
+            return ROLE_RECOVERY
+        return ROLE_CONTEXT
 
     def gl_links(self) -> list[GLLink]:
         claimed = set(self.claimed_ids())
@@ -920,6 +968,9 @@ class AdjustmentTrace:
                     group=link.group,
                     supports_claim=eid in claimed and removal is None,
                     doc_ids=self.entry_docs(eid),
+                    role=self.role_of(eid),
+                    claimed=eid in claimed,
+                    removed_by=removal.code if removal is not None else None,
                 )
             )
         return out
@@ -938,11 +989,12 @@ class AdjustmentTrace:
             if not info.prelinked and not info.entry_basis:
                 continue
             facts = self.index.facts.get(doc_id)
+            about = [e for e, basis in info.entry_basis.items() if basis in ENTRY_ABOUT_BASES]
             out.append(
                 DocLink(
                     doc_id=doc_id,
                     relation=info.relation or _default_relation(facts, info),
-                    entry_ids=self.index.sort_ids(info.entry_basis),
+                    entry_ids=self.index.sort_ids(about),
                     score=round(info.score, 2),
                     reasons=list(info.reasons),
                     quotes=_doc_quotes(facts, self, info),
@@ -954,8 +1006,13 @@ class AdjustmentTrace:
 
 def _default_relation(facts: Optional[DocFacts], info: DocLinkInfo) -> str:
     doc_type = (facts.doc_type if facts else "other").lower()
-    if doc_type == "invoice" or "number" in info.entry_basis.values():
+    bases = set(info.entry_basis.values())
+    if "number" in bases:
         return "invoice_for_entry"
+    if doc_type == "invoice":
+        # An invoice is only "the invoice for" entries it is about; one that merely names the party
+        # (another matter's bill from the same firm) is context.
+        return "invoice_for_entry" if bases & ENTRY_ABOUT_BASES else "other"
     if doc_type in AGREEMENT_DOC_TYPES:
         return "agreement"
     if doc_type in CORRESPONDENCE_DOC_TYPES:
@@ -971,7 +1028,7 @@ def _doc_quotes(facts: Optional[DocFacts], trace: AdjustmentTrace, info: DocLink
     linked entries (singly or in total), then terms, then key statements."""
     if facts is None:
         return []
-    ids = [e for e in info.entry_basis if e in trace.index.by_id]
+    ids = [e for e, basis in info.entry_basis.items() if basis in ENTRY_ABOUT_BASES and e in trace.index.by_id]
     targets = {abs(trace.amount(e)) for e in ids}
     targets.add(abs(sum((trace.amount(e) for e in ids), ZERO)))
     for g in {trace.group_of.get(e, "") for e in ids}:
@@ -1803,13 +1860,14 @@ def _fit_flags(t: AdjustmentTrace) -> None:
                 )
             elif fit.bounded:
                 msg += f" The search considered the {MAX_SUBSET_ITEMS} strongest links only."
+            # The excess is context activity management did not claim, not an EBITDA effect:
+            # it stays in the message and never in amount_impact / effects.
             t.add_flag(
                 Flag(
                     code=FlagCode.EXCESS_GL_ACTIVITY,
                     severity=Severity.INFO,
                     message=_short_sentence(msg),
                     period_label=lbl,
-                    amount_impact=fmt(excess),
                     entry_ids=idx.sort_ids(others),
                 )
             )
@@ -1826,7 +1884,6 @@ def _fit_flags(t: AdjustmentTrace) -> None:
                             f"strong links ({money(traced)}) are treated as claimed, capped at the claim."
                         ),
                         period_label=lbl,
-                        amount_impact=fmt(traced - claim),
                         entry_ids=idx.sort_ids(chosen),
                     )
                 )

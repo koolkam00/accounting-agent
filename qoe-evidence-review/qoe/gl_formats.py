@@ -20,6 +20,8 @@ from __future__ import annotations
 import csv
 import io
 import re
+import zipfile
+from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -84,9 +86,8 @@ _US_DATE_FORMATS = ("%m/%d/%Y", "%m/%d/%y")
 _DAYFIRST_DATE_FORMATS = ("%d/%m/%Y", "%d/%m/%y")
 _OTHER_DATE_FORMATS = (
     "%Y-%m-%d",
-    "%Y-%m-%d %H:%M:%S",
-    "%Y-%m-%dT%H:%M:%S",
     "%Y/%m/%d",
+    "%Y%m%d",
     "%d %b %Y",
     "%d %B %Y",
     "%b %d, %Y",
@@ -95,12 +96,19 @@ _OTHER_DATE_FORMATS = (
     "%d-%b-%y",
 )
 _EXCEL_EPOCH = date(1899, 12, 30)
+_EXCEL_SERIAL_RANGE = (20000, 80000)  # 1954-10-03 .. 2119-01-10: any plausible ledger date
+# Exports append a time of day: "1/7/2024 0:00", "01/07/2024 12:00:00 AM", "2024-01-07T00:00:00".
+_TIME_SUFFIX = re.compile(r"(?:\s+|T)\d{1,2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:\s*[AaPp]\.?[Mm]\.?)?$")
+_SERIAL_TEXT = re.compile(r"^\d{5}(?:\.\d+)?$")
+_SLASH_DATE = re.compile(r"^(\d{1,2})/(\d{1,2})/(\d{2}|\d{4})\b")
 
 
 def parse_date(value: object, *, dayfirst: bool = False) -> Optional[date]:
     """Date cell -> date. Handles Excel dates / serials and common text layouts.
 
-    Slash dates are month-first (US exports) unless ``dayfirst`` (Xero).
+    Slash dates are month-first (US exports) unless ``dayfirst``. A trailing time
+    of day is ignored, and a five-digit text cell is read as an Excel serial
+    (some exports write the serial as text).
     """
     if isinstance(value, datetime):
         return value.date()
@@ -109,13 +117,18 @@ def parse_date(value: object, *, dayfirst: bool = False) -> Optional[date]:
     if isinstance(value, bool):
         return None
     if isinstance(value, (int, float)):
-        # Only real spreadsheet numbers reach here; CSV cells are always text.
-        if 20000 <= value <= 80000:
+        if _EXCEL_SERIAL_RANGE[0] <= value <= _EXCEL_SERIAL_RANGE[1]:
             return _EXCEL_EPOCH + timedelta(days=int(value))
         return None
     text = clean_text(value)
     if not text or not any(ch.isdigit() for ch in text):
         return None
+    if _SERIAL_TEXT.match(text):
+        serial = float(text)
+        if _EXCEL_SERIAL_RANGE[0] <= serial <= _EXCEL_SERIAL_RANGE[1]:
+            return _EXCEL_EPOCH + timedelta(days=int(serial))
+        return None
+    text = _TIME_SUFFIX.sub("", text).strip()
     text = re.sub(r"\bSept\b", "Sep", text, flags=re.IGNORECASE)
     slash = _DAYFIRST_DATE_FORMATS if dayfirst else _US_DATE_FORMATS
     for pattern in (*slash, *_OTHER_DATE_FORMATS):
@@ -124,6 +137,38 @@ def parse_date(value: object, *, dayfirst: bool = False) -> Optional[date]:
         except ValueError:
             continue
     return None
+
+
+def detect_dayfirst(values: Iterable[object], default: bool, what: str) -> bool:
+    """Whether a column of slash dates is day-first (D/M/Y) or month-first (M/D/Y).
+
+    A first component above 12 proves day-first ("15/01/2024"); a second one above
+    12 proves month-first ("01/15/2024"). With no proof either way ``default`` is
+    kept. A column with both kinds cannot be read safely, so it raises.
+    """
+    day_first: Optional[str] = None
+    month_first: Optional[str] = None
+    for value in values:
+        if not isinstance(value, str):
+            continue
+        m = _SLASH_DATE.match(value.strip())
+        if not m:
+            continue
+        first, second = int(m.group(1)), int(m.group(2))
+        if first > 12 and day_first is None:
+            day_first = value.strip()
+        if second > 12 and month_first is None:
+            month_first = value.strip()
+        if day_first and month_first:
+            raise ValueError(
+                f"{what}: the date column mixes day-first ({day_first!r}) and month-first ({month_first!r}) "
+                "dates, so no date can be read safely; re-export the file with one date format"
+            )
+    if day_first:
+        return True
+    if month_first:
+        return False
+    return default
 
 
 _MONTH_FORMATS = ("%b %Y", "%B %Y", "%Y-%m", "%b-%Y", "%B-%Y", "%b-%y", "%b %y", "%m/%Y", "%b. %Y", "%Y-%m-%d")
@@ -148,30 +193,152 @@ def parse_month(value: object) -> Optional[str]:
     return None
 
 
-def load_table_rows(path: Path, sheet: Optional[str] = None) -> list[Row]:
-    """All rows of a CSV or xlsx sheet; ``rows[i]`` is spreadsheet row ``i + 1``.
+@dataclass
+class Table:
+    """Rows of one sheet (``rows[i]`` is spreadsheet row ``i + 1``) plus what loading noticed."""
 
-    For xlsx the named sheet is used when present (case-insensitive), else the
-    first sheet. CSV is decoded as UTF-8 (BOM tolerated), falling back to cp1252.
+    rows: list[Row]
+    notes: list[str] = field(default_factory=list)
+    # (row index, column index) -> Excel number format, for numeric cells with a non-General
+    # format; only filled when requested (a numeric Ref "1.10" is stored as 1.1).
+    number_formats: dict[tuple[int, int], str] = field(default_factory=dict)
+
+
+def read_table(path: Path, sheet: Optional[str] = None, *, keep_number_formats: bool = False) -> Table:
+    """All rows of a CSV or xlsx sheet, with loading notes.
+
+    xlsx: the named sheet is used when present (case-insensitive), else the first
+    sheet. The sheet's stored ``<dimension>`` is ignored (read-only openpyxl would
+    otherwise stop at a stale one and silently drop rows), and formula cells that
+    carry no calculated value are reported, because they read as blank.
+
+    CSV / text: UTF-16 (Excel "Unicode Text") and UTF-8 are recognised; lines that
+    are not valid UTF-8 fall back to Windows-1252 one line at a time, with a note.
+    Tab-delimited text is detected.
     """
     path = Path(path)
     suffix = path.suffix.lower()
     if suffix in (".xlsx", ".xlsm"):
-        wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
-        try:
-            ws = _pick_sheet(wb, sheet)
-            return [list(r) for r in ws.iter_rows(values_only=True)]
-        finally:
-            wb.close()
-    if suffix in (".csv", ".txt"):
-        data = path.read_bytes()
-        try:
-            text = data.decode("utf-8-sig")
-        except UnicodeDecodeError:
-            text = data.decode("cp1252")
+        return _read_xlsx(path, sheet, keep_number_formats)
+    if suffix in (".csv", ".txt", ".tsv"):
+        text, notes = _decode_text_table(path.read_bytes(), path.name)
+        delimiter = _sniff_delimiter(text)
         # Each csv record is one spreadsheet row, blank lines included.
-        return [list(r) for r in csv.reader(io.StringIO(text, newline=""))]
+        rows = [list(r) for r in csv.reader(io.StringIO(text, newline=""), delimiter=delimiter)]
+        return Table(rows=rows, notes=notes)
     raise ValueError(f"unsupported table file type: {path.name} (expected .csv or .xlsx)")
+
+
+def load_table_rows(path: Path, sheet: Optional[str] = None) -> list[Row]:
+    """All rows of a CSV or xlsx sheet; ``rows[i]`` is spreadsheet row ``i + 1`` (see ``read_table``)."""
+    return read_table(path, sheet).rows
+
+
+_FORMULA_TAG = re.compile(rb"<(?:\w+:)?f[\s>/]")
+
+
+def _workbook_has_formulas(path: Path) -> bool:
+    """Cheap pre-check (no XML parsing): does any worksheet part contain a formula element?"""
+    try:
+        with zipfile.ZipFile(path) as zf:
+            return any(
+                _FORMULA_TAG.search(zf.read(name))
+                for name in zf.namelist()
+                if name.startswith("xl/worksheets/") and name.endswith(".xml")
+            )
+    except (zipfile.BadZipFile, OSError, KeyError):
+        return True  # let openpyxl report the real problem
+
+
+def _read_xlsx(path: Path, sheet: Optional[str], keep_number_formats: bool) -> Table:
+    wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
+    try:
+        ws = _pick_sheet(wb, sheet)
+        title = ws.title
+        ws.reset_dimensions()
+        formats: dict[tuple[int, int], str] = {}
+        if keep_number_formats:
+            rows = []
+            for r_idx, cells in enumerate(ws.iter_rows()):
+                row = []
+                for c_idx, cell in enumerate(cells):
+                    value = cell.value
+                    row.append(value)
+                    if isinstance(value, (int, float)) and not isinstance(value, bool):
+                        number_format = getattr(cell, "number_format", None)
+                        if number_format and number_format != "General":
+                            formats[(r_idx, c_idx)] = number_format
+                rows.append(row)
+        else:
+            rows = [list(r) for r in ws.iter_rows(values_only=True)]
+    finally:
+        wb.close()
+    notes: list[str] = []
+    if _workbook_has_formulas(path):
+        uncached = _uncached_formulas(path, title, rows)
+        if uncached:
+            sample = "; ".join(uncached[:8]) + ("; ..." if len(uncached) > 8 else "")
+            notes.append(
+                f"{path.name}: {len(uncached)} formula cell(s) have no stored value and were read as blank ({sample}). "
+                "If these cells should hold numbers, the file was saved without calculated values (typical of "
+                "script-written files): open and save it in Excel or LibreOffice, then rerun."
+            )
+    return Table(rows=rows, notes=notes, number_formats=formats)
+
+
+def _uncached_formulas(path: Path, title: str, rows: list[Row]) -> list[str]:
+    wb = openpyxl.load_workbook(path, read_only=True, data_only=False)
+    out: list[str] = []
+    try:
+        ws = wb[title]
+        ws.reset_dimensions()
+        for r_idx, cells in enumerate(ws.iter_rows()):
+            for c_idx, cell in enumerate(cells):
+                if getattr(cell, "data_type", None) != "f":
+                    continue
+                cached = rows[r_idx][c_idx] if r_idx < len(rows) and c_idx < len(rows[r_idx]) else None
+                if cached is None:
+                    out.append(f"{cell.coordinate} {cell.value}")
+    finally:
+        wb.close()
+    return out
+
+
+def _decode_text_table(data: bytes, name: str) -> tuple[str, list[str]]:
+    if data.startswith((b"\xff\xfe", b"\xfe\xff")):
+        return data.decode("utf-16"), []
+    head = data[:400]
+    if len(head) >= 4 and head.count(0) * 3 >= len(head):
+        # UTF-16 without a byte-order mark: every other byte of ASCII text is NUL.
+        odd_nuls = head[1::2].count(0)
+        return data.decode("utf-16-le" if odd_nuls >= head[0::2].count(0) else "utf-16-be", errors="replace"), [
+            f"{name}: read as UTF-16 text (no byte-order mark)"
+        ]
+    if data.startswith(b"\xef\xbb\xbf"):
+        data = data[3:]
+    try:
+        return data.decode("utf-8"), []
+    except UnicodeDecodeError:
+        pass
+    # Mixed files (a UTF-8 export with a few Windows-1252 bytes pasted in) are decoded line by
+    # line, so one stray byte does not turn every other line, and the header, into mojibake.
+    lines: list[str] = []
+    fallback: list[int] = []
+    for lineno, raw in enumerate(data.split(b"\n"), start=1):
+        try:
+            lines.append(raw.decode("utf-8"))
+        except UnicodeDecodeError:
+            lines.append(raw.decode("cp1252", errors="replace"))
+            fallback.append(lineno)
+    sample = ", ".join(str(n) for n in fallback[:10]) + (", ..." if len(fallback) > 10 else "")
+    return "\n".join(lines), [f"{name}: {len(fallback)} line(s) are not valid UTF-8 and were decoded as Windows-1252 (lines {sample})"]
+
+
+def _sniff_delimiter(text: str) -> str:
+    sample = [line for line in text.splitlines()[:30] if line.strip()]
+    tabs = sum(line.count("\t") for line in sample)
+    commas = sum(line.count(",") for line in sample)
+    return "\t" if tabs > commas else ","
 
 
 def _pick_sheet(wb, preferred: Optional[str]):
@@ -209,12 +376,32 @@ class _SkipLog:
 
     def __init__(self) -> None:
         self._rows: dict[str, list[int]] = {}
+        # Rows that carry money but could not be dated: real transactions, not totals.
+        self._undated: list[tuple[int, str]] = []
+        self._undated_total = Decimal(0)
 
     def add(self, reason: str, row: int) -> None:
         self._rows.setdefault(reason, []).append(row)
 
+    def add_undated(self, row: int, raw_date: object, amounts: Sequence[object]) -> None:
+        self._undated.append((row, clean_text(raw_date)))
+        for cell in amounts:
+            try:
+                value = parse_money(cell)
+            except ValueError:
+                continue
+            if value is not None:
+                self._undated_total += abs(value)
+
     def notes(self, label: str) -> list[str]:
         out = []
+        if self._undated:
+            sample = ", ".join(f"{r} ({d!r})" if d else str(r) for r, d in self._undated[:8]) + (", ..." if len(self._undated) > 8 else "")
+            out.append(
+                f"{label}: WARNING - dropped {len(self._undated)} row(s) that carry amounts "
+                f"({fmt(self._undated_total)} in absolute value) but have no readable transaction date "
+                f"(rows {sample}); check the Date column format and re-export if these are transactions"
+            )
         for reason, rows in self._rows.items():
             sample = ", ".join(str(r) for r in rows[:8]) + (", ..." if len(rows) > 8 else "")
             out.append(f"{label}: skipped {len(rows)} {reason} (rows {sample})")
@@ -225,15 +412,26 @@ class _SkipLog:
 # Account labels and EBITDA classification
 # ---------------------------------------------------------------------------
 
-_LABEL = re.compile(r"^(\d+(?:\.\d+)?)(?:\s*[·\-–—:]\s*|\s+)(\S.*)$")
-_NUMBER_ONLY = re.compile(r"^\d+(?:\.\d+)?$")
+# An account number may carry sub-account segments joined by "." or "-" ("6000.10",
+# "4000-10", "4-1000"), so a hyphen directly between digits belongs to the number. The
+# name follows whitespace, or a separator ("·", ":", "–", or a hyphen next to a space or
+# a letter: "4000 - Revenue", "4000-Revenue").
+_ACCOUNT_NUMBER = r"\d+(?:[.\-]\d+)*"
+_LABEL = re.compile(rf"^({_ACCOUNT_NUMBER})(?:\s*[·–—:]\s*|\s+-\s*|\s*-\s+|\s*-(?=[^\d\s])|\s+)(\S.*)$")
+_NUMBER_ONLY = re.compile(rf"^{_ACCOUNT_NUMBER}$")
+
+
+def account_path(text: object) -> str:
+    """ "Office Expenses : Other" -> "Office Expenses:Other" (a QBO full name without numbers)."""
+    return ":".join(s.strip() for s in clean_text(text).split(":") if s.strip())
 
 
 def split_account_label(label: object) -> tuple[str, str]:
     """ "4000 Service Revenue - Commercial" -> ("4000", "Service Revenue - Commercial").
 
     Hierarchical labels ("700 Overheads : 710 Legal", "Parent:Child") resolve to the
-    last segment. Without a leading number the number is "".
+    last segment. Without a leading number the number is "". Sub-account numbers
+    keep their segments: "4000-10 Commercial" -> ("4000-10", "Commercial").
     """
     text = clean_text(label)
     if ":" in text:
@@ -313,16 +511,30 @@ def _type_rule(source_type: str) -> tuple[Optional[EbitdaClass], str]:
 
 
 _INTEREST_NAME = re.compile(r"interest\s+(expense|paid)|loan\s+interest|interest\s+income", re.I)
+# On a non-operating (Other Income / Other Expense) account any mention of interest is
+# financing: QBO's default "Interest Earned", "Mortgage Interest", "Interest - Line of
+# Credit", "Bank Interest". Operating-typed names such as "Bank Charges & Interest" keep
+# their type class; "interest-free" and ownership interests are not interest.
+_INTEREST_WORD = re.compile(r"\binterest\b(?![\s-]*free)", re.I)
+_NOT_INTEREST = re.compile(r"non[\s-]?controlling|minority|interest\s+in\b", re.I)
+_NON_OPERATING_TYPES = frozenset({"otherincome", "othincome", "otherexpense", "otherexpenses", "othexpense"})
 _DEPRECIATION_NAME = re.compile(r"depreciation", re.I)
 _AMORTIZATION_NAME = re.compile(r"amorti[sz]ation", re.I)
 _FINANCING_NAME = re.compile(r"loan|debt|financing", re.I)
-# Payroll, sales, property and franchise taxes stay operating: their names do not say "income tax".
-_INCOME_TAX_NAME = re.compile(r"income\s+tax", re.I)
+# Payroll, sales, property and franchise taxes stay operating: their names do not say
+# "income tax" ("Taxes - Federal Income" is an income tax; "State Income" alone is not a tax).
+_INCOME_TAX_NAME = re.compile(r"income\s+tax|\btax(?:es)?\b.*\b(?:federal|state|provincial)\s+income\b", re.I)
 
 
-def _name_rule(name: str) -> Optional[tuple[EbitdaClass, str]]:
+def _name_rule(name: str, source_type: str = "") -> Optional[tuple[EbitdaClass, str]]:
     if _INTEREST_NAME.search(name):
         return EbitdaClass.INTEREST, "name rule: interest -> INTEREST"
+    if (
+        _type_key(source_type) in _NON_OPERATING_TYPES
+        and _INTEREST_WORD.search(name)
+        and not _NOT_INTEREST.search(name)
+    ):
+        return EbitdaClass.INTEREST, "name rule: interest on a non-operating (Other Income / Other Expense) account -> INTEREST"
     if _DEPRECIATION_NAME.search(name):
         return EbitdaClass.DEPRECIATION, "name rule: depreciation -> DEPRECIATION"
     if _AMORTIZATION_NAME.search(name):
@@ -338,7 +550,7 @@ def classify_account(name: str, source_type: str) -> tuple[EbitdaClass, str]:
     """EBITDA class and basis from name and source type (rules 2-4 of SPEC §3.4)."""
     type_class, type_basis = _type_rule(source_type)
     if type_class is not EbitdaClass.BALANCE_SHEET:
-        named = _name_rule(name)
+        named = _name_rule(name, source_type)
         if named is not None:
             return named
     if type_class is None:
@@ -385,8 +597,9 @@ def _parse_class(raw: str) -> Optional[EbitdaClass]:
 
 
 def _read_overrides(path: Path) -> tuple[dict[str, tuple[EbitdaClass, str]], list[str]]:
-    rows = load_table_rows(path)
-    notes: list[str] = []
+    table = read_table(path)
+    rows = table.rows
+    notes: list[str] = list(table.notes)
     out: dict[str, tuple[EbitdaClass, str]] = {}
     if not rows:
         return out, [f"overrides {path.name}: empty file"]
@@ -421,9 +634,10 @@ def _find_coa_header(rows: list[Row]) -> tuple[int, Optional[int], Optional[int]
 def read_chart_of_accounts(path: Path, overrides: Path | None = None) -> tuple[list[Account], list[str]]:
     """Accounts in file order with their EBITDA class, plus ingest notes."""
     path = Path(path)
-    rows = load_table_rows(path)
+    table = read_table(path)
+    rows = table.rows
     h, num_col, name_col, type_col, combined_col = _find_coa_header(rows)
-    notes: list[str] = []
+    notes: list[str] = list(table.notes)
     override_map: dict[str, tuple[EbitdaClass, str]] = {}
     if overrides is not None:
         override_map, override_notes = _read_overrides(Path(overrides))
@@ -431,6 +645,7 @@ def read_chart_of_accounts(path: Path, overrides: Path | None = None) -> tuple[l
 
     accounts: list[Account] = []
     seen: set[str] = set()
+    unnumbered: list[str] = []
     for i in range(h + 1, len(rows)):
         row = rows[i]
         number = clean_text(_cell(row, num_col))
@@ -438,15 +653,19 @@ def read_chart_of_accounts(path: Path, overrides: Path | None = None) -> tuple[l
         if combined_col is not None:
             label_number, label_name = split_account_label(_cell(row, combined_col))
             number = label_number
-            name = name or label_name
+            name = name or (label_name if label_number else clean_text(_cell(row, combined_col)))
         if not number and not name:
             continue
         if not number:
-            number, name = split_account_label(name)
+            label_number, label_name = split_account_label(name)
+            if label_number:
+                number, name = label_number, label_name
         if not number:
-            notes.append(f"chart of accounts: row {i + 1} {name!r} has no account number; its name is used as the id")
-            number = name
-        if ":" in name:
+            # Without numbers the full name is the only unique key: QBO repeats leaf names under
+            # different parents ("Services:Other" income, "Office Expenses:Other" expense).
+            number = name = account_path(name)
+            unnumbered.append(f"{i + 1} {name!r}")
+        elif ":" in name:
             name = split_account_label(name)[1] or name
         if number in seen:
             notes.append(f"chart of accounts: duplicate account {number} at row {i + 1} ignored")
@@ -465,6 +684,20 @@ def read_chart_of_accounts(path: Path, overrides: Path | None = None) -> tuple[l
     for key in override_map:
         if key not in known:
             notes.append(f"overrides: account {key!r} is not in the chart of accounts; override ignored")
+    if unnumbered:
+        sample = "; ".join(unnumbered[:8]) + ("; ..." if len(unnumbered) > 8 else "")
+        notes.append(f"chart of accounts: {len(unnumbered)} account(s) have no account number; the full account name is used as the id (rows {sample})")
+    leaves: dict[str, list[str]] = {}
+    for a in accounts:
+        leaves.setdefault(a.name.rsplit(":", 1)[-1].casefold(), []).append(a.number)
+    # Only unnumbered accounts are looked up by name, so only they can be confused.
+    shared = {leaf: ids for leaf, ids in leaves.items() if len(ids) > 1 and any(not _NUMBER_ONLY.match(n) for n in ids)}
+    if shared:
+        listed = "; ".join(f"{leaf!r}: {', '.join(ids)}" for leaf, ids in sorted(shared.items()))
+        notes.append(
+            "chart of accounts: some account names repeat under different parents; a GL or P&L line naming only "
+            f"the short name cannot be matched and is reported as not in the chart of accounts ({listed})"
+        )
     counts: dict[str, int] = {}
     for a in accounts:
         counts[a.ebitda_class.value] = counts.get(a.ebitda_class.value, 0) + 1
@@ -504,11 +737,12 @@ def detect_format(path: Path) -> str:
         try:
             has_xero_sheet = any(n.strip().casefold() == XERO_SHEET.casefold() for n in wb.sheetnames)
             ws = _pick_sheet(wb, XERO_SHEET)
+            ws.reset_dimensions()  # a stale <dimension> ("A1") would hide the header row
             head = [list(r) for r in ws.iter_rows(max_row=DETECT_ROWS, values_only=True)]
         finally:
             wb.close()
     else:
-        head = load_table_rows(path)[:DETECT_ROWS]
+        head = read_table(path).rows[:DETECT_ROWS]
     for wanted in (QBO, NETSUITE):
         if any(_signature(_header_map(r)) == wanted for r in head):
             return wanted
@@ -524,29 +758,81 @@ def detect_format(path: Path) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _name_key(text: str) -> str:
+    return account_path(text).casefold()
+
+
+class AccountIndex:
+    """Finds chart-of-accounts accounts by number, full name, or unambiguous short name.
+
+    Used for labels without an account number (QBO with numbering off, P&L rows by
+    name). A short name that several accounts share ("Other" under two parents) is
+    never guessed: ``find`` returns no match and the candidates.
+    """
+
+    def __init__(self, accounts: Iterable[Account]) -> None:
+        self.accounts = {a.number: a for a in accounts}
+        self._exact: dict[str, list[Account]] = {}
+        self._leaf: dict[str, list[Account]] = {}
+        for a in self.accounts.values():
+            for key in dict.fromkeys((_name_key(a.number), _name_key(a.name))):
+                if key:
+                    self._exact.setdefault(key, []).append(a)
+            self._leaf.setdefault(_name_key(a.name).rsplit(":", 1)[-1], []).append(a)
+
+    def find(self, number: str, name: str, path: str = "") -> tuple[Optional[Account], list[Account]]:
+        """(account, ambiguous candidates). ``path`` is the "Parent:Child" name when known."""
+        if number:
+            return self.accounts.get(number), []
+        for key in dict.fromkeys(k for k in (_name_key(path), _name_key(name)) if k):
+            hits = self._exact.get(key, [])
+            if len(hits) == 1:
+                return hits[0], []
+        wanted = _name_key(path or name)
+        if not wanted:
+            return None, []
+        hits = self._leaf.get(wanted.rsplit(":", 1)[-1], [])
+        if len(hits) > 1:
+            # A longer path narrows it: "Office Expenses:Other" picks the child of that parent.
+            narrowed = [a for a in hits if _name_key(a.name).endswith(":" + wanted) or wanted.endswith(":" + _name_key(a.name))]
+            if len(narrowed) == 1:
+                return narrowed[0], []
+            return None, hits
+        return (hits[0], []) if hits else (None, [])
+
+
 class _AccountResolver:
     def __init__(self, accounts: dict[str, Account]) -> None:
         self.accounts = accounts
-        self.by_name = {a.name.casefold(): a for a in accounts.values()}
+        self.index = AccountIndex(accounts.values())
         self.unknown: dict[str, str] = {}
+        self.ambiguous: dict[str, list[str]] = {}
 
-    def resolve(self, number: str, name: str) -> tuple[str, str, Optional[Account]]:
-        if number and number in self.accounts:
-            acct = self.accounts[number]
+    def resolve(self, number: str, name: str, path: str = "") -> tuple[str, str, Optional[Account]]:
+        acct, candidates = self.index.find(number, name, path)
+        if acct is not None:
             return acct.number, acct.name, acct
-        if not number and name.casefold() in self.by_name:
-            acct = self.by_name[name.casefold()]
-            return acct.number, acct.name, acct
-        key = number or name
-        self.unknown.setdefault(key, name)
+        key = number or account_path(path) or name
+        if candidates:
+            self.ambiguous.setdefault(key, [a.number for a in candidates])
+        else:
+            self.unknown.setdefault(key, name)
         return key, name, None
 
     def notes(self, label: str, natural_sign: bool = False) -> list[str]:
-        if not self.unknown:
-            return []
-        listed = "; ".join(f"{k} {v}".strip() if k != v else k for k, v in sorted(self.unknown.items()))
+        out = []
         how = " (natural-sign amounts kept as debit-positive)" if natural_sign else ""
-        return [f"{label}: {len(self.unknown)} account(s) not in the chart of accounts{how}: {listed}"]
+        if self.unknown:
+            listed = "; ".join(f"{k} {v}".strip() if k != v else k for k, v in sorted(self.unknown.items()))
+            out.append(f"{label}: {len(self.unknown)} account(s) not in the chart of accounts{how}: {listed}")
+        if self.ambiguous:
+            listed = "; ".join(f"{k!r} could be {', '.join(v)}" for k, v in sorted(self.ambiguous.items()))
+            out.append(
+                f"{label}: WARNING - {len(self.ambiguous)} account label(s) without a number match more than one "
+                f"chart-of-accounts account and were not matched{how}: {listed}. Export the GL with full account "
+                "names or account numbers."
+            )
+        return out
 
 
 def _find_header(rows: list[Row], fmt_name: str) -> tuple[int, dict[str, int]]:
@@ -598,6 +884,38 @@ def _entry(
     )
 
 
+def _column_values(rows: list[Row], start: int, col: Optional[int]) -> list[object]:
+    return [] if col is None else [_cell(r, col) for r in rows[start:]]
+
+
+_QBO_TOTAL_FOR = re.compile(r"^total\s+for\s+(.*)$", re.I)
+_QBO_TOTAL = re.compile(r"^total\s+(.*)$", re.I)
+
+
+def _qbo_total_target(first: str, stack: list[str], has_amount: bool) -> Optional[str]:
+    """Label a QBO subtotal row closes ("" = the grand TOTAL), or None if the row is not a total.
+
+    QBO writes "Total for <account>"; QBO Desktop "Total <account>". An account whose own
+    name starts with "Total" ("Total Care Janitorial", "Totalflex Rental") is a section
+    header, so a bare "Total <x>" is a subtotal only when <x> is an open section or the
+    row carries an amount.
+    """
+    if first.casefold() == "total":
+        return ""
+    m = _QBO_TOTAL_FOR.match(first)
+    if m:
+        return m.group(1).strip()
+    m = _QBO_TOTAL.match(first)
+    if m and (has_amount or m.group(1).strip().casefold() in (s.casefold() for s in stack)):
+        return m.group(1).strip()
+    return None
+
+
+def _qbo_path(stack: list[str]) -> str:
+    """ "Office Expenses" > "Other" section headers -> "Office Expenses:Other" (names only)."""
+    return ":".join(split_account_label(s)[1] or s for s in stack)
+
+
 def _read_qbo(rows: list[Row], accounts: dict[str, Account], source: str) -> tuple[list[GLEntry], list[str]]:
     h, cols = _find_header(rows, QBO)
     c_date = _col(cols, "date", "transaction date")
@@ -613,6 +931,7 @@ def _read_qbo(rows: list[Row], accounts: dict[str, Account], source: str) -> tup
     if c_date is None or (c_amount is None and c_debit is None):
         raise ValueError(f"{source}: QBO header lacks Date/Amount columns: {list(cols)}")
     use_debit_credit = c_amount is None
+    dayfirst = detect_dayfirst(_column_values(rows, h + 1, c_date), False, source)
 
     resolver = _AccountResolver(accounts)
     skips = _SkipLog()
@@ -625,11 +944,13 @@ def _read_qbo(rows: list[Row], accounts: dict[str, Account], source: str) -> tup
             continue
         first = clean_text(_cell(row, c_acct))
         raw_date = _cell(row, c_date)
-        when = parse_date(raw_date)
+        when = parse_date(raw_date, dayfirst=dayfirst)
         amount_cells = (_cell(row, c_amount),) if not use_debit_credit else (_cell(row, c_debit), _cell(row, c_credit))
+        has_amount = any(not is_blank(c) for c in amount_cells)
         if when is None:
-            if first.casefold().startswith("total"):
-                label = re.sub(r"^total(\s+for)?\s*", "", first, flags=re.I).casefold()
+            target = _qbo_total_target(first, stack, has_amount)
+            if target is not None:
+                label = target.casefold()
                 if not label:
                     stack.clear()
                 elif label in (s.casefold() for s in stack):
@@ -638,16 +959,24 @@ def _read_qbo(rows: list[Row], accounts: dict[str, Account], source: str) -> tup
                 elif stack:
                     stack.pop()
                 skips.add("total/subtotal rows", rowno)
-            elif first and is_blank(raw_date) and all(is_blank(c) for c in amount_cells):
+            elif first and is_blank(raw_date) and not has_amount:
                 stack.append(first)
+            elif has_amount and (
+                not is_blank(raw_date) or any(not is_blank(_cell(row, c)) for c in (c_type, c_num, c_name, c_memo) if c is not None)
+            ):
+                skips.add_undated(rowno, raw_date, amount_cells)
             else:
                 skips.add("rows without a transaction date (e.g. beginning balance)", rowno)
             continue
-        label = first or (stack[-1] if stack else "")
-        if not label:
+        if first:
+            label, path = first, first
+        elif stack:
+            label, path = stack[-1], _qbo_path(stack)
+        else:
             skips.add("transaction rows outside any account section", rowno)
             continue
-        number, name, acct = resolver.resolve(*split_account_label(label))
+        number, name = split_account_label(label)
+        number, name, acct = resolver.resolve(number, name, "" if number else path)
         if use_debit_credit:
             ok_d, debit = _money_or_skip(_cell(row, c_debit), rowno, skips)
             ok_c, credit = _money_or_skip(_cell(row, c_credit), rowno, skips)
@@ -672,10 +1001,31 @@ def _read_qbo(rows: list[Row], accounts: dict[str, Account], source: str) -> tup
                 counterparty=_cell(row, c_name), memo=_cell(row, c_memo),
             )
         )
-    return entries, skips.notes(source) + resolver.notes(source, natural_sign=not use_debit_credit)
+    notes = skips.notes(source) + resolver.notes(source, natural_sign=not use_debit_credit)
+    if dayfirst:
+        notes.append(f"{source}: slash dates read day-first (D/M/Y): a day above 12 appears in the first position")
+    return entries, notes
 
 
 _NETSUITE_DIMENSIONS = ("Subsidiary", "Department", "Class", "Location")
+
+
+def _netsuite_dayfirst(rows: list[Row], h: int, c_date: int, c_period: Optional[int], source: str) -> bool:
+    dates = _column_values(rows, h + 1, c_date)
+    dayfirst = detect_dayfirst(dates, False, source)
+    if dayfirst or c_period is None or any(isinstance(d, str) and (m := _SLASH_DATE.match(d.strip())) and int(m.group(2)) > 12 for d in dates):
+        return dayfirst
+    # Only ambiguous slash dates (both parts <= 12): let the Period column decide.
+    month_first_hits = day_first_hits = 0
+    for row in rows[h + 1:]:
+        raw, period = _cell(row, c_date), parse_month(_cell(row, c_period))
+        m = _SLASH_DATE.match(raw.strip()) if isinstance(raw, str) else None
+        if not m or period is None or m.group(1) == m.group(2):
+            continue
+        year = int(m.group(3)) + (2000 if len(m.group(3)) == 2 else 0)
+        month_first_hits += f"{year:04d}-{int(m.group(1)):02d}" == period
+        day_first_hits += f"{year:04d}-{int(m.group(2)):02d}" == period
+    return day_first_hits > month_first_hits
 
 
 def _read_netsuite(rows: list[Row], accounts: dict[str, Account], source: str) -> tuple[list[GLEntry], list[str]]:
@@ -686,20 +1036,30 @@ def _read_netsuite(rows: list[Row], accounts: dict[str, Account], source: str) -
     c_num = _col(cols, "document number", "document #", "doc number", "number")
     c_name = _col(cols, "name", "entity")
     c_memo = _col(cols, "memo", "memo (main)", "description")
+    c_period = _col(cols, "period", "accounting period", "posting period")
     if c_date is None or c_acct is None or c_credit is None:
         raise ValueError(f"{source}: NetSuite header lacks Date/Account/Credit columns: {list(cols)}")
     dim_cols = [(d, _col(cols, d.casefold())) for d in _NETSUITE_DIMENSIONS]
+    dayfirst = _netsuite_dayfirst(rows, h, c_date, c_period, source)
 
     resolver = _AccountResolver(accounts)
     skips = _SkipLog()
     entries: list[GLEntry] = []
+    off_period: list[int] = []
     for idx in range(h + 1, len(rows)):
         row, rowno = rows[idx], idx + 1
         if all(is_blank(c) for c in row):
             continue
-        when = parse_date(_cell(row, c_date))
+        raw_date = _cell(row, c_date)
+        when = parse_date(raw_date, dayfirst=dayfirst)
         if when is None:
-            skips.add("rows without a transaction date (e.g. totals)", rowno)
+            amount_cells = (_cell(row, c_debit), _cell(row, c_credit))
+            is_total = any(clean_text(c).casefold().startswith("total") for c in row)
+            has_context = not is_blank(raw_date) or not is_blank(_cell(row, c_acct))
+            if not is_total and has_context and any(not is_blank(c) for c in amount_cells):
+                skips.add_undated(rowno, raw_date, amount_cells)
+            else:
+                skips.add("rows without a transaction date (e.g. totals)", rowno)
             continue
         label = clean_text(_cell(row, c_acct))
         if not label:
@@ -712,7 +1072,11 @@ def _read_netsuite(rows: list[Row], accounts: dict[str, Account], source: str) -
         if debit is None and credit is None:
             skips.add("rows with neither debit nor credit", rowno)
             continue
-        number, name, _ = resolver.resolve(*split_account_label(label))
+        number, name = split_account_label(label)
+        number, name, _ = resolver.resolve(number, name, "" if number else label)
+        period = parse_month(_cell(row, c_period)) if c_period is not None else None
+        if period is not None and period != when.isoformat()[:7]:
+            off_period.append(rowno)
         dims = {d: clean_text(_cell(row, c)) for d, c in dim_cols if c is not None and clean_text(_cell(row, c))}
         entries.append(
             _entry(
@@ -721,7 +1085,16 @@ def _read_netsuite(rows: list[Row], accounts: dict[str, Account], source: str) -
                 counterparty=_cell(row, c_name), memo=_cell(row, c_memo), dimensions=dims,
             )
         )
-    return entries, skips.notes(source) + resolver.notes(source)
+    notes = skips.notes(source) + resolver.notes(source)
+    if dayfirst:
+        notes.append(f"{source}: slash dates read day-first (D/M/Y), from the dates themselves or the Period column")
+    if off_period:
+        sample = ", ".join(str(r) for r in off_period[:10]) + (", ..." if len(off_period) > 10 else "")
+        notes.append(
+            f"{source}: {len(off_period)} row(s) are dated in a different month than their Period column "
+            f"(rows {sample}); the month is taken from Date"
+        )
+    return entries, notes
 
 
 _XERO_NON_TXN = re.compile(r"^(total\b|opening balance|closing balance|net movement)", re.I)
@@ -735,6 +1108,7 @@ def _read_xero(rows: list[Row], accounts: dict[str, Account], source: str) -> tu
     c_ref = _col(cols, "reference")
     c_debit, c_credit = _col(cols, "debit"), _col(cols, "credit")
     c_code, c_acct = _col(cols, "account code", "code"), _col(cols, "account")
+    dayfirst = detect_dayfirst(_column_values(rows, h + 1, c_date), True, source)
 
     resolver = _AccountResolver(accounts)
     skips = _SkipLog()
@@ -744,22 +1118,28 @@ def _read_xero(rows: list[Row], accounts: dict[str, Account], source: str) -> tu
         row, rowno = rows[idx], idx + 1
         if all(is_blank(c) for c in row):
             continue
-        when = parse_date(_cell(row, c_date), dayfirst=True)
+        raw_date = _cell(row, c_date)
+        when = parse_date(raw_date, dayfirst=dayfirst)
         if when is None:
             first = next((clean_text(c) for c in row if not is_blank(c)), "")
+            amount_cells = (_cell(row, c_debit), _cell(row, c_credit))
             if _XERO_NON_TXN.match(first):
                 skips.add("total/balance rows", rowno)
-            elif first and all(is_blank(_cell(row, c)) for c in (c_debit, c_credit)):
+            elif first and all(is_blank(c) for c in amount_cells):
                 section = first
+            elif any(not is_blank(c) for c in amount_cells):
+                skips.add_undated(rowno, raw_date, amount_cells)
             else:
                 skips.add("rows without a transaction date", rowno)
             continue
         code, acct_name = clean_text(_cell(row, c_code)), clean_text(_cell(row, c_acct))
+        path = ""
         if code:
             number, name = split_account_label(code)
             number, name = (number, acct_name or name) if number else (code, acct_name)
         elif acct_name or section:
             number, name = split_account_label(acct_name or section)
+            path = "" if number else (acct_name or section)
         else:
             skips.add("rows without an account", rowno)
             continue
@@ -770,7 +1150,7 @@ def _read_xero(rows: list[Row], accounts: dict[str, Account], source: str) -> tu
         if debit is None and credit is None:
             skips.add("rows with neither debit nor credit", rowno)
             continue
-        number, name, _ = resolver.resolve(number, name)
+        number, name, _ = resolver.resolve(number, name, path)
         description = clean_text(_cell(row, c_desc))
         contact, sep, _rest = description.partition(" - ")
         entries.append(
@@ -780,7 +1160,10 @@ def _read_xero(rows: list[Row], accounts: dict[str, Account], source: str) -> tu
                 counterparty=contact if sep else "", memo=description,
             )
         )
-    return entries, skips.notes(source) + resolver.notes(source)
+    notes = skips.notes(source) + resolver.notes(source)
+    if not dayfirst:
+        notes.append(f"{source}: slash dates read month-first (M/D/Y): a day above 12 appears in the second position")
+    return entries, notes
 
 
 _READERS = {QBO: _read_qbo, NETSUITE: _read_netsuite, XERO: _read_xero}
@@ -806,8 +1189,9 @@ def read_gl(
     if reader is None:
         raise ValueError(f"unknown GL format {fmt!r}; expected one of {GL_FORMATS} or 'auto'")
     source = source_label or path.name
-    rows = load_table_rows(path, XERO_SHEET if fmt == XERO else None)
-    entries, notes = reader(rows, accounts, source)
+    table = read_table(path, XERO_SHEET if fmt == XERO else None)
+    entries, notes = reader(table.rows, accounts, source)
+    notes = [*table.notes, *notes]
     if entries:
         rows_used = f"rows {entries[0].source_row}-{entries[-1].source_row}"
         span = f"{min(e.date for e in entries)} to {max(e.date for e in entries)}"

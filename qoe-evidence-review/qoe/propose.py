@@ -39,6 +39,8 @@ from qoe.schemas import (
 )
 from qoe.trace import (
     MAX_RATIONALE,
+    ROLE_CONTEXT,
+    ROLE_SUPPORTING,
     AdjustmentTrace,
     DealIndex,
     _short_sentence,
@@ -105,13 +107,137 @@ def compute_proposed(t: AdjustmentTrace) -> dict[str, Decimal]:
         return out
     out = {}
     for lbl in t.labels:
-        supported = t.supporting_total(lbl)
-        claim = t.claim(lbl)
-        # No exact subset ties to the claim: never carry more than management claimed.
-        if lbl in t.capped and ((claim > 0 and supported > claim) or (claim < 0 and supported < claim)):
-            supported = claim
-        out[lbl] = supported + t.effect(lbl)
+        out[lbl] = _capped(t, lbl, t.supporting_total(lbl)) + t.effect(lbl)
     return out
+
+
+def _capped(t: AdjustmentTrace, lbl: str, supported: Decimal) -> Decimal:
+    """No exact subset ties to the claim: never carry more than management claimed."""
+    claim = t.claim(lbl)
+    if lbl in t.capped and ((claim > 0 and supported > claim) or (claim < 0 and supported < claim)):
+        return claim
+    return supported
+
+
+# ---------------------------------------------------------------------------
+# Flag effects: the walk from claimed to proposed
+# ---------------------------------------------------------------------------
+
+# Flags that carry the gap between the GL traced in a period and management's claim there,
+# in order of preference (period_mismatch and sign_error replace PARTIAL_GL_SUPPORT).
+_GAP_FLAGS = (FlagCode.PERIOD_MISMATCH, FlagCode.SIGN_ERROR, FlagCode.PARTIAL_GL_SUPPORT)
+# Flags raised for one named period whatever their effect (their period_label is not derived from it).
+_PERIOD_FLAGS = frozenset(
+    {
+        FlagCode.PARTIAL_GL_SUPPORT,
+        FlagCode.PERIOD_MISMATCH,
+        FlagCode.SIGN_ERROR,
+        FlagCode.EXCESS_GL_ACTIVITY,
+        FlagCode.NO_DOCUMENT_SUPPORT,
+    }
+)
+
+
+def flag_effects(t: AdjustmentTrace, proposed: Optional[dict[str, Decimal]] = None) -> dict[str, Decimal]:
+    """Set ``Flag.effects`` (period -> signed change in the proposed amount) on every flag that
+    moves the number, and return the part of ``proposed - claimed`` that no flag carries.
+
+    For every period the walk runs from management's claim to ``compute_proposed`` (for a
+    REQUEST_INFO item that is the provisional amount the rationale states):
+
+    1. GL gap: traced GL less the claim, carried by the period's PERIOD_MISMATCH, SIGN_ERROR or
+       PARTIAL_GL_SUPPORT flag, else by NO_GL_SUPPORT. When no exact subset ties and the strong
+       links are capped at the claim, the cap absorbs the excess, so there is no gap.
+    2. Removals, in the order the challenges made them. Each belongs to the flag that removed the
+       entry first; a later flag on the same entries corroborates it and has no effect.
+    3. Out-of-period moves: the entry leaves its booking period, then returns pro rata by service month.
+    4. Offsetting recoveries, in the periods received.
+
+    Differences no flag carries (returned, and noted on the trace when above the tolerance):
+    a GL gap within the tolerance, or one a period move offsets so that PARTIAL_GL_SUPPORT is
+    dropped; and for a normalization item the difference between the normalized level
+    management's claim implies and the level used. EXCESS_GL_ACTIVITY never has an effect:
+    its amount is unclaimed context activity.
+    """
+    proposed = compute_proposed(t) if proposed is None else proposed
+    labels = t.labels
+    credited: dict[int, dict[str, Decimal]] = {}
+    total: dict[str, Decimal] = {lbl: ZERO for lbl in labels}
+
+    def credit(flag: Optional[Flag], lbl: str, value: Decimal) -> None:
+        if flag is None or value == 0:
+            return
+        by_lbl = credited.setdefault(id(flag), {})
+        by_lbl[lbl] = by_lbl.get(lbl, ZERO) + value
+        total[lbl] += value
+
+    held = {id(f) for f in t.flags}
+
+    def owner(code: FlagCode, entry_id: str, linked: Optional[Flag]) -> Optional[Flag]:
+        if linked is not None and id(linked) in held:
+            return linked
+        same = [f for f in t.flags if f.code == code]
+        return next((f for f in same if entry_id in f.entry_ids), same[0] if same else None)
+
+    def gap_flag(lbl: str) -> Optional[Flag]:
+        for code in _GAP_FLAGS:
+            for f in t.flags:
+                if f.code == code and f.period_label == lbl:
+                    return f
+        return next((f for f in t.flags if f.code == FlagCode.NO_GL_SUPPORT), None)
+
+    for lbl in labels:
+        claim = t.claim(lbl)
+        claimed_here = set(t.claimed.get(lbl, []))
+        if t.is_normalization:
+            for e, r in t.removals.items():
+                if e in claimed_here:
+                    credit(owner(r.code, e, r.flag), lbl, -t.amount(e))
+            rest = proposed.get(lbl, ZERO) - claim - total[lbl]
+            credit(next((f for f in t.flags if f.code == FlagCode.PARTIAL_GL_SUPPORT and f.period_label == lbl), None),
+                   lbl, rest)
+            continue
+        running = t.traced(lbl)
+        carried = _capped(t, lbl, running)
+        credit(gap_flag(lbl), lbl, carried - claim)
+        for e, r in t.removals.items():
+            if e in claimed_here:
+                running -= t.amount(e)
+                now = _capped(t, lbl, running)
+                credit(owner(r.code, e, r.flag), lbl, now - carried)
+                carried = now
+        for e in t.index.sort_ids(t.moved):
+            moves = [x for x in t.effects if x.entry_id == e and x.code == FlagCode.OUT_OF_PERIOD]
+            flag = owner(FlagCode.OUT_OF_PERIOD, e, next((x.flag for x in moves if x.flag is not None), None))
+            if e in claimed_here and e not in t.removals:
+                running -= t.amount(e)
+                now = _capped(t, lbl, running)
+                credit(flag, lbl, now - carried)
+                carried = now
+            credit(flag, lbl, sum((x.amount for x in moves if x.label == lbl), ZERO))
+        for x in t.effects:
+            if x.code == FlagCode.OFFSETTING_RECOVERY and x.label == lbl:
+                credit(owner(x.code, x.entry_id, x.flag), lbl, x.amount)
+
+    for f in t.flags:
+        effects = {lbl: v for lbl in labels if (v := credited.get(id(f), {}).get(lbl, ZERO)) != 0}
+        f.effects = {lbl: fmt(v) for lbl, v in effects.items()}
+        if f.code in _PERIOD_FLAGS:
+            f.amount_impact = fmt(effects[f.period_label]) if f.period_label in effects else None
+        elif len(effects) == 1:
+            f.period_label, v = next(iter(effects.items()))
+            f.amount_impact = fmt(v)
+        else:
+            f.amount_impact = None
+            if effects or f.code in JUDGMENT_REMOVAL_FLAGS | AMOUNT_SETTING_FLAGS:
+                f.period_label = None
+    residual = {lbl: proposed.get(lbl, ZERO) - t.claim(lbl) - total[lbl] for lbl in labels}
+    loose = {lbl: v for lbl, v in residual.items() if abs(v) > t.index.tolerance}
+    if loose:
+        t.notes.append(
+            "Difference between claimed and proposed that no flag carries: " + periods_text(loose, labels) + "."
+        )
+    return residual
 
 
 # ---------------------------------------------------------------------------
@@ -261,15 +387,40 @@ def _repeats(text: str, existing: Sequence[str]) -> bool:
 # ---------------------------------------------------------------------------
 
 
+# Judgment lines that only say there is no call to make start with this.
+NO_JUDGMENT = "No judgment needed"
+
+
 def build_judgments(t: AdjustmentTrace) -> list[str]:
-    """One question per removal basis, citing the groups, amounts and documents, then the
-    challenges' own judgment points (ties in the claimed set, levels, unverified AI output)."""
+    """The calls a reviewer has to make, kept apart from the documented facts (SPEC §5.5).
+
+    One question per removal basis, citing the groups, amounts and documents; one per
+    overlap (which adjustment carries the entry), recovery (which period it nets against)
+    and out-of-period move (where the cost belongs); then the challenges' own judgment
+    points (ties in the claimed set, levels, unverified AI output). When the only change
+    is a fixed rule (costs already below EBITDA), the list says so instead of being empty.
+    """
     out: list[str] = []
     by_code: dict[tuple[FlagCode, str], list[str]] = {}
+    mechanical: list[str] = []
+    overlaps: dict[str, list[str]] = {}
     for e, r in t.removals.items():
-        if r.code in (FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT, FlagCode.ALREADY_EXCLUDED_FROM_EBITDA):
-            continue  # mechanical: nothing for a reviewer to weigh
-        by_code.setdefault((r.code, r.source), []).append(e)
+        if r.code == FlagCode.ALREADY_EXCLUDED_FROM_EBITDA:
+            mechanical.append(e)
+        elif r.code == FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT:
+            overlaps.setdefault(r.note, []).append(e)
+        else:
+            by_code.setdefault((r.code, r.source), []).append(e)
+    for note, ids in overlaps.items():
+        others = sorted({a for f in t.flags if f.code == FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT
+                         and set(ids) & set(f.entry_ids) for a in f.related_adj_ids})
+        other = join_limited(others, 2) or "the other adjustment"
+        amounts = periods_text(_removed_by_period(t, ids), t.labels)
+        out.append(_short_sentence(
+            f"Which adjustment should carry {_groups(t, ids, 2)} ({amounts}): {t.adj.adj_id} or {other}? "
+            f"The tool removed it here because it is {note}."
+        ))
+    out += _effect_judgments(t)
     for (code, source), ids in by_code.items():
         idset = set(ids)
         what = _groups(t, ids, 2)
@@ -312,6 +463,52 @@ def build_judgments(t: AdjustmentTrace) -> list[str]:
     for j in t.judgments:
         if j not in out:
             out.append(_short_sentence(j))
+    if not out and mechanical:
+        amounts = periods_text(_removed_by_period(t, mechanical), t.labels)
+        accounts = join_limited(sorted({f"{t.index.by_id[e].entry.account} {t.index.by_id[e].entry.account_name}"
+                                        for e in mechanical}), 1)
+        what = _groups(t, mechanical, 2)
+        out.append(_short_sentence(
+            f"{NO_JUDGMENT} on the amount: {what} ({amounts}) {_verb(what, 'sits', 'sit')} in {accounts}, which "
+            f"EBITDA already excludes, so {_verb(what, 'its', 'their')} removal follows a fixed rule."
+        ))
+    return out
+
+
+def _effect_judgments(t: AdjustmentTrace) -> list[str]:
+    """Timing calls behind the amount effects: where a recovery nets, where a moved cost belongs."""
+    idx = t.index
+    out: list[str] = []
+    order = t.labels.index
+    claimed_in = [lbl for lbl in t.claimed_labels() if t.supporting(lbl)]
+    for eid in dict.fromkeys(x.entry_id for x in t.effects if x.code == FlagCode.OFFSETTING_RECOVERY):
+        info = idx.by_id[eid]
+        received = idx.labels_of(info.month)
+        who = f" from {info.entry.counterparty}" if info.entry.counterparty else ""
+        what = f"the {money(abs(info.amount))} recovery{who} ({month_label(info.month)})"
+        loss = [lbl for lbl in claimed_in if lbl not in received]
+        if loss:
+            out.append(_short_sentence(
+                f"Should {what} be netted in {join_limited(received, 2)}, the period received, as proposed, or "
+                f"against the {join_limited(loss, 2)} cost it reimburses?"
+            ))
+        else:
+            out.append(_short_sentence(
+                f"Should {what} be netted against the add-back, as proposed? It relates to the same event."
+            ))
+    for eid in idx.sort_ids(t.moved):
+        info = idx.by_id[eid]
+        contrib = {lbl: sum((x.amount for x in t.effects if x.entry_id == eid and x.label == lbl
+                             and x.code == FlagCode.OUT_OF_PERIOD), ZERO) for lbl in t.labels}
+        booked = idx.labels_of(info.month)
+        belongs = sorted({lbl for lbl, v in contrib.items() if (v < 0) == (info.amount > 0) and v != 0}, key=order)
+        docs = [d for f in t.flags if f.code == FlagCode.OUT_OF_PERIOD and eid in f.entry_ids for d in f.doc_ids]
+        where = join_limited(belongs, 2) or "the months before the analysis periods"
+        out.append(_short_sentence(
+            f"Should {t.entry_ref(eid)} ({money(info.amount)}) be treated as a {where} cost per the service period in "
+            f"{docs[0] if docs else 'its invoice'}, as proposed, rather than left in "
+            f"{join_limited(booked, 2) or 'the booking month'} where it was booked?"
+        ))
     return out
 
 
@@ -538,11 +735,23 @@ def build_facts(t: AdjustmentTrace) -> list[Fact]:
                 entry_ids=ids,
             )
         )
+    # What each group carries, per period label, so the facts tick to the proposed column; the
+    # periods overlap (FY vs TTM), so a total across them would tie to nothing. Moved entries are
+    # carried by their out-of-period effect, and a normalization item's own facts state its cost.
     by_group: dict[str, list[str]] = {}
     for e in t.supporting_ids():
-        by_group.setdefault(t.group_of.get(e, ""), []).append(e)
-    for ids in by_group.values():
-        facts.append(Fact(text=f"Supported: {t.describe_groups(ids, 1)}.", entry_ids=ids, quotes=_group_quotes(t, ids)))
+        if e not in t.moved and not t.is_normalization:
+            by_group.setdefault(t.group_label(e), []).append(e)
+    for group, ids in by_group.items():
+        per_label = {lbl: sum((t.amount(e) for e in ids if e in t.claimed.get(lbl, [])), ZERO) for lbl in t.labels}
+        span = month_span(t.index.by_id[e].month for e in ids)
+        facts.append(
+            Fact(
+                text=f"Supported: {group}: {periods_text(per_label, t.labels)} ({entries_word(len(ids))}, {span}).",
+                entry_ids=ids,
+                quotes=_group_quotes(t, ids),
+            )
+        )
     for f in t.facts:
         if all(f.text != x.text for x in facts):
             facts.append(f)
@@ -646,9 +855,11 @@ def build_rationale(
     tail: list[str] = []
     if judgments:
         more = f" (+{len(judgments) - 1} more)" if len(judgments) > 1 else ""
-        tail.append(f"Judgment: {judgments[0]}{more}")
-    if t.dropped_quotes:
-        tail.append(f"{t.dropped_quotes} AI quote(s) failed verification and were dropped.")
+        lead = judgments[0] if judgments[0].startswith(NO_JUDGMENT) else f"Judgment: {judgments[0]}"
+        tail.append(f"{lead}{more}")
+    dropped = t.dropped_quotes + t.ai_dropped_quotes
+    if dropped:
+        tail.append(f"{dropped} AI quote(s) failed verification and were dropped.")
 
     def assemble(parts: list[str]) -> str:
         return " ".join(p for p in [head, *parts, outcome, *tail] if p)
@@ -659,7 +870,7 @@ def build_rationale(
         established.pop()
         text = assemble(established)
     if len(text) > MAX_RATIONALE and tail:
-        tail = [x for x in tail if not x.startswith("Judgment:")] + (
+        tail = [x for x in tail if not x.startswith(("Judgment:", NO_JUDGMENT))] + (
             [f"Judgment: {len(judgments)} open point(s) listed separately."] if judgments else []
         )
         text = assemble(established)
@@ -675,6 +886,7 @@ def propose(t: AdjustmentTrace, ai: Optional[EvidenceAI] = None) -> AdjustmentAs
     """Turn a challenged trace into the adjustment's assessment."""
     labels = t.labels
     proposed = compute_proposed(t)
+    flag_effects(t, proposed)
     treatment, drivers, reason = decide_treatment(t, proposed)
     confidence = assess_confidence(t, treatment, proposed, drivers)
     judgments = build_judgments(t)
@@ -847,6 +1059,9 @@ def _duplicate_item(
                 group=f"{who} · {number}",
                 supports_claim=e in reverse,
                 doc_ids=docs_by_entry[e],
+                # Management claims none of the postings; the reversed ones are what the item carries.
+                role=ROLE_SUPPORTING if e in reverse else ROLE_CONTEXT,
+                claimed=False,
             )
         )
 
@@ -859,6 +1074,8 @@ def _duplicate_item(
         ),
         period_label=next(iter(k for k, v in proposed.items() if v)) if sum(1 for v in proposed.values() if v) == 1 else None,
         amount_impact=fmt(next(v for v in proposed.values() if v)) if sum(1 for v in proposed.values() if v) == 1 else None,
+        # Nothing is claimed, so the whole proposal is this flag's effect.
+        effects={lbl: fmt(v) for lbl, v in proposed.items() if v},
         entry_ids=list(group),
         doc_ids=sorted({d.doc_id for d in doc_links}),
         quotes=[q for d in doc_links for q in d.quotes][:2],
