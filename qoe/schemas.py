@@ -373,6 +373,10 @@ class AdjustmentAssessment(StrictModel):
     adj_id: str
     title: str
     category: AdjustmentCategory
+    source: str = "management"  # management (on the seller's schedule) | diligence (identified by the tool)
+    description: str = ""  # management's stated basis, carried so the workpaper stands alone
+    gl_accounts: list[str] = Field(default_factory=list)
+    support_refs: list[str] = Field(default_factory=list)
     claimed: dict[str, str]  # period label -> amount
     traced_gl: dict[str, str]  # period label -> GL amount linked in support of the claim
     documented: dict[str, str]  # period label -> portion of traced GL with document support
@@ -467,9 +471,10 @@ class Workpaper(StrictModel):
     ingest_notes: list[str] = Field(default_factory=list)
     reconciliation: ReconciliationResult
     doc_facts: list[DocFacts] = Field(default_factory=list)
-    assessments: list[AdjustmentAssessment]
+    assessments: list[AdjustmentAssessment]  # management items in schedule order, then diligence items
     reviews: list[ReviewDecision] = Field(default_factory=list)
     bridge: EbitdaBridge
+    schedule: Optional[ManagementSchedule] = None  # management's schedule as presented (needed to rebuild the bridge)
 
 
 # ---------------------------------------------------------------------------
@@ -506,6 +511,10 @@ class GroundTruth(StrictModel):
     split: str  # dev | holdout
     adjustments: list[ExpectedAdjustment]
     data_quality: list[ExpectedDataQuality] = Field(default_factory=list)
+    # Diligence-identified items not on management's schedule (e.g. reversing a duplicate
+    # posting). Matched to tool items with source="diligence" by supporting_gl_rows overlap.
+    diligence_items: list[ExpectedAdjustment] = Field(default_factory=list)
     gl_ebitda: dict[str, str] = Field(default_factory=dict)  # period label -> reported EBITDA per GL
-    diligence_adjusted_ebitda: dict[str, str] = Field(default_factory=dict)  # excludes REQUEST_INFO items
+    # gl_ebitda + non-REQUEST_INFO management finals + diligence items
+    diligence_adjusted_ebitda: dict[str, str] = Field(default_factory=dict)
     notes: str = ""

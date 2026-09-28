@@ -356,7 +356,8 @@ Entries above the link threshold are linked.
 
 For each period *p* with a nonzero claim:
 
-- **Linked total too high.** If the linked total in *p* exceeds the claim by more than the tolerance, search for an exact subset (to the cent) of linked entries that sums to the claim. Prefer whole groups first, then entries.
+- **Linked total too high.** If the linked total in *p* exceeds the claim by more than the tolerance, search for an exact subset (to the cent) of linked entries that sums to the claim.
+  - **Tie-break (deterministic).** Among exact fits, prefer the most whole groups, then entries cited by the support refs (a document named in a support ref that links to the entry), then the earliest entries. If fits are still tied, record the ambiguity in the rationale.
   - The search is bounded to at most 30 entries, using meet-in-the-middle or a cents DP with a cap.
   - If a subset is found, it is the claimed set. The rest are linked with `supports_claim=False`, and `EXCESS_GL_ACTIVITY` (INFO) is raised.
   - If no subset is found, treat all strongly linked entries as claimed and note the gap.
@@ -372,15 +373,15 @@ Each flag has a trigger, an effect on `proposed`, and a severity.
 | `ALREADY_EXCLUDED_FROM_EBITDA` | Claimed entries sit in INTEREST, TAXES, DEPRECIATION, or AMORTIZATION accounts. EBITDA already adds them back. | Remove those entries. CRITICAL. |
 | `OVERLAP_WITH_OTHER_ADJUSTMENT` | An entry is claimed by more than one adjustment. The adjustment with the highest link score keeps it; ties go to schedule order. The others get this flag, naming the related adj id. | Remove from the others. CRITICAL. |
 | `CONTRADICTORY_EVIDENCE` | `ai.find_contradictions` returns a verified conflict, such as a document calling a "one-time" cost a monthly subscription. | Remove the entries the contradiction covers. If it is not entry-specific, remove every group whose documents contain it. WARNING. |
-| `CONTINUING_OBLIGATION` | A linked document has a term fact (monthly_fee, retainer, auto_renew, ongoing_services, or a term_end after the last claimed month) that applies to claimed entries. | Remove the entries whose amount equals the recurring fee, or whose group is covered by the term. WARNING. |
-| `RECURRING_PATTERN` | A claimed group has comparable activity (same counterparty and theme, or same account and theme) in another fiscal period that the claim does not cover, at ≥ 50% of the claimed group's amount; or it has ≥ 3 similar months outside the event window. Record a `RecurrenceObservation` with amounts by period label. | Remove that group. WARNING. |
-| `OUT_OF_PERIOD` | A document linked to a claimed entry has a service period that falls in different months from the booking month, and in a different fiscal period. | For each period label: + the amount if the booking month is in it, − the amount pro rata by the service-period months it contains. WARNING. |
+| `CONTINUING_OBLIGATION` | A linked document has a term fact that carries the obligation into the go-forward cost base: a periodic fee (monthly or quarterly), "until terminated", auto-renewal, ongoing services, or a service term_end after the last claimed month. The fact must apply to the claimed entries. A one-time retainer tied to a single transaction or search does **not** qualify. | Remove the entries whose amount equals the recurring fee, or whose group is covered by the term. WARNING. |
+| `RECURRING_PATTERN` | A claimed group has comparable activity (same counterparty and theme, or same account and theme) in another fiscal period that the claim does not cover, at ≥ 50% of the claimed group's amount; or it has ≥ 3 similar months outside the event window. The event window is the union of the months of the group's claimed entries across all period labels. A month counts toward the ≥ 3 test only if its similar activity is at least 25% of the group's average claimed monthly amount. This flag does **not** apply to OWNER_DISCRETIONARY or NORMALIZATION items, where recurrence is the premise. Record a `RecurrenceObservation` with amounts by period label. | Remove that group. WARNING. |
+| `OUT_OF_PERIOD` | A document linked to a claimed entry has a service period that falls in different months from the booking month, and in a different fiscal period. | The entry leaves the supporting set and is **replaced entirely** by its effect. For each period label: + the amount if the booking month is in it, − the amount pro rata by the service-period months it contains. Service months before `data_start` are outside the analysis, so no negative side is carried for them. WARNING. |
 | `PERIOD_MISMATCH` | The claim in *p* is nonzero but no claimed entry falls in *p*, while linked entries exist in other periods. The same applies when the claim in *p* exceeds traced activity in *p* and the excess matches activity in another period. | `proposed[p]` = the supporting total in *p*. WARNING. |
 | `OFFSETTING_RECOVERY` | A credit entry in OTHER_INCOME or REVENUE (or a credit in the same account) relates to the same event (counterparty, keyword, or reference, such as a claim number found in a linked document), and management did not adjust it. | − the recovery amount in the periods containing the recovery month. WARNING. |
 | `UNSIGNED_OR_DRAFT_SUPPORT` | A linked agreement is `is_draft` or `is_signed is False`. | None by itself; it drives REQUEST_INFO for normalization and pro forma items. WARNING. |
 | `NORMALIZATION_BENCHMARK_MISSING` | A normalization item has no signed agreement or benchmark document that supports the normalized level. | None; it drives REQUEST_INFO. WARNING. |
 | `PRO_FORMA_NOT_REALIZED` | `intent.is_pro_forma` is set, and the GL shows the cost continuing through `data_end` or no evidence that the event occurred. | None; it drives REQUEST_INFO. CRITICAL. |
-| `NO_DOCUMENT_SUPPORT` | More than 25% of the claimed amount in any period has no linked document. | None; it drives REQUEST_INFO when above 25%. WARNING. |
+| `NO_DOCUMENT_SUPPORT` | Measured per period on the **supporting** amount, meaning what diligence would carry after every challenge removal and period move. More than 25% of that amount has no linked document. A period whose supporting total is 0 cannot trigger it; documents are needed for what we carry, not for what we reject. It can also be raised as INFO on the claimed set, to prompt questions. | Drives REQUEST_INFO when above 25% of the supporting amount. WARNING. |
 | `DOC_GL_AMOUNT_MISMATCH` | A document linked to an entry states a total that differs from the entry by more than the tolerance. | None; it creates a question. WARNING. |
 | `SIGN_ERROR` | The claim's sign conflicts with the claimed entries, for example an add-back made of credits. | None; it creates a question. WARNING. |
 | `DUPLICATE_GL_ENTRY` | A claimed entry is part of a duplicate group from reconciliation. | None; it creates a question. WARNING. |
@@ -400,7 +401,7 @@ This step is deterministic and runs in order:
 1. If `PRO_FORMA_NOT_REALIZED` is raised → **REQUEST_INFO**.
 2. If this is a normalization item with `UNSIGNED_OR_DRAFT_SUPPORT` or `NORMALIZATION_BENCHMARK_MISSING` → **REQUEST_INFO**.
 3. If `NO_GL_SUPPORT` is raised and there is no contradiction → **REQUEST_INFO**.
-4. If `NO_DOCUMENT_SUPPORT` is above 25% → **REQUEST_INFO**.
+4. If `NO_DOCUMENT_SUPPORT` (WARNING, measured on the supporting amount) is raised → **REQUEST_INFO**.
 5. Compute `proposed[p]` for every period label, including periods management left at zero. Examples: the −42,000 out-of-period move into FY2024, and the −40,000 recovery.
 6. If every `|proposed[p] − claimed[p]|` is within the tolerance → **ACCEPT**.
 7. If every `proposed[p]` is 0 → **REJECT**.
@@ -435,11 +436,25 @@ Rows (`key`) for each period label:
 | `mgmt_adjusted_ebitda` | Management adjusted EBITDA | subtotal |
 | `dil_recon` | Reverse unsupported reporting difference (to GL) | diligence_adjustment |
 | `dil:<adj_id>` | <title>: diligence revision (final − claimed; −claimed if pending) | diligence_adjustment |
+| `dil:<item_id>` | Diligence-identified item (e.g. reverse a duplicate posting): the final amount | diligence_adjustment |
 | `dil_total` | Total diligence adjustments | subtotal |
 | `diligence_adjusted_ebitda` | Diligence adjusted EBITDA | subtotal |
 | `pending` | Memo: management adjustments pending information (excluded) | memo |
 
-**Identity:** `diligence_adjusted_ebitda = gl_ebitda + Σ final amounts (excluding pending)`. Tests assert it.
+**Identity:** `diligence_adjusted_ebitda = gl_ebitda + Σ final amounts of management items (excluding pending) + Σ final amounts of diligence-identified items`. Tests assert it.
+
+### 5.7 Diligence-identified items
+
+The tool also proposes adjustments that are not on management's schedule, where the evidence makes the amount mechanical.
+
+- **Scope in v1: duplicate postings only.** Each `DUPLICATE_GL_ENTRY` group matched on a non-empty `doc_number` becomes one item. Groups matched on memo within 7 days stay questions only.
+- **Representation.** The item is an `AdjustmentAssessment` with `source="diligence"`.
+  - `adj_id` is `D-<n>`, numbered in order of the group's first GL row.
+  - `claimed` is all zeros; `category` is OTHER; `treatment` is REVISE.
+  - `proposed` = + every posting except the first, in the periods of those postings, because each extra posting overstates expense.
+  - `gl_links` list every posting in the group. The first posting is marked `supports_claim=False`.
+- **Nothing counted twice.** A posting that a management item's supporting set already carries is excluded.
+- **Review.** Diligence items are reviewed like management items: same `ReviewDecision`, same final-amount rules.
 
 ## 6. Reconciliation (`reconcile.py`)
 
@@ -513,7 +528,8 @@ Per deal and overall:
 | doc_link_precision / recall | Tool doc links vs `supporting_docs`. |
 | flag_recall | The share of `expected_flags` raised on the right adjustment. |
 | missed_contradictions | Expected CONTRADICTORY_EVIDENCE, RECURRING_PATTERN, CONTINUING_OBLIGATION, OFFSETTING_RECOVERY, OVERLAP_WITH_OTHER_ADJUSTMENT, or ALREADY_EXCLUDED_FROM_EBITDA flags that were not raised. |
-| data_quality_recall | Planted data-quality issues that were detected, matched on code and month or account. |
+| data_quality_recall | Planted data-quality issues that were detected. The codes must match, along with every locator both sides carry (month, account, GL rows). A key entry with no locator matches on code alone. |
+| diligence_item_accuracy | Expected diligence items (`GroundTruth.diligence_items`) are matched to tool items with `source="diligence"` by overlap of supporting GL rows. An item scores correct when every period is within 1.00. |
 | ebitda_error | For each period: `abs(tool diligence_adjusted_ebitda − gt.diligence_adjusted_ebitda)`, plus `gl_ebitda` agreement. |
 | by_case_type | treatment accuracy grouped by `case_type` |
 
@@ -557,15 +573,49 @@ This is a Florida commercial and residential HVAC and plumbing service contracto
 | M-11 | **Warehouse relocation** (non-recurring), accts 6100, 6150. Claimed 0 / 80,000 / 80,000. | Suncoast Movers $32,000 (Feb 2025, 6100) and Brandon Build-Out Contractors $48,000 (Mar–Apr 2025 as two $24,000 invoices, 6150), with invoices for each. Nothing in Jul 2025 – Jun 2026. | **REVISE 0 / 80,000 / 0.** Flag: PERIOD_MISMATCH. |
 | M-12 | **Pro forma dispatcher savings** (pro forma), acct 6000. Claimed 0 / 0 / 165,000. | Three dispatchers are still on payroll through Jun 2026. The only document is a Mar 2026 email from the COO: "we plan to reduce the dispatch team by three FTEs once FieldPro auto-dispatch is live — targeting Q3 2026". There are no separation agreements. | **REQUEST_INFO.** Flag: PRO_FORMA_NOT_REALIZED. Questions: evidence the reduction happened; severance cost; whether the roles are backfilled. |
 | M-13 | **"One-time" inventory write-off** (non-recurring), acct 5400. Claimed 0 / 64,000 / 64,000. | Dec 2025 "Year-end physical count adjustment – obsolete & shrink" of $64,000. Dec 2024 has the same entry at $58,500. The Dec 2025 inventory count memo says: "Consistent with prior years, the year-end count adjustment reflects shrink and obsolete parts." | **REJECT 0 / 0 / 0.** Flags: RECURRING_PATTERN, CONTRADICTORY_EVIDENCE. |
-| M-14 | **Customer bankruptcy write-off** (non-recurring), acct 6950. Claimed 0 / 52,000 / 52,000. | Oct 2025 bad debt of $52,000 for Halvorsen Builders, with a Chapter 7 bankruptcy notice for Halvorsen Builders. Normal bad debt is small ($300–700/mo). | **ACCEPT 0 / 52,000 / 52,000.** Ambiguity is medium: some seniors accept only the excess over normal bad debt. |
+| M-14 | **Customer bankruptcy write-off** (non-recurring), acct 6950. Claimed 0 / 52,000 / 52,000. | Oct 2025 bad debt of $52,000 for Halvorsen Builders, with a Chapter 7 bankruptcy notice for Halvorsen Builders. Normal bad debt is small ($300–700/mo). | **ACCEPT 0 / 52,000 / 52,000.** Ambiguity is medium. The alternative view normalizes 6950 to its 30-month average; it is pre-registered in the benchmark's key alternatives. RECURRING_PATTERN must not fire. |
 
 **Planted data-quality issues**
 
 | Issue | Detail | Code |
 | --- | --- | --- |
-| Duplicate posting | One Coastal Risk Insurance premium bill (6200, same Num and same amount) is posted twice, three days apart, in May 2025. The P&L includes both. | `DUPLICATE_GL_ENTRY` |
-| Top-side entry | Management's monthly P&L for Dec 2025, account 6000, is $25,000 higher than the GL. It is a top-side bonus accrual that is not in the GL. | `RECON_VARIANCE` |
+| Duplicate posting | Coastal Risk Insurance monthly premium installment Num CRI-25-0507, $18,400.00 (6200), is posted twice, three days apart, in May 2025. The P&L includes both. It also becomes diligence item **D-1**: +18,400 in FY2025, 0 in FY2024 and TTM. | `DUPLICATE_GL_ENTRY` |
+| Top-side entry | Management's monthly P&L for Dec 2025, account 6000, is $25,000 higher than the GL. It is a top-side accrual for a *proposed* discretionary bonus pool. A Jan 2026 controller email (in the financials folder) says the owner has not approved the pool, nothing has been communicated to employees or paid, and it will not be booked in QuickBooks. No bonus payments appear anywhere in 6000 or 6010. Reversing to the GL (`dil_recon` 0 / +25,000 / +25,000) is therefore correct. | `RECON_VARIANCE` |
 | Reported EBITDA gap | Management's reported EBITDA for FY2025 and TTM is therefore $25,000 lower than the GL-derived figure. | `MGMT_EBITDA_DIFFERS_FROM_GL` |
+
+**§10.1 Answer-key review amendments (binding).** An independent review panel (a Deals senior manager, a buy-side investor, and an audit senior, then adjudicated) confirmed every truth treatment and amount above. It required the package changes below so that each answer can be reached from the evidence:
+
+- **M-01.** The litigation engagement letter describes Dawson as a customer property-damage claim. The settlement agreement states a $100,000 self-insured retention for defense costs, so no reimbursement of the $84,500 is expected. Question topics also cover defense coverage and retention, the nature of the claim, and the post-close status of the Matter 1004 retainer.
+- **M-02.** The draft agreement is silent on club dues and vehicles. Ambiguity is medium. The rationale states the provisional 360,000 per period (about 365,220 with employer Medicare).
+- **M-03.** Add a BMW Financial Services lease statement (lessee D. Castellano, X5, $1,500/mo from Jan 2025) and a Pelican Bay Country Club statement (member R. Castellano, individual membership since Jan 2025, $1,100/mo). Replace the registration confirmations with per-trip **expense reports** of $5,600 each. Each report itemizes registration, airfare, and hotel and states the business purpose, and its report number is the GL Num. supporting_docs = the lease and club statements; the expense reports are related. RECURRING_PATTERN must not fire.
+- **M-04.** The Barrow letter keeps its "retained search" wording as a deliberate trap. Must not fire: CONTINUING_OBLIGATION, RECURRING_PATTERN.
+- **M-05.** The separation agreement says "three equal monthly installments of $25,000". Must not fire: RECURRING_PATTERN.
+- **M-06.** The rationale states that TTM 48,000 = Jul–Dec 2025, the claimed set under the tie-break.
+- **M-07.** The rationale cites that management's interest line equals GL 8100 including the 35,000.
+- **M-08.** The Support Ref cites the data-room file of H&C invoice 25-0910 (for example `DR 7.1; DR 7.2; DR 4.2.4`), which makes the intended set the unique fit under the §5.3 tie-break. The Keel Harbor letter reads "one-time retainer of $26,000 payable on signing, creditable against the success fee". Must not fire: CONTINUING_OBLIGATION.
+- **M-09.** Add Gulf Coast Roofing ($38,000) and Tampa Bay Restoration ($20,000) invoices citing claim FL-24-88172. Add an itemized settlement letter: loss 58,000; non-covered 8,000 (above a sublimit); covered 50,000; deductible 10,000; paid 40,000; claim closed. Ambiguity is medium. The pre-registered alternative is 40,000 / −40,000 / 0.
+- **M-10.** There are no other Apex or closeout true-ups anywhere in the GL.
+- **M-11.** The two Brandon invoices have distinct numbers and memos ("Progress billing 1 of 2" / "2 of 2") and post more than 7 days apart.
+- **M-12.** Dispatcher payroll is 3 × $55,000 = $13,750/mo in 6000 (memo "Payroll – Dispatch") through Jun 2026. Ambiguity is medium. The pre-registered alternative is REJECT 0 / 0 / 0.
+- **M-13.** The count memo states the $64,000 current-year adjustment and the $58,500 prior-year adjustment.
+- **M-14.** Add an Official Form 410 proof of claim for $52,000 listing Halvorsen invoices dated Jun–Aug 2025. Background 6950 memos must not share the Halvorsen theme.
+
+**Generator constraints**
+
+- There are no unplanted duplicate groups anywhere in the deal.
+- 8050, 8200, and 9000 have zero activity; 8000 carries only the M-09 proceeds. The company is an LLC taxed as an S corporation.
+- There are no bonus payments in 6000 or 6010.
+- **Ground truth:** every item carries a `case_type`, `ambiguity`, `supporting_docs`, and `question_topics`. Must-not flags are recorded in `reviewer_note`. The case types are:
+  - M-01 RECURRING; M-02 NEEDS_INFO; M-03 CONTRADICTED;
+  - M-04, M-05, and M-14 ADEQUATE;
+  - M-06 CONTRADICTED; M-07 EBITDA_EXCLUDED; M-08 OVERLAP;
+  - M-09 RECOVERY_OFFSET; M-10 OUT_OF_PERIOD; M-11 WRONG_PERIOD;
+  - M-12 NEEDS_INFO; M-13 RECURRING.
+- **Expected totals.**
+  - Claims: 418,000 / 1,004,000 / 1,034,500.
+  - Management finals: 16,000 / 335,700 / 244,200.
+  - Plus D-1: 0 / 18,400 / 0.
+  - Pending (M-02, M-12): 360,000 / 360,000 / 525,000.
 
 **Documents.** These are data-room style file names, for example `4.2.1 Hollis Crane Invoice 25-0212.pdf` and `6.1 Brightline Managed Services Agreement.pdf`. Emails are `.txt` files with From / To / Date / Subject headers. Every document footer reads "SYNTHETIC — generated for QoE Evidence Review testing".
 
