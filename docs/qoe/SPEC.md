@@ -254,7 +254,7 @@ Other columns are found by header, case-insensitively:
 
 - Walk `documents_dir` recursively in sorted order.
 - `doc_id` is the file's basename, which must be unique within a deal.
-- PDF pages come from `app.pdf_text.extract_pdf_text` (pypdf, plain mode). Page text is canonicalized with `app.canonicalize.canonicalize_page_text`.
+- PDF pages come from `qoe.pdf_text.extract_pdf_pages` (pypdf, plain mode). Page text is canonicalized with `qoe.pdf_text.canonicalize_page_text`. QoE never imports from the AP agent's `app/` package.
 - `.txt`, `.md`, and `.eml` files become a single page, also canonicalized.
 - Quotes are verified against the canonicalized page text.
 
