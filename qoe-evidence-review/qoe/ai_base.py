@@ -105,10 +105,14 @@ class EvidenceAI(Protocol):
         ...
 
 
+# A quote this short proves nothing: "a" or "$5" is a substring of almost any page.
+MIN_QUOTE_CHARS = 8
+
+
 def verify_quote(quote: EvidenceQuote, docs_by_id: dict[str, SourceDocument]) -> bool:
-    """True only if the quote is a verbatim substring of the cited page."""
+    """True only if the quote is a verbatim, non-trivial substring of the cited page."""
     doc = docs_by_id.get(quote.doc_id)
-    if doc is None or not quote.quote.strip():
+    if doc is None or len(quote.quote.strip()) < MIN_QUOTE_CHARS:
         return False
     for page in doc.pages:
         if page.page == quote.page:

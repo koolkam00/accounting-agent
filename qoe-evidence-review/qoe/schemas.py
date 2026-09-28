@@ -321,6 +321,13 @@ class GLLink(StrictModel):
     group: str = ""  # cluster key (vendor + matter / memo theme)
     supports_claim: bool = True  # False = linked for context only (e.g. prior-period comparable)
     doc_ids: list[str] = Field(default_factory=list)
+    # Audit-trail role of the entry in this adjustment:
+    #   supporting (claimed and carried) | removed (claimed, taken out by a flag) |
+    #   moved (claimed, carried in another period by an OUT_OF_PERIOD effect) |
+    #   recovery (offset applied in the proposal) | context (not part of the claim).
+    role: str = ""
+    claimed: bool = False  # management's claimed amount includes this entry
+    removed_by: Optional[FlagCode] = None  # the flag that removed it, when role == "removed"
 
 
 class DocLink(StrictModel):
@@ -338,6 +345,9 @@ class Flag(StrictModel):
     message: str
     period_label: Optional[str] = None
     amount_impact: Optional[str] = None  # signed EBITDA effect the flag argues for, if quantifiable
+    # Period label -> signed change this flag drives in the proposed amount (EBITDA-signed).
+    # Empty for flags that do not move the number (questions, context-only activity).
+    effects: dict[str, str] = Field(default_factory=dict)
     entry_ids: list[str] = Field(default_factory=list)
     doc_ids: list[str] = Field(default_factory=list)
     quotes: list[EvidenceQuote] = Field(default_factory=list)
@@ -474,7 +484,9 @@ class Workpaper(StrictModel):
     assessments: list[AdjustmentAssessment]  # management items in schedule order, then diligence items
     reviews: list[ReviewDecision] = Field(default_factory=list)
     bridge: EbitdaBridge
-    schedule: Optional[ManagementSchedule] = None  # management's schedule as presented (needed to rebuild the bridge)
+    schedule: Optional[ManagementSchedule] = None
+    ai_fallbacks: list[str] = Field(default_factory=list)  # AI calls that failed and fell back to rules
+    ai_dropped_quotes: int = 0  # AI quotes rejected because they were not verbatim  # management's schedule as presented (needed to rebuild the bridge)
 
 
 # ---------------------------------------------------------------------------
