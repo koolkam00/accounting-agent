@@ -489,7 +489,8 @@ class ExpectedAdjustment(StrictModel):
     amounts: dict[str, str] = Field(default_factory=dict)  # final diligence amounts; empty for REQUEST_INFO
     supporting_gl_rows: list[int] = Field(default_factory=list)  # GL source rows that support the claim
     related_gl_rows: list[int] = Field(default_factory=list)  # rows a good review should surface but that do not support it
-    supporting_docs: list[str] = Field(default_factory=list)  # doc_ids
+    supporting_docs: list[str] = Field(default_factory=list)  # doc_ids that support the amount carried
+    related_docs: list[str] = Field(default_factory=list)  # doc_ids a good review surfaces as evidence against / context
     expected_flags: list[FlagCode] = Field(default_factory=list)  # flags a correct review must raise
     question_topics: list[str] = Field(default_factory=list)  # topics an open-questions list should cover
     rationale: str
