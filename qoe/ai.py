@@ -23,6 +23,7 @@ import re
 from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import Decimal
+from itertools import pairwise
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
@@ -143,7 +144,8 @@ _GENERIC_WORDS = frozenset(
     add-back addbacks add back related one-time onetime one time non-recurring nonrecurring non recurring normalization
     normalize normalized normalizing normalise normalised pro forma run-rate management company companys business amount
     amounts total totals period periods paid pay payment payments incurred recorded booked reflect reflects reflected
-    removed remove eliminate eliminated ebitda fy ttm year years month months monthly annual annually gl account accounts
+    removed remove eliminate eliminated ebitda fy ttm year years month months monthly annual annually gl account
+    accounts
     acct various certain professional operating operations item items entry entries represents represent associated
     primarily pursuant reported net gross former new prior current other misc miscellaneous general ledger schedule
     basis based claimed claim claims owner owners services service savings level market rate actual actuals portion
@@ -273,6 +275,12 @@ _DAY_SPAN_RE = re.compile(
     rf"\b(?P<m>{_MON})\.?\s+(?P<d1>\d{{1,2}})\s*(?:–|—|-|through|to)\s*(?P<d2>\d{{1,2}}),?\s+(?P<y>\d{{4}})\b",
     re.IGNORECASE,
 )
+_CROSS_SPAN_RE = re.compile(
+    rf"\b(?P<m1>{_MON})\.?\s+(?P<d1>\d{{1,2}})(?:,?\s+(?P<y1>\d{{4}}))?\s*(?:–|—|-|through|thru|to)\s*"
+    rf"(?P<m2>{_MON})\.?\s+(?P<d2>\d{{1,2}}),?\s+(?P<y2>\d{{4}})\b",
+    re.IGNORECASE,
+)
+_WEEKDAY_RE = re.compile(r"\b(?:mon|tues?|wed(?:nes)?|thu(?:rs)?|fri|sat(?:ur)?|sun)(?:day)?\b\.?,?", re.IGNORECASE)
 _QUARTER_RE = re.compile(r"\bQ(?P<q>[1-4])\s*(?:FY)?\s*'?(?P<y>(?:19|20)\d{2}|\d{2})\b")
 _MONTH_WORD_RE = re.compile(rf"\b{_MON}\b\.?", re.IGNORECASE)
 
@@ -303,21 +311,19 @@ _AMOUNT_LABEL_RES: list[tuple[str, re.Pattern[str]]] = [
         ("total_due", r"total (?:amount )?due|amount due|balance due|amount payable|please remit|invoice total"
                       r"|total (?:this )?invoice|total charges|total fees|grand total|total amount|\btotal\b"),
         ("premium", r"premium"),
-        ("amount_paid", r"amount paid|total paid|\bpaid\b|registration fee"),
+        ("amount_paid", r"amount paid|total paid|\bpaid\b|registration fee|\bcharged\b"),
         ("fee", r"\bfees?\b"),
     )
 ]
-_MONTHLY_AFTER_RE = _lex(r"^\s*(?:per month|/\s?mo(?:nth)?\b|a month\b|each month|every month|monthly\b)", re.I)
-_HOURLY_AFTER_RE = _lex(r"^\s*(?:per hour|/\s?h(?:ou)?r\b|an hour|hourly)", re.I)
-_SETTLEMENT_AFTER_RE = _lex(r"^\s*\)?\s*\(?\s*(?:the\s+)?[\"“]settlement (?:amount|payment)", re.I)
+_MONTHLY_AFTER_RE = _lex(r"^[ \t]*(?:per month|/\s?mo(?:nth)?\b|a month\b|each month|every month|monthly\b)", re.I)
+_HOURLY_AFTER_RE = _lex(r"^[ \t]*(?:per hour|/\s?h(?:ou)?r\b|an hour|hourly)", re.I)
+_SETTLEMENT_AFTER_RE = _lex(r"^[ \t]*\)?[ \t]*\(?[ \t]*(?:the\s+)?[\"“]settlement (?:amount|payment)", re.I)
 _INSTALLMENT_WORD_RE = _lex(r"\binstall?ments?\b", re.I)
 _MONTHLY_CUE_RE = _lex(r"per month|/\s?mo(?:nth)?\b|a month\b|each month|every month|\bmonthly\b", re.I)
-_EXPLICIT_MONTHLY_TERM_RE = _lex(
-    r"monthly (?:fee|subscription|charge|service fee|retainer|license|licence|dues|rent)", re.I
-)
 
 _AUTO_RENEW_RE = _lex(
-    r"renews? automatically|automatically renew(?:s|ed)?|auto-?renew(?:s|al|ing)?|shall renew for (?:successive|additional)"
+    r"renews? automatically|automatically renew(?:s|ed)?|auto-?renew(?:s|al|ing)?"
+    r"|shall renew for (?:successive|additional)"
     r"|evergreen",
     re.I,
 )
@@ -329,7 +335,7 @@ _ONGOING_RE = _lex(
 )
 _ONE_TIME_RE = _lex(
     r"one-time|one time (?:fee|payment|charge|cost)|non-?recurring|single payment|lump[- ]sum"
-    r"|in full and final settlement|full and final|in full satisfaction",
+    r"|in full and final settlement|full and final|in full settlement|in full satisfaction|fully and finally",
     re.I,
 )
 _INSTALLMENTS_RE = _lex(
@@ -356,6 +362,7 @@ _TERM_WORD_RE = re.compile(r"\b(?:initial |renewal |lease |agreement |contract )
 _RECURRENCE_RE = _lex(
     r"consistent with (?:the )?(?:prior|previous) (?:years?|periods?)|as in (?:prior|previous) (?:years|periods)"
     r"|(?:each|every) (?:year|quarter)|year after year|\bannually\b|\brecurring\b|\brecurs\b|subscription"
+    r"|\bmonthly fee\b|\bmonth \d+ of \d+\b"
     r"|annual (?:subscription|fee|renewal|license|licence|maintenance|contract|service|retainer|charge|count"
     r"|physical|inventory|review|program)"
     r"|renews? automatically|automatically renew|auto-?renew|evergreen|month-to-month|on an ongoing basis"
@@ -375,13 +382,15 @@ _BUSINESS_PURPOSE_RE = _lex(
     re.I,
 )
 _PLAN_RE = _lex(
-    r"\bwe (?:plan|intend|expect|anticipate) to\b|\btargeting\b|\bplanned\b|\bwill be (?:eliminated|reduced|implemented)\b"
+    r"\bwe (?:plan|intend|expect|anticipate) to\b|\btargeting\b|\bplanned\b"
+    r"|\bwill be (?:eliminated|reduced|implemented)\b"
     r"|\bprojected\b|\bexpected to (?:save|reduce)\b|\bhave not (?:yet )?(?:started|begun|been)\b|\bnot yet\b",
     re.I,
 )
 _RECOVERY_RE = _lex(
-    r"insurer (?:shall|will) pay|paid (?:directly )?by (?:the )?(?:insurer|carrier)|funded by (?:the )?(?:insurer|carrier)"
-    r"|net (?:claim )?payment|deductible|proceeds|reimburse",
+    r"(?:insurer|carrier) (?:shall|will) (?:pay|fund|reimburse)"
+    r"|(?:paid|funded) (?:directly )?by [^.;]{0,60}?\b(?:insurer|carrier|insurance)"
+    r"|on the company'?s behalf|no obligation to fund|net (?:claim )?payment|deductible|proceeds|reimburse",
     re.I,
 )
 _PERSONAL_RE = _lex(
@@ -402,6 +411,15 @@ _KEY_STATEMENT_RES = (
 )
 # Recurrence cues that come from payment mechanics rather than from the cost itself.
 _INSTALLMENT_CONTEXT_RE = _lex(r"install?ments?|severance|settlement|separation", re.I)
+# Statements that state the purpose outright rank ahead of mere mentions of an event.
+_BUSINESS_STRONG_RE = _lex(
+    r"business purpose|purpose of (?:the )?(?:visit|trip|travel|attendance)|attending (?:company|organi[sz]ation)"
+    r"|visiting company|on behalf of|registered company"
+)
+_RECURRENCE_STRONG_RE = _lex(
+    r"consistent with (?:the )?(?:prior|previous)|subscription|renews? automatically|automatically renew|monthly fee"
+    r"|until terminated|each year|every year|month \d+ of \d+"
+)
 _BUSINESS_MEMO_RE = _lex(
     r"conference|summit|trade ?show|\bexpo\b|convention|seminar|training|certification|supplier|vendor visit"
     r"|(?:plant|factory|facility|site|customer|client|job ?site) (?:visit|tour|meeting)|dealer|sales (?:call|meeting)"
@@ -429,6 +447,11 @@ _REF_RE = re.compile(
     r"(?P<val>(?=[A-Z0-9/.:-]*\d)[A-Z0-9][A-Z0-9/.:-]*[A-Z0-9]|\d)",
     re.IGNORECASE,
 )
+# Everyday words that only introduce a reference when followed by "No." / "#" ("file 3.00" is not one).
+_WEAK_REF_LABELS = frozenset(
+    {"file", "statement", "check", "cheque", "bill", "order", "reference", "ref", "registration", "confirmation",
+     "document", "permit", "ticket", "certificate", "quote", "estimate", "proposal"}
+)
 _CODE_RE = re.compile(r"\b[A-Z]{2,6}-\d{2,}(?:-[A-Z0-9]+)*\b")
 _REF_KIND = {
     "invoice": "invoice", "inv": "invoice", "inv.": "invoice", "bill": "invoice", "statement": "invoice",
@@ -453,10 +476,12 @@ _TYPE_TITLE_RULES: list[tuple[str, re.Pattern[str]]] = [
         ("engagement_letter", r"engagement letter|letter of engagement|engagement agreement|terms of engagement"
                               r"|\bengagement of\b"),
         ("insurance", r"claim (?:settlement|payment|determination|closing|summary)|proof of loss|statement of loss"
-                      r"|insurance claim|explanation of benefits|certificate of insurance|policy (?:declarations|renewal)"),
+                      r"|insurance claim|explanation of benefits|certificate of insurance"
+                      r"|policy (?:declarations|renewal)"),
         ("payroll", r"payroll (?:register|summary|journal|report)|pay ?stub|earnings statement|pay statement"),
         ("memo", r"\bmemo(?:randum)?\b"),
-        ("invoice", r"\binvoice\b|\bbill\b|statement of account|\breceipt\b"),
+        ("invoice", r"\binvoice\b|\bbill\b|statement of account|\breceipt\b|billing statement|member statement"
+                    r"|account statement"),
         ("contract", r"agreement|contract|statement of work|\bsow\b|terms and conditions|\blease\b|order form"
                      r"|addendum|amendment"),
     )
@@ -476,6 +501,11 @@ _TITLE_WORD_RE = _lex(
     r"|proposal|order|receipt|report|summary|register|addendum|amendment|engagement|itinerary|policy|claim|settlement"
     r"|payoff|quote|estimate)\b",
     re.IGNORECASE,
+)
+_TITLE_NOUNS = frozenset(
+    {"invoice", "statement", "agreement", "contract", "letter", "memo", "memorandum", "notice", "confirmation",
+     "agenda", "release", "proposal", "order", "receipt", "report", "summary", "register", "addendum", "amendment",
+     "itinerary", "policy", "settlement", "estimate", "quote", "bankruptcy"}
 )
 _FIELD_LINE_RE = re.compile(r"^\s*[A-Za-z][\w .#/&'()-]{0,40}:\s*\S")
 _BULLET_RE = re.compile(r"^\s*(?:[-•*▪·]\s|\d{1,2}[.)]\s|\(?[a-z]\)\s)")
@@ -503,6 +533,7 @@ _DOC_DATE_LABEL_RE = re.compile(
     r"(?:date|dated|sent)\s*[:\-]?\s*",
     re.IGNORECASE,
 )
+_ISSUED_RE = re.compile(r"\b(?:issued(?: on)?|issue date|date issued|dated)\s*[:\-]?\s*", re.IGNORECASE)
 _DATED_RE = _lex(
     r"(?:\bdated|entered into|made(?: and entered into)?|executed|effective)\s+(?:as of\s+|on\s+)?(?:this\s+)?$",
     re.IGNORECASE,
@@ -530,7 +561,8 @@ _SINGLE_EVENT_DATE_RE = _lex(
 _RANGE_SEP_RE = re.compile(r"^\s*(?:–|—|-|to|through|thru|until|and)\s*$", re.IGNORECASE)
 _DRAFT_MARK_RE = re.compile(r"\bDRAFT\b")
 _DRAFT_PHRASE_RE = _lex(
-    r"not (?:yet )?executed|unexecuted|for discussion purposes only|draft for discussion|subject to (?:further )?revision"
+    r"not (?:yet )?executed|unexecuted|for discussion purposes only|draft for discussion"
+    r"|subject to (?:further )?revision"
     r"|preliminary draft",
     re.IGNORECASE,
 )
@@ -757,13 +789,15 @@ def _filename_title(doc_id: str) -> str:
 
 
 def _labeled_refs(text: str) -> list[tuple[str, str]]:
-    """(kind, value) reference numbers introduced by a label ("Matter 2291", "Claim No. FL-24-1")."""
+    """(kind, value) reference numbers introduced by a label ("Matter 4410", "Claim No. XY-00-123")."""
     out: list[tuple[str, str]] = []
     for m in _REF_RE.finditer(text):
         label = re.sub(r"\s+", " ", m.group("label").lower())
         value = m.group("val").rstrip(".:-/")
         marker = bool(m.group("marker"))
         if len(value) < 3 and not (marker and value.isdigit()):
+            continue
+        if re.fullmatch(r"\d+\.\d+", value) or (label.rstrip(".") in _WEAK_REF_LABELS and not marker):
             continue
         if _parse_date(value) is not None or re.fullmatch(r"\d{1,2}/\d{1,2}", value):
             continue
@@ -816,8 +850,12 @@ def _continues(prev: str, nxt: str) -> bool:
         return False
     if prev.endswith((".", "!", "?", ":", ";")) or _FIELD_LINE_RE.match(prev):
         return False
+    if prev[-1:].isdigit() and nxt[:1].isupper():
+        return False  # a table row ends in a figure; the next capitalised line starts something new
     if nxt[:1].islower():
         return True
+    if _core(prev.split()[-1]) in _TITLE_NOUNS:
+        return False  # a heading such as "... Travel Confirmation" is not wrapped prose
     return len(prev) >= 45
 
 
@@ -1068,6 +1106,44 @@ def _looks_like_org_line(line: str) -> bool:
 # ---------------------------------------------------------------------------
 
 
+_MONTHLY_PHRASE_RE = _lex(
+    r"\bmonthly (?:[a-z]+ ){0,2}?(?:fee|charge|subscription|payment|dues|rent|license|licence|retainer)\b"
+    r"|\bretainer (?:fee )?per month\b"
+)
+_NEGATED_SCOPE_RE = _lex(
+    r"(?:outside|beyond|excluded from|not (?:included in|covered by|part of)|in addition to|separate from"
+    r"|over and above)(?: the)?(?: scope of)?(?: the| our| your| its)?\s*$"
+)
+_RATE_CONTEXT_RE = _lex(r"\b(?:hourly|rates?|per hour)\b\W*(?:\w+\W+){0,6}$")
+
+
+def _monthly_amount(text: str, start: int, end: int) -> Optional[tuple[int, int]]:
+    """Span of a fee the sentence states as monthly: "$1,200 per month" or "monthly fee of $1,200".
+
+    A billing frequency ("billed monthly at our hourly rates ($400 ...)") is not a monthly fee, and a
+    mention without an amount ("outside the scope of the monthly retainer") is not a term.
+    """
+    for ms, me, _, _ in _money_hits(text, start, end, bare=True):
+        if _RATE_CONTEXT_RE.search(text[max(start, ms - 40) : ms]) or _HOURLY_AFTER_RE.match(text[me : me + 20]):
+            continue
+        if _MONTHLY_AFTER_RE.match(text[me : me + 20]):
+            return ms, me
+        line_start = text.rfind("\n", start, ms) + 1
+        before = text[max(start, line_start, ms - 90) : ms]
+        phrases = list(_MONTHLY_PHRASE_RE.finditer(before))
+        if not phrases:
+            continue
+        phrase = phrases[-1]
+        between = before[phrase.end() :]
+        # "(outside the scope of the monthly retainer) 1,750.00" names the retainer to exclude the amount from it
+        lead = before[: phrase.start()]
+        enclosed = lead.count("(") > lead.count(")") and ")" in between
+        if re.search(r"[.;]\s", between) or enclosed or _NEGATED_SCOPE_RE.search(lead):
+            continue
+        return ms, me
+    return None
+
+
 class _DocReader:
     """Builds ``DocFacts`` for one document from lexicons and regexes."""
 
@@ -1104,19 +1180,23 @@ class _DocReader:
                 m = re.match(r"^\s*subject\s*:\s*(.+)$", line, re.IGNORECASE)
                 if m:
                     return i, m.group(1).strip()
-        found: Optional[tuple[int, str]] = None
+        # A "Re:" line beats a line ending in a document noun ("... Confirmation"), which beats a line that
+        # merely contains one (a letterhead tagline such as "Event Registration Services").
+        best: Optional[tuple[int, int, str]] = None
         for i, line in enumerate(self.first_lines[:14]):
             if self._is_skippable(line):
                 continue
             sub = _SUBJECT_RE.match(line)
             if sub:
-                found = (i, sub.group("val").strip())
-                break
-            if _FIELD_LINE_RE.match(line) or len(line) > 110:
+                score, text = 3, sub.group("val").strip()
+            elif _FIELD_LINE_RE.match(line) or len(line) > 110 or not _TITLE_WORD_RE.search(line):
                 continue
-            if _TITLE_WORD_RE.search(line):
-                found = (i, line.strip())
-                break
+            else:
+                last = _core(line.split()[-1])
+                score, text = (2 if last in _TITLE_NOUNS else 1), line.strip()
+            if best is None or score > best[0]:
+                best = (score, i, text)
+        found: Optional[tuple[int, str]] = (best[1], best[2]) if best else None
         if found is None:
             for i, line in enumerate(self.first_lines[:3]):
                 if not self._is_skippable(line) and not _FIELD_LINE_RE.match(line):
@@ -1190,7 +1270,7 @@ class _DocReader:
                     excluded.append(name)
                 elif role in _VENDOR_ROLES:
                     add(8, name)
-        for i, line in enumerate(lines[:40]):
+        for line in lines[:40]:
             m = _ISSUER_LABEL_RE.match(line)
             if m and not (self.is_email and not line.lower().lstrip().startswith("from")):
                 add(10 if self.is_email else 9, _label_value_name(m.group("val")))
@@ -1248,6 +1328,12 @@ class _DocReader:
         found = labeled(head)
         if found:
             return found
+        if head:
+            region_start, region_end = head[0][0], head[-1][1]
+            for m in _ISSUED_RE.finditer(text, region_start, region_end):
+                hits = _find_dates(text, m.end(), min(len(text), m.end() + 40))
+                if hits and hits[0].start == m.end():
+                    return hits[0].iso
         for s, e in head:
             hits = _find_dates(text, s, e)
             if hits and hits[-1].end == e and (e - s) <= (hits[-1].end - hits[-1].start) + 30:
@@ -1277,10 +1363,9 @@ class _DocReader:
             for m in _DAY_SPAN_RE.finditer(text):
                 s0 = page.segment_at(m.start())[0]
                 line = page.line_at(m.start())
-                # an agenda or itinerary often states its dates on a line of their own
-                standalone = page is self.first and line in header_lines and not re.search(
-                    r"[A-Za-z]{2,}", _MONTH_WORD_RE.sub("", text[line[0] : m.start()] + text[m.end() : line[1]])
-                )
+                # an agenda or itinerary often opens a header line with its dates
+                lead = _WEEKDAY_RE.sub("", text[line[0] : m.start()])
+                standalone = page is self.first and line in header_lines and not re.search(r"[A-Za-z]{2,}", lead)
                 if standalone or _SP_CUE_RE.search(text[max(s0, m.start() - 100) : m.start()]):
                     mo = _month_number(m.group("m"))
                     y = int(m.group("y"))
@@ -1288,10 +1373,22 @@ class _DocReader:
                     d2 = _safe_date(y, mo or 0, int(m.group("d2"))) if mo else None
                     if d1 and d2 and d1 <= d2:
                         return d1.isoformat(), d2.isoformat()
+            for m in _CROSS_SPAN_RE.finditer(text):
+                s0 = page.segment_at(m.start())[0]
+                if not _SP_CUE_RE.search(text[max(s0, m.start() - 100) : m.start()]):
+                    continue
+                m1, m2 = _month_number(m.group("m1")), _month_number(m.group("m2"))
+                y2 = int(m.group("y2"))
+                # "December 1 - January 31, 2025" starts in the prior year
+                y1 = int(m.group("y1")) if m.group("y1") else (y2 if (m1 or 0) <= (m2 or 0) else y2 - 1)
+                d1 = _safe_date(y1, m1, int(m.group("d1"))) if m1 else None
+                d2 = _safe_date(y2, m2, int(m.group("d2"))) if m2 else None
+                if d1 and d2 and d1 <= d2:
+                    return d1.isoformat(), d2.isoformat()
             points: list[tuple[int, int, str, str]] = [(h.start, h.end, h.iso, h.iso) for h in dates]
             points += [(s, e, _iso_month_start(mo), _iso_month_end(mo)) for s, e, mo in _month_year_hits(text, dates)]
             points.sort()
-            for a, b in zip(points, points[1:]):
+            for a, b in pairwise(points):
                 if not _RANGE_SEP_RE.match(text[a[1] : b[0]]):
                     continue
                 seg_start = page.segment_at(a[0])[0]
@@ -1311,7 +1408,7 @@ class _DocReader:
                     end_only = hit.iso
                 if single is None and _SINGLE_EVENT_DATE_RE.search(before):
                     single = hit.iso
-            for s, e, mo in _month_year_hits(text, dates):
+            for s, _, mo in _month_year_hits(text, dates):
                 if _SP_MONTH_ONLY_RE.search(text[max(0, s - 60) : s]):
                     return _iso_month_start(mo), _iso_month_end(mo)
         if single is not None and end_only is None:
@@ -1370,6 +1467,10 @@ class _DocReader:
             if installment_ctx:
                 return "installment"
             return "retainer" if re.search(r"\bretainer\b", sentence, re.I) else "monthly_fee"
+        line_start = page.line_at(start)[0]
+        # a rate list ("hourly rates ($400 partner, $250 associate)") spans several amounts on one line
+        if _RATE_CONTEXT_RE.search(text[max(line_start, start - 60) : start]):
+            return "rate"
         best_label, best_end = "line", -1
         for label, rx in _AMOUNT_LABEL_RES:
             for m in rx.finditer(left):
@@ -1390,7 +1491,8 @@ class _DocReader:
         seen: set[tuple[str, str]] = set()
 
         def add(kind: str, text: str, quote: EvidenceQuote) -> None:
-            key = (kind, text.lower())
+            # one fact per kind is enough for the qualitative terms; fees and dates can differ
+            key = (kind, text.lower()) if kind in ("monthly_fee", "retainer", "term_end") else (kind, "")
             if key not in seen:
                 seen.add(key)
                 out.append(TermFact(kind=kind, text=text, quote=quote))
@@ -1405,22 +1507,15 @@ class _DocReader:
                     "separation_agreement",
                     "settlement_agreement",
                 )
-                monthly = _MONTHLY_CUE_RE.search(sent)
-                if monthly and not installment_ctx:
-                    money = [h for h in _money_hits(text, s, e)]
-                    explicit = _EXPLICIT_MONTHLY_TERM_RE.search(sent)
-                    if money or explicit:
-                        is_retainer = re.search(r"\bretainer\b", sent, re.I) is not None
-                        kind = "retainer" if is_retainer else "monthly_fee"
-                        if money:
-                            # the amount nearest the monthly cue is the fee
-                            cue_pos = s + monthly.start()
-                            ms, me, _, _ = min(money, key=lambda h: abs(h[0] - cue_pos))
-                            raw = text[ms:me]
-                            desc = f"retainer of {raw} per month" if is_retainer else f"monthly fee of {raw}"
-                        else:
-                            desc = "monthly retainer (amount not stated)" if is_retainer else "monthly fee (amount not stated)"
-                        add(kind, desc, page.quote(s, e))
+                fee = None if installment_ctx else _monthly_amount(text, s, e)
+                if fee is not None:
+                    ms, me = fee
+                    # the description repeats the stated figure in one format so consumers can read it back
+                    raw = f"${next(v for _, _, v, _ in _money_hits(text, ms, me, bare=True)):,.2f}"
+                    is_retainer = re.search(r"\bretainer\b", sent, re.I) is not None
+                    kind = "retainer" if is_retainer else "monthly_fee"
+                    desc = f"retainer of {raw} per month" if is_retainer else f"monthly fee of {raw}"
+                    add(kind, desc, page.quote(s, e))
                 for m in _AUTO_RENEW_RE.finditer(sent):
                     add("auto_renew", "renews automatically", page.quote(s + m.start(), s + m.end()))
                     break
@@ -1443,13 +1538,17 @@ class _DocReader:
                     unit = m.group("u1") or m.group("u2")
                     n = _number(n_word) if n_word else None
                     hits = _find_dates(text, s + m.end(), e)
-                    if n and hits and hits[0].start == s + m.end():
-                        start_d = date.fromisoformat(hits[0].iso)
+                    starts = [(h.end, h.iso) for h in hits if h.start == s + m.end()]
+                    starts += [(me_, f"{mo}-01") for ms_, me_, mo in _month_year_hits(text[: e], hits)
+                               if ms_ == s + m.end()]
+                    if n and starts:
+                        start_end, start_iso = starts[0]
+                        start_d = date.fromisoformat(start_iso)
                         end_d = _term_end(start_d, n, unit)
                         add(
                             "term_end",
                             f"term ends {end_d.isoformat()} ({n}-{unit.lower()} term commencing {start_d.isoformat()})",
-                            page.quote(s + m.start(), hits[0].end),
+                            page.quote(s + m.start(), start_end),
                         )
                         break
                 for m in _TERM_EXPIRY_RE.finditer(sent):
@@ -1459,7 +1558,7 @@ class _DocReader:
                         break
                 if _TERM_WORD_RE.search(sent):
                     hits = _find_dates(text, s, e)
-                    for a, b in zip(hits, hits[1:]):
+                    for a, b in pairwise(hits):
                         if _RANGE_SEP_RE.match(text[a.end : b.start]) and a.iso < b.iso:
                             add("term_end", f"term ends {b.iso} (term from {a.iso})", page.quote(a.start, b.end))
                             break
@@ -1852,33 +1951,46 @@ class _Evidence:
         return any(q.page == quote.page and quote.quote in q.quote for q in _fact_quotes(fact))
 
 
-def _primary_refs(fact: DocFacts, evidence: _Evidence) -> list[str]:
-    """The references a document is *about*: its own bill numbers and the first matter / claim / case it names.
+def _header_end(doc: SourceDocument) -> int:
+    """Offset on page 1 where the body starts: the first prose sentence (long, mostly lower-case words)."""
+    page = doc.pages[0]
+    text = page.text
+    for s, e in _segments(text, _line_spans(text)):
+        chunk = text[s:e]
+        if len(chunk) >= 60 and len(re.findall(r"\b[a-z]{2,}\b", chunk)) >= 6 and not _FIELD_LINE_RE.match(chunk):
+            return s
+    return len(text)
 
-    A letter for one matter often mentions another ("separate from Matter 1004"); those mentions must not
-    tie the document to the other matter's entries.
+
+def _primary_refs(fact: DocFacts, evidence: _Evidence) -> list[str]:
+    """The references a document is *about*: those in its header block and its own bill numbers.
+
+    A letter for one matter often mentions another in the body ("separate from our retainer under
+    Matter 4410"); such mentions must not tie the document to the other matter's entries.
     """
     doc = evidence.docs.get(fact.doc_id)
     known = {r.lower(): r for r in fact.reference_numbers}
+    if doc is None or not doc.pages:
+        heading = f"{fact.title}\n{_filename_title(fact.doc_id)}"
+        out = [r for r in fact.reference_numbers if _token_in(r, heading)]
+        return out or fact.reference_numbers[:1]
+    header = doc.pages[0].text[: _header_end(doc)]
     out: list[str] = []
-    if doc is not None:
-        first_event: Optional[str] = None
-        for kind, value in _labeled_refs(doc.full_text):
-            if kind in _EVENT_REF_KINDS:
-                if first_event is None:
-                    first_event = value
-            elif kind not in ("reference",) and value not in out:
-                out.append(value)
+    for value in _reference_values(header):
+        if value not in out:
+            out.append(value)
+    for kind, value in _labeled_refs(doc.full_text):
+        if kind in ("invoice", "confirmation", "check") and value not in out:
+            out.append(value)
+    if not any(k in _EVENT_REF_KINDS for k, v in _labeled_refs(header)):
+        first_event = next((v for k, v in _labeled_refs(doc.full_text) if k in _EVENT_REF_KINDS), None)
         if first_event is not None and first_event not in out:
             out.append(first_event)
-        out.extend(r for r in fact.reference_numbers if _CODE_RE.fullmatch(r) and r not in out
-                   and not any(r.lower() == v.lower() for _, v in _labeled_refs(doc.full_text)))
-        return [known.get(r.lower(), r) for r in out]
-    heading = f"{fact.title}\n{_filename_title(fact.doc_id)}"
-    out = [r for r in fact.reference_numbers if _token_in(r, heading)]
-    if not out and fact.reference_numbers:
-        out = [fact.reference_numbers[0]]
-    return out
+    # "Matter 4410" is the same reference as client-matter "10001-4410"
+    for r in fact.reference_numbers:
+        if r not in out and any(r in re.split(r"[-/.]", p) for p in out):
+            out.append(r)
+    return [known.get(r.lower(), r) for r in out]
 
 
 def _tie_entries(
@@ -1948,6 +2060,23 @@ _NONRECURRING_CONFLICT = "Management describes the cost as one-time / non-recurr
 _PERSONAL_CONFLICT = "Management describes the cost as a personal (non-business) owner expense."
 
 
+def _ranked(quotes: list[EvidenceQuote], strong: re.Pattern[str]) -> list[EvidenceQuote]:
+    return sorted(quotes, key=lambda q: 0 if strong.search(q.quote) else 1)
+
+
+def _theme_key(entry: GLEntry) -> tuple[str, str]:
+    return " ".join(sorted(_name_tokens(entry.counterparty))), _memo_theme(entry.memo)
+
+
+def _extend_by_theme(entry_ids: list[str], entries: list[GLEntry]) -> list[str]:
+    if not entry_ids:
+        return entry_ids
+    chosen = set(entry_ids)
+    themes = {_theme_key(e) for e in entries if e.entry_id in chosen}
+    themes = {t for t in themes if t[1]}
+    return [e.entry_id for e in entries if e.entry_id in chosen or _theme_key(e) in themes]
+
+
 def _term_statement(term: TermFact, label: str) -> str:
     if term.kind == "monthly_fee":
         return f"{label} provides for a recurring {term.text}, which is not a one-time cost."
@@ -2000,7 +2129,7 @@ def _find_contradictions_rules(
         label = _doc_label(fact)
         per_doc = 0
         if intent.asserts_nonrecurring and not intent.is_pro_forma:
-            for q in fact.key_statements:
+            for q in _ranked(fact.key_statements, _RECURRENCE_STRONG_RE):
                 if per_doc >= 3:
                     break
                 m = _RECURRENCE_RE.search(q.quote)
@@ -2011,6 +2140,8 @@ def _find_contradictions_rules(
                 is_term_like = _AUTO_RENEW_RE.search(q.quote) or _ONGOING_RE.search(q.quote)
                 if is_term_like:
                     entry_ids = _tie_entries(fact, entries, evidence, "fee")
+                # a statement that the cost recurs covers the whole series, not just the entries near its date
+                entry_ids = _extend_by_theme(entry_ids, entries)
                 statement = f"{label} describes the cost as recurring (\"{phrase}\")."
                 if add(fact, q, statement, _NONRECURRING_CONFLICT, entry_ids):
                     per_doc += 1
@@ -2025,7 +2156,7 @@ def _find_contradictions_rules(
                 if add(fact, term.quote, _term_statement(term, label), _NONRECURRING_CONFLICT, entry_ids):
                     per_doc += 1
         if intent.asserts_personal:
-            for q in fact.key_statements:
+            for q in _ranked(fact.key_statements, _BUSINESS_STRONG_RE):
                 if per_doc >= 3:
                     break
                 if not _BUSINESS_PURPOSE_RE.search(q.quote) or _PERSONAL_RE.search(q.quote):
@@ -2084,6 +2215,20 @@ def _quote_excerpt(text: str, limit: int = 160) -> str:
     return text[: cut if cut > 40 else limit].rstrip(" ,;:") + " …"
 
 
+def _docs_for_entry(entry: GLEntry, facts: list[DocFacts], primary: dict[str, list[str]]) -> list[str]:
+    """Documents that are demonstrably about an entry: its bill, a reference its memo cites, or vendor + amount."""
+    memo_refs = {v.lower() for _, v in _labeled_refs(entry.memo)}
+    out: list[str] = []
+    for f in facts:
+        if (
+            _entry_cites(entry, primary.get(f.doc_id, []))
+            or memo_refs & {r.lower() for r in f.reference_numbers}
+            or (_cp_match(f.counterparty, entry.counterparty) and _amount_matches(entry, [a.amount for a in f.amounts]))
+        ):
+            out.append(f.doc_id)
+    return out
+
+
 def _classify_personal(
     entries: list[GLEntry], facts: list[DocFacts], evidence: _Evidence
 ) -> list[EntryClassification]:
@@ -2095,31 +2240,31 @@ def _classify_personal(
     for e in entries:
         personal = _PERSONAL_RE.search(e.memo)
         business = _BUSINESS_MEMO_RE.search(e.memo)
+        tied = [(f, q) for f, q in business_docs if e.entry_id in _tie_entries(f, [e], evidence, "business")]
+        tied_docs = list(dict.fromkeys(f.doc_id for f, _ in tied))
         if personal:
             out.append(EntryClassification(
                 entry_id=e.entry_id, qualifies=True,
                 reason=f"Memo identifies the cost as personal (\"{personal.group()}\").",
             ))
-            continue
-        if business:
+        elif business:
             out.append(EntryClassification(
                 entry_id=e.entry_id, qualifies=False,
                 reason=f"Memo shows a business purpose (\"{business.group()}\"), so it is not a personal expense.",
+                doc_ids=tied_docs,
             ))
-            continue
-        tied = [(f, q) for f, q in business_docs if e.entry_id in _tie_entries(f, [e], evidence, "business")]
-        if tied:
+        elif tied:
             fact, q = tied[0]
             out.append(EntryClassification(
                 entry_id=e.entry_id, qualifies=False,
                 reason=f"{_doc_label(fact)} documents a business purpose: \"{_quote_excerpt(q.quote)}\"",
-                doc_ids=sorted({f.doc_id for f, _ in tied}),
+                doc_ids=tied_docs,
             ))
-            continue
-        out.append(EntryClassification(
-            entry_id=e.entry_id, qualifies=True,
-            reason="No business-purpose evidence in the memo or linked documents.",
-        ))
+        else:
+            out.append(EntryClassification(
+                entry_id=e.entry_id, qualifies=True,
+                reason="No business-purpose evidence in the memo or linked documents.",
+            ))
     return out
 
 
@@ -2130,12 +2275,12 @@ def _classify_event(
     facts: list[DocFacts],
     evidence: _Evidence,
 ) -> list[EntryClassification]:
-    title_kw = {k for k in _narrative_keywords(adj.title, "") if k not in _WEAK_KEYWORDS}
-    all_kw = {k for k in intent.keywords if k not in _WEAK_KEYWORDS and len(k) >= 4}
+    # A vendor can bill several matters, so its name never identifies the event.
+    cp_tokens = {t for name in intent.counterparties for t in _name_tokens(name)}
+    title_kw = {k for k in _narrative_keywords(adj.title, "") if k not in _WEAK_KEYWORDS} - cp_tokens
+    all_kw = {k for k in intent.keywords if k not in _WEAK_KEYWORDS and len(k) >= 4} - cp_tokens
     primary = (title_kw & all_kw) or title_kw
     secondary = all_kw - primary
-    for name in intent.counterparties:
-        primary |= {t for t in _name_tokens(name) if len(t) >= 4 and t not in _GENERIC_WORDS}
 
     def kw_hits(text: str) -> list[str]:
         low = text.lower()
@@ -2152,7 +2297,8 @@ def _classify_event(
             event_labeled.extend(_entry_event_refs(e))
     event_values = {v.lower() for _, v in event_labeled} | {r.lower() for r in intent.reference_numbers}
     event_docs: list[DocFacts] = []
-    primary_by_doc = {f.doc_id: {r.lower() for r in _primary_refs(f, evidence)} for f in facts}
+    primary_by_doc_list = {f.doc_id: _primary_refs(f, evidence) for f in facts}
+    primary_by_doc = {d: {r.lower() for r in refs} for d, refs in primary_by_doc_list.items()}
     for f in facts:
         refs = primary_by_doc[f.doc_id]
         if refs & event_values or kw_hits(f"{f.title}\n{_filename_title(f.doc_id)}"):
@@ -2248,7 +2394,13 @@ def _classify_event(
                 entry_id=e.entry_id, qualifies=True,
                 reason="No evidence separates this entry from the claimed event.",
             )
-    return [decided[e.entry_id] for e in entries]
+    out: list[EntryClassification] = []
+    for e in entries:
+        c = decided[e.entry_id]
+        if not c.doc_ids and not c.reason.startswith("No evidence"):
+            c = c.model_copy(update={"doc_ids": _docs_for_entry(e, facts, primary_by_doc_list)})
+        out.append(c)
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -2273,7 +2425,7 @@ def _docs_phrase(flag: Flag, docs: dict[str, DocFacts], default: str = "The supp
 
 
 def _long_date(iso: Optional[str]) -> str:
-    """'2024-07-01' -> 'July 1, 2024' for text written to management."""
+    """'2025-04-01' -> 'April 1, 2025' for text written to management."""
     try:
         d = date.fromisoformat(iso or "")
     except ValueError:
@@ -2402,7 +2554,10 @@ def _question_for(adj: AdjustmentClaim, flag: Flag, docs: dict[str, DocFacts]) -
             status = "is not signed"
         else:
             status = "is unsigned or in draft form"
-        subject = f"The copy of {docs_txt[:1].lower() + docs_txt[1:]}" if flag.doc_ids else f"The agreement supporting {ref}"
+        if flag.doc_ids:
+            subject = f"The copy of {docs_txt[:1].lower() + docs_txt[1:]}"
+        else:
+            subject = f"The agreement supporting {ref}"
         return (f"{subject} we received {status}. Please provide the executed version, or confirm the agreed "
                 f"terms and when they take effect.")
     if code == FlagCode.NORMALIZATION_BENCHMARK_MISSING:
@@ -2623,7 +2778,7 @@ def _amount_in_quote(amount: str, quote: str) -> bool:
         return False
     whole = str(int(target))
     for written in (f"{int(target):,}", whole):
-        # a whole amount may be written without cents ("300,000"), but not as the start of "300,000.50"
+        # a whole amount may be written without cents ("120,000"), but not as the start of "120,000.50"
         if re.search(rf"(?<![\d,.]){re.escape(written)}(?![\d,]|\.\d*[1-9])", quote):
             return True
     return False
@@ -2864,7 +3019,9 @@ class OpenAICompatibleEvidenceAI:
                     normalized = None
             if normalized is not None and not _amount_in_quote(normalized, narrative):
                 normalized = None  # the model may not compute a level the narrative does not state
-            months = [m for m in data.get("event_months") or [] if isinstance(m, str) and re.fullmatch(r"\d{4}-\d{2}", m)]
+            months = [
+                m for m in data.get("event_months") or [] if isinstance(m, str) and re.fullmatch(r"\d{4}-\d{2}", m)
+            ]
             event_type = str(data.get("event_type") or "other")
             return AdjustmentIntent(
                 adj_id=adj.adj_id,

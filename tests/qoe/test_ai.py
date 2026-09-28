@@ -22,7 +22,6 @@ from qoe.ai import (
     load_prompt,
 )
 from qoe.ai_base import AdjustmentIntent, EvidenceAI, verify_quote
-from qoe.money import D
 from qoe.pdf_text import canonicalize_page_text
 from qoe.schemas import (
     AdjustmentCategory,
@@ -86,11 +85,12 @@ Coastline Climate Services, LLC
 88 Industrial Way
 Clearwater, FL 33760
 
-Re: Engagement Letter – General Corporate & Employment Matters (Matter No. 1187)
+Re: Engagement Letter – General Corporate & Employment Matters
+Client-Matter No. 40211-1187
 
 Dear Mr. Okafor:
 
-Thank you for selecting Harrow & Vale LLP to serve as general corporate and employment counsel to Coastline Climate Services, LLC (the "Company"). This letter confirms the terms of our engagement.
+Thank you for selecting Harrow & Vale LLP to serve as general corporate and employment counsel to Coastline Climate Services, LLC (the "Company"). This letter confirms the terms of our engagement, which we have opened as Matter 1187.
 
 Scope. We will advise the Company on general corporate, contract and employment matters. Litigation is outside the scope of this engagement and will be the subject of a separate engagement letter.
 
@@ -443,7 +443,7 @@ def test_retainer_engagement_letter_facts(ai_and_facts):
     assert f.counterparty == "HARROW & VALE LLP"
     assert f.doc_date == "2023-03-01"
     assert "1187" in f.reference_numbers
-    assert _terms(f, "retainer") == ["retainer of $2,500 per month"]
+    assert _terms(f, "retainer") == ["retainer of $2,500.00 per month"]
     assert _terms(f, "ongoing_services")
     assert "continuing until terminated" in next(t for t in f.terms if t.kind == "ongoing_services").quote.quote
     assert _amount(f, "retainer") == ["2500.00"]
@@ -563,6 +563,38 @@ def test_hourly_rates_and_monthly_billing_are_not_recurring_fees(ai_and_facts):
     assert f.reference_numbers == ["3310", "1187"]
     assert not [t for t in f.terms if t.kind in ("retainer", "monthly_fee", "ongoing_services")]
     assert "rate" in [a.label for a in f.amounts]
+
+
+def test_layout_variants_seen_in_pdf_text_layers():
+    ai = RuleBasedEvidenceAI()
+    invoice = ai.extract_facts(_doc("inv.pdf", """Harrow & Vale LLP
+INVOICE
+Invoice No.: 25-0418
+Client-Matter: 40211-3310
+Billing Period: February 1 - March 31, 2025
+Description Hours Rate Amount
+J. Park, Associate - closing the file 3.00 325.00 975.00
+Employment policy review (outside the scope of the monthly retainer) 5,500.00
+Total Due This Invoice: $6,475.00
+"""))
+    assert (invoice.service_period_start, invoice.service_period_end) == ("2025-02-01", "2025-03-31")
+    assert "3.00" not in invoice.reference_numbers and "40211-3310" in invoice.reference_numbers
+    assert not [t for t in invoice.terms if t.kind in ("retainer", "monthly_fee")]
+    confirmation = ai.extract_facts(_doc("conf.pdf", """Southeast Travel Partners
+Conference Registration & Travel Confirmation
+Confirmation No. STP-250214-3381 | Issued February 14
+2025
+Event dates: March 10-12, 2025
+Total charged to company card 5,600.00
+"""))
+    assert confirmation.doc_date == "2025-02-14"
+    assert confirmation.title == "Conference Registration & Travel Confirmation"
+    assert (confirmation.service_period_start, confirmation.service_period_end) == ("2025-03-10", "2025-03-12")
+    assert [(a.label, a.amount) for a in confirmation.amounts] == [("amount_paid", "5600.00")]
+    letter = ai.extract_facts(_doc("lit.pdf", """Harrow & Vale LLP
+Litigation services will be billed monthly at our standard hourly rates ($525 partner, $325 associate).
+"""))
+    assert letter.terms == [] and {a.label for a in letter.amounts} == {"rate"}
 
 
 @pytest.mark.parametrize(
@@ -716,13 +748,15 @@ def test_recurrence_memo_contradiction_is_entry_specific(docs, ai_and_facts):
     adj = _claim("A-9", "One-time inventory write-off", AdjustmentCategory.NON_RECURRING,
                  "Year-end obsolete inventory write-off.")
     entries = [
+        _gl("GL-R302", "2025-12-15", "5400", "", "Scrap sale credit", "300.00"),
         _gl("GL-R300", "2025-12-31", "5400", "", "Year-end physical count adjustment – obsolete & shrink", "64000.00"),
         _gl("GL-R301", "2024-12-31", "5400", "", "Year-end physical count adjustment – obsolete & shrink", "58500.00"),
     ]
     found = ai.find_contradictions(adj, ai.parse_intent(adj), [facts["8.1 Year-end Inventory Count Memo.pdf"]], entries)
     assert len(found) == 1
     assert found[0].quote.quote.startswith("Consistent with prior years")
-    assert found[0].entry_ids == ["GL-R300"]
+    # tied by amount and date to the Dec 2025 entry, then to the same series (the memo says it recurs)
+    assert found[0].entry_ids == ["GL-R300", "GL-R301"]
 
 
 def test_personal_claim_contradicted_by_business_purpose(docs, ai_and_facts):
@@ -810,6 +844,9 @@ def test_classify_litigation_vs_general_matter(ai_and_facts):
     assert [result[e.entry_id].qualifies for e in entries] == [True, True, False, False, False]
     assert "1187" in result["GL-R702"].reason and "3310" in result["GL-R702"].reason
     assert all(c.reason for c in result.values())
+    # the engine only acts on a classification that cites a document about the entry
+    assert "4.1 Harrow Vale Engagement Letter Matter 1187.pdf" in result["GL-R702"].doc_ids
+    assert result["GL-R700"].doc_ids == ["4.2.1 Harrow Vale Invoice 25-0317.pdf"]
 
 
 def test_classify_ignores_other_matters_mentioned_in_event_letter(ai_and_facts):
@@ -843,6 +880,8 @@ def test_classify_personal_vs_business_travel(ai_and_facts):
         adj, ai.parse_intent(adj), entries, [facts["3.4 SMCS 2025 Registration Confirmation.pdf"]])}
     assert [result[e.entry_id].qualifies for e in entries] == [True, True, False, False, False]
     assert result["GL-R804"].doc_ids == ["3.4 SMCS 2025 Registration Confirmation.pdf"]
+    assert result["GL-R802"].doc_ids == ["3.4 SMCS 2025 Registration Confirmation.pdf"]
+    assert result["GL-R803"].doc_ids == []  # business memo, but no document to verify it against
 
 
 def test_classify_leaves_clean_claims_alone(ai_and_facts):
