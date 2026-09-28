@@ -2641,6 +2641,12 @@ def _amount_in_quote(amount: str, quote: str) -> bool:
     return False
 
 
+def _is_stated_ref(ref: str, text: str) -> bool:
+    """A reference must be a whole token of the text and long enough to identify something:
+    "331" is not stated by "Matter 3310", and "7" identifies nothing."""
+    return len(re.sub(r"[^0-9A-Za-z]", "", ref)) >= 3 and _token_in(ref, text)
+
+
 def _figures_in_quote(text: str, quote: str) -> bool:
     """Every money figure a description names is written in its quote."""
     for _, _, value, _ in _money_hits(text, bare=True):
@@ -2969,10 +2975,8 @@ class OpenAICompatibleEvidenceAI:
                 statements.append(q)
         refs = list(rules.reference_numbers)
         for r in (_stated(x) for x in data.get("reference_numbers") or []):
-            # A reference must be a whole token of the text and long enough to identify something.
-            if r and len(re.sub(r"[^0-9A-Za-z]", "", r)) >= 3 and _token_in(r, full_text):
-                if r.lower() not in {x.lower() for x in refs}:
-                    refs.append(r)
+            if r and _is_stated_ref(r, full_text) and r.lower() not in {x.lower() for x in refs}:
+                refs.append(r)
         counterparty = _stated(data.get("counterparty"))
         if counterparty and _norm_space(counterparty).lower() not in full_lower:
             counterparty = None
@@ -3020,7 +3024,7 @@ class OpenAICompatibleEvidenceAI:
             low = _norm_space(narrative).lower()
             counterparties = [c for c in (_stated(x) for x in data.get("counterparties") or [])
                               if c and _norm_space(c).lower() in low]
-            refs = [r for r in (_stated(x) for x in data.get("reference_numbers") or []) if r and r.lower() in low]
+            refs = [r for r in (_stated(x) for x in data.get("reference_numbers") or []) if r and _is_stated_ref(r, narrative)]
             keywords = [k.lower() for k in (_stated(x) for x in data.get("keywords") or []) if k]
             keywords = _without_names(keywords, counterparties, narrative)
             normalized = _stated(data.get("normalized_amount"))

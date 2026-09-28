@@ -43,7 +43,6 @@ Deals workpaper conventions used throughout:
 from __future__ import annotations
 
 import json
-import math
 import os
 import re
 import shutil
@@ -1116,9 +1115,8 @@ def _removed_code(link: GLLink) -> Optional[FlagCode]:
 def _entry_views(ctx: _Ctx, a: AdjustmentAssessment, flags: Sequence[tuple[int, Flag]]) -> list[_EntryView]:
     periods = ctx.wp.deal.periods
     recovery_ids = {e for _, f in flags if f.code == FlagCode.OFFSETTING_RECOVERY for e in f.entry_ids}
-    out: list[_EntryView] = []
+    rows: list[tuple[GLLink, str, bool, Optional[FlagCode]]] = []
     for link in a.gl_links:
-        entry = ctx.gl_by_id.get(link.entry_id)
         if link.role in _ROLE_TICK:
             tick, claimed, removed_by = _ROLE_TICK[link.role], link.claimed, link.removed_by
             if tick == "R" and removed_by is None:
@@ -1133,15 +1131,20 @@ def _entry_views(ctx: _Ctx, a: AdjustmentAssessment, flags: Sequence[tuple[int, 
                 tick, claimed = "O", False
             else:
                 tick, claimed = "X", False
+        rows.append((link, tick, claimed, removed_by))
+    # A diligence-identified item has no management claim: (b) is the entries the item itself rests on.
+    traces = [lk for lk, tick, claimed, _ in rows if claimed or (_is_diligence(a) and tick in ("T", "R", "M"))]
+    claimed_in = _claimed_periods(ctx, a, traces)
+    out: list[_EntryView] = []
+    for link, tick, claimed, removed_by in rows:
         cited = removed_by
         if tick == "M" and cited is None:
             cited = FlagCode.OUT_OF_PERIOD
         elif tick == "O" and cited is None:
             cited = FlagCode.OFFSETTING_RECOVERY
-        in_periods = labels_for_month(link.period, periods)
-        if claimed or (_is_diligence(a) and tick in ("T", "R", "M")):
-            # A claimed entry counts only where management claims something (its (b) Traced periods).
-            in_periods = [p for p in in_periods if D(a.claimed.get(p)) != 0 or D(a.traced_gl.get(p)) != 0]
+        traced = any(link is lk for lk in traces)
+        in_periods = claimed_in.get(link.entry_id, []) if traced else labels_for_month(link.period, periods)
+        entry = ctx.gl_by_id.get(link.entry_id)
         out.append(_EntryView(
             link=link, entry=entry, tick=tick, claimed=claimed, removed_by=removed_by,
             removed_flag=_flag_for(flags, cited, link.entry_id) if tick in ("R", "M", "O") else None,
@@ -1151,6 +1154,82 @@ def _entry_views(ctx: _Ctx, a: AdjustmentAssessment, flags: Sequence[tuple[int, 
     out.sort(key=lambda v: (_ROLE_RANK[v.tick], not v.claimed, v.link.period, _gl_row(v.link.entry_id) or 0,
                             v.link.entry_id))
     return out
+
+
+_CLAIMED_IN = re.compile(r"^Claimed in (.+)$")
+_MAX_SUBSET = 28  # entries whose period membership is inferred by an exact subset (meet in the middle)
+
+
+def _cents(value: object) -> int:
+    return int(q2(D(value)) * 100)
+
+
+def _claimed_periods(ctx: _Ctx, a: AdjustmentAssessment, links: Sequence[GLLink]) -> dict[str, list[str]]:
+    """The analysis periods in whose (b) Traced amount each entry is counted.
+
+    ``GLLink.claimed`` does not say which of two overlapping periods (a fiscal year and a TTM) an entry
+    is claimed in, and management can claim a month in one and not the other. Membership comes from,
+    in order: the trace's "Claimed in ..." reason; the only period with traced activity that contains
+    the entry's month; otherwise the exact subset of the undecided entries that makes up the period's
+    (b) Traced amount. When nothing ties, every containing period is used and the listing's check
+    shows the difference."""
+    active = [p for p in ctx.labels if D(a.claimed.get(p)) != 0 or D(a.traced_gl.get(p)) != 0]
+    periods = ctx.wp.deal.periods
+    hinted: dict[str, set[str]] = {}
+    for lk in links:
+        for reason in lk.reasons:
+            m = _CLAIMED_IN.match(reason)
+            if m:
+                hinted[lk.entry_id] = {x.strip() for x in m.group(1).split(",")} & set(ctx.labels)
+    out: dict[str, list[str]] = {}
+    containing = {lk.entry_id: [p for p in labels_for_month(lk.period, periods) if p in active] for lk in links}
+    for p in active:
+        fixed, open_ = 0, []
+        for lk in links:
+            if p not in containing[lk.entry_id]:
+                continue
+            if lk.entry_id in hinted:
+                if p in hinted[lk.entry_id]:
+                    fixed += _cents(lk.amount)
+                    out.setdefault(lk.entry_id, []).append(p)
+            elif len(containing[lk.entry_id]) == 1:
+                fixed += _cents(lk.amount)
+                out.setdefault(lk.entry_id, []).append(p)
+            else:
+                open_.append(lk)
+        chosen = _exact_subset([_cents(lk.amount) for lk in open_], _cents(a.traced_gl.get(p)) - fixed)
+        for i, lk in enumerate(open_):
+            if chosen is None or i in chosen:
+                out.setdefault(lk.entry_id, []).append(p)
+    return out
+
+
+def _exact_subset(values: list[int], target: int) -> Optional[set[int]]:
+    """Indexes of values summing exactly to target, preferring the most entries; None if none does
+    (or there are too many to search)."""
+    if sum(values) == target:
+        return set(range(len(values)))
+    if not values or len(values) > _MAX_SUBSET:
+        return None
+    half = len(values) // 2
+    left, right = values[:half], values[half:]
+
+    def sums(part: list[int], offset: int) -> dict[int, frozenset[int]]:
+        best: dict[int, frozenset[int]] = {}
+        for mask in range(1 << len(part)):
+            idx = frozenset(offset + i for i in range(len(part)) if mask >> i & 1)
+            total = sum(part[i - offset] for i in idx)
+            if total not in best or len(idx) > len(best[total]):
+                best[total] = idx
+        return best
+
+    rights = sums(right, half)
+    found: Optional[frozenset[int]] = None
+    for total, idx in sums(left, 0).items():
+        other = rights.get(target - total)
+        if other is not None and (found is None or len(idx) + len(other) > len(found)):
+            found = idx | other
+    return set(found) if found is not None else None
 
 
 def _norm_ref(text: Optional[str]) -> str:
@@ -1203,7 +1282,8 @@ def _vouch(ctx: _Ctx, entry: Optional[GLEntry], link: GLLink, doc_id: str) -> st
         return "D"
     tol = D(ctx.wp.deal.tolerance)
     amount = abs(D(link.amount))
-    states_amount = any(abs(abs(D(x.amount)) - amount) <= tol for x in facts.amounts)
+    stated = (_decimal(x.amount) for x in facts.amounts)
+    states_amount = any(v is not None and abs(abs(v) - amount) <= tol for v in stated)
     memo = _norm_ref(entry.memo) if entry is not None else ""
     if states_amount and memo and any(len(r) >= 5 and any(ch.isdigit() for ch in r) and r in memo for r in refs):
         return "D"
@@ -1219,6 +1299,14 @@ def _vouch(ctx: _Ctx, entry: Optional[GLEntry], link: GLLink, doc_id: str) -> st
         return "S"  # the document carries its own number, and it is not this entry's
     party_ok = not facts.counterparty or not entry.counterparty or _same_party(entry.counterparty, facts.counterparty)
     return "D" if party_ok and _near(facts, link.period) else "S"
+
+
+def _decimal(value: object) -> Optional[Decimal]:
+    """A document-stated amount, or None when the extractor recorded something that is not a number."""
+    try:
+        return D(value)
+    except (ValueError, TypeError):
+        return None
 
 
 def _walk_baseline(a: AdjustmentAssessment, labels: Sequence[str], flags: Sequence[tuple[int, Flag]]) -> str:
@@ -1415,6 +1503,7 @@ def _write_support(ws: Worksheet, ctx: _Ctx, a: AdjustmentAssessment) -> _TieOut
         diffs.append(("(a) - (b) Claimed saving less cost still in the GL" if pro_forma
                       else "(a) - (b) Claimed less traced to GL", "a", "b", "plain"))
     diffs.append(("(b) - (c) Actual cost without document support" if norm
+                  else "(b) - (c) Cost still in the GL without document support" if pro_forma
                   else "(b) - (c) Traced to GL less documented", "b", "c", "plain"))
     diffs.append(("(d) - (a) Tool proposed less claimed", "d", "a", "pending" if pending_tool else "plain"))
     diffs.append(("(e) - (a) Final less claimed (bridge revision; a pending item reverses the claim)", "e", "a",
@@ -1473,6 +1562,19 @@ def _write_support(ws: Worksheet, ctx: _Ctx, a: AdjustmentAssessment) -> _TieOut
             sh.put(row, 1, f"F{i} {_flag_label(f.code)}", span=3, indent=1)
             walk_refs.append((row, i))
             sh.text(row, rc, _effect_note(f), span=last - rc + 1, italic=True, color=MUTED)
+            row += 1
+        tol = D(ctx.wp.deal.tolerance)
+        base = a.traced_gl if baseline == "b" else a.claimed
+        residual = [D(a.proposed.get(p)) - D(base.get(p)) - sum((D(f.effects.get(p)) for _, f in effect_flags),
+                                                                  Decimal(0)) for p in ctx.labels]
+        if any(0 < abs(x) <= tol for x in residual):
+            # The engine leaves a gap within the tie-out tolerance to rounding, not to a flag.
+            sh.put(row, 1, f"Difference within the tie-out tolerance ({fmt(tol)}), not attributed to a flag",
+                   span=3, indent=1, italic=True, wrap=True)
+            for i in range(n):
+                col = pc + i
+                gap = f"{_a1(col, rows['d'])}-SUM({_a1(col, walk_first)}:{_a1(col, row - 1)})"
+                sh.formula(row, col, f"=IF(ABS({gap})<={fmt(tol)},{gap},0)", italic=True)
             row += 1
         walk_last = row - 1
         walk_total = row
@@ -1746,6 +1848,7 @@ def _gl_table(
     n = len(ctx.labels)
     out = _Listing()
     diligence = _is_diligence(a)
+    norm = a.category == AdjustmentCategory.NORMALIZATION and not diligence
     if row > 2:
         sh.ws.row_breaks.append(Break(id=row - 1))
     sh.section(row, f"LINKED GL ENTRIES ({len(views)})")
@@ -1783,10 +1886,30 @@ def _gl_table(
     if oop:
         lines.append(("oop", "Out-of-period flag effects (net; see the Flags block)",
                       "The service-period side of a move is not a GL entry in that period."))
+    # No exact subset of the linked entries ties to the claim: the tool carries no more than the claim.
+    capped = not norm and any(
+        (D(a.claimed.get(p)) > 0 and D(a.traced_gl.get(p)) > D(a.claimed.get(p)))
+        or (D(a.claimed.get(p)) < 0 and D(a.traced_gl.get(p)) < D(a.claimed.get(p))) for p in ctx.labels)
+    if capped:
+        lines.append(("cap", "Cap at the claim (no exact subset of the linked entries ties to it)",
+                      "Where the traced entries exceed the claim, (d) carries no more than management claimed."))
+    if norm:
+        lines += [
+            ("listing_d", "Actual cost carried per the listing: T + M + O" + (" + out-of-period effects" if oop
+                                                                              else ""), ""),
+            ("level", "Normalized level deducted in (d): the line above less (d)",
+             "The normalized level is not a GL entry, so this line is derived."),
+            ("level_diff", "Level deducted less the level the claim implies, (b) - (a)",
+             "Zero when the tool uses the level management's claim implies."),
+        ]
+    else:
+        lines += [
+            ("listing_d", "Tool proposed per the listing: T + M + O" + (" + out-of-period effects" if oop else "")
+             + (" + cap" if capped else ""), ""),
+            ("chk_d", "Check: listing less (d) Tool proposed; should be zero"
+             + ("" if d_rolled or pending_tool else " (memo: not in the checks for this workpaper)"), ""),
+        ]
     lines += [
-        ("listing_d", "Tool proposed per the listing: T + M + O" + (" + out-of-period effects" if oop else ""), ""),
-        ("chk_d", "Check: listing less (d) Tool proposed; should be zero"
-         + ("" if d_rolled or pending_tool else " (memo: not in the checks for this workpaper)"), ""),
         ("doc_D", "Claimed entries vouched to their own document (D)", ""),
         ("doc_AS", "Claimed entries with agreement or sample support only (A / S)", ""),
         ("doc_gap", "(c) Documented less the two lines above", "Documents the tool counted that are not specific to "
@@ -1864,9 +1987,22 @@ def _gl_table(
         sh.formula(at["chk_b"], col, f"={L}{at['claimed']}-{L}{tie_rows['b']}", num_fmt=CHECK_FORMAT, italic=True)
         if oop:
             sh.formula(at["oop"], col, "=" + "+".join(f"{L}{flag_rows[i]}" for i in oop))
-        listing_d = f"={L}{at['T']}+{L}{at['M']}+{L}{at['O']}" + (f"+{L}{at['oop']}" if oop else "")
+        if capped:
+            ta, tb, tt = f"{L}{tie_rows['a']}", f"{L}{tie_rows['b']}", f"{L}{at['T']}"
+            sh.formula(at["cap"], col, f"=IF(AND({ta}>0,{tb}>{ta}),MIN({tt},{ta})-{tt},"
+                                       f"IF(AND({ta}<0,{tb}<{ta}),MAX({tt},{ta})-{tt},0))")
+        listing_d = (f"={L}{at['T']}+{L}{at['M']}+{L}{at['O']}" + (f"+{L}{at['oop']}" if oop else "")
+                     + (f"+{L}{at['cap']}" if capped else ""))
         sh.formula(at["listing_d"], col, listing_d, bold=True, border=_TOP_BORDER)
-        if pending_tool:
+        if norm:
+            if pending_tool:
+                sh.pending(at["level"], col)
+                sh.pending(at["level_diff"], col)
+            else:
+                sh.formula(at["level"], col, f"={L}{at['listing_d']}-{L}{tie_rows['d']}", italic=True)
+                sh.formula(at["level_diff"], col, f"={L}{at['level']}-({L}{tie_rows['b']}-{L}{tie_rows['a']})",
+                           italic=True)
+        elif pending_tool:
             sh.pending(at["chk_d"], col)
         else:
             sh.formula(at["chk_d"], col, f"={L}{at['listing_d']}-{L}{tie_rows['d']}", num_fmt=CHECK_FORMAT,
@@ -1878,7 +2014,7 @@ def _gl_table(
     if n and ctx.records_roles:
         out.rolled.append(f"SUMPRODUCT(ABS({_a1(pc, at['chk_b'])}:{_a1(pc + n - 1, at['chk_b'])}))")
         sh.check_row(at["chk_b"], pc, pc + n - 1)
-    if n and d_rolled:
+    if n and d_rolled and not norm:
         out.rolled.append(f"SUMPRODUCT(ABS({_a1(pc, at['chk_d'])}:{_a1(pc + n - 1, at['chk_d'])}))")
         sh.check_row(at["chk_d"], pc, pc + n - 1)
     sh.ws.auto_filter.ref = f"A{header_row}:{get_column_letter(reasons_col)}{last_row}"
@@ -1909,7 +2045,7 @@ def _documents_block(sh: _Sheet, ctx: _Ctx, a: AdjustmentAssessment, row: int, l
     titles = ["Document", "Type", "Doc date", "Signed?", "Relation", "Counterparty", "Reference #s", "Key terms",
               "Service period", "Linked GL rows"]
     sh.header(row, [("#", 1)])
-    sh.header_at(row, [(t, c, s) for t, (c, s) in zip(titles, fields)])
+    sh.header_at(row, [(t, c, s) for t, (c, s) in zip(titles, fields, strict=True)])
     sh.header(row, [("Link reasons (not printed)", 1)], start_col=reasons_col)
     row += 1
     for i, link in enumerate(a.doc_links, start=1):
@@ -3247,7 +3383,8 @@ def _page_setup(ws: Worksheet, ctx: _Ctx) -> None:
         ws.print_title_cols = f"A:{get_column_letter(spec.title_cols)}"
     last_row = spec.last_row or ws.max_row
     ws.print_area = f"A1:{get_column_letter(last_col)}{max(1, last_row)}"
-    label = ("SYNTHETIC | " if ctx.wp.deal.synthetic else "") + ("DRAFT" if ctx.unreviewed else "DRAFT until signed off")
+    label = ("SYNTHETIC | " if ctx.wp.deal.synthetic else "") + (
+        "DRAFT" if ctx.unreviewed else "DRAFT until signed off")
     ws.oddHeader.left.text = f"{ctx.wp.deal.target_name}: &A"
     ws.oddHeader.right.text = "Prepared: ________  Reviewed: ________"
     ws.oddFooter.left.text = f"{label}: QoE Evidence Review, run {ctx.wp.run_id}"

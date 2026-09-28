@@ -157,7 +157,8 @@ class DealFiles(StrictModel):
 
 
 class DealMeta(StrictModel):
-    deal_id: str
+    # Used in file and sheet names, so it must be a plain, safe token.
+    deal_id: str = Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
     target_name: str
     industry: str = ""
     synthetic: bool = True
@@ -326,7 +327,8 @@ class GLLink(StrictModel):
     #   moved (claimed, carried in another period by an OUT_OF_PERIOD effect) |
     #   recovery (offset applied in the proposal) | context (not part of the claim).
     role: str = ""
-    claimed: bool = False  # management's claimed amount includes this entry
+    claimed: bool = False  # management's claimed amount includes this entry (in any period)
+    claimed_in: list[str] = Field(default_factory=list)  # period labels whose claim includes it (FY and TTM can differ)
     removed_by: Optional[FlagCode] = None  # the flag that removed it, when role == "removed"
 
 

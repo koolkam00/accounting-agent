@@ -347,7 +347,8 @@ def _reviews() -> list[ReviewDecision]:
 
 RECON_ACCOUNTS = [("4000", "Service Revenue", "-310000.00"), ("6000", "Salaries & Wages - Office", "118500.25"),
                   ("6200", "Insurance", "8200.00")]
-PERIOD_MONTHS = {"FY2024": ("2024-01", "2024-12"), "FY2025": ("2025-01", "2025-12"), "TTM Jun-26": ("2025-07", "2026-06")}
+PERIOD_MONTHS = {"FY2024": ("2024-01", "2024-12"), "FY2025": ("2025-01", "2025-12"),
+                 "TTM Jun-26": ("2025-07", "2026-06")}
 
 
 def _recon_gl(i: int, acct: str, base: str) -> Decimal:
@@ -1192,8 +1193,9 @@ def _recalc_copy(wp: Workpaper, tmp_path: Path, pkg: DealPackage | None = None):
 
 
 def _sheet_check(ws) -> tuple[object, object]:
+    """(check total rounded to the cent, status) of a support sheet."""
     r = _row_of(ws, "Sheet checks")
-    return ws.cell(row=r, column=3).value, ws.cell(row=r, column=4).value
+    return round(float(ws.cell(row=r, column=3).value), 2), ws.cell(row=r, column=4).value
 
 
 def _cover_status(cover, label: str) -> object:
@@ -1296,6 +1298,85 @@ def test_walk_and_listing_tie_moves_and_period_mismatches(tmp_path):
     assert _cover_status(wb[SHEET_COVER], "Workbook checks") == "OK"
 
 
+def _edge_items() -> list[AdjustmentAssessment]:
+    """Cases the second dev deal exposed: a proposal capped at the claim, an entry claimed in one of two
+    overlapping periods only, a normalization item carried at the claim's level, and a gap within the
+    tie-out tolerance that no flag carries."""
+
+    def link(row: int, month: str, amount: str, role: str = "supporting", hint: str = "", **kw) -> GLLink:
+        return GLLink(entry_id=f"GL-R{row}", period=month, amount=amount, score=4.0, role=role, claimed=True,
+                      reasons=[hint] if hint else [], supports_claim=role == "supporting", **kw)
+
+    capped = AdjustmentAssessment(
+        adj_id="A-10", title="Relocation (no exact fit)", category=AdjustmentCategory.NON_RECURRING,
+        claimed=_pm(0, 50000, 0), traced_gl=_pm(0, 60000, 0), documented=_pm(0, 0, 0), proposed=_pm(0, 50000, 0),
+        treatment=Treatment.ACCEPT,
+        gl_links=[link(2400 + i, f"2025-0{i}", "20000.00") for i in (2, 3, 4)],
+    )
+    overlap = AdjustmentAssessment(
+        adj_id="A-11", title="Consulting (claimed FY only)", category=AdjustmentCategory.NON_RECURRING,
+        claimed=_pm(0, 30000, 20000), traced_gl=_pm(0, 30000, 20000), documented=_pm(0, 0, 0),
+        proposed=_pm(0, 20000, 20000), treatment=Treatment.REVISE,
+        gl_links=[
+            link(2501, "2025-07", "10000.00", hint="Claimed in FY2025"),
+            link(2502, "2025-08", "10000.00", hint="Claimed in FY2025, TTM Jun-26"),
+            link(2503, "2025-09", "10000.00", role="removed", removed_by=FlagCode.RECURRING_PATTERN),
+            link(2504, "2026-01", "10000.00", hint="Claimed in TTM Jun-26"),
+        ],
+        flags=[Flag(code=FlagCode.RECURRING_PATTERN, severity=Severity.WARNING, message="Recurs.",
+                    entry_ids=["GL-R2503"], effects={"FY2025": "-10000.00"})],
+    )
+    level = AdjustmentAssessment(
+        adj_id="A-12", title="Owner pay at the signed level", category=AdjustmentCategory.NORMALIZATION,
+        claimed=_pm(250000, 250000, 250000), traced_gl=_pm(550000, 550000, 550000), documented=_pm(0, 0, 0),
+        proposed=_pm(250000, 250000, 250000), treatment=Treatment.ACCEPT,
+        gl_links=[link(2600 + i, m, amt) for i, (m, amt) in enumerate(
+            (("2024-06", "550000.00"), ("2025-03", "275000.00"), ("2025-09", "275000.00"), ("2026-03", "275000.00")))],
+    )
+    rounding = AdjustmentAssessment(
+        adj_id="A-13", title="Repairs (partial)", category=AdjustmentCategory.NON_RECURRING,
+        claimed=_pm(0, 10000, 10000), traced_gl=_pm(0, "9318.27", "9999.22"), documented=_pm(0, 0, 0),
+        proposed=_pm(0, "9318.27", "9999.22"), treatment=Treatment.REVISE,
+        gl_links=[link(2701, "2025-07", "9318.27", hint="Claimed in FY2025, TTM Jun-26"),
+                  link(2702, "2026-01", "680.95", hint="Claimed in TTM Jun-26")],
+        flags=[Flag(code=FlagCode.PARTIAL_GL_SUPPORT, severity=Severity.WARNING, period_label="FY2025",
+                    amount_impact="-681.73", effects={"FY2025": "-681.73"}, message="Part of the claim is not in the GL.")],
+    )
+    return [capped, overlap, level, rounding]
+
+
+def test_listing_and_walk_tie_caps_overlaps_normalization_and_rounding(tmp_path):
+    wp = make_workpaper(reviews=[])
+    wp = wp.model_copy(update={"assessments": [*wp.assessments, *_edge_items()]})
+    wp = wp.model_copy(update={"bridge": _build_bridge(list(wp.assessments), _fallback_final_amounts(wp, {}))})
+    wb = _recalc_copy(wp, tmp_path)
+    for adj in ("A-10", "A-11", "A-12", "A-13"):
+        assert _sheet_check(wb[f"Adj {adj}"]) == (0, "OK"), adj
+    a10 = wb["Adj A-10"]
+    assert [D(x) for x in _period_values(a10, _row_of(a10, "Cap at the claim"))] == [D(0), D(-10000), D(0)]
+    a11 = wb["Adj A-11"]
+    rows = _listing(a11)
+    assert rows["GL-R2501"]["TTM Jun-26\n(USD, debit +)"] is None  # claimed in FY2025 only
+    assert rows["GL-R2503"]["FY2025\n(USD, debit +)"] == 10000 and rows["GL-R2503"]["TTM Jun-26\n(USD, debit +)"] is None
+    a12 = wb["Adj A-12"]
+    assert [D(x) for x in _period_values(a12, _row_of(a12, "Normalized level deducted in (d)"))] == [D(300000)] * 3
+    assert [D(x) for x in _period_values(a12, _row_of(a12, "Level deducted less the level the claim"))] == [D(0)] * 3
+    assert not any(v.startswith("Check: listing less (d)") for v in _values(a12))
+    a13 = wb["Adj A-13"]
+    gap = _row_of(a13, "Difference within the tie-out tolerance")
+    assert [round(D(x), 2) for x in _period_values(a13, gap)] == [D(0), D(0), D("-0.78")]
+    assert _cover_status(wb[SHEET_COVER], "Workbook checks") == "OK"
+
+
+def test_exact_subset_prefers_the_largest_fit():
+    from qoe.export_xlsx import _exact_subset
+
+    assert _exact_subset([100, 200, 300], 600) == {0, 1, 2}
+    assert _exact_subset([100, 200, 300], 300) == {0, 1}  # two entries beat one
+    assert _exact_subset([100, 200, 300], 0) == set()
+    assert _exact_subset([100, 200], 50) is None
+
+
 # -- excel-tick-x-on-claimed-entries ----------------------------------------
 
 
@@ -1355,12 +1436,12 @@ def test_listing_ties_by_period_to_traced_and_proposed(wp, recalculated):
         ws = wb[f"Adj {a.adj_id}"]
         claimed = _row_of(ws, "Claimed by management (Claimed? = Yes)")
         assert [D(x) for x in _period_values(ws, claimed)] == [D(a.traced_gl[p]) for p in LABELS], a.adj_id
-        listing_d = _row_of(ws, "Tool proposed per the listing")
         if a.treatment != Treatment.REQUEST_INFO:
+            listing_d = _row_of(ws, "Tool proposed per the listing")
             assert [D(x) for x in _period_values(ws, listing_d)] == [D(a.proposed[p]) for p in LABELS], a.adj_id
         assert _sheet_check(ws) == (0, "OK"), a.adj_id
         f = formulas[f"Adj {a.adj_id}"].cell(row=_row_of(ws, "Supporting: claimed and carried"), column=5).value
-        assert f.startswith("=SUMIFS(E$") and ',"T")' in f
+        assert f.startswith("=SUMIFS($E$") and ',"T")' in f
     a1 = wb["Adj A-1"]
     assert [D(x) for x in _period_values(a1, _row_of(a1, "Removed by a flag (R)"))] == [D(0), D("30000"), D("30000")]
     a5 = wb["Adj A-5"]
@@ -1426,6 +1507,11 @@ def test_document_ticks_vouch_each_entry_to_its_own_document(wp):
     # Same party and amount: vouched in the statement's month, a sample in any other month.
     assert _vouch(ctx, *entry(5, "2025-12", "1500.00", cp="Lakeside Leasing Co."), "statement") == "D"
     assert _vouch(ctx, *entry(6, "2025-03", "1500.00", cp="Lakeside Leasing Co."), "statement") == "S"
+    # An extractor amount that is not a number never breaks the export.
+    odd = DocFacts(doc_id="odd", doc_type="invoice",
+                   amounts=[AmountFact(label="x", amount="n/a", quote=_q("odd", "x"))])
+    odd_ctx = _context(wp.model_copy(update={"doc_facts": [odd]}), None)
+    assert _vouch(odd_ctx, *entry(7, "2025-03", "1500.00"), "odd") == ""
 
 
 def test_documented_rows_follow_the_ticks(wp):
@@ -1461,7 +1547,7 @@ def test_bridge_agrees_to_schedule_line_by_line_and_to_net_income(wp, tmp_path):
         return [D(x) for x in _period_values(ws, _row_of(ws, label, col=2), first_col=3)]
 
     assert checks("Total management adjustments less total claimed") == [D(0)] * 3  # the total still ties
-    assert checks("Each management line less its claimed amount") == [D(0), D(40000), D(52000)]
+    assert checks("Each management line less its claimed amount") == [D(0), D(84000), D(52000)]
     assert checks("Check: Reported EBITDA (per management) above less the schedule") == [D(0)] * 3
     assert checks("Check: Management adjusted EBITDA above less the schedule") == [D(0), D(-1000), D(0)]
     assert checks("Check: Net income (per GL) above less the reconciliation") == [D(0)] * 3
@@ -1519,13 +1605,13 @@ def test_print_setup_is_legible_with_repeating_headers(wp):
             assert ws.print_title_rows, ws.title
     support = wb["Adj A-1"]
     header = _find_row(support, 1, lambda v: v == "Entry ID")
-    assert support.print_title_rows == f"{header}:{header}"
+    assert support.print_title_rows == f"${header}:${header}"
     assert support.row_breaks.brk[-1].id == _row_of(support, "LINKED GL ENTRIES") - 1
     reasons = next(c for c in range(1, support.max_column + 1)
                    if str(support.cell(row=header, column=c).value).startswith("Link reasons"))
     printed = column_index_from_string(re.findall(r"\$([A-Z]+)\$\d+", support.print_area)[-1])
     assert reasons > printed
-    assert wb[SHEET_SUMMARY].print_title_rows == "6:7" and wb[SHEET_BRIDGE].print_title_rows == "6:6"
+    assert wb[SHEET_SUMMARY].print_title_rows == "$6:$7" and wb[SHEET_BRIDGE].print_title_rows == "$6:$6"
     recon = wb[SHEET_RECON]
     detail = _row_of(recon, "ALL ACCOUNT-MONTHS COMPARED")
     assert int(re.findall(r"\d+", recon.print_area.split(":")[-1])[0]) < detail
@@ -1553,10 +1639,12 @@ def test_normalization_tieout_shows_actual_cost_and_implied_level(wp):
 def test_pro_forma_tieout_says_the_cost_is_still_in_the_gl():
     wp = make_workpaper()
     pf = wp.assessments[3].model_copy(update={"category": AdjustmentCategory.PRO_FORMA, "title": "Pro forma savings"})
-    ws = build_workbook(wp.model_copy(update={"assessments": [*wp.assessments[:3], pf, *wp.assessments[4:]]}))["Adj A-4"]
+    swapped = wp.model_copy(update={"assessments": [*wp.assessments[:3], pf, *wp.assessments[4:]]})
+    ws = build_workbook(swapped)["Adj A-4"]
     values = _values(ws)
     assert "(b) Cost still in the GL (run-rate saving not yet realized)" in values
     assert "(a) - (b) Claimed saving less cost still in the GL" in values
+    assert "(b) - (c) Cost still in the GL without document support" in values
 
 
 # -- excel-pending-tool-diff-misleading -------------------------------------
@@ -1583,7 +1671,8 @@ def test_pending_item_shows_pending_difference_and_a_provisional_memo(wp, recalc
 
 def test_provisional_amount_parsing():
     labels = ["FY2024", "FY2025", "TTM Jun-26"]
-    text = "REQUEST_INFO: x. Provisional amount the evidence would support: FY2024 0 / FY2025 (42,000) / TTM Jun-26 165,000."
+    text = ("REQUEST_INFO: x. Provisional amount the evidence would support: FY2024 0 / FY2025 (42,000) / "
+            "TTM Jun-26 165,000.")
     assert _provisional_from_rationale(text, labels) == {"FY2024": D(0), "FY2025": D(-42000), "TTM Jun-26": D(165000)}
     assert _provisional_from_rationale("REQUEST_INFO: FY2024 1 / FY2025 2 / TTM Jun-26 3", labels) is None
     assert _provisional_from_rationale("Provisional: FY2024 1 / FY2025 2", labels) is None
@@ -1616,7 +1705,8 @@ def test_pending_item_without_an_open_question_gets_a_request(tmp_path):
     cover = wb[SHEET_COVER]
     r = _row_of(cover, "Pending items with no open question")
     assert cover.cell(row=r, column=2).value == 2 and "A-4, A-6" in cover.cell(row=r, column=3).value
-    assert any(v.startswith("The item is pending but no question to management is open") for v in _values(wb["Adj A-6"]))
+    held = _values(wb["Adj A-6"])
+    assert any(v.startswith("The item is pending but no question to management is open") for v in held)
     # A pending item that already has an open question gets nothing extra.
     assert "Q-A-4-P" not in _values(build_workbook(make_workpaper())[SHEET_QUESTIONS])
 

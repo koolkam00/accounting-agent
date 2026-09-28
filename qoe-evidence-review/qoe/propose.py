@@ -233,10 +233,9 @@ def flag_effects(t: AdjustmentTrace, proposed: Optional[dict[str, Decimal]] = No
                 f.period_label = None
     residual = {lbl: proposed.get(lbl, ZERO) - t.claim(lbl) - total[lbl] for lbl in labels}
     loose = {lbl: v for lbl, v in residual.items() if abs(v) > t.index.tolerance}
-    if loose:
-        t.notes.append(
-            "Difference between claimed and proposed that no flag carries: " + periods_text(loose, labels) + "."
-        )
+    note = "Difference between claimed and proposed that no flag carries: " + periods_text(loose, labels) + "."
+    if loose and note not in t.notes:
+        t.notes.append(note)
     return residual
 
 
@@ -418,7 +417,7 @@ def build_judgments(t: AdjustmentTrace) -> list[str]:
         amounts = periods_text(_removed_by_period(t, ids), t.labels)
         out.append(_short_sentence(
             f"Which adjustment should carry {_groups(t, ids, 2)} ({amounts}): {t.adj.adj_id} or {other}? "
-            f"The tool removed it here because it is {note}."
+            f"The tool removed {plural(len(ids), 'it', 'them')} here because {plural(len(ids), 'it is', 'they are')} {note}."
         ))
     out += _effect_judgments(t)
     for (code, source), ids in by_code.items():

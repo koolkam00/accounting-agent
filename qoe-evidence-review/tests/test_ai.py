@@ -1069,7 +1069,7 @@ def test_llm_parse_intent_rejects_unstated_values():
     client = _fake_client({
         "counterparties": ["Harrow & Vale LLP", "Invented Partners LLC"],
         "keywords": ["Litigation", "brennan", "Harrow & Vale"],
-        "reference_numbers": ["3310", "7777"],
+        "reference_numbers": ["3310", "7777", "331", "33"],
         "event_type": "litigation",
         "asserts_nonrecurring": True,
         "asserts_personal": False,

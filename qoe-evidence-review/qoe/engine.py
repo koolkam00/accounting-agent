@@ -7,6 +7,11 @@
 ``run_review`` works from a deal directory; ``review_package`` does the same
 from an in-memory ``DealPackage``. Output is deterministic: the same inputs,
 ``run_id``, and ``created_at`` give a byte-identical ``workpaper.json``.
+
+AI provenance is part of the workpaper: every AI call that failed and fell back
+(``Workpaper.ai_fallbacks``) and every AI quote rejected anywhere in the run
+(``Workpaper.ai_dropped_quotes``), so a run labelled ``llm:<model>`` cannot hide
+that parts of it were answered by the rules or that the model fabricated quotes.
 """
 
 from __future__ import annotations
@@ -21,7 +26,7 @@ from typing import Optional
 from qoe import TOOL_VERSION
 from qoe.ai_base import AdjustmentIntent, EvidenceAI, verify_quote
 from qoe.bridge import build_bridge
-from qoe.challenge import ChallengeContext, resolve_overlaps, run_challenges
+from qoe.challenge import ChallengeContext, _adapter_drops, resolve_overlaps, run_challenges
 from qoe.propose import propose, propose_duplicate_items
 from qoe.schemas import (
     AdjustmentCategory,
@@ -178,7 +183,10 @@ def review_package(
             f"the schedule; this run is not purely {ai.name}. See ai_fallbacks."
         )
     if ai_dropped:
-        notes.append(f"AI provenance: {ai_dropped} AI quote(s) were not verbatim (or too short to prove anything) and were dropped.")
+        notes.append(
+            f"AI provenance: {ai_dropped} AI quote(s) were rejected (not verbatim, too short to prove anything, or "
+            "not backing the statement made with them) and dropped."
+        )
     bridge = build_bridge(pkg, recon, pkg.schedule, assessments)
     return Workpaper(
         run_id=run_id or default_run_id(pkg, ai.name),
@@ -207,10 +215,6 @@ def _adapter_fallbacks(ai: EvidenceAI) -> list[str]:
     value = getattr(ai, "fallbacks", None)
     return [str(x) for x in value] if isinstance(value, list) else []
 
-
-def _adapter_drops(ai: EvidenceAI) -> int:
-    value = getattr(ai, "dropped_quotes", 0)
-    return value if isinstance(value, int) else 0
 
 
 def run_review(
