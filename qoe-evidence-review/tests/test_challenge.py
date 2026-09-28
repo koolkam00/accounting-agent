@@ -68,6 +68,7 @@ ACCOUNTS = {
         ("6450", "Recruiting", "Expense", EbitdaClass.OPEX),
         ("6600", "Travel", "Expense", EbitdaClass.OPEX),
         ("6700", "Dues & Subscriptions", "Expense", EbitdaClass.OPEX),
+        ("6950", "Bad Debt Expense", "Expense", EbitdaClass.OPEX),
         ("8000", "Other Income", "Other Income", EbitdaClass.OTHER_INCOME),
         ("8100", "Interest Expense", "Other Expense", EbitdaClass.INTEREST),
     ]
@@ -239,7 +240,7 @@ def build_deal():
     # A-03 owner personal expenses; two trips have a documented business purpose.
     ids["dues"] = gl.monthly("2025-01", "2026-06", "6700", 500, "Harbor Point Yacht Club", "Club dues - J. Varga")
     ids["expo"] = [gl.add("2025-02-20", "6600", 4000, "Skyway Travel", "Travel - J. Varga - AHR Expo")]
-    ids["vacation"] = [gl.add("2025-07-10", "6600", 8000, "Skyway Travel", "Travel - J. Varga - family vacation")]
+    ids["vacation"] = [gl.add("2025-07-10", "6600", 8000, "Skyway Travel", "Travel - J. Varga - family vacation", "SV-8")]
     ids["supplier"] = [gl.add("2025-10-05", "6600", 4000, "Skyway Travel", "Travel - J. Varga - supplier plant visit")]
     # A-04 transaction costs; management also included litigation invoice MF-7710-09 (already in A-02).
     ids["keystone"] = [gl.add("2025-10-12", "6400", 22000, "Keystone Advisors", "Sell-side advisory retainer", "KA-1")]
@@ -289,6 +290,8 @@ def build_deal():
         "4.1 Keystone engagement letter.txt": "Keystone Advisors sell-side engagement. Retainer of $22,000 due on signing.",
         "3.1 AHR Expo registration.txt": "Registration confirmed for Harbor Unit Co. Attendee: J. Varga. Purpose: HVAC product training.",
         "3.2 Supplier visit agenda.txt": "Supplier plant visit agenda for Harbor Unit Co purchasing review.",
+        "3.3 Harbor Point Yacht Club statement.txt": "Member: J. Varga (individual). Monthly dues $500.00.",
+        "3.6 Skyway Travel invoice SV-8.txt": "Invoice SV-8. Family vacation package for J. Varga. Total due $8,000.00",
         "6.1 Nimbus managed services agreement.txt": (
             "Managed Services Agreement with Nimbus Cloud Systems. Monthly fee of $3,000 per month. "
             "This agreement renews automatically for successive terms."
@@ -373,6 +376,14 @@ def build_deal():
             doc_type="memo",
             key_statements=[q("3.2 Supplier visit agenda.txt", "Supplier plant visit agenda for Harbor Unit Co purchasing review.")],
         ),
+        "3.3 Harbor Point Yacht Club statement.txt": DocFacts(
+            doc_id="3.3 Harbor Point Yacht Club statement.txt",
+            doc_type="other",
+            counterparty="Harbor Point Yacht Club",
+            amounts=[AmountFact(label="monthly_fee", amount="500",
+                                quote=q("3.3 Harbor Point Yacht Club statement.txt", "Monthly dues $500.00."))],
+        ),
+        "3.6 Skyway Travel invoice SV-8.txt": invoice("3.6 Skyway Travel invoice SV-8.txt", "Skyway Travel", "SV-8", "8000"),
         "6.1 Nimbus managed services agreement.txt": DocFacts(
             doc_id="6.1 Nimbus managed services agreement.txt",
             doc_type="contract",
@@ -534,9 +545,12 @@ def test_entry_qualification_removes_business_trips_with_a_verified_basis(deal):
     # The unsupported classification is kept and handed to the reviewer.
     assert ids["dues"][0] not in t.removals
     assert any("cited no verifiable document" in j for j in a.judgment_questions)
-    # Personal items rest on GL descriptions: noted, but not a REQUEST_INFO trigger.
-    assert all(f.severity == Severity.INFO for f in a.flags if f.code == FlagCode.NO_DOCUMENT_SUPPORT)
+    # The dues statement and the vacation invoice support what is carried, so nothing blocks it.
+    assert not [f for f in a.flags if f.code == FlagCode.NO_DOCUMENT_SUPPORT and f.severity != Severity.INFO]
     assert a.confidence == "low"  # the change rests entirely on an AI classification
+    # One consolidated question and one judgment about the business trips, not one per document.
+    assert [oq.basis for oq in a.open_questions].count("CONTRADICTORY_EVIDENCE") == 1
+    assert any("does not fit management's basis" in j and "AI reading" in j for j in a.judgment_questions)
 
 
 def test_overlap_goes_to_the_stronger_link_and_revises_the_loser(deal):
@@ -606,6 +620,7 @@ def test_out_of_period_cost_moves_to_its_service_period(deal):
     flag = the_flag(a, FlagCode.OUT_OF_PERIOD)
     assert flag.period_label == FY24 and flag.amount_impact == "-18000.00"
     assert "covers services in Jul 2024–Dec 2024" in flag.message and "moves out of FY2025" in flag.message
+    assert "outside the analysis" not in flag.message
     assert flag.quotes[0].quote.startswith("Service period")
     # The routine monthly subcontract invoices from the same vendor are not part of the claim.
     assert {x.entry_id for x in a.gl_links if x.supports_claim} == set(ids["trueup"])
@@ -652,6 +667,27 @@ def test_every_flag_message_reads_as_a_sentence(deal):
             assert f.message[0].isupper() or f.message[:1].isdigit(), f.message
             assert f.message.rstrip()[-1] in ".)", f.message
             assert "None" not in f.message
+
+
+def test_reviewer_text_is_short_and_keeps_quotes_structured(deal):
+    """Practitioners read every line: one or two sentences, amounts in deals format,
+    quotes in Flag.quotes rather than pasted into the message, each document named once."""
+    results, _ = deal
+    for _, a in results.values():
+        for f in a.flags:
+            assert len(f.message) <= 320, f.message
+            assert all(q.quote not in f.message for q in f.quotes), f.message
+            for d in f.doc_ids:
+                assert f.message.count(d) <= 1, f.message
+            assert ".00" not in f.message.replace("$", "")  # 35,500 not 35500.00
+        for text in [x.text for x in a.facts] + a.judgment_questions + [oq.text for oq in a.open_questions]:
+            assert len(text) <= 320, text
+        for oq in a.open_questions:
+            assert oq.text.count("?") <= 1 or oq.text.endswith("?"), oq.text
+        assert len(a.rationale) <= 600, a.rationale
+        # Contradictions are deduplicated per document.
+        docs = [d for f in a.flags if f.code == FlagCode.CONTRADICTORY_EVIDENCE for d in f.doc_ids]
+        assert len(docs) == len(set(docs))
 
 
 # ---------------------------------------------------------------------------
@@ -719,7 +755,7 @@ def test_undocumented_claim_above_25_percent_requests_information():
         intent=AdjustmentIntent(adj_id="B-4", counterparties=["Tidewater Restoration"]),
     )
     flag = the_flag(a, FlagCode.NO_DOCUMENT_SUPPORT)
-    assert flag.severity == Severity.WARNING and "100% of the claim" in flag.message
+    assert flag.severity == Severity.WARNING and "10,000 of the 10,000 carried (100%)" in flag.message
     assert a.treatment == Treatment.REQUEST_INFO and a.proposed == {}
     assert "Provisional amount the evidence would support: FY2024 0 / FY2025 10,000 / TTM Jun-26 0" in a.rationale
 
@@ -746,10 +782,15 @@ def test_management_move_into_the_service_period_is_accepted():
 
 
 def test_ai_contradiction_scope_keeps_only_entries_the_document_is_about():
-    texts = {"3.1 Expo registration.txt": "Registration for Harbor Unit Co at AHR Expo. Business purpose: product training."}
+    texts = {"3.1 Expo registration.txt": "Registration for Harbor Unit Co at AHR Expo. Business purpose: product training.",
+             "3.2 Coastal Auto Leasing statement.txt": "Lessee: J. Varga. Monthly payment $1,500.00."}
     facts = {"3.1 Expo registration.txt": DocFacts(
         doc_id="3.1 Expo registration.txt", doc_type="correspondence",
-        key_statements=[q("3.1 Expo registration.txt", "Business purpose: product training.")])}
+        key_statements=[q("3.1 Expo registration.txt", "Business purpose: product training.")]),
+        "3.2 Coastal Auto Leasing statement.txt": DocFacts(
+            doc_id="3.2 Coastal Auto Leasing statement.txt", doc_type="other", counterparty="Coastal Auto Leasing",
+            amounts=[AmountFact(label="monthly_fee", amount="1500",
+                                quote=q("3.2 Coastal Auto Leasing statement.txt", "Monthly payment $1,500.00."))])}
     gl = GL()
     expo = gl.add("2025-02-20", "6600", 4000, "Skyway Travel", "Travel - J. Varga - AHR Expo")
     lease = gl.add("2025-02-01", "6700", 1500, "Coastal Auto Leasing", "Lease - J. Varga personal vehicle")
@@ -849,3 +890,174 @@ def test_a_write_off_is_tied_to_the_customer_billings_behind_it():
     assert tie and set(tie[0].entry_ids) == set(bills + [wo])
     context = {x.entry_id for x in a.gl_links if not x.supports_claim}
     assert set(bills) <= context
+
+
+# ---------------------------------------------------------------------------
+# SPEC §5.4 amendments (answer-key review, §10.1)
+# ---------------------------------------------------------------------------
+
+
+def test_no_document_support_is_measured_on_the_amount_carried():
+    """An undocumented entry that a challenge removes cannot force REQUEST_INFO:
+    documents are needed for what diligence carries, not for what it rejects."""
+    texts = {"7.1 Gulfline invoice GR-77.txt": "Invoice GR-77. Site repair after refinancing. Total due $10,000.00"}
+    facts = {"7.1 Gulfline invoice GR-77.txt": DocFacts(
+        doc_id="7.1 Gulfline invoice GR-77.txt", doc_type="invoice", counterparty="Gulfline Roofing", reference_numbers=["GR-77"],
+        amounts=[AmountFact(label="total_due", amount="10000", quote=q("7.1 Gulfline invoice GR-77.txt", "Total due $10,000.00"))])}
+    (t, a), ids = _small(
+        [("2025-06-30", "8100", 20000, "Bayline Bank", "Loan fee write-off - Bayline Bank", "JE-9"),
+         ("2025-06-15", "6150", 10000, "Gulfline Roofing", "Site repair - refinancing", "GR-77")],
+        claim("F-1", "Refinancing costs", [0, 30000, 0], ["8100", "6150"]),
+        texts, facts, AdjustmentIntent(adj_id="F-1", counterparties=["Bayline Bank", "Gulfline Roofing"]),
+    )
+    # Measured on the claim, 20,000 of 30,000 (67%) is undocumented; on what is carried, none is.
+    assert FlagCode.ALREADY_EXCLUDED_FROM_EBITDA in codes(a)
+    assert FlagCode.NO_DOCUMENT_SUPPORT not in codes(a)
+    assert a.treatment == Treatment.REVISE and a.proposed == amounts(0, 10000, 0)
+
+
+def test_a_period_that_carries_nothing_cannot_lack_documents(deal):
+    results, _ = deal
+    _, a = results["A-09"]  # TTM is claimed but carries nothing (the relocation sits in FY2025)
+    assert not [f for f in a.flags if f.code == FlagCode.NO_DOCUMENT_SUPPORT and f.period_label == TTM]
+
+
+def test_owner_items_need_documents_for_what_is_carried():
+    """No exemption for owner items: a GL description or the company's own email is not documentary support."""
+    entries = [(f"2025-{m:02d}-28", "6000", 3000, "K. Varga", "Payroll - K. Varga") for m in range(1, 13)]
+    adj = claim("F-2", "Family member on payroll", [0, 36000, 0], ["6000"], ["DR 5"], AdjustmentCategory.OWNER_DISCRETIONARY)
+    it = AdjustmentIntent(adj_id="F-2", counterparties=["K. Varga"], asserts_personal=True)
+    (t, a), _ = _small(entries, adj, intent=it)
+    flag = the_flag(a, FlagCode.NO_DOCUMENT_SUPPORT)
+    assert flag.severity == Severity.WARNING and a.treatment == Treatment.REQUEST_INFO
+    email = {"5.1 CEO email.txt": "From: CEO\nSubject: Payroll\nK. Varga is on payroll at $3,000 per month and does not work here."}
+    email_facts = {"5.1 CEO email.txt": DocFacts(
+        doc_id="5.1 CEO email.txt", doc_type="correspondence", counterparty="K. Varga",
+        amounts=[AmountFact(label="monthly_fee", amount="3000", quote=q("5.1 CEO email.txt", "$3,000 per month"))])}
+    (t, a), _ = _small(entries, adj, email, email_facts, it)
+    assert t.doc_links and a.treatment == Treatment.REQUEST_INFO  # linked, but a management representation
+    assert a.documented == amounts(0, 0, 0)
+
+
+def _write_offs(claimed_memo: str, routine: object, months: Iterable[str]):
+    rows = [("2025-10-31", "6950", 52000, "Halvor Homes", claimed_memo)]
+    rows += [(f"{m}-28", "6950", routine, "Various customers", "Bad debt write-off - small accounts") for m in months]
+    texts = {"11.1 Proof of claim.txt": "Proof of claim. Halvor Homes. Amount of claim $52,000.00"}
+    facts = {"11.1 Proof of claim.txt": DocFacts(
+        doc_id="11.1 Proof of claim.txt", doc_type="other", counterparty="Halvor Homes",
+        amounts=[AmountFact(label="claim", amount="52000", quote=q("11.1 Proof of claim.txt", "Amount of claim $52,000.00"))])}
+    adj = claim("F-3", "Customer bankruptcy write-off", [0, 52000, 52000], ["6950"], ["DR 11"])
+    it = AdjustmentIntent(adj_id="F-3", counterparties=["Halvor Homes"], asserts_nonrecurring=True)
+    return _small(rows, adj, texts, facts, it)
+
+
+def test_recurrence_ignores_routine_months_below_a_quarter_of_the_claimed_month():
+    months = [m for m in month_range("2024-01", "2026-06") if m != "2025-10"]
+    (t, a), _ = _write_offs("Bad debt write-off - Halvor Homes", 500, months)
+    assert FlagCode.RECURRING_PATTERN not in codes(a)
+    assert a.treatment == Treatment.ACCEPT
+    (obs,) = a.recurrence  # the routine activity is still recorded for the reviewer
+    assert "Below the recurrence threshold" in obs.note
+
+
+def test_recurrence_counts_material_months_outside_the_event_window():
+    (t, a), _ = _write_offs("Bad debt write-off - Halvor Homes", 20000, ["2026-02", "2026-04", "2026-06"])
+    flag = the_flag(a, FlagCode.RECURRING_PATTERN)
+    assert "3 months outside the claimed window" in flag.message
+    assert a.treatment == Treatment.REJECT
+
+
+def test_event_window_is_the_union_of_claimed_months_not_their_range():
+    """Comparable activity between two claimed months is outside the event window."""
+    rows = [("2025-01-15", "6400", 12000, "Stone Legal", "Arbitration - Stone Legal", "SL-1"),
+            ("2025-12-15", "6400", 8000, "Stone Legal", "Arbitration - Stone Legal", "SL-2")]
+    rows += [(f"2025-{m:02d}-15", "6400", 9000, "Stone Legal", "Arbitration - Stone Legal") for m in (4, 6, 8)]
+    adj = claim("F-4", "Arbitration costs", [0, 20000, 0], ["6400"])
+    (t, a), ids = _small(rows, adj, intent=AdjustmentIntent(adj_id="F-4", counterparties=["Stone Legal"], asserts_nonrecurring=True))
+    assert set(t.claimed[FY25]) == {ids[0], ids[1]}  # the only exact fit
+    flag = the_flag(a, FlagCode.RECURRING_PATTERN)
+    assert "3 months outside the claimed window (Apr 2025–Aug 2025)" in flag.message
+
+
+def test_recurrence_does_not_apply_to_owner_or_normalization_items():
+    rows = [(f"{m}-05", "6700", 500, "Harbor Point Yacht Club", "Club dues - J. Varga") for m in month_range("2024-01", "2025-12")]
+    texts = {"3.3 Harbor Point Yacht Club statement.txt": "Member: J. Varga (individual). Monthly dues $500.00."}
+    facts = {"3.3 Harbor Point Yacht Club statement.txt": DocFacts(
+        doc_id="3.3 Harbor Point Yacht Club statement.txt", doc_type="other", counterparty="Harbor Point Yacht Club",
+        amounts=[AmountFact(label="monthly_fee", amount="500", quote=q("3.3 Harbor Point Yacht Club statement.txt", "Monthly dues $500.00."))])}
+    adj = claim("F-5", "Owner club dues", [0, 6000, 0], ["6700"], ["DR 3"], AdjustmentCategory.OWNER_DISCRETIONARY)
+    # Even when the narrative also calls it one-time, recurrence is the premise of an owner item.
+    it = AdjustmentIntent(adj_id="F-5", counterparties=["Harbor Point Yacht Club"], asserts_personal=True, asserts_nonrecurring=True)
+    (t, a), _ = _small(rows, adj, texts, facts, it)
+    assert FlagCode.RECURRING_PATTERN not in codes(a) and not a.recurrence
+    assert a.treatment == Treatment.ACCEPT
+
+
+def _retainer_letter(term_text: str, quote_text: str):
+    rows = [("2025-10-02", "6400", 26000, "Keystone Advisors", "Sell-side advisory retainer", "KA-7")]
+    texts = {"8.1 Keystone engagement letter.txt": f"Keystone Advisors sell-side engagement. {quote_text}"}
+    facts = {"8.1 Keystone engagement letter.txt": DocFacts(
+        doc_id="8.1 Keystone engagement letter.txt", doc_type="engagement_letter", counterparty="Keystone Advisors", is_signed=True,
+        amounts=[AmountFact(label="retainer", amount="26000", quote=q("8.1 Keystone engagement letter.txt", quote_text))],
+        terms=[TermFact(kind="retainer", text=term_text, quote=q("8.1 Keystone engagement letter.txt", quote_text))])}
+    adj = claim("F-6", "Transaction advisory fees", [0, 26000, 26000], ["6400"], ["DR 8"])
+    it = AdjustmentIntent(adj_id="F-6", counterparties=["Keystone Advisors"], asserts_nonrecurring=True)
+    return _small(rows, adj, texts, facts, it)
+
+
+def test_a_one_time_retainer_tied_to_a_transaction_is_not_a_continuing_obligation():
+    (t, a), _ = _retainer_letter(
+        "one-time retainer of $26,000 payable on signing, creditable against the success fee",
+        "A one-time retainer of $26,000 is payable on signing, creditable against the success fee.",
+    )
+    assert FlagCode.CONTINUING_OBLIGATION not in codes(a)
+    assert a.treatment == Treatment.ACCEPT
+
+
+def test_a_periodic_retainer_is_a_continuing_obligation():
+    (t, a), _ = _retainer_letter(
+        "retainer of $26,000 per quarter until terminated",
+        "A retainer of $26,000 per quarter is payable until terminated by either party.",
+    )
+    assert FlagCode.CONTINUING_OBLIGATION in codes(a)
+    assert a.treatment == Treatment.REJECT
+
+
+def test_a_retained_search_is_not_a_continuing_obligation():
+    rows = [("2025-04-10", "6450", 15000, "Pinecrest Search Partners", "Retained search - installment 1", "PS-1")]
+    quote = "This is a retained search; the fee is payable as the search progresses."
+    texts = {"1.1 Pinecrest letter.txt": quote}
+    facts = {"1.1 Pinecrest letter.txt": DocFacts(
+        doc_id="1.1 Pinecrest letter.txt", doc_type="engagement_letter", counterparty="Pinecrest Search Partners", is_signed=True,
+        amounts=[AmountFact(label="retainer", amount="15000", quote=q("1.1 Pinecrest letter.txt", quote))],
+        terms=[TermFact(kind="retainer", text="retained search, fee payable monthly as the search progresses",
+                        quote=q("1.1 Pinecrest letter.txt", quote))])}
+    (t, a), _ = _small(rows, claim("F-7", "CFO search", [0, 15000, 0], ["6450"], ["DR 1"]), texts, facts,
+                       AdjustmentIntent(adj_id="F-7", counterparties=["Pinecrest Search"], asserts_nonrecurring=True))
+    assert FlagCode.CONTINUING_OBLIGATION not in codes(a) and a.treatment == Treatment.ACCEPT
+
+
+def _true_up(service_start: str, service_end: str, booked: str, claimed: Iterable[object]):
+    texts = {"8.1 Ridgeway invoice RD-9.txt": "Invoice RD-9. Project closeout true-up."}
+    facts = {"8.1 Ridgeway invoice RD-9.txt": DocFacts(
+        doc_id="8.1 Ridgeway invoice RD-9.txt", doc_type="invoice", counterparty="Ridgeway Ductwork LLC",
+        reference_numbers=["RD-9"], service_period_start=service_start, service_period_end=service_end)}
+    return _small([(booked, "5200", 18000, "Ridgeway Ductwork LLC", "Project closeout true-up", "RD-9")],
+                  claim("F-8", "Prior-period true-up", claimed, ["5200"], category=AdjustmentCategory.OUT_OF_PERIOD),
+                  texts, facts, AdjustmentIntent(adj_id="F-8", counterparties=["Ridgeway Ductwork"]))
+
+
+def test_out_of_period_service_before_the_data_carries_no_negative_side():
+    """One-sided case: FY2023 services booked in FY2024; the FY2023 side is outside the analysis."""
+    (t, a), _ = _true_up("2023-10-01", "2023-12-31", "2024-02-20", [18000, 0, 0])
+    flag = the_flag(a, FlagCode.OUT_OF_PERIOD)
+    assert "no negative side is carried" in flag.message
+    assert a.proposed == amounts(18000, 0, 0) and a.treatment == Treatment.ACCEPT
+
+
+def test_an_out_of_period_entry_is_replaced_entirely_by_its_effect():
+    """Services Oct 2023-Mar 2024 booked Jun 2024: FY2024 keeps only the pre-2024 half (9,000),
+    not the booking plus the move (the double count the review panel found)."""
+    (t, a), _ = _true_up("2023-10-01", "2024-03-31", "2024-06-15", [9000, 0, 0])
+    assert a.proposed == amounts(9000, 0, 0) and a.treatment == Treatment.ACCEPT
+    assert t.supporting_total(FY24) == 0 and t.effect(FY24) == 9000

@@ -21,10 +21,13 @@ from qoe.evaluate import (
     build_report,
     entry_row,
     load_ground_truth,
+    match_diligence_items,
     regression_cases,
     render_markdown,
     score,
     supporting_entry_ids,
+    surfaced_doc_ids,
+    tool_supporting_docs,
 )
 from qoe.schemas import (
     AdjustmentAssessment,
@@ -112,7 +115,16 @@ def _assessment(
         treatment=treatment,
         confidence=confidence,
         gl_links=list(links),
-        doc_links=[DocLink(doc_id=d, relation="invoice_for_entry", score=1.0) for d in docs],
+        # Like the engine: each document is linked to the claimed entries it evidences.
+        doc_links=[
+            DocLink(
+                doc_id=d,
+                relation="invoice_for_entry",
+                entry_ids=[lk.entry_id for lk in links if lk.supports_claim],
+                score=1.0,
+            )
+            for d in docs
+        ],
         flags=list(flags),
         recurrence=list(recurrence),
     )
@@ -494,6 +506,222 @@ def test_doc_link_precision_recall():
     assert _row(s, "A-3")["doc_links"]["extra"] == ["x.pdf"]
 
 
+def _doc(doc_id: str, rows: tuple[int, ...] = (), relation: str = "invoice_for_entry") -> DocLink:
+    return DocLink(doc_id=doc_id, relation=relation, entry_ids=[f"GL-R{r}" for r in rows], score=1.0)
+
+
+def _flag_docs(code: FlagCode, rows: tuple[int, ...], docs: tuple[str, ...]) -> Flag:
+    return Flag(
+        code=code,
+        severity=Severity.WARNING,
+        message=code.value,
+        entry_ids=[f"GL-R{r}" for r in rows],
+        doc_ids=list(docs),
+    )
+
+
+def test_tool_supporting_docs_follow_what_is_carried():
+    # Carried non-zero (REVISE): documents on supporting entries, stand-alone agreements no removing
+    # flag cites, and the recovery document; not the documents that argued part of the claim away.
+    revise = _assessment(
+        "A-1",
+        Treatment.REVISE,
+        {"FY2024": "58.00", "FY2025": "-40.00"},
+        claimed={"FY2024": "58.00", "FY2025": "0.00"},
+        links=(_link(1), _link(2), _link(3), _link(9, supports=False)),
+        flags=(
+            _flag_docs(FlagCode.CONTRADICTORY_EVIDENCE, (3,), ("trip report.pdf",)),
+            _flag_docs(FlagCode.CONTINUING_OBLIGATION, (), ("retainer letter.pdf",)),
+            _flag_docs(FlagCode.OFFSETTING_RECOVERY, (9,), ("settlement letter.pdf",)),
+        ),
+    ).model_copy(
+        update={
+            "doc_links": [
+                _doc("invoice 1.pdf", (1,)),
+                _doc("statement.pdf", (2, 3)),  # evidences a carried entry, even if it also covers a removed one
+                _doc("trip report.pdf", (3,)),
+                _doc("engagement letter.pdf", (), "agreement"),
+                _doc("retainer letter.pdf", (), "agreement"),
+                _doc("settlement letter.pdf", (9,), "recovery"),
+                _doc("email.txt", (), "correspondence"),
+            ]
+        }
+    )
+    assert tool_supporting_docs(revise) == {
+        "invoice 1.pdf",
+        "statement.pdf",
+        "engagement letter.pdf",
+        "settlement letter.pdf",
+    }
+    assert surfaced_doc_ids(revise) >= {"trip report.pdf", "retainer letter.pdf", "email.txt"}
+
+    # Carried zero (REJECT): the documents the rejection rests on.
+    reject = _assessment(
+        "A-2",
+        Treatment.REJECT,
+        {"FY2024": "0.00", "FY2025": "0.00"},
+        claimed={"FY2024": "0.00", "FY2025": "96.00"},
+        links=(_link(20), _link(21), _link(22, supports=False)),
+        flags=(
+            _flag(FlagCode.ALREADY_EXCLUDED_FROM_EBITDA, (20,)),
+            _flag_docs(FlagCode.CONTRADICTORY_EVIDENCE, (21,), ("controller email.txt",)),
+        ),
+    ).model_copy(
+        update={
+            "doc_links": [
+                _doc("payoff letter.pdf", (20,), "other"),
+                _doc("controller email.txt", (), "correspondence"),
+                _doc("comparable invoice.pdf", (22,)),
+            ]
+        }
+    )
+    assert tool_supporting_docs(reject) == {"payoff letter.pdf", "controller email.txt"}
+
+    # Pending (REQUEST_INFO): what the request rests on.
+    pending = _assessment(
+        "A-3",
+        Treatment.REQUEST_INFO,
+        {},
+        claimed={"FY2024": "360.00", "FY2025": "360.00"},
+        flags=(_flag_docs(FlagCode.UNSIGNED_OR_DRAFT_SUPPORT, (), ("draft agreement.pdf",)),),
+    ).model_copy(update={"doc_links": [_doc("draft agreement.pdf", (), "agreement"), _doc("memo.txt", (), "other")]})
+    assert tool_supporting_docs(pending) == {"draft agreement.pdf"}
+
+
+def test_doc_scores_use_supporting_and_related_docs():
+    a = _assessment(
+        "A-1",
+        Treatment.REVISE,
+        {"FY2024": "0.00", "FY2025": "31.00"},
+        claimed={"FY2024": "0.00", "FY2025": "48.00"},
+        links=(_link(1), _link(2)),
+        flags=(_flag_docs(FlagCode.CONTRADICTORY_EVIDENCE, (2,), ("expense report.pdf",)),),
+    ).model_copy(update={"doc_links": [_doc("lease.pdf", (1,)), _doc("expense report.pdf", (2,))]})
+    exp = _expected("A-1", Treatment.REVISE, {"FY2024": "0.00", "FY2025": "31.00"}, supporting=(1,))
+    exp = exp.model_copy(
+        update={"supporting_docs": ["lease.pdf", "club statement.pdf"], "related_docs": ["expense report.pdf"]}
+    )
+    s = score(_workpaper([a]), _gt([exp]))
+    docs = _row(s, "A-1")["doc_links"]
+    assert (docs["tool"], docs["missing"], docs["extra"]) == (["lease.pdf"], ["club statement.pdf"], [])
+    assert s["doc_link_precision"]["rate"] == 1.0 and s["doc_link_recall"]["rate"] == 0.5
+    # Surfaced: lease and expense report are shown; the club statement is not.
+    assert s["doc_surfaced_recall"] == {"num": 2, "den": 3, "rate": 0.6667}
+    assert docs["unsurfaced"] == ["club statement.pdf"]
+
+
+# Diligence-identified items (SPEC §5.7): a duplicate posting at rows 4464 / 4465.
+
+
+def _dup_item(adj_id: str, reversed_row: int, kept_row: int, amount: str = "18400.00", **kw: Any):
+    a = _assessment(
+        adj_id,
+        kw.pop("treatment", Treatment.REVISE),
+        {"FY2024": "0.00", "FY2025": amount},
+        claimed={"FY2024": "0.00", "FY2025": "0.00"},
+        links=(_link(kept_row, "18400.00", supports=False, period="2025-05"), _link(reversed_row, "18400.00", period="2025-05")),
+        flags=(_flag(FlagCode.DUPLICATE_GL_ENTRY, (kept_row, reversed_row)),),
+    )
+    return a.model_copy(update={"source": "diligence", "title": f"Reverse duplicate posting ({adj_id})", **kw})
+
+
+def _expected_dup(adj_id: str = "D-1") -> ExpectedAdjustment:
+    e = _expected(
+        adj_id,
+        Treatment.REVISE,
+        {"FY2024": "0.00", "FY2025": "18400.00"},
+        case_type="DUPLICATE_POSTING",
+        supporting=(4465,),
+        related=(4464,),
+        flags=(FlagCode.DUPLICATE_GL_ENTRY,),
+    )
+    return e.model_copy(update={"supporting_docs": ["premium notice.pdf"]})
+
+
+def _with_diligence(tool_items: list[AdjustmentAssessment], expected_items: list[ExpectedAdjustment]):
+    mgmt = _assessment("A-1", Treatment.ACCEPT, {"FY2024": "0.00", "FY2025": "1000.00"}, links=(_link(10),))
+    wp = _workpaper([mgmt, *tool_items])
+    gt = _gt(
+        [_expected("A-1", Treatment.ACCEPT, {"FY2024": "0.00", "FY2025": "1000.00"}, supporting=(10,))],
+        dil={"FY2024": "10000.00", "FY2025": "39400.00"},
+    )
+    return wp, gt.model_copy(update={"diligence_items": expected_items})
+
+
+def test_diligence_items_are_scored_apart_from_management_items():
+    extra = _dup_item("D-2", 5001, 5000, amount="700.00")
+    wp, gt = _with_diligence([_dup_item("D-1", 4465, 4464), extra], [_expected_dup(), _expected_dup("D-9")])
+    gt = gt.model_copy(
+        update={"diligence_items": [_expected_dup(), _expected_dup("D-9").model_copy(update={"supporting_gl_rows": [900]})]}
+    )
+    s = score(wp, gt)
+    # Management metrics see A-1 only.
+    assert s["n_adjustments"] == 1 and s["treatment_accuracy"] == {"num": 1, "den": 1, "rate": 1.0}
+    assert s["gl_link_precision"] == {"num": 1, "den": 1, "rate": 1.0}
+    assert s["unscored_tool_adjustments"] == []
+    di = s["diligence_item_accuracy"]
+    # D-1 correct; D-9 missed; D-2 extra (counts against accuracy).
+    assert (di["num"], di["den"], di["expected"], di["tool"], di["matched"]) == (1, 3, 2, 2, 1)
+    assert di["missed"] == ["D-9"] and di["extra"] == ["D-2"]
+    items = {(r["key_id"], r["tool_id"]): r for r in di["items"]}
+    d1 = items[("D-1", "D-1")]
+    assert d1["verdict"] == "CORRECT" and d1["match_basis"] == "supporting_rows"
+    assert d1["amount_diffs"] == {"FY2024": "0.00", "FY2025": "0.00"}
+    assert d1["gl_links"]["tool_rows"] == [4465] and d1["gl_links"]["surfaced"]["rate"] == 1.0
+    assert d1["flags"]["missing"] == []
+    assert items[("D-9", None)]["verdict"] == "MISSED"
+    assert items[(None, "D-2")]["verdict"] == "EXTRA" and items[(None, "D-2")]["tool_rows"] == [5001]
+    # The EBITDA identity carries the diligence items: 20,000 + 1,000 + 18,400 + 700.
+    fy25 = s["ebitda_error"]["by_period"]["FY2025"]
+    assert fy25["tool_management_adjustments"] == "1000.00"
+    assert fy25["tool_diligence_items"] == "19100.00"
+    assert fy25["expected_diligence_items"] == "36800.00"
+    assert fy25["tool_diligence_adjusted_ebitda"] == "40100.00"
+    assert fy25["abs_error"] == "700.00"
+
+
+def test_diligence_item_wrong_amount_and_other_posting_match():
+    # The tool reversed the first posting instead of the second: same item, matched on a shared GL row.
+    other = _dup_item("D-1", 4464, 4465)
+    s = score(*_with_diligence([other], [_expected_dup()]))
+    item = s["diligence_item_accuracy"]["items"][0]
+    assert (item["tool_id"], item["match_basis"], item["verdict"]) == ("D-1", "linked_rows", "CORRECT")
+    assert item["gl_links"]["extra_rows"] == [4464]
+    # A wrong amount is matched but not correct; REQUEST_INFO carries nothing.
+    wrong = _dup_item("D-1", 4465, 4464, amount="36800.00")
+    item = score(*_with_diligence([wrong], [_expected_dup()]))["diligence_item_accuracy"]["items"][0]
+    assert item["verdict"] == "WRONG_AMOUNT" and item["amount_diffs"]["FY2025"] == "18400.00"
+    pending = _dup_item("D-1", 4465, 4464, treatment=Treatment.REQUEST_INFO, proposed={})
+    item = score(*_with_diligence([pending], [_expected_dup()]))["diligence_item_accuracy"]["items"][0]
+    assert item["verdict"] == "WRONG_AMOUNT" and item["amount_diffs"]["FY2025"] == "-18400.00"
+    # No expected items and none proposed: nothing to score.
+    none = score(*_with_diligence([], []))["diligence_item_accuracy"]
+    assert (none["num"], none["den"], none["rate"]) == (0, 0, None)
+
+
+def test_diligence_items_one_to_one_matching():
+    first = _dup_item("D-1", 4465, 4464)
+    second = _dup_item("D-2", 4465, 4464)
+    pairs = match_diligence_items([_expected_dup()], [first, second])
+    assert pairs == [(0, 0, "supporting_rows")]
+
+
+def test_diligence_items_in_report_and_aggregate():
+    s1 = score(*_mixed())
+    wp, gt = _with_diligence([_dup_item("D-1", 4465, 4464, amount="9200.00")], [_expected_dup()])
+    s2 = score(wp.model_copy(update={"deal": _meta("second")}), gt.model_copy(update={"deal_id": "second"}))
+    o = aggregate([s1, s2])
+    assert o["n_diligence_items"] == 1
+    assert o["diligence_item_accuracy"]["den"] == 1 and o["diligence_item_accuracy"]["num"] == 0
+    assert o["diligence_item_accuracy"]["items"][0]["deal_id"] == "second"
+    assert o["doc_surfaced_recall"]["den"] >= 1
+    md = render_markdown(build_report("dev", [s1, s2], "rules"))
+    assert md.index("## 1. False accepts") < md.index("### Diligence-identified items") < md.index("## 3. Headline")
+    assert "| second | D-1 | D-1 | supporting rows | 0 / 18,400 | 0 / 9,200 | - | WRONG_AMOUNT |" in md
+    assert "| Diligence item accuracy | 0.0% | 0/1 |" in md
+    assert "Doc P / R" in md
+
+
 def test_flag_recall_and_missed_contradictions():
     s = score(*_mixed())
     # Expected: A-2 RECURRING, A-3 CONTRADICTORY + CONTINUING, A-4 PRO_FORMA. Raised correctly: 2.
@@ -871,6 +1099,67 @@ def test_run_script_saves_workpaper_and_prints_summary(tmp_path, monkeypatch, ca
     assert script.main(["--deal", str(tmp_path / "missing"), "--out", str(out)]) == 2
 
 
+def test_run_script_exports_with_package_and_reports_recalc(tmp_path, monkeypatch, capsys):
+    wp, decisions = _review_fixture()
+    deal = tmp_path / "toy_deal"
+    deal.mkdir()
+    (deal / "deal.yaml").write_text("deal_id: toy_deal\n", encoding="utf-8")
+    calls: list[dict[str, Any]] = []
+    _fake_engine(monkeypatch, wp, calls)
+    pkg = SimpleNamespace(schedule=SimpleNamespace(source_file="adjustments/schedule.xlsx"))
+    monkeypatch.setattr("qoe.ingest.load_deal", lambda d: pkg)
+    seen: dict[str, Any] = {}
+
+    def fake_apply(w: Workpaper, log: list[ReviewDecision], schedule=None) -> Workpaper:
+        seen["schedule"] = schedule
+        return w.model_copy(update={"reviews": list(log)})
+
+    def fake_export(w: Workpaper, path: Path, pkg=None) -> Path:
+        seen["pkg"] = pkg
+        Path(path).write_bytes(b"xlsx")
+        return Path(path)
+
+    recalc = {"status": "success", "total_errors": 0, "total_formulas": 321, "error_summary": {}}
+    monkeypatch.setattr("qoe.review_store.apply_reviews", fake_apply)
+    monkeypatch.setattr("qoe.export_xlsx.export_workpaper", fake_export)
+    monkeypatch.setattr("qoe.export_xlsx.recalc_and_check", lambda path, timeout=90: dict(recalc, path=str(path)))
+    out = tmp_path / "wp"
+    _write_log(out / "toy_deal" / "review_log.jsonl", decisions)
+    script = _load_script("qoe_run")
+    argv = ["--deal", str(deal), "--out", str(out), "--xlsx"]
+    assert script.main(argv) == 0
+    assert seen["pkg"] is pkg and seen["schedule"] is pkg.schedule
+    printed = capsys.readouterr().out
+    assert "Recalculated with LibreOffice: 321 formulas, 0 formula error(s)" in printed
+    assert f"Review log applied: {out / 'toy_deal' / 'review_log.jsonl'} (6 decision(s))" in printed
+
+    recalc.update(status="errors_found", total_errors=2,
+                  error_summary={"#REF!": {"count": 2, "locations": ["EBITDA Bridge!C9", "Cover!B30"]}})
+    assert script.main(argv) == 1
+    assert "#REF! 2: EBITDA Bridge!C9, Cover!B30" in capsys.readouterr().out
+    assert script.main([*argv, "--no-recalc"]) == 0
+    assert "Recalculated" not in capsys.readouterr().out
+
+    # A package that cannot be reloaded: export without GL detail, never crash.
+    def broken(_):
+        raise ValueError("no GL")
+
+    monkeypatch.setattr("qoe.ingest.load_deal", broken)
+    assert script.main([*argv, "--no-recalc"]) == 0
+    assert seen["pkg"] is None and seen["schedule"] is None
+    assert "could not be reloaded" in capsys.readouterr().err
+
+
+def test_run_summary_lists_diligence_items_separately():
+    wp, _ = _mixed()
+    item = _assessment("D-1", Treatment.REVISE, {"FY2024": "0.00", "FY2025": "18400.00"},
+                       claimed={"FY2024": "0.00", "FY2025": "0.00"}).model_copy(update={"source": "diligence"})
+    text = _load_script("qoe_run").summarize(wp.model_copy(update={"assessments": [*wp.assessments, item]}))
+    assert "Tool treatments: ACCEPT 3, REVISE 1, REJECT 0, REQUEST_INFO 2  (reviewed 0/6)" in text
+    head, _, tail = text.partition("Diligence-identified items (not on management's schedule): 1")
+    assert tail and "D-1" in tail and "D-1" not in head
+
+
 def test_run_summary_renders_without_engine():
     wp, _ = _mixed()
     script = _load_script("qoe_run")
@@ -885,13 +1174,13 @@ def test_run_summary_renders_without_engine():
 # ---------------------------------------------------------------------------
 
 
+# Pinned to the reference dev deal: other packages under data/dev may be mid-authoring.
+DEV_DEAL = ROOT / "data" / "dev" / "meridian_mechanical"
+
+
 def _first_dev_deal() -> Optional[Path]:
-    base = ROOT / "data" / "dev"
-    if not base.is_dir():
-        return None
-    for d in sorted(base.iterdir()):
-        if (d / "deal.yaml").is_file() and (d / "ground_truth.json").is_file():
-            return d
+    if (DEV_DEAL / "deal.yaml").is_file() and (DEV_DEAL / "ground_truth.json").is_file():
+        return DEV_DEAL
     return None
 
 
@@ -906,5 +1195,9 @@ def test_integration_score_dev_deal():
     s = score(wp, gt)
     assert s["n_adjustments"] == len(gt.adjustments)
     assert set(s["ebitda_error"]["by_period"]) == {p.label for p in wp.deal.periods}
+    assert s["diligence_item_accuracy"]["expected"] == len(gt.diligence_items)
+    # Diligence-identified items are scored on their own, never as unscored management items.
+    diligence_ids = {a.adj_id for a in wp.assessments if a.source == "diligence"}
+    assert not diligence_ids & set(s["unscored_tool_adjustments"])
     md = render_markdown(build_report("dev", [s], wp.ai_mode))
-    assert "## 1. False accepts" in md
+    assert "## 1. False accepts" in md and "### Diligence-identified items" in md

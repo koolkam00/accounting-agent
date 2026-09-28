@@ -22,7 +22,6 @@ import os
 import re
 from dataclasses import dataclass
 from datetime import date, timedelta
-from decimal import Decimal
 from itertools import pairwise
 from pathlib import Path
 from typing import Any, Iterable, Optional
@@ -43,7 +42,6 @@ from qoe.schemas import (
     DocFacts,
     EvidenceQuote,
     Flag,
-    FlagCode,
     GLEntry,
     SourceDocument,
     TermFact,
@@ -121,7 +119,6 @@ _SIGNABLE_TYPES = frozenset(
 )
 _MAX_QUOTE = 320
 _MAX_KEY_STATEMENTS = 30
-_DATE_WINDOW_DAYS = 45
 
 # ---------------------------------------------------------------------------
 # Lexicons
@@ -1760,6 +1757,27 @@ def _narrative_keywords(title: str, description: str, limit: int = 15) -> list[s
     return out
 
 
+def _without_names(keywords: Iterable[str], names: Iterable[str], narrative: str) -> list[str]:
+    """Keywords that are not a party's name. A vendor or person is matched as a counterparty;
+    as a keyword it would link every charge that party makes, whatever the event. A word
+    that also describes the event outside the name ("search" in "retained search fee paid
+    to Pinecrest Search Partners") stays a keyword."""
+    names = [n for n in names if n and n.strip()]
+    name_words = {t for n in names for t in _name_tokens(n)}
+    outside = narrative
+    for n in sorted(names, key=len, reverse=True):
+        outside = re.sub(re.escape(n), " ", outside, flags=re.IGNORECASE)
+    outside_words = set(re.findall(r"[a-z0-9]+", outside.lower()))
+    out: list[str] = []
+    for kw in keywords:
+        words = [w for w in re.findall(r"[a-z0-9]+", kw.lower().replace("&", " and ")) if w not in _ENTITY_FORM_WORDS]
+        if words and all(w in name_words for w in words) and not all(w in outside_words for w in words):
+            continue
+        if kw not in out:
+            out.append(kw)
+    return out
+
+
 def _narrative_refs(text: str, gl_accounts: Iterable[str]) -> list[str]:
     accounts = {a.strip() for a in gl_accounts}
     out: list[str] = []
@@ -1835,10 +1853,11 @@ def _parse_intent_rules(adj: AdjustmentClaim) -> AdjustmentIntent:
     notes = [f"rules: event_type={event_type}"]
     if adj.category != AdjustmentCategory.OTHER:
         notes.append(f"category={adj.category.value}")
+    counterparties = _narrative_counterparties(title, description)
     return AdjustmentIntent(
         adj_id=adj.adj_id,
-        counterparties=_narrative_counterparties(title, description),
-        keywords=_narrative_keywords(title, description),
+        counterparties=counterparties,
+        keywords=_without_names(_narrative_keywords(title, description), counterparties, narrative),
         reference_numbers=_narrative_refs(narrative, adj.gl_accounts),
         event_type=event_type,
         asserts_nonrecurring=asserts_nonrecurring,
@@ -1872,42 +1891,6 @@ def _entry_date(entry: GLEntry) -> Optional[date]:
         return date.fromisoformat(entry.date[:10])
     except ValueError:
         return None
-
-
-def _near_doc_dates(entry: GLEntry, fact: DocFacts, days: int = _DATE_WINDOW_DAYS) -> bool:
-    ed = _entry_date(entry)
-    if ed is None:
-        return False
-    if fact.service_period_start and fact.service_period_end:
-        try:
-            s = date.fromisoformat(fact.service_period_start) - timedelta(days=15)
-            e = date.fromisoformat(fact.service_period_end) + timedelta(days=days)
-            if s <= ed <= e:
-                return True
-        except ValueError:
-            pass
-    for value in (fact.doc_date, fact.service_period_start, fact.service_period_end):
-        if not value:
-            continue
-        try:
-            if abs((date.fromisoformat(value) - ed).days) <= days:
-                return True
-        except ValueError:
-            continue
-    return False
-
-
-def _within_event(entry: GLEntry, fact: DocFacts, *, before: int, after: int) -> bool:
-    """Entry date inside the document's stated period (event or service dates), with slack days."""
-    ed = _entry_date(entry)
-    if ed is None or not (fact.service_period_start and fact.service_period_end):
-        return False
-    try:
-        start = date.fromisoformat(fact.service_period_start) - timedelta(days=before)
-        end = date.fromisoformat(fact.service_period_end) + timedelta(days=after)
-    except ValueError:
-        return False
-    return start <= ed <= end
 
 
 def _amount_matches(entry: GLEntry, amounts: Iterable[str]) -> bool:
@@ -1993,6 +1976,16 @@ def _primary_refs(fact: DocFacts, evidence: _Evidence) -> list[str]:
     return [known.get(r.lower(), r) for r in out]
 
 
+# Distinctive words a memo and a document must share to name the same event.
+_SHARED_EVENT_WORDS = 2
+_TIE_NOISE_WORDS = frozenset({"report", "reports", "statement", "statements", "agenda", "summary", "details", "detail"})
+
+
+def _event_tokens(text: str) -> set[str]:
+    """Words that can identify an event: not generic, not an account-category noun."""
+    return {t for t in _distinct_tokens(text) if t not in _WEAK_KEYWORDS and t not in _TIE_NOISE_WORDS}
+
+
 def _tie_entries(
     fact: DocFacts,
     entries: list[GLEntry],
@@ -2000,6 +1993,10 @@ def _tie_entries(
     mode: str,
 ) -> list[str]:
     """Entries a document's statement applies to; [] means the statement is not entry-specific.
+
+    A tie needs a reference (the document's own number, or a matter or claim number the
+    memo cites), the same amount for the same counterparty, or a memo that names the
+    document's event. Date proximity alone never ties a document to an entry.
 
     mode "fee": a recurring-fee term; "statement": a recurrence statement; "business": a business-purpose record.
     """
@@ -2027,28 +2024,25 @@ def _tie_entries(
                 chosen = cp_entries
         return [e.entry_id for e in entries if e in chosen]
 
+    if ref_hits:
+        # A numbered document (an invoice, an expense report) is about the entries carrying its number.
+        return [e.entry_id for e in entries if e in ref_hits]
     doc_text = evidence.text(fact)
     # Person names (the owner, the attendee) appear on personal and business items alike.
     person_tokens = {t for m in _INITIAL_NAME_RE.finditer(doc_text) for t in _name_tokens(m.group())}
-    doc_tokens = _distinct_tokens(doc_text) - person_tokens
-    chosen = list(ref_hits)
+    doc_tokens = _event_tokens(doc_text) - person_tokens
+    chosen: list[GLEntry] = []
     for e in entries:
-        if e in chosen:
-            continue
-        near = _near_doc_dates(e, fact)
         amount = bool(doc_amounts) and _amount_matches(e, doc_amounts)
-        cp = cp_ok(e) is True
-        memo_tokens = _distinct_tokens(e.memo) - {t for m in _INITIAL_NAME_RE.finditer(e.memo)
-                                                   for t in _name_tokens(m.group())}
+        cp = cp_ok(e)
+        memo_tokens = _event_tokens(e.memo) - {t for m in _INITIAL_NAME_RE.finditer(e.memo) for t in _name_tokens(m.group())}
         shared = len(memo_tokens & doc_tokens)
-        if mode == "statement":
-            if amount and (near or cp) or (near and cp and shared >= 1):
-                chosen.append(e)
-        elif mode == "business":
-            during = _within_event(e, fact, before=3, after=3)
-            around = _within_event(e, fact, before=45, after=45)
-            if during or (around and (shared or cp or amount)) or (near and shared):
-                chosen.append(e)
+        if amount and cp is True:
+            chosen.append(e)  # the same amount for the same counterparty
+        elif shared >= _SHARED_EVENT_WORDS:
+            chosen.append(e)  # the memo names the document's event ("Dixon plant visit", "SMCS summit")
+        elif amount and cp is None and not e.counterparty and shared >= 1:
+            chosen.append(e)  # a journal entry has no party: its amount plus the document's subject
     return [e.entry_id for e in entries if e in chosen]
 
 
@@ -2077,16 +2071,17 @@ def _extend_by_theme(entry_ids: list[str], entries: list[GLEntry]) -> list[str]:
     return [e.entry_id for e in entries if e.entry_id in chosen or _theme_key(e) in themes]
 
 
-def _term_statement(term: TermFact, label: str) -> str:
+def _term_statement(term: TermFact) -> str:
+    """What the term says, as a clause that completes '<document> ...' (the engine names the document)."""
     if term.kind == "monthly_fee":
-        return f"{label} provides for a recurring {term.text}, which is not a one-time cost."
+        return f"provides for a recurring {term.text}, not a one-time cost."
     if term.kind == "retainer":
-        return f"{label} sets a standing {term.text}, an ongoing cost rather than a one-time charge."
+        return f"sets a standing {term.text}, an ongoing cost rather than a one-time charge."
     if term.kind == "auto_renew":
-        return f"{label} renews automatically, so the cost continues beyond the claim period."
+        return "renews automatically, so the cost continues past the claim period."
     if term.kind == "ongoing_services":
-        return f"{label} provides for services that continue until terminated."
-    return f"{label} commits the company to a multi-period term ({term.text})."
+        return "provides for services that continue until terminated."
+    return f"commits the company to a multi-period term ({term.text})."
 
 
 def _is_multi_period_term(term: TermFact) -> bool:
@@ -2126,7 +2121,6 @@ def _find_contradictions_rules(
         return True
 
     for fact in facts:
-        label = _doc_label(fact)
         per_doc = 0
         if intent.asserts_nonrecurring and not intent.is_pro_forma:
             for q in _ranked(fact.key_statements, _RECURRENCE_STRONG_RE):
@@ -2142,7 +2136,7 @@ def _find_contradictions_rules(
                     entry_ids = _tie_entries(fact, entries, evidence, "fee")
                 # a statement that the cost recurs covers the whole series, not just the entries near its date
                 entry_ids = _extend_by_theme(entry_ids, entries)
-                statement = f"{label} describes the cost as recurring (\"{phrase}\")."
+                statement = f"describes the cost as recurring (\"{phrase}\"), not one-time."
                 if add(fact, q, statement, _NONRECURRING_CONFLICT, entry_ids):
                     per_doc += 1
             for term in fact.terms:
@@ -2153,7 +2147,7 @@ def _find_contradictions_rules(
                 if _INSTALLMENT_CONTEXT_RE.search(term.quote.quote):
                     continue
                 entry_ids = _tie_entries(fact, entries, evidence, "fee")
-                if add(fact, term.quote, _term_statement(term, label), _NONRECURRING_CONFLICT, entry_ids):
+                if add(fact, term.quote, _term_statement(term), _NONRECURRING_CONFLICT, entry_ids):
                     per_doc += 1
         if intent.asserts_personal:
             for q in _ranked(fact.key_statements, _BUSINESS_STRONG_RE):
@@ -2162,10 +2156,7 @@ def _find_contradictions_rules(
                 if not _BUSINESS_PURPOSE_RE.search(q.quote) or _PERSONAL_RE.search(q.quote):
                     continue
                 entry_ids = _tie_entries(fact, entries, evidence, "business")
-                statement = (
-                    f"{label} records a business purpose for the expense (for example a conference, supplier or "
-                    f"customer visit attended for the company)."
-                )
+                statement = "records a business purpose for the expense, so it is not a personal cost."
                 if add(fact, q, statement, _PERSONAL_CONFLICT, entry_ids):
                     per_doc += 1
         if intent.is_normalization and intent.normalized_amount:
@@ -2175,7 +2166,7 @@ def _find_contradictions_rules(
                 add(
                     fact,
                     a.quote,
-                    f"{label} states a base salary of {_usd(a.amount)}, not the {_usd(intent.normalized_amount)} "
+                    f"states a base salary of {_usd(a.amount)}, not the {_usd(intent.normalized_amount)} "
                     f"normalized level used in the adjustment.",
                     "The normalized compensation level management used.",
                     [],
@@ -2186,7 +2177,7 @@ def _find_contradictions_rules(
                     add(
                         fact,
                         q,
-                        f"{label} describes the change as planned, not completed.",
+                        "describes the change as planned, not completed.",
                         "Management describes the change as already made.",
                         [],
                     )
@@ -2205,14 +2196,6 @@ def _memo_theme(memo: str) -> str:
     text = re.sub(r"\$?\d[\d,./-]*", " ", text.lower())
     text = re.sub(r"[^a-z&]+", " ", text)
     return " ".join(w for w in text.split() if w not in _STOPWORDS)
-
-
-def _quote_excerpt(text: str, limit: int = 160) -> str:
-    text = _norm_space(text)
-    if len(text) <= limit:
-        return text
-    cut = text.rfind(" ", 0, limit)
-    return text[: cut if cut > 40 else limit].rstrip(" ,;:") + " …"
 
 
 def _docs_for_entry(entry: GLEntry, facts: list[DocFacts], primary: dict[str, list[str]]) -> list[str]:
@@ -2236,28 +2219,31 @@ def _classify_personal(
         (f, q) for f in facts for q in f.key_statements
         if _BUSINESS_PURPOSE_RE.search(q.quote) and not _PERSONAL_RE.search(q.quote)
     ]
+    # Ties are decided per document over all entries at once, so a numbered document (an
+    # expense report) ties only to the entry carrying its number, not to every same-sized trip.
+    tied_by_doc = {f.doc_id: set(_tie_entries(f, entries, evidence, "business")) for f, _ in business_docs}
     out: list[EntryClassification] = []
     for e in entries:
         personal = _PERSONAL_RE.search(e.memo)
         business = _BUSINESS_MEMO_RE.search(e.memo)
-        tied = [(f, q) for f, q in business_docs if e.entry_id in _tie_entries(f, [e], evidence, "business")]
+        tied = [(f, q) for f, q in business_docs if e.entry_id in tied_by_doc[f.doc_id]]
         tied_docs = list(dict.fromkeys(f.doc_id for f, _ in tied))
         if personal:
             out.append(EntryClassification(
                 entry_id=e.entry_id, qualifies=True,
-                reason=f"Memo identifies the cost as personal (\"{personal.group()}\").",
+                reason=f"The GL memo identifies the cost as personal ({personal.group()}).",
             ))
         elif business:
             out.append(EntryClassification(
                 entry_id=e.entry_id, qualifies=False,
-                reason=f"Memo shows a business purpose (\"{business.group()}\"), so it is not a personal expense.",
+                reason=f"The GL memo shows a business purpose ({business.group()}), so it is not a personal expense.",
                 doc_ids=tied_docs,
             ))
         elif tied:
             fact, q = tied[0]
             out.append(EntryClassification(
                 entry_id=e.entry_id, qualifies=False,
-                reason=f"{_doc_label(fact)} documents a business purpose: \"{_quote_excerpt(q.quote)}\"",
+                reason=f"{fact.doc_id} records a business purpose for it.",
                 doc_ids=tied_docs,
             ))
         else:
@@ -2360,8 +2346,7 @@ def _classify_event(
             term = next(t for t in recurring_doc.terms if t.kind in ("retainer", "monthly_fee", "ongoing_services"))
             decided[e.entry_id] = EntryClassification(
                 entry_id=e.entry_id, qualifies=False,
-                reason=f"Linked to {_doc_label(recurring_doc)}, a standing arrangement ({term.text}), not the "
-                f"claimed event.",
+                reason=f"Billed under {recurring_doc.doc_id}, a standing arrangement ({term.text}), not the claimed event.",
                 doc_ids=[recurring_doc.doc_id],
             )
             continue
@@ -2408,22 +2393,6 @@ def _classify_event(
 # ---------------------------------------------------------------------------
 
 
-def _claim_summary(adj: AdjustmentClaim) -> str:
-    parts = [f"{label} {_usd(v)}" for label, v in adj.amounts.items() if D(v) != 0]
-    return _join_words(parts) if parts else "no amount"
-
-
-def _docs_phrase(flag: Flag, docs: dict[str, DocFacts], default: str = "The supporting document") -> str:
-    labels: list[str] = []
-    for doc_id in flag.doc_ids[:2]:
-        fact = docs.get(doc_id)
-        labels.append(f"the {_doc_label(fact)}" if fact and fact.title else doc_id)
-    if not labels:
-        return default
-    text = " and ".join(labels)
-    return text[:1].upper() + text[1:]
-
-
 def _long_date(iso: Optional[str]) -> str:
     """'2025-04-01' -> 'April 1, 2025' for text written to management."""
     try:
@@ -2433,178 +2402,39 @@ def _long_date(iso: Optional[str]) -> str:
     return f"{d.strftime('%B')} {d.day}, {d.year}"
 
 
-def _term_phrase(term: TermFact) -> str:
-    if term.kind in ("monthly_fee", "retainer"):
-        return f"a {term.text}"
-    if term.kind == "auto_renew":
-        return "automatic renewal"
-    if term.kind == "ongoing_services":
-        return "services that continue until terminated"
-    if term.kind == "term_end":
-        m = re.search(r"\d{4}-\d{2}-\d{2}", term.text)
-        return f"a term running to {_long_date(m.group())}" if m else term.text
-    return term.text
+_SUCCESS_FEE_RE = _lex(r"\bsuccess fee\b|\btransaction fee\b|\bpayable (?:up)?on (?:closing|completion)\b", re.I)
 
 
-def _join_words(items: list[str]) -> str:
-    if len(items) <= 1:
-        return "".join(items)
-    return ", ".join(items[:-1]) + " and " + items[-1]
+def _followup_questions(adj: AdjustmentClaim, facts: list[DocFacts]) -> list[str]:
+    """Questions the documents raise that no review flag covers.
 
-
-_COUNT_WORDS = ("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
-
-
-def _entries_phrase(n: int) -> str:
-    count = _COUNT_WORDS[n] if 0 <= n < len(_COUNT_WORDS) else str(n)
-    return f"{count} ledger entr{'y' if n == 1 else 'ies'}"
-
-
-def _question_for(adj: AdjustmentClaim, flag: Flag, docs: dict[str, DocFacts]) -> str:
-    ref = f"adjustment {adj.adj_id} ({adj.title})"
-    ref_cap = ref[:1].upper() + ref[1:]
-    period = flag.period_label
-    in_period = f" in {period}" if period else ""
-    claimed = adj.amounts.get(period or "", "")
-    claimed_txt = f"the {_usd(claimed)} claimed" if claimed and D(claimed) != 0 else "the amount claimed"
-    impact = _usd(flag.amount_impact) if flag.amount_impact and D(flag.amount_impact) != 0 else ""
-    docs_txt = _docs_phrase(flag, docs)
-    n_entries = len(flag.entry_ids)
-    code = flag.code
-
-    if code == FlagCode.NO_GL_SUPPORT:
-        return (f"We could not find the costs behind {ref} in the general ledger (management claims "
-                f"{_claim_summary(adj)}). "
-                f"Please send the ledger detail (account, date, vendor and amount) for the entries that make up "
-                f"this adjustment.")
-    if code == FlagCode.PARTIAL_GL_SUPPORT:
-        gap = f"{impact} " if impact else ""
-        return (f"For {ref}, the ledger activity we could tie to this item{in_period} is {gap}less than "
-                f"{claimed_txt}. Please send the entries that make up the full amount, or revise the adjustment.")
-    if code == FlagCode.EXCESS_GL_ACTIVITY:
-        return (f"The ledger shows more activity related to {ref}{in_period} than {claimed_txt}. Please confirm "
-                f"which invoices management included and why the remaining entries were left out.")
-    if code == FlagCode.NO_DOCUMENT_SUPPORT:
-        portion = f"{impact} of" if impact else "part of"
-        return (f"We have not received invoices or agreements supporting {portion} {ref}{in_period}. "
-                f"Please provide the supporting documents for these costs.")
-    if code == FlagCode.DOC_GL_AMOUNT_MISMATCH:
-        which = f"the {_entries_phrase(n_entries)}" if n_entries > 1 else "the ledger entry"
-        return (f"{docs_txt} shows a different amount from {which} it supports in {ref}. Please explain the "
-                f"difference (for example a partial payment, a credit memo or a second invoice).")
-    if code == FlagCode.PERIOD_MISMATCH:
-        amount = f" {_usd(claimed)}" if claimed and D(claimed) != 0 else " an amount"
-        return (f"{ref_cap} claims{amount}{in_period}, but the related ledger activity was recorded in a "
-                f"different period. Please confirm when these costs were incurred and update the schedule if the "
-                f"timing is wrong.")
-    if code == FlagCode.OUT_OF_PERIOD:
-        for doc_id in flag.doc_ids:
-            fact = docs.get(doc_id)
-            if fact and fact.service_period_start and fact.service_period_end:
-                return (f"{_docs_phrase(flag.model_copy(update={'doc_ids': [doc_id]}), docs)} covers services "
-                        f"from {_long_date(fact.service_period_start)} to {_long_date(fact.service_period_end)}, "
-                        f"but the cost was recorded{in_period}. Please confirm the service period and explain how "
-                        f"management reflected the portion that relates to an earlier period.")
-        return (f"The costs in {ref} appear to relate to a different period from the one in which they were "
-                f"recorded{in_period}. Please confirm the service period of the underlying invoices.")
-    if code == FlagCode.RECURRING_PATTERN:
-        amount = f"of {impact} " if impact else ""
-        return (f"We see comparable costs {amount}in periods that {ref} does not cover. Please explain why "
-                f"management considers this cost non-recurring and whether you expect it to continue after closing.")
-    if code == FlagCode.CONTINUING_OBLIGATION:
-        phrases: list[str] = []
-        for doc_id in flag.doc_ids:
-            fact = docs.get(doc_id)
-            for term in fact.terms if fact else []:
-                phrase = _term_phrase(term)
-                if term.kind in RECURRING_TERM_KINDS and phrase not in phrases:
-                    phrases.append(phrase)
-        what = _join_words(phrases[:3]) if phrases else "an ongoing commitment"
-        return (f"{docs_txt} provides for {what}. Please confirm whether this arrangement is still in place, what "
-                f"it will cost after closing, and whether it can be terminated.")
-    if code == FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT:
-        related = _join_words([f"adjustment {r}" for r in flag.related_adj_ids]) or "another adjustment"
-        subject = _entries_phrase(n_entries).capitalize() if n_entries else "Some of the entries"
-        return (f"{subject} in {ref} {'is' if n_entries == 1 else 'are'} also included in {related}. Please "
-                f"confirm which adjustment should carry them so they are not counted twice.")
-    if code == FlagCode.ALREADY_EXCLUDED_FROM_EBITDA:
-        return (f"The costs in {ref} are recorded in interest, tax, depreciation or amortization accounts, which "
-                f"EBITDA already excludes. Please confirm whether any portion was recorded in operating expenses; "
-                f"otherwise the adjustment counts these costs twice.")
-    if code == FlagCode.OFFSETTING_RECOVERY:
-        amount = f" of {impact}" if impact else ""
-        return (f"The ledger shows a related recovery{amount}{in_period} (for example insurance proceeds) that "
-                f"{ref} does not net off. Please confirm the amount and timing of all recoveries and whether any "
-                f"further amounts are expected.")
-    if code == FlagCode.CONTRADICTORY_EVIDENCE:
-        if flag.quotes:
-            excerpt = _quote_excerpt(flag.quotes[0].quote).rstrip(".")
-            source = _docs_phrase(flag.model_copy(update={"doc_ids": [flag.quotes[0].doc_id]}), docs)
-            return (f"{source} states \"{excerpt}\", which appears inconsistent with how management describes "
-                    f"{ref}. Please explain how management reconciled this with the basis for the adjustment.")
-        return (f"The documents for {ref} appear inconsistent with management's description of the item. "
-                f"Please explain the basis for the adjustment.")
-    if code == FlagCode.UNSIGNED_OR_DRAFT_SUPPORT:
-        fact = next((docs[d] for d in flag.doc_ids if d in docs), None)
-        if fact is not None and fact.is_draft and fact.is_signed is False:
-            status = "is marked as a draft and is not signed"
-        elif fact is not None and fact.is_draft:
-            status = "is marked as a draft"
-        elif fact is not None and fact.is_signed is False:
-            status = "is not signed"
-        else:
-            status = "is unsigned or in draft form"
-        if flag.doc_ids:
-            subject = f"The copy of {docs_txt[:1].lower() + docs_txt[1:]}"
-        else:
-            subject = f"The agreement supporting {ref}"
-        return (f"{subject} we received {status}. Please provide the executed version, or confirm the agreed "
-                f"terms and when they take effect.")
-    if code == FlagCode.NORMALIZATION_BENCHMARK_MISSING:
-        return (f"Please provide the basis for the normalized level used in {ref} (for example a compensation "
-                f"survey or a signed agreement), and explain how payroll taxes and benefits were treated.")
-    if code == FlagCode.PRO_FORMA_NOT_REALIZED:
-        return (f"The ledger shows these costs continuing through the end of the data provided. Please provide "
-                f"evidence that the change behind {ref} has happened or is committed (for example separation "
-                f"letters or payroll changes), the one-time cost to achieve it, and whether any roles or costs will "
-                f"be replaced.")
-    if code == FlagCode.SIGN_ERROR:
-        total = sum((D(v) for v in adj.amounts.values()), Decimal("0"))
-        direction = "an add-back that increases EBITDA" if total >= 0 else "a deduction that reduces EBITDA"
-        entries = f"the {_entries_phrase(n_entries)} behind it" if n_entries else "the underlying ledger entries"
-        return (f"{ref_cap} is presented as {direction}, but {entries} point the other way. Please confirm the "
-                f"direction of this adjustment.")
-    if code == FlagCode.DUPLICATE_GL_ENTRY:
-        subject = f"{_entries_phrase(n_entries).capitalize()} included in {ref}" if n_entries else f"Entries in {ref}"
-        return (f"{subject} appear to have been posted twice. Please confirm whether this is a duplicate and, if "
-                f"so, when and how it was reversed.")
-    return f"Please explain the following point on {ref}: {flag.message}"
-
-
-def _fact_questions(adj: AdjustmentClaim, facts: list[DocFacts]) -> list[str]:
+    The engine already asks one templated question per flag; these are the follow-ups a
+    senior would add from the documents themselves (who funded a settlement, whether a
+    vacated role is backfilled, what a success fee will cost at closing).
+    """
     out: list[str] = []
     for fact in facts:
-        if fact.doc_type == "settlement_agreement":
-            dated = f" dated {_long_date(fact.doc_date)}" if fact.doc_date else ""
+        doc_type = (fact.doc_type or "").lower()
+        if doc_type == "settlement_agreement":
+            dated = f" (dated {_long_date(fact.doc_date)})" if fact.doc_date else ""
             out.append(
-                f"The {_doc_label(fact)}{dated} resolves the matter behind adjustment {adj.adj_id} ({adj.title}). "
-                f"Please confirm who funded the settlement (and that any insurer payment was received in full), and "
-                f"whether any fees or obligations continue after the settlement."
+                f"Who funded the settlement under {fact.doc_id}{dated}, was any insurer payment received in full, and "
+                "do any fees or obligations continue after it?"
             )
-    return out
+        elif doc_type == "separation_agreement":
+            out.append(f"Has the role vacated under {fact.doc_id} been backfilled, and at what annual cost?")
+        quotes = [q.quote for q in fact.key_statements] + [t.quote.quote for t in fact.terms] + [t.text for t in fact.terms]
+        quotes += [a.quote.quote for a in fact.amounts]
+        if any(_SUCCESS_FEE_RE.search(q) for q in quotes):
+            out.append(
+                f"What success fee is payable under {fact.doc_id} at closing, and were other sale-process fees "
+                f"incurred but left out of {adj.adj_id}?"
+            )
+    return list(dict.fromkeys(out))
 
 
 def _draft_questions_rules(adj: AdjustmentClaim, flags: list[Flag], facts: list[DocFacts]) -> list[str]:
-    docs = {f.doc_id: f for f in facts}
-    out: list[str] = []
-    for flag in flags:
-        q = _question_for(adj, flag, docs)
-        if q and q not in out:
-            out.append(q)
-    for q in _fact_questions(adj, facts):
-        if q not in out:
-            out.append(q)
-    return out
+    return _followup_questions(adj, facts)
 
 
 # ---------------------------------------------------------------------------
@@ -2658,12 +2488,25 @@ class RuleBasedEvidenceAI:
         return _classify_event(adj, intent, entries, facts, evidence)
 
     def draft_questions(self, adj: AdjustmentClaim, flags: list[Flag], facts: list[DocFacts]) -> list[str]:
+        """Follow-up questions the documents raise. The engine already templates one question per
+        flag (qoe/propose.py), so repeating them here would only duplicate the list."""
         return _draft_questions_rules(adj, flags, facts)
 
 
 # ---------------------------------------------------------------------------
 # OpenAI-compatible LLM implementation
 # ---------------------------------------------------------------------------
+
+
+def _verified_entry_ids(
+    fact: DocFacts, proposed: list[str], entries: dict[str, GLEntry], evidence: _Evidence
+) -> list[str]:
+    """Entry ids the model tied to a document, kept only when code can see the tie: a
+    reference or document number, the same amount for the same counterparty, or a memo
+    naming the document's event. Date proximity alone is not a tie."""
+    candidates = [entries[x] for x in dict.fromkeys(proposed)]
+    tied = set(_tie_entries(fact, candidates, evidence, "statement"))
+    return [e.entry_id for e in candidates if e.entry_id in tied]
 
 
 def _nullable(kind: str) -> dict[str, Any]:
@@ -3011,6 +2854,7 @@ class OpenAICompatibleEvidenceAI:
                               if c and _norm_space(c).lower() in low]
             refs = [r for r in (_stated(x) for x in data.get("reference_numbers") or []) if r and r.lower() in low]
             keywords = [k.lower() for k in (_stated(x) for x in data.get("keywords") or []) if k]
+            keywords = _without_names(keywords, counterparties, narrative)
             normalized = _stated(data.get("normalized_amount"))
             if normalized is not None:
                 try:
@@ -3061,7 +2905,7 @@ class OpenAICompatibleEvidenceAI:
             return self.rules.find_contradictions(adj, intent, facts, entries)
         evidence = _Evidence(self._docs)
         facts_by_id = {f.doc_id: f for f in facts}
-        known_entries = {e.entry_id for e in entries}
+        known_entries = {e.entry_id: e for e in entries}
         out: list[Contradiction] = []
         for item in data.get("contradictions") or []:
             try:
@@ -3081,7 +2925,10 @@ class OpenAICompatibleEvidenceAI:
                     statement=statement,
                     quote=q,
                     conflicts_with=_norm_space(str(item.get("conflicts_with") or "")) or "management's explanation",
-                    entry_ids=[x for x in item.get("entry_ids") or [] if x in known_entries],
+                    entry_ids=_verified_entry_ids(
+                        facts_by_id[q.doc_id], [x for x in item.get("entry_ids") or [] if x in known_entries],
+                        known_entries, evidence,
+                    ),
                 )
             )
         return out
@@ -3147,10 +2994,8 @@ class OpenAICompatibleEvidenceAI:
         try:
             data = self._call("questions", payload, QUESTIONS_SCHEMA)
             questions = [_norm_space(str(q)) for q in data.get("questions") or []]
-            questions = list(dict.fromkeys(q for q in questions if q))
-            if flags and not questions:
-                raise ValueError("no questions returned for open flags")
-            return questions
+            # An empty list is a valid answer: the engine already asks one question per flag.
+            return list(dict.fromkeys(q for q in questions if q))
         except Exception as exc:  # noqa: BLE001
             self._fallback("draft_questions", adj.adj_id, exc)
             return self.rules.draft_questions(adj, flags, facts)

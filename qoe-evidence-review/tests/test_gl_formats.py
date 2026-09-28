@@ -15,6 +15,7 @@ from qoe.gl_formats import (
     XERO,
     classify_account,
     detect_format,
+    is_credit_natural,
     parse_date,
     parse_money,
     parse_month,
@@ -369,6 +370,83 @@ def test_classification_rules(name: str, source_type: str, expected: EbitdaClass
     cls, basis = classify_account(name, source_type)
     assert cls is expected, basis
     assert not basis.startswith(FALLBACK_BASIS)
+
+
+@pytest.mark.parametrize(
+    "source_type, expected, credit_natural",
+    [
+        # QBO and NetSuite UI labels, including the plural and "Cost of Sales" forms real exports use.
+        ("Expenses", EbitdaClass.OPEX, False),
+        ("Expense", EbitdaClass.OPEX, False),
+        ("Other Expenses", EbitdaClass.OTHER_EXPENSE, False),
+        ("Other Expense", EbitdaClass.OTHER_EXPENSE, False),
+        ("Cost of Sales", EbitdaClass.COGS, False),
+        ("Cost of sales", EbitdaClass.COGS, False),
+        ("Cost of Goods Sold", EbitdaClass.COGS, False),
+        ("Other Income", EbitdaClass.OTHER_INCOME, True),
+        ("  EXPENSES ", EbitdaClass.OPEX, False),
+        # NetSuite internal type ids from saved-search exports.
+        ("OthExpense", EbitdaClass.OTHER_EXPENSE, False),
+        ("OthIncome", EbitdaClass.OTHER_INCOME, True),
+        ("COGS", EbitdaClass.COGS, False),
+        ("AcctRec", EbitdaClass.BALANCE_SHEET, False),
+        ("AcctPay", EbitdaClass.BALANCE_SHEET, True),
+        ("CredCard", EbitdaClass.BALANCE_SHEET, True),
+        ("DeferRevenue", EbitdaClass.BALANCE_SHEET, True),
+        ("DeferExpense", EbitdaClass.BALANCE_SHEET, False),
+        ("OthCurrLiab", EbitdaClass.BALANCE_SHEET, True),
+        ("Stat", EbitdaClass.BALANCE_SHEET, False),
+    ],
+)
+def test_real_export_type_labels(source_type: str, expected: EbitdaClass, credit_natural: bool):
+    cls, basis = classify_account("Some Account", source_type)
+    assert cls is expected, basis
+    assert basis.startswith("type rule:")
+    account = Account(number="1", name="Some Account", source_type=source_type, ebitda_class=cls, mapping_basis=basis)
+    assert is_credit_natural(account) is credit_natural
+
+
+def test_coa_with_plural_and_cost_of_sales_types_reads_a_qbo_gl(tmp_path: Path):
+    coa = _write(
+        tmp_path / "coa.csv",
+        "\n".join(
+            [
+                "Account #,Full name,Type,Detail type",
+                "4000,Service Revenue,Income,Service/Fee Income",
+                "5000,Materials & Equipment,Cost of Sales,Supplies & Materials - COS",
+                "6400,Legal & Professional Fees,Expenses,Legal & Professional Fees",
+                "8000,Other Income,Other Income,Other Miscellaneous Income",
+                "8200,Other Expense,Other Expenses,Other Miscellaneous Expense",
+            ]
+        ),
+    )
+    accounts, notes = read_chart_of_accounts(coa)
+    by_number = {a.number: a for a in accounts}
+    assert {n: a.ebitda_class for n, a in by_number.items()} == {
+        "4000": EbitdaClass.REVENUE,
+        "5000": EbitdaClass.COGS,
+        "6400": EbitdaClass.OPEX,
+        "8000": EbitdaClass.OTHER_INCOME,
+        "8200": EbitdaClass.OTHER_EXPENSE,
+    }
+    assert by_number["5000"].mapping_basis == "type rule: Cost of Sales -> COGS"
+    assert by_number["8200"].mapping_basis == "type rule: Other Expenses -> OTHER_EXPENSE"
+    assert not any(a.mapping_basis.startswith(FALLBACK_BASIS) for a in accounts)
+    assert "0 fallback mapping(s)" in notes[0]
+    gl = "\n".join(
+        [
+            ",Date,Transaction Type,Num,Name,Memo/Description,Split,Amount,Balance",  # 1
+            "5000 Materials & Equipment,,,,,,,,",  # 2
+            ",03/04/2025,Bill,M-1,Ferguson,Copper fittings,Accounts Payable (A/P),\"1,250.00\",",  # 3
+            "8000 Other Income,,,,,,,,",  # 4
+            ",03/10/2025,Deposit,,Sunshine Mutual,Insurance proceeds,Checking,\"40,000.00\",",  # 5
+            "8200 Other Expense,,,,,,,,",  # 6
+            ",03/12/2025,Expense,,City of Tampa,Late filing penalty,Checking,75.00,",  # 7
+        ]
+    )
+    entries, _ = read_gl(_write(tmp_path / "gl.csv", gl), QBO, by_number)
+    # Natural sign: expense-type accounts stay debit-positive; income-type accounts are negated.
+    assert [(e.account, e.amount) for e in entries] == [("5000", "1250.00"), ("8000", "-40000.00"), ("8200", "75.00")]
 
 
 def test_unrecognized_type_falls_back_to_opex():

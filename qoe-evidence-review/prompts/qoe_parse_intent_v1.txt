@@ -7,7 +7,7 @@ BOUNDARY (non-negotiable)
 
 FIELDS
 - counterparties: vendor, firm, insurer, lender, customer or person names mentioned ("Smith & Jones LLP", "J. Doe").
-- keywords: distinctive lower-case terms that would appear in ledger memos or documents for this event ("litigation", "severance", "relocation", "conversion"). Leave out generic accounting words (fees, costs, expense, adjustment, one-time, non-recurring, professional, services, management).
+- keywords: distinctive lower-case terms that would appear in ledger memos or documents for this event ("litigation", "severance", "relocation", "conversion"). Leave out generic accounting words (fees, costs, expense, adjustment, one-time, non-recurring, professional, services, management) and leave out party names: vendors, firms and people go in counterparties only, because a name would match every charge that party makes.
 - reference_numbers: matter, invoice, claim, case, agreement or project numbers mentioned, value only.
 - event_type: litigation | severance | recruiting | transaction | relocation | casualty | owner_expense | owner_comp | it_project | inventory | bad_debt | refinancing | out_of_period | pro_forma_savings | other.
 - asserts_nonrecurring: management calls the cost one-time, non-recurring, isolated or unusual (or the category says so).

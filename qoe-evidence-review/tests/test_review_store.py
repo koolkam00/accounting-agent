@@ -419,6 +419,128 @@ def test_apply_reviews_bridge_identity_with_real_bridge(wp):
 
 
 # ---------------------------------------------------------------------------
+# Diligence-identified items (SPEC §5.7) and the stored schedule
+# ---------------------------------------------------------------------------
+
+
+def _diligence_item(**kw) -> AdjustmentAssessment:
+    return _assessment(
+        "D-1",
+        kw.pop("treatment", Treatment.REVISE),
+        _pm("0", "0"),
+        kw.pop("proposed", _pm("0", "18400")),
+        title="Reverse duplicate premium posting",
+        category=AdjustmentCategory.OTHER,
+        source="diligence",
+        description="Premium installment CRI-0507 is posted twice; the P&L carries both.",
+        gl_accounts=["6200"],
+        support_refs=["9.4 Premium notice.pdf"],
+        gl_links=[
+            GLLink(entry_id="GL-R40", period="2025-05", amount="18400.00", score=5.0, supports_claim=False),
+            GLLink(entry_id="GL-R41", period="2025-05", amount="18400.00", score=5.0),
+        ],
+        open_questions=[OpenQuestion(q_id="Q-D-1-1", adj_id="D-1", text="Was the installment paid twice?")],
+        **kw,
+    )
+
+
+def _wp_with_diligence(store_schedule: bool = False) -> Workpaper:
+    """A run with one diligence-identified item, bridged the way the engine does it."""
+    build_bridge = pytest.importorskip("qoe.bridge").build_bridge
+    wp = _workpaper()
+    wp.assessments.append(_diligence_item())
+    sched = schedule_from_workpaper(wp)
+    bridge = build_bridge(wp.deal, wp.reconciliation, sched, wp.assessments)
+    return wp.model_copy(update={"bridge": bridge, "schedule": sched if store_schedule else None})
+
+
+def test_schedule_from_workpaper_leaves_out_diligence_items():
+    wp = _workpaper()
+    wp.assessments[1] = wp.assessments[1].model_copy(
+        update={"description": "Dawson litigation.", "gl_accounts": ["6400"], "support_refs": ["DR 4.2"]}
+    )
+    wp.assessments.append(_diligence_item())
+    sched = schedule_from_workpaper(wp)
+    assert [c.adj_id for c in sched.adjustments] == ["A-1", "A-2", "A-3", "A-4", "A-5"]
+    a2 = sched.adjustments[1]
+    assert (a2.description, a2.gl_accounts, a2.support_refs) == ("Dawson litigation.", ["6400"], ["DR 4.2"])
+
+
+def test_apply_reviews_prefers_explicit_then_stored_schedule(monkeypatch):
+    captured = {}
+
+    def fake_build_bridge(pkg_or_meta, recon, schedule, assessments, final_amounts=None):
+        captured.update(schedule=schedule, assessments=assessments, finals=final_amounts)
+        return EbitdaBridge(period_labels=LABELS, rows=[])
+
+    monkeypatch.setitem(sys.modules, "qoe.bridge", types.SimpleNamespace(build_bridge=fake_build_bridge))
+    wp = _workpaper()
+    wp.assessments.append(_diligence_item())
+    stored = schedule_from_workpaper(wp).model_copy(update={"source_file": "adjustments/schedule.xlsx"})
+    explicit = stored.model_copy(update={"source_file": "from the package"})
+
+    apply_reviews(wp, [])
+    assert captured["schedule"].source_file == "(reconstructed from workpaper)"
+    assert "D-1" not in [c.adj_id for c in captured["schedule"].adjustments]
+    apply_reviews(wp.model_copy(update={"schedule": stored}), [])
+    assert captured["schedule"].source_file == "adjustments/schedule.xlsx"
+    apply_reviews(wp.model_copy(update={"schedule": stored}), [], schedule=explicit)
+    assert captured["schedule"].source_file == "from the package"
+    # The diligence item reaches the bridge through the assessments, with its final amount.
+    assert [a.adj_id for a in captured["assessments"]][-1] == "D-1"
+    assert captured["finals"]["D-1"] == _pm("0", "18400")
+
+
+def test_diligence_item_final_amounts_follow_management_rules():
+    wp = _workpaper()
+    wp.assessments.append(_diligence_item())
+    d1 = wp.assessments[-1]
+    assert final_amounts(wp, {})["D-1"] == _pm("0", "18400")  # unreviewed: the tool's proposal
+    kw = dict(rationale="Paid once; the second posting is an AP error.", reviewer="Ann", labels=LABELS)
+    agree = make_decision(d1, treatment=Treatment.REVISE, amounts=_pm("0", "18400"), timestamp=TS, **kw)
+    assert not decision_is_override(agree) and agree.tool_amounts == _pm("0", "18400")
+    assert review_status(d1, agree) == STATUS_AGREED
+    half = make_decision(d1, treatment=Treatment.REVISE, amounts={"FY2025": "9200"},
+                         correction_type=CorrectionType.JUDGMENT_DIFFERENCE, **kw)
+    assert final_amounts(wp, [agree, half])["D-1"] == _pm("0", "9200")
+    # Accept carries management's claim, which for a diligence item is zero; Reject is zero too.
+    accept = make_decision(d1, treatment=Treatment.ACCEPT, amounts={}, correction_type=CorrectionType.JUDGMENT_DIFFERENCE, **kw)
+    assert final_amounts(wp, [accept])["D-1"] == _pm("0", "0")
+    info = make_decision(d1, treatment=Treatment.REQUEST_INFO, amounts={}, correction_type=CorrectionType.NEW_INFORMATION, **kw)
+    assert final_amounts(wp, [info])["D-1"] == {}
+
+
+def test_apply_reviews_bridge_identity_includes_diligence_items():
+    for stored in (False, True):
+        wp = _wp_with_diligence(store_schedule=stored)
+        rows = {r.key: r for r in wp.bridge.rows}
+        assert D(rows["dil:D-1"].amounts["FY2025"]) == D("18400")
+        assert bridge_ties(check_bridge_identity(wp))
+        # FY2025: 1200 + A-1 100 + A-2 120 + A-3 0 + A-5 (40) + D-1 18,400 (A-4 pending)
+        assert D(rows["diligence_adjusted_ebitda"].amounts["FY2025"]) == D("19780")
+
+        log = [
+            _decision("D-1", Treatment.REVISE, _pm("0", "9200"), Treatment.REVISE, _pm("0", "18400"),
+                      correction_type=CorrectionType.JUDGMENT_DIFFERENCE, question_updates={"Q-D-1-1": "ANSWERED: once"}),
+            _decision("A-2", Treatment.REJECT, _pm("0", "0"), Treatment.REVISE, _pm("0", "120"),
+                      correction_type=CorrectionType.JUDGMENT_DIFFERENCE),
+        ]
+        out = apply_reviews(wp, log)
+        rows = {r.key: r for r in out.bridge.rows}
+        assert D(rows["dil:D-1"].amounts["FY2025"]) == D("9200")
+        assert bridge_ties(check_bridge_identity(out))
+        assert D(rows["diligence_adjusted_ebitda"].amounts["FY2025"]) == D("19780") - D("9200") - D("120")
+        # Management rows still carry the claims as presented, whichever schedule was used.
+        for a in wp.assessments[:5]:
+            assert rows[f"mgmt:{a.adj_id}"].amounts == a.claimed
+        q = next(q for a in out.assessments for q in a.open_questions if q.q_id == "Q-D-1-1")
+        assert (q.status, q.response) == (QuestionStatus.ANSWERED, "once")
+        # Reverting to the tool's proposal restores the original bridge.
+        back = apply_reviews(out, [*log, _decision("D-1", Treatment.REVISE, _pm("0", "18400"), Treatment.REVISE, _pm("0", "18400"))])
+        assert {r.key: r.amounts for r in back.bridge.rows}["dil:D-1"] == {r.key: r.amounts for r in wp.bridge.rows}["dil:D-1"]
+
+
+# ---------------------------------------------------------------------------
 # Question updates
 # ---------------------------------------------------------------------------
 
@@ -638,7 +760,7 @@ def test_queue_rows_and_status_counts(wp):
     latest = {"A-2": _decision("A-2", Treatment.REJECT, _pm("0", "0"), Treatment.REVISE, _pm("0", "120"))}
     finals = final_amounts(wp, latest)
     rows = {r["Ref"]: r for r in ui.queue_rows(wp, latest, finals)}
-    assert set(ui.queue_columns(LABELS)) >= set(rows["A-1"])
+    assert set(ui.queue_columns(LABELS)) >= {k for k in rows["A-1"] if not k.startswith("_")}  # "_" keys are hidden
     assert rows["A-2"]["Status"] == STATUS_OVERRIDDEN and rows["A-2"]["Reviewer"] == "Reject"
     assert rows["A-2"]["Final FY2025"] == "-" and rows["A-2"]["Proposed FY2025"] == "120"
     assert rows["A-2"]["Top flags"] == "Already excluded from EBITDA, Continuing obligation, Recurring pattern (+1)"
@@ -653,6 +775,64 @@ def test_queue_rows_and_status_counts(wp):
     assert counts["review"] == {STATUS_UNREVIEWED: 4, STATUS_AGREED: 0, STATUS_OVERRIDDEN: 1}
     assert counts["final_treatment"]["REJECT"] == 2
     assert counts["pending"] == 1 and counts["open_questions"] == 2 and counts["stale"] == 0
+
+
+def test_queue_groups_put_diligence_items_after_management_items():
+    wp = _wp_with_diligence()
+    finals = final_amounts(wp, {})
+    groups = ui.queue_groups(ui.queue_rows(wp, {}, finals))
+    assert [(g, [r["Ref"] for r in rows]) for g, rows in groups] == [
+        (ui.GROUP_MANAGEMENT, ["A-1", "A-2", "A-3", "A-4", "A-5"]),
+        (ui.GROUP_DILIGENCE, ["D-1"]),
+    ]
+    d1 = groups[1][1][0]
+    assert (d1["Claimed FY2025"], d1["Proposed FY2025"], d1["Final FY2025"]) == ("-", "18,400", "18,400")
+    assert d1["Tool"] == "Revise" and d1["Status"] == STATUS_UNREVIEWED and d1["Bridge"] == "Included"
+    # No diligence items: a single management group.
+    plain = _workpaper()
+    assert [g for g, _ in ui.queue_groups(ui.queue_rows(plain, {}, final_amounts(plain, {})))] == [ui.GROUP_MANAGEMENT]
+    assert ui.status_counts(wp, {}, finals)["diligence_items"] == 1
+
+
+def test_bridge_tables_show_diligence_item_rows():
+    wp = _wp_with_diligence()
+    ids = ui.diligence_ids(wp)
+    assert ids == {"D-1"}
+    full = ui.bridge_rows(wp.bridge, ids)
+    lines = [r["Line"] for r in full]
+    heading = next(i for i, r in enumerate(full) if r["_class"] == "group")
+    assert full[heading]["Line"].startswith(ui.GROUP_DILIGENCE)
+    d1 = next(i for i, r in enumerate(full) if r["_class"] == "diligence_adjustment" and "premium" in r["Line"].lower())
+    assert heading == d1 - 1 and d1 > max(i for i, r in enumerate(full) if r["Line"].startswith("Adjustment A-5"))
+    assert full[d1]["FY2025"] == "18,400"
+    assert not any("as claimed" in line and "premium" in line.lower() for line in lines)
+    summary = ui.bridge_summary_rows(wp.bridge, ids)
+    assert [r["Line"] for r in summary][:4] == [label for _, label in ui.BRIDGE_SUMMARY_KEYS]
+    assert summary[-1]["Line"].startswith("of which D-1: ") and summary[-1]["FY2025"] == "18,400"
+    # Without the diligence ids the rows are listed as the bridge has them, with no heading.
+    assert not any(r["_class"] == "group" for r in ui.bridge_rows(wp.bridge))
+
+
+def test_claim_details_fall_back_to_workpaper_fields():
+    wp = _workpaper()
+    a2 = wp.assessments[1].model_copy(
+        update={"description": "Dawson litigation fees.", "gl_accounts": ["6400"], "support_refs": ["DR 4.2"]}
+    )
+    info = ui.claim_details(a2, None)
+    assert info["description"] == "Dawson litigation fees."
+    assert info["bits"] == ["GL accounts: 6400", "Support: DR 4.2"]
+    assert ui.claim_details(wp.assessments[0], None) == {
+        "heading": "Management's claim and basis", "description": "", "bits": []
+    }
+    stored = schedule_from_workpaper(wp).model_copy(deep=True)
+    stored.adjustments[1].description = "From the stored schedule."
+    stored.adjustments[1].category_raw = "Non-recurring"
+    info = ui.claim_details(a2, None, stored)
+    assert info["description"] == "From the stored schedule." and "Schedule row 2" in info["bits"]
+    d1 = _diligence_item()
+    info = ui.claim_details(d1, None)
+    assert info["heading"].startswith("Diligence-identified") and info["description"].startswith("Premium installment")
+    assert info["bits"][0] == ui.DILIGENCE_NOTE and "GL accounts: 6200" in info["bits"]
 
 
 def test_tieout_rows(wp):
@@ -790,3 +970,39 @@ def test_app_renders_pages_and_records_decision(wp, tmp_path, monkeypatch):
     timing = load_timing(wp_path.parent / "timing.jsonl")
     assert [t["adj_id"] for t in timing] == ["A-2"] and timing[0]["seconds"] >= 0
     assert any("Recorded Reject for A-2" in s.value for s in at.success)
+
+
+def test_app_reviews_a_diligence_item(tmp_path, monkeypatch):
+    testing = pytest.importorskip("streamlit.testing.v1")
+    wp = _wp_with_diligence(store_schedule=True)
+    (tmp_path / "data").mkdir()
+    monkeypatch.setenv("QOE_DATA_DIR", str(tmp_path / "data"))
+    monkeypatch.setenv("QOE_WORKPAPERS_DIR", str(tmp_path / "wp"))
+    wp_path = tmp_path / "wp" / wp.deal.deal_id / "workpaper.json"
+    wp_path.parent.mkdir(parents=True)
+    wp_path.write_text(wp.model_dump_json())
+
+    at = testing.AppTest.from_file(str(ROOT / "qoe" / "ui.py"), default_timeout=60)
+    at.session_state["wp_path"] = str(wp_path)
+    for page in ui.PAGES:
+        at.session_state["page"] = page
+        at.session_state["adj_select"] = "D-1"
+        at.run()
+        assert not at.exception, page
+        assert not at.error, (page, [e.value for e in at.error])
+    at.session_state["page"] = "Adjustment queue"
+    at.run()
+    assert any(ui.GROUP_DILIGENCE in m.value for m in at.markdown)
+
+    at.session_state["page"] = "Adjustment detail"
+    at.run()
+    html = " ".join(str(getattr(h, "proto", "")) for h in at.get("html"))
+    assert "Diligence-identified" in html and "Premium installment CRI-0507" in html
+    at.text_input(key="reviewer").input("Ann Senior")
+    at.run()
+    next(b for b in at.button if b.label == "Record decision").click().run()
+    assert not at.exception
+    decisions = ReviewStore(wp_path.parent / "review_log.jsonl").all()
+    assert [(d.adj_id, d.treatment, d.amounts, d.correction_type) for d in decisions] == [
+        ("D-1", Treatment.REVISE, _pm("0", "18400"), CorrectionType.NONE)
+    ]

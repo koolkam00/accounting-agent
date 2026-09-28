@@ -169,3 +169,58 @@ def test_an_assessment_missing_from_the_schedule_still_bridges():
     assert "mgmt:X-9" in keys and "dil:X-9" in keys
     finals = {"M-01": per(0, 84_500, 30_000), "M-02": {}, "M-03": per(58_000, -40_000, 0), "X-9": per(0, 1_000, 0)}
     assert set(bridge_identity_gaps(bridge, finals).values()) == {"0.00"}
+
+
+# ---------------------------------------------------------------------------
+# Diligence-identified items (SPEC §5.6, §5.7)
+# ---------------------------------------------------------------------------
+
+
+DUPLICATE = AdjustmentAssessment(
+    adj_id="D-1", title="Reverse duplicate posting: Coastal Risk CR-0507", category=AdjustmentCategory.OTHER,
+    source="diligence", claimed=per(0, 0, 0), traced_gl=per(0, 18_400, 0), documented=per(0, 18_400, 0),
+    proposed=per(0, 18_400, 0), treatment=Treatment.REVISE,
+)
+
+
+def test_diligence_items_get_their_own_rows_before_the_total():
+    bridge = build_bridge(META, RECON, SCHEDULE, ASSESSMENTS + [DUPLICATE])
+    keys = [r.key for r in bridge.rows]
+    assert "mgmt:D-1" not in keys  # not management's claim
+    assert keys.index("dil:M-03") < keys.index("dil:D-1") < keys.index("dil_total")
+    row = {r.key: r for r in bridge.rows}["dil:D-1"]
+    assert row.kind == "diligence_adjustment" and row.adj_id == "D-1"
+    assert row.label == "Reverse duplicate posting: Coastal Risk CR-0507 (diligence-identified)"
+    r = rows(bridge)
+    assert r["dil:D-1"] == {lbl: D(v) for lbl, v in per(0, 18_400, 0).items()}
+    assert r["dil_total"]["FY2025"] == r["dil_recon"]["FY2025"] + sum(r[f"dil:M-0{i}"]["FY2025"] for i in (1, 2, 3)) + 18_400
+    # Identity: GL EBITDA + management finals (pending excluded) + diligence items.
+    for lbl in LABELS:
+        expected = r["gl_ebitda"][lbl] + D(per(0, 84_500, 30_000)[lbl]) + D(per(58_000, -40_000, 0)[lbl]) + D(per(0, 18_400, 0)[lbl])
+        assert r["diligence_adjusted_ebitda"][lbl] == expected
+    finals = {"M-01": per(0, 84_500, 30_000), "M-02": {}, "M-03": per(58_000, -40_000, 0), "D-1": per(0, 18_400, 0)}
+    assert set(bridge_identity_gaps(bridge, finals).values()) == {"0.00"}
+    # Without the item in the finals the gap is exactly its amount; the assessments fill it in.
+    partial = {k: v for k, v in finals.items() if k != "D-1"}
+    assert bridge_identity_gaps(bridge, partial)["FY2025"] == "18400.00"
+    assert set(bridge_identity_gaps(bridge, partial, ASSESSMENTS + [DUPLICATE]).values()) == {"0.00"}
+
+
+def test_a_schedule_rebuilt_from_a_workpaper_does_not_turn_a_diligence_item_into_a_claim():
+    listed = SCHEDULE.model_copy(update={"adjustments": SCHEDULE.adjustments + [adj("D-1", 0, 0, 0)]})
+    bridge = build_bridge(META, RECON, listed, ASSESSMENTS + [DUPLICATE])
+    keys = [r.key for r in bridge.rows]
+    assert "mgmt:D-1" not in keys and keys.count("dil:D-1") == 1
+
+
+def test_a_reviewer_can_hold_or_revise_a_diligence_item():
+    held = {"M-01": per(0, 84_500, 30_000), "M-02": {}, "M-03": per(58_000, -40_000, 0), "D-1": {}}
+    bridge = build_bridge(META, RECON, SCHEDULE, ASSESSMENTS + [DUPLICATE], final_amounts=held)
+    r = rows(bridge)
+    assert all(v == 0 for v in r["dil:D-1"].values())
+    assert r["pending"] == {lbl: Decimal("360000") for lbl in LABELS}  # the memo lists management items only
+    assert set(bridge_identity_gaps(bridge, held).values()) == {"0.00"}
+    revised = dict(held, **{"D-1": per(0, 9_200, 0)})
+    bridge = build_bridge(META, RECON, SCHEDULE, ASSESSMENTS + [DUPLICATE], final_amounts=revised)
+    assert rows(bridge)["dil:D-1"]["FY2025"] == Decimal("9200")
+    assert set(bridge_identity_gaps(bridge, revised).values()) == {"0.00"}

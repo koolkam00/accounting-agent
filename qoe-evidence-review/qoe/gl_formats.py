@@ -254,28 +254,43 @@ def split_account_label(label: object) -> tuple[str, str]:
 
 
 def _type_key(source_type: str) -> str:
+    # Case, spaces and punctuation vary by system and export ("Other Expenses", "OTHER_EXPENSE",
+    # "Cost of Sales"), so types are compared on their letters only.
     return re.sub(r"[^a-z]", "", source_type.casefold())
 
 
+# Exact P&L account types. QBO labels them "Income", "Cost of Goods Sold", "Expenses",
+# "Other Income", "Other Expense"; QBO outside the US and Sage say "Cost of Sales"; NetSuite
+# shows "Income", "Cost of Goods Sold", "Expense", "Other Income", "Other Expense" in the UI and
+# "COGS", "OthIncome", "OthExpense" as internal ids in saved-search exports; Xero uses REVENUE,
+# SALES, DIRECTCOSTS, EXPENSE, OVERHEADS, OTHERINCOME, DEPRECIATN.
 _TYPE_CLASSES: dict[str, EbitdaClass] = {
     "income": EbitdaClass.REVENUE,
     "revenue": EbitdaClass.REVENUE,
     "sales": EbitdaClass.REVENUE,
     "otherincome": EbitdaClass.OTHER_INCOME,
+    "othincome": EbitdaClass.OTHER_INCOME,
     "costofgoodssold": EbitdaClass.COGS,
     "cogs": EbitdaClass.COGS,
     "directcosts": EbitdaClass.COGS,
     "costofsales": EbitdaClass.COGS,
+    "costofsale": EbitdaClass.COGS,
     "expense": EbitdaClass.OPEX,
     "expenses": EbitdaClass.OPEX,
     "overheads": EbitdaClass.OPEX,
     "overhead": EbitdaClass.OPEX,
     "otherexpense": EbitdaClass.OTHER_EXPENSE,
     "otherexpenses": EbitdaClass.OTHER_EXPENSE,
+    "othexpense": EbitdaClass.OTHER_EXPENSE,
     "depreciatn": EbitdaClass.DEPRECIATION,
     "depreciation": EbitdaClass.DEPRECIATION,
 }
-_INCOME_TYPES = frozenset({"income", "revenue", "sales", "otherincome"})
+_INCOME_TYPES = frozenset({"income", "revenue", "sales", "otherincome", "othincome"})
+
+# NetSuite internal ids for balance-sheet types that the substring hints below would miss.
+_BS_EXACT_DEBIT = frozenset({"acctrec", "deferexpense", "unbilledrec"})
+_BS_EXACT_CREDIT = frozenset({"acctpay", "credcard", "deferrevenue"})
+_BS_EXACT_OTHER = frozenset({"stat"})
 
 # Substrings of normalized source types that identify balance-sheet accounts
 # (QBO, NetSuite and Xero vocabularies). Checked only after the exact P&L types,
@@ -290,7 +305,9 @@ def _type_rule(source_type: str) -> tuple[Optional[EbitdaClass], str]:
     if key in _TYPE_CLASSES:
         cls = _TYPE_CLASSES[key]
         return cls, f"type rule: {clean_text(source_type)} -> {cls.value}"
-    if key and any(h in key for h in (*_BS_CREDIT_HINTS, *_BS_DEBIT_HINTS, *_BS_OTHER_HINTS)):
+    if key in _BS_EXACT_DEBIT | _BS_EXACT_CREDIT | _BS_EXACT_OTHER or (
+        key and any(h in key for h in (*_BS_CREDIT_HINTS, *_BS_DEBIT_HINTS, *_BS_OTHER_HINTS))
+    ):
         return EbitdaClass.BALANCE_SHEET, f"type rule: {clean_text(source_type)} -> BALANCE_SHEET"
     return None, ""
 
@@ -347,7 +364,7 @@ def is_credit_natural(account: Account) -> bool:
         return True
     if key in _TYPE_CLASSES:
         return False
-    return bool(key) and any(h in key for h in _BS_CREDIT_HINTS)
+    return key in _BS_EXACT_CREDIT or (bool(key) and any(h in key for h in _BS_CREDIT_HINTS))
 
 
 # ---------------------------------------------------------------------------

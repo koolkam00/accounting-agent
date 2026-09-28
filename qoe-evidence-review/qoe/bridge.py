@@ -2,12 +2,15 @@
 
 The bridge is built so that, for every period label,
 
-    diligence_adjusted_ebitda = gl_ebitda + sum(final amounts, excluding pending items)
+    diligence_adjusted_ebitda = gl_ebitda
+                              + sum(final amounts of management items, excluding pending items)
+                              + sum(final amounts of diligence-identified items)
 
 Management's reported EBITDA and adjustments are shown as claimed; the
 diligence rows first reverse any unsupported reporting difference back to the
-GL and then revise each adjustment to its final amount (or reverse it
-entirely while it is pending information).
+GL, then revise each management adjustment to its final amount (or reverse it
+entirely while it is pending information), and finally add the items diligence
+identified itself (SPEC §5.7), such as reversing a duplicate posting.
 """
 
 from __future__ import annotations
@@ -26,6 +29,8 @@ from qoe.schemas import (
     ReconciliationResult,
     Treatment,
 )
+
+DILIGENCE_SOURCE = "diligence"  # AdjustmentAssessment.source of a diligence-identified item
 
 _COMPONENTS = (
     ("net_income", "Net income (per GL)", "net_income"),
@@ -93,12 +98,18 @@ def build_bridge(
     add("mgmt_reported_ebitda", "Reported EBITDA (per management)", "subtotal", mgmt_reported)
 
     by_id = {a.adj_id: a for a in assessments}
+    diligence = [a for a in assessments if a.source == DILIGENCE_SOURCE]
+    diligence_ids = {a.adj_id for a in diligence}
+    # A diligence-identified item is not management's claim, even if a schedule rebuilt
+    # from a workpaper lists it; it gets its own row below.
     claims: list[tuple[str, str, dict[str, Decimal]]] = [
-        (adj.adj_id, adj.title, {lbl: D(adj.amounts.get(lbl)) for lbl in labels}) for adj in schedule.adjustments
+        (adj.adj_id, adj.title, {lbl: D(adj.amounts.get(lbl)) for lbl in labels})
+        for adj in schedule.adjustments
+        if adj.adj_id not in diligence_ids
     ]
     scheduled = {adj_id for adj_id, _, _ in claims}
-    for a in assessments:  # an assessed item missing from the schedule still has to appear
-        if a.adj_id not in scheduled:
+    for a in assessments:  # an assessed management item missing from the schedule still has to appear
+        if a.adj_id not in scheduled and a.adj_id not in diligence_ids:
             claims.append((a.adj_id, a.title, {lbl: D(a.claimed.get(lbl)) for lbl in labels}))
 
     mgmt_total = {lbl: ZERO for lbl in labels}
@@ -127,6 +138,13 @@ def build_bridge(
         add(f"dil:{adj_id}", label, "diligence_adjustment", revision, adj_id)
         for lbl in labels:
             dil_total[lbl] += revision[lbl]
+    for a in diligence:
+        # Nothing was claimed, so the row is the final amount itself; a pending item carries nothing.
+        final = _final(a.adj_id, a, final_amounts) or {}
+        amounts = {lbl: final.get(lbl, ZERO) for lbl in labels}
+        add(f"dil:{a.adj_id}", f"{a.title} (diligence-identified)", "diligence_adjustment", amounts, a.adj_id)
+        for lbl in labels:
+            dil_total[lbl] += amounts[lbl]
     add("dil_total", "Total diligence adjustments", "subtotal", dil_total)
     add(
         "diligence_adjusted_ebitda",
@@ -138,11 +156,26 @@ def build_bridge(
     return EbitdaBridge(period_labels=labels, rows=rows)
 
 
-def bridge_identity_gaps(bridge: EbitdaBridge, final_amounts: Mapping[str, Mapping[str, str]]) -> dict[str, str]:
-    """Period -> diligence adjusted EBITDA minus (GL EBITDA + final amounts excluding pending). All "0.00" when it ties."""
+def bridge_identity_gaps(
+    bridge: EbitdaBridge,
+    final_amounts: Mapping[str, Mapping[str, str]],
+    assessments: Optional[Sequence[AdjustmentAssessment]] = None,
+) -> dict[str, str]:
+    """Period -> diligence adjusted EBITDA minus (GL EBITDA + final amounts of management
+    items excluding pending ones + final amounts of diligence-identified items).
+    All "0.00" when the bridge ties.
+
+    ``final_amounts`` (adj_id -> period -> amount, ``{}`` = pending) may cover every item.
+    With ``assessments``, items it leaves out count at the tool's proposal, the way
+    ``build_bridge`` treats them.
+    """
+    finals: dict[str, Mapping[str, str]] = dict(final_amounts)
+    for a in assessments or ():
+        if a.adj_id not in finals:
+            finals[a.adj_id] = {} if a.treatment == Treatment.REQUEST_INFO else a.proposed
     rows = {r.key: r for r in bridge.rows}
     out: dict[str, str] = {}
     for lbl in bridge.period_labels:
-        expected = D(rows["gl_ebitda"].amounts[lbl]) + sum((D(f.get(lbl)) for f in final_amounts.values() if f), ZERO)
+        expected = D(rows["gl_ebitda"].amounts[lbl]) + sum((D(f.get(lbl)) for f in finals.values() if f), ZERO)
         out[lbl] = fmt(D(rows["diligence_adjusted_ebitda"].amounts[lbl]) - expected)
     return out

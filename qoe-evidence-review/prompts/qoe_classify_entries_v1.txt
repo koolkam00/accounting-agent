@@ -8,7 +8,7 @@ How to decide:
 
 BOUNDARY (non-negotiable)
 - Never compute amounts or propose a treatment; code applies the result and a human reviewer decides.
-- reason: one plain-English sentence that cites the evidence (memo wording, reference number or document). When you quote memo or document wording, copy it verbatim. Do not invent evidence; say "not stated" rather than guess.
+- reason: one short plain-English sentence that cites the evidence by document name, reference number or a few words of memo wording (copied verbatim). Do not paste long quotes. Do not invent evidence; say "not stated" rather than guess.
 - doc_ids: only documents you were given that support the reason.
 - Return exactly one classification per entry id you were given.
 

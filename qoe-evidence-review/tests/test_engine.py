@@ -19,6 +19,8 @@ from qoe.schemas import (
     AdjustmentCategory,
     AdjustmentClaim,
     AmountFact,
+    DataQualityCode,
+    DataQualityIssue,
     DealFiles,
     DealMeta,
     DealPackage,
@@ -32,6 +34,7 @@ from qoe.schemas import (
     ManagementSchedule,
     PeriodDef,
     ReconciliationResult,
+    Severity,
     SourceDocument,
     TermFact,
     Treatment,
@@ -255,6 +258,46 @@ def test_bridge_identity_holds_on_the_workpaper(workpaper):
     assert D(rows["pending"].amounts["FY2025"]) == pending == Decimal("100000")
 
 
+def test_workpaper_carries_the_schedule_and_managements_basis(workpaper):
+    pkg = build_package()
+    assert workpaper.schedule == pkg.schedule
+    by_id = {a.adj_id: a for a in workpaper.assessments}
+    for adj in pkg.schedule.adjustments:
+        a = by_id[adj.adj_id]
+        assert a.source == "management"
+        assert (a.description, a.gl_accounts, a.support_refs) == (adj.description, adj.gl_accounts, adj.support_refs)
+
+
+def _with_duplicate() -> tuple[DealPackage, ReconciliationResult]:
+    pkg = build_package()
+    rows = list(pkg.gl)
+    for day in ("07", "10"):
+        row = len(rows) + 6
+        rows.append(GLEntry(entry_id=f"GL-R{row}", date=f"2025-05-{day}", period="2025-05", account="6300",
+                            account_name=ACCOUNTS["6300"].name, txn_type="Bill", doc_number="HOST-0507",
+                            counterparty="Stratus Hosting", memo="Hosting - May 2025", amount="1200.00",
+                            source_file="gl/general_ledger.csv", source_row=row))
+    pkg = pkg.model_copy(update={"gl": rows})
+    recon = gl_recon(pkg)
+    issue = DataQualityIssue(code=DataQualityCode.DUPLICATE_GL_ENTRY, severity=Severity.WARNING, message="Possible duplicate.",
+                             entry_ids=[rows[-2].entry_id, rows[-1].entry_id])
+    return pkg, recon.model_copy(update={"issues": [issue]})
+
+
+def test_duplicate_postings_become_a_diligence_item_after_managements_items():
+    pkg, recon = _with_duplicate()
+    wp = review_package(pkg, FakeAI(), recon, **RUN)
+    assert [a.adj_id for a in wp.assessments] == ["E-1", "E-2", "E-3", "D-1"]
+    item = wp.assessments[-1]
+    assert item.source == "diligence" and item.treatment == Treatment.REVISE
+    assert item.proposed == {"FY2024": "0.00", "FY2025": "1200.00", "TTM Jun-26": "0.00"}
+    rows = {r.key: r for r in wp.bridge.rows}
+    assert "dil:D-1" in rows and "mgmt:D-1" not in rows
+    for lbl in LABELS:
+        finals = sum((D(a.proposed[lbl]) for a in wp.assessments if a.treatment != Treatment.REQUEST_INFO), ZERO)
+        assert D(rows["diligence_adjusted_ebitda"].amounts[lbl]) == D(rows["gl_ebitda"].amounts[lbl]) + finals
+
+
 # ---------------------------------------------------------------------------
 # Determinism and persistence
 # ---------------------------------------------------------------------------
@@ -346,5 +389,13 @@ def test_meridian_dev_deal_runs_end_to_end_and_the_bridge_ties(tmp_path):
     for a in wp.assessments:
         assert (a.proposed == {}) == (a.treatment == Treatment.REQUEST_INFO)
         assert all(oq.q_id.startswith(f"Q-{a.adj_id}-") for oq in a.open_questions)
+    # Management items in schedule order, then the items diligence identified itself.
+    sources = [a.source for a in wp.assessments]
+    assert sources == sorted(sources, key=lambda s: s == "diligence")
+    assert [a.adj_id for a in wp.assessments if a.source == "management"] == [x.adj_id for x in wp.schedule.adjustments]
+    for a in wp.assessments:
+        for f in a.flags:
+            assert len(f.message) <= 320, f.message
+        assert len(a.rationale) <= 600, a.rationale
     path = save_workpaper(wp, tmp_path)
     assert load_workpaper(path) == wp

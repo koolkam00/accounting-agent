@@ -28,6 +28,7 @@ from qoe.export_xlsx import (
     workbook_filename,
 )
 from qoe.money import D, fmt
+from qoe.review_store import bridge_display_rows
 from qoe.periods import add_months, month_range
 from qoe.schemas import (
     Account,
@@ -269,6 +270,42 @@ def _assessments() -> list[AdjustmentAssessment]:
     return [lit, search, erp, comp, storm, refi]
 
 
+PREMIUM_NOTICE = "9.4 Keystone Risk premium installment notice May 2025.pdf"
+
+
+def _diligence_item() -> AdjustmentAssessment:
+    """SPEC §5.7: a duplicate posting the tool proposes to reverse (not on management's schedule)."""
+    return AdjustmentAssessment(
+        adj_id="D-1",
+        title="Reverse duplicate premium posting (KRI-25-0507)",
+        category=AdjustmentCategory.OTHER,
+        source="diligence",
+        description="Premium installment KRI-25-0507 is posted twice in May 2025; the P&L carries both.",
+        gl_accounts=["6200"],
+        support_refs=[PREMIUM_NOTICE],
+        claimed=_pm(0, 0, 0),
+        traced_gl=_pm(0, 0, 0),
+        documented=_pm(0, 0, 0),
+        proposed=_pm(0, 18400, 0),
+        treatment=Treatment.REVISE,
+        confidence="high",
+        gl_links=[
+            GLLink(entry_id="GL-R2210", period="2025-05", amount="18400.00", score=5.0, supports_claim=False,
+                   reasons=["first posting: kept"], doc_ids=[PREMIUM_NOTICE]),
+            GLLink(entry_id="GL-R2215", period="2025-05", amount="18400.00", score=5.0,
+                   reasons=["duplicate of GL row 2210"], doc_ids=[PREMIUM_NOTICE]),
+        ],
+        doc_links=[DocLink(doc_id=PREMIUM_NOTICE, relation="invoice_for_entry", entry_ids=["GL-R2210", "GL-R2215"],
+                           score=4.0, quotes=[_q(PREMIUM_NOTICE, "Installment due: $18,400.00")])],
+        flags=[Flag(code=FlagCode.DUPLICATE_GL_ENTRY, severity=Severity.WARNING,
+                    message="The same bill (KRI-25-0507) is posted twice, three days apart.",
+                    entry_ids=["GL-R2210", "GL-R2215"])],
+        open_questions=[OpenQuestion(q_id="Q-D-1-1", adj_id="D-1", priority="medium", basis="DUPLICATE_GL_ENTRY",
+                                     text="Was installment KRI-25-0507 paid twice, refunded, or applied to a later bill?")],
+        rationale="One installment is due; the second posting overstates FY2025 insurance expense.",
+    )
+
+
 def _reviews() -> list[ReviewDecision]:
     return [
         ReviewDecision(adj_id="A-3", reviewer="k.osei", timestamp="2026-09-01T10:00:00Z", treatment=Treatment.REJECT,
@@ -300,6 +337,8 @@ def _build_bridge(assessments: list[AdjustmentAssessment], final: dict[str, dict
     def per(fn) -> dict[str, str]:
         return {p: fmt(fn(p)) for p in LABELS}
 
+    items = [a for a in assessments if a.source == "diligence"]
+    assessments = [a for a in assessments if a.source != "diligence"]
     comp = {p: [D(x) for x in GL_COMPONENTS[p]] for p in LABELS}
     gl = per(lambda p: sum(comp[p], Decimal(0)))
     rows = [BridgeRow(key=k, label=lab, kind="component", amounts=per(lambda p, i=i: comp[p][i]))
@@ -326,7 +365,11 @@ def _build_bridge(assessments: list[AdjustmentAssessment], final: dict[str, dict
     for a in assessments:
         rows.append(BridgeRow(key=f"dil:{a.adj_id}", label=f"{a.title}: diligence revision",
                               kind="diligence_adjustment", adj_id=a.adj_id, amounts=dil[a.adj_id]))
-    dil_total = per(lambda p: -D(diff[p]) + sum((D(dil[a.adj_id][p]) for a in assessments), Decimal(0)))
+    for a in items:  # diligence-identified items carry their final amount (claimed is zero)
+        dil[a.adj_id] = per(lambda p, a=a: D(final[a.adj_id].get(p)))
+        rows.append(BridgeRow(key=f"dil:{a.adj_id}", label=f"Diligence-identified: {a.title}",
+                              kind="diligence_adjustment", adj_id=a.adj_id, amounts=dil[a.adj_id]))
+    dil_total = per(lambda p: -D(diff[p]) + sum((D(v[p]) for v in dil.values()), Decimal(0)))
     rows.append(BridgeRow(key="dil_total", label="Total diligence adjustments", kind="subtotal", amounts=dil_total))
     rows.append(BridgeRow(key="diligence_adjusted_ebitda", label="Diligence adjusted EBITDA", kind="subtotal",
                           amounts=per(lambda p: D(mgmt_adj[p]) + D(dil_total[p]))))
@@ -390,8 +433,8 @@ def _meta() -> DealMeta:
     )
 
 
-def make_workpaper(reviews: list[ReviewDecision] | None = None) -> Workpaper:
-    assessments = _assessments()
+def make_workpaper(reviews: list[ReviewDecision] | None = None, diligence: bool = False) -> Workpaper:
+    assessments = _assessments() + ([_diligence_item()] if diligence else [])
     reviews = _reviews() if reviews is None else reviews
     wp = Workpaper(
         run_id="run-test-001",
@@ -781,6 +824,187 @@ def test_empty_workpaper_exports(wp, tmp_path):
 
 
 # ---------------------------------------------------------------------------
+# Diligence-identified items (SPEC §5.7) and assessment-carried narrative
+# ---------------------------------------------------------------------------
+
+D1_TITLE = "Reverse duplicate premium posting (KRI-25-0507)"
+
+
+@pytest.fixture(scope="module")
+def dwp() -> Workpaper:
+    agree = ReviewDecision(adj_id="D-1", reviewer="k.osei", timestamp="2026-09-02T10:00:00Z",
+                           treatment=Treatment.REVISE, amounts=_pm(0, 18400, 0), rationale="AP shows one payment.",
+                           tool_treatment=Treatment.REVISE, tool_amounts=_pm(0, 18400, 0))
+    return make_workpaper(reviews=[*_reviews(), agree], diligence=True)
+
+
+@pytest.fixture(scope="module")
+def dexported(dwp, tmp_path_factory) -> Path:
+    return export_workpaper(dwp, tmp_path_factory.mktemp("dxlsx"))
+
+
+def _values(ws) -> list[str]:
+    return [str(c.value) for row in ws.iter_rows() for c in row if c.value is not None]
+
+
+def _col_by_header(ws, title: str) -> int:
+    return next(c for c in range(1, ws.max_column + 1) if ws.cell(row=6, column=c).value == title)
+
+
+def test_diligence_item_sheet_and_summary_block(dexported):
+    wb = load_workbook(dexported)
+    assert wb.sheetnames[3:11] == ["Adj A-1", "Adj A-2", "Adj A-3", "Adj A-4", "Adj A-5", "Adj A-6", "Adj D-1",
+                                   "Open Questions"]
+    ws = wb[SHEET_SUMMARY]
+    labels = {ws.cell(row=r, column=2).value: r for r in range(8, ws.max_row + 1) if ws.cell(row=r, column=2).value}
+    mgmt_total, dil_total, total = (labels["Total management adjustments"], labels["Total diligence-identified items"],
+                                    labels["Total"])
+    d1 = _find_row(ws, 1, lambda v: v == "D-1")
+    assert mgmt_total == 14 and ws.cell(row=mgmt_total, column=4).value == "=SUM(D8:D13)"
+    assert mgmt_total < d1 < dil_total < total
+    assert ws.cell(row=d1 - 1, column=1).value.startswith("Diligence-identified items (not on management's schedule)")
+    assert ws.cell(row=d1, column=1).hyperlink.location == "'Adj D-1'!A1"
+    assert ws.cell(row=dil_total, column=4).value == f"=SUM(D{d1}:D{d1})"
+    assert ws.cell(row=total, column=4).value == f"=D{mgmt_total}+D{dil_total}"
+    assert ws.cell(row=d1, column=_col_by_header(ws, "Status")).value == "AGREED"
+    assert ws.cell(row=d1, column=_col_by_header(ws, "Tool treatment")).value == "REVISE"
+
+
+def test_diligence_item_support_sheet_uses_assessment_fields(dexported):
+    values = _values(load_workbook(dexported)["Adj D-1"])
+    assert any(v.startswith("DILIGENCE-IDENTIFIED ITEMS (NOT ON MANAGEMENT'S SCHEDULE)") for v in values)
+    assert "MANAGEMENT'S CLAIM" not in values
+    assert "Premium installment KRI-25-0507 is posted twice in May 2025; the P&L carries both." in values
+    assert "6200" in values and PREMIUM_NOTICE in values
+    assert "(a) Claimed by management (not on the schedule: zero)" in values
+    assert "Q-D-1-1" in values
+
+
+def test_management_claim_falls_back_to_assessment_fields():
+    wp = make_workpaper()
+    a0 = wp.assessments[0].model_copy(update={"description": "Litigation narrative carried by the run.",
+                                               "gl_accounts": ["6400"], "support_refs": ["DR 3.1", "DR 3.3"]})
+    wp = wp.model_copy(update={"assessments": [a0, *wp.assessments[1:]]})
+    values = _values(build_workbook(wp)["Adj A-1"])
+    assert "Litigation narrative carried by the run." in values
+    assert "6400" in values and "DR 3.1; DR 3.3" in values
+    assert "Schedule row" not in values
+    # Without a description anywhere, the sheet says where to look.
+    values = _values(build_workbook(make_workpaper())["Adj A-2"])
+    assert "Not carried in the workpaper; see management's adjusted EBITDA schedule." in values
+    # A schedule stored on the workpaper is the source when present.
+    sched = ManagementSchedule(source_file="adjustments/schedule.xlsx", period_labels=LABELS, adjustments=[
+        AdjustmentClaim(adj_id="A-1", title=a0.title, description="From the schedule.", gl_accounts=["6410"],
+                        amounts=dict(a0.claimed), source_row=12)])
+    values = _values(build_workbook(wp.model_copy(update={"schedule": sched}))["Adj A-1"])
+    assert "From the schedule." in values and "6410" in values and "Schedule row" in values
+
+
+def test_bridge_shows_diligence_items_after_management_revisions(dwp, dexported):
+    ws = load_workbook(dexported)[SHEET_BRIDGE]
+    rows = _bridge_rows(ws)
+    d1 = rows[f"Diligence-identified: {D1_TITLE}"]
+    last_revision = max(rows[f"{a.title}: diligence revision"] for a in dwp.assessments if a.source != "diligence")
+    assert last_revision < d1 < rows["Total diligence adjustments"]
+    assert ws.cell(row=d1 - 1, column=1).value.startswith("Diligence-identified items")
+    assert ws.cell(row=d1, column=1).value == "D-1"
+    assert D(ws.cell(row=d1, column=4).value) == D("18400")
+    assert ws.cell(row=d1, column=6).value == "REVISE" and ws.cell(row=d1, column=7).value == "AGREED"
+    assert ws.cell(row=d1, column=8).value == "Adj D-1"
+    assert not any(k.endswith("(as claimed)") and D1_TITLE in k for k in rows)
+    total = ws.cell(row=rows["Total diligence adjustments"], column=3).value
+    assert total.startswith("=SUM(C") and total.endswith(f":C{d1})")
+    assert "Diligence-identified items less their total final amounts, Adjustment Summary" in rows
+
+
+def test_bridge_display_rows_reorders_and_drops_zero_claims(dwp):
+    rows = list(dwp.bridge.rows)
+    # An older bridge: D-1 ahead of the management revisions, plus an all-zero "as claimed" row for it.
+    d1 = next(r for r in rows if r.key == "dil:D-1")
+    rows.remove(d1)
+    rows.insert(next(k for k, r in enumerate(rows) if r.key == "dil:A-1"), d1)
+    rows.insert(next(k for k, r in enumerate(rows) if r.key == "mgmt_total"),
+                BridgeRow(key="mgmt:D-1", label="D-1 (as claimed)", kind="mgmt_adjustment", amounts=_pm(0, 0, 0)))
+    out = bridge_display_rows(rows, {"D-1"})
+    keys = [r.key for r in out]
+    assert "mgmt:D-1" not in keys
+    assert keys.index("dil:D-1") == keys.index("dil_total") - 1
+    assert keys.index("dil:A-6") < keys.index("dil:D-1")
+    assert all(ok for _, ok in _plan_subtotals(out, LABELS).values())
+    # Without diligence items the order is untouched.
+    assert bridge_display_rows(dwp.bridge.rows, set()) == list(dwp.bridge.rows)
+
+
+def test_cover_counts_diligence_items_separately(dexported):
+    ws = load_workbook(dexported)[SHEET_COVER]
+    values = _values(ws)
+    assert "ADJUSTMENT STATUS: MANAGEMENT ADJUSTMENTS" in values
+    assert "DILIGENCE-IDENTIFIED ITEMS (NOT ON MANAGEMENT'S SCHEDULE)" in values
+    assert "6 on management's schedule; 1 identified by diligence (not on the schedule)" in values
+    assert any("2 of 6 management adjustments reviewed; 1 of 1 diligence-identified items reviewed" in v
+               for v in values)
+    # The diligence table counts the summary's diligence block (row 17), the management table rows 8-13.
+    header = _find_row(ws, 1, lambda v: v == "DILIGENCE-IDENTIFIED ITEMS (NOT ON MANAGEMENT'S SCHEDULE)")
+    revise = header + 3
+    assert ws.cell(row=revise, column=1).value == "REVISE"
+    assert ws.cell(row=revise, column=2).value == "=COUNTIF('Adjustment Summary'!$P$17:$P$17,\"REVISE\")"
+    mgmt_revise = _find_row(ws, 1, lambda v: v == "REVISE")
+    assert ws.cell(row=mgmt_revise, column=2).value == "=COUNTIF('Adjustment Summary'!$P$8:$P$13,\"REVISE\")"
+
+
+@pytest.fixture(scope="module")
+def drecalculated(dexported, tmp_path_factory) -> tuple[Path, dict]:
+    if find_recalc_script() is None or shutil.which("soffice") is None:
+        pytest.skip("LibreOffice recalc not available")
+    copy = tmp_path_factory.mktemp("drecalc") / dexported.name
+    shutil.copy(dexported, copy)
+    return copy, recalc_and_check(copy, timeout=120)
+
+
+def test_recalc_with_diligence_item_ties(dwp, drecalculated):
+    path, result = drecalculated
+    assert result.get("status") == "success", result
+    assert result["total_errors"] == 0
+    wb = load_workbook(path, data_only=True)
+    ws = wb[SHEET_BRIDGE]
+    rows = _bridge_rows(ws)
+    for r in dwp.bridge.rows:
+        for k, p in enumerate(LABELS):
+            got = ws.cell(row=rows[r.label], column=3 + k).value
+            assert abs(D(got) - D(r.amounts[p])) <= D("0.01"), (r.key, p, got)
+    final = resolve_final_amounts(dwp)
+    assert final["D-1"] == _pm(0, 18400, 0)
+    for k, p in enumerate(LABELS):
+        gl = D(ws.cell(row=rows["Reported EBITDA (per GL)"], column=3 + k).value)
+        dil = D(ws.cell(row=rows["Diligence adjusted EBITDA"], column=3 + k).value)
+        assert abs(dil - (gl + sum((D(v[p]) for v in final.values() if v), Decimal(0)))) <= D("0.01")
+    checks = [r for r in range(1, ws.max_row + 1) if str(ws.cell(row=r, column=2).value or "").endswith(
+        ("Adjustment Summary", "Adjustment Summary)"))]
+    assert len(checks) == 3
+    for r in checks:
+        for k in range(3):
+            assert abs(D(ws.cell(row=r, column=3 + k).value)) < D("0.01")
+    cover = wb[SHEET_COVER]
+    assert cover.cell(row=_find_row(cover, 1, lambda v: str(v).startswith("Workbook checks")), column=2).value == "OK"
+    header = _find_row(cover, 1, lambda v: v == "DILIGENCE-IDENTIFIED ITEMS (NOT ON MANAGEMENT'S SCHEDULE)")
+    counts = {cover.cell(row=r, column=1).value: tuple(cover.cell(row=r, column=c).value for c in (2, 3, 4))
+              for r in range(header + 2, header + 6)}
+    assert counts == {"ACCEPT": (0, 0, 0), "REVISE": (1, 1, 1), "REJECT": (0, 0, 0), "REQUEST_INFO": (0, 0, 0)}
+    agreed = _find_row(cover, 1, lambda v: v == "Reviewed: agreed with tool")
+    unreviewed = _find_row(cover, 1, lambda v: str(v).startswith("UNREVIEWED ("))
+    assert (cover.cell(row=agreed, column=2).value, cover.cell(row=agreed, column=3).value) == (1, 1)
+    assert (cover.cell(row=unreviewed, column=2).value, cover.cell(row=unreviewed, column=3).value) == (4, 0)
+    summary = wb[SHEET_SUMMARY]
+    total = _find_row(summary, 2, lambda v: v == "Total")
+    fy25_final = 4 + 6 + 1
+    assert D(summary.cell(row=total, column=fy25_final).value) == D("60000") + D("30000") + D("12000.25") - D(
+        "30000") + D("18400")
+    sws = wb["Adj D-1"]
+    check = _find_row(sws, 1, lambda v: str(v).startswith("Check: EBITDA Bridge"))
+    assert [abs(D(sws.cell(row=check, column=4 + k).value)) < D("0.01") for k in range(3)] == [True] * 3
+
+
+# ---------------------------------------------------------------------------
 # LibreOffice recalculation
 # ---------------------------------------------------------------------------
 
@@ -886,13 +1110,12 @@ def test_recalculated_checks_catch_a_stale_bridge(wp, tmp_path):
 
 
 def test_integration_dev_deal_exports_and_ties(tmp_path):
-    """End to end on the first generated dev deal, when the engine and data exist."""
+    """End to end on the reference dev deal (other data/dev packages may be mid-authoring)."""
     engine = pytest.importorskip("qoe.engine")
     ingest = pytest.importorskip("qoe.ingest")
-    deals = sorted((ROOT / "data" / "dev").glob("*/deal.yaml"))
-    if not deals:
-        pytest.skip("no generated dev deal under data/dev")
-    deal_dir = deals[0].parent
+    deal_dir = ROOT / "data" / "dev" / "meridian_mechanical"
+    if not (deal_dir / "deal.yaml").is_file():
+        pytest.skip("no generated dev deal at data/dev/meridian_mechanical")
     wp = engine.run_review(deal_dir, run_id="export-test", created_at="2026-01-01T00:00:00Z")
     out = export_workpaper(wp, tmp_path, pkg=ingest.load_deal(deal_dir))
     result = recalc_and_check(out, timeout=180)

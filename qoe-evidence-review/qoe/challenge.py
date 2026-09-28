@@ -23,6 +23,7 @@ from qoe.money import ZERO, D, fmt, q2
 from qoe.periods import add_months
 from qoe.schemas import (
     EBITDA_EXCLUDED_CLASSES,
+    AdjustmentCategory,
     DocFacts,
     EbitdaClass,
     EvidenceQuote,
@@ -45,8 +46,11 @@ from qoe.trace import (
     Effect,
     EntryInfo,
     NormalizationInfo,
+    MAX_MESSAGE,
+    _short_sentence,
     cents,
     find_subset,
+    join_limited,
     keyword_hits,
     keyword_list,
     money,
@@ -58,6 +62,7 @@ from qoe.trace import (
     name_tokens,
     names_match,
     norm_text,
+    periods_text,
     ref_tokens,
     theme_similarity,
 )
@@ -71,9 +76,9 @@ from qoe.trace import (
 RECURRENCE_SHARE = Decimal("0.5")
 # Three similar months outside the event window is a pattern, not an event.
 RECURRENCE_MIN_MONTHS = 3
-# A month is "similar" when its amount is within +/-50% of the group's typical entry.
-SIMILAR_LOW = Decimal("0.5")
-SIMILAR_HIGH = Decimal("1.5")
+# A month counts toward that test only when its comparable activity is at least a quarter of
+# the group's average claimed month, so routine small charges do not make a large event recur.
+RECURRENCE_MONTH_FLOOR = Decimal("0.25")
 # Memo themes must share half their words to count as the same kind of cost.
 THEME_SIM_SAME_PARTY = 0.5
 THEME_SIM_SAME_ACCOUNT = 0.5
@@ -113,6 +118,12 @@ _PERIODIC = re.compile(
 _FINITE = re.compile(
     r"\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d{1,2})\s+(?:equal\s+)?"
     r"(?:monthly\s+)?(?:installments?|instalments?|payments?)\b",
+    re.IGNORECASE,
+)
+# A retainer or fee tied to one transaction or one search ends with it (SPEC §5.4).
+_ONE_OFF_TERM = re.compile(
+    r"one[- ]time|creditable|success fee|upon (?:closing|completion|placement)|(?:payable |due )?(?:up)?on signing|"
+    r"retained search|search fee|single (?:transaction|search|engagement)",
     re.IGNORECASE,
 )
 _MONEY = re.compile(r"\$\s?(\d{1,3}(?:,\d{3})+(?:\.\d{2})?|\d+(?:\.\d{2})?)")
@@ -193,8 +204,9 @@ def _flag(
     label: Optional[str] = None,
     amount_impact: Optional[Decimal] = None,
 ) -> Flag:
-    """Raise a flag. A per-period impact touching one period sets period_label /
-    amount_impact; touching several, it is spelled out in the message instead."""
+    """Raise a flag. An impact touching one period sets period_label / amount_impact;
+    the message states the effect in words either way (see ``_effect``). Quotes go in
+    ``Flag.quotes``, never into the message."""
     period_label = label
     impact_str = fmt(amount_impact) if amount_impact is not None else None
     if impact is not None:
@@ -202,16 +214,14 @@ def _flag(
         if len(nonzero) == 1:
             period_label, v = next(iter(nonzero.items()))
             impact_str = fmt(v)
-        elif nonzero:
-            message += " Effect: " + "; ".join(f"{k} {money(v)}" for k, v in nonzero.items()) + "."
     picked: list[EvidenceQuote] = []
     for q in quotes:
-        if q is not None and all((q.doc_id, q.page, q.quote) != (p.doc_id, p.page, p.quote) for p in picked):
+        if q is not None and len(picked) < 3 and all((q.doc_id, q.page, q.quote) != (p.doc_id, p.page, p.quote) for p in picked):
             picked.append(q)
     flag = Flag(
         code=code,
         severity=severity,
-        message=message,
+        message=_short_sentence(message),
         period_label=period_label,
         amount_impact=impact_str,
         entry_ids=t.index.sort_ids(entry_ids),
@@ -228,7 +238,7 @@ def _plural(n: int, one: str, many: str) -> str:
 
 
 def _sentence(text: str) -> str:
-    text = (text or "").strip()
+    text = " ".join((text or "").split())
     return text if not text or text[-1] in ".!?" else text + "."
 
 
@@ -243,6 +253,50 @@ def _quoted(text: str, end: bool = True) -> str:
 def _short(text: str, limit: int = 90) -> str:
     text = " ".join((text or "").split())
     return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
+
+
+def _effect(t: AdjustmentTrace, impact: Optional[dict[str, Decimal]], removed: Iterable[str] = ()) -> str:
+    """' Removed <items>: (35,500) in FY2025 and TTM Jun-26.' or ' Effect: ...' ('' when nothing changes)."""
+    if not impact or not any(impact.get(lbl) for lbl in t.labels):
+        return ""
+    removed = list(removed)
+    if removed:
+        return f" Removed {t.items_text(removed)}: {periods_text(impact, t.labels)}."
+    return f" Effect: {periods_text(impact, t.labels)}."
+
+def _doc_says(doc_id: str, statement: str, facts: Optional[DocFacts] = None) -> str:
+    """'<doc> <what it says>.', naming the document once.
+
+    The AI's statement is either a predicate ('describes the fee as a subscription')
+    or a sentence; a sentence that already names the document is used as it is.
+    """
+    st = _sentence(statement)
+    if not st:
+        return f"{doc_id} conflicts with management's description."
+    title = (facts.title if facts else "") or ""
+    if doc_id in st or (len(title) > 8 and title in st):
+        return st
+    if st[0].islower():
+        return f"{doc_id} {st}"
+    return f"{doc_id}: {st[0].lower() + st[1:] if st[1:2].islower() else st}"
+
+def _with_corroboration(msg: str, others: Sequence[str], tail: str = "") -> str:
+    """Name corroborating documents only while the message stays short; they remain in doc_ids either way."""
+    if others:
+        longer = f"{msg} Corroborated by {join_limited(list(others), 1)}.{tail}"
+        if len(longer) <= MAX_MESSAGE:
+            return longer
+    return msg + tail
+
+
+def _term_brief(term: TermFact) -> str:
+    """A term's description without parentheticals ('term ends 2027-12-31')."""
+    return _short(re.sub(r"\s*\([^)]*\)", "", term.text) or term.text, 50)
+
+
+def _groups_text(t: AdjustmentTrace, entry_ids: Iterable[str], limit: int = 1) -> str:
+    """A compact name for an entry set ('Marlow & Finch LLP · Matter 3002 and 2 more')."""
+    return t.items_text(entry_ids, limit)
 
 
 def _has_verified_content(facts: Optional[DocFacts]) -> bool:
@@ -327,19 +381,18 @@ def resolve_overlaps(traces: Sequence[AdjustmentTrace]) -> None:
         ls = max(loser.links[e].score for e in eids)
         ws = max(winner.links[e].score for e in eids)
         n = len(eids)
-        if ws != ls:
-            why = f"links {_plural(n, 'it', 'them')} more strongly (score {ws:g} vs {ls:g})"
-        else:
-            why = f"comes first in the schedule (equal link scores of {ws:g})"
+        it = _plural(n, "it", "them")
+        why = f"links {it} more strongly" if ws != ls else "comes first in the schedule (the links are equally strong)"
         impact = loser.impact_of_removing(eids)
-        loser.remove(eids, FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT, f"also claimed in {winner.adj.adj_id}")
         docs = sorted({d for e in eids for d in loser.entry_docs(e) + winner.entry_docs(e)})
+        loser.remove(eids, FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT, f"also claimed in {winner.adj.adj_id}", doc_ids=docs)
         _flag(
             loser,
             FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT,
             Severity.CRITICAL,
-            f"{loser.describe_many(eids)} {_plural(n, 'is', 'are')} also claimed in {winner.adj.adj_id} "
-            f"({winner.adj.title}), which {why}; removed here so the same cost is not added back twice.",
+            f"{loser.describe_many(eids, 1)} {_plural(n, 'is', 'are')} also claimed in {winner.adj.adj_id} "
+            f"({winner.adj.title}), which {why}; removed here so the cost is not added back twice."
+            + _effect(loser, impact),
             entry_ids=eids,
             doc_ids=docs,
             related=[winner.adj.adj_id],
@@ -348,7 +401,7 @@ def resolve_overlaps(traces: Sequence[AdjustmentTrace]) -> None:
         winner.add_fact(
             Fact(
                 text=(
-                    f"{winner.describe_many(eids)} {_plural(n, 'is', 'are')} also claimed in {loser.adj.adj_id}; "
+                    f"{winner.describe_many(eids, 1)} {_plural(n, 'is', 'are')} also claimed in {loser.adj.adj_id}; "
                     f"kept here because this adjustment {why}."
                 ),
                 entry_ids=eids,
@@ -394,7 +447,8 @@ def already_excluded(t: AdjustmentTrace) -> None:
         info = idx.by_id[eids[0]]
         klass = info.klass.value
         impact = t.impact_of_removing(eids)
-        t.remove(eids, FlagCode.ALREADY_EXCLUDED_FROM_EBITDA, f"{acct} is {klass}, already below EBITDA")
+        docs = sorted({d for e in eids for d in t.entry_docs(e)})
+        t.remove(eids, FlagCode.ALREADY_EXCLUDED_FROM_EBITDA, f"{acct} is {klass}, already below EBITDA", doc_ids=docs)
         total = sum((t.amount(e) for e in eids), ZERO)
         n = len(eids)
         _flag(
@@ -402,19 +456,39 @@ def already_excluded(t: AdjustmentTrace) -> None:
             FlagCode.ALREADY_EXCLUDED_FROM_EBITDA,
             Severity.CRITICAL,
             f"{n} claimed {_plural(n, 'entry', 'entries')} ({money(total)}) sit in {acct} {info.entry.account_name}, "
-            f"which is classified {klass} and is already added back to reach EBITDA; adding "
-            f"{_plural(n, 'it', 'them')} back again would double count: {t.describe_many(eids)}.",
+            f"classified {klass}, which EBITDA already adds back; adding {_plural(n, 'it', 'them')} back again would "
+            f"double count." + _effect(t, impact),
             entry_ids=eids,
+            doc_ids=docs,
             impact=impact,
         )
         account = idx.accounts.get(acct)
         basis = f" ({account.mapping_basis})" if account is not None and account.mapping_basis else ""
         t.add_fact(Fact(text=f"Account {acct} {info.entry.account_name} maps to {klass}{basis}.", entry_ids=eids))
+        # Show the add-back management's own schedule already makes for this class.
+        mgmt, gl = idx.mgmt_lines.get(info.klass, {}), idx.gl_lines.get(info.klass, {})
+        for lbl in t.labels:
+            claimed_here = [e for e in eids if e in t.claimed.get(lbl, [])]
+            if not claimed_here or lbl not in mgmt or lbl not in gl:
+                continue
+            here = sum((t.amount(e) for e in claimed_here), ZERO)
+            line = klass.lower().replace("_", " ")
+            if abs(abs(mgmt[lbl]) - abs(gl[lbl])) <= idx.tolerance:
+                text = (
+                    f"{lbl}: management's {line} line ({money(abs(mgmt[lbl]))}) equals the GL {line} total, which "
+                    f"includes these {money(here)}, so the schedule already adds them back once."
+                )
+            else:
+                text = (
+                    f"{lbl}: management's {line} line is {money(abs(mgmt[lbl]))} against a GL {line} total of "
+                    f"{money(abs(gl[lbl]))} that includes these {money(here)}."
+                )
+            t.add_fact(Fact(text=text, entry_ids=claimed_here))
 
 
 def contradictions(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
-    """Verified AI contradictions, one flag per document. The AI may name entries;
-    code keeps only those the document demonstrably relates to."""
+    """Verified AI contradictions, deduplicated to one statement per document. The AI
+    may name entries; code keeps only those the document demonstrably relates to."""
     idx = t.index
     if ctx.ai is None or not t.doc_links:
         return
@@ -436,15 +510,15 @@ def contradictions(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
     claimed_set = set(claimed)
     claimed_groups = {t.group_of[e] for e in claimed if e in t.group_of}
     removable = not (t.is_normalization or t.is_pro_forma)
-    # Documents that contradict the same entries share one flag.
-    merged: dict[tuple[str, ...], list[tuple[str, list[EvidenceQuote], list[str], list[str]]]] = {}
+    # One statement per document (the AI lists its strongest first); documents that
+    # contradict the same entries share one flag.
+    merged: dict[tuple[str, ...], list[tuple[str, list[EvidenceQuote], str]]] = {}
     for doc_id, items in by_doc.items():
         quotes: list[EvidenceQuote] = []
         for c in items:
             if all((c.quote.page, c.quote.quote) != (x.page, x.quote) for x in quotes) and len(quotes) < 2:
                 quotes.append(c.quote)
-        statements = list(dict.fromkeys(_sentence(c.statement) for c in items if c.statement.strip()))
-        conflicts = list(dict.fromkeys(_sentence(c.conflicts_with) for c in items if c.conflicts_with.strip()))
+        statement = next((c.statement for c in items if c.statement.strip()), "")
         proposed = {e for c in items for e in c.entry_ids if e in claimed_set}
         scope = [e for e in claimed if e in proposed and _doc_relates_to_entry(t, doc_id, e)]
         if not scope and not proposed:
@@ -453,46 +527,38 @@ def contradictions(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
             if not scope and len(claimed_groups) == 1:
                 # One kind of activity is claimed, so a document contradicting the claim covers all of it.
                 scope = list(claimed)
-        merged.setdefault(tuple(scope), []).append((doc_id, quotes, statements, conflicts))
+        merged.setdefault(tuple(scope), []).append((doc_id, quotes, statement))
     for scope_key, docs in merged.items():
         scope = list(scope_key)
-        doc_ids = [d for d, _, _, _ in docs]
-        quotes = [q for _, qs, _, _ in docs for q in qs][:3]
-        parts = []
-        for doc_id, qs, statements, _ in docs:
-            parts.append(f"{doc_id} states {' '.join(_quoted(q.quote) for q in qs)} {' '.join(statements)}".rstrip())
-        conflicts = list(dict.fromkeys(c for _, _, _, cs in docs for c in cs))
-        msg = " ".join(parts)
-        if conflicts:
-            msg += f" Conflicts with: {' '.join(conflicts)}"
+        doc_ids = [d for d, _, _ in docs]
+        quotes = [q for _, qs, _ in docs for q in qs][:3]
+        lead, _, statement = docs[0]
+        msg = _doc_says(lead, statement, idx.facts.get(lead))
         impact = None
+        tail = ""
         if scope and removable:
             impact = t.impact_of_removing(scope)
-            t.remove(scope, FlagCode.CONTRADICTORY_EVIDENCE, f"{doc_ids[0]}: {_quoted(_short(quotes[0].quote, 60), end=False)}")
-            msg += f" Removes {t.describe_groups(scope)}."
+            t.remove(scope, FlagCode.CONTRADICTORY_EVIDENCE, f"contradicted by {lead}", doc_ids=doc_ids)
+            tail = _effect(t, impact, scope)
         elif not scope:
-            msg += " It could not be tied to specific GL entries, so nothing was removed."
+            tail = " It could not be tied to specific GL entries, so nothing was removed."
             t.add_judgment(
-                f"Does {doc_ids[0]} ({_quoted(_short(quotes[0].quote), end=False)}) undermine the adjustment as a whole? "
-                "The tool could not tie it to specific GL entries."
+                f"Does {lead} undermine the {t.adj.title} adjustment as a whole? It could not be tied to specific "
+                "GL entries, so nothing was removed.",
+                key=f"doc:{lead}",
             )
         _flag(
             t,
             FlagCode.CONTRADICTORY_EVIDENCE,
             Severity.WARNING,
-            msg,
+            _with_corroboration(msg, doc_ids[1:], tail),
             entry_ids=scope,
             doc_ids=doc_ids,
             quotes=quotes,
             impact=impact,
         )
-        for q in quotes:
-            t.add_fact(Fact(text=f"{q.doc_id}: {_quoted(q.quote, end=False)}", entry_ids=scope, quotes=[q]))
-        if scope:
-            t.add_judgment(
-                f"Does {doc_ids[0]} ({_quoted(_short(quotes[0].quote, 60), end=False)}) outweigh management's description of "
-                f"{t.describe_groups(scope, 2)}?"
-            )
+        for doc_id, qs, stmt in docs:
+            t.add_fact(Fact(text=_doc_says(doc_id, stmt, idx.facts.get(doc_id)), entry_ids=scope, quotes=qs), key=f"doc:{doc_id}")
 
 
 def entry_qualification(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
@@ -511,6 +577,8 @@ def entry_qualification(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
         t.notes.append(f"classify_entries failed: {exc}")
         return
     remaining_set = set(remaining)
+    # Recurrence is the premise of owner and normalization items, so it is never the removal code there.
+    recurrence_applies = not _recurrence_is_premise(t)
     buckets: dict[tuple[FlagCode, str, tuple[str, ...]], list[str]] = {}
     unverified: list[str] = []
     for c in results:
@@ -526,11 +594,12 @@ def entry_qualification(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
         if not docs:
             unverified.append(c.entry_id)
             continue
-        code = FlagCode.RECURRING_PATTERN if _RECURRENCE_REASON.search(c.reason) else FlagCode.CONTRADICTORY_EVIDENCE
+        recurring = recurrence_applies and _RECURRENCE_REASON.search(c.reason)
+        code = FlagCode.RECURRING_PATTERN if recurring else FlagCode.CONTRADICTORY_EVIDENCE
         buckets.setdefault((code, " ".join(c.reason.split()), tuple(docs)), []).append(c.entry_id)
     for (code, reason, docs), eids in sorted(buckets.items(), key=lambda kv: idx.by_id[kv[1][0]].pos):
         impact = t.impact_of_removing(eids)
-        t.remove(eids, code, f"does not fit management's basis: {reason}", source="ai")
+        t.remove(eids, code, f"does not fit management's basis per {docs[0]}", source="ai", doc_ids=docs)
         for d in docs:
             for e in eids:
                 t.associate(d, e, "classification", 0.0, "")
@@ -540,21 +609,18 @@ def entry_qualification(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
             t,
             code,
             Severity.WARNING,
-            f"Entry review: {t.describe_many(eids)} {_plural(n, 'does', 'do')} not fit management's basis: "
-            f"{_sentence(reason)} Basis: {', '.join(docs)}. Removed.",
+            f"{_groups_text(t, eids)} {_plural(n, 'does', 'do')} not fit management's basis per "
+            f"{join_limited(list(docs), 1)}: {_sentence(_short(reason, 140))}" + _effect(t, impact),
             entry_ids=eids,
             doc_ids=list(docs),
             quotes=quotes,
             impact=impact,
         )
-        t.add_judgment(
-            f"Do you agree that {t.describe_groups(eids)} {_plural(n, 'does', 'do')} not qualify ({_short(reason, 80)})? "
-            f"This removal rests on an AI reading of {', '.join(docs)}."
-        )
     if unverified:
         t.add_judgment(
-            f"The AI suggested that {t.describe_many(unverified)} may not fit management's basis but cited no "
-            "verifiable document that relates to them; the entries were kept. Should they be?"
+            f"The AI suggested that {t.describe_many(unverified, 2)} may not fit management's basis but cited no "
+            "verifiable document that relates to them, so they were kept. Should they be removed?",
+            key="ai:unverified",
         )
 
 
@@ -601,7 +667,22 @@ def _term_end_month(term: TermFact, facts: DocFacts) -> Optional[str]:
     return None
 
 
+def _recurrence_is_premise(t: AdjustmentTrace) -> bool:
+    """Owner and normalization items recur by design (SPEC §5.4): recurrence cannot undercut them."""
+    return t.is_normalization or t.adj.category in (
+        AdjustmentCategory.OWNER_DISCRETIONARY,
+        AdjustmentCategory.NORMALIZATION,
+    )
+
+def _one_off(text: str) -> bool:
+    return bool(_ONE_OFF_TERM.search(text or ""))
+
+
 def continuing_obligation(t: AdjustmentTrace) -> None:
+    """A document term that carries the cost into the go-forward cost base (SPEC §5.4):
+    a periodic fee, 'until terminated', auto-renewal, ongoing services, or a service
+    term ending after the last claimed month. A one-time retainer or fee tied to a
+    single transaction or search does not qualify, whatever the letter calls it."""
     idx = t.index
     if not t.asserts_nonrecurring:
         return
@@ -616,6 +697,11 @@ def continuing_obligation(t: AdjustmentTrace) -> None:
         facts = idx.facts.get(doc_id)
         if facts is None or not facts.terms:
             continue
+        # A letter that frames its retainer as one-time or creditable against a success fee
+        # describes a single engagement, even where a term on its own reads as a retainer.
+        doc_one_off = any(_one_off(q.quote) for q in facts.key_statements) or any(
+            _one_off(f"{x.text} {x.quote.quote}") for x in facts.terms
+        )
         terms: list[TermFact] = []
         fees: list[Decimal] = []
         feeless = False
@@ -624,7 +710,11 @@ def continuing_obligation(t: AdjustmentTrace) -> None:
             text = f"{term.text} {term.quote.quote}"
             if _FINITE.search(text):
                 continue
-            if kind in _CONTINUING_KINDS:
+            if kind in ("auto_renew", "ongoing_services"):
+                ok = True
+            elif _one_off(text) or (doc_one_off and kind in ("retainer", "term_end")):
+                ok = False
+            elif kind == "monthly_fee":
                 ok = True
             elif kind == "retainer":
                 ok = bool(_PERIODIC.search(text))
@@ -667,29 +757,30 @@ def continuing_obligation(t: AdjustmentTrace) -> None:
     for scope_key, docs in by_scope.items():
         scope = list(scope_key)
         doc_ids = [d for d, _ in docs]
-        terms = [term for _, ts in docs for term in ts]
+        lead, lead_terms = docs[0]
         impact = t.impact_of_removing(scope)
-        t.remove(scope, FlagCode.CONTINUING_OBLIGATION, f"{doc_ids[0]} sets a continuing obligation")
-        described = "; ".join(dict.fromkeys(_short(term.text, 70) for term in terms[:3]))
+        t.remove(scope, FlagCode.CONTINUING_OBLIGATION, f"{lead} sets a continuing obligation", doc_ids=doc_ids)
+        described = "; ".join(dict.fromkeys(_term_brief(term) for term in lead_terms[:2]))
+        msg = f"{lead} sets a continuing obligation ({described}) that runs past the last claimed month ({month_label(last)})."
         _flag(
             t,
             FlagCode.CONTINUING_OBLIGATION,
             Severity.WARNING,
-            f"{' and '.join(doc_ids[:2])} set{'s' if len(doc_ids) == 1 else ''} a continuing obligation ({described}) "
-            f"covering {t.describe_groups(scope)}. An obligation that runs past the last claimed month "
-            f"({month_label(last)}) is part of the ongoing cost base, not non-recurring.",
+            _with_corroboration(msg, doc_ids[1:], _effect(t, impact, scope)),
             entry_ids=scope,
             doc_ids=doc_ids,
-            quotes=[term.quote for term in terms[:3]],
+            quotes=[term.quote for _, ts in docs for term in ts][:3],
             impact=impact,
         )
         for doc_id, ts in docs:
-            for term in ts[:3]:
-                t.add_fact(Fact(text=f"{doc_id}: {term.text}", quotes=[term.quote]))
-        t.add_judgment(
-            f"Is the obligation under {doc_ids[0]} part of the ongoing cost base after closing? "
-            f"The tool removed {t.describe_groups(scope, limit=2)} on that basis."
-        )
+            t.add_fact(
+                Fact(
+                    text=f"{doc_id} sets {'; '.join(dict.fromkeys(_short(x.text, 60) for x in ts[:2]))}.",
+                    entry_ids=scope,
+                    quotes=[x.quote for x in ts[:2]],
+                ),
+                key=f"doc:{doc_id}",
+            )
 
 
 @dataclass
@@ -714,9 +805,15 @@ def _comparable_reason(info: EntryInfo, p: _Profile) -> str:
 
 
 def recurring_pattern(t: AdjustmentTrace) -> None:
-    """Record comparable activity for each claimed group; remove groups that recur."""
+    """Record comparable activity for each claimed group; remove groups that recur (SPEC §5.4).
+
+    Two tests: comparable activity in a period the claim does not cover, at half the
+    claimed group's amount or more; or at least three months outside the event
+    window (the union of the months of the group's claimed entries) whose comparable
+    activity is at least a quarter of the group's average claimed month.
+    """
     idx = t.index
-    if not t.asserts_nonrecurring:
+    if not t.asserts_nonrecurring or _recurrence_is_premise(t):
         return
     claimed = t.in_play_ids()
     if not claimed:
@@ -724,7 +821,6 @@ def recurring_pattern(t: AdjustmentTrace) -> None:
     tol = idx.tolerance
     # Activity inside this claim (including items lost to another adjustment) is not "elsewhere".
     claimed_set = set(t.claimed_ids())
-    event_months = _valid_months(t.intent.event_months)
     uncovered = [lbl for lbl in t.labels if t.claim(lbl) == 0]
     for g in dict.fromkeys(t.group_of[e] for e in claimed if e in t.group_of):
         g_claimed = [e for e in claimed if t.group_of.get(e) == g]
@@ -756,20 +852,17 @@ def recurring_pattern(t: AdjustmentTrace) -> None:
             for lbl in t.labels
         }
         prior_hits = [lbl for lbl in uncovered if s * by_label[lbl] >= RECURRENCE_SHARE * g_amount]
-        window = [idx.by_id[e].month for e in g_claimed] + event_months
-        lo, hi = min(window), max(window)
-        typical = _median_abs([t.amount(e) for e in g_claimed])
-        similar_months = sorted(
-            {
-                info.month
-                for info, _ in comparables
-                if (info.month < lo or info.month > hi) and SIMILAR_LOW * typical <= abs(info.amount) <= SIMILAR_HIGH * typical
-            }
-        )
+        window = {idx.by_id[e].month for e in g_claimed}
+        floor = RECURRENCE_MONTH_FLOOR * s * net / len(window)
+        by_month: dict[str, Decimal] = {}
+        for info, _ in comparables:
+            if info.month not in window:
+                by_month[info.month] = by_month.get(info.month, ZERO) + s * info.amount
+        similar_months = sorted(m for m, v in by_month.items() if v >= floor)
         recurring = bool(prior_hits) or len(similar_months) >= RECURRENCE_MIN_MONTHS
         comp_ids = [info.entry_id for info, _ in comparables]
         for info, why in comparables:
-            t.add_context_link(info.entry_id, 0.0, f"Comparable activity for {g}: {why}")
+            t.add_context_link(info.entry_id, 0.0, f"Comparable to {g} ({why})")
 
         parts: list[str] = []
         for lbl in prior_hits:
@@ -780,15 +873,12 @@ def recurring_pattern(t: AdjustmentTrace) -> None:
             )
         if len(similar_months) >= RECURRENCE_MIN_MONTHS:
             parts.append(
-                f"similar amounts in {len(similar_months)} months outside the claimed window "
+                f"similar activity in {len(similar_months)} months outside the claimed window "
                 f"({month_span(similar_months)})"
             )
         claimed_txt = ", ".join(f"{lbl} {money(s * v)}" for lbl, v in per_label.items() if v)
-        note = (
-            f"Claimed: {claimed_txt}. Comparable activity outside the claim: "
-            + ", ".join(f"{lbl} {money(v)}" for lbl, v in by_label.items() if v)
-            + "."
-        )
+        seen = ", ".join(f"{lbl} {money(v)}" for lbl, v in by_label.items() if v)
+        note = f"Claimed: {claimed_txt}. Comparable activity outside the claim: {seen}."
         t.recurrence.append(
             RecurrenceObservation(
                 group=g,
@@ -799,24 +889,21 @@ def recurring_pattern(t: AdjustmentTrace) -> None:
         )
         if recurring:
             impact = t.impact_of_removing(g_claimed)
-            t.remove(g_claimed, FlagCode.RECURRING_PATTERN, f"{g} recurs outside the claimed period")
+            t.remove(g_claimed, FlagCode.RECURRING_PATTERN, "comparable activity outside the claimed window")
             _flag(
                 t,
                 FlagCode.RECURRING_PATTERN,
                 Severity.WARNING,
-                f"{g} recurs: {'; '.join(parts)}. Management claims it as non-recurring ({claimed_txt}); removed.",
+                f"{t.items_text(g_claimed, 1)} recurs: {'; '.join(parts)}." + _effect(t, impact),
                 entry_ids=g_claimed + comp_ids,
                 impact=impact,
             )
-            t.add_judgment(
-                f"Is {g} part of the ongoing cost base? It was removed as recurring; management would need to "
-                "show why the claimed activity differs from the comparable activity."
-            )
         elif any(by_label[lbl] for lbl in uncovered):
-            seen = ", ".join(f"{lbl} {money(by_label[lbl])}" for lbl in uncovered if by_label[lbl])
+            below = ", ".join(f"{lbl} {money(by_label[lbl])}" for lbl in uncovered if by_label[lbl])
             t.add_judgment(
-                f"{g}: comparable activity ({seen}) is below the recurrence threshold. Should only the excess "
-                "over that routine level be added back?"
+                f"{g} has comparable activity where nothing is claimed ({below}), below the recurrence threshold. "
+                "Should only the excess over that routine level be added back?",
+                key=f"group:{g}",
             )
 
 
@@ -830,7 +917,13 @@ def _service_quote(facts: DocFacts, months: list[str]) -> Optional[EvidenceQuote
 
 
 def out_of_period(t: AdjustmentTrace) -> None:
-    """Move entries whose documented service period sits in another analysis period."""
+    """Move entries whose documented service period sits in another analysis period.
+
+    The entry leaves the supporting set and is replaced entirely by its effect: + the
+    amount in each period containing the booking month, - the amount pro rata by the
+    service months each period contains. Service months before ``data_start`` are
+    outside the analysis, so no negative side is carried for them (SPEC §5.4).
+    """
     idx = t.index
     for e in t.supporting_ids():
         if e in t.moved:
@@ -843,7 +936,10 @@ def out_of_period(t: AdjustmentTrace) -> None:
                 continue
             book_labels = set(idx.labels_of(info.month))
             svc_labels = {lbl for m in s_months for lbl in idx.labels_of(m)}
-            if book_labels == svc_labels:
+            # Service months outside every analysis period (before data_start, say) are a different
+            # fiscal period even when the rest of the service falls in the booking period's labels.
+            outside = [m for m in s_months if not idx.labels_of(m)]
+            if book_labels == svc_labels and not outside:
                 continue
             total_months = len(s_months)
             contrib: dict[str, Decimal] = {}
@@ -859,14 +955,23 @@ def out_of_period(t: AdjustmentTrace) -> None:
                 if v:
                     t.effects.append(Effect(lbl, v, FlagCode.OUT_OF_PERIOD, e))
             quote = _service_quote(facts, s_months)
-            belongs = ", ".join(sorted(svc_labels, key=t.labels.index)) or "months before the analysis periods"
-            booked = ", ".join(sorted(book_labels, key=t.labels.index)) or "the booking month"
+            order = t.labels.index
+            belongs = ", ".join(sorted(svc_labels, key=order)) or "months before the analysis periods"
+            booked = ", ".join(sorted(book_labels, key=order)) or "the booking month"
+            msg = (
+                f"{t.entry_ref(e)} ({money(info.amount)}) covers services in {month_span(s_months)} per {doc_id}, so "
+                f"the cost belongs to {belongs} and moves out of {booked} pro rata by service month."
+            )
+            if outside:
+                msg += (
+                    f" {len(outside)} service {_plural(len(outside), 'month falls', 'months fall')} outside the "
+                    "analysis periods, so no negative side is carried for them."
+                )
             _flag(
                 t,
                 FlagCode.OUT_OF_PERIOD,
                 Severity.WARNING,
-                f"{t.describe(e)} covers services in {month_span(s_months)} per {doc_id}, not the booking month. "
-                f"The cost belongs to {belongs}, so it moves out of {booked} pro rata by service month.",
+                msg + _effect(t, realloc),
                 entry_ids=[e],
                 doc_ids=[doc_id],
                 quotes=[quote],
@@ -877,7 +982,8 @@ def out_of_period(t: AdjustmentTrace) -> None:
                     text=f"{doc_id} states a service period of {month_span(s_months)} for {t.describe(e)}.",
                     entry_ids=[e],
                     quotes=[quote] if quote else [],
-                )
+                ),
+                key=f"doc:{doc_id}",
             )
             break
 
@@ -931,7 +1037,7 @@ def _recovery_candidates(
             if n in refs:
                 display, doc_id = refs[n]
                 score += W_REFERENCE
-                reasons.append(f"the memo cites {display}" + (f", stated in {doc_id}" if doc_id else ", named by management"))
+                reasons.append(f"the memo cites {display}")
                 if doc_id:
                     cited.append(doc_id)
                 break
@@ -939,7 +1045,7 @@ def _recovery_candidates(
         for name, toks in names:
             if names_match(info.cp_tokens, toks) or name_in_text(toks, info.memo_tokens):
                 score += W_COUNTERPARTY
-                reasons.append(f"the payer matches '{name}'")
+                reasons.append(f"the payer is {name}")
                 party = toks | info.cp_tokens
                 break
         hits = keyword_hits(keywords, info.memo_norm, info.memo_tokens, party)
@@ -973,22 +1079,23 @@ def offsetting_recovery(t: AdjustmentTrace, ctx: ChallengeContext) -> None:
             quotes += [a.quote for a in idx.facts[d].amounts if _amount_is(a.amount, info.amount, idx.tolerance)]
         e = info.entry
         who = f" from {e.counterparty}" if e.counterparty else ""
+        impact = {lbl: info.amount for lbl in labels_in}
         _flag(
             t,
             FlagCode.OFFSETTING_RECOVERY,
             Severity.WARNING,
-            f"{money(abs(info.amount))} received{who} in {month_label(info.month)} ({e.account} {e.account_name}: "
-            f"\"{e.memo}\") relates to the same event: {', '.join(reasons)}. Management did not adjust it, so it "
-            f"offsets the add-back in the period received.",
+            f"{money(abs(info.amount))} received{who} in {month_label(info.month)} ({e.account} {e.account_name}) "
+            f"relates to the same event ({reasons[0]}); management did not adjust it, so it offsets the add-back "
+            f"in the period received." + _effect(t, impact),
             entry_ids=[eid],
             doc_ids=docs,
             quotes=quotes,
-            impact={lbl: info.amount for lbl in labels_in},
+            impact=impact,
         )
         t.add_fact(
             Fact(
-                text=f"Recovery of {money(abs(info.amount))} booked {month_label(info.month)} to {e.account} "
-                f"{e.account_name} (\"{e.memo}\").",
+                text=f"A recovery of {money(abs(info.amount))}{who} was booked in {month_label(info.month)} to "
+                f"{e.account} {e.account_name}, inside EBITDA.",
                 entry_ids=[eid],
                 quotes=quotes[:1],
             )
@@ -1086,8 +1193,8 @@ def period_mismatch(t: AdjustmentTrace) -> None:
             FlagCode.PERIOD_MISMATCH,
             Severity.WARNING,
             f"{lbl}: management claims {money(claim)} but {what}; the matching entries ({money(total)}) were booked "
-            f"{booked}{', in ' + ', '.join(where) if where else ''}. Diligence carries only the activity in "
-            f"{lbl}: {money(proposed)}.",
+            f"{booked}{', in ' + ', '.join(where) if where else ''}. Diligence carries only the {lbl} activity: "
+            f"{money(proposed)}.",
             entry_ids=match,
             label=lbl,
             amount_impact=proposed - claim,
@@ -1107,7 +1214,7 @@ def sign_error(t: AdjustmentTrace) -> None:
             FlagCode.SIGN_ERROR,
             Severity.WARNING,
             f"{lbl}: management's {kind} of {money(claim)} is made of GL entries that net to {money(traced)} "
-            f"({nature}); the sign of the adjustment conflicts with the GL.",
+            f"({nature}), so the sign of the adjustment conflicts with the GL.",
             entry_ids=t.claimed.get(lbl, []),
             label=lbl,
         )
@@ -1123,12 +1230,13 @@ def duplicate_entries(t: AdjustmentTrace) -> None:
             continue
         seen.add(tuple(group))
         inside = [x for x in group if x in claimed]
+        rows = ", ".join(str(idx.by_id[x].entry.source_row) for x in group if x in idx.by_id)
         _flag(
             t,
             FlagCode.DUPLICATE_GL_ENTRY,
             Severity.WARNING,
-            f"{t.describe(e)} is part of a possible duplicate posting ({', '.join(group)}: same account, amount, "
-            f"and party); {len(inside)} of the {len(group)} postings are in the claimed set.",
+            f"{t.describe(e)} may be posted {len(group)} times (GL rows {rows}: same account, amount and party); "
+            f"{len(inside)} of the {len(group)} postings are in the claimed set.",
             entry_ids=group,
         )
 
@@ -1183,8 +1291,8 @@ def unsigned_or_draft(t: AdjustmentTrace) -> None:
             t,
             FlagCode.UNSIGNED_OR_DRAFT_SUPPORT,
             Severity.WARNING,
-            f"{doc_id} ({facts.doc_type.replace('_', ' ')}) is {state}; it cannot support the adjustment until "
-            "executed.",
+            f"{doc_id} ({facts.doc_type.replace('_', ' ')}) is {state}, so it cannot support the adjustment until "
+            "it is executed.",
             doc_ids=[doc_id],
             quotes=[quote],
         )
@@ -1242,7 +1350,8 @@ def normalization(t: AdjustmentTrace) -> None:
                 if _executed(facts) and info.supported_by is None:
                     info.level, info.supported_by = annual, doc_id
                     t.add_fact(
-                        Fact(text=f"{doc_id} sets the normalized level at {money(annual)} a year.", quotes=[a.quote])
+                        Fact(text=f"{doc_id} sets the normalized level at {money(annual)} a year.", quotes=[a.quote]),
+                        key=f"doc:{doc_id}",
                     )
                 elif not _executed(facts) and doc_id not in info.draft_docs:
                     info.draft_docs.append(doc_id)
@@ -1253,25 +1362,26 @@ def normalization(t: AdjustmentTrace) -> None:
                 t,
                 FlagCode.PARTIAL_GL_SUPPORT,
                 Severity.WARNING,
-                f"{lbl}: no actual cost for the normalized item was found in the GL; the normalization cannot be "
+                f"{lbl}: no actual cost for the normalized item was found in the GL, so the normalization cannot be "
                 "measured for this period.",
                 label=lbl,
                 amount_impact=-t.claim(lbl),
             )
         else:
+            n = len(t.claimed.get(lbl, []))
             t.add_fact(
                 Fact(
-                    text=f"{lbl}: actual cost in the GL is {money(actual[lbl])} "
-                    f"({len(t.claimed.get(lbl, []))} entries); management claims {money(t.claim(lbl))}.",
+                    text=f"{lbl}: actual cost in the GL is {money(actual[lbl])} ({n} {_plural(n, 'entry', 'entries')}); "
+                    f"management claims {money(t.claim(lbl))}.",
                     entry_ids=t.claimed.get(lbl, []),
                 )
             )
     if info.supported_by is None:
         level_txt = money(candidates[0]) if candidates else "the normalized level"
         if info.draft_docs:
-            detail = f"the only document stating {level_txt} is {', '.join(info.draft_docs)}, which is not executed"
+            detail = f"the only document stating it, {join_limited(info.draft_docs, 1)}, is not executed"
         else:
-            detail = f"no linked document states {level_txt}"
+            detail = "no linked document states it"
         _flag(
             t,
             FlagCode.NORMALIZATION_BENCHMARK_MISSING,
@@ -1281,7 +1391,8 @@ def normalization(t: AdjustmentTrace) -> None:
         )
         t.add_judgment(
             f"Is {level_txt} a year a supportable market level? Management's claim implies it, but no executed "
-            "agreement or benchmark sets it."
+            "agreement or benchmark sets it.",
+            key="normalization:level",
         )
 
 
@@ -1294,7 +1405,7 @@ def pro_forma(t: AdjustmentTrace) -> None:
     base = t.in_play_ids() or t.candidates
     continuing = [e for e in base if idx.by_id[e].month >= last]
     if continuing:
-        reasons.append(f"the GL shows the cost continuing through {month_label(last)} ({t.describe_groups(continuing, 2)})")
+        reasons.append(f"the GL shows {_groups_text(t, continuing)} continuing through {month_label(last)}")
     executed = [
         d
         for d in sorted(t.doc_links)
@@ -1306,7 +1417,7 @@ def pro_forma(t: AdjustmentTrace) -> None:
         reasons.append("no executed document shows the event has occurred")
     future = [m for m in _valid_months(t.intent.event_months) if m > last]
     if future:
-        reasons.append(f"management dates the event to {month_label(future[0])}, after the last GL month ({month_label(last)})")
+        reasons.append(f"management dates it to {month_label(future[0])}, after the last GL month")
     if not reasons:
         return
     quotes = [q for d in sorted(t.doc_links) for q in idx.facts[d].key_statements[:1]][:3]
@@ -1314,43 +1425,48 @@ def pro_forma(t: AdjustmentTrace) -> None:
         t,
         FlagCode.PRO_FORMA_NOT_REALIZED,
         Severity.CRITICAL,
-        f"Pro forma savings not realized: {'; '.join(reasons)}.",
+        f"The pro forma savings are not realized: {'; '.join(reasons)}.",
         entry_ids=continuing,
         doc_ids=[q.doc_id for q in quotes],
         quotes=quotes,
     )
     t.add_judgment(
         "Should savings that have not yet occurred be carried in diligence EBITDA, or only disclosed as a "
-        "run-rate consideration?"
+        "run-rate consideration?",
+        key="pro_forma",
     )
 
 
 def document_coverage(t: AdjustmentTrace) -> None:
-    """NO_DOCUMENT_SUPPORT per period; above 25% of the claim it drives REQUEST_INFO."""
+    """NO_DOCUMENT_SUPPORT per period, measured on what diligence would carry (SPEC §5.4).
+
+    The base is the supporting amount after every removal and period move: entries
+    still supporting, plus out-of-period effects (which rest on a document by
+    construction). A period that carries nothing cannot trigger it: documents are
+    needed for what we carry, not for what we reject. Above 25% undocumented it is
+    a WARNING that drives REQUEST_INFO; a smaller gap is an INFO note.
+    """
     idx = t.index
     if t.is_normalization or t.is_pro_forma:
         return
     tol = idx.tolerance
     for lbl in t.claimed_labels():
-        claim = t.claim(lbl)
-        undoc = [e for e in t.supporting(lbl) if not t.entry_docs(e)]
+        carried_ids = [e for e in t.supporting(lbl) if e not in t.moved]
+        moved = sum((x.amount for x in t.effects if x.label == lbl and x.code == FlagCode.OUT_OF_PERIOD), ZERO)
+        base = sum((t.amount(e) for e in carried_ids), ZERO) + moved
+        undoc = [e for e in carried_ids if not t.support_docs(e)]
         amount = sum((t.amount(e) for e in undoc), ZERO)
-        if abs(amount) <= tol:
+        if abs(amount) <= tol or abs(base) <= tol:
             continue
-        share = abs(amount) / abs(claim)
-        pct = int((share * 100).to_integral_value())
-        msg = f"{lbl}: {money(abs(amount))} ({pct}% of the claim) has no linked document: {t.describe_groups(undoc)}."
-        if t.asserts_personal:
-            # For owner / personal items the GL description is the primary evidence; the gap is noted, not blocking.
-            severity = Severity.INFO
-            msg += " The GL descriptions identify the items; no third-party document was provided."
-            t.add_judgment(
-                f"Are {t.describe_groups(undoc, 2)} personal rather than business costs? The GL description is "
-                "the only evidence."
-            )
-        elif share > UNDOCUMENTED_SHARE_LIMIT:
+        share = abs(amount) / abs(base)
+        pct = int((min(share, Decimal(1)) * 100).to_integral_value())
+        msg = (
+            f"{lbl}: {money(abs(amount))} of the {money(abs(base))} carried ({pct}%) has no supporting document "
+            f"({_groups_text(t, undoc)})."
+        )
+        if share > UNDOCUMENTED_SHARE_LIMIT:
             severity = Severity.WARNING
-            msg += " This is above the 25% limit, so documents are needed before diligence can carry it."
+            msg += " That is above the 25% limit, so documents are needed before diligence can carry it."
         else:
             severity = Severity.INFO
         _flag(t, FlagCode.NO_DOCUMENT_SUPPORT, severity, msg, entry_ids=undoc, label=lbl)

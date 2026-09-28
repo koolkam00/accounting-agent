@@ -75,10 +75,6 @@ LINK_THRESHOLD = 2.0
 STRONG_LINK = 2.5
 # Meet-in-the-middle over 2 x 15 items is ~65k subsets: exact and fast.
 MAX_SUBSET_ITEMS = 30
-# Prefer entries already claimed in an overlapping period (FY vs TTM) so the
-# two fits describe the same activity. In score hundredths, below any real
-# signal so it only breaks ties.
-_OVERLAP_PERIOD_PREFERENCE = 10
 
 # Document-to-adjustment weights.
 DW_SUPPORT_REF = 3.0  # management cited the document (data-room index or name)
@@ -305,6 +301,46 @@ def cents(value: Decimal) -> int:
     return int(q2(value) * 100)
 
 
+# Reviewer-facing text limits: a flag message is one or two sentences, a rationale a short paragraph.
+MAX_MESSAGE = 320
+MAX_RATIONALE = 600
+
+
+def plural(n: int, one: str, many: str) -> str:
+    return one if n == 1 else many
+
+
+def entries_word(n: int) -> str:
+    return f"{n} {plural(n, 'entry', 'entries')}"
+
+
+def join_limited(items: Sequence[str], limit: int = 2, sep: str = ", ") -> str:
+    """'a, b and 3 more': names beyond ``limit`` are counted, not listed."""
+    items = list(dict.fromkeys(i for i in items if i))
+    if len(items) <= limit:
+        return " and ".join(items) if len(items) == 2 and sep == ", " else sep.join(items)
+    return f"{sep.join(items[:limit])} and {len(items) - limit} more"
+
+
+def _short_sentence(text: str, limit: int = MAX_MESSAGE) -> str:
+    """Collapse whitespace; an over-long text is cut at a word boundary and closed with an ellipsis."""
+    text = " ".join((text or "").split())
+    if len(text) <= limit:
+        return text
+    cut = text.rfind(" ", 0, limit - 1)
+    return text[: cut if cut > limit // 2 else limit - 1].rstrip(" ,;:") + "…"
+
+
+def periods_text(amounts: dict[str, Decimal], labels: Sequence[str]) -> str:
+    """'35,500 in FY2025 and TTM Jun-26' when equal, else 'FY2025 35,500; TTM Jun-26 30,000'."""
+    nonzero = [(lbl, amounts[lbl]) for lbl in labels if amounts.get(lbl)]
+    if not nonzero:
+        return "0"
+    if len({v for _, v in nonzero}) == 1:
+        return f"{money(nonzero[0][1])} in {' and '.join(lbl for lbl, _ in nonzero)}"
+    return "; ".join(f"{lbl} {money(v)}" for lbl, v in nonzero)
+
+
 # ---------------------------------------------------------------------------
 # Deal-wide index (built once per run)
 # ---------------------------------------------------------------------------
@@ -352,6 +388,10 @@ class DealIndex:
     docs_by_text_ref: dict[str, list[str]]  # reference-like token in a document's text -> doc ids
     label_months: dict[str, frozenset[str]]
     duplicate_groups: dict[str, list[str]]
+    # Management's own below-EBITDA lines by class and the GL's, per period label, so a
+    # claim of already-excluded costs can be shown against the line that adds them back.
+    mgmt_lines: dict[EbitdaClass, dict[str, Decimal]] = field(default_factory=dict)
+    gl_lines: dict[EbitdaClass, dict[str, Decimal]] = field(default_factory=dict)
     _amount_keys: list[int] = field(default_factory=list, repr=False)
 
     def __post_init__(self) -> None:
@@ -455,11 +495,26 @@ def build_index(
             docs_by_text_ref.setdefault(r, []).append(doc_id)
 
     duplicates: dict[str, list[str]] = {}
+    gl_lines: dict[EbitdaClass, dict[str, Decimal]] = {}
     if recon is not None:
         for issue in recon.issues:
             if issue.code == DataQualityCode.DUPLICATE_GL_ENTRY and len(issue.entry_ids) > 1:
                 for eid in issue.entry_ids:
                     duplicates[eid] = list(issue.entry_ids)
+        for lbl, comp in recon.gl_ebitda.items():
+            gl_lines.setdefault(EbitdaClass.INTEREST, {})[lbl] = D(comp.interest)
+            gl_lines.setdefault(EbitdaClass.TAXES, {})[lbl] = D(comp.taxes)
+            da = D(comp.depreciation) + D(comp.amortization)
+            gl_lines.setdefault(EbitdaClass.DEPRECIATION, {})[lbl] = da
+            gl_lines.setdefault(EbitdaClass.AMORTIZATION, {})[lbl] = da
+    sched = pkg.schedule
+    da_line = {k: D(v) for k, v in sched.depreciation_amortization.items()}
+    mgmt_lines = {
+        EbitdaClass.INTEREST: {k: D(v) for k, v in sched.interest.items()},
+        EbitdaClass.TAXES: {k: D(v) for k, v in sched.taxes.items()},
+        EbitdaClass.DEPRECIATION: da_line,
+        EbitdaClass.AMORTIZATION: da_line,
+    }
 
     return DealIndex(
         labels=[p.label for p in meta.periods],
@@ -481,6 +536,8 @@ def build_index(
         docs_by_text_ref=docs_by_text_ref,
         label_months={p.label: frozenset(months_in(p)) for p in meta.periods},
         duplicate_groups=duplicates,
+        mgmt_lines={k: v for k, v in mgmt_lines.items() if v},
+        gl_lines=gl_lines,
     )
 
 
@@ -522,6 +579,7 @@ class Removal:
     code: FlagCode
     note: str
     source: str = "code"  # "ai" when an AI entry classification drove it
+    doc_ids: list[str] = field(default_factory=list)  # documents the removal rests on
 
 
 @dataclass
@@ -539,6 +597,8 @@ class PeriodFit:
     linked_total: Decimal  # EBITDA-signed total of linked entries in the period
     method: str  # all | groups | entries | strong | elsewhere | normalization
     bounded: bool = False
+    ties: int = 1  # exact fits still level when the earliest-entries rule decided (SPEC §5.3)
+    cited: int = 0  # chosen entries a support-ref document links to
     elsewhere: list[str] = field(default_factory=list)  # entries outside the period that tie to its claim
 
 
@@ -577,6 +637,8 @@ class AdjustmentTrace:
     notes: list[str] = field(default_factory=list)
     dropped_quotes: int = 0  # AI quotes (contradictions) that failed verification
     search_terms: str = ""
+    _judgment_keys: set[str] = field(default_factory=set, repr=False)
+    _fact_keys: dict[str, int] = field(default_factory=dict, repr=False)
 
     # -- classification ----------------------------------------------------
 
@@ -638,7 +700,7 @@ class AdjustmentTrace:
         return sum((self.amount(e) for e in self.claimed.get(label, [])), ZERO)
 
     def documented(self, label: str) -> Decimal:
-        return sum((self.amount(e) for e in self.claimed.get(label, []) if self.entry_docs(e)), ZERO)
+        return sum((self.amount(e) for e in self.claimed.get(label, []) if self.support_docs(e)), ZERO)
 
     def effect(self, label: str) -> Decimal:
         return sum((x.amount for x in self.effects if x.label == label), ZERO)
@@ -668,6 +730,16 @@ class AdjustmentTrace:
 
     def entry_docs(self, entry_id: str) -> list[str]:
         return sorted(d for d, info in self.doc_links.items() if entry_id in info.entry_basis)
+
+    def support_docs(self, entry_id: str) -> list[str]:
+        """Documents that evidence an entry. The company's own emails and memos are management
+        representations, not documentary support, so they do not count (SPEC §5.4 NO_DOCUMENT_SUPPORT)."""
+        return [
+            d
+            for d in self.entry_docs(entry_id)
+            if (self.index.facts[d].doc_type if d in self.index.facts else "other").strip().lower()
+            not in CORRESPONDENCE_DOC_TYPES
+        ]
 
     def entry_docs_by_basis(self, entry_id: str, bases: Iterable[str]) -> list[str]:
         wanted = set(bases)
@@ -706,11 +778,13 @@ class AdjustmentTrace:
 
     # -- mutation ----------------------------------------------------------
 
-    def remove(self, entry_ids: Iterable[str], code: FlagCode, note: str, source: str = "code") -> list[str]:
+    def remove(
+        self, entry_ids: Iterable[str], code: FlagCode, note: str, source: str = "code", doc_ids: Iterable[str] = ()
+    ) -> list[str]:
         newly: list[str] = []
         for e in self.index.sort_ids(entry_ids):
             if e not in self.removals:
-                self.removals[e] = Removal(code=code, note=note, source=source)
+                self.removals[e] = Removal(code=code, note=note, source=source, doc_ids=sorted(set(doc_ids)))
                 newly.append(e)
         return newly
 
@@ -737,13 +811,30 @@ class AdjustmentTrace:
         elif reason not in link.reasons:
             link.reasons.append(reason)
 
-    def add_judgment(self, text: str) -> None:
-        if text and text not in self.judgments:
+    def add_judgment(self, text: str, key: str = "") -> None:
+        """One judgment per topic: a later challenge on the same topic (``key``) does not repeat it."""
+        key = key or text
+        if text and key not in self._judgment_keys:
+            self._judgment_keys.add(key)
             self.judgments.append(text)
 
-    def add_fact(self, fact: Fact) -> None:
-        if all(f.text != fact.text for f in self.facts):
+    def add_fact(self, fact: Fact, key: str = "") -> None:
+        """One fact per topic (``key``, e.g. a document): later evidence on it adds quotes, not lines."""
+        if not key:
+            if all(f.text != fact.text for f in self.facts):
+                self.facts.append(fact)
+            return
+        if key not in self._fact_keys:
+            self._fact_keys[key] = len(self.facts)
             self.facts.append(fact)
+            return
+        cur = self.facts[self._fact_keys[key]]
+        quotes = list(cur.quotes)
+        for q in fact.quotes:
+            if len(quotes) < 3 and all((q.page, q.quote) != (x.page, x.quote) for x in quotes):
+                quotes.append(q)
+        ids = self.index.sort_ids(list(cur.entry_ids) + list(fact.entry_ids))
+        self.facts[self._fact_keys[key]] = cur.model_copy(update={"quotes": quotes, "entry_ids": ids})
 
     # -- descriptions (for flag messages and questions) --------------------
 
@@ -756,6 +847,34 @@ class AdjustmentTrace:
         head = f"{e.txn_type or 'Doc'} {e.doc_number}" if e.doc_number else f"GL row {e.source_row}"
         tail = f"; memo cites {info.memo_ref}" if info.memo_ref else ""
         return f"{head} ({e.counterparty or e.account_name}, {month_label(info.month)}, {money(info.amount)}{tail})"
+
+    def entry_ref(self, entry_id: str) -> str:
+        """'Bill MF-7710-09 (Marlow & Finch LLP, Sep 2025)': enough to find the entry, without its amount."""
+        info = self.index.by_id.get(entry_id)
+        if info is None:
+            return entry_id
+        e = info.entry
+        head = f"{e.txn_type or 'Doc'} {e.doc_number}" if e.doc_number else f"GL row {e.source_row}"
+        who = e.counterparty or f"{e.account} {e.account_name}"
+        return f"{head} ({who}, {month_label(info.month)})"
+
+    def items_text(self, entry_ids: Iterable[str], limit: int = 2) -> str:
+        """A compact name for a set of entries: its group when the label is short, else the entries."""
+        ids = self.index.sort_ids(entry_ids)
+        by_group: dict[str, list[str]] = {}
+        for e in ids:
+            by_group.setdefault(self.group_of.get(e) or self.entry_ref(e), []).append(e)
+        names: list[str] = []
+        for g, members in by_group.items():
+            label = short_label(g)
+            if len(label) <= _SHORT_LABEL:
+                names.append(label)
+            elif len(members) == 1:
+                names.append(self.entry_ref(members[0]))
+            else:
+                who = g.split(" · ")[0]
+                names.append(f"{who} ({entries_word(len(members))}, {month_span(self.index.by_id[e].month for e in members)})")
+        return join_limited(names, limit)
 
     def describe_many(self, entry_ids: Iterable[str], limit: int = 3) -> str:
         ids = self.index.sort_ids(entry_ids)
@@ -809,8 +928,8 @@ class AdjustmentTrace:
         in_labels = self.index.labels_of(info.month)
         claimed_in = [lbl for lbl in in_labels if self.claim(lbl) != 0]
         if not claimed_in:
-            where = ", ".join(in_labels) if in_labels else "outside the analysis periods"
-            return f"Context only: no claim in {where}; kept for recurrence and period analysis"
+            where = ", ".join(in_labels) if in_labels else "the months outside the analysis periods"
+            return f"Context only: no claim in {where}"
         return "Context only: not needed to tie the claim in " + ", ".join(claimed_in)
 
     def doc_link_models(self) -> list[DocLink]:
@@ -903,6 +1022,17 @@ def memo_display(memo: str) -> str:
     return re.sub(r"\s*\((?:inv|invoice|ref|no|#|pmt|payment)?\.?\)", "", text, flags=re.IGNORECASE).strip()
 
 
+_SHORT_LABEL = 70
+
+
+def short_label(group: str) -> str:
+    """A group label without an account-number prefix ('5400 Inventory ... · Year-end count' -> 'Year-end count')."""
+    who, sep, what = group.partition(" · ")
+    if sep and who[:1].isdigit() and what:
+        return what
+    return group
+
+
 def _group_display(info: EntryInfo, ref_display: str = "") -> str:
     # Journal entries often have no party; the account says more than "no counterparty".
     who = info.entry.counterparty.strip() or f"{info.entry.account} {info.entry.account_name}"
@@ -981,6 +1111,224 @@ def find_subset(
     mask = best[1]
     total = len(items)
     return [order[i] for i in range(total) if mask >> (total - 1 - i) & 1]
+
+
+@dataclass(frozen=True)
+class ClaimFit:
+    """The claimed set chosen by ``fit_claim``."""
+
+    indices: list[int]  # chosen candidates, ascending
+    diff: int  # |sum - target| in cents; 0 is an exact fit
+    split_groups: int  # groups the fit takes only part of
+    cited: int  # chosen entries that a document cited in management's support refs links to
+    ties: int  # fits ranked equal before the earliest-entries rule decided (1 = unique)
+    bounded: bool  # more candidates than the search could consider
+
+
+# A half-table row: (-split groups, cited entries, entry mask, number of subsets with that rank).
+_Row = list
+
+
+def _merge_options(table: dict[tuple[int, int], _Row], options: dict[tuple[int, int], _Row]) -> dict[tuple[int, int], _Row]:
+    """Combine every row of ``table`` with every option of the next unit, keeping per
+    (sum, straddle state) the best rank and how many subsets reach it.
+
+    Every rank component is additive (split count, cited count, and a mask of
+    disjoint bits), so keeping only the best row per sum loses nothing: adding the
+    same later option to two rows preserves their order.
+    """
+    out: dict[tuple[int, int], _Row] = {}
+    for (s, st), (ns, c, m, n) in table.items():
+        for (v, ost), (ons, oc, om, on) in options.items():
+            key = (s + v, st or ost)
+            rank = (ns + ons, c + oc)
+            cur = out.get(key)
+            if cur is None or rank > (cur[0], cur[1]):
+                out[key] = [rank[0], rank[1], m | om, n * on]
+            elif rank == (cur[0], cur[1]):
+                cur[3] += n * on
+                if m | om > cur[2]:
+                    cur[2] = m | om
+    return out
+
+
+def _unit_options(
+    members: Sequence[int], values: Sequence[int], cited: Sequence[bool], bits: Sequence[int], whole_ok: bool, straddle: bool
+) -> dict[tuple[int, int], _Row]:
+    """Every subset of one group's members in one half, reduced to (sum, state) -> best rank.
+
+    For a group wholly inside the half, taking some but not all members splits it.
+    For the one group that straddles the halves the split is decided when the
+    halves are joined, so each side only records none (0), part (1), or all (2).
+    """
+    subsets: list[tuple[int, int, int, int]] = [(0, 0, 0, 0)]  # (sum, count, cited, mask)
+    for i in members:
+        subsets += [(s + values[i], k + 1, c + int(cited[i]), m | bits[i]) for s, k, c, m in subsets]
+    out: dict[tuple[int, int], _Row] = {}
+    size = len(members)
+    for s, k, c, m in subsets:
+        if straddle:
+            state, split = (0 if k == 0 else 2 if k == size else 1), 0
+        else:
+            state, split = 0, int(0 < k and not (k == size and whole_ok))
+        key = (s, state)
+        cur = out.get(key)
+        rank = (-split, c)
+        if cur is None or rank > (cur[0], cur[1]):
+            out[key] = [rank[0], rank[1], m, 1]
+        elif rank == (cur[0], cur[1]):
+            cur[3] += 1
+            if m > cur[2]:
+                cur[2] = m
+    return out
+
+
+def _half_table(units: Sequence[dict[tuple[int, int], _Row]]) -> dict[tuple[int, int], _Row]:
+    table: dict[tuple[int, int], _Row] = {(0, 0): [0, 0, 0, 1]}
+    for options in units:
+        table = _merge_options(table, options)
+    return table
+
+
+def _join_halves(
+    left: dict[tuple[int, int], _Row],
+    right: dict[tuple[int, int], _Row],
+    target: int,
+    tolerance: int,
+    straddle_whole_ok: bool,
+) -> Optional[tuple[tuple[int, int, int], int, int]]:
+    """Best ((-diff, -split, cited), mask, ties) over every pair of half subsets within tolerance."""
+    by_state: dict[int, tuple[list[int], list[_Row]]] = {}
+    for (s, st), row in sorted(right.items()):
+        sums, rows = by_state.setdefault(st, ([], []))
+        sums.append(s)
+        rows.append(row)
+    best: Optional[tuple[int, int, int]] = None
+    best_mask, ties = 0, 0
+    for (ls, lst), (lns, lc, lm, ln) in left.items():
+        for rst, (sums, rows) in by_state.items():
+            lo = bisect_left(sums, target - tolerance - ls)
+            hi = bisect_right(sums, target + tolerance - ls)
+            for k in range(lo, hi):
+                rns, rc, rm, rn = rows[k]
+                mask = lm | rm
+                if mask == 0:
+                    continue
+                # The straddling group is whole only when both halves take all of it.
+                straddle_split = int((lst, rst) != (0, 0) and not ((lst, rst) == (2, 2) and straddle_whole_ok))
+                rank = (-abs(ls + sums[k] - target), lns + rns - straddle_split, lc + rc)
+                if best is None or rank > best:
+                    best, best_mask, ties = rank, mask, ln * rn
+                elif rank == best:
+                    ties += ln * rn
+                    if mask > best_mask:
+                        best_mask = mask
+    if best is None:
+        return None
+    return best, best_mask, ties
+
+
+def fit_claim(
+    values: Sequence[int],
+    target: int,
+    tolerance: int,
+    groups: Sequence[str],
+    cited: Sequence[bool],
+    *,
+    scores: Optional[Sequence[float]] = None,
+    max_items: int = MAX_SUBSET_ITEMS,
+) -> Optional[ClaimFit]:
+    """The claimed set for one period (SPEC §5.3), or None when no subset ties.
+
+    ``values`` are EBITDA-signed cents in date order (index = date rank). Among
+    fits within ``tolerance`` the ranking is: exact before approximate; then the
+    most whole groups, read as the fewest groups the fit splits (a claim is
+    normally whole billing streams, not entries picked out of one); then the
+    most entries that a document cited in management's support references links
+    to; then the earliest entries. ``ties`` counts the fits that were still level
+    when the earliest-entries rule decided, so the caller can record the ambiguity.
+
+    The search is exact meet-in-the-middle over at most ``max_items`` entries
+    (the strongest links when there are more). With more candidates a second
+    search over whole groups keeps whole-group fits reachable; tie counts are
+    then approximate.
+    """
+    n = len(values)
+    if n == 0:
+        return None
+    scores = list(scores) if scores is not None else [0.0] * n
+    bits = [1 << (n - 1 - i) for i in range(n)]
+    group_members: dict[str, list[int]] = {}
+    for i, g in enumerate(groups):
+        group_members.setdefault(g, []).append(i)
+    kept = list(range(n))
+    bounded = n > max_items
+    if bounded:
+        kept = sorted(sorted(range(n), key=lambda i: (-scores[i], i))[:max_items])
+    kept_set = set(kept)
+    whole_ok = {g: all(i in kept_set for i in members) for g, members in group_members.items()}
+
+    # Entry-level search: halves cut along group boundaries so wholeness stays additive;
+    # at most one group straddles the cut.
+    order = sorted(kept, key=lambda i: (min(j for j in group_members[groups[i]] if j in kept_set), i))
+    cut = len(order) // 2
+    left_items, right_items = order[:cut], order[cut:]
+    straddler = groups[order[cut - 1]] if 0 < cut < len(order) and groups[order[cut - 1]] == groups[order[cut]] else None
+
+    def units(items: list[int]) -> list[dict[tuple[int, int], _Row]]:
+        by_group: dict[str, list[int]] = {}
+        for i in items:
+            by_group.setdefault(groups[i], []).append(i)
+        return [
+            _unit_options(members, values, cited, bits, whole_ok[g] and len(members) == len(group_members[g]), g == straddler)
+            for g, members in by_group.items()
+        ]
+
+    candidates: list[tuple[tuple[int, int, int], int, int]] = []
+    found = _join_halves(
+        _half_table(units(left_items)), _half_table(units(right_items)), target, tolerance,
+        straddler is not None and whole_ok[straddler],
+    )
+    if found is not None:
+        candidates.append(found)
+    if bounded:
+        # Whole groups only, over every group (the strongest 30 groups when there are more).
+        ranked = sorted(group_members, key=lambda g: (-max(scores[i] for i in group_members[g]), group_members[g][0]))
+        chosen_groups = sorted(ranked[:max_items], key=lambda g: group_members[g][0])
+
+        def whole(g: str) -> dict[tuple[int, int], _Row]:
+            members = group_members[g]
+            mask = 0
+            for i in members:
+                mask |= bits[i]
+            return {
+                (0, 0): [0, 0, 0, 1],
+                (sum(values[i] for i in members), 0): [0, sum(int(cited[i]) for i in members), mask, 1],
+            }
+
+        half = len(chosen_groups) // 2
+        found = _join_halves(
+            _half_table([whole(g) for g in chosen_groups[:half]]),
+            _half_table([whole(g) for g in chosen_groups[half:]]),
+            target, tolerance, False,
+        )
+        if found is not None:
+            candidates.append(found)
+    if not candidates:
+        return None
+    best_rank = max(c[0] for c in candidates)
+    at_best = [c for c in candidates if c[0] == best_rank]
+    mask = max(c[1] for c in at_best)
+    # A whole-group fit can be found by both searches; the group search sees every such fit.
+    ties = at_best[-1][2] if len(at_best) > 1 and best_rank[1] == 0 else sum(c[2] for c in at_best)
+    return ClaimFit(
+        indices=[i for i in range(n) if mask & bits[i]],
+        diff=-best_rank[0],
+        split_groups=-best_rank[1],
+        cited=best_rank[2],
+        ties=max(ties, 1),
+        bounded=bounded,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1102,22 +1450,23 @@ def _score_entry(info: EntryInfo, ctx: _LinkContext, idx: DealIndex) -> tuple[fl
     score, reasons = 0.0, []
     if e.account in ctx.accounts:
         score += W_ACCOUNT
-        reasons.append(f"Account {e.account} {e.account_name} is named in management's schedule")
+        reasons.append(f"Account {e.account} {e.account_name} is on management's schedule")
 
     cp_reason = ""
     party: frozenset[str] = frozenset()
     for name, toks in ctx.intent_names:
         if names_match(info.cp_tokens, toks):
-            cp_reason = f"Counterparty '{e.counterparty}' matches '{name}' named by management"
+            same = norm_text(e.counterparty) == norm_text(name)
+            cp_reason = f"Counterparty {e.counterparty} " + ("is named by management" if same else f"matches {name}, named by management")
         elif name_in_text(toks, info.memo_tokens):
-            cp_reason = f"Memo names '{name}', named by management"
+            cp_reason = f"Memo names {name}, named by management"
         if cp_reason:
             party = toks | info.cp_tokens
             break
     if not cp_reason:
         for doc_id, name, toks in ctx.doc_names:
             if names_match(info.cp_tokens, toks):
-                cp_reason = f"Counterparty '{e.counterparty}' matches the party in {doc_id}"
+                cp_reason = f"Counterparty {e.counterparty} is the party to {doc_id}"
                 party = toks | info.cp_tokens
                 break
     if cp_reason:
@@ -1135,7 +1484,8 @@ def _score_entry(info: EntryInfo, ctx: _LinkContext, idx: DealIndex) -> tuple[fl
         hit = ctx.refs.get(n)
         if hit is None or (n == info.doc_number and hit[1] != _MGMT):
             continue
-        ref_reason = f"Memo cites {hit[0]} ({hit[1]})"
+        # hit[1] is "named by management" or "from <doc id>"
+        ref_reason = f"Memo cites {hit[0]}, {hit[1]}" if hit[1] == _MGMT else f"Memo cites {hit[0]}, stated in {hit[1][5:]}"
         break
     if not ref_reason and info.doc_number:
         hit = ctx.refs.get(info.doc_number)
@@ -1153,7 +1503,7 @@ def _score_entry(info: EntryInfo, ctx: _LinkContext, idx: DealIndex) -> tuple[fl
             if doc_id not in ctx.prelinked:
                 continue
             if names_match(info.cp_tokens, idx.doc_cp[doc_id]) or (not info.cp_tokens and doc_id in ctx.cited):
-                doc_reason = f"Amount {money(abs(info.amount))} and party match {doc_id}"
+                doc_reason = f"{doc_id} states this amount ({money(abs(info.amount))}) for the same party"
                 break
     if doc_reason:
         score += W_DOCUMENT
@@ -1247,41 +1597,59 @@ def _fit_one(t: AdjustmentTrace, label: str, cands: list[str]) -> None:
     if abs(sum(vals.values()) - target) <= tol:
         pass
     elif sum(vals.values()) > target + tol:
-        already = set(t.claimed_ids())
-
-        def units(e: str) -> int:
-            return int(round(t.links[e].score * 100)) + (_OVERLAP_PERIOD_PREFERENCE if e in already else 0)
-
-        group_keys = list(dict.fromkeys(t.group_of[e] for e in cands))
-        members = {g: [e for e in cands if t.group_of[e] == g] for g in group_keys}
-        pick = find_subset(
-            [sum(vals[e] for e in members[g]) for g in group_keys],
+        cited = _cited_entries(t, cands)
+        found = fit_claim(
+            [vals[e] for e in cands],
             target,
             tol,
-            weights=[len(members[g]) for g in group_keys],
-            scores=[sum(units(e) for e in members[g]) for g in group_keys],
+            [t.group_of[e] for e in cands],
+            [e in cited for e in cands],
+            scores=[t.links[e].score for e in cands],
         )
-        if pick is not None:
-            chosen = [e for e in cands if t.group_of[e] in {group_keys[i] for i in pick}]
-            fit.method = "groups"
+        if found is not None:
+            chosen = [cands[i] for i in found.indices]
+            fit.method = "groups" if found.split_groups == 0 else "entries"
+            fit.bounded, fit.ties, fit.cited = found.bounded, found.ties, found.cited
         else:
-            pick = find_subset([vals[e] for e in cands], target, tol, scores=[units(e) for e in cands])
             fit.bounded = len(cands) > MAX_SUBSET_ITEMS
-            if pick is not None:
-                chosen = [cands[i] for i in pick]
-                fit.method = "entries"
+            elsewhere = _claim_elsewhere(t, label, target, tol, s)
+            if elsewhere:
+                chosen, fit.method, fit.elsewhere = [], "elsewhere", elsewhere
             else:
-                elsewhere = _claim_elsewhere(t, label, target, tol, s)
-                if elsewhere:
-                    chosen, fit.method, fit.elsewhere = [], "elsewhere", elsewhere
-                else:
-                    strong = [e for e in cands if t.links[e].score >= STRONG_LINK]
-                    chosen = strong or list(cands)
-                    fit.method = "strong"
+                strong = [e for e in cands if t.links[e].score >= STRONG_LINK]
+                chosen = strong or list(cands)
+                fit.method = "strong"
     elif not cands:
         fit.elsewhere = _claim_elsewhere(t, label, target, tol, s)
     t.claimed[label] = chosen
     t.fits[label] = fit
+
+
+def _cited_entries(t: AdjustmentTrace, cands: Iterable[str]) -> set[str]:
+    """Candidates management itself points to: a document cited in its support references
+    states the entry's doc number, or its amount for the same party; or management's
+    narrative names the entry's own document number."""
+    idx = t.index
+    cited_docs = sorted(d for d, info in t.doc_links.items() if info.cited)
+    named: set[str] = set()
+    for r in t.intent.reference_numbers:
+        named |= ref_tokens(r)
+    out: set[str] = set()
+    for e in cands:
+        info = idx.by_id[e]
+        if info.doc_number and info.doc_number in named:
+            out.add(e)
+            continue
+        stating = {d for d, _ in idx.docs_with_amount(info.amount)}
+        for d in cited_docs:
+            if e in idx.doc_entries.get(d, frozenset()):
+                out.add(e)
+                break
+            if d in stating and not (idx.doc_entries.get(d) and e not in idx.doc_entries[d]):
+                if not info.cp_tokens or names_match(idx.doc_cp.get(d, frozenset()), info.cp_tokens):
+                    out.add(e)
+                    break
+    return out
 
 
 def _claim_elsewhere(t: AdjustmentTrace, label: str, target: int, tol: int, s: int) -> list[str]:
@@ -1400,7 +1768,10 @@ def _fit_flags(t: AdjustmentTrace) -> None:
             Flag(
                 code=FlagCode.NO_GL_SUPPORT,
                 severity=Severity.CRITICAL,
-                message=f"No GL entries link to this adjustment in any period (searched {t.search_terms}).",
+                message=_short_sentence(
+                    f"No GL entry links to this adjustment in any period (searched {t.search_terms}), so nothing "
+                    "can be carried until management identifies the entries."
+                ),
             )
         )
         return
@@ -1417,19 +1788,26 @@ def _fit_flags(t: AdjustmentTrace) -> None:
         excess = sum((t.amount(e) for e in others), ZERO)
         if fit.method in ("groups", "entries"):
             groups = list(dict.fromkeys(t.group_of[e] for e in chosen))
+            what = t.items_text(chosen, 1) if len(groups) == 1 else f"{len(groups)} groups"
             msg = (
-                f"{lbl}: linked GL activity of {money(fit.linked_total)} exceeds the claim of {money(claim)}. "
-                f"The claim ties to the cent to {len(chosen)} entr{'y' if len(chosen) == 1 else 'ies'} "
-                f"({'; '.join(groups[:4])}{' and others' if len(groups) > 4 else ''}); "
-                f"the other {len(others)} linked entries ({money(excess)}) are context only."
+                f"{lbl}: linked GL activity of {money(fit.linked_total)} exceeds the {money(claim)} claim, which ties "
+                f"to the cent to {entries_word(len(chosen))} ({what}); the other {money(excess)} is context only."
             )
-            if fit.bounded:
+            span = month_span(idx.by_id[e].month for e in chosen)
+            if fit.ties > 1:
+                msg += f" {fit.ties:,} fits rank equal, so the earliest entries ({span}) were taken."
+                t.add_judgment(
+                    f"Which entries make up management's {lbl} claim of {money(claim)}? {fit.ties:,} combinations "
+                    f"of the linked entries tie; the tool took the earliest ({span}).",
+                    key=f"fit:{lbl}",
+                )
+            elif fit.bounded:
                 msg += f" The search considered the {MAX_SUBSET_ITEMS} strongest links only."
             t.add_flag(
                 Flag(
                     code=FlagCode.EXCESS_GL_ACTIVITY,
                     severity=Severity.INFO,
-                    message=msg,
+                    message=_short_sentence(msg),
                     period_label=lbl,
                     amount_impact=fmt(excess),
                     entry_ids=idx.sort_ids(others),
@@ -1442,11 +1820,10 @@ def _fit_flags(t: AdjustmentTrace) -> None:
                     Flag(
                         code=FlagCode.EXCESS_GL_ACTIVITY,
                         severity=Severity.INFO,
-                        message=(
-                            f"{lbl}: linked GL activity of {money(fit.linked_total)} exceeds the claim of "
-                            f"{money(claim)} and no combination of linked entries ties to it. The "
-                            f"{len(chosen)} strongly linked entries ({money(traced)}) are treated as claimed; "
-                            f"the proposal is capped at the claim. Which entries management included is unresolved."
+                        message=_short_sentence(
+                            f"{lbl}: linked GL activity of {money(fit.linked_total)} exceeds the {money(claim)} claim "
+                            f"and no combination of linked entries ties to it. The {entries_word(len(chosen))} with "
+                            f"strong links ({money(traced)}) are treated as claimed, capped at the claim."
                         ),
                         period_label=lbl,
                         amount_impact=fmt(traced - claim),
@@ -1455,7 +1832,8 @@ def _fit_flags(t: AdjustmentTrace) -> None:
                 )
                 t.add_judgment(
                     f"Which GL entries make up management's {lbl} claim of {money(claim)}? No combination of the "
-                    f"linked entries ties to it; {len(chosen)} strongly linked entries total {money(traced)}."
+                    f"linked entries ties to it; the {entries_word(len(chosen))} with strong links total {money(traced)}.",
+                    key=f"fit:{lbl}",
                 )
                 continue
         if s * (claim - traced) > tol:
@@ -1465,8 +1843,8 @@ def _fit_flags(t: AdjustmentTrace) -> None:
                     code=FlagCode.PARTIAL_GL_SUPPORT,
                     severity=Severity.WARNING,
                     message=(
-                        f"{lbl}: GL entries linked to this adjustment total {money(traced)} against a claim of "
-                        f"{money(claim)}; {money(abs(gap))} of the claim is not found in the GL."
+                        f"{lbl}: GL entries linked to this adjustment total {money(traced)} against the "
+                        f"{money(claim)} claim, so {money(abs(gap))} of the claim is not found in the GL."
                     ),
                     period_label=lbl,
                     amount_impact=fmt(gap),
@@ -1510,9 +1888,9 @@ def _describe_search(t: AdjustmentTrace, ctx: _LinkContext) -> str:
     if ctx.accounts:
         parts.append("accounts " + ", ".join(sorted(ctx.accounts)))
     if ctx.intent_names:
-        parts.append("parties " + ", ".join(n for n, _ in ctx.intent_names))
+        parts.append("parties " + join_limited([n for n, _ in ctx.intent_names], 2))
     if ctx.keywords:
-        parts.append("keywords " + ", ".join(ctx.keywords))
+        parts.append("keywords " + join_limited(ctx.keywords, 4))
     refs = [d for d, src in ctx.refs.values() if src == "named by management"]
     if refs:
         parts.append("references " + ", ".join(refs))

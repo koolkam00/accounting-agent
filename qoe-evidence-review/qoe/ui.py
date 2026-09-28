@@ -6,6 +6,12 @@ Flow: pick a deal package -> run (or reopen) the review -> Overview (bridge,
 reconciliation, status counts) -> Adjustment queue -> Adjustment detail (the
 evidence, the judgment calls, and the review form) -> Open questions -> Export.
 
+Diligence-identified items (``source == "diligence"``, SPEC §5.7: adjustments
+the tool proposes that are not on management's schedule, such as reversing a
+duplicate posting) are reviewed exactly like management's items. The queue
+lists them as their own group after management's items, and the bridge shows
+their rows after the diligence revisions to management's items.
+
 Decisions go to ``<workpapers>/<deal_id>/review_log.jsonl`` (append-only) and
 time on task to ``timing.jsonl`` beside it. The top half of this module is pure
 helpers (table builders, formatting, the time tracker) that are unit-tested;
@@ -48,10 +54,14 @@ from qoe.review_store import (
     STATUS_UNREVIEWED,
     TIMING_LOG_NAME,
     DecisionError,
+    is_diligence_item,
+    is_item_row,
     ReviewStore,
     append_timing,
     apply_question_updates,
     apply_reviews,
+    bridge_display_rows,
+    bridge_row_adj_id,
     bridge_ties,
     carry_forward_decision,
     check_bridge_identity,
@@ -79,6 +89,7 @@ from qoe.schemas import (
     Fact,
     Flag,
     GLEntry,
+    ManagementSchedule,
     QuestionStatus,
     ReconciliationResult,
     ReviewDecision,
@@ -132,6 +143,10 @@ CORRECTION_LABELS = {
     CorrectionType.JUDGMENT_DIFFERENCE: "Judgment difference (not a tool error)",
     CorrectionType.NEW_INFORMATION: "New information (not available to the tool)",
 }
+
+GROUP_MANAGEMENT = "Management adjustments"
+GROUP_DILIGENCE = "Diligence-identified items"
+DILIGENCE_NOTE = "Not on management's schedule: identified by the tool; management claimed nothing."
 
 BRIDGE_SUMMARY_KEYS = (
     ("gl_ebitda", "Reported EBITDA (per GL)"),
@@ -423,8 +438,18 @@ def _row_map(bridge: EbitdaBridge) -> dict[str, Any]:
     return {r.key: r for r in bridge.rows}
 
 
-def bridge_summary_rows(bridge: EbitdaBridge) -> list[dict[str, Any]]:
-    """GL reported / management reported / management adjusted / diligence adjusted."""
+def diligence_ids(wp: Workpaper) -> set[str]:
+    return {a.adj_id for a in wp.assessments if is_diligence_item(a)}
+
+
+def ordered_bridge_rows(bridge: EbitdaBridge, item_ids: Iterable[str] = ()) -> list[Any]:
+    """Bridge rows with diligence-identified items as their own block (same order as the workbook)."""
+    return bridge_display_rows(bridge.rows, item_ids)
+
+
+def bridge_summary_rows(bridge: EbitdaBridge, item_ids: Iterable[str] = ()) -> list[dict[str, Any]]:
+    """GL reported / management reported / management adjusted / diligence adjusted, then the
+    difference, with the diligence-identified items (``dil:<D-n>`` rows) shown beneath it."""
     rows = _row_map(bridge)
     out: list[dict[str, Any]] = []
     for key, label in BRIDGE_SUMMARY_KEYS:
@@ -439,12 +464,25 @@ def bridge_summary_rows(bridge: EbitdaBridge) -> list[dict[str, Any]]:
         for p in bridge.period_labels:
             rec[p] = fmt_amount(D(dil.amounts.get(p)) - D(mgmt.amounts.get(p)))
         out.append(rec)
+    ids = set(item_ids)
+    for r in bridge.rows:
+        if is_item_row(r, ids):
+            rec = {"Line": f"of which {bridge_row_adj_id(r)}: {r.label}", "_class": "memo"}
+            for p in bridge.period_labels:
+                rec[p] = fmt_amount(r.amounts.get(p))
+            out.append(rec)
     return out
 
 
-def bridge_rows(bridge: EbitdaBridge) -> list[dict[str, Any]]:
+def bridge_rows(bridge: EbitdaBridge, item_ids: Iterable[str] = ()) -> list[dict[str, Any]]:
+    """Every bridge row, with diligence-identified items as their own block (a heading row first)."""
+    ids = set(item_ids)
     out = []
-    for r in bridge.rows:
+    heading = False
+    for r in ordered_bridge_rows(bridge, ids):
+        if is_item_row(r, ids) and not heading:
+            out.append({"Line": f"{GROUP_DILIGENCE} (not on management's schedule): final amount", "_class": "group"})
+            heading = True
         rec: dict[str, Any] = {"Line": r.label, "_class": r.kind}
         for p in bridge.period_labels:
             rec[p] = fmt_amount(r.amounts.get(p))
@@ -488,6 +526,7 @@ def queue_rows(
         if d is not None and decision_is_stale(a, d, tolerance):
             status += " (tool proposal changed since review)"
         rec: dict[str, Any] = {
+            "_group": GROUP_DILIGENCE if is_diligence_item(a) else GROUP_MANAGEMENT,
             "Ref": a.adj_id,
             "Title": a.title,
             "Category": category_label(a.category),
@@ -509,6 +548,48 @@ def queue_rows(
         rec["Open Qs"] = _open_question_count(a)
         out.append(rec)
     return out
+
+
+def queue_groups(rows: Iterable[Mapping[str, Any]]) -> list[tuple[str, list[dict[str, Any]]]]:
+    """(group title, rows): management's items first, then diligence-identified items; empty groups dropped
+    (management's group is kept, even when empty, so the queue always says what it holds)."""
+    groups: dict[str, list[dict[str, Any]]] = {GROUP_MANAGEMENT: [], GROUP_DILIGENCE: []}
+    for r in rows:
+        groups[r.get("_group", GROUP_MANAGEMENT)].append(dict(r))
+    return [(g, rs) for g, rs in groups.items() if rs or g == GROUP_MANAGEMENT]
+
+
+def claim_details(
+    a: AdjustmentAssessment, pkg: Optional[DealPackage], schedule: Optional[ManagementSchedule] = None
+) -> dict[str, Any]:
+    """Management's narrative for the detail page: the deal package's schedule when loaded, else the
+    schedule stored on the workpaper, else the fields the assessment itself carries."""
+    if is_diligence_item(a):
+        return {
+            "heading": "Diligence-identified item: basis",
+            "description": a.description,
+            "bits": [
+                DILIGENCE_NOTE,
+                "GL accounts: " + (", ".join(a.gl_accounts) if a.gl_accounts else "none recorded"),
+                "Support: " + (", ".join(a.support_refs) if a.support_refs else "see the documents tab"),
+            ],
+        }
+    sched = pkg.schedule if pkg is not None else schedule
+    claim = next((c for c in sched.adjustments if c.adj_id == a.adj_id), None) if sched is not None else None
+    heading = "Management's claim and basis"
+    if claim is None:
+        bits: list[str] = []
+        if a.description or a.gl_accounts or a.support_refs:
+            bits.append("GL accounts: " + (", ".join(a.gl_accounts) if a.gl_accounts else "none given"))
+            bits.append("Support: " + (", ".join(a.support_refs) if a.support_refs else "none cited"))
+        return {"heading": heading, "description": a.description, "bits": bits}
+    bits = []
+    if claim.category_raw:
+        bits.append(f"Category as presented: {claim.category_raw}")
+    bits.append("GL accounts: " + (", ".join(claim.gl_accounts) if claim.gl_accounts else "none given"))
+    bits.append("Support: " + (", ".join(claim.support_refs) if claim.support_refs else "none cited"))
+    bits.append(f"Schedule row {claim.source_row}")
+    return {"heading": heading, "description": claim.description or a.description, "bits": bits}
 
 
 def tieout_rows(
@@ -708,6 +789,7 @@ def status_counts(
         "review": review,
         "final_treatment": final_treatment,
         "pending": sum(1 for a in wp.assessments if not finals.get(a.adj_id)),
+        "diligence_items": sum(1 for a in wp.assessments if is_diligence_item(a)),
         "open_questions": sum(_open_question_count(a) for a in wp.assessments),
         "stale": sum(
             1 for a in wp.assessments if a.adj_id in latest and decision_is_stale(a, latest[a.adj_id], tolerance)
@@ -869,6 +951,7 @@ table.qoe td{padding:3px 8px;border-bottom:1px solid rgba(128,128,128,.18)}
 table.qoe .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 table.qoe tr.subtotal td{font-weight:600;border-top:1px solid rgba(128,128,128,.6)}
 table.qoe tr.memo td{font-style:italic;opacity:.75}
+table.qoe tr.group td{font-weight:600;color:#1F3864;background:rgba(91,122,153,.10)}
 table.qoe tr.component td:first-child,table.qoe tr.mgmt_adjustment td:first-child,
 table.qoe tr.diligence_adjustment td:first-child{padding-left:22px}
 .qoe-item{padding:6px 0 8px 0;border-bottom:1px solid rgba(128,128,128,.15)}
@@ -1188,7 +1271,8 @@ def _page_overview(ctx: ReviewContext) -> None:
         st.warning(note)
 
     st.subheader("EBITDA bridge")
-    st.html(html_table(["Line", *ctx.labels], bridge_summary_rows(wp.bridge), numeric=ctx.labels))
+    items = diligence_ids(wp)
+    st.html(html_table(["Line", *ctx.labels], bridge_summary_rows(wp.bridge, items), numeric=ctx.labels))
     try:
         diffs = check_bridge_identity(wp)
         if bridge_ties(diffs):
@@ -1197,8 +1281,8 @@ def _page_overview(ctx: ReviewContext) -> None:
             st.error("Bridge does not tie: " + ", ".join(f"{p} off by {fmt_amount(v, cents=True)}" for p, v in diffs.items()))
     except ValueError as exc:
         st.warning(f"Bridge check not available: {exc}")
-    with st.expander("Full bridge: management adjustments and diligence revisions"):
-        st.html(html_table(["Line", *ctx.labels], bridge_rows(wp.bridge), numeric=ctx.labels))
+    with st.expander("Full bridge: management adjustments, diligence revisions and diligence-identified items"):
+        st.html(html_table(["Line", *ctx.labels], bridge_rows(wp.bridge, items), numeric=ctx.labels))
 
     counts = status_counts(wp, ctx.latest, ctx.finals, ctx.tolerance)
     c1, c2, c3 = st.columns(3)
@@ -1229,6 +1313,7 @@ def _page_overview(ctx: ReviewContext) -> None:
                 ["Measure", "Count"],
                 [
                     {"Measure": "Pending information (excluded)", "Count": counts["pending"]},
+                    {"Measure": "Diligence-identified items (not on the schedule)", "Count": counts["diligence_items"]},
                     {"Measure": "Overridden by reviewer", "Count": counts["review"][STATUS_OVERRIDDEN]},
                     {"Measure": "Open questions for management", "Count": counts["open_questions"]},
                 ],
@@ -1277,18 +1362,23 @@ def _page_queue(ctx: ReviewContext) -> None:
         and (not text or text in f"{r['Ref']} {r['Title']} {r['Top flags']}".lower())
     ]
     amount_cols = [c for c in queue_columns(ctx.labels) if c.split(" ")[0] in ("Claimed", "Proposed", "Final")]
-    _table(
-        shown,
-        numeric=amount_cols + ["GL links", "Docs", "Open Qs"],
-        color_cols=["Tool", "Reviewer"],
-        columns=queue_columns(ctx.labels),
-    )
+    for group, group_rows in queue_groups(shown):
+        st.markdown(f"**{group}** ({len(group_rows)})")
+        if group == GROUP_DILIGENCE:
+            st.caption(DILIGENCE_NOTE + " Final = the whole diligence adjustment.")
+        _table(
+            group_rows,
+            numeric=amount_cols + ["GL links", "Docs", "Open Qs"],
+            color_cols=["Tool", "Reviewer"],
+            columns=queue_columns(ctx.labels),
+        )
     st.caption("Final = reviewer's amounts where reviewed, otherwise the tool's proposal. Pending items are excluded from diligence adjusted EBITDA.")
     ids = [a.adj_id for a in ctx.wp.assessments]
     if ids:
         c1, c2 = st.columns([3, 1])
         titles = {a.adj_id: a.title for a in ctx.wp.assessments}
-        pick = c1.selectbox("Open adjustment", ids, format_func=lambda i: f"{i}: {titles[i]}", key="q_pick")
+        tags = {a.adj_id: " (diligence-identified)" if is_diligence_item(a) else "" for a in ctx.wp.assessments}
+        pick = c1.selectbox("Open adjustment", ids, format_func=lambda i: f"{i}: {titles[i]}{tags[i]}", key="q_pick")
         c2.button("Open", on_click=_goto, args=("Adjustment detail", pick), type="primary")
 
 
@@ -1318,7 +1408,8 @@ def _page_detail(ctx: ReviewContext) -> None:
     if ctx.wp.deal.synthetic:
         st.html('<div class="qoe-banner">SYNTHETIC DATA</div>')
     status = review_status(a, decision, ctx.tolerance)
-    chips = [
+    chips = [chip("Diligence-identified", "#DDEBF7", "#1F3864")] if is_diligence_item(a) else []
+    chips += [
         chip(category_label(a.category), "#E7E9EC", "#3C4650"),
         treatment_chip(a.treatment, prefix="Tool: "),
         chip(f"Confidence: {a.confidence}", "#E7E9EC", "#3C4650"),
@@ -1391,22 +1482,15 @@ def _page_detail(ctx: ReviewContext) -> None:
 
 
 def _detail_claim(ctx: ReviewContext, a: AdjustmentAssessment) -> None:
-    claim = None
-    if ctx.pkg is not None:
-        claim = next((c for c in ctx.pkg.schedule.adjustments if c.adj_id == a.adj_id), None)
-    st.markdown("**Management's claim and basis**")
-    if claim is None:
-        st.caption("Management's narrative is not stored in the workpaper and the deal package is not loaded.")
+    info = claim_details(a, ctx.pkg, ctx.wp.schedule)
+    st.markdown(f"**{info['heading']}**")
+    if not info["description"] and not info["bits"]:
+        st.caption("Management's narrative is not stored in this workpaper and the deal package is not loaded.")
         return
-    bits = []
-    if claim.category_raw:
-        bits.append(f"Category as presented: {claim.category_raw}")
-    bits.append("GL accounts: " + (", ".join(claim.gl_accounts) if claim.gl_accounts else "none given"))
-    bits.append("Support: " + (", ".join(claim.support_refs) if claim.support_refs else "none cited"))
-    bits.append(f"Schedule row {claim.source_row}")
+    empty = "<span class=qoe-muted>No description recorded.</span>"
     st.html(
-        f"<div>{_esc(claim.description) or '<span class=qoe-muted>No description given.</span>'}</div>"
-        f"<div class='qoe-src'>{_esc(' | '.join(bits))}</div>"
+        f"<div>{_esc(info['description']) or empty}</div>"
+        + (f"<div class='qoe-src'>{_esc(' | '.join(info['bits']))}</div>" if info["bits"] else "")
     )
 
 

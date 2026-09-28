@@ -9,6 +9,13 @@ recorded on a workpaper are ignored by ``score``.
 
 Scoring rules (the ones a reader could reasonably interpret differently):
 
+- **Two populations.** Management items (``source != "diligence"``) are scored
+  against ``GroundTruth.adjustments``: every per-adjustment metric below
+  (treatment, amount, false accept, GL and document links, flags, case type)
+  covers management items only. Diligence-identified items
+  (``source == "diligence"``, SPEC §5.7) are scored separately against
+  ``GroundTruth.diligence_items`` by ``diligence_item_accuracy``. Both
+  populations enter the diligence adjusted EBITDA check.
 - **GL rows.** A tool ``GLLink.entry_id`` maps to a GL source row through the
   ``GL-R<row>`` convention (SPEC §3.3). Ids that do not follow it cannot be
   compared with the answer key and are ignored.
@@ -25,6 +32,31 @@ Scoring rules (the ones a reader could reasonably interpret differently):
   adjustment's evidence: any GL link (supporting or not), any flag's
   ``entry_ids``, or any recurrence observation. It is measured against
   ``supporting_gl_rows ∪ related_gl_rows``.
+- **Supporting documents.** The key's ``supporting_docs`` are the documents
+  that support the amount diligence carries. The tool's counterpart
+  (``tool_supporting_docs``) depends on what the tool carries:
+
+  * a non-zero amount (ACCEPT / REVISE): documents whose ``DocLink.entry_ids``
+    include a supporting entry; plus agreements that stand for the event as a
+    whole (``relation == "agreement"`` with no entry ids, e.g. a settlement
+    agreement) unless a removing flag cites them; plus documents cited by an
+    amount-effect flag (OFFSETTING_RECOVERY, OUT_OF_PERIOD) whose effect the
+    carried amount includes;
+  * zero in every period (REJECT): the evidence the zero rests on, i.e.
+    documents linked to entries a removing flag took out, and documents a
+    removing flag cites;
+  * pending (REQUEST_INFO): documents linked to the claimed entries still
+    standing, stand-alone agreements, and documents cited by the flags that
+    drive the request (draft or unsigned support, missing benchmark, pro
+    forma not realized, missing GL or document support).
+
+  Documents that argue against part of a carried amount (for example the
+  expense reports that show a trip was business travel) are therefore *not*
+  supporting; the key lists those as ``related_docs``. Document precision /
+  recall compare ``tool_supporting_docs`` with ``supporting_docs``.
+- **Surfaced documents.** A document is *surfaced* when any ``DocLink`` or any
+  flag's ``doc_ids`` on the adjustment names it. ``doc_surfaced_recall`` is
+  measured against ``supporting_docs ∪ related_docs``.
 - **Empty sets.** For one adjustment, precision (recall) is undefined when the
   tool proposed (the key expects) nothing; if both sets are empty the tool was
   right to link nothing and both are 1.0. Deal and overall figures are
@@ -38,15 +70,25 @@ Scoring rules (the ones a reader could reasonably interpret differently):
 - **Flag recall.** An expected flag counts only when raised on the same
   adjustment. Extra flags are listed, not penalized: the key names the flags
   that *must* be raised, not the only acceptable ones.
+- **Diligence items.** Each expected diligence item is matched one-to-one to a
+  tool item with ``source == "diligence"``, greedily by the number of shared
+  supporting GL rows (ties: key order, then tool order). An expected item
+  with no supporting-row overlap may still match on any shared GL row (the
+  tool reversed the other posting of a duplicate pair); the match basis is
+  reported. A matched item is correct when every period of the tool's
+  proposal is within 1.00 of the key (REQUEST_INFO carries nothing, so it is
+  compared as zero). Unmatched items on either side are reported, and a tool
+  item the key does not expect counts against accuracy: the denominator is
+  expected items plus unmatched tool items.
 - **Data quality.** A planted issue is detected when an issue with the same
   code exists and every locator both sides carry agrees (month, account, and
   GL rows vs the issue's entry ids), with at least one locator compared when
   the key specifies any.
 - **EBITDA error.** The tool's diligence adjusted EBITDA is recomputed from
   the SPEC §5.6 identity: GL EBITDA per the workpaper's reconciliation plus
-  every non-REQUEST_INFO *tool proposal*. The bridge row is reported beside
-  it as a cross-check, because a bridge rebuilt after review would include
-  reviewer decisions.
+  every non-REQUEST_INFO *tool proposal*, management and diligence-identified
+  items alike. The bridge row is reported beside it as a cross-check, because
+  a bridge rebuilt after review would include reviewer decisions.
 """
 
 from __future__ import annotations
@@ -98,7 +140,24 @@ CHALLENGE_FLAGS = frozenset(
     }
 )
 
+# Flags whose amount effect is part of what the tool carries (their documents support that amount).
+AMOUNT_EFFECT_FLAGS = frozenset({FlagCode.OFFSETTING_RECOVERY, FlagCode.OUT_OF_PERIOD})
+
+# Flags that send an item to REQUEST_INFO (SPEC §5.5 steps 1-4): the request rests on their documents.
+REQUEST_INFO_FLAGS = frozenset(
+    {
+        FlagCode.PRO_FORMA_NOT_REALIZED,
+        FlagCode.UNSIGNED_OR_DRAFT_SUPPORT,
+        FlagCode.NORMALIZATION_BENCHMARK_MISSING,
+        FlagCode.NO_GL_SUPPORT,
+        FlagCode.NO_DOCUMENT_SUPPORT,
+    }
+)
+
+DILIGENCE_SOURCE = "diligence"  # AdjustmentAssessment.source of a diligence-identified item (SPEC §5.7)
+
 VERDICTS = ("NOT_ASSESSED", "FALSE_ACCEPT", "WRONG_TREATMENT", "WRONG_AMOUNT", "MISSED_FLAG", "PASS")
+DILIGENCE_VERDICTS = ("CORRECT", "WRONG_AMOUNT", "MISSED", "EXTRA")
 
 RATIO_KEYS = (
     "treatment_accuracy",
@@ -109,9 +168,11 @@ RATIO_KEYS = (
     "gl_surfaced_recall",
     "doc_link_precision",
     "doc_link_recall",
+    "doc_surfaced_recall",
     "flag_recall",
     "missed_contradictions",
     "data_quality_recall",
+    "diligence_item_accuracy",
 )
 
 DISCLAIMER = (
@@ -207,6 +268,50 @@ def surfaced_entry_ids(a: AdjustmentAssessment) -> set[str]:
     return out
 
 
+def is_diligence_item(a: AdjustmentAssessment) -> bool:
+    """A diligence-identified item (SPEC §5.7), not an adjustment on management's schedule."""
+    return a.source == DILIGENCE_SOURCE
+
+
+def _carries_nonzero(a: AdjustmentAssessment) -> bool:
+    return any(D(v) != 0 for v in a.proposed.values())
+
+
+def _docs_linked_to(a: AdjustmentAssessment, entry_ids: set[str]) -> set[str]:
+    return {dl.doc_id for dl in a.doc_links if entry_ids.intersection(dl.entry_ids)}
+
+
+def _flag_docs(a: AdjustmentAssessment, codes: frozenset[FlagCode]) -> set[str]:
+    return {d for f in a.flags if f.code in codes for d in f.doc_ids}
+
+
+def tool_supporting_docs(a: AdjustmentAssessment) -> set[str]:
+    """Documents the tool relies on for the amount it carries (see module docstring).
+
+    Carried non-zero: documents on supporting entries, stand-alone agreements no
+    removing flag cites, and documents behind a recovery or period effect.
+    Carried zero: the documents that took the claim out. Pending: the documents
+    the request for information rests on.
+    """
+    against = _flag_docs(a, REMOVING_FLAGS)
+    standalone = {
+        dl.doc_id for dl in a.doc_links if dl.relation == "agreement" and not dl.entry_ids and dl.doc_id not in against
+    }
+    if a.treatment == Treatment.REQUEST_INFO or not a.proposed:
+        return _docs_linked_to(a, supporting_entry_ids(a)) | standalone | _flag_docs(a, REQUEST_INFO_FLAGS)
+    if not _carries_nonzero(a):
+        return _docs_linked_to(a, removed_entry_ids(a)) | against
+    return _docs_linked_to(a, supporting_entry_ids(a)) | standalone | _flag_docs(a, AMOUNT_EFFECT_FLAGS)
+
+
+def surfaced_doc_ids(a: AdjustmentAssessment) -> set[str]:
+    """Every document the adjustment's evidence shows a reviewer: doc links and flag citations."""
+    out = {dl.doc_id for dl in a.doc_links}
+    for f in a.flags:
+        out.update(f.doc_ids)
+    return out
+
+
 def _period_keys(labels: list[str], *maps: dict[str, str]) -> list[str]:
     keys = list(labels)
     for m in maps:
@@ -227,6 +332,36 @@ def _unique(items: Iterable[str]) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
+def _score_gl(exp: ExpectedAdjustment, a: Optional[AdjustmentAssessment]) -> dict[str, Any]:
+    supporting = _rows(supporting_entry_ids(a)) if a is not None else set()
+    expected_rows = set(exp.supporting_gl_rows)
+    gl = _pr(supporting, expected_rows)
+    gl["tool_rows"] = sorted(supporting)
+    gl["expected_rows"] = sorted(expected_rows)
+    gl["missing_rows"] = sorted(expected_rows - supporting)
+    gl["extra_rows"] = sorted(supporting - expected_rows)
+    surfaced = _rows(surfaced_entry_ids(a)) if a is not None else set()
+    target = expected_rows | set(exp.related_gl_rows)
+    gl["surfaced"] = _ratio(len(surfaced & target), len(target))
+    gl["unsurfaced_rows"] = sorted(target - surfaced)
+    return gl
+
+
+def _score_docs(exp: ExpectedAdjustment, a: Optional[AdjustmentAssessment]) -> dict[str, Any]:
+    tool_docs = tool_supporting_docs(a) if a is not None else set()
+    expected_docs = set(exp.supporting_docs)
+    docs = _pr(tool_docs, expected_docs)
+    docs["tool"] = sorted(tool_docs)
+    docs["expected"] = sorted(expected_docs)
+    docs["missing"] = sorted(expected_docs - tool_docs)
+    docs["extra"] = sorted(tool_docs - expected_docs)
+    surfaced = surfaced_doc_ids(a) if a is not None else set()
+    target = expected_docs | set(exp.related_docs)
+    docs["surfaced"] = _ratio(len(surfaced & target), len(target))
+    docs["unsurfaced"] = sorted(target - surfaced)
+    return docs
+
+
 def _score_adjustment(exp: ExpectedAdjustment, a: Optional[AdjustmentAssessment], labels: list[str]) -> dict[str, Any]:
     tool_t = a.treatment if a is not None else None
     expected_t = exp.treatment
@@ -243,25 +378,8 @@ def _score_adjustment(exp: ExpectedAdjustment, a: Optional[AdjustmentAssessment]
             amount_diffs[p] = fmt(D(proposed.get(p)) - D(exp.amounts.get(p)))
         amount_correct = all(abs(D(v)) <= AMOUNT_TOLERANCE for v in amount_diffs.values())
 
-    supporting = _rows(supporting_entry_ids(a)) if a is not None else set()
-    expected_rows = set(exp.supporting_gl_rows)
-    gl = _pr(supporting, expected_rows)
-    gl["tool_rows"] = sorted(supporting)
-    gl["expected_rows"] = sorted(expected_rows)
-    gl["missing_rows"] = sorted(expected_rows - supporting)
-    gl["extra_rows"] = sorted(supporting - expected_rows)
-    surfaced = _rows(surfaced_entry_ids(a)) if a is not None else set()
-    target = expected_rows | set(exp.related_gl_rows)
-    gl["surfaced"] = _ratio(len(surfaced & target), len(target))
-    gl["unsurfaced_rows"] = sorted(target - surfaced)
-
-    tool_docs = {dl.doc_id for dl in a.doc_links} if a is not None else set()
-    expected_docs = set(exp.supporting_docs)
-    docs = _pr(tool_docs, expected_docs)
-    docs["tool"] = sorted(tool_docs)
-    docs["expected"] = sorted(expected_docs)
-    docs["missing"] = sorted(expected_docs - tool_docs)
-    docs["extra"] = sorted(tool_docs - expected_docs)
+    gl = _score_gl(exp, a)
+    docs = _score_docs(exp, a)
 
     expected_flags = _unique(f.value for f in exp.expected_flags)
     raised = _unique(f.code.value for f in a.flags) if a is not None else []
@@ -308,6 +426,121 @@ def _score_adjustment(exp: ExpectedAdjustment, a: Optional[AdjustmentAssessment]
         "missed_challenge_flags": missed_challenges,
         "verdict": verdict,
     }
+
+
+# ---------------------------------------------------------------------------
+# Diligence-identified items (SPEC §5.7)
+# ---------------------------------------------------------------------------
+
+
+def _greedy_pairs(scores: list[tuple[int, int, int]], taken_exp: set[int], taken_tool: set[int]) -> list[tuple[int, int]]:
+    """One-to-one pairs from (overlap, exp index, tool index), largest overlap first."""
+    out: list[tuple[int, int]] = []
+    for _, i, j in sorted(scores, key=lambda t: (-t[0], t[1], t[2])):
+        if i in taken_exp or j in taken_tool:
+            continue
+        taken_exp.add(i)
+        taken_tool.add(j)
+        out.append((i, j))
+    return out
+
+
+def match_diligence_items(
+    expected: list[ExpectedAdjustment], tool: list[AdjustmentAssessment]
+) -> list[tuple[int, int, str]]:
+    """(expected index, tool index, basis) for every matched pair.
+
+    First on shared supporting GL rows; then, for items still unmatched, on any
+    shared GL row (key supporting + related vs every row the tool item links),
+    which catches a duplicate whose other posting the tool chose to reverse.
+    """
+    taken_exp: set[int] = set()
+    taken_tool: set[int] = set()
+    tool_supporting = [_rows(supporting_entry_ids(a)) for a in tool]
+    tool_linked = [_rows(surfaced_entry_ids(a)) for a in tool]
+    first = [
+        (len(set(exp.supporting_gl_rows) & tool_supporting[j]), i, j)
+        for i, exp in enumerate(expected)
+        for j in range(len(tool))
+    ]
+    pairs = [(i, j, "supporting_rows") for i, j in _greedy_pairs([t for t in first if t[0]], taken_exp, taken_tool)]
+    second = [
+        (len((set(exp.supporting_gl_rows) | set(exp.related_gl_rows)) & tool_linked[j]), i, j)
+        for i, exp in enumerate(expected)
+        if i not in taken_exp
+        for j in range(len(tool))
+        if j not in taken_tool
+    ]
+    pairs += [(i, j, "linked_rows") for i, j in _greedy_pairs([t for t in second if t[0]], taken_exp, taken_tool)]
+    return sorted(pairs)
+
+
+def _score_diligence_items(wp: Workpaper, gt: GroundTruth, labels: list[str]) -> dict[str, Any]:
+    expected = list(gt.diligence_items)
+    tool = [a for a in wp.assessments if is_diligence_item(a)]
+    matched = {i: (j, basis) for i, j, basis in match_diligence_items(expected, tool)}
+    used = {j for j, _ in matched.values()}
+    items: list[dict[str, Any]] = []
+    for i, exp in enumerate(expected):
+        j, basis = matched.get(i, (None, None))
+        a = tool[j] if j is not None else None
+        diffs: dict[str, str] = {}
+        correct = False
+        if a is not None:
+            proposed = a.proposed if a.treatment != Treatment.REQUEST_INFO else {}
+            for p in _period_keys(labels, exp.amounts, proposed):
+                diffs[p] = fmt(D(proposed.get(p)) - D(exp.amounts.get(p)))
+            correct = all(abs(D(v)) <= AMOUNT_TOLERANCE for v in diffs.values())
+        raised = _unique(f.code.value for f in a.flags) if a is not None else []
+        expected_flags = _unique(f.value for f in exp.expected_flags)
+        items.append(
+            {
+                "key_id": exp.adj_id,
+                "tool_id": a.adj_id if a is not None else None,
+                "title": a.title if a is not None else "",
+                "match_basis": basis,
+                "case_type": exp.case_type,
+                "ambiguity": exp.ambiguity,
+                "expected_treatment": exp.treatment.value,
+                "tool_treatment": a.treatment.value if a is not None else None,
+                "expected_amounts": dict(exp.amounts),
+                "proposed_amounts": dict(a.proposed) if a is not None else {},
+                "amount_diffs": diffs,
+                "correct": correct,
+                "gl_links": _score_gl(exp, a),
+                "doc_links": _score_docs(exp, a),
+                "flags": {
+                    "expected": expected_flags,
+                    "raised": raised,
+                    "missing": [f for f in expected_flags if f not in raised],
+                },
+                "verdict": "MISSED" if a is None else ("CORRECT" if correct else "WRONG_AMOUNT"),
+            }
+        )
+    for j, a in enumerate(tool):
+        if j in used:
+            continue
+        items.append(
+            {
+                "key_id": None,
+                "tool_id": a.adj_id,
+                "title": a.title,
+                "match_basis": None,
+                "tool_treatment": a.treatment.value,
+                "proposed_amounts": dict(a.proposed),
+                "tool_rows": sorted(_rows(supporting_entry_ids(a))),
+                "correct": False,
+                "verdict": "EXTRA",
+            }
+        )
+    out = _ratio(sum(1 for r in items if r["correct"]), len(items))
+    out["expected"] = len(expected)
+    out["tool"] = len(tool)
+    out["matched"] = len(matched)
+    out["missed"] = [r["key_id"] for r in items if r["verdict"] == "MISSED"]
+    out["extra"] = [r["tool_id"] for r in items if r["verdict"] == "EXTRA"]
+    out["items"] = items
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -363,11 +596,11 @@ def _score_ebitda(wp: Workpaper, gt: GroundTruth, labels: list[str]) -> dict[str
     for label in labels:
         comps = wp.reconciliation.gl_ebitda.get(label)
         tool_gl = D(comps.ebitda) if comps is not None else None
-        tool_dil: Optional[Decimal] = None
-        if tool_gl is not None:
-            tool_dil = tool_gl + dsum(
-                a.proposed.get(label) for a in wp.assessments if a.treatment != Treatment.REQUEST_INFO
-            )
+        carried = [a for a in wp.assessments if a.treatment != Treatment.REQUEST_INFO]
+        tool_mgmt = dsum(a.proposed.get(label) for a in carried if not is_diligence_item(a))
+        tool_items = dsum(a.proposed.get(label) for a in carried if is_diligence_item(a))
+        tool_dil = tool_gl + tool_mgmt + tool_items if tool_gl is not None else None
+        exp_items = dsum(x.amounts.get(label) for x in gt.diligence_items if x.treatment != Treatment.REQUEST_INFO)
         exp_gl = gt.gl_ebitda.get(label)
         exp_dil = gt.diligence_adjusted_ebitda.get(label)
         abs_error = abs(tool_dil - D(exp_dil)) if tool_dil is not None and exp_dil is not None else None
@@ -380,6 +613,9 @@ def _score_ebitda(wp: Workpaper, gt: GroundTruth, labels: list[str]) -> dict[str
             "expected_gl_ebitda": fmt(exp_gl) if exp_gl is not None else None,
             "gl_ebitda_diff": fmt(gl_diff) if gl_diff is not None else None,
             "gl_ebitda_agrees": abs(gl_diff) <= AMOUNT_TOLERANCE if gl_diff is not None else None,
+            "tool_management_adjustments": fmt(tool_mgmt),
+            "tool_diligence_items": fmt(tool_items),
+            "expected_diligence_items": fmt(exp_items),
             "tool_diligence_adjusted_ebitda": fmt(tool_dil) if tool_dil is not None else None,
             "expected_diligence_adjusted_ebitda": fmt(exp_dil) if exp_dil is not None else None,
             "abs_error": fmt(abs_error) if abs_error is not None else None,
@@ -413,8 +649,10 @@ def score(wp: Workpaper, gt: GroundTruth) -> dict[str, Any]:
     if wp.deal.deal_id != gt.deal_id:
         raise ValueError(f"workpaper is for {wp.deal.deal_id!r} but the answer key is for {gt.deal_id!r}")
     labels = [p.label for p in wp.deal.periods]
+    # Management-item metrics never see diligence-identified items (scored on their own below).
+    management = [a for a in wp.assessments if not is_diligence_item(a)]
     by_id: dict[str, AdjustmentAssessment] = {}
-    for a in wp.assessments:
+    for a in management:
         by_id.setdefault(a.adj_id, a)
     rows = [_score_adjustment(exp, by_id.get(exp.adj_id), labels) for exp in gt.adjustments]
     expected_ids = {exp.adj_id for exp in gt.adjustments}
@@ -455,19 +693,22 @@ def score(wp: Workpaper, gt: GroundTruth) -> dict[str, Any]:
         "gl_surfaced_recall": _sum_ratios(r["gl_links"]["surfaced"] for r in rows),
         "doc_link_precision": link_ratio("doc_links", "precision"),
         "doc_link_recall": link_ratio("doc_links", "recall"),
+        "doc_surfaced_recall": _sum_ratios(r["doc_links"]["surfaced"] for r in rows),
         "flag_recall": _ratio(
             sum(len(r["flags"]["expected"]) - len(r["flags"]["missing"]) for r in rows),
             sum(len(r["flags"]["expected"]) for r in rows),
         ),
         "missed_contradictions": missed_ratio,
         "data_quality_recall": _score_data_quality(wp, gt),
+        "n_diligence_items": len(gt.diligence_items),
+        "diligence_item_accuracy": _score_diligence_items(wp, gt, labels),
         "ebitda_error": _score_ebitda(wp, gt, labels),
         "by_case_type": _grouped_accuracy(rows, "case_type"),
         "by_confidence": _grouped_accuracy(rows, "tool_confidence"),
         "by_ambiguity": _grouped_accuracy(rows, "ambiguity"),
         "verdicts": dict(sorted(Counter(r["verdict"] for r in rows).items())),
         "adjustments": rows,
-        "unscored_tool_adjustments": sorted(a.adj_id for a in wp.assessments if a.adj_id not in expected_ids),
+        "unscored_tool_adjustments": sorted(a.adj_id for a in management if a.adj_id not in expected_ids),
     }
 
 
@@ -476,9 +717,16 @@ def aggregate(scores: list[dict[str, Any]]) -> dict[str, Any]:
     out: dict[str, Any] = {
         "deals": [s["deal_id"] for s in scores],
         "n_adjustments": sum(s["n_adjustments"] for s in scores),
+        "n_diligence_items": sum(s.get("n_diligence_items", 0) for s in scores),
     }
     for key in RATIO_KEYS:
-        out[key] = _sum_ratios(s[key] for s in scores)
+        out[key] = _sum_ratios(s[key] for s in scores if key in s)
+    out["diligence_item_accuracy"]["items"] = [
+        {"deal_id": s["deal_id"], **item}
+        for s in scores
+        for item in s.get("diligence_item_accuracy", {}).get("items", [])
+        if item["verdict"] != "CORRECT"
+    ]
     out["false_accept_rate"]["items"] = [
         {"deal_id": s["deal_id"], "adj_id": adj_id} for s in scores for adj_id in s["false_accept_rate"]["adj_ids"]
     ]
@@ -552,6 +800,12 @@ def _frac(r: dict[str, Any]) -> str:
     return f"{r['num']}/{r['den']}"
 
 
+def _pr_text(section: dict[str, Any]) -> str:
+    p = "n/a" if section["precision"] is None else f"{section['precision']:.2f}"
+    r = "n/a" if section["recall"] is None else f"{section['recall']:.2f}"
+    return f"{p} / {r}"
+
+
 def _cell(text: object) -> str:
     return str(text).replace("|", "\\|").replace("\n", " ")
 
@@ -567,8 +821,8 @@ def render_markdown(report: dict[str, Any]) -> str:
     add(f"> **Read this first.** {report['disclaimer']}")
     add("")
     add(
-        f"- Deals: {len(deals)} ({', '.join(overall['deals']) or 'none'}); adjustments scored: "
-        f"{overall['n_adjustments']}"
+        f"- Deals: {len(deals)} ({', '.join(overall['deals']) or 'none'}); management adjustments scored: "
+        f"{overall['n_adjustments']}; diligence-identified items in the keys: {overall.get('n_diligence_items', 0)}"
     )
     add(f"- AI mode: `{report['ai_mode']}`; tool version: `{report['tool_version']}`")
     for s in deals:
@@ -658,19 +912,51 @@ def render_markdown(report: dict[str, Any]) -> str:
     else:
         add("None.")
     add("")
+    di = overall.get("diligence_item_accuracy", _ratio(0, 0))
+    add(f"### Diligence-identified items ({di['num']} of {di['den']} correct)")
+    add("")
+    add(
+        "Adjustments the tool proposes beyond management's schedule (SPEC §5.7, e.g. reversing a duplicate "
+        "posting), matched to the key by shared GL rows. Correct = every period within 1.00. A key item the "
+        "tool did not identify is MISSED; a tool item the key does not expect is EXTRA and counts against accuracy."
+    )
+    add("")
+    di_rows = [(s, r) for s in deals for r in s.get("diligence_item_accuracy", {}).get("items", [])]
+    if di_rows:
+        add("| Deal | Key item | Tool item | Matched on | Key amounts | Tool amounts | Missing flags | Verdict |")
+        add("| --- | --- | --- | --- | --- | --- | --- | --- |")
+        for s, r in di_rows:
+            labels = s["period_labels"]
+            key_amounts = _amounts(r["expected_amounts"], labels) if r["key_id"] is not None else "-"
+            tool_amounts = (
+                _amounts(r["proposed_amounts"], labels) if r["tool_id"] is not None else "-"
+            )
+            missing = ", ".join(r.get("flags", {}).get("missing", [])) or "-"
+            basis = (r["match_basis"] or "-").replace("_", " ")
+            add(
+                f"| {s['deal_id']} | {_cell(r['key_id'] or '-')} | {_cell(r['tool_id'] or '-')} | {basis} | "
+                f"{key_amounts} | {tool_amounts} | {missing} | {r['verdict']} |"
+            )
+    else:
+        add("None expected, and the tool proposed none.")
+    add("")
     add("### Diligence adjusted EBITDA vs answer key")
     add("")
     add(
-        "Tool figure = GL EBITDA + every tool proposal that is not REQUEST_INFO (SPEC §5.6 identity), "
-        "before any reviewer decision."
+        "Tool figure = GL EBITDA + every tool proposal that is not REQUEST_INFO, management items and "
+        "diligence-identified items alike (SPEC §5.6 identity), before any reviewer decision."
     )
     add("")
-    add("| Deal | Period | GL EBITDA (tool) | GL EBITDA (key) | Diligence adj. EBITDA (tool) | (key) | Abs. error |")
-    add("| --- | --- | --- | --- | --- | --- | --- |")
+    add(
+        "| Deal | Period | GL EBITDA (tool) | GL EBITDA (key) | Diligence items (tool) | (key) | "
+        "Diligence adj. EBITDA (tool) | (key) | Abs. error |"
+    )
+    add("| --- | --- | --- | --- | --- | --- | --- | --- | --- |")
     for s in deals:
         for label, v in s["ebitda_error"]["by_period"].items():
             add(
                 f"| {s['deal_id']} | {label} | {_money(v['tool_gl_ebitda'])} | {_money(v['expected_gl_ebitda'])} | "
+                f"{_money(v.get('tool_diligence_items'))} | {_money(v.get('expected_diligence_items'))} | "
                 f"{_money(v['tool_diligence_adjusted_ebitda'])} | {_money(v['expected_diligence_adjusted_ebitda'])} | "
                 f"{_money(v['abs_error'])} |"
             )
@@ -689,12 +975,15 @@ def render_markdown(report: dict[str, Any]) -> str:
         ("GL link precision", "gl_link_precision", "supporting tool links that the key also supports"),
         ("GL link recall", "gl_link_recall", "key supporting rows the tool linked as supporting"),
         ("GL surfaced recall", "gl_surfaced_recall", "key supporting + related rows shown anywhere in the evidence"),
-        ("Document link precision", "doc_link_precision", "linked documents the key lists as support"),
-        ("Document link recall", "doc_link_recall", "key support documents the tool linked"),
+        ("Document precision", "doc_link_precision", "documents the tool relies on that the key lists as support"),
+        ("Document recall", "doc_link_recall", "key support documents the tool relies on"),
+        ("Document surfaced recall", "doc_surfaced_recall", "key supporting + related documents shown anywhere"),
         ("Data-quality recall", "data_quality_recall", "planted data issues detected"),
+        ("Diligence item accuracy", "diligence_item_accuracy", "items beyond management's schedule, right amounts"),
     ]
     for name, key, what in headline:
-        add(f"| {name} | {_pct(overall[key])} | {_frac(overall[key])} | {what} |")
+        r = overall.get(key, _ratio(0, 0))
+        add(f"| {name} | {_pct(r)} | {_frac(r)} | {what} |")
     add(
         f"| Max diligence EBITDA error | {_money(overall['ebitda_error']['max_abs_error'])} | - | "
         "largest absolute error across deals and periods |"
@@ -705,22 +994,20 @@ def render_markdown(report: dict[str, Any]) -> str:
     add("")
     add(
         "| Deal | Ref | Case type | Ambiguity | Key | Tool | Conf. | Key amounts | Tool amounts | "
-        "GL P / R | Missing flags | Verdict |"
+        "GL P / R | Doc P / R | Missing flags | Verdict |"
     )
-    add("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |")
+    add("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |")
     for s in deals:
         labels = s["period_labels"]
         for r in s["adjustments"]:
-            gl = r["gl_links"]
-            p = "n/a" if gl["precision"] is None else f"{gl['precision']:.2f}"
-            rc = "n/a" if gl["recall"] is None else f"{gl['recall']:.2f}"
             add(
                 f"| {s['deal_id']} | {_cell(r['adj_id'])} | {r['case_type']} | {r['ambiguity']} | "
                 f"{r['expected_treatment']} | {r['tool_treatment'] or 'not assessed'} | "
                 f"{r['tool_confidence'] or '-'} | "
                 f"{_amounts(r['expected_amounts'], labels)} | "
                 f"{_amounts(r['proposed_amounts'], labels, r['tool_treatment'] is not None)} | "
-                f"{p} / {rc} | {', '.join(r['flags']['missing']) or '-'} | {r['verdict']} |"
+                f"{_pr_text(r['gl_links'])} | {_pr_text(r['doc_links'])} | "
+                f"{', '.join(r['flags']['missing']) or '-'} | {r['verdict']} |"
             )
     add("")
 
@@ -751,6 +1038,18 @@ def render_markdown(report: dict[str, Any]) -> str:
         "recurrence observations), measured against the key's supporting and related rows."
     )
     add(
+        "- The documents the tool *relies on* depend on what it carries. A non-zero amount: documents linked to "
+        "supporting entries, stand-alone agreements no removing flag cites, and documents behind a recovery or "
+        "out-of-period effect. Zero (REJECT): the documents that took the claim out. Pending (REQUEST_INFO): the "
+        "documents the request rests on. Documents that argue against part of a carried amount are not support; "
+        "*surfaced* documents (any doc link or flag citation) are measured against supporting + related documents."
+    )
+    add(
+        "- Management-item metrics exclude diligence-identified items. Those are matched to the key one-to-one by "
+        "shared supporting GL rows (then any shared GL row) and scored on amounts only; both kinds of item enter "
+        "the diligence adjusted EBITDA check."
+    )
+    add(
         "- Deal and overall rates pool the underlying counts (micro-average). The false accept rate's "
         "denominator is the number of adjustments the key does not accept."
     )
@@ -777,6 +1076,7 @@ def _tool_output(a: Optional[AdjustmentAssessment]) -> Optional[dict[str, Any]]:
     if a is None:
         return None
     return {
+        "source": a.source,
         "treatment": a.treatment.value,
         "confidence": a.confidence,
         "claimed": dict(a.claimed),
@@ -878,12 +1178,16 @@ __all__ = [
     "aggregate",
     "build_report",
     "entry_row",
+    "is_diligence_item",
     "load_ground_truth",
+    "match_diligence_items",
     "regression_case_id",
     "regression_cases",
     "removed_entry_ids",
     "render_markdown",
     "score",
     "supporting_entry_ids",
+    "surfaced_doc_ids",
     "surfaced_entry_ids",
+    "tool_supporting_docs",
 ]

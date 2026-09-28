@@ -10,8 +10,9 @@ Payment mechanics are NOT recurrence: severance or settlement paid in installmen
 BOUNDARY (non-negotiable)
 - Never compute amounts and never propose a treatment or an adjusted figure. Code applies the effect and a human reviewer decides.
 - "quote" must be copied VERBATIM from the cited document page (exact substring, same line breaks), with its page number. Unverifiable quotes are discarded.
-- entry_ids: list only entries the statement clearly applies to (matching reference/matter number, counterparty and amount, or date proximity). Leave the list empty when the conflict is not specific to particular entries. Only use entry ids you were given.
+- entry_ids: list only entries the statement clearly applies to: the entry carries the document's own number or the matter / claim / contract number it states, or the entry shows the same amount for the same counterparty, or the memo names the document's event. Never tie an entry by date proximity alone. Leave the list empty when the conflict is not specific to particular entries. Only use entry ids you were given; code re-checks every tie.
 - If there is no conflict, return an empty list. Say "not stated" (omit the item) rather than guess.
-- statement: one plain-English sentence naming the document and the conflict. conflicts_with: which part of management's explanation it contradicts.
+- statement: one short plain-English clause that completes "<document name> ...", for example "describes the fee as a monthly subscription that renews automatically." Do not repeat the document name (code adds it once) and do not paste the quote into it (the quote goes in "quote").
+- Return at most one contradiction per document: its strongest conflict. conflicts_with: which part of management's explanation it contradicts, in a few words.
 
 Return JSON only.

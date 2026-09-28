@@ -8,10 +8,12 @@ from typing import Iterable
 from qoe.ai_base import AdjustmentIntent, EntryClassification
 from qoe.challenge import ChallengeContext, run_challenges
 from qoe.money import fmt
-from qoe.propose import assess_confidence, compute_proposed, decide_treatment, propose
+from qoe.propose import assess_confidence, compute_proposed, decide_treatment, propose, propose_duplicate_items
 from qoe.schemas import (
     Account,
     AdjustmentCategory,
+    DataQualityCode,
+    DataQualityIssue,
     AdjustmentClaim,
     AmountFact,
     DealFiles,
@@ -27,6 +29,7 @@ from qoe.schemas import (
     ManagementPL,
     ManagementSchedule,
     PeriodDef,
+    ReconciliationResult,
     Severity,
     SourceDocument,
     Treatment,
@@ -48,6 +51,8 @@ ACCOUNTS = {
     "6010": Account(number="6010", name="Officer Compensation", source_type="Expense", ebitda_class=EbitdaClass.OPEX),
     "6150": Account(number="6150", name="Repairs & Maintenance", source_type="Expense", ebitda_class=EbitdaClass.OPEX),
     "6600": Account(number="6600", name="Travel", source_type="Expense", ebitda_class=EbitdaClass.OPEX),
+    "6200": Account(number="6200", name="Insurance", source_type="Expense", ebitda_class=EbitdaClass.OPEX),
+    "8100": Account(number="8100", name="Interest Expense", source_type="Other Expense", ebitda_class=EbitdaClass.INTEREST),
 }
 
 
@@ -186,7 +191,7 @@ def test_undocumented_share_drives_request_info_only_above_the_limit():
     pkg = pkg.model_copy(update={"gl": entries})
     t = traced(pkg, REPAIR_INTENT, facts)
     (flag,) = [f for f in t.flags if f.code == FlagCode.NO_DOCUMENT_SUPPORT]
-    assert flag.severity == Severity.INFO and "20% of the claim" in flag.message
+    assert flag.severity == Severity.INFO and "2,000 of the 10,000 carried (20%)" in flag.message
     assert propose(t).treatment == Treatment.ACCEPT
 
 
@@ -279,7 +284,7 @@ def test_facts_are_evidenced_and_kept_apart_from_judgment_questions():
     pkg, facts = documented_repairs(repairs(("2024-03", 6000), ("2025-03", 6000)), claim("P-1", [0, 6000, 0], ["6150"]))
     a = propose(traced(pkg, REPAIR_INTENT, facts))
     assert a.facts and all(f.entry_ids or f.quotes for f in a.facts)
-    assert any(f.text.startswith("FY2025: 1 GL entry in 6150") for f in a.facts)
+    assert any(f.text.startswith("FY2025: 1 entry in 6150 traces to 6,000") for f in a.facts)
     assert a.judgment_questions and all(j.endswith("?") or "?" in j for j in a.judgment_questions)
     assert not {f.text for f in a.facts} & set(a.judgment_questions)
     # The FY2024 twin is recurring: removed, and the reviewer is asked about it.
@@ -293,3 +298,109 @@ def test_propose_is_deterministic():
     one = propose(traced(pkg, REPAIR_INTENT, facts)).model_dump_json()
     two = propose(traced(pkg, REPAIR_INTENT, facts)).model_dump_json()
     assert one == two
+
+
+# ---------------------------------------------------------------------------
+# The assessment carries management's own description (the workpaper stands alone)
+# ---------------------------------------------------------------------------
+
+
+def test_assessment_carries_managements_description_and_support():
+    adj = claim("P-1", [0, 10000, 0], ["6150"], refs=["DR 7", "DR 7.1"]).model_copy(
+        update={"description": "Storm repairs after the October hurricane."})
+    pkg, facts = documented_repairs(repairs(("2025-03", 10000)), adj)
+    a = propose(traced(pkg, REPAIR_INTENT, facts))
+    assert a.source == "management"
+    assert a.description == "Storm repairs after the October hurricane."
+    assert a.gl_accounts == ["6150"] and a.support_refs == ["DR 7", "DR 7.1"]
+
+
+def test_rationale_states_facts_then_judgment_and_stays_short():
+    pkg, facts = documented_repairs(repairs(("2024-03", 6000), ("2025-03", 6000)), claim("P-1", [0, 6000, 0], ["6150"]))
+    a = propose(traced(pkg, REPAIR_INTENT, facts))
+    assert a.rationale.startswith("REJECT: no part of the claim survives (recurring activity).")
+    assert a.rationale.index("1 entry traces to FY2025 6,000") < a.rationale.index("Judgment:")
+    assert len(a.rationale) <= 600
+
+
+# ---------------------------------------------------------------------------
+# Diligence-identified items (SPEC §5.7)
+# ---------------------------------------------------------------------------
+
+
+def _dup(row: int, date: str, num: str = "CR-0507", account: str = "6200", amount: object = 18400, memo: str = "Premium installment") -> GLEntry:
+    return entry(row, date, account, amount, "Coastal Risk Insurance", memo, num)
+
+
+def _dq(*groups: list[GLEntry]) -> ReconciliationResult:
+    issues = [DataQualityIssue(code=DataQualityCode.DUPLICATE_GL_ENTRY, severity=Severity.WARNING, message="dup",
+                               entry_ids=[e.entry_id for e in g]) for g in groups]
+    return ReconciliationResult(items=[], issues=issues, gl_ebitda={}, mgmt_reported_ebitda={}, months_compared=0,
+                                accounts_compared=0, variance_count=0)
+
+
+def _items(entries: list[GLEntry], groups: list[list[GLEntry]], adj: AdjustmentClaim | None = None, texts=None, facts=(),
+           taken=()):
+    adj = adj or claim("M-1", [0, 0, 0], ["6150"])
+    pkg = package(entries, adj, texts)
+    index = build_index(pkg, list(facts), _dq(*groups))
+    traces = []
+    if any(v != "0.00" for v in adj.amounts.values()):
+        t = trace_adjustment(index, adj, AdjustmentIntent(adj_id=adj.adj_id, counterparties=["Coastal Risk Insurance"]))
+        run_challenges(t, ChallengeContext.build(None, [t]))
+        traces.append(t)
+    return propose_duplicate_items(index, traces, taken_ids=taken), traces
+
+
+def test_a_doc_number_duplicate_becomes_a_diligence_item():
+    first, second = _dup(40, "2025-05-07"), _dup(41, "2025-05-10")
+    texts = {"9.4 Coastal Risk installment notice.txt": "Installment CR-0507. Amount Due: $18,400.00"}
+    facts = [DocFacts(doc_id="9.4 Coastal Risk installment notice.txt", doc_type="invoice", counterparty="Coastal Risk Insurance",
+                      reference_numbers=["CR-0507"],
+                      amounts=[AmountFact(label="total_due", amount="18400", quote=EvidenceQuote(
+                          doc_id="9.4 Coastal Risk installment notice.txt", page=1, quote="Amount Due: $18,400.00"))])]
+    (item,), _ = _items([first, second], [[first, second]], texts=texts, facts=facts)
+    assert item.adj_id == "D-1" and item.source == "diligence"
+    assert item.category == AdjustmentCategory.OTHER and item.treatment == Treatment.REVISE
+    assert item.claimed == amounts(0, 0, 0)
+    # The second posting overstates FY2025 expense; May 2025 is outside TTM Jun-26.
+    assert item.proposed == amounts(0, 18400, 0)
+    links = {x.entry_id: x for x in item.gl_links}
+    assert links["GL-R40"].supports_claim is False and links["GL-R41"].supports_claim is True
+    assert [f.code for f in item.flags] == [FlagCode.DUPLICATE_GL_ENTRY]
+    assert item.flags[0].quotes and "twice" in item.flags[0].message and len(item.flags[0].message) <= 320
+    (doc,) = item.doc_links
+    assert doc.doc_id == "9.4 Coastal Risk installment notice.txt" and set(doc.entry_ids) == {"GL-R40", "GL-R41"}
+    (q,) = item.open_questions
+    assert q.q_id == "Q-D-1-1" and "paid once" in q.text and "refunded" in q.text and q.text.count("?") == 1
+    assert item.facts and all(f.entry_ids or f.quotes for f in item.facts)
+    assert len(item.rationale) <= 600 and item.rationale.startswith("REVISE:")
+
+
+def test_a_posting_management_already_carries_is_not_reversed_again():
+    first, second = _dup(40, "2025-05-07"), _dup(41, "2025-05-10")
+    # Management claims one posting of the bill as its own adjustment.
+    (item,), traces = _items([first, second], [[first, second]], adj=claim("M-1", [0, 18400, 0], ["6200"]))
+    carried = traces[0].supporting_ids()
+    assert len(carried) == 1
+    reversed_ids = [x.entry_id for x in item.gl_links if x.supports_claim]
+    assert reversed_ids and not set(reversed_ids) & set(carried)
+    assert item.proposed == amounts(0, 18400, 0)
+    assert any("already carried in M-1" in f.text for f in item.facts)
+    # Management claims both postings: nothing is left to reverse.
+    items, _ = _items([first, second], [[first, second]], adj=claim("M-1", [0, 36800, 0], ["6200"]))
+    assert items == []
+
+
+def test_only_doc_number_groups_inside_ebitda_become_items_numbered_by_first_row():
+    memo_a, memo_b = _dup(50, "2025-02-03", num=""), _dup(51, "2025-02-06", num="")  # matched on memo: a question only
+    int_a = _dup(60, "2025-03-01", num="JE-5", account="8100", amount=900)
+    int_b = _dup(61, "2025-03-02", num="JE-5", account="8100", amount=900)  # below EBITDA: no bridge effect
+    late_a, late_b = _dup(80, "2026-02-01", num="CR-0201", amount=500), _dup(81, "2026-02-03", num="CR-0201", amount=500)
+    early_a, early_b = _dup(70, "2024-11-01", num="CR-1101", amount=700), _dup(71, "2024-11-04", num="CR-1101", amount=700)
+    entries = [memo_a, memo_b, int_a, int_b, late_a, late_b, early_a, early_b]
+    groups = [[late_a, late_b], [memo_a, memo_b], [int_a, int_b], [early_a, early_b]]
+    items, _ = _items(entries, groups, taken=["M-1", "D-1"])
+    # Management already uses D-1, so numbering continues; order follows each group's first GL row.
+    assert [i.adj_id for i in items] == ["D-2", "D-3"]
+    assert items[0].proposed == amounts(700, 0, 0) and items[1].proposed == amounts(0, 0, 500)

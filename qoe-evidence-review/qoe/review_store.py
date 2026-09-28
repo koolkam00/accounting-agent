@@ -10,12 +10,17 @@ Final-amount semantics (SPEC section 7):
 - reviewed REQUEST_INFO      -> {} (pending, excluded from diligence adjusted EBITDA)
 - unreviewed                 -> the tool's proposal ({} when the tool said REQUEST_INFO)
 
-``apply_reviews`` rebuilds the bridge with ``qoe.bridge.build_bridge``. The
-management schedule is not stored in a ``Workpaper``; callers that have the
-deal package pass ``schedule=pkg.schedule``, otherwise the parts of the schedule
-the bridge uses are reconstructed from the workpaper itself (see
-``schedule_from_workpaper``). That keeps the review path free of file I/O on
-the deal package and works for a workpaper whose deal directory has moved.
+Diligence-identified items (``source == "diligence"``, SPEC §5.7) follow exactly
+the same rules: they carry a zero claim, so an unreviewed item carries the
+tool's proposal and a reviewed one carries the reviewer's amounts.
+
+``apply_reviews`` rebuilds the bridge with ``qoe.bridge.build_bridge`` from
+management's schedule as presented: the ``schedule`` argument when the caller
+has the deal package, else ``Workpaper.schedule`` when the run stored it, else
+the parts of the schedule the bridge uses reconstructed from the workpaper
+itself (see ``schedule_from_workpaper``). That keeps the review path free of
+file I/O on the deal package and works for a workpaper whose deal directory
+has moved.
 """
 
 from __future__ import annotations
@@ -33,6 +38,7 @@ from qoe.schemas import (
     TOOL_ERROR_CORRECTIONS,
     AdjustmentAssessment,
     AdjustmentClaim,
+    BridgeRow,
     CorrectionType,
     ManagementSchedule,
     OpenQuestion,
@@ -159,6 +165,14 @@ def period_labels(wp: Workpaper) -> list[str]:
     return [p.label for p in wp.deal.periods]
 
 
+DILIGENCE_SOURCE = "diligence"
+
+
+def is_diligence_item(a: AdjustmentAssessment) -> bool:
+    """Identified by the tool (SPEC §5.7), not an adjustment on management's schedule."""
+    return a.source == DILIGENCE_SOURCE
+
+
 def final_amounts(
     wp: Workpaper, reviews: Mapping[str, ReviewDecision] | Iterable[ReviewDecision]
 ) -> dict[str, dict[str, str]]:
@@ -180,8 +194,11 @@ def final_amounts(
 def schedule_from_workpaper(wp: Workpaper) -> ManagementSchedule:
     """Rebuild the parts of management's schedule the bridge needs from the workpaper.
 
+    Only management items are on the schedule; diligence-identified items were
+    never claimed by management and reach the bridge through the assessments.
     Claimed amounts come from the existing ``mgmt:<adj_id>`` bridge rows (what the
     bridge was originally built from) and fall back to ``assessment.claimed``.
+    Descriptions, GL accounts and support refs come from the assessment.
     Reported EBITDA comes from the reconciliation. Management's own net income /
     interest / tax / D&A lines are not stored in a workpaper and are left empty;
     the bridge takes those components from the GL.
@@ -194,7 +211,7 @@ def schedule_from_workpaper(wp: Workpaper) -> ManagementSchedule:
         return period_map(row.amounts, labels) if row is not None else {}
 
     claims: list[AdjustmentClaim] = []
-    for i, a in enumerate(wp.assessments, 1):
+    for i, a in enumerate((a for a in wp.assessments if not is_diligence_item(a)), 1):
         mgmt_row = rows.get(f"mgmt:{a.adj_id}")
         amounts = mgmt_row.amounts if mgmt_row is not None else a.claimed
         claims.append(
@@ -202,6 +219,9 @@ def schedule_from_workpaper(wp: Workpaper) -> ManagementSchedule:
                 adj_id=a.adj_id,
                 title=a.title,
                 category=a.category,
+                description=a.description,
+                gl_accounts=list(a.gl_accounts),
+                support_refs=list(a.support_refs),
                 amounts=period_map(amounts, labels),
                 source_row=i,
             )
@@ -226,8 +246,10 @@ def apply_reviews(
     bridge rebuilt on final amounts. The input workpaper is not modified.
 
     ``reviews`` is the full log in order (the Review Log sheet shows every line);
-    the latest decision per adj id sets the final amount. Pass the deal package's
-    ``schedule`` when available; otherwise it is reconstructed from ``wp``.
+    the latest decision per adj id sets the final amount, for management and
+    diligence-identified items alike. Pass the deal package's ``schedule`` when
+    available; otherwise ``wp.schedule`` is used, and failing that the schedule
+    is reconstructed from ``wp``.
     """
     from qoe.bridge import build_bridge  # lazy: the bridge is owned by the engine module
 
@@ -236,15 +258,26 @@ def apply_reviews(
     out.reviews = decisions
     apply_question_updates(out.assessments, decisions)
     finals = final_amounts(out, latest_by_adj(decisions))
-    sched = schedule if schedule is not None else schedule_from_workpaper(wp)
+    sched = schedule_for(wp, schedule)
     out.bridge = build_bridge(out.deal, out.reconciliation, sched, out.assessments, final_amounts=finals)
     return out
+
+
+def schedule_for(wp: Workpaper, schedule: Optional[ManagementSchedule] = None) -> ManagementSchedule:
+    """The schedule to rebuild the bridge from: explicit, stored on the workpaper, or reconstructed."""
+    if schedule is not None:
+        return schedule
+    if wp.schedule is not None:
+        return wp.schedule
+    return schedule_from_workpaper(wp)
 
 
 def check_bridge_identity(wp: Workpaper) -> dict[str, str]:
     """period label -> (diligence adjusted EBITDA - (GL EBITDA + final amounts)).
 
-    Uses the latest decisions in ``wp.reviews``; pending items are excluded. See
+    Final amounts cover management items and diligence-identified items (SPEC
+    §5.6 identity). Uses the latest decisions in ``wp.reviews``; pending items
+    are excluded. See
     ``bridge_ties``. Raises ValueError when the bridge lacks the rows the identity
     needs.
     """
@@ -264,6 +297,49 @@ def check_bridge_identity(wp: Workpaper) -> dict[str, str]:
 
 def bridge_ties(differences: Mapping[str, str], tolerance: object = "0.01") -> bool:
     return all(abs(D(v)) <= D(tolerance) for v in differences.values())
+
+
+def bridge_row_adj_id(row: BridgeRow) -> Optional[str]:
+    """The adjustment a bridge row belongs to: its adj_id, else the id in a "mgmt:" / "dil:" key."""
+    if row.adj_id:
+        return row.adj_id
+    head, sep, tail = row.key.partition(":")
+    return tail if sep and head in ("mgmt", "dil") else None
+
+
+def is_item_row(row: BridgeRow, item_ids: Iterable[str]) -> bool:
+    """A bridge row of a diligence-identified item (``item_ids`` = their adj ids)."""
+    return row.kind == "diligence_adjustment" and bridge_row_adj_id(row) in set(item_ids)
+
+
+def bridge_display_rows(rows: Iterable[BridgeRow], item_ids: Iterable[str]) -> list[BridgeRow]:
+    """Bridge rows in the order the workpaper and the app show them.
+
+    Diligence-identified items form their own block after the diligence
+    revisions to management's items: within each run of rows between subtotals
+    their rows move (stably) to the end, so every subtotal still sums the same
+    rows. An all-zero "as claimed" row for an item management never claimed
+    (an older bridge may carry one) is dropped.
+    """
+    ids = set(item_ids)
+    out: list[BridgeRow] = []
+    run: list[BridgeRow] = []
+
+    def flush() -> None:
+        out.extend(r for r in run if not is_item_row(r, ids))
+        out.extend(r for r in run if is_item_row(r, ids))
+        run.clear()
+
+    for r in rows:
+        if r.kind == "mgmt_adjustment" and bridge_row_adj_id(r) in ids and all(D(v) == 0 for v in r.amounts.values()):
+            continue
+        if r.kind == "subtotal":
+            flush()
+            out.append(r)
+        else:
+            run.append(r)
+    flush()
+    return out
 
 
 # ---------------------------------------------------------------------------

@@ -98,6 +98,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  Treatment accuracy: {pct('treatment_accuracy')}")
     print(f"  Amount accuracy   : {pct('amount_accuracy')}")
     print(f"  Flag recall       : {pct('flag_recall')}")
+    print(f"  Document P / R    : {pct('doc_link_precision')} / {pct('doc_link_recall')}")
+    print(f"  Diligence items   : {pct('diligence_item_accuracy')}")
     print(f"  Max EBITDA error  : {o['ebitda_error']['max_abs_error']}")
     print(f"Wrote {json_path}")
     print(f"Wrote {md_path}")

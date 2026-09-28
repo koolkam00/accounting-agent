@@ -711,6 +711,36 @@ def test_intent_casualty_and_out_of_period():
     assert "true-up" in oop.keywords
 
 
+def test_intent_keywords_never_restate_a_party_name():
+    ai = RuleBasedEvidenceAI()
+    search = ai.parse_intent(_claim(
+        "A-5b", "CFO search fee", AdjustmentCategory.NON_RECURRING,
+        "Retained search fee paid to Barrow Search Partners for the CFO hire.",
+    ))
+    assert search.counterparties == ["Barrow Search Partners"]
+    assert "barrow" not in search.keywords and "search" in search.keywords
+    lit = ai.parse_intent(_claim(
+        "A-1b", "Brennan litigation legal fees", AdjustmentCategory.NON_RECURRING,
+        "Outside counsel fees (Harrow & Vale LLP) defending Brennan v. Coastline.",
+    ))
+    assert "Harrow & Vale LLP" in lit.counterparties
+    assert not {"harrow", "vale"} & set(lit.keywords)
+    assert {"brennan", "litigation"} <= set(lit.keywords)  # a case name is the event, not a vendor
+
+
+def test_a_document_never_ties_to_an_entry_by_date_alone(ai_and_facts):
+    """The inventory memo is dated in December; a same-month entry it does not describe stays untied."""
+    ai, facts = ai_and_facts
+    adj = _claim("A-9b", "One-time inventory write-off", AdjustmentCategory.NON_RECURRING,
+                 "Year-end obsolete inventory write-off.")
+    entries = [
+        _gl("GL-R310", "2025-12-30", "5400", "Metro Freight", "Freight on parts returns", "1250.00"),
+        _gl("GL-R311", "2025-12-31", "5400", "", "Year-end physical count adjustment – obsolete & shrink", "64000.00"),
+    ]
+    found = ai.find_contradictions(adj, ai.parse_intent(adj), [facts["8.1 Year-end Inventory Count Memo.pdf"]], entries)
+    assert found and all("GL-R310" not in c.entry_ids for c in found)
+
+
 # ---------------------------------------------------------------------------
 # find_contradictions
 # ---------------------------------------------------------------------------
@@ -740,7 +770,11 @@ def test_one_time_claim_contradicted_by_monthly_fee_agreement(docs, ai_and_facts
     assert msa and all(c.entry_ids == ["GL-R100", "GL-R101", "GL-R102", "GL-R103"] for c in msa)
     assert any("monthly fee" in c.quote.quote for c in msa)
     email = [c for c in found if c.doc_id.startswith("6.2")]
-    assert email and "subscription" in email[0].quote.quote and email[0].entry_ids == []
+    # The email names the RouteWise service the memos name, so it ties to those entries, not the laptop.
+    assert email and "subscription" in email[0].quote.quote
+    assert email[0].entry_ids == ["GL-R100", "GL-R101", "GL-R102", "GL-R103"]
+    # Statements complete "<document> ...": the engine names the document once.
+    assert all(c.statement[:1].islower() and c.doc_id not in c.statement for c in found)
 
 
 def test_recurrence_memo_contradiction_is_entry_specific(docs, ai_and_facts):
@@ -878,10 +912,12 @@ def test_classify_personal_vs_business_travel(ai_and_facts):
     ]
     result = {c.entry_id: c for c in ai.classify_entries(
         adj, ai.parse_intent(adj), entries, [facts["3.4 SMCS 2025 Registration Confirmation.pdf"]])}
-    assert [result[e.entry_id].qualifies for e in entries] == [True, True, False, False, False]
-    assert result["GL-R804"].doc_ids == ["3.4 SMCS 2025 Registration Confirmation.pdf"]
+    # The Orlando hotel falls in the summit week, but nothing else ties it to the registration:
+    # date proximity alone is not evidence, so it is left to the reviewer as a personal item.
+    assert [result[e.entry_id].qualifies for e in entries] == [True, True, False, False, True]
     assert result["GL-R802"].doc_ids == ["3.4 SMCS 2025 Registration Confirmation.pdf"]
     assert result["GL-R803"].doc_ids == []  # business memo, but no document to verify it against
+    assert all('"' not in c.reason for c in result.values())  # reasons cite documents; they do not paste quotes
 
 
 def test_classify_leaves_clean_claims_alone(ai_and_facts):
@@ -901,41 +937,28 @@ def test_classify_leaves_clean_claims_alone(ai_and_facts):
 # ---------------------------------------------------------------------------
 
 
-def test_draft_questions_one_per_flag_and_specific(ai_and_facts):
+def test_draft_questions_are_follow_ups_the_flags_do_not_cover(ai_and_facts):
+    """The engine asks one templated question per flag; the AI adds what the documents raise."""
     ai, facts = ai_and_facts
     adj = _claim("A-18", "Storm damage repairs", AdjustmentCategory.NON_RECURRING,
                  amounts={"FY2024": "58000.00", "FY2025": "0.00", "TTM Jun-26": "0.00"})
-    msa_quote = next(t.quote for t in facts["6.1 Northgate Managed Services Agreement.pdf"].terms
-                     if t.kind == "monthly_fee")
     flags = [
         Flag(code=FlagCode.OFFSETTING_RECOVERY, severity=Severity.WARNING, message="recovery",
              period_label="FY2025", amount_impact="-40000.00", entry_ids=["GL-R1"],
              doc_ids=["7.2 Gulf Harbor Claim Settlement Letter.pdf"]),
-        Flag(code=FlagCode.CONTRADICTORY_EVIDENCE, severity=Severity.WARNING, message="contradiction",
-             doc_ids=[msa_quote.doc_id], quotes=[msa_quote]),
         Flag(code=FlagCode.UNSIGNED_OR_DRAFT_SUPPORT, severity=Severity.WARNING, message="draft",
              doc_ids=["2.1 Executive Employment Agreement DRAFT.pdf"]),
-        Flag(code=FlagCode.PRO_FORMA_NOT_REALIZED, severity=Severity.CRITICAL, message="not realized"),
-        Flag(code=FlagCode.OVERLAP_WITH_OTHER_ADJUSTMENT, severity=Severity.CRITICAL, message="overlap",
-             entry_ids=["GL-R5"], related_adj_ids=["A-1"]),
-        Flag(code=FlagCode.CONTINUING_OBLIGATION, severity=Severity.WARNING, message="term",
-             doc_ids=["6.1 Northgate Managed Services Agreement.pdf"]),
     ]
     questions = ai.draft_questions(adj, flags, list(facts.values()))
-    assert len(questions) == len(flags) + 1  # plus the settlement follow-up
-    recovery, contra, draft, pro_forma, overlap, obligation, settlement = questions
-    assert "$40,000" in recovery and "FY2025" in recovery and "A-18" in recovery
-    assert "monthly fee of $8,000.00" in contra
-    assert "executed version" in draft and "Executive Employment Agreement" in draft
-    assert "marked as a draft and is not signed" in draft
-    assert "backfill" not in pro_forma and "replaced" in pro_forma
-    assert "adjustment A-1" in overlap and "counted twice" in overlap and overlap.startswith("One ledger entry")
-    assert "automatic renewal" in obligation and "December 31, 2027" in obligation
-    assert "a monthly fee of $8,000.00" in obligation
-    assert "settlement" in settlement.lower() and "November 14, 2025" in settlement
+    settlement = [q for q in questions if "settlement" in q.lower()]
+    assert settlement and "4.3 Brennan Settlement Agreement.pdf" in settlement[0] and "November 14, 2025" in settlement[0]
+    assert any("5.1 Whitfield Separation Agreement.pdf" in q and "backfilled" in q for q in questions)
+    assert any("10.1 Keel Point Engagement Letter.pdf" in q and "success fee" in q for q in questions)
+    # Nothing restates a flag: no recovery or executed-version questions from the AI.
+    assert not any("recover" in q.lower() or "executed version" in q.lower() for q in questions)
     for q in questions:
-        assert "?" in q or "Please" in q
-        assert "FlagCode" not in q and "_" not in q.replace("_" * 3, "")
+        assert q.endswith("?") and q.count("?") == 1 and len(q) <= 320
+    assert questions == list(dict.fromkeys(questions))
 
 
 def test_draft_questions_no_flags():
@@ -1037,7 +1060,7 @@ def test_llm_missing_fields_fall_back():
 def test_llm_parse_intent_rejects_unstated_values():
     client = _fake_client({
         "counterparties": ["Harrow & Vale LLP", "Invented Partners LLC"],
-        "keywords": ["Litigation", "brennan"],
+        "keywords": ["Litigation", "brennan", "Harrow & Vale"],
         "reference_numbers": ["3310", "7777"],
         "event_type": "litigation",
         "asserts_nonrecurring": True,
@@ -1054,7 +1077,7 @@ def test_llm_parse_intent_rejects_unstated_values():
     intent = ai.parse_intent(adj)
     assert intent.counterparties == ["Harrow & Vale LLP"]
     assert intent.reference_numbers == ["3310"]
-    assert intent.keywords == ["litigation", "brennan"]
+    assert intent.keywords == ["litigation", "brennan"]  # the firm's name is a counterparty, not a keyword
     assert intent.normalized_amount is None
     assert intent.event_months == ["2025-11"]
     assert intent.notes.startswith("llm:fake-model")
@@ -1081,6 +1104,7 @@ def test_llm_contradictions_drop_hallucinated_quotes(docs):
     intent = AdjustmentIntent(adj_id="A-23", asserts_nonrecurring=True)
     found = ai.find_contradictions(adj, intent, [rules_facts], _routewise_entries())
     assert len(found) == 1
+    # GL-R999 is unknown; GL-R100 is kept because code sees the tie (monthly fee amount, same vendor).
     assert found[0].quote.quote == good and found[0].entry_ids == ["GL-R100"]
     assert ai.dropped_quotes == 1
     sent = json.loads(client.chat.completions.calls[1]["messages"][1]["content"])

@@ -1,7 +1,8 @@
 """Review orchestration: deal package -> workpaper (SPEC §4-5).
 
     load_deal -> reconcile -> extract + verify document facts -> parse intent
-    -> trace each adjustment -> resolve overlaps -> challenges -> propose -> bridge
+    -> trace each adjustment -> resolve overlaps -> challenges -> propose
+    -> diligence-identified items (SPEC §5.7) -> bridge
 
 ``run_review`` works from a deal directory; ``review_package`` does the same
 from an in-memory ``DealPackage``. Output is deterministic: the same inputs,
@@ -20,7 +21,7 @@ from qoe import TOOL_VERSION
 from qoe.ai_base import AdjustmentIntent, EvidenceAI, verify_quote
 from qoe.bridge import build_bridge
 from qoe.challenge import ChallengeContext, resolve_overlaps, run_challenges
-from qoe.propose import propose
+from qoe.propose import propose, propose_duplicate_items
 from qoe.schemas import (
     AdjustmentCategory,
     AdjustmentClaim,
@@ -145,6 +146,8 @@ def review_package(
     for t in traces:
         run_challenges(t, ctx)
     assessments = [propose(t, ai) for t in traces]
+    # Management items in schedule order, then the items diligence identified itself.
+    assessments += propose_duplicate_items(index, traces, taken_ids=[a.adj_id for a in assessments])
     for t in traces:
         notes.extend(f"{t.adj.adj_id}: {n}" for n in t.notes)
     bridge = build_bridge(pkg, recon, pkg.schedule, assessments)
@@ -160,6 +163,7 @@ def review_package(
         doc_facts=facts,
         assessments=assessments,
         bridge=bridge,
+        schedule=pkg.schedule,
     )
 
 

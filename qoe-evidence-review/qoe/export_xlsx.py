@@ -17,6 +17,12 @@ Deals workpaper conventions used throughout:
   wins). An adjustment without a decision carries the tool proposal and is
   marked UNREVIEWED; a REQUEST_INFO item is "Pending" and is excluded from
   diligence adjusted EBITDA.
+- Diligence-identified items (``source == "diligence"``, SPEC §5.7: e.g. a
+  duplicate posting to reverse) are not on management's schedule. They get
+  their own block in the Adjustment Summary, the Bridge (after the diligence
+  revisions to management's items) and the Cover counts, and a support sheet
+  like any other item ("Adj D-1"). Their claimed amount is zero, so the final
+  amount is the whole adjustment.
 """
 
 from __future__ import annotations
@@ -45,6 +51,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from qoe.money import D, fmt, period_map, q2
 from qoe.periods import labels_for_month, months_in
+from qoe.review_store import bridge_display_rows, bridge_row_adj_id, is_item_row
 from qoe.schemas import (
     AdjustmentAssessment,
     AdjustmentCategory,
@@ -130,6 +137,9 @@ SEVERITY_STYLES: dict[Severity, tuple[str, str]] = {
 _SEVERITY_RANK = {Severity.CRITICAL: 0, Severity.WARNING: 1, Severity.INFO: 2}
 
 # Same vocabulary as the reviewer app (qoe.review_store), upper-cased for the workpaper.
+DILIGENCE_SOURCE = "diligence"
+DILIGENCE_BLOCK = "Diligence-identified items (not on management's schedule)"
+
 UNREVIEWED = "UNREVIEWED"
 AGREED = "AGREED"
 OVERRIDDEN = "OVERRIDDEN"
@@ -370,6 +380,18 @@ class _Ctx:
     def final_treatment(self, a: AdjustmentAssessment) -> Treatment:
         rv = self.latest.get(a.adj_id)
         return rv.treatment if rv is not None else a.treatment
+
+    @property
+    def mgmt_items(self) -> list[AdjustmentAssessment]:
+        return [a for a in self.wp.assessments if not _is_diligence(a)]
+
+    @property
+    def dil_items(self) -> list[AdjustmentAssessment]:
+        return [a for a in self.wp.assessments if _is_diligence(a)]
+
+
+def _is_diligence(a: AdjustmentAssessment) -> bool:
+    return a.source == DILIGENCE_SOURCE
 
 
 def _period_labels(wp: Workpaper) -> list[str]:
@@ -783,25 +805,11 @@ def _write_support(ws: Worksheet, ctx: _Ctx, a: AdjustmentAssessment) -> _TieOut
     sh.text(row, 3, a.rationale or "", span=last - 2)
     row += 2
 
-    # Management's claim.
-    sh.section(row, "MANAGEMENT'S CLAIM")
+    # Management's claim (or, for a diligence-identified item, the tool's basis).
+    diligence = _is_diligence(a)
+    sh.section(row, DILIGENCE_BLOCK.upper() if diligence else "MANAGEMENT'S CLAIM")
     row += 1
-    category = _CATEGORY_LABELS.get(a.category, a.category.value)
-    pairs: list[tuple[str, str]] = [
-        ("Adjustment", f"{a.adj_id}: {claim.title if claim else a.title}"),
-        ("Category", f"{category}" + (f" (as labelled: {claim.category_raw})" if claim and claim.category_raw else "")),
-        (
-            "Description",
-            claim.description if claim and claim.description else
-            ("No description provided in the schedule." if claim else
-             "Not carried in the workpaper; see management's adjusted EBITDA schedule."),
-        ),
-    ]
-    if claim is not None:
-        pairs.append(("GL accounts", ", ".join(claim.gl_accounts) or "None cited"))
-        pairs.append(("Support refs", "; ".join(claim.support_refs) or "None cited"))
-        pairs.append(("Schedule row", str(claim.source_row)))
-    for label, value in pairs:
+    for label, value in _claim_pairs(a, claim):
         sh.put(row, 1, label, span=2, bold=True)
         sh.text(row, 3, value, span=last - 2)
         row += 1
@@ -817,7 +825,7 @@ def _write_support(ws: Worksheet, ctx: _Ctx, a: AdjustmentAssessment) -> _TieOut
     final = ctx.final.get(a.adj_id, {})
     final_label = "(e) Final: reviewer decision" if rv is not None else "(e) Final: tool proposal carried (UNREVIEWED)"
     for key, label, values in (
-        ("a", "(a) Claimed by management", a.claimed),
+        ("a", "(a) Claimed by management" + (" (not on the schedule: zero)" if diligence else ""), a.claimed),
         ("b", "(b) Traced to GL (claimed entries)", a.traced_gl),
         ("c", "(c) Documented (traced GL with document support)", a.documented),
         ("d", "(d) Tool proposed", None if pending_tool else a.proposed),
@@ -964,6 +972,36 @@ def _write_support(ws: Worksheet, ctx: _Ctx, a: AdjustmentAssessment) -> _TieOut
         revision_row=revision_row,
         check_row=check_row,
     )
+
+
+def _claim_pairs(a: AdjustmentAssessment, claim: Optional[AdjustmentClaim]) -> list[tuple[str, str]]:
+    """Label / value lines describing the item. Management's schedule (from the deal package or the
+    workpaper) is the source when available; otherwise the assessment carries the same fields."""
+    category = _CATEGORY_LABELS.get(a.category, a.category.value)
+    if _is_diligence(a):
+        return [
+            ("Item", f"{a.adj_id}: {a.title}"),
+            ("Source", "Identified by diligence from the GL and data room; not on management's schedule. The "
+                       "claimed amount is zero, so the final amount is the whole diligence adjustment."),
+            ("Category", category),
+            ("Basis", a.description or "No basis recorded in the workpaper; see the tool rationale and flags."),
+            ("GL accounts", ", ".join(a.gl_accounts) or "None recorded"),
+            ("Support", "; ".join(a.support_refs) or "See the documents block below"),
+        ]
+    description = (claim.description if claim is not None else "") or a.description
+    if not description:
+        description = ("No description provided in the schedule." if claim is not None else
+                       "Not carried in the workpaper; see management's adjusted EBITDA schedule.")
+    pairs = [
+        ("Adjustment", f"{a.adj_id}: {claim.title if claim else a.title}"),
+        ("Category", f"{category}" + (f" (as labelled: {claim.category_raw})" if claim and claim.category_raw else "")),
+        ("Description", description),
+        ("GL accounts", ", ".join(claim.gl_accounts if claim is not None else a.gl_accounts) or "None cited"),
+        ("Support refs", "; ".join(claim.support_refs if claim is not None else a.support_refs) or "None cited"),
+    ]
+    if claim is not None:
+        pairs.append(("Schedule row", str(claim.source_row)))
+    return pairs
 
 
 def _quote_rows(sh: _Sheet, row: int, quotes: Iterable[EvidenceQuote]) -> int:
@@ -1167,9 +1205,9 @@ def _decision_block(sh: _Sheet, ctx: _Ctx, a: AdjustmentAssessment, row: int) ->
 
 @dataclass
 class _SummaryRefs:
-    first_row: int
+    first_row: int  # management items (the Cover's status counts read these ranges)
     last_row: int
-    total_row: int
+    total_row: int  # grand total: management + diligence-identified items
     claimed_col: int
     proposed_col: int
     final_col: int
@@ -1178,6 +1216,10 @@ class _SummaryRefs:
     reviewer_col: int
     status_col: int
     rows: dict[str, int] = field(default_factory=dict)
+    mgmt_total_row: int = 0  # management items only (== total_row when there are no diligence items)
+    dil_first_row: Optional[int] = None
+    dil_last_row: Optional[int] = None
+    dil_total_row: Optional[int] = None
 
 
 def _write_summary(ws: Worksheet, ctx: _Ctx, tie: dict[str, _TieOut]) -> _SummaryRefs:
@@ -1213,10 +1255,9 @@ def _write_summary(ws: Worksheet, ctx: _Ctx, tie: dict[str, _TieOut]) -> _Summar
     ):
         sh.header_tall(g, h, col, title)
     ws.row_dimensions[g].height = 30
-    row = h + 1
-    first = row
     refs_rows: dict[str, int] = {}
-    for a in ctx.wp.assessments:
+
+    def item_row(row: int, a: AdjustmentAssessment) -> None:
         t = tie[a.adj_id]
         rv = ctx.latest.get(a.adj_id)
         refs_rows[a.adj_id] = row
@@ -1240,30 +1281,62 @@ def _write_summary(ws: Worksheet, ctx: _Ctx, tie: dict[str, _TieOut]) -> _Summar
         sh.count(row, supp_col, sum(1 for lk in a.gl_links if lk.supports_claim))
         sh.count(row, docs_col, len(a.doc_links))
         sh.count(row, qs_col, sum(1 for q in ctx.questions.get(a.adj_id, []) if q.status == QuestionStatus.OPEN))
+
+    total_cols = [*range(claimed_col, tool_col), links_col, supp_col, docs_col, qs_col]
+
+    def total_line(row: int, label: str, formula: Any, border: Border) -> None:
+        sh.put(row, 2, label, bold=True, border=border)
+        sh.put(row, 1, None, border=border)
+        sh.put(row, 3, None, border=border)
+        for col in total_cols:
+            count = col in (links_col, supp_col, docs_col, qs_col)
+            sh.formula(row, col, formula(get_column_letter(col)), bold=True, border=border,
+                       num_fmt="#,##0" if count else NUMBER_FORMAT)
+
+    row = h + 1
+    first = row
+    mgmt, dil = ctx.mgmt_items, ctx.dil_items
+    for a in mgmt:
+        item_row(row, a)
         row += 1
     last_row = max(first, row - 1)
-    total_row = row if ctx.wp.assessments else first
-    sh.put(total_row, 2, "Total", bold=True, border=_FINAL_BORDER)
-    sh.put(total_row, 1, None, border=_FINAL_BORDER)
-    sh.put(total_row, 3, None, border=_FINAL_BORDER)
-    for col in range(claimed_col, tool_col):
-        L = get_column_letter(col)
-        sh.formula(total_row, col, f"=SUM({L}{first}:{L}{last_row})", bold=True, border=_FINAL_BORDER)
-    for col in (links_col, supp_col, docs_col, qs_col):
-        L = get_column_letter(col)
-        sh.formula(total_row, col, f"=SUM({L}{first}:{L}{last_row})", bold=True, num_fmt="#,##0", border=_FINAL_BORDER)
+    dil_first = dil_last = dil_total = None
+    if not dil:
+        total_row = row if mgmt else first
+        total_line(total_row, "Total", lambda L: f"=SUM({L}{first}:{L}{last_row})", _FINAL_BORDER)
+        mgmt_total = total_row
+    else:
+        # Management items, their subtotal, then the diligence-identified block and its subtotal.
+        mgmt_total = row if mgmt else first
+        total_line(mgmt_total, "Total management adjustments", lambda L: f"=SUM({L}{first}:{L}{last_row})",
+                   _TOP_BORDER)
+        row = mgmt_total + 2
+        sh.put(row, 1, DILIGENCE_BLOCK + ": management claimed nothing, so the final amount is the adjustment",
+               span=qs_col, bold=True, color=NAVY, fill=SECTION_FILL)
+        row += 1
+        dil_first = row
+        for a in dil:
+            item_row(row, a)
+            row += 1
+        dil_last = row - 1
+        dil_total = row
+        total_line(dil_total, "Total diligence-identified items",
+                   lambda L: f"=SUM({L}{dil_first}:{L}{dil_last})", _TOP_BORDER)
+        total_row = dil_total + 2
+        total_line(total_row, "Total", lambda L: f"={L}{mgmt_total}+{L}{dil_total}", _FINAL_BORDER)
     note = total_row + 2
     sh.put(note, 2, "Pending (REQUEST_INFO) items show \"Pending\": they are excluded from Final totals, and the "
                     "bridge reverses their claimed amounts.", italic=True, color=MUTED)
     sh.put(note + 1, 2, "Final = latest reviewer decision; an UNREVIEWED item carries the tool proposal until a "
                         "reviewer signs off.", italic=True, color=MUTED)
     ws.freeze_panes = _a1(4, h + 1)
-    if ctx.wp.assessments:
+    if mgmt:
         ws.auto_filter.ref = f"A{h}:{get_column_letter(qs_col)}{last_row}"
     return _SummaryRefs(
         first_row=first, last_row=last_row, total_row=total_row, claimed_col=claimed_col,
         proposed_col=proposed_col, final_col=final_col, diff_col=diff_col, tool_col=tool_col,
-        reviewer_col=reviewer_col, status_col=status_col, rows=refs_rows,
+        reviewer_col=reviewer_col, status_col=status_col, rows=refs_rows, mgmt_total_row=mgmt_total,
+        dil_first_row=dil_first, dil_last_row=dil_last, dil_total_row=dil_total,
     )
 
 
@@ -1366,7 +1439,8 @@ def _write_bridge(ws: Worksheet, ctx: _Ctx, srefs: _SummaryRefs, tie: dict[str, 
     ws.row_dimensions[row].height = 28
     header_row = row
     row += 1
-    rows = list(ctx.wp.bridge.rows)
+    item_ids = {a.adj_id for a in ctx.dil_items}
+    rows = bridge_display_rows(ctx.wp.bridge.rows, item_ids)
     if not rows:
         sh.put(row, 2, "No bridge rows in the workpaper.", italic=True, color=MUTED)
         return _BridgeRefs(rows={}, first_col=pc, footed=True)
@@ -1381,6 +1455,7 @@ def _write_bridge(ws: Worksheet, ctx: _Ctx, srefs: _SummaryRefs, tie: dict[str, 
         "diligence_adjustment": "Diligence adjustments (final less claimed; claimed reversed when pending)",
     }
     prev: Optional[BridgeRow] = None
+    item_block = False
     for i, r in enumerate(rows):
         if prev is not None and prev.kind == "subtotal" and not _is_total(prev) and r.kind != "subtotal":
             row += 1
@@ -1388,6 +1463,12 @@ def _write_bridge(ws: Worksheet, ctx: _Ctx, srefs: _SummaryRefs, tie: dict[str, 
             sh.put(row, 1, sections[r.kind], span=link_col, bold=True, color=NAVY, fill=SECTION_FILL)
             row += 1
         seen_kinds.add(r.kind)
+        if is_item_row(r, item_ids) and not item_block:
+            # A text-only row inside the diligence block; SUM ranges over it are unaffected.
+            sh.put(row, 1, DILIGENCE_BLOCK + ": the final amount (management claimed nothing)", span=link_col,
+                   bold=True, italic=True, color=NAVY)
+            row += 1
+            item_block = True
         sheet_rows[i] = row
         is_sub = r.kind == "subtotal"
         level = is_sub and not _is_total(r)
@@ -1410,7 +1491,7 @@ def _write_bridge(ws: Worksheet, ctx: _Ctx, srefs: _SummaryRefs, tie: dict[str, 
                 sh.money(row, col, r.amounts.get(p), italic=memo, fill=fill, border=border)
         for col in (treat_col, status_col, link_col):
             sh.put(row, col, None, fill=fill, border=border)
-        a = by_id.get(r.adj_id or "")
+        a = by_id.get(bridge_row_adj_id(r) or "")
         if a is not None and r.kind == "diligence_adjustment":
             sh.treatment(row, treat_col, ctx.final_treatment(a), border=border)
             sh.status(row, status_col, ctx.status(a.adj_id), border=border)
@@ -1435,11 +1516,18 @@ def _write_bridge(ws: Worksheet, ctx: _Ctx, srefs: _SummaryRefs, tie: dict[str, 
             lambda col, k: (f"={_a1(col, key_rows['diligence_adjusted_ebitda'])}-{_a1(col, key_rows['gl_ebitda'])}"
                             f"-{_xref(SHEET_SUMMARY, srefs.final_col + k, srefs.total_row)}"),
         ))
-    if ctx.wp.assessments and "mgmt_total" in key_rows:
+    if ctx.mgmt_items and "mgmt_total" in key_rows:
         checks.append((
             "Total management adjustments less total claimed, Adjustment Summary",
             lambda col, k: (f"={_a1(col, key_rows['mgmt_total'])}"
-                            f"-{_xref(SHEET_SUMMARY, srefs.claimed_col + k, srefs.total_row)}"),
+                            f"-{_xref(SHEET_SUMMARY, srefs.claimed_col + k, srefs.mgmt_total_row)}"),
+        ))
+    item_rows = [key_rows[f"dil:{a.adj_id}"] for a in ctx.dil_items if f"dil:{a.adj_id}" in key_rows]
+    if srefs.dil_total_row is not None and len(item_rows) == len(ctx.dil_items):
+        checks.append((
+            "Diligence-identified items less their total final amounts, Adjustment Summary",
+            lambda col, k: ("=" + "+".join(_a1(col, r) for r in item_rows)
+                            + f"-{_xref(SHEET_SUMMARY, srefs.final_col + k, srefs.dil_total_row)}"),
         ))
     check_ranges: list[str] = []
     for label, build in checks:
@@ -1794,7 +1882,11 @@ def _write_cover(
 
     sh.section(row, "ENGAGEMENT AND RUN")
     row += 1
-    reviewed = len(ctx.latest)
+    mgmt_ids = {a.adj_id for a in ctx.mgmt_items}
+    dil_ids = {a.adj_id for a in ctx.dil_items}
+    reviewed = f"{len(mgmt_ids & ctx.latest.keys())} of {len(mgmt_ids)} management adjustments reviewed"
+    if dil_ids:
+        reviewed += f"; {len(dil_ids & ctx.latest.keys())} of {len(dil_ids)} diligence-identified items reviewed"
     info: list[tuple[str, Any]] = [
         ("Target", deal.target_name),
         ("Industry", deal.industry or ""),
@@ -1809,7 +1901,9 @@ def _write_cover(
                     "and treatment; the reviewer decides)"),
         ("Documents analysed", f"{len(wp.doc_facts)}; quotes dropped as not verbatim: "
                                f"{sum(f.dropped_quotes for f in wp.doc_facts)}"),
-        ("Reviewer decisions", f"{len(wp.reviews)} logged; {reviewed} of {len(wp.assessments)} adjustments reviewed"),
+        ("Adjustments", f"{len(mgmt_ids)} on management's schedule; {len(dil_ids)} identified by diligence "
+                        "(not on the schedule)"),
+        ("Reviewer decisions", f"{len(wp.reviews)} logged; {reviewed}"),
     ]
     for label, value in info:
         sh.put(row, 1, label, bold=True)
@@ -1877,47 +1971,69 @@ def _write_cover(
         )
         row += 2
 
-    sh.section(row, "ADJUSTMENT STATUS")
-    row += 1
-    sh.header(row, [("Treatment", 1), ("Tool proposal", 1), ("Reviewer decision", 1), ("Carried (final)", 1)])
-    row += 1
     def rng(sheet: str, col: int, first: int, last_row: int) -> str:
         L = get_column_letter(col)
         return f"{_quoted(sheet)}!${L}${first}:${L}${last_row}"
 
-    tool_r, rev_r, stat_r = (rng(SHEET_SUMMARY, c, srefs.first_row, srefs.last_row)
-                             for c in (srefs.tool_col, srefs.reviewer_col, srefs.status_col))
-    count_first = row
-    for t in Treatment:
-        sh.treatment(row, 1, t)
-        crit = f'"{t.value}"'
-        sh.formula(row, 2, f"=COUNTIF({tool_r},{crit})", num_fmt="#,##0")
-        sh.formula(row, 3, f"=COUNTIF({rev_r},{crit})", num_fmt="#,##0")
-        # Reviewed items carry the reviewer's treatment; unreviewed ones carry the tool's.
-        sh.formula(row, 4, f'=COUNTIF({rev_r},{crit})+COUNTIFS({stat_r},"{UNREVIEWED}",{tool_r},{crit})',
-                   num_fmt="#,##0")
+    def summary_ranges(first: int, last_row: int) -> tuple[str, str, str]:
+        return tuple(rng(SHEET_SUMMARY, c, first, last_row)  # type: ignore[return-value]
+                     for c in (srefs.tool_col, srefs.reviewer_col, srefs.status_col))
+
+    def status_table(row: int, title: str, ranges: tuple[str, str, str]) -> int:
+        tool_r, rev_r, stat_r = ranges
+        sh.section(row, title)
         row += 1
-    sh.put(row, 1, "Total", bold=True, border=_FINAL_BORDER)
-    for col in (2, 3, 4):
-        L = get_column_letter(col)
-        sh.formula(row, col, f"=SUM({L}{count_first}:{L}{row - 1})", bold=True, num_fmt="#,##0", border=_FINAL_BORDER)
-    row += 2
+        sh.header(row, [("Treatment", 1), ("Tool proposal", 1), ("Reviewer decision", 1), ("Carried (final)", 1)])
+        row += 1
+        count_first = row
+        for t in Treatment:
+            sh.treatment(row, 1, t)
+            crit = f'"{t.value}"'
+            sh.formula(row, 2, f"=COUNTIF({tool_r},{crit})", num_fmt="#,##0")
+            sh.formula(row, 3, f"=COUNTIF({rev_r},{crit})", num_fmt="#,##0")
+            # Reviewed items carry the reviewer's treatment; unreviewed ones carry the tool's.
+            sh.formula(row, 4, f'=COUNTIF({rev_r},{crit})+COUNTIFS({stat_r},"{UNREVIEWED}",{tool_r},{crit})',
+                       num_fmt="#,##0")
+            row += 1
+        sh.put(row, 1, "Total", bold=True, border=_FINAL_BORDER)
+        for col in (2, 3, 4):
+            L = get_column_letter(col)
+            sh.formula(row, col, f"=SUM({L}{count_first}:{L}{row - 1})", bold=True, num_fmt="#,##0",
+                       border=_FINAL_BORDER)
+        return row + 2
+
+    mgmt_ranges = summary_ranges(srefs.first_row, srefs.last_row)
+    dil_ranges = (summary_ranges(srefs.dil_first_row, srefs.dil_last_row)
+                  if dil_ids and srefs.dil_first_row is not None and srefs.dil_last_row is not None else None)
+    row = status_table(row, "ADJUSTMENT STATUS: MANAGEMENT ADJUSTMENTS" if dil_ranges else "ADJUSTMENT STATUS",
+                       mgmt_ranges)
+    if dil_ranges:
+        row = status_table(row, DILIGENCE_BLOCK.upper(), dil_ranges)
+        sh.header(row, [("Review status", 1), ("Management", 1), ("Diligence-identified", 1)])
+        row += 1
     q_range = rng(SHEET_QUESTIONS, 6, *q_rows)
     dq_range = rng(SHEET_DATA_QUALITY, 1, *dq_rows)
-    for label, formula, style in (
-        ("Reviewed: agreed with tool", f'=COUNTIF({stat_r},"{AGREED}")', None),
-        ("Reviewed: overridden", f'=COUNTIF({stat_r},"{OVERRIDDEN}")', None),
-        ("UNREVIEWED (tool proposal carried)", f'=COUNTIF({stat_r},"{UNREVIEWED}")', UNREVIEWED_STYLE),
-        ("Open questions for management", f'=COUNTIF({q_range},"{QuestionStatus.OPEN.value}")', None),
-        ("Data quality issues: critical", f'=COUNTIF({dq_range},"{Severity.CRITICAL.value}")', None),
-        ("Data quality issues: warning", f'=COUNTIF({dq_range},"{Severity.WARNING.value}")', None),
-        ("Data quality issues: info", f'=COUNTIF({dq_range},"{Severity.INFO.value}")', None),
+    for label, status, style in (
+        ("Reviewed: agreed with tool", AGREED, None),
+        ("Reviewed: overridden", OVERRIDDEN, None),
+        ("UNREVIEWED (tool proposal carried)", UNREVIEWED, UNREVIEWED_STYLE),
     ):
         if style:
             sh.put(row, 1, label, bold=True, fill=style[0], color=style[1])
         else:
             sh.put(row, 1, label, bold=True)
-        sh.formula(row, 2, formula, num_fmt="#,##0", bold=bool(style))
+        sh.formula(row, 2, f'=COUNTIF({mgmt_ranges[2]},"{status}")', num_fmt="#,##0", bold=bool(style))
+        if dil_ranges:
+            sh.formula(row, 3, f'=COUNTIF({dil_ranges[2]},"{status}")', num_fmt="#,##0", bold=bool(style))
+        row += 1
+    for label, formula in (
+        ("Open questions for management", f'=COUNTIF({q_range},"{QuestionStatus.OPEN.value}")'),
+        ("Data quality issues: critical", f'=COUNTIF({dq_range},"{Severity.CRITICAL.value}")'),
+        ("Data quality issues: warning", f'=COUNTIF({dq_range},"{Severity.WARNING.value}")'),
+        ("Data quality issues: info", f'=COUNTIF({dq_range},"{Severity.INFO.value}")'),
+    ):
+        sh.put(row, 1, label, bold=True)
+        sh.formula(row, 2, formula, num_fmt="#,##0")
         row += 1
     row += 1
 
@@ -1962,11 +2078,15 @@ def _write_cover(
         sh.text(row, 2, desc, span=last - 1)
         row += 1
         if sheet.startswith("Adj "):
-            for a in wp.assessments:
-                cell = sh.link(row, 1, ctx.adj_sheets[a.adj_id], ctx.adj_sheets[a.adj_id])
-                cell.alignment = Alignment(indent=2, vertical="top")
-                sh.text(row, 2, a.title, span=last - 1, color=MUTED)
-                row += 1
+            for group, items in (("", ctx.mgmt_items), (DILIGENCE_BLOCK, ctx.dil_items)):
+                if group and items:
+                    sh.put(row, 1, group, span=last, italic=True, color=NAVY)
+                    row += 1
+                for a in items:
+                    cell = sh.link(row, 1, ctx.adj_sheets[a.adj_id], ctx.adj_sheets[a.adj_id])
+                    cell.alignment = Alignment(indent=2, vertical="top")
+                    sh.text(row, 2, a.title, span=last - 1, color=MUTED)
+                    row += 1
     row += 1
 
     sh.section(row, f"INPUT FILES ({len(wp.input_hashes)}), SHA-256")

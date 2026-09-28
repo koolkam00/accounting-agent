@@ -34,6 +34,7 @@ from qoe.trace import (
     STRONG_LINK,
     build_index,
     find_subset,
+    fit_claim,
     money,
     name_tokens,
     names_match,
@@ -219,6 +220,45 @@ def test_find_subset_is_bounded_to_the_strongest_items():
     assert time.perf_counter() - start < 5
 
 
+def test_fit_claim_prefers_fits_that_keep_groups_whole():
+    # A: one 6,000 entry; B: two 5,000 entries; C: one 4,000 entry. 10,000 = A + C (whole) or B (whole)
+    # or A + half of... none; the earliest-first rule would otherwise take A + 4,000 of B if it could.
+    values = [6_000_00, 5_000_00, 4_000_00, 5_000_00]
+    groups = ["A", "B", "C", "B"]
+    fit = fit_claim(values, 10_000_00, 0, groups, [False] * 4)
+    assert fit is not None and fit.split_groups == 0
+    # Two whole-group fits remain (A + C, and B); the earliest entries decide and the tie is counted.
+    assert fit.indices == [0, 2] and fit.ties == 2
+
+
+def test_fit_claim_prefers_whole_groups_then_cited_entries_then_the_earliest():
+    # Group G has four 2,500 entries; X is a single 5,000 entry that management's support cites.
+    values = [2_500_00, 2_500_00, 2_500_00, 2_500_00, 5_000_00]
+    groups = ["G", "G", "G", "G", "X"]
+    # 5,000: X alone (whole, cited) beats any two G entries (splits G).
+    assert fit_claim(values, 5_000_00, 0, groups, [False] * 4 + [True]).indices == [4]
+    # 7,500: every fit splits G once; the cited X decides over three uncited G entries.
+    fit = fit_claim(values, 7_500_00, 0, groups, [False] * 4 + [True])
+    assert fit.indices == [0, 4] and fit.cited == 1 and fit.split_groups == 1 and fit.ties == 4
+    # Nothing cited: the earliest entries win among the equally ranked fits.
+    fit = fit_claim(values, 7_500_00, 0, groups, [False] * 5)
+    assert fit.indices == [0, 1, 2]
+    # Exact beats approximate; no fit within tolerance is None.
+    assert fit_claim(values, 7_500_50, 100, groups, [False] * 5).diff == 50
+    assert fit_claim(values, 1_000_00, 0, groups, [False] * 5) is None
+
+
+def test_fit_claim_counts_residual_ties_and_stays_bounded():
+    # Twelve equal monthly entries, a claim of six: C(12,6) = 924 equal fits; the earliest six are taken.
+    fit = fit_claim([8_000_00] * 12, 48_000_00, 0, ["G"] * 12, [True] * 12)
+    assert fit.indices == list(range(6)) and fit.ties == 924 and not fit.bounded
+    start = time.perf_counter()
+    values = [1_000_00 + i for i in range(40)]
+    fit = fit_claim(values, values[3] + values[38], 0, [f"g{i}" for i in range(40)], [False] * 40, scores=[1.0] * 40)
+    assert fit is not None and fit.bounded
+    assert time.perf_counter() - start < 5
+
+
 def test_find_subset_handles_mixed_signs():
     # A credit memo inside the claimed set nets against the invoices.
     assert find_subset([10_000_00, -2_000_00, 3_000_00], 8_000_00) == [0, 1]
@@ -310,11 +350,25 @@ def test_excess_activity_is_fitted_by_whole_groups_first():
 
 def test_entry_level_fit_when_no_group_combination_ties():
     gl, lit, retainer, adhoc, *_ = _legal_deal()
-    # 14,000 + 4,000: one litigation invoice plus the ad hoc item, no whole group.
+    # 18,000 splits a group whichever way it is made, and nothing is cited: the earliest entries
+    # win (SPEC §5.3), and the residual tie is recorded for the reviewer.
     pkg = package(gl, [claim("A-1", "Mixed", [0, 18000, 0], ["6400"])])
     t = trace_one(pkg, intent("A-1", counterparties=["Marlow & Finch"]))
-    assert t.fits["FY2025"].method == "entries"
-    assert set(t.claimed["FY2025"]) == {lit[1], adhoc}
+    fit = t.fits["FY2025"]
+    assert fit.method == "entries" and fit.ties > 1
+    assert set(t.claimed["FY2025"]) == {lit[0]} | set(retainer[12:18])  # Mar 12,000 + Jan-Jun 2025 retainers
+    assert any(f"{fit.ties:,} fits rank equal" in f.message for f in flags(t, FlagCode.EXCESS_GL_ACTIVITY))
+    assert any("Which entries make up" in j for j in t.judgments)
+
+
+def test_a_reference_management_names_decides_between_equal_fits():
+    gl, lit, retainer, adhoc, *_ = _legal_deal()
+    pkg = package(gl, [claim("A-1", "Mixed", [0, 18000, 0], ["6400"])])
+    t = trace_one(pkg, intent("A-1", counterparties=["Marlow & Finch"], reference_numbers=["MF-7710-06"]))
+    # The invoice management names is taken first; the other 4,000 then comes from the earliest retainers.
+    assert set(t.claimed["FY2025"]) == {lit[1]} | set(retainer[12:16])
+    assert t.fits["FY2025"].cited == 1
+
 
 
 def test_ttm_fit_prefers_the_entries_claimed_in_the_overlapping_fiscal_year():
