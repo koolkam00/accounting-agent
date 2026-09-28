@@ -62,6 +62,7 @@
         "4.2.5 Hollis Crane Invoice 25-1120.pdf",
         "4.2.6 Dawson Settlement Agreement.pdf"
       ],
+      "related_docs": [],
       "expected_flags": [
         "RECURRING_PATTERN",
         "CONTINUING_OBLIGATION"
@@ -148,6 +149,7 @@
       "supporting_docs": [
         "5.1 Castellano Executive Employment Agreement DRAFT.pdf"
       ],
+      "related_docs": [],
       "expected_flags": [
         "UNSIGNED_OR_DRAFT_SUPPORT",
         "NORMALIZATION_BENCHMARK_MISSING"
@@ -218,6 +220,7 @@
         "3.5 Pelican Bay Country Club Member Statement Dec 2025.pdf",
         "3.6 BMW Financial Services Lease Statement X5 Dec 2025.pdf"
       ],
+      "related_docs": [],
       "expected_flags": [
         "CONTRADICTORY_EVIDENCE"
       ],
@@ -250,6 +253,7 @@
         "5.2.2 Barrow Search Partners Invoice BSP-25-0515.pdf",
         "5.2.3 Barrow Search Partners Invoice BSP-25-0717.pdf"
       ],
+      "related_docs": [],
       "expected_flags": [],
       "question_topics": [
         "Any further search fees, including replacement-search costs under the guarantee"
@@ -276,6 +280,7 @@
       "supporting_docs": [
         "5.3 Whitfield Separation Agreement.pdf"
       ],
+      "related_docs": [],
       "expected_flags": [],
       "question_topics": [
         "Whether the VP Sales role will be backfilled and at what cost"
@@ -319,6 +324,7 @@
         "6.1.1 Brightline Invoice BSG-2503.pdf",
         "6.2 Controller Email - FieldPro Subscription Mar 2025.txt"
       ],
+      "related_docs": [],
       "expected_flags": [
         "CONTRADICTORY_EVIDENCE",
         "CONTINUING_OBLIGATION",
@@ -348,6 +354,7 @@
       "supporting_docs": [
         "7.1 Gulfstream Bank Payoff Letter - Term Loan.pdf"
       ],
+      "related_docs": [],
       "expected_flags": [
         "ALREADY_EXCLUDED_FROM_EBITDA"
       ],
@@ -380,6 +387,7 @@
         "8.2 Dunmore Pike Engagement Letter - Sell-Side Readiness.pdf",
         "8.2.1 Dunmore Pike Invoice DP-25-1107.pdf"
       ],
+      "related_docs": [],
       "expected_flags": [
         "OVERLAP_WITH_OTHER_ADJUSTMENT"
       ],
@@ -411,6 +419,7 @@
         "9.2 Tampa Bay Restoration Invoice TBR-24-10417.pdf",
         "9.3 Gulf Coast Roofing Invoice GCR-5602.pdf"
       ],
+      "related_docs": [],
       "expected_flags": [
         "OFFSETTING_RECOVERY"
       ],
@@ -437,6 +446,7 @@
       "supporting_docs": [
         "10.1 Apex Ductwork Invoice AD-3391.pdf"
       ],
+      "related_docs": [],
       "expected_flags": [
         "OUT_OF_PERIOD"
       ],
@@ -468,6 +478,7 @@
         "10.3 Brandon Build-Out Contractors Invoice BBC-1147.pdf",
         "10.4 Brandon Build-Out Contractors Invoice BBC-1162.pdf"
       ],
+      "related_docs": [],
       "expected_flags": [
         "PERIOD_MISMATCH"
       ],
@@ -501,6 +512,7 @@
       "supporting_docs": [
         "5.4 COO Email - Dispatch Team Plan Mar 2026.txt"
       ],
+      "related_docs": [],
       "expected_flags": [
         "PRO_FORMA_NOT_REALIZED"
       ],
@@ -530,6 +542,7 @@
       "supporting_docs": [
         "10.5 Year-End Inventory Count Memo Dec 2025.pdf"
       ],
+      "related_docs": [],
       "expected_flags": [
         "RECURRING_PATTERN",
         "CONTRADICTORY_EVIDENCE"
@@ -562,6 +575,7 @@
         "11.1 Halvorsen Builders Chapter 7 Notice.pdf",
         "11.2 Halvorsen Builders Proof of Claim Official Form 410.pdf"
       ],
+      "related_docs": [],
       "expected_flags": [],
       "question_topics": [
         "Other customer credit exposure similar to Halvorsen Builders"
@@ -616,6 +630,7 @@
       "supporting_docs": [
         "9.4 Coastal Risk Premium Installment Notice May 2025.pdf"
       ],
+      "related_docs": [],
       "expected_flags": [
         "DUPLICATE_GL_ENTRY"
       ],
