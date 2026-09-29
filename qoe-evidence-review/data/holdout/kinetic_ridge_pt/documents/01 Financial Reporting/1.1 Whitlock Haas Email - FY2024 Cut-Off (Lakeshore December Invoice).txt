@@ -1,0 +1,21 @@
+From: Carolyn Haas <chaas@whitlockhaas.example>
+To: Megan Sato <msato@kineticridgept.example>
+Cc: Brent Oyelaran <boyelaran@kineticridgept.example>
+Date: Mon, 10 Feb 2025 16:42:18 -0500
+Subject: FY2024 close - Lakeshore December invoice (cut-off)
+
+Megan,
+
+While tying out the December AP subledger I found that Lakeshore Revenue Cycle Partners invoice LRC-2412 ($21,436.80, services December 1-31, 2024, invoice dated December 31, 2024) was entered in Xero on January 8 with the entry date instead of the invoice date, so the ledger shows it in January 2025.
+
+FY2024 is locked in Xero because we filed the partnership extension off the locked numbers, so we are not re-dating the bill. Instead the management reporting pack carries it in December through line 6995 Year-End Cut-Off Adjustments: +$21,436.80 in December 2024 and -$21,436.80 in January 2025. The Xero general ledger will keep showing the bill in January 2025.
+
+I checked every January 2025 bill over $2,500 against its invoice date and found no other December invoices posted to January.
+
+Carolyn
+
+Carolyn Haas, CPA
+Whitlock Haas CPAs, LLP
+
+--
+SYNTHETIC — generated for QoE Evidence Review testing

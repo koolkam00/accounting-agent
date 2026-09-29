@@ -1,0 +1,19 @@
+deal_id: tidewell_distribution
+target_name: "Tidewell Distribution Group, LLC"
+industry: "Specialty distribution - foodservice packaging and janitorial & sanitation supplies"
+synthetic: true
+currency: USD
+periods:
+  - {label: "FY2025", start: "2024-04", end: "2025-03"}
+  - {label: "FY2026", start: "2025-04", end: "2026-03"}
+  - {label: "TTM Jun-26", start: "2025-07", end: "2026-06"}
+data_start: "2024-04"
+data_end: "2026-06"
+gl_format: auto
+files:
+  gl: gl/general_ledger.csv
+  chart_of_accounts: gl/chart_of_accounts.csv
+  monthly_pl: financials/monthly_pl.xlsx
+  adjustments: adjustments/management_adjusted_ebitda.xlsx
+  documents_dir: documents
+tolerance: "1.00"

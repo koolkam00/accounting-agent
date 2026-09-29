@@ -1,0 +1,4459 @@
+{
+  "ai_mode": "rules",
+  "deals": [
+    {
+      "adjustments": [
+        {
+          "adj_id": "M-01",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "RECURRING",
+          "claimed": {
+            "FY2024": "0.00",
+            "FY2025": "120000.00",
+            "TTM Jun-26": "65500.00"
+          },
+          "doc_links": {
+            "expected": [
+              "4.2 Hollis Crane Engagement Letter - Matter 2291 Dawson.pdf",
+              "4.2.1 Hollis Crane Invoice 25-0212.pdf",
+              "4.2.2 Hollis Crane Invoice 25-0418.pdf",
+              "4.2.3 Hollis Crane Invoice 25-0615.pdf",
+              "4.2.4 Hollis Crane Invoice 25-0910.pdf",
+              "4.2.5 Hollis Crane Invoice 25-1120.pdf",
+              "4.2.6 Dawson Settlement Agreement.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 7,
+              "num": 7,
+              "rate": 1.0
+            },
+            "tool": [
+              "4.2 Hollis Crane Engagement Letter - Matter 2291 Dawson.pdf",
+              "4.2.1 Hollis Crane Invoice 25-0212.pdf",
+              "4.2.2 Hollis Crane Invoice 25-0418.pdf",
+              "4.2.3 Hollis Crane Invoice 25-0615.pdf",
+              "4.2.4 Hollis Crane Invoice 25-0910.pdf",
+              "4.2.5 Hollis Crane Invoice 25-1120.pdf",
+              "4.2.6 Dawson Settlement Agreement.pdf"
+            ],
+            "tp": 7,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "84500.00",
+            "TTM Jun-26": "30000.00"
+          },
+          "expected_treatment": "REVISE",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "RECURRING_PATTERN",
+              "CONTINUING_OBLIGATION"
+            ],
+            "missing": [],
+            "raised": [
+              "CONTRADICTORY_EVIDENCE",
+              "CONTINUING_OBLIGATION",
+              "RECURRING_PATTERN"
+            ],
+            "unexpected": [
+              "CONTRADICTORY_EVIDENCE"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              4699,
+              4707,
+              4711,
+              4720,
+              4727
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 37,
+              "num": 37,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              4699,
+              4707,
+              4711,
+              4720,
+              4727
+            ],
+            "tp": 5,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "84500.00",
+            "TTM Jun-26": "30000.00"
+          },
+          "title": "Dawson litigation legal fees",
+          "tool_confidence": "medium",
+          "tool_treatment": "REVISE",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "M-02",
+          "ambiguity": "medium",
+          "amount_correct": null,
+          "amount_diffs": {},
+          "amount_scored": false,
+          "case_type": "NEEDS_INFO",
+          "claimed": {
+            "FY2024": "360000.00",
+            "FY2025": "360000.00",
+            "TTM Jun-26": "360000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "5.1 Castellano Executive Employment Agreement DRAFT.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 1,
+              "num": 1,
+              "rate": 1.0
+            },
+            "tool": [
+              "5.1 Castellano Executive Employment Agreement DRAFT.pdf"
+            ],
+            "tp": 1,
+            "unsurfaced": []
+          },
+          "expected_amounts": {},
+          "expected_treatment": "REQUEST_INFO",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "UNSIGNED_OR_DRAFT_SUPPORT",
+              "NORMALIZATION_BENCHMARK_MISSING"
+            ],
+            "missing": [],
+            "raised": [
+              "UNSIGNED_OR_DRAFT_SUPPORT",
+              "NORMALIZATION_BENCHMARK_MISSING"
+            ],
+            "unexpected": []
+          },
+          "gl_links": {
+            "expected_rows": [
+              3946,
+              3947,
+              3948,
+              3949,
+              3950,
+              3951,
+              3952,
+              3953,
+              3954,
+              3955,
+              3956,
+              3957,
+              3958,
+              3959,
+              3960,
+              3961,
+              3962,
+              3963,
+              3964,
+              3965,
+              3966,
+              3967,
+              3968,
+              3969,
+              3970,
+              3971,
+              3972,
+              3973,
+              3974,
+              3975,
+              3976,
+              3977,
+              3978,
+              3979,
+              3980,
+              3981,
+              3982,
+              3983,
+              3984,
+              3985,
+              3986,
+              3987,
+              3988,
+              3989,
+              3990,
+              3991,
+              3992,
+              3993,
+              3994,
+              3995,
+              3996,
+              3997,
+              3998,
+              3999,
+              4000,
+              4001,
+              4002,
+              4003,
+              4004,
+              4005
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 60,
+              "num": 60,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              3946,
+              3947,
+              3948,
+              3949,
+              3950,
+              3951,
+              3952,
+              3953,
+              3954,
+              3955,
+              3956,
+              3957,
+              3958,
+              3959,
+              3960,
+              3961,
+              3962,
+              3963,
+              3964,
+              3965,
+              3966,
+              3967,
+              3968,
+              3969,
+              3970,
+              3971,
+              3972,
+              3973,
+              3974,
+              3975,
+              3976,
+              3977,
+              3978,
+              3979,
+              3980,
+              3981,
+              3982,
+              3983,
+              3984,
+              3985,
+              3986,
+              3987,
+              3988,
+              3989,
+              3990,
+              3991,
+              3992,
+              3993,
+              3994,
+              3995,
+              3996,
+              3997,
+              3998,
+              3999,
+              4000,
+              4001,
+              4002,
+              4003,
+              4004,
+              4005
+            ],
+            "tp": 60,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {},
+          "title": "Owner compensation normalization",
+          "tool_confidence": "high",
+          "tool_treatment": "REQUEST_INFO",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "M-03",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "CONTRADICTED",
+          "claimed": {
+            "FY2024": "0.00",
+            "FY2025": "48000.00",
+            "TTM Jun-26": "48000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "3.5 Pelican Bay Country Club Member Statement Dec 2025.pdf",
+              "3.6 BMW Financial Services Lease Statement X5 Dec 2025.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 2,
+              "num": 2,
+              "rate": 1.0
+            },
+            "tool": [
+              "3.5 Pelican Bay Country Club Member Statement Dec 2025.pdf",
+              "3.6 BMW Financial Services Lease Statement X5 Dec 2025.pdf"
+            ],
+            "tp": 2,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "31200.00",
+            "TTM Jun-26": "31200.00"
+          },
+          "expected_treatment": "REVISE",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "CONTRADICTORY_EVIDENCE"
+            ],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY",
+              "CONTRADICTORY_EVIDENCE"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              5125,
+              5129,
+              5133,
+              5137,
+              5140,
+              5143,
+              5147,
+              5151,
+              5154,
+              5158,
+              5162,
+              5166,
+              5168,
+              5172,
+              5175,
+              5180,
+              5184,
+              5188,
+              5218,
+              5222,
+              5226,
+              5229,
+              5232,
+              5235,
+              5238,
+              5241,
+              5244,
+              5247,
+              5250,
+              5253,
+              5256,
+              5260,
+              5264,
+              5267,
+              5270,
+              5273
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 40,
+              "num": 40,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              5125,
+              5129,
+              5133,
+              5137,
+              5140,
+              5143,
+              5147,
+              5151,
+              5154,
+              5158,
+              5162,
+              5166,
+              5168,
+              5172,
+              5175,
+              5180,
+              5184,
+              5188,
+              5218,
+              5222,
+              5226,
+              5229,
+              5232,
+              5235,
+              5238,
+              5241,
+              5244,
+              5247,
+              5250,
+              5253,
+              5256,
+              5260,
+              5264,
+              5267,
+              5270,
+              5273
+            ],
+            "tp": 36,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "31200.00",
+            "TTM Jun-26": "31200.00"
+          },
+          "title": "Owner personal expenses",
+          "tool_confidence": "medium",
+          "tool_treatment": "REVISE",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "M-04",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "ADEQUATE",
+          "claimed": {
+            "FY2024": "0.00",
+            "FY2025": "45000.00",
+            "TTM Jun-26": "15000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "5.2 Barrow Search Partners Engagement Letter - CFO Search.pdf",
+              "5.2.1 Barrow Search Partners Invoice BSP-25-0412.pdf",
+              "5.2.2 Barrow Search Partners Invoice BSP-25-0515.pdf",
+              "5.2.3 Barrow Search Partners Invoice BSP-25-0717.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 4,
+              "num": 4,
+              "rate": 1.0
+            },
+            "tool": [
+              "5.2 Barrow Search Partners Engagement Letter - CFO Search.pdf",
+              "5.2.1 Barrow Search Partners Invoice BSP-25-0412.pdf",
+              "5.2.2 Barrow Search Partners Invoice BSP-25-0515.pdf",
+              "5.2.3 Barrow Search Partners Invoice BSP-25-0717.pdf"
+            ],
+            "tp": 4,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "45000.00",
+            "TTM Jun-26": "15000.00"
+          },
+          "expected_treatment": "ACCEPT",
+          "false_accept": false,
+          "flags": {
+            "expected": [],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              4805,
+              4809,
+              4815
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 3,
+              "num": 3,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              4805,
+              4809,
+              4815
+            ],
+            "tp": 3,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "45000.00",
+            "TTM Jun-26": "15000.00"
+          },
+          "title": "CFO search fee",
+          "tool_confidence": "high",
+          "tool_treatment": "ACCEPT",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "M-05",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "ADEQUATE",
+          "claimed": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "75000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "5.3 Whitfield Separation Agreement.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 1,
+              "num": 1,
+              "rate": 1.0
+            },
+            "tool": [
+              "5.3 Whitfield Separation Agreement.pdf"
+            ],
+            "tp": 1,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "75000.00"
+          },
+          "expected_treatment": "ACCEPT",
+          "false_accept": false,
+          "flags": {
+            "expected": [],
+            "missing": [],
+            "raised": [],
+            "unexpected": []
+          },
+          "gl_links": {
+            "expected_rows": [
+              3909,
+              3917,
+              3925
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 3,
+              "num": 3,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              3909,
+              3917,
+              3925
+            ],
+            "tp": 3,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "75000.00"
+          },
+          "title": "Severance - former VP Sales",
+          "tool_confidence": "high",
+          "tool_treatment": "ACCEPT",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "M-06",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "CONTRADICTED",
+          "claimed": {
+            "FY2024": "0.00",
+            "FY2025": "96000.00",
+            "TTM Jun-26": "48000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "6.1 Brightline Managed Services Agreement.pdf",
+              "6.1.1 Brightline Invoice BSG-2503.pdf",
+              "6.2 Controller Email - FieldPro Subscription Mar 2025.txt"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 3,
+              "num": 3,
+              "rate": 1.0
+            },
+            "tool": [
+              "6.1 Brightline Managed Services Agreement.pdf",
+              "6.1.1 Brightline Invoice BSG-2503.pdf",
+              "6.2 Controller Email - FieldPro Subscription Mar 2025.txt"
+            ],
+            "tp": 3,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "expected_treatment": "REJECT",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "CONTRADICTORY_EVIDENCE",
+              "CONTINUING_OBLIGATION",
+              "RECURRING_PATTERN"
+            ],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY",
+              "CONTRADICTORY_EVIDENCE",
+              "CONTINUING_OBLIGATION",
+              "RECURRING_PATTERN"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 18,
+              "num": 18,
+              "rate": 1.0
+            },
+            "tool_rows": [],
+            "tp": 0,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "title": "FieldPro implementation (one-time)",
+          "tool_confidence": "medium",
+          "tool_treatment": "REJECT",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "M-07",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "EBITDA_EXCLUDED",
+          "claimed": {
+            "FY2024": "0.00",
+            "FY2025": "35000.00",
+            "TTM Jun-26": "0.00"
+          },
+          "doc_links": {
+            "expected": [
+              "7.1 Gulfstream Bank Payoff Letter - Term Loan.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 1,
+              "num": 1,
+              "rate": 1.0
+            },
+            "tool": [
+              "7.1 Gulfstream Bank Payoff Letter - Term Loan.pdf"
+            ],
+            "tp": 1,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "expected_treatment": "REJECT",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "ALREADY_EXCLUDED_FROM_EBITDA"
+            ],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY",
+              "ALREADY_EXCLUDED_FROM_EBITDA"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 2,
+              "num": 2,
+              "rate": 1.0
+            },
+            "tool_rows": [],
+            "tp": 0,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "title": "Refinancing costs",
+          "tool_confidence": "high",
+          "tool_treatment": "REJECT",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "M-08",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "OVERLAP",
+          "claimed": {
+            "FY2024": "0.00",
+            "FY2025": "62000.00",
+            "TTM Jun-26": "62000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "8.1 Keel Harbor Advisors Engagement Letter.pdf",
+              "8.1.1 Keel Harbor Advisors Invoice KHA-2510-031.pdf",
+              "8.2 Dunmore Pike Engagement Letter - Sell-Side Readiness.pdf",
+              "8.2.1 Dunmore Pike Invoice DP-25-1107.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 4,
+              "num": 4,
+              "rate": 1.0
+            },
+            "tool": [
+              "8.1 Keel Harbor Advisors Engagement Letter.pdf",
+              "8.1.1 Keel Harbor Advisors Invoice KHA-2510-031.pdf",
+              "8.2 Dunmore Pike Engagement Letter - Sell-Side Readiness.pdf",
+              "8.2.1 Dunmore Pike Invoice DP-25-1107.pdf"
+            ],
+            "tp": 4,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "41000.00",
+            "TTM Jun-26": "41000.00"
+          },
+          "expected_treatment": "REVISE",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "OVERLAP_WITH_OTHER_ADJUSTMENT"
+            ],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY",
+              "OVERLAP_WITH_OTHER_ADJUSTMENT"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              4722,
+              4757
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 3,
+              "num": 3,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              4722,
+              4757
+            ],
+            "tp": 2,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "41000.00",
+            "TTM Jun-26": "41000.00"
+          },
+          "title": "Transaction-related professional fees",
+          "tool_confidence": "high",
+          "tool_treatment": "REVISE",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "M-09",
+          "ambiguity": "medium",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "RECOVERY_OFFSET",
+          "claimed": {
+            "FY2024": "58000.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "doc_links": {
+            "expected": [
+              "9.1 Sunshine Mutual Claim Settlement Letter FL-24-88172.pdf",
+              "9.2 Tampa Bay Restoration Invoice TBR-24-10417.pdf",
+              "9.3 Gulf Coast Roofing Invoice GCR-5602.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 3,
+              "num": 3,
+              "rate": 1.0
+            },
+            "tool": [
+              "9.1 Sunshine Mutual Claim Settlement Letter FL-24-88172.pdf",
+              "9.2 Tampa Bay Restoration Invoice TBR-24-10417.pdf",
+              "9.3 Gulf Coast Roofing Invoice GCR-5602.pdf"
+            ],
+            "tp": 3,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2024": "58000.00",
+            "FY2025": "-40000.00",
+            "TTM Jun-26": "0.00"
+          },
+          "expected_treatment": "REVISE",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "OFFSETTING_RECOVERY"
+            ],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY",
+              "OFFSETTING_RECOVERY"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              4342,
+              4349
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 3,
+              "num": 3,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              4342,
+              4349
+            ],
+            "tp": 2,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2024": "58000.00",
+            "FY2025": "-40000.00",
+            "TTM Jun-26": "0.00"
+          },
+          "title": "Storm damage repairs",
+          "tool_confidence": "high",
+          "tool_treatment": "REVISE",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "M-10",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "OUT_OF_PERIOD",
+          "claimed": {
+            "FY2024": "0.00",
+            "FY2025": "42000.00",
+            "TTM Jun-26": "0.00"
+          },
+          "doc_links": {
+            "expected": [
+              "10.1 Apex Ductwork Invoice AD-3391.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 1,
+              "num": 1,
+              "rate": 1.0
+            },
+            "tool": [
+              "10.1 Apex Ductwork Invoice AD-3391.pdf"
+            ],
+            "tp": 1,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2024": "-42000.00",
+            "FY2025": "42000.00",
+            "TTM Jun-26": "0.00"
+          },
+          "expected_treatment": "REVISE",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "OUT_OF_PERIOD"
+            ],
+            "missing": [],
+            "raised": [
+              "OUT_OF_PERIOD"
+            ],
+            "unexpected": []
+          },
+          "gl_links": {
+            "expected_rows": [
+              3281
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 1,
+              "num": 1,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              3281
+            ],
+            "tp": 1,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2024": "-42000.00",
+            "FY2025": "42000.00",
+            "TTM Jun-26": "0.00"
+          },
+          "title": "Prior-year subcontractor true-up",
+          "tool_confidence": "high",
+          "tool_treatment": "REVISE",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "M-11",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "WRONG_PERIOD",
+          "claimed": {
+            "FY2024": "0.00",
+            "FY2025": "80000.00",
+            "TTM Jun-26": "80000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "10.2 Suncoast Movers Invoice SM-25-0214.pdf",
+              "10.3 Brandon Build-Out Contractors Invoice BBC-1147.pdf",
+              "10.4 Brandon Build-Out Contractors Invoice BBC-1162.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 3,
+              "num": 3,
+              "rate": 1.0
+            },
+            "tool": [
+              "10.2 Suncoast Movers Invoice SM-25-0214.pdf",
+              "10.3 Brandon Build-Out Contractors Invoice BBC-1147.pdf",
+              "10.4 Brandon Build-Out Contractors Invoice BBC-1162.pdf"
+            ],
+            "tp": 3,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "80000.00",
+            "TTM Jun-26": "0.00"
+          },
+          "expected_treatment": "REVISE",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "PERIOD_MISMATCH"
+            ],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY",
+              "PERIOD_MISMATCH"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              4229,
+              4360,
+              4364
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 3,
+              "num": 3,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              4229,
+              4360,
+              4364
+            ],
+            "tp": 3,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "80000.00",
+            "TTM Jun-26": "0.00"
+          },
+          "title": "Warehouse relocation",
+          "tool_confidence": "high",
+          "tool_treatment": "REVISE",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "M-12",
+          "ambiguity": "medium",
+          "amount_correct": null,
+          "amount_diffs": {},
+          "amount_scored": false,
+          "case_type": "NEEDS_INFO",
+          "claimed": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "165000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "5.4 COO Email - Dispatch Team Plan Mar 2026.txt"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 1,
+              "num": 1,
+              "rate": 1.0
+            },
+            "tool": [
+              "5.4 COO Email - Dispatch Team Plan Mar 2026.txt"
+            ],
+            "tp": 1,
+            "unsurfaced": []
+          },
+          "expected_amounts": {},
+          "expected_treatment": "REQUEST_INFO",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "PRO_FORMA_NOT_REALIZED"
+            ],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY",
+              "PRO_FORMA_NOT_REALIZED"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              3863,
+              3870,
+              3877,
+              3884,
+              3891,
+              3898,
+              3905,
+              3913,
+              3921,
+              3929,
+              3936,
+              3943
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 12,
+              "num": 12,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              3863,
+              3870,
+              3877,
+              3884,
+              3891,
+              3898,
+              3905,
+              3913,
+              3921,
+              3929,
+              3936,
+              3943
+            ],
+            "tp": 12,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {},
+          "title": "Pro forma dispatcher savings",
+          "tool_confidence": "high",
+          "tool_treatment": "REQUEST_INFO",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "M-13",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "RECURRING",
+          "claimed": {
+            "FY2024": "0.00",
+            "FY2025": "64000.00",
+            "TTM Jun-26": "64000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "10.5 Year-End Inventory Count Memo Dec 2025.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 1,
+              "num": 1,
+              "rate": 1.0
+            },
+            "tool": [
+              "10.5 Year-End Inventory Count Memo Dec 2025.pdf"
+            ],
+            "tp": 1,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "expected_treatment": "REJECT",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "RECURRING_PATTERN",
+              "CONTRADICTORY_EVIDENCE"
+            ],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY",
+              "CONTRADICTORY_EVIDENCE",
+              "RECURRING_PATTERN"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 2,
+              "num": 2,
+              "rate": 1.0
+            },
+            "tool_rows": [],
+            "tp": 0,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "title": "Inventory write-off (one-time)",
+          "tool_confidence": "medium",
+          "tool_treatment": "REJECT",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "M-14",
+          "ambiguity": "medium",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2024": "0.00",
+            "FY2025": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "ADEQUATE",
+          "claimed": {
+            "FY2024": "0.00",
+            "FY2025": "52000.00",
+            "TTM Jun-26": "52000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "11.1 Halvorsen Builders Chapter 7 Notice.pdf",
+              "11.2 Halvorsen Builders Proof of Claim Official Form 410.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 2,
+              "num": 2,
+              "rate": 1.0
+            },
+            "tool": [
+              "11.1 Halvorsen Builders Chapter 7 Notice.pdf",
+              "11.2 Halvorsen Builders Proof of Claim Official Form 410.pdf"
+            ],
+            "tp": 2,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "52000.00",
+            "TTM Jun-26": "52000.00"
+          },
+          "expected_treatment": "ACCEPT",
+          "false_accept": false,
+          "flags": {
+            "expected": [],
+            "missing": [],
+            "raised": [],
+            "unexpected": []
+          },
+          "gl_links": {
+            "expected_rows": [
+              5543
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 4,
+              "num": 4,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              5543
+            ],
+            "tp": 1,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2024": "0.00",
+            "FY2025": "52000.00",
+            "TTM Jun-26": "52000.00"
+          },
+          "title": "Customer bankruptcy write-off",
+          "tool_confidence": "high",
+          "tool_treatment": "ACCEPT",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        }
+      ],
+      "ai_mode": "rules",
+      "amount_accuracy": {
+        "den": 12,
+        "num": 12,
+        "rate": 1.0
+      },
+      "by_ambiguity": {
+        "low": {
+          "den": 10,
+          "num": 10,
+          "rate": 1.0
+        },
+        "medium": {
+          "den": 4,
+          "num": 4,
+          "rate": 1.0
+        }
+      },
+      "by_case_type": {
+        "ADEQUATE": {
+          "den": 3,
+          "num": 3,
+          "rate": 1.0
+        },
+        "CONTRADICTED": {
+          "den": 2,
+          "num": 2,
+          "rate": 1.0
+        },
+        "EBITDA_EXCLUDED": {
+          "den": 1,
+          "num": 1,
+          "rate": 1.0
+        },
+        "NEEDS_INFO": {
+          "den": 2,
+          "num": 2,
+          "rate": 1.0
+        },
+        "OUT_OF_PERIOD": {
+          "den": 1,
+          "num": 1,
+          "rate": 1.0
+        },
+        "OVERLAP": {
+          "den": 1,
+          "num": 1,
+          "rate": 1.0
+        },
+        "RECOVERY_OFFSET": {
+          "den": 1,
+          "num": 1,
+          "rate": 1.0
+        },
+        "RECURRING": {
+          "den": 2,
+          "num": 2,
+          "rate": 1.0
+        },
+        "WRONG_PERIOD": {
+          "den": 1,
+          "num": 1,
+          "rate": 1.0
+        }
+      },
+      "by_confidence": {
+        "high": {
+          "den": 10,
+          "num": 10,
+          "rate": 1.0
+        },
+        "medium": {
+          "den": 4,
+          "num": 4,
+          "rate": 1.0
+        }
+      },
+      "data_quality_recall": {
+        "den": 3,
+        "items": [
+          {
+            "account": "6200",
+            "code": "DUPLICATE_GL_ENTRY",
+            "detected": true,
+            "matched_message": "Possible duplicate posting in 6200 Insurance: 2 entries of 18,400.00 to Coastal Risk Insurance (same doc # CRI-25-0507; GL rows 4464, 4465; dated 2025-05-07, 2025-05-10). If duplicated, the GL double counts 18,400.00.",
+            "month": "2025-05",
+            "note": "Coastal Risk Insurance May 2025 premium installment CRI-25-0507 ($18,400.00) was entered twice, on 05/07/2025 and again on 05/10/2025. Management's P&L includes both postings."
+          },
+          {
+            "account": "6000",
+            "code": "RECON_VARIANCE",
+            "detected": true,
+            "matched_message": "2025-12 6000 Salaries & Wages - Office: P&L 233,835.53 vs GL 208,835.53 (debit-positive); variance 25,000.00 (P&L minus GL): P&L EBITDA is 25,000.00 lower than the GL.",
+            "month": "2025-12",
+            "note": "Management's Dec 2025 P&L carries a $25,000 top-side accrual in 6000 for a proposed discretionary bonus pool. The owner has not approved it, nothing was communicated or paid, and it was never booked in QuickBooks (see the Jan 2026 controller email in the financials folder). Management P&L less GL: 25000.00."
+          },
+          {
+            "account": null,
+            "code": "MGMT_EBITDA_DIFFERS_FROM_GL",
+            "detected": true,
+            "matched_message": "FY2025: management's reported EBITDA of 4,514,300.32 is 25,000.00 lower than EBITDA recomputed from the GL (4,539,300.32). GL-to-P&L variances in the period move P&L EBITDA by -25,000.00, which explains the difference.",
+            "month": null,
+            "note": "Management's reported EBITDA less GL-derived EBITDA: FY2025 -25000.00; TTM Jun-26 -25000.00. The difference is the planted P&L-only entries above; the GL is the diligence starting point."
+          }
+        ],
+        "num": 3,
+        "rate": 1.0
+      },
+      "deal_id": "meridian_mechanical",
+      "diligence_item_accuracy": {
+        "den": 1,
+        "expected": 1,
+        "extra": [],
+        "items": [
+          {
+            "ambiguity": "low",
+            "amount_diffs": {
+              "FY2024": "0.00",
+              "FY2025": "0.00",
+              "TTM Jun-26": "0.00"
+            },
+            "case_type": "DUPLICATE_POSTING",
+            "correct": true,
+            "doc_links": {
+              "expected": [
+                "9.4 Coastal Risk Premium Installment Notice May 2025.pdf"
+              ],
+              "extra": [],
+              "fn": 0,
+              "fp": 0,
+              "missing": [],
+              "precision": 1.0,
+              "recall": 1.0,
+              "surfaced": {
+                "den": 1,
+                "num": 1,
+                "rate": 1.0
+              },
+              "tool": [
+                "9.4 Coastal Risk Premium Installment Notice May 2025.pdf"
+              ],
+              "tp": 1,
+              "unsurfaced": []
+            },
+            "expected_amounts": {
+              "FY2024": "0.00",
+              "FY2025": "18400.00",
+              "TTM Jun-26": "0.00"
+            },
+            "expected_treatment": "REVISE",
+            "flags": {
+              "expected": [
+                "DUPLICATE_GL_ENTRY"
+              ],
+              "missing": [],
+              "raised": [
+                "DUPLICATE_GL_ENTRY"
+              ]
+            },
+            "gl_links": {
+              "expected_rows": [
+                4465
+              ],
+              "extra_rows": [],
+              "fn": 0,
+              "fp": 0,
+              "missing_rows": [],
+              "precision": 1.0,
+              "recall": 1.0,
+              "surfaced": {
+                "den": 2,
+                "num": 2,
+                "rate": 1.0
+              },
+              "tool_rows": [
+                4465
+              ],
+              "tp": 1,
+              "unsurfaced_rows": []
+            },
+            "key_id": "D-1",
+            "match_basis": "supporting_rows",
+            "proposed_amounts": {
+              "FY2024": "0.00",
+              "FY2025": "18400.00",
+              "TTM Jun-26": "0.00"
+            },
+            "title": "Reverse duplicate posting: Coastal Risk Insurance CRI-25-0507",
+            "tool_id": "D-1",
+            "tool_treatment": "REVISE",
+            "verdict": "CORRECT"
+          }
+        ],
+        "matched": 1,
+        "missed": [],
+        "num": 1,
+        "rate": 1.0,
+        "tool": 1
+      },
+      "doc_link_precision": {
+        "den": 34,
+        "num": 34,
+        "rate": 1.0
+      },
+      "doc_link_recall": {
+        "den": 34,
+        "num": 34,
+        "rate": 1.0
+      },
+      "doc_surfaced_recall": {
+        "den": 34,
+        "num": 34,
+        "rate": 1.0
+      },
+      "ebitda_error": {
+        "by_period": {
+          "FY2024": {
+            "abs_error": "0.00",
+            "bridge_diligence_adjusted_ebitda": "4278397.50",
+            "bridge_matches_proposals": true,
+            "expected_diligence_adjusted_ebitda": "4278397.50",
+            "expected_diligence_items": "0.00",
+            "expected_gl_ebitda": "4262397.50",
+            "gl_ebitda_agrees": true,
+            "gl_ebitda_diff": "0.00",
+            "tool_diligence_adjusted_ebitda": "4278397.50",
+            "tool_diligence_items": "0.00",
+            "tool_gl_ebitda": "4262397.50",
+            "tool_management_adjustments": "16000.00",
+            "within_tolerance": true
+          },
+          "FY2025": {
+            "abs_error": "0.00",
+            "bridge_diligence_adjusted_ebitda": "4893400.32",
+            "bridge_matches_proposals": true,
+            "expected_diligence_adjusted_ebitda": "4893400.32",
+            "expected_diligence_items": "18400.00",
+            "expected_gl_ebitda": "4539300.32",
+            "gl_ebitda_agrees": true,
+            "gl_ebitda_diff": "0.00",
+            "tool_diligence_adjusted_ebitda": "4893400.32",
+            "tool_diligence_items": "18400.00",
+            "tool_gl_ebitda": "4539300.32",
+            "tool_management_adjustments": "335700.00",
+            "within_tolerance": true
+          },
+          "TTM Jun-26": {
+            "abs_error": "0.00",
+            "bridge_diligence_adjusted_ebitda": "5091058.55",
+            "bridge_matches_proposals": true,
+            "expected_diligence_adjusted_ebitda": "5091058.55",
+            "expected_diligence_items": "0.00",
+            "expected_gl_ebitda": "4846858.55",
+            "gl_ebitda_agrees": true,
+            "gl_ebitda_diff": "0.00",
+            "tool_diligence_adjusted_ebitda": "5091058.55",
+            "tool_diligence_items": "0.00",
+            "tool_gl_ebitda": "4846858.55",
+            "tool_management_adjustments": "244200.00",
+            "within_tolerance": true
+          }
+        },
+        "max_abs_error": "0.00"
+      },
+      "false_accept_rate": {
+        "adj_ids": [],
+        "den": 11,
+        "num": 0,
+        "rate": 0.0
+      },
+      "flag_recall": {
+        "den": 16,
+        "num": 16,
+        "rate": 1.0
+      },
+      "gl_link_precision": {
+        "den": 128,
+        "num": 128,
+        "rate": 1.0
+      },
+      "gl_link_recall": {
+        "den": 128,
+        "num": 128,
+        "rate": 1.0
+      },
+      "gl_surfaced_recall": {
+        "den": 191,
+        "num": 191,
+        "rate": 1.0
+      },
+      "missed_contradictions": {
+        "den": 11,
+        "items": [],
+        "num": 0,
+        "rate": 0.0
+      },
+      "n_adjustments": 14,
+      "n_diligence_items": 1,
+      "period_labels": [
+        "FY2024",
+        "FY2025",
+        "TTM Jun-26"
+      ],
+      "run_id": "eval-dev-meridian_mechanical",
+      "split": "dev",
+      "tool_version": "0.1.0",
+      "treatment_accuracy": {
+        "den": 14,
+        "num": 14,
+        "rate": 1.0
+      },
+      "unscored_tool_adjustments": [],
+      "verdicts": {
+        "PASS": 14
+      }
+    },
+    {
+      "adjustments": [
+        {
+          "adj_id": "1",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "ADEQUATE",
+          "claimed": {
+            "FY2025": "540000.00",
+            "FY2026": "540000.00",
+            "TTM Jun-26": "540000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "2.1 Carrow Executive Employment Agreement - Executed.pdf",
+              "2.2 Holloway Compensation Advisors - CEO Pay Benchmark Jan 2026.pdf"
+            ],
+            "extra": [],
+            "fn": 2,
+            "fp": 0,
+            "missing": [
+              "2.1 Carrow Executive Employment Agreement - Executed.pdf",
+              "2.2 Holloway Compensation Advisors - CEO Pay Benchmark Jan 2026.pdf"
+            ],
+            "precision": null,
+            "recall": 0.0,
+            "surfaced": {
+              "den": 2,
+              "num": 2,
+              "rate": 1.0
+            },
+            "tool": [],
+            "tp": 0,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2025": "540000.00",
+            "FY2026": "540000.00",
+            "TTM Jun-26": "540000.00"
+          },
+          "expected_treatment": "ACCEPT",
+          "false_accept": false,
+          "flags": {
+            "expected": [],
+            "missing": [],
+            "raised": [
+              "CONTRADICTORY_EVIDENCE"
+            ],
+            "unexpected": [
+              "CONTRADICTORY_EVIDENCE"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              120,
+              232,
+              341,
+              466,
+              575,
+              673,
+              800,
+              920,
+              1004,
+              1081,
+              1190,
+              1305,
+              1416,
+              1542,
+              1662,
+              1754,
+              1872,
+              1990,
+              2100,
+              2212,
+              2318,
+              2428,
+              2535,
+              2647,
+              2768,
+              2874,
+              2983,
+              3085,
+              3217,
+              3328,
+              3436,
+              3566,
+              3678,
+              3775,
+              3899,
+              4011,
+              4133,
+              4245,
+              4353,
+              4451,
+              4576,
+              4692,
+              4816,
+              4916,
+              5035,
+              5137,
+              5253,
+              5373,
+              5491,
+              5597,
+              5713,
+              5801,
+              5932,
+              6034
+            ],
+            "extra_rows": [],
+            "fn": 54,
+            "fp": 0,
+            "missing_rows": [
+              120,
+              232,
+              341,
+              466,
+              575,
+              673,
+              800,
+              920,
+              1004,
+              1081,
+              1190,
+              1305,
+              1416,
+              1542,
+              1662,
+              1754,
+              1872,
+              1990,
+              2100,
+              2212,
+              2318,
+              2428,
+              2535,
+              2647,
+              2768,
+              2874,
+              2983,
+              3085,
+              3217,
+              3328,
+              3436,
+              3566,
+              3678,
+              3775,
+              3899,
+              4011,
+              4133,
+              4245,
+              4353,
+              4451,
+              4576,
+              4692,
+              4816,
+              4916,
+              5035,
+              5137,
+              5253,
+              5373,
+              5491,
+              5597,
+              5713,
+              5801,
+              5932,
+              6034
+            ],
+            "precision": null,
+            "recall": 0.0,
+            "surfaced": {
+              "den": 54,
+              "num": 54,
+              "rate": 1.0
+            },
+            "tool_rows": [],
+            "tp": 0,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2025": "540000.00",
+            "FY2026": "540000.00",
+            "TTM Jun-26": "540000.00"
+          },
+          "title": "Owner compensation normalization",
+          "tool_confidence": "medium",
+          "tool_treatment": "ACCEPT",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "2",
+          "ambiguity": "medium",
+          "amount_correct": null,
+          "amount_diffs": {},
+          "amount_scored": false,
+          "case_type": "CONTRADICTED",
+          "claimed": {
+            "FY2025": "48000.00",
+            "FY2026": "48000.00",
+            "TTM Jun-26": "48000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "2.3 Lease Agreement - 410 Grange Road (Pooler Industrial Holdings).pdf",
+              "2.4 Marsh Point Broker Opinion of Market Rent - 410 Grange Road.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 2,
+              "num": 2,
+              "rate": 1.0
+            },
+            "tool": [
+              "2.3 Lease Agreement - 410 Grange Road (Pooler Industrial Holdings).pdf",
+              "2.4 Marsh Point Broker Opinion of Market Rent - 410 Grange Road.pdf"
+            ],
+            "tp": 2,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2025": "-60000.00",
+            "FY2026": "-60000.00",
+            "TTM Jun-26": "-60000.00"
+          },
+          "expected_treatment": "REVISE",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "CONTRADICTORY_EVIDENCE"
+            ],
+            "missing": [
+              "CONTRADICTORY_EVIDENCE"
+            ],
+            "raised": [
+              "NORMALIZATION_BENCHMARK_MISSING"
+            ],
+            "unexpected": [
+              "NORMALIZATION_BENCHMARK_MISSING"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              16,
+              246,
+              473,
+              700,
+              931,
+              1090,
+              1319,
+              1559,
+              1772,
+              2005,
+              2219,
+              2435,
+              2662,
+              2888,
+              3103,
+              3342,
+              3582,
+              3803,
+              4025,
+              4252,
+              4475,
+              4708,
+              4934,
+              5152,
+              5387,
+              5610,
+              5824
+            ],
+            "extra_rows": [
+              11,
+              12,
+              241,
+              242,
+              469,
+              470,
+              694,
+              695,
+              929,
+              930,
+              1086,
+              1087,
+              1314,
+              1315,
+              1553,
+              1554,
+              1643,
+              1768,
+              1769,
+              2000,
+              2001,
+              2215,
+              2216,
+              2431,
+              2432,
+              2657,
+              2658,
+              2884,
+              2885,
+              3099,
+              3100,
+              3337,
+              3338,
+              3576,
+              3577,
+              3797,
+              3798,
+              4020,
+              4021,
+              4248,
+              4249,
+              4351,
+              4471,
+              4472,
+              4704,
+              4705,
+              4931,
+              4932,
+              5149,
+              5150,
+              5384,
+              5385,
+              5606,
+              5607,
+              5820,
+              5821
+            ],
+            "fn": 0,
+            "fp": 56,
+            "missing_rows": [],
+            "precision": 0.3253,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 29,
+              "num": 29,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              11,
+              12,
+              16,
+              241,
+              242,
+              246,
+              469,
+              470,
+              473,
+              694,
+              695,
+              700,
+              929,
+              930,
+              931,
+              1086,
+              1087,
+              1090,
+              1314,
+              1315,
+              1319,
+              1553,
+              1554,
+              1559,
+              1643,
+              1768,
+              1769,
+              1772,
+              2000,
+              2001,
+              2005,
+              2215,
+              2216,
+              2219,
+              2431,
+              2432,
+              2435,
+              2657,
+              2658,
+              2662,
+              2884,
+              2885,
+              2888,
+              3099,
+              3100,
+              3103,
+              3337,
+              3338,
+              3342,
+              3576,
+              3577,
+              3582,
+              3797,
+              3798,
+              3803,
+              4020,
+              4021,
+              4025,
+              4248,
+              4249,
+              4252,
+              4351,
+              4471,
+              4472,
+              4475,
+              4704,
+              4705,
+              4708,
+              4931,
+              4932,
+              4934,
+              5149,
+              5150,
+              5152,
+              5384,
+              5385,
+              5387,
+              5606,
+              5607,
+              5610,
+              5820,
+              5821,
+              5824
+            ],
+            "tp": 27,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [
+            "CONTRADICTORY_EVIDENCE"
+          ],
+          "proposed_amounts": {},
+          "title": "Related-party rent - Savannah DC",
+          "tool_confidence": "high",
+          "tool_treatment": "REQUEST_INFO",
+          "treatment_correct": false,
+          "verdict": "WRONG_TREATMENT"
+        },
+        {
+          "adj_id": "3",
+          "ambiguity": "medium",
+          "amount_correct": null,
+          "amount_diffs": {},
+          "amount_scored": false,
+          "case_type": "NEEDS_INFO",
+          "claimed": {
+            "FY2025": "60000.00",
+            "FY2026": "60000.00",
+            "TTM Jun-26": "60000.00"
+          },
+          "doc_links": {
+            "expected": [],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 0,
+              "num": 0,
+              "rate": null
+            },
+            "tool": [],
+            "tp": 0,
+            "unsurfaced": []
+          },
+          "expected_amounts": {},
+          "expected_treatment": "REQUEST_INFO",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "NO_GL_SUPPORT"
+            ],
+            "missing": [],
+            "raised": [
+              "NO_GL_SUPPORT"
+            ],
+            "unexpected": []
+          },
+          "gl_links": {
+            "expected_rows": [],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 0,
+              "num": 0,
+              "rate": null
+            },
+            "tool_rows": [],
+            "tp": 0,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {},
+          "title": "Family office shared services",
+          "tool_confidence": "high",
+          "tool_treatment": "REQUEST_INFO",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "4",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "ADEQUATE",
+          "claimed": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "88230.18"
+          },
+          "doc_links": {
+            "expected": [
+              "3.1 HR Memo - Charleston Order Desk Reduction in Force.pdf",
+              "3.1.1 Separation Agreement - R. Alvarez.pdf",
+              "3.1.2 Separation Agreement - K. Brooks.pdf",
+              "3.1.3 Separation Agreement - T. Nguyen.pdf",
+              "3.1.4 Payroll Register Extract - Charleston Order Desk Jul 2025-Jan 2026.pdf",
+              "3.1.5 COO Email - Order Desk Volume Moved to Portal.eml"
+            ],
+            "extra": [],
+            "fn": 2,
+            "fp": 0,
+            "missing": [
+              "3.1 HR Memo - Charleston Order Desk Reduction in Force.pdf",
+              "3.1.5 COO Email - Order Desk Volume Moved to Portal.eml"
+            ],
+            "precision": 1.0,
+            "recall": 0.6667,
+            "surfaced": {
+              "den": 6,
+              "num": 6,
+              "rate": 1.0
+            },
+            "tool": [
+              "3.1.1 Separation Agreement - R. Alvarez.pdf",
+              "3.1.2 Separation Agreement - K. Brooks.pdf",
+              "3.1.3 Separation Agreement - T. Nguyen.pdf",
+              "3.1.4 Payroll Register Extract - Charleston Order Desk Jul 2025-Jan 2026.pdf"
+            ],
+            "tp": 4,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "88230.18"
+          },
+          "expected_treatment": "ACCEPT",
+          "false_accept": false,
+          "flags": {
+            "expected": [],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              3431,
+              3553,
+              3671,
+              3769,
+              3893,
+              3998,
+              4127,
+              4230,
+              4347,
+              4445,
+              4569,
+              4680,
+              4808,
+              4910
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 15,
+              "num": 15,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              3431,
+              3553,
+              3671,
+              3769,
+              3893,
+              3998,
+              4127,
+              4230,
+              4347,
+              4445,
+              4569,
+              4680,
+              4808,
+              4910
+            ],
+            "tp": 14,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "88230.18"
+          },
+          "title": "Charleston order desk eliminated",
+          "tool_confidence": "high",
+          "tool_treatment": "ACCEPT",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "5",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "PARTIAL",
+          "claimed": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "48000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "3.2 Separation and Release Agreement - M. Bell (Purchasing Manager).pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 3,
+              "num": 3,
+              "rate": 1.0
+            },
+            "tool": [
+              "3.2 Separation and Release Agreement - M. Bell (Purchasing Manager).pdf"
+            ],
+            "tp": 1,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "43200.00"
+          },
+          "expected_treatment": "REVISE",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "PARTIAL_GL_SUPPORT"
+            ],
+            "missing": [],
+            "raised": [
+              "PARTIAL_GL_SUPPORT"
+            ],
+            "unexpected": []
+          },
+          "gl_links": {
+            "expected_rows": [
+              3437,
+              3567,
+              3679,
+              3776,
+              3900,
+              4012,
+              4134,
+              4246,
+              4354,
+              4452,
+              4577,
+              4693
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 12,
+              "num": 12,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              3437,
+              3567,
+              3679,
+              3776,
+              3900,
+              4012,
+              4134,
+              4246,
+              4354,
+              4452,
+              4577,
+              4693
+            ],
+            "tp": 12,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "43200.00"
+          },
+          "title": "Purchasing Manager position eliminated",
+          "tool_confidence": "high",
+          "tool_treatment": "REVISE",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "6",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "ADEQUATE",
+          "claimed": {
+            "FY2025": "0.00",
+            "FY2026": "90000.00",
+            "TTM Jun-26": "90000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "3.3 Project Marlin Transaction Bonus Plan.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 2,
+              "num": 1,
+              "rate": 0.5
+            },
+            "tool": [
+              "3.3 Project Marlin Transaction Bonus Plan.pdf"
+            ],
+            "tp": 1,
+            "unsurfaced": [
+              "1.4 FY2026 MIP Bonus Calculation - Approved.pdf"
+            ]
+          },
+          "expected_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "90000.00",
+            "TTM Jun-26": "90000.00"
+          },
+          "expected_treatment": "ACCEPT",
+          "false_accept": false,
+          "flags": {
+            "expected": [],
+            "missing": [],
+            "raised": [],
+            "unexpected": []
+          },
+          "gl_links": {
+            "expected_rows": [
+              5254
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 1,
+              "num": 1,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              5254
+            ],
+            "tp": 1,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "90000.00",
+            "TTM Jun-26": "90000.00"
+          },
+          "title": "Transaction bonuses - Project Marlin",
+          "tool_confidence": "high",
+          "tool_treatment": "ACCEPT",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "7",
+          "ambiguity": "low",
+          "amount_correct": false,
+          "amount_diffs": {
+            "FY2025": "0.00",
+            "FY2026": "9658.81",
+            "TTM Jun-26": "8526.49"
+          },
+          "amount_scored": true,
+          "case_type": "RECOVERY_OFFSET",
+          "claimed": {
+            "FY2025": "0.00",
+            "FY2026": "100000.00",
+            "TTM Jun-26": "100000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "6.1 Coastal Empire Restoration Invoice CER-25-3318.pdf",
+              "6.1.1 Lowcountry Rack Invoice LRS-7742.pdf",
+              "6.1.3 Palmetto State Mutual Claim Payment Letter PSM-25-40718.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 5,
+              "num": 5,
+              "rate": 1.0
+            },
+            "tool": [
+              "6.1 Coastal Empire Restoration Invoice CER-25-3318.pdf",
+              "6.1.1 Lowcountry Rack Invoice LRS-7742.pdf",
+              "6.1.3 Palmetto State Mutual Claim Payment Letter PSM-25-40718.pdf"
+            ],
+            "tp": 3,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "72000.00",
+            "TTM Jun-26": "42000.00"
+          },
+          "expected_treatment": "REVISE",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "PARTIAL_GL_SUPPORT",
+              "OFFSETTING_RECOVERY"
+            ],
+            "missing": [],
+            "raised": [
+              "PARTIAL_GL_SUPPORT",
+              "EXCESS_GL_ACTIVITY",
+              "RECURRING_PATTERN",
+              "OFFSETTING_RECOVERY",
+              "NO_DOCUMENT_SUPPORT"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY",
+              "RECURRING_PATTERN",
+              "NO_DOCUMENT_SUPPORT"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              3722,
+              3935
+            ],
+            "extra_rows": [
+              3481,
+              4706,
+              5947
+            ],
+            "fn": 0,
+            "fp": 3,
+            "missing_rows": [],
+            "precision": 0.4,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 3,
+              "num": 3,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              3481,
+              3722,
+              3935,
+              4706,
+              5947
+            ],
+            "tp": 2,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "81658.81",
+            "TTM Jun-26": "50526.49"
+          },
+          "title": "Sprinkler line break - Savannah DC",
+          "tool_confidence": "medium",
+          "tool_treatment": "REVISE",
+          "treatment_correct": true,
+          "verdict": "WRONG_AMOUNT"
+        },
+        {
+          "adj_id": "8",
+          "ambiguity": "medium",
+          "amount_correct": false,
+          "amount_diffs": {
+            "FY2025": "0.00",
+            "FY2026": "-148600.00",
+            "TTM Jun-26": "-148600.00"
+          },
+          "amount_scored": true,
+          "case_type": "ADEQUATE",
+          "claimed": {
+            "FY2025": "0.00",
+            "FY2026": "148600.00",
+            "TTM Jun-26": "148600.00"
+          },
+          "doc_links": {
+            "expected": [
+              "6.2 Inventory Write-off Memo - PFAS-Treated Molded Fiber Dec 2025.pdf",
+              "6.2.1 Greenleaf Molded Fiber Letter - Discontinued Line.pdf",
+              "6.2.2 Certificate of Disposal - Chatham Waste & Recycling Jan 2026.pdf"
+            ],
+            "extra": [],
+            "fn": 2,
+            "fp": 0,
+            "missing": [
+              "6.2.1 Greenleaf Molded Fiber Letter - Discontinued Line.pdf",
+              "6.2.2 Certificate of Disposal - Chatham Waste & Recycling Jan 2026.pdf"
+            ],
+            "precision": 1.0,
+            "recall": 0.3333,
+            "surfaced": {
+              "den": 3,
+              "num": 3,
+              "rate": 1.0
+            },
+            "tool": [
+              "6.2 Inventory Write-off Memo - PFAS-Treated Molded Fiber Dec 2025.pdf"
+            ],
+            "tp": 1,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "148600.00",
+            "TTM Jun-26": "148600.00"
+          },
+          "expected_treatment": "ACCEPT",
+          "false_accept": false,
+          "flags": {
+            "expected": [],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY",
+              "CONTRADICTORY_EVIDENCE"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY",
+              "CONTRADICTORY_EVIDENCE"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              4694
+            ],
+            "extra_rows": [],
+            "fn": 1,
+            "fp": 0,
+            "missing_rows": [
+              4694
+            ],
+            "precision": null,
+            "recall": 0.0,
+            "surfaced": {
+              "den": 3,
+              "num": 3,
+              "rate": 1.0
+            },
+            "tool_rows": [],
+            "tp": 0,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "title": "PFAS molded fiber inventory write-off",
+          "tool_confidence": "medium",
+          "tool_treatment": "REJECT",
+          "treatment_correct": false,
+          "verdict": "WRONG_TREATMENT"
+        },
+        {
+          "adj_id": "9",
+          "ambiguity": "low",
+          "amount_correct": false,
+          "amount_diffs": {
+            "FY2025": "0.00",
+            "FY2026": "-51000.00",
+            "TTM Jun-26": "-34200.00"
+          },
+          "amount_scored": true,
+          "case_type": "ADEQUATE",
+          "claimed": {
+            "FY2025": "0.00",
+            "FY2026": "51000.00",
+            "TTM Jun-26": "34200.00"
+          },
+          "doc_links": {
+            "expected": [
+              "4.2 Brannock Vail Engagement Letter - Brightfield Arbitration (Matter 2025-014).pdf",
+              "4.2.1 Brannock Vail Invoice BV-25-0611.pdf",
+              "4.2.2 Brannock Vail Invoice BV-25-0813.pdf",
+              "4.2.3 Brannock Vail Invoice BV-25-1015.pdf",
+              "4.2.4 Final Award - Brightfield Converting v Tidewell.pdf"
+            ],
+            "extra": [
+              "4.1 Brannock Vail Engagement Letter - General Counsel (Matter 100).pdf"
+            ],
+            "fn": 1,
+            "fp": 1,
+            "missing": [
+              "4.2.4 Final Award - Brightfield Converting v Tidewell.pdf"
+            ],
+            "precision": 0.8,
+            "recall": 0.8,
+            "surfaced": {
+              "den": 6,
+              "num": 6,
+              "rate": 1.0
+            },
+            "tool": [
+              "4.1 Brannock Vail Engagement Letter - General Counsel (Matter 100).pdf",
+              "4.2 Brannock Vail Engagement Letter - Brightfield Arbitration (Matter 2025-014).pdf",
+              "4.2.1 Brannock Vail Invoice BV-25-0611.pdf",
+              "4.2.2 Brannock Vail Invoice BV-25-0813.pdf",
+              "4.2.3 Brannock Vail Invoice BV-25-1015.pdf"
+            ],
+            "tp": 4,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "51000.00",
+            "TTM Jun-26": "34200.00"
+          },
+          "expected_treatment": "ACCEPT",
+          "false_accept": false,
+          "flags": {
+            "expected": [],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY",
+              "CONTRADICTORY_EVIDENCE"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY",
+              "CONTRADICTORY_EVIDENCE"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              3199,
+              3659,
+              4141
+            ],
+            "extra_rows": [],
+            "fn": 3,
+            "fp": 0,
+            "missing_rows": [
+              3199,
+              3659,
+              4141
+            ],
+            "precision": null,
+            "recall": 0.0,
+            "surfaced": {
+              "den": 30,
+              "num": 30,
+              "rate": 1.0
+            },
+            "tool_rows": [],
+            "tp": 0,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "title": "Brightfield arbitration legal fees",
+          "tool_confidence": "medium",
+          "tool_treatment": "REJECT",
+          "treatment_correct": false,
+          "verdict": "WRONG_TREATMENT"
+        },
+        {
+          "adj_id": "10",
+          "ambiguity": "low",
+          "amount_correct": false,
+          "amount_diffs": {
+            "FY2025": "0.00",
+            "FY2026": "-64000.00",
+            "TTM Jun-26": "-64000.00"
+          },
+          "amount_scored": true,
+          "case_type": "CONTRADICTED",
+          "claimed": {
+            "FY2025": "0.00",
+            "FY2026": "128400.00",
+            "TTM Jun-26": "144600.00"
+          },
+          "doc_links": {
+            "expected": [
+              "5.1 Kestrel Systems Order Form KS-OF-2025-061.pdf",
+              "5.1.1 Kestrel Systems Invoice KS-10311.pdf",
+              "5.1.2 Kestrel Systems Invoice KS-10442.pdf"
+            ],
+            "extra": [
+              "5.1.3 Kestrel Systems Invoice KS-SUB-2511.pdf",
+              "5.1.4 Kestrel Systems Customer Statement Dec 2025.pdf"
+            ],
+            "fn": 0,
+            "fp": 2,
+            "missing": [],
+            "precision": 0.6,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 5,
+              "num": 5,
+              "rate": 1.0
+            },
+            "tool": [
+              "5.1 Kestrel Systems Order Form KS-OF-2025-061.pdf",
+              "5.1.1 Kestrel Systems Invoice KS-10311.pdf",
+              "5.1.2 Kestrel Systems Invoice KS-10442.pdf",
+              "5.1.3 Kestrel Systems Invoice KS-SUB-2511.pdf",
+              "5.1.4 Kestrel Systems Customer Statement Dec 2025.pdf"
+            ],
+            "tp": 3,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "64000.00",
+            "TTM Jun-26": "64000.00"
+          },
+          "expected_treatment": "REVISE",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "CONTINUING_OBLIGATION",
+              "CONTRADICTORY_EVIDENCE",
+              "DUPLICATE_GL_ENTRY"
+            ],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY",
+              "CONTRADICTORY_EVIDENCE",
+              "CONTINUING_OBLIGATION",
+              "DUPLICATE_GL_ENTRY"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              3385,
+              4046
+            ],
+            "extra_rows": [],
+            "fn": 2,
+            "fp": 0,
+            "missing_rows": [
+              3385,
+              4046
+            ],
+            "precision": null,
+            "recall": 0.0,
+            "surfaced": {
+              "den": 12,
+              "num": 12,
+              "rate": 1.0
+            },
+            "tool_rows": [],
+            "tp": 0,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "title": "KestrelWMS implementation",
+          "tool_confidence": "medium",
+          "tool_treatment": "REJECT",
+          "treatment_correct": false,
+          "verdict": "WRONG_TREATMENT"
+        },
+        {
+          "adj_id": "11",
+          "ambiguity": "medium",
+          "amount_correct": false,
+          "amount_diffs": {
+            "FY2025": "0.00",
+            "FY2026": "-30000.00",
+            "TTM Jun-26": "-30000.00"
+          },
+          "amount_scored": true,
+          "case_type": "UNDERSTATED",
+          "claimed": {
+            "FY2025": "0.00",
+            "FY2026": "54000.00",
+            "TTM Jun-26": "54000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "6.4 Ridgeline Engagement Letter - Distribution Network Study.pdf",
+              "6.4.1 Ridgeline Invoice RSC-2291.pdf",
+              "6.4.2 Ridgeline Invoice RSC-2344.pdf",
+              "6.4.3 Ridgeline Invoice RSC-2403.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 4,
+              "num": 4,
+              "rate": 1.0
+            },
+            "tool": [
+              "6.4 Ridgeline Engagement Letter - Distribution Network Study.pdf",
+              "6.4.1 Ridgeline Invoice RSC-2291.pdf",
+              "6.4.2 Ridgeline Invoice RSC-2344.pdf",
+              "6.4.3 Ridgeline Invoice RSC-2403.pdf"
+            ],
+            "tp": 4,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "84000.00",
+            "TTM Jun-26": "84000.00"
+          },
+          "expected_treatment": "REVISE",
+          "false_accept": true,
+          "flags": {
+            "expected": [
+              "EXCESS_GL_ACTIVITY"
+            ],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY"
+            ],
+            "unexpected": []
+          },
+          "gl_links": {
+            "expected_rows": [
+              4098,
+              4557,
+              5090
+            ],
+            "extra_rows": [],
+            "fn": 1,
+            "fp": 0,
+            "missing_rows": [
+              5090
+            ],
+            "precision": 1.0,
+            "recall": 0.6667,
+            "surfaced": {
+              "den": 3,
+              "num": 3,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              4098,
+              4557
+            ],
+            "tp": 2,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "54000.00",
+            "TTM Jun-26": "54000.00"
+          },
+          "title": "Distribution network study",
+          "tool_confidence": "high",
+          "tool_treatment": "ACCEPT",
+          "treatment_correct": false,
+          "verdict": "FALSE_ACCEPT"
+        },
+        {
+          "adj_id": "12",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "SIGN_ERROR",
+          "claimed": {
+            "FY2025": "0.00",
+            "FY2026": "46500.00",
+            "TTM Jun-26": "46500.00"
+          },
+          "doc_links": {
+            "expected": [
+              "4.3 Sunmeadow Termination and Release Agreement.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 1,
+              "num": 1,
+              "rate": 1.0
+            },
+            "tool": [
+              "4.3 Sunmeadow Termination and Release Agreement.pdf"
+            ],
+            "tp": 1,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "-46500.00",
+            "TTM Jun-26": "-46500.00"
+          },
+          "expected_treatment": "REVISE",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "SIGN_ERROR"
+            ],
+            "missing": [],
+            "raised": [
+              "SIGN_ERROR"
+            ],
+            "unexpected": []
+          },
+          "gl_links": {
+            "expected_rows": [
+              4298
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 1,
+              "num": 1,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              4298
+            ],
+            "tp": 1,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "-46500.00",
+            "TTM Jun-26": "-46500.00"
+          },
+          "title": "Sunmeadow termination settlement",
+          "tool_confidence": "medium",
+          "tool_treatment": "REVISE",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "13",
+          "ambiguity": "low",
+          "amount_correct": false,
+          "amount_diffs": {
+            "FY2025": "0.00",
+            "FY2026": "38400.00",
+            "TTM Jun-26": "19200.00"
+          },
+          "amount_scored": true,
+          "case_type": "OUT_OF_PERIOD",
+          "claimed": {
+            "FY2025": "0.00",
+            "FY2026": "38400.00",
+            "TTM Jun-26": "38400.00"
+          },
+          "doc_links": {
+            "expected": [
+              "6.3 Altamaha Freight Lines Invoice AFL-TU-25-118.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 1,
+              "num": 1,
+              "rate": 1.0
+            },
+            "tool": [
+              "6.3 Altamaha Freight Lines Invoice AFL-TU-25-118.pdf"
+            ],
+            "tp": 1,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "19200.00"
+          },
+          "expected_treatment": "REVISE",
+          "false_accept": true,
+          "flags": {
+            "expected": [
+              "OUT_OF_PERIOD"
+            ],
+            "missing": [
+              "OUT_OF_PERIOD"
+            ],
+            "raised": [
+              "EXCESS_GL_ACTIVITY"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              4355
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 1,
+              "num": 1,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              4355
+            ],
+            "tp": 1,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "38400.00",
+            "TTM Jun-26": "38400.00"
+          },
+          "title": "Prior-period freight true-up",
+          "tool_confidence": "high",
+          "tool_treatment": "ACCEPT",
+          "treatment_correct": false,
+          "verdict": "FALSE_ACCEPT"
+        },
+        {
+          "adj_id": "14",
+          "ambiguity": "low",
+          "amount_correct": false,
+          "amount_diffs": {
+            "FY2025": "0.00",
+            "FY2026": "-42000.00",
+            "TTM Jun-26": "-42000.00"
+          },
+          "amount_scored": true,
+          "case_type": "EBITDA_EXCLUDED",
+          "claimed": {
+            "FY2025": "0.00",
+            "FY2026": "69600.00",
+            "TTM Jun-26": "69600.00"
+          },
+          "doc_links": {
+            "expected": [
+              "7.1 Marlowe Capital Advisors Engagement Letter - Debt Placement.pdf",
+              "7.1.1 Marlowe Capital Advisors Invoice MCA-2026-004.pdf"
+            ],
+            "extra": [
+              "7.3 Debt Issuance Cost Amortization Schedule - Ogeechee Term Loan.pdf"
+            ],
+            "fn": 0,
+            "fp": 1,
+            "missing": [],
+            "precision": 0.6667,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 3,
+              "num": 3,
+              "rate": 1.0
+            },
+            "tool": [
+              "7.1 Marlowe Capital Advisors Engagement Letter - Debt Placement.pdf",
+              "7.1.1 Marlowe Capital Advisors Invoice MCA-2026-004.pdf",
+              "7.3 Debt Issuance Cost Amortization Schedule - Ogeechee Term Loan.pdf"
+            ],
+            "tp": 2,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "42000.00",
+            "TTM Jun-26": "42000.00"
+          },
+          "expected_treatment": "REVISE",
+          "false_accept": false,
+          "flags": {
+            "expected": [
+              "ALREADY_EXCLUDED_FROM_EBITDA"
+            ],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY",
+              "ALREADY_EXCLUDED_FROM_EBITDA",
+              "CONTRADICTORY_EVIDENCE"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY",
+              "CONTRADICTORY_EVIDENCE"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              4825
+            ],
+            "extra_rows": [],
+            "fn": 1,
+            "fp": 0,
+            "missing_rows": [
+              4825
+            ],
+            "precision": null,
+            "recall": 0.0,
+            "surfaced": {
+              "den": 2,
+              "num": 2,
+              "rate": 1.0
+            },
+            "tool_rows": [],
+            "tp": 0,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "title": "Refinancing costs",
+          "tool_confidence": "medium",
+          "tool_treatment": "REJECT",
+          "treatment_correct": false,
+          "verdict": "WRONG_TREATMENT"
+        },
+        {
+          "adj_id": "15",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "ADEQUATE",
+          "claimed": {
+            "FY2025": "0.00",
+            "FY2026": "18500.00",
+            "TTM Jun-26": "18500.00"
+          },
+          "doc_links": {
+            "expected": [
+              "7.2 Ogeechee National Bank Payoff Letter - Term Loan.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 1,
+              "num": 1,
+              "rate": 1.0
+            },
+            "tool": [
+              "7.2 Ogeechee National Bank Payoff Letter - Term Loan.pdf"
+            ],
+            "tp": 1,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "18500.00",
+            "TTM Jun-26": "18500.00"
+          },
+          "expected_treatment": "ACCEPT",
+          "false_accept": false,
+          "flags": {
+            "expected": [],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              4917
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 1,
+              "num": 1,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              4917
+            ],
+            "tp": 1,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "18500.00",
+            "TTM Jun-26": "18500.00"
+          },
+          "title": "Loss on extinguishment - prepayment premium",
+          "tool_confidence": "high",
+          "tool_treatment": "ACCEPT",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        },
+        {
+          "adj_id": "16",
+          "ambiguity": "low",
+          "amount_correct": true,
+          "amount_diffs": {
+            "FY2025": "0.00",
+            "FY2026": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "amount_scored": true,
+          "case_type": "ADEQUATE",
+          "claimed": {
+            "FY2025": "0.00",
+            "FY2026": "95000.00",
+            "TTM Jun-26": "95000.00"
+          },
+          "doc_links": {
+            "expected": [
+              "8.1 Cordell Harbor Partners Engagement Letter - Project Marlin.pdf",
+              "8.1.1 Cordell Harbor Partners Invoice CHP-1125-07.pdf",
+              "8.2 Whitlock Rowe Engagement Letter - Sell-Side Quality of Earnings.pdf",
+              "8.2.1 Whitlock Rowe Invoice WR-25-3381.pdf",
+              "8.2.2 Whitlock Rowe Invoice WR-26-0412.pdf"
+            ],
+            "extra": [],
+            "fn": 0,
+            "fp": 0,
+            "missing": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 5,
+              "num": 5,
+              "rate": 1.0
+            },
+            "tool": [
+              "8.1 Cordell Harbor Partners Engagement Letter - Project Marlin.pdf",
+              "8.1.1 Cordell Harbor Partners Invoice CHP-1125-07.pdf",
+              "8.2 Whitlock Rowe Engagement Letter - Sell-Side Quality of Earnings.pdf",
+              "8.2.1 Whitlock Rowe Invoice WR-25-3381.pdf",
+              "8.2.2 Whitlock Rowe Invoice WR-26-0412.pdf"
+            ],
+            "tp": 5,
+            "unsurfaced": []
+          },
+          "expected_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "95000.00",
+            "TTM Jun-26": "95000.00"
+          },
+          "expected_treatment": "ACCEPT",
+          "false_accept": false,
+          "flags": {
+            "expected": [],
+            "missing": [],
+            "raised": [
+              "EXCESS_GL_ACTIVITY"
+            ],
+            "unexpected": [
+              "EXCESS_GL_ACTIVITY"
+            ]
+          },
+          "gl_links": {
+            "expected_rows": [
+              4391,
+              4604,
+              5119
+            ],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 3,
+              "num": 3,
+              "rate": 1.0
+            },
+            "tool_rows": [
+              4391,
+              4604,
+              5119
+            ],
+            "tp": 3,
+            "unsurfaced_rows": []
+          },
+          "missed_challenge_flags": [],
+          "proposed_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "95000.00",
+            "TTM Jun-26": "95000.00"
+          },
+          "title": "Sale-process professional fees",
+          "tool_confidence": "high",
+          "tool_treatment": "ACCEPT",
+          "treatment_correct": true,
+          "verdict": "PASS"
+        }
+      ],
+      "ai_mode": "rules",
+      "amount_accuracy": {
+        "den": 14,
+        "num": 7,
+        "rate": 0.5
+      },
+      "by_ambiguity": {
+        "low": {
+          "den": 12,
+          "num": 8,
+          "rate": 0.6667
+        },
+        "medium": {
+          "den": 4,
+          "num": 1,
+          "rate": 0.25
+        }
+      },
+      "by_case_type": {
+        "ADEQUATE": {
+          "den": 7,
+          "num": 5,
+          "rate": 0.7143
+        },
+        "CONTRADICTED": {
+          "den": 2,
+          "num": 0,
+          "rate": 0.0
+        },
+        "EBITDA_EXCLUDED": {
+          "den": 1,
+          "num": 0,
+          "rate": 0.0
+        },
+        "NEEDS_INFO": {
+          "den": 1,
+          "num": 1,
+          "rate": 1.0
+        },
+        "OUT_OF_PERIOD": {
+          "den": 1,
+          "num": 0,
+          "rate": 0.0
+        },
+        "PARTIAL": {
+          "den": 1,
+          "num": 1,
+          "rate": 1.0
+        },
+        "RECOVERY_OFFSET": {
+          "den": 1,
+          "num": 1,
+          "rate": 1.0
+        },
+        "SIGN_ERROR": {
+          "den": 1,
+          "num": 1,
+          "rate": 1.0
+        },
+        "UNDERSTATED": {
+          "den": 1,
+          "num": 0,
+          "rate": 0.0
+        }
+      },
+      "by_confidence": {
+        "high": {
+          "den": 9,
+          "num": 6,
+          "rate": 0.6667
+        },
+        "medium": {
+          "den": 7,
+          "num": 3,
+          "rate": 0.4286
+        }
+      },
+      "data_quality_recall": {
+        "den": 6,
+        "items": [
+          {
+            "account": "6600",
+            "code": "DUPLICATE_GL_ENTRY",
+            "detected": true,
+            "matched_message": "Possible duplicate posting in 6600 Software & IT: 2 entries of 32,000.00 to Kestrel Systems, Inc. (same doc # KS-10442; GL rows 4046, 4084; dated 2025-10-03, 2025-10-09). If duplicated, the GL double counts 32,000.00.",
+            "month": "2025-10",
+            "note": "Kestrel Systems go-live milestone bill KS-10442 ($32,000.00, 6600) was entered twice in NetSuite, on 10/03/2025 and again on 10/09/2025. Management's P&L and its Ref 10 claim include both postings; the Kestrel statement shows the second payment sitting as an unapplied credit."
+          },
+          {
+            "account": "6040",
+            "code": "RECON_VARIANCE",
+            "detected": true,
+            "matched_message": "2026-03 6040 Wages - General & Administrative: P&L 344,631.53 vs GL 158,631.53 (debit-positive); variance 186,000.00 (P&L minus GL): P&L EBITDA is 186,000.00 lower than the GL.",
+            "month": "2026-03",
+            "note": "Management's Mar-2026 P&L accrues the FY2026 Management Incentive Plan pool ($186,000) as a top-side entry in 6040; NetSuite has no accrual. The plan was adopted in April 2025 and the bonus calculation was approved in April 2026. Management P&L less GL: 186000.00."
+          },
+          {
+            "account": "6040",
+            "code": "RECON_VARIANCE",
+            "detected": true,
+            "matched_message": "2026-06 6040 Wages - General & Administrative: P&L 70,295.73 vs GL 256,295.73 (debit-positive); variance -186,000.00 (P&L minus GL): P&L EBITDA is 186,000.00 higher than the GL.",
+            "month": "2026-06",
+            "note": "Management's Jun-2026 P&L reverses the Mar-2026 top-side accrual when the $186,000 MIP payout runs through NetSuite payroll on 06/12/2026, so the bonus is expensed once, in FY2026. Management P&L less GL: -186000.00."
+          },
+          {
+            "account": null,
+            "code": "MISSING_PERIOD",
+            "detected": true,
+            "matched_message": "2024-08 looks incomplete: only 16 of the 38 accounts active in the neighbouring month(s) have GL entries (missing: 5300, 6060, 6100, 6110, 6210, 6220, 6300, 6310, 6320, 6500, 6600, 6700, ...). Management's P&L for 2024-08 shows EBITDA 363,586.47 lower than the GL.",
+            "month": "2024-08",
+            "note": "The Aug-2024 GL batch was exported with the 16-account flash-report saved search, so 23 of the 39 accounts with August activity are missing from the GL (all of them are in management's P&L). See the NetSuite administrator's email in 01 Financial Information."
+          },
+          {
+            "account": null,
+            "code": "MGMT_EBITDA_DIFFERS_FROM_GL",
+            "detected": true,
+            "matched_message": "FY2025: management's reported EBITDA of 7,658,231.89 is 363,586.47 lower than EBITDA recomputed from the GL (8,021,818.36). GL-to-P&L variances in the period move P&L EBITDA by -363,586.47, which explains the difference.",
+            "month": null,
+            "note": "Management's reported EBITDA less GL-derived EBITDA: FY2025 -363586.47; FY2026 -186000.00. Two causes, both supported: the Aug-2024 GL export omits 23 accounts (FY2025), and management's P&L carries the FY2026 MIP accrual in Mar-2026 and reverses it on payment in Jun-2026 (FY2026; nets to zero in TTM). Diligence keeps both differences through diligence items D-2 and D-3 rather than reversing to the GL."
+          },
+          {
+            "account": null,
+            "code": "MGMT_SCHEDULE_ARITHMETIC",
+            "detected": true,
+            "matched_message": "FY2026: management's total adjustments of 1,393,000.00 does not foot to the sum of its 16 adjustments = 1,488,000.00 (difference -95,000.00).",
+            "month": null,
+            "note": "The total-adjustments row omits ref(s) 16; printed total less the sum of the listed adjustments: FY2025 0.00; FY2026 -95000.00; TTM Jun-26 -95000.00. The printed total equals the sum of refs 1-15; ref 16 (sale-process fees, listed last) is not included. The schedule holds values, not formulas. The printed total and adjusted EBITDA are therefore understated by 95,000 in FY2026 and TTM."
+          }
+        ],
+        "num": 6,
+        "rate": 1.0
+      },
+      "deal_id": "tidewell_distribution",
+      "diligence_item_accuracy": {
+        "den": 3,
+        "expected": 3,
+        "extra": [],
+        "items": [
+          {
+            "ambiguity": "low",
+            "amount_diffs": {
+              "FY2025": "0.00",
+              "FY2026": "0.00",
+              "TTM Jun-26": "0.00"
+            },
+            "case_type": "DUPLICATE_POSTING",
+            "correct": true,
+            "doc_links": {
+              "expected": [
+                "5.1.2 Kestrel Systems Invoice KS-10442.pdf",
+                "5.1.4 Kestrel Systems Customer Statement Dec 2025.pdf"
+              ],
+              "extra": [],
+              "fn": 0,
+              "fp": 0,
+              "missing": [],
+              "precision": 1.0,
+              "recall": 1.0,
+              "surfaced": {
+                "den": 2,
+                "num": 2,
+                "rate": 1.0
+              },
+              "tool": [
+                "5.1.2 Kestrel Systems Invoice KS-10442.pdf",
+                "5.1.4 Kestrel Systems Customer Statement Dec 2025.pdf"
+              ],
+              "tp": 2,
+              "unsurfaced": []
+            },
+            "expected_amounts": {
+              "FY2025": "0.00",
+              "FY2026": "32000.00",
+              "TTM Jun-26": "32000.00"
+            },
+            "expected_treatment": "REVISE",
+            "flags": {
+              "expected": [
+                "DUPLICATE_GL_ENTRY"
+              ],
+              "missing": [],
+              "raised": [
+                "DUPLICATE_GL_ENTRY"
+              ]
+            },
+            "gl_links": {
+              "expected_rows": [
+                4084
+              ],
+              "extra_rows": [],
+              "fn": 0,
+              "fp": 0,
+              "missing_rows": [],
+              "precision": 1.0,
+              "recall": 1.0,
+              "surfaced": {
+                "den": 2,
+                "num": 2,
+                "rate": 1.0
+              },
+              "tool_rows": [
+                4084
+              ],
+              "tp": 1,
+              "unsurfaced_rows": []
+            },
+            "key_id": "D-1",
+            "match_basis": "supporting_rows",
+            "proposed_amounts": {
+              "FY2025": "0.00",
+              "FY2026": "32000.00",
+              "TTM Jun-26": "32000.00"
+            },
+            "title": "Reverse duplicate posting: Kestrel Systems, Inc. KS-10442",
+            "tool_id": "D-1",
+            "tool_treatment": "REVISE",
+            "verdict": "CORRECT"
+          },
+          {
+            "ambiguity": "low",
+            "amount_diffs": {},
+            "case_type": "SUPPORTED_TOPSIDE",
+            "correct": false,
+            "doc_links": {
+              "expected": [
+                "1.2 Controller Email - FY2026 MIP Accrual in Management P&L.eml",
+                "1.3 FY2026 Management Incentive Plan.pdf",
+                "1.4 FY2026 MIP Bonus Calculation - Approved.pdf"
+              ],
+              "extra": [],
+              "fn": 3,
+              "fp": 0,
+              "missing": [
+                "1.2 Controller Email - FY2026 MIP Accrual in Management P&L.eml",
+                "1.3 FY2026 Management Incentive Plan.pdf",
+                "1.4 FY2026 MIP Bonus Calculation - Approved.pdf"
+              ],
+              "precision": null,
+              "recall": 0.0,
+              "surfaced": {
+                "den": 3,
+                "num": 0,
+                "rate": 0.0
+              },
+              "tool": [],
+              "tp": 0,
+              "unsurfaced": [
+                "1.2 Controller Email - FY2026 MIP Accrual in Management P&L.eml",
+                "1.3 FY2026 Management Incentive Plan.pdf",
+                "1.4 FY2026 MIP Bonus Calculation - Approved.pdf"
+              ]
+            },
+            "expected_amounts": {
+              "FY2025": "0.00",
+              "FY2026": "-186000.00",
+              "TTM Jun-26": "0.00"
+            },
+            "expected_treatment": "REVISE",
+            "flags": {
+              "expected": [],
+              "missing": [],
+              "raised": []
+            },
+            "gl_links": {
+              "expected_rows": [
+                5915
+              ],
+              "extra_rows": [],
+              "fn": 1,
+              "fp": 0,
+              "missing_rows": [
+                5915
+              ],
+              "precision": null,
+              "recall": 0.0,
+              "surfaced": {
+                "den": 1,
+                "num": 0,
+                "rate": 0.0
+              },
+              "tool_rows": [],
+              "tp": 0,
+              "unsurfaced_rows": [
+                5915
+              ]
+            },
+            "key_id": "D-2",
+            "match_basis": null,
+            "proposed_amounts": {},
+            "title": "",
+            "tool_id": null,
+            "tool_treatment": null,
+            "verdict": "MISSED"
+          },
+          {
+            "ambiguity": "low",
+            "amount_diffs": {},
+            "case_type": "MISSING_GL_MONTH",
+            "correct": false,
+            "doc_links": {
+              "expected": [
+                "1.1 NetSuite Admin Email - Aug 2024 GL Export Batch.eml"
+              ],
+              "extra": [],
+              "fn": 1,
+              "fp": 0,
+              "missing": [
+                "1.1 NetSuite Admin Email - Aug 2024 GL Export Batch.eml"
+              ],
+              "precision": null,
+              "recall": 0.0,
+              "surfaced": {
+                "den": 1,
+                "num": 0,
+                "rate": 0.0
+              },
+              "tool": [],
+              "tp": 0,
+              "unsurfaced": [
+                "1.1 NetSuite Admin Email - Aug 2024 GL Export Batch.eml"
+              ]
+            },
+            "expected_amounts": {
+              "FY2025": "-363586.47",
+              "FY2026": "0.00",
+              "TTM Jun-26": "0.00"
+            },
+            "expected_treatment": "REVISE",
+            "flags": {
+              "expected": [],
+              "missing": [],
+              "raised": []
+            },
+            "gl_links": {
+              "expected_rows": [],
+              "extra_rows": [],
+              "fn": 0,
+              "fp": 0,
+              "missing_rows": [],
+              "precision": 1.0,
+              "recall": 1.0,
+              "surfaced": {
+                "den": 0,
+                "num": 0,
+                "rate": null
+              },
+              "tool_rows": [],
+              "tp": 0,
+              "unsurfaced_rows": []
+            },
+            "key_id": "D-3",
+            "match_basis": null,
+            "proposed_amounts": {},
+            "title": "",
+            "tool_id": null,
+            "tool_treatment": null,
+            "verdict": "MISSED"
+          }
+        ],
+        "matched": 1,
+        "missed": [
+          "D-2",
+          "D-3"
+        ],
+        "num": 1,
+        "rate": 0.3333,
+        "tool": 1
+      },
+      "doc_link_precision": {
+        "den": 37,
+        "num": 33,
+        "rate": 0.8919
+      },
+      "doc_link_recall": {
+        "den": 40,
+        "num": 33,
+        "rate": 0.825
+      },
+      "doc_surfaced_recall": {
+        "den": 49,
+        "num": 48,
+        "rate": 0.9796
+      },
+      "ebitda_error": {
+        "by_period": {
+          "FY2025": {
+            "abs_error": "423586.47",
+            "bridge_diligence_adjusted_ebitda": "8561818.36",
+            "bridge_matches_proposals": true,
+            "expected_diligence_adjusted_ebitda": "8138231.89",
+            "expected_diligence_items": "-363586.47",
+            "expected_gl_ebitda": "8021818.36",
+            "gl_ebitda_agrees": true,
+            "gl_ebitda_diff": "0.00",
+            "tool_diligence_adjusted_ebitda": "8561818.36",
+            "tool_diligence_items": "0.00",
+            "tool_gl_ebitda": "8021818.36",
+            "tool_management_adjustments": "540000.00",
+            "within_tolerance": false
+          },
+          "FY2026": {
+            "abs_error": "41541.19",
+            "bridge_diligence_adjusted_ebitda": "8321089.28",
+            "bridge_matches_proposals": true,
+            "expected_diligence_adjusted_ebitda": "8362630.47",
+            "expected_diligence_items": "-154000.00",
+            "expected_gl_ebitda": "7418030.47",
+            "gl_ebitda_agrees": true,
+            "gl_ebitda_diff": "0.00",
+            "tool_diligence_adjusted_ebitda": "8321089.28",
+            "tool_diligence_items": "32000.00",
+            "tool_gl_ebitda": "7418030.47",
+            "tool_management_adjustments": "871058.81",
+            "within_tolerance": false
+          },
+          "TTM Jun-26": {
+            "abs_error": "231073.51",
+            "bridge_diligence_adjusted_ebitda": "8447171.26",
+            "bridge_matches_proposals": true,
+            "expected_diligence_adjusted_ebitda": "8678244.77",
+            "expected_diligence_items": "32000.00",
+            "expected_gl_ebitda": "7443814.59",
+            "gl_ebitda_agrees": true,
+            "gl_ebitda_diff": "0.00",
+            "tool_diligence_adjusted_ebitda": "8447171.26",
+            "tool_diligence_items": "32000.00",
+            "tool_gl_ebitda": "7443814.59",
+            "tool_management_adjustments": "971356.67",
+            "within_tolerance": false
+          }
+        },
+        "max_abs_error": "423586.47"
+      },
+      "false_accept_rate": {
+        "adj_ids": [
+          "11",
+          "13"
+        ],
+        "den": 9,
+        "num": 2,
+        "rate": 0.2222
+      },
+      "flag_recall": {
+        "den": 12,
+        "num": 10,
+        "rate": 0.8333
+      },
+      "gl_link_precision": {
+        "den": 123,
+        "num": 64,
+        "rate": 0.5203
+      },
+      "gl_link_recall": {
+        "den": 126,
+        "num": 64,
+        "rate": 0.5079
+      },
+      "gl_surfaced_recall": {
+        "den": 170,
+        "num": 170,
+        "rate": 1.0
+      },
+      "missed_contradictions": {
+        "den": 5,
+        "items": [
+          {
+            "adj_id": "2",
+            "flag": "CONTRADICTORY_EVIDENCE",
+            "tool_treatment": "REQUEST_INFO"
+          }
+        ],
+        "num": 1,
+        "rate": 0.2
+      },
+      "n_adjustments": 16,
+      "n_diligence_items": 3,
+      "period_labels": [
+        "FY2025",
+        "FY2026",
+        "TTM Jun-26"
+      ],
+      "run_id": "eval-dev-tidewell_distribution",
+      "split": "dev",
+      "tool_version": "0.1.0",
+      "treatment_accuracy": {
+        "den": 16,
+        "num": 9,
+        "rate": 0.5625
+      },
+      "unscored_tool_adjustments": [],
+      "verdicts": {
+        "FALSE_ACCEPT": 2,
+        "PASS": 8,
+        "WRONG_AMOUNT": 1,
+        "WRONG_TREATMENT": 5
+      }
+    }
+  ],
+  "disclaimer": "These are automated scores of the tool's first-pass proposals, compared with answer keys written for SYNTHETIC deal packages. They are not practitioner-timed results, they say nothing about time saved, and they ignore any reviewer overrides. Each answer key records one careful senior's judgment; items marked medium or high ambiguity could reasonably be carried differently.",
+  "overall": {
+    "amount_accuracy": {
+      "den": 26,
+      "num": 19,
+      "rate": 0.7308
+    },
+    "by_ambiguity": {
+      "low": {
+        "den": 22,
+        "num": 18,
+        "rate": 0.8182
+      },
+      "medium": {
+        "den": 8,
+        "num": 5,
+        "rate": 0.625
+      }
+    },
+    "by_case_type": {
+      "ADEQUATE": {
+        "den": 10,
+        "num": 8,
+        "rate": 0.8
+      },
+      "CONTRADICTED": {
+        "den": 4,
+        "num": 2,
+        "rate": 0.5
+      },
+      "EBITDA_EXCLUDED": {
+        "den": 2,
+        "num": 1,
+        "rate": 0.5
+      },
+      "NEEDS_INFO": {
+        "den": 3,
+        "num": 3,
+        "rate": 1.0
+      },
+      "OUT_OF_PERIOD": {
+        "den": 2,
+        "num": 1,
+        "rate": 0.5
+      },
+      "OVERLAP": {
+        "den": 1,
+        "num": 1,
+        "rate": 1.0
+      },
+      "PARTIAL": {
+        "den": 1,
+        "num": 1,
+        "rate": 1.0
+      },
+      "RECOVERY_OFFSET": {
+        "den": 2,
+        "num": 2,
+        "rate": 1.0
+      },
+      "RECURRING": {
+        "den": 2,
+        "num": 2,
+        "rate": 1.0
+      },
+      "SIGN_ERROR": {
+        "den": 1,
+        "num": 1,
+        "rate": 1.0
+      },
+      "UNDERSTATED": {
+        "den": 1,
+        "num": 0,
+        "rate": 0.0
+      },
+      "WRONG_PERIOD": {
+        "den": 1,
+        "num": 1,
+        "rate": 1.0
+      }
+    },
+    "by_confidence": {
+      "high": {
+        "den": 19,
+        "num": 16,
+        "rate": 0.8421
+      },
+      "medium": {
+        "den": 11,
+        "num": 7,
+        "rate": 0.6364
+      }
+    },
+    "data_quality_recall": {
+      "den": 9,
+      "missed": [],
+      "num": 9,
+      "rate": 1.0
+    },
+    "deals": [
+      "meridian_mechanical",
+      "tidewell_distribution"
+    ],
+    "diligence_item_accuracy": {
+      "den": 4,
+      "items": [
+        {
+          "ambiguity": "low",
+          "amount_diffs": {},
+          "case_type": "SUPPORTED_TOPSIDE",
+          "correct": false,
+          "deal_id": "tidewell_distribution",
+          "doc_links": {
+            "expected": [
+              "1.2 Controller Email - FY2026 MIP Accrual in Management P&L.eml",
+              "1.3 FY2026 Management Incentive Plan.pdf",
+              "1.4 FY2026 MIP Bonus Calculation - Approved.pdf"
+            ],
+            "extra": [],
+            "fn": 3,
+            "fp": 0,
+            "missing": [
+              "1.2 Controller Email - FY2026 MIP Accrual in Management P&L.eml",
+              "1.3 FY2026 Management Incentive Plan.pdf",
+              "1.4 FY2026 MIP Bonus Calculation - Approved.pdf"
+            ],
+            "precision": null,
+            "recall": 0.0,
+            "surfaced": {
+              "den": 3,
+              "num": 0,
+              "rate": 0.0
+            },
+            "tool": [],
+            "tp": 0,
+            "unsurfaced": [
+              "1.2 Controller Email - FY2026 MIP Accrual in Management P&L.eml",
+              "1.3 FY2026 Management Incentive Plan.pdf",
+              "1.4 FY2026 MIP Bonus Calculation - Approved.pdf"
+            ]
+          },
+          "expected_amounts": {
+            "FY2025": "0.00",
+            "FY2026": "-186000.00",
+            "TTM Jun-26": "0.00"
+          },
+          "expected_treatment": "REVISE",
+          "flags": {
+            "expected": [],
+            "missing": [],
+            "raised": []
+          },
+          "gl_links": {
+            "expected_rows": [
+              5915
+            ],
+            "extra_rows": [],
+            "fn": 1,
+            "fp": 0,
+            "missing_rows": [
+              5915
+            ],
+            "precision": null,
+            "recall": 0.0,
+            "surfaced": {
+              "den": 1,
+              "num": 0,
+              "rate": 0.0
+            },
+            "tool_rows": [],
+            "tp": 0,
+            "unsurfaced_rows": [
+              5915
+            ]
+          },
+          "key_id": "D-2",
+          "match_basis": null,
+          "proposed_amounts": {},
+          "title": "",
+          "tool_id": null,
+          "tool_treatment": null,
+          "verdict": "MISSED"
+        },
+        {
+          "ambiguity": "low",
+          "amount_diffs": {},
+          "case_type": "MISSING_GL_MONTH",
+          "correct": false,
+          "deal_id": "tidewell_distribution",
+          "doc_links": {
+            "expected": [
+              "1.1 NetSuite Admin Email - Aug 2024 GL Export Batch.eml"
+            ],
+            "extra": [],
+            "fn": 1,
+            "fp": 0,
+            "missing": [
+              "1.1 NetSuite Admin Email - Aug 2024 GL Export Batch.eml"
+            ],
+            "precision": null,
+            "recall": 0.0,
+            "surfaced": {
+              "den": 1,
+              "num": 0,
+              "rate": 0.0
+            },
+            "tool": [],
+            "tp": 0,
+            "unsurfaced": [
+              "1.1 NetSuite Admin Email - Aug 2024 GL Export Batch.eml"
+            ]
+          },
+          "expected_amounts": {
+            "FY2025": "-363586.47",
+            "FY2026": "0.00",
+            "TTM Jun-26": "0.00"
+          },
+          "expected_treatment": "REVISE",
+          "flags": {
+            "expected": [],
+            "missing": [],
+            "raised": []
+          },
+          "gl_links": {
+            "expected_rows": [],
+            "extra_rows": [],
+            "fn": 0,
+            "fp": 0,
+            "missing_rows": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "surfaced": {
+              "den": 0,
+              "num": 0,
+              "rate": null
+            },
+            "tool_rows": [],
+            "tp": 0,
+            "unsurfaced_rows": []
+          },
+          "key_id": "D-3",
+          "match_basis": null,
+          "proposed_amounts": {},
+          "title": "",
+          "tool_id": null,
+          "tool_treatment": null,
+          "verdict": "MISSED"
+        }
+      ],
+      "num": 2,
+      "rate": 0.5
+    },
+    "doc_link_precision": {
+      "den": 71,
+      "num": 67,
+      "rate": 0.9437
+    },
+    "doc_link_recall": {
+      "den": 74,
+      "num": 67,
+      "rate": 0.9054
+    },
+    "doc_surfaced_recall": {
+      "den": 83,
+      "num": 82,
+      "rate": 0.988
+    },
+    "ebitda_error": {
+      "by_deal": {
+        "meridian_mechanical": {
+          "FY2024": "0.00",
+          "FY2025": "0.00",
+          "TTM Jun-26": "0.00"
+        },
+        "tidewell_distribution": {
+          "FY2025": "423586.47",
+          "FY2026": "41541.19",
+          "TTM Jun-26": "231073.51"
+        }
+      },
+      "max_abs_error": "423586.47"
+    },
+    "false_accept_rate": {
+      "den": 20,
+      "items": [
+        {
+          "adj_id": "11",
+          "deal_id": "tidewell_distribution"
+        },
+        {
+          "adj_id": "13",
+          "deal_id": "tidewell_distribution"
+        }
+      ],
+      "num": 2,
+      "rate": 0.1
+    },
+    "flag_recall": {
+      "den": 28,
+      "num": 26,
+      "rate": 0.9286
+    },
+    "gl_link_precision": {
+      "den": 251,
+      "num": 192,
+      "rate": 0.7649
+    },
+    "gl_link_recall": {
+      "den": 254,
+      "num": 192,
+      "rate": 0.7559
+    },
+    "gl_surfaced_recall": {
+      "den": 361,
+      "num": 361,
+      "rate": 1.0
+    },
+    "missed_contradictions": {
+      "den": 16,
+      "items": [
+        {
+          "adj_id": "2",
+          "deal_id": "tidewell_distribution",
+          "flag": "CONTRADICTORY_EVIDENCE",
+          "tool_treatment": "REQUEST_INFO"
+        }
+      ],
+      "num": 1,
+      "rate": 0.0625
+    },
+    "n_adjustments": 30,
+    "n_diligence_items": 4,
+    "treatment_accuracy": {
+      "den": 30,
+      "num": 23,
+      "rate": 0.7667
+    },
+    "verdicts": {
+      "FALSE_ACCEPT": 2,
+      "PASS": 22,
+      "WRONG_AMOUNT": 1,
+      "WRONG_TREATMENT": 5
+    }
+  },
+  "split": "dev",
+  "tool_version": "0.1.0"
+}

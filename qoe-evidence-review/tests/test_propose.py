@@ -1,0 +1,601 @@
+"""Tests for qoe.propose: treatment rules in order, amounts, confidence, and the narrative."""
+
+from __future__ import annotations
+
+import pytest
+
+import re
+from typing import Iterable
+
+from qoe.ai_base import AdjustmentIntent, EntryClassification
+from qoe.challenge import ChallengeContext, run_challenges
+from qoe.money import fmt
+from qoe.propose import (
+    assess_confidence,
+    compute_proposed,
+    decide_treatment,
+    propose,
+    propose_duplicate_items,
+    propose_reporting_items,
+)
+from qoe.schemas import (
+    Account,
+    AdjustmentCategory,
+    DataQualityCode,
+    DataQualityIssue,
+    AdjustmentClaim,
+    AmountFact,
+    DealFiles,
+    DealMeta,
+    DealPackage,
+    DocFacts,
+    DocumentPage,
+    EbitdaClass,
+    EvidenceQuote,
+    Flag,
+    FlagCode,
+    GLEntry,
+    ManagementPL,
+    ManagementSchedule,
+    PeriodDef,
+    ReconciliationItem,
+    ReconciliationResult,
+    Severity,
+    SourceDocument,
+    Treatment,
+)
+from qoe.trace import build_index, trace_adjustment
+
+# ---------------------------------------------------------------------------
+# In-memory fixture kit
+# ---------------------------------------------------------------------------
+
+PERIODS = [
+    PeriodDef(label="FY2024", start="2024-01", end="2024-12"),
+    PeriodDef(label="FY2025", start="2025-01", end="2025-12"),
+    PeriodDef(label="TTM Jun-26", start="2025-07", end="2026-06"),
+]
+LABELS = [p.label for p in PERIODS]
+FY24, FY25, TTM = LABELS
+ACCOUNTS = {
+    "6010": Account(number="6010", name="Officer Compensation", source_type="Expense", ebitda_class=EbitdaClass.OPEX),
+    "6150": Account(number="6150", name="Repairs & Maintenance", source_type="Expense", ebitda_class=EbitdaClass.OPEX),
+    "6600": Account(number="6600", name="Travel", source_type="Expense", ebitda_class=EbitdaClass.OPEX),
+    "6200": Account(number="6200", name="Insurance", source_type="Expense", ebitda_class=EbitdaClass.OPEX),
+    "8100": Account(number="8100", name="Interest Expense", source_type="Other Expense", ebitda_class=EbitdaClass.INTEREST),
+}
+
+
+def entry(row: int, date: str, account: str, amount: object, cp: str, memo: str, num: str = "") -> GLEntry:
+    return GLEntry(
+        entry_id=f"GL-R{row}", date=date, period=date[:7], account=account, account_name=ACCOUNTS[account].name,
+        txn_type="Bill", doc_number=num, counterparty=cp, memo=memo, amount=fmt(amount), source_file="gl.csv", source_row=row,
+    )
+
+
+def claim(adj_id: str, amounts: Iterable[object], accounts: Iterable[str],
+          category: AdjustmentCategory = AdjustmentCategory.NON_RECURRING, refs: Iterable[str] = ()) -> AdjustmentClaim:
+    return AdjustmentClaim(
+        adj_id=adj_id, title=f"Item {adj_id}", category=category, gl_accounts=list(accounts), support_refs=list(refs),
+        amounts={lbl: fmt(a) for lbl, a in zip(LABELS, amounts)}, source_row=9,
+    )
+
+
+def package(entries: list[GLEntry], adj: AdjustmentClaim, texts: dict[str, str] | None = None) -> DealPackage:
+    meta = DealMeta(
+        deal_id="propose_deal", target_name="Propose Co (SYNTHETIC)", periods=PERIODS, data_start="2024-01", data_end="2026-06",
+        files=DealFiles(gl="gl.csv", chart_of_accounts="coa.csv", monthly_pl="pl.xlsx", adjustments="adj.xlsx"),
+    )
+    docs = [
+        SourceDocument(doc_id=k, relpath=f"documents/{k}", media_type="txt", sha256="0" * 64, pages=[DocumentPage(page=1, text=v)])
+        for k, v in (texts or {}).items()
+    ]
+    return DealPackage(
+        deal_dir="(memory)", meta=meta, accounts=ACCOUNTS, gl=entries, pl=ManagementPL(source_file="pl.xlsx", months=[], lines=[]),
+        schedule=ManagementSchedule(source_file="adj.xlsx", period_labels=LABELS, adjustments=[adj]), documents=docs,
+    )
+
+
+class FakeAI:
+    name = "fake"
+
+    def __init__(self, classifications=None, questions=None):
+        self.classifications = classifications or []
+        self.questions = questions or []
+
+    def extract_facts(self, doc):
+        return DocFacts(doc_id=doc.doc_id, doc_type="other")
+
+    def parse_intent(self, adj):
+        return AdjustmentIntent(adj_id=adj.adj_id)
+
+    def find_contradictions(self, adj, intent, facts, entries):
+        return []
+
+    def classify_entries(self, adj, intent, entries, facts):
+        return list(self.classifications)
+
+    def draft_questions(self, adj, flags, facts):
+        return list(self.questions)
+
+
+def traced(pkg: DealPackage, it: AdjustmentIntent, facts: list[DocFacts] = (), ai=None, challenge: bool = True):
+    index = build_index(pkg, list(facts))
+    t = trace_adjustment(index, pkg.schedule.adjustments[0], it)
+    if challenge:
+        run_challenges(t, ChallengeContext.build(ai, [t]))
+    return t
+
+
+def amounts(*values: object) -> dict[str, str]:
+    return {lbl: fmt(v) for lbl, v in zip(LABELS, values)}
+
+
+def repairs(*months_amounts: tuple[str, object]) -> list[GLEntry]:
+    return [entry(10 + i, f"{m}-10", "6150", a, "Tidewater Restoration", "Storm repair", f"TR-{i}") for i, (m, a) in enumerate(months_amounts)]
+
+
+REPAIR_INTENT = AdjustmentIntent(adj_id="P-1", counterparties=["Tidewater Restoration"])
+
+
+def documented_repairs(entries: list[GLEntry], adj: AdjustmentClaim):
+    """Each repair invoice has its own document, so NO_DOCUMENT_SUPPORT stays out of the way."""
+    texts = {f"inv {e.doc_number}.txt": f"Invoice {e.doc_number}" for e in entries}
+    facts = [
+        DocFacts(doc_id=f"inv {e.doc_number}.txt", doc_type="invoice", counterparty="Tidewater Restoration", reference_numbers=[e.doc_number])
+        for e in entries
+    ]
+    return package(entries, adj, texts), facts
+
+
+# ---------------------------------------------------------------------------
+# Treatment rules, in order
+# ---------------------------------------------------------------------------
+
+
+def test_accept_when_every_period_is_within_tolerance():
+    pkg, facts = documented_repairs(repairs(("2025-03", 10000)), claim("P-1", [0, "10000.60", 0], ["6150"]))
+    t = traced(pkg, REPAIR_INTENT, facts)
+    a = propose(t)
+    assert a.treatment == Treatment.ACCEPT
+    assert a.proposed == amounts(0, 10000, 0)  # the GL amount, not management's rounding
+    assert a.confidence == "high"
+    assert a.rationale.startswith("ACCEPT: the GL and documents support the claim.")
+
+
+def test_revise_when_part_is_supported_and_reject_when_nothing_is():
+    pkg, facts = documented_repairs(repairs(("2025-03", 6000)), claim("P-1", [0, 10000, 0], ["6150"]))
+    a = propose(traced(pkg, REPAIR_INTENT, facts))
+    assert a.treatment == Treatment.REVISE and a.proposed == amounts(0, 6000, 0)
+    assert "claims larger than the GL activity" in a.rationale
+
+    t = traced(pkg, REPAIR_INTENT, facts)
+    t.remove(t.claimed_ids(), FlagCode.CONTRADICTORY_EVIDENCE, "test")
+    treatment, drivers, reason = decide_treatment(t, compute_proposed(t))
+    assert treatment == Treatment.REJECT and drivers == [] and "no part of the claim survives" in reason
+
+
+def test_pro_forma_not_realized_comes_before_everything_else():
+    pkg, facts = documented_repairs(repairs(("2025-03", 10000)), claim("P-1", [0, 10000, 0], ["6150"]))
+    t = traced(pkg, REPAIR_INTENT, facts)
+    t.add_flag(Flag(code=FlagCode.PRO_FORMA_NOT_REALIZED, severity=Severity.CRITICAL, message="Not realized."))
+    treatment, drivers, _ = decide_treatment(t, compute_proposed(t))
+    assert treatment == Treatment.REQUEST_INFO and [f.code for f in drivers] == [FlagCode.PRO_FORMA_NOT_REALIZED]
+    a = propose(t)
+    assert a.proposed == {}
+    assert "Provisional amount the evidence would support: FY2024 0 / FY2025 10,000 / TTM Jun-26 0" in a.rationale
+
+
+def test_no_gl_support_requests_info_unless_a_contradiction_was_raised():
+    pkg = package([], claim("P-1", [0, 5000, 0], ["6150"]))
+    t = traced(pkg, AdjustmentIntent(adj_id="P-1"))
+    assert propose(t).treatment == Treatment.REQUEST_INFO
+    t.add_flag(Flag(code=FlagCode.CONTRADICTORY_EVIDENCE, severity=Severity.WARNING, message="Contradicted."))
+    treatment, _, _ = decide_treatment(t, compute_proposed(t))
+    assert treatment == Treatment.REJECT
+
+
+def test_undocumented_share_drives_request_info_only_above_the_limit():
+    entries = repairs(("2025-03", 8000), ("2025-04", 2000))
+    pkg, facts = documented_repairs(entries[:1], claim("P-1", [0, 10000, 0], ["6150"]))
+    pkg = pkg.model_copy(update={"gl": entries})
+    t = traced(pkg, REPAIR_INTENT, facts)
+    (flag,) = [f for f in t.flags if f.code == FlagCode.NO_DOCUMENT_SUPPORT]
+    assert flag.severity == Severity.INFO and "2,000 of the 10,000 carried (20%)" in flag.message
+    assert propose(t).treatment == Treatment.ACCEPT
+
+
+def test_normalization_supported_by_an_executed_agreement_is_computed_not_copied():
+    officer = [entry(20 + i, f"2025-{i + 1:02d}-15", "6010", 25000, "J. Varga", "Officer payroll - J. Varga") for i in range(12)]
+    text = "Executed employment agreement. Base salary of $220,000 per year. Signed by both parties."
+    pkg = package(officer, claim("P-1", [0, 100000, 0], ["6010"], AdjustmentCategory.NORMALIZATION, ["DR 2"]), {"2.1 Employment agreement.txt": text})
+    facts = [DocFacts(
+        doc_id="2.1 Employment agreement.txt", doc_type="employment_agreement", counterparty="J. Varga", is_signed=True,
+        amounts=[AmountFact(label="base_salary", amount="220000",
+                            quote=EvidenceQuote(doc_id="2.1 Employment agreement.txt", page=1, quote="Base salary of $220,000 per year."))],
+    )]
+    it = AdjustmentIntent(adj_id="P-1", counterparties=["J. Varga"], is_normalization=True, normalized_amount="220000")
+    a = propose(traced(pkg, it, facts))
+    # Actual 300,000 less the executed 220,000 level: 80,000, not management's 100,000.
+    assert a.treatment == Treatment.REVISE
+    assert a.proposed == amounts(0, 80000, 0)
+    assert a.traced_gl == amounts(0, 300000, 0)
+    assert any("sets the normalized level at 220,000" in f.text for f in a.facts)
+    assert not [f for f in a.flags if f.code == FlagCode.NORMALIZATION_BENCHMARK_MISSING]
+
+
+def test_normalization_without_an_executed_level_requests_info_with_the_provisional_amount():
+    officer = [entry(20 + i, f"2025-{i + 1:02d}-15", "6010", 25000, "J. Varga", "Officer payroll - J. Varga") for i in range(12)]
+    pkg = package(officer, claim("P-1", [0, 100000, 0], ["6010"], AdjustmentCategory.NORMALIZATION))
+    a = propose(traced(pkg, AdjustmentIntent(adj_id="P-1", counterparties=["J. Varga"], is_normalization=True)))
+    assert a.treatment == Treatment.REQUEST_INFO and a.proposed == {}
+    assert [f.code for f in a.flags] == [FlagCode.NORMALIZATION_BENCHMARK_MISSING]
+    assert "normalized level of 200,000 a year (implied by the claim, not yet supported)" in a.rationale
+    assert "FY2025 100,000" in a.rationale
+
+
+# ---------------------------------------------------------------------------
+# Confidence
+# ---------------------------------------------------------------------------
+
+
+def test_confidence_levels():
+    pkg, facts = documented_repairs(repairs(("2025-03", 6000), ("2025-04", 4000)), claim("P-1", [0, 10000, 0], ["6150"]))
+    t = traced(pkg, REPAIR_INTENT, facts)
+    p = compute_proposed(t)
+    assert assess_confidence(t, Treatment.ACCEPT, p, []) == "high"
+
+    # A doubt that does not set the amount lowers confidence.
+    t.add_flag(Flag(code=FlagCode.DUPLICATE_GL_ENTRY, severity=Severity.WARNING, message="Possible duplicate."))
+    assert assess_confidence(t, Treatment.ACCEPT, p, []) == "medium"
+
+    # A recurrence or contradiction removal is a judgment: medium.
+    t2 = traced(pkg, REPAIR_INTENT, facts)
+    first = t2.claimed_ids()[0]
+    t2.remove([first], FlagCode.RECURRING_PATTERN, "recurs")
+    t2.add_flag(Flag(code=FlagCode.RECURRING_PATTERN, severity=Severity.WARNING, message="Recurs."))
+    assert assess_confidence(t2, Treatment.REVISE, compute_proposed(t2), []) == "medium"
+
+    # An AI-only classification behind most of the change: low.
+    t3 = traced(pkg, REPAIR_INTENT, facts)
+    t3.remove([first], FlagCode.CONTRADICTORY_EVIDENCE, "does not qualify", source="ai")
+    assert assess_confidence(t3, Treatment.REVISE, compute_proposed(t3), []) == "low"
+
+
+def test_ai_classification_needs_a_verified_document_to_remove_anything():
+    entries = repairs(("2025-03", 6000), ("2025-04", 4000))
+    pkg, facts = documented_repairs(entries, claim("P-1", [0, 10000, 0], ["6150"]))
+    ai = FakeAI(classifications=[EntryClassification(entry_id=entries[0].entry_id, qualifies=False, reason="Looks routine.")])
+    a = propose(traced(pkg, REPAIR_INTENT, facts, ai=ai), ai)
+    assert a.treatment == Treatment.ACCEPT
+    assert any("cited no verifiable document" in j for j in a.judgment_questions)
+
+
+# ---------------------------------------------------------------------------
+# Questions, facts, judgment
+# ---------------------------------------------------------------------------
+
+
+def test_open_questions_are_numbered_per_adjustment_and_deduplicated():
+    pkg = package([], claim("M-07", [0, 5000, 0], ["6150"]))
+    ai = FakeAI(questions=["Please confirm the vendor.", "please confirm the vendor", "  Please confirm   the vendor. "])
+    t = traced(pkg, AdjustmentIntent(adj_id="M-07"), ai=ai)
+    a = propose(t, ai)
+    ids = [q.q_id for q in a.open_questions]
+    assert ids == [f"Q-M-07-{n}" for n in range(1, len(ids) + 1)]
+    assert all(re.fullmatch(r"Q-M-07-\d+", i) for i in ids)
+    no_gl = a.open_questions[0]
+    assert no_gl.basis == "NO_GL_SUPPORT" and no_gl.priority == "high"  # it drives REQUEST_INFO
+    assert "GL detail" in no_gl.text and "FY2025 5,000" in no_gl.text
+    assert [q.basis for q in a.open_questions].count("ai:draft_questions") == 1
+
+
+def test_facts_are_evidenced_and_kept_apart_from_judgment_questions():
+    pkg, facts = documented_repairs(repairs(("2024-03", 6000), ("2025-03", 6000)), claim("P-1", [0, 6000, 0], ["6150"]))
+    a = propose(traced(pkg, REPAIR_INTENT, facts))
+    assert a.facts and all(f.entry_ids or f.quotes for f in a.facts)
+    assert any(f.text.startswith("FY2025: 1 entry in 6150 traces to 6,000") for f in a.facts)
+    assert a.judgment_questions and all(j.endswith("?") or "?" in j for j in a.judgment_questions)
+    assert not {f.text for f in a.facts} & set(a.judgment_questions)
+    # The FY2024 twin is recurring: removed, and the reviewer is asked about it.
+    assert a.treatment == Treatment.REJECT and any("ongoing cost base" in j for j in a.judgment_questions)
+    link = {x.entry_id: x for x in a.gl_links}["GL-R11"]
+    assert link.supports_claim is False and link.reasons[-1].startswith("Removed (RECURRING_PATTERN)")
+
+
+def test_supported_facts_state_each_period_so_they_tie_to_the_proposal():
+    # Review finding ui-16: "Supported: ... (18 entries, Jan 2025–Jun 2026, 19,800)" summed overlapping
+    # periods (FY vs TTM) and tied to no tie-out column.
+    entries = repairs(("2025-03", 10000), ("2025-08", 5000))
+    pkg, facts = documented_repairs(entries, claim("P-1", [0, 15000, 5000], ["6150"]))
+    a = propose(traced(pkg, REPAIR_INTENT, facts))
+    assert a.proposed == amounts(0, 15000, 5000)
+    supported = [f.text for f in a.facts if f.text.startswith("Supported:")]
+    assert supported == ["Supported: Tidewater Restoration · Storm repair: FY2025 15,000; TTM Jun-26 5,000 "
+                         "(2 entries, Mar 2025–Aug 2025)."]
+
+
+def test_costs_already_below_ebitda_say_there_is_no_judgment_to_make():
+    # Review finding ui-09: a purely mechanical removal left "What needs judgment" reading "None recorded".
+    entries = [entry(40, "2025-06-20", "8100", 22000, "Harbor Bank", "Loan fee write-off - refinancing"),
+               entry(41, "2025-06-20", "8100", 13000, "Harbor Bank", "Prepayment penalty - refinancing")]
+    pkg = package(entries, claim("P-7", [0, 35000, 0], ["8100"]))
+    a = propose(traced(pkg, AdjustmentIntent(adj_id="P-7", counterparties=["Harbor Bank"])))
+    assert a.treatment == Treatment.REJECT
+    assert len(a.judgment_questions) == 1
+    assert a.judgment_questions[0].startswith("No judgment needed on the amount:")
+    assert "8100 Interest Expense" in a.judgment_questions[0]
+    assert "No judgment needed" in a.rationale and "Judgment: No judgment" not in a.rationale
+    (flag,) = [f for f in a.flags if f.code == FlagCode.ALREADY_EXCLUDED_FROM_EBITDA]
+    assert flag.effects == {FY25: "-35000.00"} and flag.amount_impact == "-35000.00"
+
+
+def test_a_partial_gap_is_the_flags_effect():
+    pkg, facts = documented_repairs(repairs(("2025-03", 20000)), claim("P-1", [0, 25000, 0], ["6150"]))
+    a = propose(traced(pkg, REPAIR_INTENT, facts))
+    (gap,) = [f for f in a.flags if f.code == FlagCode.PARTIAL_GL_SUPPORT]
+    assert gap.effects == {FY25: "-5000.00"} and gap.amount_impact == "-5000.00" and gap.period_label == FY25
+    assert a.proposed == amounts(0, 20000, 0)
+
+
+def test_propose_is_deterministic():
+    pkg, facts = documented_repairs(repairs(("2024-03", 6000), ("2025-03", 6000), ("2025-08", 4000)), claim("P-1", [0, 10000, 4000], ["6150"]))
+    one = propose(traced(pkg, REPAIR_INTENT, facts)).model_dump_json()
+    two = propose(traced(pkg, REPAIR_INTENT, facts)).model_dump_json()
+    assert one == two
+
+
+# ---------------------------------------------------------------------------
+# The assessment carries management's own description (the workpaper stands alone)
+# ---------------------------------------------------------------------------
+
+
+def test_assessment_carries_managements_description_and_support():
+    adj = claim("P-1", [0, 10000, 0], ["6150"], refs=["DR 7", "DR 7.1"]).model_copy(
+        update={"description": "Storm repairs after the October hurricane."})
+    pkg, facts = documented_repairs(repairs(("2025-03", 10000)), adj)
+    a = propose(traced(pkg, REPAIR_INTENT, facts))
+    assert a.source == "management"
+    assert a.description == "Storm repairs after the October hurricane."
+    assert a.gl_accounts == ["6150"] and a.support_refs == ["DR 7", "DR 7.1"]
+
+
+def test_rationale_states_facts_then_judgment_and_stays_short():
+    pkg, facts = documented_repairs(repairs(("2024-03", 6000), ("2025-03", 6000)), claim("P-1", [0, 6000, 0], ["6150"]))
+    a = propose(traced(pkg, REPAIR_INTENT, facts))
+    assert a.rationale.startswith("REJECT: no part of the claim survives (recurring activity).")
+    assert a.rationale.index("1 entry traces to FY2025 6,000") < a.rationale.index("Judgment:")
+    assert len(a.rationale) <= 600
+
+
+# ---------------------------------------------------------------------------
+# Diligence-identified items (SPEC §5.7)
+# ---------------------------------------------------------------------------
+
+
+def _dup(row: int, date: str, num: str = "CR-0507", account: str = "6200", amount: object = 18400, memo: str = "Premium installment") -> GLEntry:
+    return entry(row, date, account, amount, "Coastal Risk Insurance", memo, num)
+
+
+def _dq(*groups: list[GLEntry]) -> ReconciliationResult:
+    issues = [DataQualityIssue(code=DataQualityCode.DUPLICATE_GL_ENTRY, severity=Severity.WARNING, message="dup",
+                               entry_ids=[e.entry_id for e in g]) for g in groups]
+    return ReconciliationResult(items=[], issues=issues, gl_ebitda={}, mgmt_reported_ebitda={}, months_compared=0,
+                                accounts_compared=0, variance_count=0)
+
+
+def _items(entries: list[GLEntry], groups: list[list[GLEntry]], adj: AdjustmentClaim | None = None, texts=None, facts=(),
+           taken=()):
+    adj = adj or claim("M-1", [0, 0, 0], ["6150"])
+    pkg = package(entries, adj, texts)
+    index = build_index(pkg, list(facts), _dq(*groups))
+    traces = []
+    if any(v != "0.00" for v in adj.amounts.values()):
+        t = trace_adjustment(index, adj, AdjustmentIntent(adj_id=adj.adj_id, counterparties=["Coastal Risk Insurance"]))
+        run_challenges(t, ChallengeContext.build(None, [t]))
+        traces.append(t)
+    return propose_duplicate_items(index, traces, taken_ids=taken), traces
+
+
+def test_a_doc_number_duplicate_becomes_a_diligence_item():
+    first, second = _dup(40, "2025-05-07"), _dup(41, "2025-05-10")
+    texts = {"9.4 Coastal Risk installment notice.txt": "Installment CR-0507. Amount Due: $18,400.00"}
+    facts = [DocFacts(doc_id="9.4 Coastal Risk installment notice.txt", doc_type="invoice", counterparty="Coastal Risk Insurance",
+                      reference_numbers=["CR-0507"],
+                      amounts=[AmountFact(label="total_due", amount="18400", quote=EvidenceQuote(
+                          doc_id="9.4 Coastal Risk installment notice.txt", page=1, quote="Amount Due: $18,400.00"))])]
+    (item,), _ = _items([first, second], [[first, second]], texts=texts, facts=facts)
+    assert item.adj_id == "D-1" and item.source == "diligence"
+    assert item.category == AdjustmentCategory.OTHER and item.treatment == Treatment.REVISE
+    assert item.claimed == amounts(0, 0, 0)
+    # The second posting overstates FY2025 expense; May 2025 is outside TTM Jun-26.
+    assert item.proposed == amounts(0, 18400, 0)
+    links = {x.entry_id: x for x in item.gl_links}
+    assert links["GL-R40"].supports_claim is False and links["GL-R41"].supports_claim is True
+    assert [f.code for f in item.flags] == [FlagCode.DUPLICATE_GL_ENTRY]
+    assert item.flags[0].quotes and "twice" in item.flags[0].message and len(item.flags[0].message) <= 320
+    (doc,) = item.doc_links
+    assert doc.doc_id == "9.4 Coastal Risk installment notice.txt" and set(doc.entry_ids) == {"GL-R40", "GL-R41"}
+    (q,) = item.open_questions
+    assert q.q_id == "Q-D-1-1" and "paid once" in q.text and "refunded" in q.text and q.text.count("?") == 1
+    assert item.facts and all(f.entry_ids or f.quotes for f in item.facts)
+    assert len(item.rationale) <= 600 and item.rationale.startswith("REVISE:")
+
+
+def test_a_posting_management_already_carries_is_not_reversed_again():
+    first, second = _dup(40, "2025-05-07"), _dup(41, "2025-05-10")
+    # Management claims one posting of the bill as its own adjustment.
+    (item,), traces = _items([first, second], [[first, second]], adj=claim("M-1", [0, 18400, 0], ["6200"]))
+    carried = traces[0].supporting_ids()
+    assert len(carried) == 1
+    reversed_ids = [x.entry_id for x in item.gl_links if x.supports_claim]
+    assert reversed_ids and not set(reversed_ids) & set(carried)
+    assert item.proposed == amounts(0, 18400, 0)
+    assert any("already carried in management's adjustment M-1" in f.text for f in item.facts)
+    # Management claims both postings (SPEC §5.7): its item keeps the first and the diligence item
+    # reverses the second, so the bill is added back once and the extra posting reversed once.
+    (item,), traces = _items([first, second], [[first, second]], adj=claim("M-1", [0, 36800, 0], ["6200"]))
+    assert traces[0].supporting_ids() == [first.entry_id]
+    assert [x.entry_id for x in item.gl_links if x.supports_claim] == [second.entry_id]
+    assert item.proposed == amounts(0, 18400, 0)
+
+
+def test_postings_of_one_day_under_one_number_are_not_reversed_as_a_duplicate():
+    # Two identical lines of one bill post together: no mechanical reversal, the question stays with reconciliation.
+    first, second = _dup(40, "2025-05-07"), _dup(41, "2025-05-07")
+    items, _ = _items([first, second], [[first, second]])
+    assert items == []
+
+
+def test_only_doc_number_groups_inside_ebitda_become_items_numbered_by_first_row():
+    memo_a, memo_b = _dup(50, "2025-02-03", num=""), _dup(51, "2025-02-06", num="")  # matched on memo: a question only
+    int_a = _dup(60, "2025-03-01", num="JE-5", account="8100", amount=900)
+    int_b = _dup(61, "2025-03-02", num="JE-5", account="8100", amount=900)  # below EBITDA: no bridge effect
+    late_a, late_b = _dup(80, "2026-02-01", num="CR-0201", amount=500), _dup(81, "2026-02-03", num="CR-0201", amount=500)
+    early_a, early_b = _dup(70, "2024-11-01", num="CR-1101", amount=700), _dup(71, "2024-11-04", num="CR-1101", amount=700)
+    entries = [memo_a, memo_b, int_a, int_b, late_a, late_b, early_a, early_b]
+    groups = [[late_a, late_b], [memo_a, memo_b], [int_a, int_b], [early_a, early_b]]
+    items, _ = _items(entries, groups, taken=["M-1", "D-1"])
+    # Management already uses D-1, so numbering continues; order follows each group's first GL row.
+    assert [i.adj_id for i in items] == ["D-2", "D-3"]
+    assert items[0].proposed == amounts(700, 0, 0) and items[1].proposed == amounts(0, 0, 500)
+
+
+# ---------------------------------------------------------------------------
+# Diligence-identified items (SPEC §5.7): supported reporting differences
+# ---------------------------------------------------------------------------
+
+
+def _recon(items: list[tuple[str, str, object]], missing: tuple[str, ...] = ()) -> ReconciliationResult:
+    rows = [ReconciliationItem(month=m, account=a, account_name=ACCOUNTS[a].name, gl_amount="0.00", pl_amount=fmt(v),
+                               variance=fmt(v), within_tolerance=False) for m, a, v in items]
+    issues = [DataQualityIssue(code=DataQualityCode.MISSING_PERIOD, severity=Severity.WARNING, message="gap", month=m)
+              for m in missing]
+    return ReconciliationResult(items=rows, issues=issues, gl_ebitda={}, mgmt_reported_ebitda={}, months_compared=0,
+                                accounts_compared=0, variance_count=len(rows))
+
+
+def _bonus_case(signed, reverses: bool = True,
+                text: str = "FY2025 bonus plan.\nTotal awards: $50,000.00.\nApproved by the Board.",
+                accrual: str = "2025-12", paid: str = "2026-03", pay_date: str = "2026-03-13", doc_date=None,
+                account: str = "6010"):
+    payout = entry(70, pay_date, account, 50000, "", "Management bonus payout - FY2025 plan")
+    texts = {"1.4 Bonus calculation - approved.txt": text}
+    facts = [DocFacts(doc_id="1.4 Bonus calculation - approved.txt", doc_type="other", is_signed=signed, doc_date=doc_date,
+                      amounts=[AmountFact(label="total_due", amount="50000", quote=EvidenceQuote(
+                          doc_id="1.4 Bonus calculation - approved.txt", page=1, quote="Total awards: $50,000.00."))])]
+    pkg = package([payout], claim("M-1", [0, 0, 0], ["6150"]), texts)
+    index = build_index(pkg, facts)
+    variances = [(accrual, account, 50000)] + ([(paid, account, -50000)] if reverses else [])
+    return propose_reporting_items(index, _recon(variances), taken_ids=["M-1", "D-1"]), payout
+
+
+def test_a_supported_top_side_accrual_is_kept_as_a_diligence_item():
+    # Management accrues a bonus in December (FY2025) and reverses it in March when the GL books the payout.
+    (item,), payout = _bonus_case(signed=True)
+    assert item.adj_id == "D-2" and item.source == "diligence" and item.treatment == Treatment.REVISE
+    # FY2025 holds the accrual month but not the payout: the cost moves in. TTM Jun-26 holds both: no change.
+    assert item.proposed == amounts(0, -50000, 0)
+    (link,) = item.gl_links
+    assert link.entry_id == payout.entry_id and link.supports_claim and link.role == "moved"
+    # Traced where the GL books it (Mar 2026, TTM only); the flag moves it to December.
+    assert item.traced_gl == amounts(0, 0, 50000)
+    assert item.flags[0].effects == {FY25: "-50000.00", TTM: "-50000.00"}
+    assert item.doc_links[0].doc_id == "1.4 Bonus calculation - approved.txt"
+
+
+def test_a_top_side_without_approved_support_or_reversal_stays_reversed_to_the_gl():
+    assert _bonus_case(signed=False)[0] == []  # the calculation is marked unsigned
+    assert _bonus_case(signed=None, text="FY2025 bonus plan. Total awards: $50,000.00. Proposed pool.")[0] == []
+    assert len(_bonus_case(signed=None)[0]) == 1  # an approval recorded without a signature block is enough
+    assert _bonus_case(signed=True, reverses=False)[0] == []  # never booked in the GL: unsupported
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "FY2025 Bonus Pool - proposed; not approved by the owner.\nTotal awards: $50,000.00.",
+        "FY2025 bonus plan.\nTotal awards: $50,000.00.\nApproved by: ________",
+        "FY2025 bonus plan.\nTotal awards: $50,000.00, subject to the Board's approval.\nApproved vendor: Acme",
+        "FY2025 bonus plan.\nTotal awards: $50,000.00. Pending approval by the owner.",
+        "FY2025 bonus plan.\nTotal awards: $50,000.00.\nApproved vendor: Acme",
+    ],
+)
+def test_an_approval_word_that_records_no_approval_does_not_support_a_top_side(text):
+    assert _bonus_case(signed=None, text=text)[0] == []
+
+
+def test_a_signed_document_that_says_the_amount_is_not_approved_is_not_support():
+    text = "FY2025 bonus pool proposal - not approved.\nTotal awards: $50,000.00.\n/s/ P. Raman, Controller"
+    assert _bonus_case(signed=True, text=text)[0] == []
+
+
+def test_a_cost_deferred_to_a_later_month_is_not_a_supported_accrual():
+    # The GL books the cost in March; management's P&L moves it to June. That raises March's period and is not
+    # cash-to-accrual: the difference stays reversed to the GL whatever the documents say.
+    items, _ = _bonus_case(signed=True, accrual="2025-06", paid="2025-03", pay_date="2025-03-13",
+                           text="FY2025 bonus plan. Total awards: $50,000.00. Approved by the Board.")
+    assert items == []
+
+
+def test_a_top_side_is_supported_only_by_a_document_about_that_accrual():
+    # A signed document dated after the accrual month that names neither the period nor the account (a
+    # vendor contract stating the same amount) is not evidence that the cost was earned in the accrual month.
+    text = "Master Services Agreement with Acme Corp.\nContract value: $50,000.00.\nSigned: /s/ J. Doe"
+    assert _bonus_case(signed=True, text=text, doc_date="2026-02-10")[0] == []
+    # Dated no later than the accrual month, the executed document shows the obligation existed by then.
+    assert len(_bonus_case(signed=True, text=text, doc_date="2025-11-20")[0]) == 1
+    # A calculation dated after year-end that names the plan year (a range holding the accrual month) supports it.
+    text = "Bonus calculation. Plan Year January 1, 2025 - December 31, 2025.\nTotal awards: $50,000.00."
+    assert len(_bonus_case(signed=True, text=text, doc_date="2026-02-10")[0]) == 1
+
+
+GAP_EMAIL = ("The August 2024 GL batch was exported with the wrong saved search, so it only has a few accounts. "
+             "The August income statement and trial balance are complete and the management P&L ties to them.")
+
+
+def _gap_case(text: str):
+    texts = {"1.1 Admin email - GL export.txt": text}
+    pkg = package([entry(80, "2024-08-15", "6150", 100, "Vendor", "Repairs")], claim("M-1", [0, 0, 0], ["6150"]), texts)
+    index = build_index(pkg, [DocFacts(doc_id="1.1 Admin email - GL export.txt", doc_type="correspondence")])
+    variances = [("2024-08", "6150", 12000), ("2024-08", "6600", 3500.5), ("2024-08", "8100", 900)]
+    return propose_reporting_items(index, _recon(variances, missing=("2024-08",)))
+
+
+def test_a_documented_gl_export_gap_keeps_managements_pl_for_the_month():
+    (item,) = _gap_case(GAP_EMAIL)
+    # EBITDA accounts only: interest (8100) is below EBITDA.
+    assert item.proposed == amounts(-15500.5, 0, 0) and item.gl_links == []
+    assert item.flags[0].effects == {FY24: "-15500.50"} and item.support_refs == ["1.1 Admin email - GL export.txt"]
+    assert item.open_questions and "trial balance" in item.open_questions[0].text
+
+
+def test_a_missing_month_without_an_explanation_is_not_kept():
+    assert _gap_case("We are looking into the August numbers.") == []
+    assert _gap_case("The August 2024 batch was exported from the wrong saved search.") == []  # no TB tie stated
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        # Month, an export word and a trial-balance word all appear, but nothing says the export is defective
+        # or that the books are complete.
+        "Attached is the August 2024 data request list. Please export the AR aging. The trial balance will follow.",
+        # A batch of claims and a TB in the same document: no export defect for the month.
+        "The August 2024 claims batch was submitted late. The trial balance is complete.",
+        # The defect is stated for another month than the one missing.
+        "The July 2024 export only has a few accounts. The August 2024 trial balance is complete.",
+        # The books themselves are said to be incomplete: that is not an export problem.
+        "The August 2024 export is missing accounts because the August 2024 books are not complete.",
+    ],
+)
+def test_an_export_gap_needs_a_stated_defect_and_complete_books_for_the_month(text):
+    assert _gap_case(text) == []
+
+
+def test_the_export_gap_states_the_share_of_accounts_missing():
+    (item,) = _gap_case(GAP_EMAIL)
+    assert "most" not in item.rationale
+    # Both EBITDA accounts in the month's P&L have no GL activity (interest is below EBITDA and not counted).
+    assert "no activity for 2 of 2 EBITDA accounts" in item.flags[0].message
+    assert "2 of the 2 EBITDA accounts" in item.rationale
