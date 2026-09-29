@@ -292,7 +292,7 @@ class TermFact(StrictModel):
 
 class DocFacts(StrictModel):
     doc_id: str
-    doc_type: str  # invoice | engagement_letter | contract | settlement_agreement | separation_agreement | insurance | correspondence | payroll | memo | other
+    doc_type: str  # invoice | engagement_letter | contract | settlement_agreement | separation_agreement | insurance | correspondence | payroll | memo | benchmark | other
     title: str = ""
     counterparty: Optional[str] = None
     doc_date: Optional[str] = None  # YYYY-MM-DD
