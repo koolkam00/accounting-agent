@@ -45,15 +45,27 @@ def signed_streak(sign: pd.Series, groups: pd.Series) -> pd.Series:
     return (length * s).where(s != 0, 0)
 
 
-def consensus_lines(lines: pd.DataFrame) -> pd.DataFrame:
+def consensus_lines(lines: pd.DataFrame, reference: str = "close") -> pd.DataFrame:
+    """Median line across books. The reference line is the close where any book has a
+    usable close, otherwise the opener (or always the opener with reference="open");
+    the open-to-close move is measured book by book."""
+    lines = lines.assign(_move=lines["line_close"] - lines["line_open"])
     g = lines.groupby(["game_id", "athlete_id", "market"], sort=False)
     cons = g.agg(
-        ref_line=("line_close", "median"),
+        ref_close=("line_close", "median"),
         ref_line_open=("line_open", "median"),
-        ref_fair_over=("fair_over_close", "mean"),
+        fair_close=("fair_over_close", "mean"),
+        fair_open=("fair_over_open", "mean"),
+        ref_move=("_move", "median"),
         n_books=("book_family", "nunique"),
     ).reset_index()
-    return cons
+    if reference == "open":
+        cons["ref_close"] = np.nan
+        cons["fair_close"] = np.nan
+    cons["ref_is_close"] = cons["ref_close"].notna()
+    cons["ref_line"] = cons["ref_close"].fillna(cons["ref_line_open"])
+    cons["ref_fair_over"] = cons["fair_close"].fillna(cons["fair_open"])
+    return cons.drop(columns=["ref_close", "fair_close", "fair_open"])
 
 
 def player_features(player_games: pd.DataFrame, games: pd.DataFrame, cons: pd.DataFrame, market: str) -> pd.DataFrame:
@@ -96,7 +108,6 @@ def player_features(player_games: pd.DataFrame, games: pd.DataFrame, cons: pd.Da
         for w in ("5", "10", "_season"):
             avg = out[f"avg{w}"]
             out[f"gap{w}_z_{timing}"] = (pg[col] - avg) / out["sd20"]
-    out["ref_move"] = pg["ref_line"] - pg["ref_line_open"]
     # Minutes: was last game's playing time unusual compared with his average before it?
     min_avg10, _ = _prior_window(pg["min"], grp, 10, 5)
     out["prev_min"] = shift(pg["min"])
@@ -111,36 +122,36 @@ def player_features(player_games: pd.DataFrame, games: pd.DataFrame, cons: pd.Da
     return out
 
 
-def build_features(player_games: pd.DataFrame, games: pd.DataFrame, lines: pd.DataFrame) -> pd.DataFrame:
-    cons = consensus_lines(lines)
+def build_features(player_games: pd.DataFrame, games: pd.DataFrame, lines: pd.DataFrame, reference: str = "close") -> pd.DataFrame:
+    cons = consensus_lines(lines, reference)
     player_games = player_games[player_games["season"].isin(lines["season"].unique())]
     feats = [player_features(player_games, games, cons, m) for m in sorted(lines["market"].unique())]
     return pd.concat(feats, ignore_index=True).merge(cons, on=["game_id", "athlete_id", "market"], how="left")
 
 
 def bet_panel(lines: pd.DataFrame, mode: str) -> pd.DataFrame:
-    """One bettable row per game x player x market.
+    """One bettable row per game x player x market, priced separately at the open and the close.
 
-    single: every bet goes to one major book (first available in SINGLE_BOOK_PREFERENCE).
+    single: every bet goes to one major book, the first in SINGLE_BOOK_PREFERENCE that has a
+            usable line at that time (a book whose close was dropped can't take a closing bet).
     best:   line shopping. The over takes the lowest line on offer, the under the highest,
             and ties go to the better price.
     """
     key = ["game_id", "athlete_id", "market"]
     base_cols = key + ["season", "season_type", "game_date", "start_utc", "played", "actual", "home"]
-    if mode == "single":
-        rank = lines["book_family"].map({b: i for i, b in enumerate(SINGLE_BOOK_PREFERENCE)}).fillna(len(SINGLE_BOOK_PREFERENCE))
-        sel = lines.assign(_r=rank).sort_values(key + ["_r"]).drop_duplicates(key)
-        out = sel[base_cols + ["book_family"]].copy()
-        for t in ("open", "close"):
+    out = lines[base_cols].drop_duplicates(key).set_index(key)
+    rank = lines["book_family"].map({b: i for i, b in enumerate(SINGLE_BOOK_PREFERENCE)}).fillna(len(SINGLE_BOOK_PREFERENCE))
+    for t in ("open", "close"):
+        ok = lines[f"over_{t}"].notna() & lines[f"under_{t}"].notna() & lines[f"line_{t}"].notna()
+        avail = lines[ok].assign(_r=rank[ok])
+        if mode == "single":
+            sel = avail.sort_values(key + ["_r"]).drop_duplicates(key).set_index(key)
             for side in ("over", "under"):
                 out[f"line_{side}_{t}"] = sel[f"line_{t}"]
                 out[f"odds_{side}_{t}"] = sel[f"{side}_{t}"]
                 out[f"pnl_{side}_{t}"] = sel[f"pnl_{side}_{t}"]
-        return out.reset_index(drop=True)
-
-    out = lines[base_cols].drop_duplicates(key).set_index(key)
-    for t in ("open", "close"):
-        avail = lines[lines[f"over_{t}"].notna() & lines[f"under_{t}"].notna() & lines[f"line_{t}"].notna()]
+                out[f"book_{side}_{t}"] = sel["book_family"]
+            continue
         for side, line_ascending in (("over", True), ("under", False)):
             price = avail[f"{side}_{t}"]
             dec = np.where(price > 0, 1 + price / 100, 1 + 100 / price.abs())

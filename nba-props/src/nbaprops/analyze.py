@@ -14,6 +14,7 @@ from nbaprops.features import bet_panel, build_features
 from nbaprops import hypothesis as hyp
 
 MIN_TRAIN_BETS = 300
+MIN_SEASON_GAMES = 100
 
 
 def _load() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -33,6 +34,10 @@ def run_analysis(holdout_season: int | None = None) -> dict:
     out = config.REPORTS
     games, player_games, lines = _load()
     lines = lines[lines["season_type"].isin(list(config.SEASON_TYPES))]
+    # A season needs real coverage to be scored on its own (2021-22 has props for only
+    # a handful of Finals-round games).
+    games_per_season = lines.groupby("season")["game_id"].nunique()
+    lines = lines[lines["season"].isin(games_per_season[games_per_season >= MIN_SEASON_GAMES].index)]
     seasons = sorted(lines["season"].unique())
     holdout = holdout_season or int(seasons[-1])
     print(f"[analyze] prop seasons {seasons}, holdout {holdout}", flush=True)
@@ -48,9 +53,14 @@ def run_analysis(holdout_season: int | None = None) -> dict:
     by_season = hyp.season_table(feats)
     history = hyp.naive_line_history(player_games)
     quality = hyp.data_quality(lines)
+    # Robustness: the same direct test against the consensus opening line only.
+    thesis_open = hyp.thesis_table(build_features(player_games, games, lines, reference="open"))
     coverage = coverage_table(lines)
+    line_quality = pd.read_parquet(config.TABLES / "line_quality.parquet")
+    line_quality = line_quality[line_quality["season"].isin(seasons)]
     for name, df in {
         "thesis_by_market": thesis,
+        "thesis_by_market_vs_open": thesis_open,
         "streaks": streaks,
         "margin_buckets": margins,
         "book_adjustment": adjust,
@@ -59,6 +69,7 @@ def run_analysis(holdout_season: int | None = None) -> dict:
         "line_accuracy": quality["line_accuracy"],
         "side_calibration": quality["side_calibration"],
         "coverage": coverage,
+        "line_quality": line_quality,
     }.items():
         df.to_csv(out / f"{name}.csv", index=False)
     print(thesis.round(4).to_string(), flush=True)
@@ -72,6 +83,8 @@ def run_analysis(holdout_season: int | None = None) -> dict:
         panels[mode] = panel.merge(feats[extra], on=key, how="inner")
     train_feats = feats[feats["season"] < holdout]
     line_q = {m: tuple(train_feats.loc[train_feats["market"] == m, "ref_line"].quantile([1 / 3, 2 / 3])) for m in config.ALL_MARKETS if (feats["market"] == m).any()}
+    streak_roi = pd.concat([hyp.streak_roi_table(panels["single"], t) for t in ("close", "open")], ignore_index=True)
+    streak_roi.to_csv(out / "streak_roi.csv", index=False)
     grid = run_grid(panels, holdout, line_q)
     table = grid.table
     table["label"] = table.apply(strategy_label, axis=1)

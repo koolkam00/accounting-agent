@@ -12,6 +12,7 @@ import statsmodels.api as sm
 from scipy import stats
 
 from nbaprops import config
+from nbaprops.features import _prior_window
 
 BREAKEVEN_110 = 110 / 210  # win rate needed at -110 on both sides
 
@@ -32,6 +33,12 @@ def thesis_table(f: pd.DataFrame) -> pd.DataFrame:
         under = (cond["ref_result"] == "under").to_numpy(float)
         prev_over = (cond["prev_result"] == "over").to_numpy(float)
         fit = _ols_cluster(under, prev_over, cond["athlete_id"].to_numpy())
+        # Same test against the odds: did unders beat their price-implied probability by
+        # more after an over than after an under? Steals and blocks lines sit at 0.5 or 1.5
+        # and are priced through the juice, so the raw rates mix very different players.
+        excess = under - (1 - cond["ref_fair_over"].to_numpy(float))
+        ok = ~np.isnan(excess)
+        fit_px = _ols_cluster(excess[ok], prev_over[ok], cond["athlete_id"].to_numpy()[ok])
         after_over = cond[cond["prev_result"] == "over"]
         after_under = cond[cond["prev_result"] == "under"]
         k = int((after_over["ref_result"] == "under").sum())
@@ -43,18 +50,50 @@ def thesis_table(f: pd.DataFrame) -> pd.DataFrame:
                 "graded_props": len(d),
                 "p_over": float((d["ref_result"] == "over").mean()),
                 "p_under": float((d["ref_result"] == "under").mean()),
+                # What the prices implied (vig removed), for comparison with what happened.
+                "fair_p_under": float((1 - d["ref_fair_over"]).mean()),
                 "n_after_over": n,
                 "p_under_after_over": k / n if n else np.nan,
+                "fair_p_under_after_over": float((1 - after_over["ref_fair_over"]).mean()) if n else np.nan,
+                "p_under_after_under": float((after_under["ref_result"] == "under").mean()) if len(after_under) else np.nan,
                 "n_after_under": len(after_under),
                 "p_over_after_under": float((after_under["ref_result"] == "over").mean()) if len(after_under) else np.nan,
+                "fair_p_over_after_under": float(after_under["ref_fair_over"].mean()) if len(after_under) else np.nan,
                 # Effect of the previous result on P(under): positive = reversal, negative = momentum.
                 "reversal_effect": float(fit.params[1]),
                 "reversal_effect_se": float(fit.bse[1]),
                 "reversal_p_value": float(fit.pvalues[1]),
+                "price_adj_effect": float(fit_px.params[1]),
+                "price_adj_effect_se": float(fit_px.bse[1]),
+                "price_adj_p_value": float(fit_px.pvalues[1]),
                 "p_beats_breakeven": float(stats.binomtest(k, n, BREAKEVEN_110, alternative="greater").pvalue) if n else np.nan,
                 "residual_autocorr": float(np.corrcoef(mz["margin_z"], mz["prev_margin_z"])[0, 1]) if len(mz) > 2 else np.nan,
             }
         )
+    return pd.DataFrame(rows)
+
+
+def streak_roi_table(panel: pd.DataFrame, timing: str, max_k: int = 6) -> pd.DataFrame:
+    """ROI of betting against a streak: the under after k straight overs, the over after k straight unders."""
+    rows = []
+    for market in config.ALL_MARKETS:
+        d = panel[panel["market"] == market]
+        for k in range(1, max_k + 1):
+            sel_o = d["streak"] >= k if k == max_k else d["streak"] == k
+            sel_u = d["streak"] <= -k if k == max_k else d["streak"] == -k
+            pu = d.loc[sel_o, f"pnl_under_{timing}"].dropna()
+            po = d.loc[sel_u, f"pnl_over_{timing}"].dropna()
+            rows.append(
+                {
+                    "market": market,
+                    "streak": f"{k}+" if k == max_k else str(k),
+                    "timing": timing,
+                    "bets_under_after_overs": len(pu),
+                    "roi_under_after_overs": float(pu.mean()) if len(pu) else np.nan,
+                    "bets_over_after_unders": len(po),
+                    "roi_over_after_unders": float(po.mean()) if len(po) else np.nan,
+                }
+            )
     return pd.DataFrame(rows)
 
 
@@ -154,7 +193,7 @@ def naive_line_history(player_games: pd.DataFrame, window: int = 10, seed: int =
             d = pg.sort_values(["athlete_id", "season", "_shuffle"]) if placebo else pg
             grp = d["athlete_id"].astype(str) + "|" + d["season"].astype(str)
             stat = d[market].astype(float)
-            prior = stat.groupby(grp).transform(lambda s: s.shift(1).rolling(window, min_periods=window).mean())
+            prior, _ = _prior_window(stat, grp, window, window)
             above = np.sign(stat - prior)
             prev = above.groupby(grp).shift(1)
             t = pd.DataFrame({"season": d["season"], "above": above, "prev": prev}).dropna()

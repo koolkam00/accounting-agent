@@ -24,6 +24,11 @@ FIRST_PROP_SEASON = 2022
 # break are excluded.
 SEASON_TYPES = {2: "regular", 3: "playoffs", 5: "play-in"}
 
+# Odds providers that list game lines but never had player props in any game we probed
+# (consensus/model feeds and books ESPN only mirrors spreads for). Skipping them saves
+# about half the requests of a props pull; everything else is still tried.
+NO_PROP_PROVIDERS = {"25", "31", "36", "50", "53", "55", "57", "1001", "1002", "1003", "1004"}
+
 # Real NBA franchises carry ESPN team ids 1-30; All-Star and exhibition sides do not.
 NBA_TEAM_IDS = {str(i) for i in range(1, 31)}
 

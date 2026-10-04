@@ -257,11 +257,76 @@ def run_grid(panels: dict[str, pd.DataFrame], holdout: int, line_q: dict[str, tu
     return GridResult(table, np.vstack(day_ps), np.vstack(day_ns), all_days, day_season, seasons)
 
 
+_BASES = {
+    "all_unders": "Every under",
+    "all_overs": "Every over",
+    "reversal_after_over": "Under after an over",
+    "reversal_after_under": "Over after an under",
+    "momentum_after_over": "Over after an over",
+    "momentum_after_under": "Under after an under",
+}
+_FILTERS = {
+    "back_to_back": "on a back-to-back",
+    "rested_3plus": "with 3+ days of rest",
+    "home": "at home",
+    "away": "on the road",
+    "prev_overtime": "after an overtime game",
+    "prev_minutes_spike": "after a minutes spike (6+ over his average)",
+    "prev_minutes_drop": "after a minutes drop (6+ under his average)",
+    "prev_starter": "if he started last game",
+    "prev_bench": "if he came off the bench last game",
+    "playoffs": "in the playoffs",
+    "regular_season": "in the regular season",
+    "low_line": "on low lines (bottom third)",
+    "high_line": "on high lines (top third)",
+    "big_spread": "when the spread is 10+",
+    "high_total": "when the game total is 232+",
+    "low_total": "when the game total is 220 or less",
+    "early_season": "in his first 15 games",
+    "late_season": "after his 50th game",
+}
+
+
+def describe(family: str, variant: str, params: str) -> str:
+    """Plain-English name for a strategy."""
+    kv = dict(x.split("=") for x in params.split(",")) if params else {}
+    if family == "baseline":
+        return _BASES[variant]
+    if family in ("reversal", "momentum"):
+        k, z = int(kv["streak"]), float(kv["margin_z"])
+        run = "an over" if k == 1 else f"{k}+ straight overs"
+        run_u = "an under" if k == 1 else f"{k}+ straight unders"
+        size = f", last miss {z:g}+ SD" if z > 0 else ""
+        if family == "reversal":
+            both = "Opposite of last game's result" if k == 1 else f"Against a {k}+ game streak"
+            parts = {"after_overs": f"Under after {run}", "after_unders": f"Over after {run_u}", "both": both}
+        else:
+            both = "Same as last game's result" if k == 1 else f"With a {k}+ game streak"
+            parts = {"after_overs": f"Over after {run}", "after_unders": f"Under after {run_u}", "both": both}
+        return parts[variant] + size
+    if family == "line_adjust":
+        return f"{variant.title()} a line move of {kv['z']}+ SD from last game"
+    if family == "line_vs_avg":
+        window = {"5": "5-game", "10": "10-game", "season": "season"}[kv["window"]]
+        return f"{variant.title()} a line {kv['z']}+ SD from his {window} average"
+    if family == "steam":
+        return f"{variant.title()} an open-to-close move of {kv['move']}+"
+    if family == "price":
+        th = float(kv.get("min_decimal", kv.get("max_decimal", "nan")))
+        odds = f"+{(th - 1) * 100:.0f}" if th >= 2 else f"−{100 / (th - 1):.0f}"
+        side = "overs" if variant.endswith("over") else "unders"
+        return f"Plus-money {side} ({odds} or longer)" if variant.startswith("plus") else f"Juiced {side} ({odds} or shorter)"
+    if family == "context":
+        base, filt = variant.split("|")
+        return f"{_BASES[base]} {_FILTERS[filt]}"
+    return f"{family}:{variant} {params}"
+
+
 def strategy_label(r: pd.Series) -> str:
     market = config.MARKET_LABELS.get(r["market"], {"core5": "Core 5 stats", "all": "All prop markets"}.get(r["market"], r["market"]))
-    params = f" [{r['params']}]" if r["params"] else ""
-    book = "best line across books" if r["book_mode"] == "best" else "single book"
-    return f"{r['family']}:{r['variant']}{params} | {market} | {r['timing']} | {book}"
+    timing = "opening line" if r["timing"] == "open" else "closing line"
+    book = "best line" if r["book_mode"] == "best" else "single book"
+    return f"{describe(r['family'], r['variant'], r['params'])} · {market} · {timing} · {book}"
 
 
 def bh_fdr(pvals: np.ndarray, q: float = 0.10) -> np.ndarray:
@@ -294,7 +359,8 @@ def reality_check(day_pnl: np.ndarray, day_n: np.ndarray, cols: np.ndarray, rows
     max_t = np.empty(n_boot)
     for b in range(n_boot):
         w = rng.multinomial(d, np.full(d, 1.0 / d)).astype(np.float64)
-        roi_b = (P @ w) / (N @ w)
+        with np.errstate(invalid="ignore", divide="ignore"):
+            roi_b = (P @ w) / (N @ w)  # a strategy with no bets in a resample drops out
         max_t[b] = np.nanmax((roi_b - roi) / se)
     best = int(np.nanargmax(t_obs))
     return {
@@ -307,8 +373,12 @@ def reality_check(day_pnl: np.ndarray, day_n: np.ndarray, cols: np.ndarray, rows
     }
 
 
-def walk_forward(grid: GridResult, min_train_bets: int = 300, top_k: int = 10) -> pd.DataFrame:
-    """For each season, pick strategies using only earlier seasons, then score them on that season."""
+def walk_forward(grid: GridResult, min_train_bets: int = 300, top_k: int = 10, min_test_bets: int = 30) -> pd.DataFrame:
+    """For each season, pick strategies using only earlier seasons, then score them on that season.
+
+    Candidates must also have bets in the scored season: a strategy can have none when the
+    feed has no usable lines of its kind that season (ESPN BET's 2024-25 openers, say).
+    """
     t = grid.table
     out = []
     for i, test in enumerate(grid.seasons):
@@ -322,7 +392,7 @@ def walk_forward(grid: GridResult, min_train_bets: int = 300, top_k: int = 10) -
         te_n = grid.day_n[:, te_cols].sum(axis=1)
         te_p = grid.day_pnl[:, te_cols].sum(axis=1)
         with np.errstate(invalid="ignore", divide="ignore"):
-            tr_roi = np.where(tr_n >= min_train_bets, tr_p / tr_n, -np.inf)
+            tr_roi = np.where((tr_n >= min_train_bets) & (te_n >= min_test_bets), tr_p / tr_n, -np.inf)
         for rule in ("best_train_roi", "best_train_t"):
             if rule == "best_train_roi":
                 score = tr_roi

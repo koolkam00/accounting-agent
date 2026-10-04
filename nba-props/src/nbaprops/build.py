@@ -78,7 +78,13 @@ def _assign_sides(ou: pd.DataFrame) -> pd.DataFrame:
 
 def pair_main_lines(props: pd.DataFrame) -> pd.DataFrame:
     ou = props[(props["kind"] == "ou") & props["market"].isin(list(config.MARKET_FORMULAS)) & props["line_close"].notna()].copy()
-    ou["book_family"] = ou["book_id"].map(BOOK_FAMILY).fillna(ou["book"])
+    # Only real sportsbooks: the feed also carries the odd tipster/model provider whose
+    # "lines" would pollute consensus and line shopping.
+    unknown = sorted(set(ou.loc[~ou["book_id"].isin(list(BOOK_FAMILY)), "book"]))
+    if unknown:
+        print(f"[build] ignoring non-sportsbook providers: {unknown}", flush=True)
+    ou = ou[ou["book_id"].isin(list(BOOK_FAMILY))]
+    ou["book_family"] = ou["book_id"].map(BOOK_FAMILY)
 
     # Keep one provider id per book family per game (the one with the most prices).
     sizes = ou.groupby(["game_id", "book_family", "book_id"]).size().rename("n").reset_index()
@@ -110,13 +116,17 @@ def pair_main_lines(props: pd.DataFrame) -> pd.DataFrame:
     )
     pairs = pairs[pairs["over_close"].notna() & pairs["under_close"].notna()]
 
-    # If a book offered several two-sided lines, the main one is the most balanced.
+    # Several two-sided lines for one prop are either repeated snapshots of the main line
+    # (ESPN BET 2024-25 keeps an early and a final record) or alternates. Take the latest
+    # snapshot, and among lines updated together, the most balanced one.
     dec_o, dec_u = american_to_decimal(pairs["over_close"]), american_to_decimal(pairs["under_close"])
     p_o, p_u = 1 / dec_o, 1 / dec_u
     pairs["fair_over_close"] = p_o / (p_o + p_u)
     pairs["vig_close"] = p_o + p_u - 1
     pairs["_balance"] = (pairs["fair_over_close"] - 0.5).abs()
-    pairs = pairs.sort_values(prop_key + ["_balance", "vig_close"]).drop_duplicates(prop_key)
+    pairs["_updated"] = pd.to_datetime(pairs["updated"], utc=True, errors="coerce")
+    pairs = pairs.sort_values(prop_key + ["_updated", "_balance", "vig_close"], ascending=[True] * len(prop_key) + [False, True, True])
+    pairs = pairs.drop_duplicates(prop_key).drop(columns="_updated")
     pairs = pairs.merge(n_lines, on=prop_key, how="left")
     # An opening line that differs from the opening line on the under side is a feed glitch.
     pairs.loc[pairs["line_open"] != pairs["line_open_under"], ["line_open", "over_open", "under_open"]] = np.nan
@@ -160,6 +170,75 @@ def pregame_game_lines(odds: pd.DataFrame) -> pd.DataFrame:
     return g.reset_index()
 
 
+CLOSE_COLS = ["line_close", "over_close", "under_close", "pnl_over_close", "pnl_under_close", "fair_over_close", "vig_close"]
+OPEN_COLS = ["line_open", "over_open", "under_open", "pnl_over_open", "pnl_under_open", "fair_over_open"]
+MAX_ABS_ODDS = 1000  # -5000 / +750 style prices are placeholders, not markets anyone could bet
+
+
+def trailing_average(player_games: pd.DataFrame, window: int = 10) -> pd.DataFrame:
+    """Each player's average over his previous `window` games in the season, per market."""
+    from nbaprops.features import _prior_window  # local import: features imports this module
+
+    pg = player_games[player_games["played"]].sort_values(["athlete_id", "start_utc", "game_id"])
+    grp = pg["athlete_id"].astype(str) + "|" + pg["season"].astype(str)
+    parts = []
+    for market, cols in config.MARKET_FORMULAS.items():
+        avg, _ = _prior_window(pg[list(cols)].sum(axis=1), grp, window, 5)
+        parts.append(pd.DataFrame({"game_id": pg["game_id"].to_numpy(), "athlete_id": pg["athlete_id"].to_numpy(), "market": market, "trail": avg.to_numpy()}))
+    return pd.concat(parts, ignore_index=True)
+
+
+def line_quality(graded: pd.DataFrame, player_games: pd.DataFrame) -> pd.DataFrame:
+    """Per season and book: are the recorded opening and closing lines real pregame lines?
+
+    The yardstick is the player's own trailing 10-game average, which knows nothing about
+    the game. Real books beat it modestly (their misses run about 93-98% of its misses):
+      * a close that beats it by far more than that was captured during the game;
+      * a close identical to the opener was never updated by the feed (a stale line);
+      * an opener that does worse than the trailing average is filled with placeholders.
+    Books are only judged on 2,000+ graded props.
+    """
+    d = graded[graded["result_close"].isin(["over", "under", "push"])].merge(
+        trailing_average(player_games), on=["game_id", "athlete_id", "market"], how="inner"
+    )
+    d = d[d["trail"].notna()]
+    d["err_trail"] = (d["actual"] - d["trail"]).abs()
+    d["err_close"] = (d["actual"] - d["line_close"]).abs()
+    d["err_open"] = (d["actual"] - d["line_open"]).abs()
+    d["moved"] = d["line_open"] != d["line_close"]
+    g = d.groupby(["season", "book_family"])
+    q = g.agg(props=("actual", "size"), err_trail=("err_trail", "sum"), err_close=("err_close", "sum"), err_open=("err_open", "sum"), share_moved=("moved", "mean"))
+    q["close_vs_trailing"] = q["err_close"] / q["err_trail"]
+    q["open_vs_trailing"] = q["err_open"] / q["err_trail"]
+    judged = q["props"] >= 2000
+    in_game = judged & (q["close_vs_trailing"] < 0.88)
+    stale = judged & (q["share_moved"] < 0.02)
+    junk_open = judged & (q["open_vs_trailing"] > 1.02)
+    q["close_usable"] = ~(in_game | stale)
+    q["open_usable"] = ~junk_open
+    issues = []
+    for ig, st, jo in zip(in_game, stale, junk_open):
+        issues.append("; ".join(x for x, flag in (("close is an in-game line", ig), ("close never updated", st), ("opener has placeholder prices", jo)) if flag))
+    q["issue"] = issues
+    return q.drop(columns=["err_trail", "err_close", "err_open"]).reset_index()
+
+
+def quarantine_bad_lines(graded: pd.DataFrame, quality: pd.DataFrame) -> pd.DataFrame:
+    """Blank out closes and openers that are not real pregame lines, so nothing downstream uses them."""
+    graded = graded.merge(quality[["season", "book_family", "close_usable", "open_usable"]], on=["season", "book_family"], how="left")
+    graded["close_usable"] = graded["close_usable"].fillna(True).astype(bool)
+    graded["open_usable"] = graded["open_usable"].fillna(True).astype(bool)
+    placeholder_open = (graded["over_open"].abs() > MAX_ABS_ODDS) | (graded["under_open"].abs() > MAX_ABS_ODDS)
+    placeholder_close = (graded["over_close"].abs() > MAX_ABS_ODDS) | (graded["under_close"].abs() > MAX_ABS_ODDS)
+    graded["open_usable"] &= ~placeholder_open
+    graded["close_usable"] &= ~placeholder_close
+    graded.loc[~graded["close_usable"], CLOSE_COLS] = np.nan
+    graded.loc[~graded["close_usable"], "result_close"] = "no_close"
+    graded.loc[~graded["open_usable"], OPEN_COLS] = np.nan
+    graded.loc[~graded["open_usable"], "result_open"] = "no_open"
+    return graded
+
+
 def build_all() -> None:
     config.ensure_dirs()
     sched = load_schedule()
@@ -180,6 +259,10 @@ def build_all() -> None:
 
     lines = pair_main_lines(props)
     graded = grade_lines(lines, player_games, games)
+    quality = line_quality(graded, player_games)
+    quality.to_parquet(config.TABLES / "line_quality.parquet", index=False)
+    print(f"[build] line quality by season and book (misses relative to a trailing 10-game average):\n{quality.round(3).to_string(index=False)}", flush=True)
+    graded = quarantine_bad_lines(graded, quality)
     graded.to_parquet(config.TABLES / "prop_lines.parquet", index=False)
     summary = graded.groupby(["season", "book_family"]).agg(props=("market", "size"), games=("game_id", "nunique"))
     print(f"[build] main prop lines: {len(graded)}\n{summary}", flush=True)

@@ -88,7 +88,7 @@ def fetch_props(season: int, game_id: str) -> str:
     for it in odds.get("items", []):
         prov = it.get("provider") or {}
         pid, name = str(prov.get("id")), prov.get("name") or ""
-        if "live" in name.lower() or pid in providers:
+        if "live" in name.lower() or pid in providers or pid in config.NO_PROP_PROVIDERS:
             continue  # in-game markets are not pregame closing lines
         items = _fetch_provider_items(game_id, pid)
         if items:

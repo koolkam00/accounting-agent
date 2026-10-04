@@ -124,3 +124,65 @@ def test_parse_summary_box_score():
     a, b = rows
     assert a["pts"] == 31 and a["fgm"] == 11 and a["fga"] == 20 and a["home"] and a["opp_team"] == "HOU"
     assert b["dnp"]
+
+
+def test_quarantine_drops_bad_closes_openers_and_placeholder_prices():
+    from nbaprops.build import quarantine_bad_lines
+
+    g = pd.DataFrame(
+        {
+            "season": [2023, 2023, 2025],
+            "book_family": ["DraftKings", "MGM", "ESPN BET"],
+            "line_open": [20.5, 20.5, 0.5],
+            "line_close": [24.5, 20.5, 21.5],
+            "over_open": [-110.0, -110.0, -5000.0],
+            "under_open": [-110.0, -110.0, 750.0],
+            "over_close": [-110.0, -110.0, -115.0],
+            "under_close": [-110.0, -110.0, -105.0],
+            "pnl_over_open": [0.9, 0.9, 0.02],
+            "pnl_under_open": [-1.0, -1.0, -1.0],
+            "pnl_over_close": [0.9, 0.9, -1.0],
+            "pnl_under_close": [-1.0, -1.0, 0.95],
+            "fair_over_open": [0.5, 0.5, 0.9],
+            "fair_over_close": [0.5, 0.5, 0.52],
+            "vig_close": [0.05, 0.05, 0.05],
+            "result_open": ["over", "over", "over"],
+            "result_close": ["over", "over", "under"],
+        }
+    )
+    quality = pd.DataFrame(
+        {
+            "season": [2023, 2023, 2025],
+            "book_family": ["DraftKings", "MGM", "ESPN BET"],
+            "close_usable": [False, True, True],  # DraftKings 2022-23 close was an in-game line
+            "open_usable": [True, True, True],
+        }
+    )
+    out = quarantine_bad_lines(g, quality)
+    dk, mgm, espn = out.iloc[0], out.iloc[1], out.iloc[2]
+    assert np.isnan(dk["line_close"]) and dk["result_close"] == "no_close" and dk["line_open"] == 20.5
+    assert mgm["line_close"] == 20.5 and mgm["result_close"] == "over"
+    # -5000 / +750 is a placeholder opener even though the book-season passed
+    assert np.isnan(espn["line_open"]) and espn["result_open"] == "no_open" and espn["line_close"] == 21.5
+
+
+def test_bet_panel_single_book_and_line_shopping():
+    from nbaprops.features import bet_panel
+
+    base = {"game_id": "g", "athlete_id": "a", "market": "pts", "season": 2024, "season_type": 2, "game_date": "2024-01-01",
+            "start_utc": "2024-01-01T00:00Z", "played": True, "actual": 21.0, "home": True}
+    rows = [
+        # MGM has the lowest line (good for overs), Caesars the highest (good for unders).
+        {**base, "book_family": "MGM", "line_close": 20.5, "over_close": -120.0, "under_close": -100.0, "pnl_over_close": 0.833, "pnl_under_close": -1.0},
+        {**base, "book_family": "Caesars", "line_close": 21.5, "over_close": -105.0, "under_close": -115.0, "pnl_over_close": -1.0, "pnl_under_close": 0.87},
+        {**base, "book_family": "DraftKings", "line_close": 21.0, "over_close": -110.0, "under_close": -110.0, "pnl_over_close": 0.0, "pnl_under_close": 0.0},
+    ]
+    lines = pd.DataFrame(rows)
+    for col in ("line_open", "over_open", "under_open", "pnl_over_open", "pnl_under_open"):
+        lines[col] = np.nan  # no usable openers: only closing bets are possible
+    best = bet_panel(lines, "best").iloc[0]
+    assert best["line_over_close"] == 20.5 and best["book_over_close"] == "MGM"
+    assert best["line_under_close"] == 21.5 and best["book_under_close"] == "Caesars"
+    assert np.isnan(best["pnl_over_open"])
+    single = bet_panel(lines, "single").iloc[0]
+    assert single["book_over_close"] == "DraftKings" and single["line_under_close"] == 21.0
