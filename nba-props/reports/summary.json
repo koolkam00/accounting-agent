@@ -1,0 +1,28 @@
+{
+ "seasons": [
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "holdout": 2026,
+ "n_games_box": 30931,
+ "n_player_games": 818120,
+ "n_box_seasons": 24,
+ "n_prop_games": 4322,
+ "n_prop_lines": 1052456,
+ "n_strategies": 16700,
+ "n_eligible": 11814,
+ "n_fdr_discoveries": 128,
+ "reality_check": {
+  "n_strategies": 11814,
+  "best_row": 9202,
+  "best_t": 6.675875910605695,
+  "best_roi": 0.03612604415788533,
+  "p_value": 0.012,
+  "null_max_t_95": 4.724131742029472,
+  "best_label": "Every under in the regular season \u00b7 Rebounds \u00b7 opening line \u00b7 best line",
+  "best_test_roi": -0.042369671722020115,
+  "best_test_bets": 3933
+ }
+}

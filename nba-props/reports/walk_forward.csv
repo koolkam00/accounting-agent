@@ -1,0 +1,7 @@
+test_season,train_seasons,rule,pick,pick_train_roi,pick_train_bets,pick_test_roi,pick_test_bets,top10_test_roi,top10_test_bets
+2024,2023-2023,best_train_roi,Follow a line move of 1.0+ SD from last game · Blocks · opening line · best line,0.2528901,420,-0.025905184,241,-0.106444746,9047
+2024,2023-2023,best_train_t,Every under in the regular season · Core 5 stats · opening line · best line,0.04589876,85704,-0.016419068,91989,-0.015729329,734466
+2025,2023-2024,best_train_roi,Under after an over after an overtime game · Steals · closing line · best line,0.15704419,411,-0.07501836,142,-0.08658752,1529
+2025,2023-2024,best_train_t,Every under after an overtime game · Steals · closing line · single book,0.11067569,884,-0.07001604,278,-0.05098074,3518
+2026,2023-2025,best_train_roi,"Under after 5+ straight overs, last miss 0.5+ SD · Rebounds · opening line · best line",0.14978348,372,-0.25261036,42,0.0076537915,476
+2026,2023-2025,best_train_t,Every under in the regular season · Rebounds · opening line · best line,0.036126044,36037,-0.042369675,3933,-0.03937423,39981
