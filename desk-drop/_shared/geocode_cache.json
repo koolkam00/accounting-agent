@@ -1,0 +1,52 @@
+{
+ "1 madison avenue": {
+  "bbl": "1008530002",
+  "confidence": 0.8,
+  "label": "1 MADISON AVENUE, New York, NY, USA",
+  "lat": 40.740847,
+  "lon": -73.986756,
+  "match": "fallback",
+  "query": "1 Madison Avenue",
+  "source": "nyc-geosearch"
+ },
+ "250 park ave s, new york, ny 10003": {
+  "bbl": "1008480043",
+  "confidence": 0.8,
+  "label": "250 PARK AVENUE SOUTH, New York, NY, USA",
+  "lat": 40.73827,
+  "lon": -73.988199,
+  "match": "fallback",
+  "query": "250 Park Ave S, New York, NY 10003",
+  "source": "nyc-geosearch"
+ },
+ "eataly, 200 fifth avenue, new york, ny 10010": {
+  "bbl": "1008250031",
+  "confidence": 0.8,
+  "label": "200 FIFTH AVENUE, New York, NY, USA",
+  "lat": 40.742166,
+  "lon": -73.989863,
+  "match": "fallback",
+  "query": "Eataly, 200 Fifth Avenue, New York, NY 10010",
+  "source": "nyc-geosearch"
+ },
+ "trader joe's, 142 e 14th st, new york, ny 10003": {
+  "bbl": "1005590022",
+  "confidence": 0.8,
+  "label": "142 EAST 14 STREET, New York, NY, USA",
+  "lat": 40.733327,
+  "lon": -73.988205,
+  "match": "fallback",
+  "query": "Trader Joe's, 142 E 14th St, New York, NY 10003",
+  "source": "nyc-geosearch"
+ },
+ "whole foods market, 4 union square south, new york, ny 10003": {
+  "bbl": "1005650011",
+  "confidence": 0.8,
+  "label": "4 UNION SQUARE SOUTH, New York, NY, USA",
+  "lat": 40.734649,
+  "lon": -73.991535,
+  "match": "fallback",
+  "query": "Whole Foods Market, 4 Union Square South, New York, NY 10003",
+  "source": "nyc-geosearch"
+ }
+}
