@@ -26,3 +26,5 @@ reports/*.json
 *.log
 .python-version
 .streamlit/secrets.toml
+desk-drop/_shared/.geocode.lock
+desk-drop/_shared/.geocode.last
