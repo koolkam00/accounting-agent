@@ -1,0 +1,16 @@
+
+===== FRAME https://tsdr.uspto.gov/documentviewer?caseId=sn99174501&docId=NFIN20250930172716#docIndex=3&page=1
+USPTO TSDR Case Viewer
+Case Id
+99174501
+	
+Document Description
+4. Non-Final Action
+	
+Mail/Create Date
+Sep. 30, 2025
+	
+of
+Feedback
+===== FRAME https://tsdrsec.uspto.gov/ts/cd/casedocs/webcontent/proxy?url=/casedoc/cms/case/99174501/office-action/OfficeAction7869279.pdf
+upstream request failed
