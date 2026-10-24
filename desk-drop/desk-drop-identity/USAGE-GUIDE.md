@@ -26,7 +26,7 @@ You need: the brand's details (from the paid brand row or their email), the pack
 1. Open the folder `desk-drop-identity/templates/tent-card/` and double-click `tent-card.html`. If it opens in another browser, right-click it and choose Open With > Google Chrome. (1 minute)
 2. The card appears on the right with yellow placeholders; the boxes on the left fill it in, and the card updates as you type. Grey text inside an empty box is a hint, not a value. Under each box, grey small print says where the value comes from.
 3. **Brand:** type the brand name (short form, as on the package), the product, and the two sentences. Keep the two sentences under 200 characters. (2 minutes)
-4. **Allergens:** pick up the package. Type the allergen statement exactly as printed into the first allergen box, then the "may contain" line into the second. If the package has no allergen statement, type: `No allergen statement on the package.` Read your typing back against the package, word by word. (3 minutes)
+4. **Allergens:** pick up the package. First choose where the package declares allergens: a "Contains" line (most packages), only inside the ingredient list, or nowhere. Then type exactly what is printed: the "Contains" line, or the whole ingredient list if there is no "Contains" line, and the "may contain" line in the second box. For "nowhere", leave the box empty; the card prints a fixed line telling people to read the package. Read your typing back against the package, word by word, then tick the box that says you did. (3 minutes)
 5. **Where to buy:** fill the retailer and street, or the code and its site, or both. The card writes the sentence for you. (1 minute)
 6. **QR and IDs:** paste this office's QR link, then type the office ID and campaign ID. Scan the QR on screen with your phone: it must open this office's link. (1 minute)
 7. Look at the status box under the buttons. It must say **Ready to print** and nothing in red. Yellow notes ("Check: ...") are warnings: read each one. If it says the two sentences were "left off", shorten them until they come back. (1 minute)
@@ -42,6 +42,7 @@ For the next office of the same brand: change only the QR link and the office ID
 | Red "Fix before printing" | Do what it says. The card will not be right until it is gone. |
 | A big red DO NOT PLACE panel on the card | The text cannot fit with the allergen text at 14 pt. Shorten the two sentences, product line or retailer line. |
 | "The two sentences were left off" | Same: shorten them, or accept the card without them (tell the brand). |
+| "The ingredient list ... prints in full on the other face" | The list is too long for the front. The front now points to the back. Stand the card where both sides can be seen (not flat against a wall) and photograph both faces. |
 | Brand name looks squeezed | Use the short brand name (24 characters or fewer reads best across a pantry). |
 | No cobalt band on paper | Background graphics was off. Print again with it on. |
 | Card prints small or off-centre | Scale was not 100. Print again at 100 or "Actual size". |

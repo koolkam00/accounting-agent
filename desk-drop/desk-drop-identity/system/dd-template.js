@@ -120,7 +120,9 @@
       const isPh = DD.isPlaceholder(raw) && /^\s*\[[^\]]*\]\s*$/.test(raw);
       const val = isPh ? '' : raw;
       const hint = isPh ? ` placeholder="${DD.escape(raw)}" data-ph="${DD.escape(raw)}"` : '';
-      const input = f.multiline
+      const input = f.options
+        ? `<select name="${f.key}">${f.options.map(([v, t]) => `<option value="${DD.escape(v)}"${v === (val || f.options[0][0]) ? ' selected' : ''}>${DD.escape(t)}</option>`).join('')}</select>`
+        : f.multiline
         ? `<textarea name="${f.key}" rows="${f.rows || 3}"${hint}>${DD.escape(val)}</textarea>`
         : `<input name="${f.key}" value="${DD.escape(val)}"${hint}>`;
       html += `<label class="dd-field"><span>${DD.escape(f.label)}${f.required ? ' <i>required</i>' : ''}</span>${input}${f.help ? `<small>${DD.escape(f.help)}</small>` : ''}</label>`;
@@ -157,6 +159,7 @@
     });
     panel.addEventListener('change', (e) => {
       if (e.target.getAttribute('data-act') === 'confirm') { showStatus(); return; }
+      if (e.target.tagName === 'SELECT') { e.target.dispatchEvent(new Event('input', { bubbles: true })); return; }
       if (e.target.getAttribute('data-act') !== 'load') return;
       const file = e.target.files[0];
       if (!file) return;
@@ -210,7 +213,10 @@
     document.body.classList.toggle('dd-is-sample', DD.status.sample);
     // let layout-dependent fitting run after fonts are ready
     const fit = cfg.fit ? cfg.fit : () => {};
-    return document.fonts.ready.then(() => {
+    // Load EVERY declared face first: the print fonts are static files (one per width), and a
+    // face that is not loaded yet would be measured in a fallback font and fit wrongly.
+    const all = []; document.fonts.forEach((f) => all.push(f.load().catch(() => null)));
+    return Promise.all(all).then(() => document.fonts.ready).then(() => {
       root.querySelectorAll('.dd-sheet').forEach((sheet, gi) => fit(sheet, per === 1 ? groups[gi][0] : groups[gi], gi * per));
       DD.status.ready = true;
       window.__DD_STATUS__ = DD.status;

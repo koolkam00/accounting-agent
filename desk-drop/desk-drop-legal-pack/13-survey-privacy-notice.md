@@ -2,13 +2,15 @@
 
 # 13 · Survey privacy notice
 
-Version 0.2 · 2026-10-24
+Version 0.5 · 2026-10-24
+
+**The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot in the full notice's first line (Part C). Replace it with the name on the filed Articles of Organization before the notice goes live.
 
 **What it is for.** The employee survey promises anonymity (plan, "The employee survey"; legal table row "Privacy"). This file is what employees read before they answer, in two layers: a short notice at the top of the form and a full notice one tap away. It also fixes the exact consent wording for the optional email and the form settings that keep every sentence here true.
 
 **When it is used.** Built when the survey form is built (plan, setup checklist "At Gate 0 pass"); live from campaign zero (drop Tuesday 2027-01-12, derived, founder to confirm). The operations workstream builds the form; the website workstream hosts the full notice if there is a site, otherwise it is a public page in the form tool or a shared document.
 
-**How to edit.** Replace `[BRAND]`, `[BRAND PRIVACY POLICY URL]`, `[EMAIL]`, `[POSTAL ADDRESS]` and `[PRIVACY URL]` per campaign. The company's name appears once, in the full notice's first line. If any setting in Part D changes, re-read the notice: it must still be true.
+**How to edit.** Replace `[BRAND]`, `[BRAND PRIVACY POLICY URL]`, `[EMAIL]`, `[POSTAL ADDRESS]` and `[PRIVACY URL]` per campaign. If any setting in Part D changes, re-read the notice: it must still be true.
 
 ---
 
@@ -20,7 +22,7 @@ Version 0.2 · 2026-10-24
 
 ## Part B · The optional email question, word for word
 
-Show only if the brand chose the newsletter option in its agreement (file 12, Part 1).
+Show only if the brand chose the newsletter option in its agreement (file 10, Part 1).
 
 > Want [BRAND]'s newsletter and a discount code? Email (optional): [ field ]
 > ☐ Share my email with [BRAND] under its privacy policy. [link: BRAND PRIVACY POLICY URL]
@@ -35,7 +37,7 @@ Rules: the box starts unticked. An email with the box left unticked is deleted, 
 
 ### Survey privacy notice
 
-Last updated [DATE]. This survey is run by **Desk Drop LLC** ("**we**", "**us**"), which brings products from emerging snack and drink brands to offices. Questions: [EMAIL], [POSTAL ADDRESS].
+Last updated [DATE]. This survey is run by **[COMPANY NAME: Desk Drop LLC]** ("**we**", "**us**"), which brings products from emerging snack and drink brands to offices. Questions: [EMAIL], [POSTAL ADDRESS].
 
 #### What we collect
 
@@ -110,3 +112,11 @@ For the operations workstream (survey form, short links, response sheet) and the
 - Plan, "The employee survey" and appendix I (survey wording and the checkbox text), legal table row "Privacy". plan.md, read 2026-10-23.
 - Google Forms help, "View & manage form responses", https://support.google.com/docs/answer/139706 (opened 2026-10-23): describes the "Collect email addresses" options ("Verified", "Responder input"). It did not address sign-in for "Limit to 1 response" or IP addresses, so D1's example is unverified, founder to confirm.
 - Bitly analytics (link clicks over time, referrers, aggregated location): Bitly blog pages seen only in a search summary, https://bitly.com/blog/analytics-launch/ : not opened, unverified, founder to confirm.
+
+---
+
+## Changelog
+
+- Rounds 1 to 9 (2026-10-23 to 24, part A drafting): two-layer notice, the optional email question word for word, eleven form settings (Part D); retention defaults; name removal before quoting.
+- Merge (2026-10-24): company name moved into the `[COMPANY NAME: …]` slot; version 0.5; numbering unchanged (13 is last in order of use).
+- Merge review (2026-10-24): no change of substance; the brand-agreement reference now points to file 10.

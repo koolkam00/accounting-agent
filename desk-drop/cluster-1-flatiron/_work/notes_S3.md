@@ -20,7 +20,12 @@ Researcher: S3. Opened all sources on 2026-10-23 unless a row says otherwise.
 4. Company websites: footer, contact, privacy and terms pages, which often carry the legal mailing address.
 5. Landlord and building sites: Rockrose (300 PAS), Columbia Property Trust and 315pas.com (lobby and tenant resources), SL Green press releases (11 Madison, One Madison).
 6. Wikipedia infoboxes for headcount of the large (over-500) tenants.
-7. After the shared web-search budget ran out mid-task, Commercial Observer address tag pages (commercialobserver.com/tag/<number>-<street>/) fetched directly, no search engine.
+7. After the shared web-search budget ran out mid-task, Commercial Observer address tag pages (commercialobserver.com/tag/<number>-<street>/) fetched directly, no search engine. I generated about 1,440 candidate address tags for every plausible building number on W/E 22nd-25th St, Broadway 900-1159, Fifth 170-231, PAS 270-361, Sixth Ave 660-759 and Madison 1-51; 127 tags exist. Each tag page lists CO articles about that address; I opened the relevant 2022-2026 office articles.
+8. Landlord sites fetched directly: Adams & Company (adamsre.com; 49/53 W 23rd, 30 W 24th, 16 Madison Square West, 121 E 24th), Williams Equities (28-40 W 23rd), Kaufman (track record only), Cure / Deerfield (345 PAS), GFP (175 and 230 Fifth).
+9. Built In NYC size listings (builtinnyc.com/companies/size/201-500 and /51-200, paged with ?page=N) harvested for company slugs, then each company's /offices page scanned with a regex for in-slice street addresses. Every hit was then checked against the company's own site (footer, contact, privacy or terms pages) before recording; Built In-only rows are marked medium and say so.
+10. Wikipedia building articles (200 Fifth Avenue, 11 Madison Avenue) for tenant names and physical details such as loading docks.
+
+Dates: most sources were opened on 2026-10-23; the session clock rolled past midnight UTC, so pages opened later carry 2026-10-24. found_date stays 2026-10-23 as instructed.
 
 ## What worked
 

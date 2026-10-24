@@ -1,17 +1,17 @@
 **Draft for attorney review. Not legal advice.**
 
-# 20 · General liability quote request script
+# 06 · General liability quote request script
 
-Version 0.4 · 2026-10-24
+Version 0.5 · 2026-10-24
 
-**The company in this file.** "The Company" means **[COMPANY NAME: Desk Drop LLC]**, a New York single-member LLC (not yet formed; see `02-formation-checklist.md`). This is the only place the name is set.
+**The company in this file.** "The Company" means **[COMPANY NAME: Desk Drop LLC]**, a New York single-member LLC (not yet formed; see `04-formation-checklist.md`). This is the only place the name is set.
 
 **What it is for.** Getting three general liability quotes that you can compare line by line, from carriers who were told exactly what the business does. The plan's targets: \$1M per occurrence, \$2M aggregate, bound before the first product arrives (plan, legal table row "General liability insurance"; roughly \$500 to \$1,500 a year is the plan's estimate, not a quote). A policy bought on a wrong description may not pay a claim, so the description in section 1 is the heart of this file.
 
 **When it is used.**
 - Ask for the three quotes at the Gate 0 pass, Friday 2026-11-13 (plan, setup checklist "At Gate 0 pass"; derived, founder to confirm). If a carrier asks for the LLC's legal name before it exists, quote as "[COMPANY NAME] (in formation)" and give the exact filed name before binding.
 - Bind before any brand ships, so cover is in place before the first case arrives. Brands are asked to ship by Tuesday 2026-12-22 (CONTRACTS section 3, derived), so the latest date is Monday 2026-12-21. A brand that pays at Gate 1 may ship earlier; then bind before its ship date. Binding means paying, so it needs your written yes.
-- Use questions 10 to 14 again whenever a building asks for a certificate (with file 15).
+- Use questions 10 to 14 again whenever a building asks for a certificate (with file 12).
 
 **Who to ask.** Three different routes, so the quotes are independent: (1) an online small-business carrier that sells direct, (2) an online agency or marketplace that quotes several carriers, (3) a local independent broker in New York City. No carrier is recommended here, and none has been checked for New York availability or price. Steps that need your login, phone or card are marked **[FOUNDER]**.
 
@@ -25,7 +25,7 @@ Version 0.4 · 2026-10-24
 >
 > **The products.** Only sealed, individually packaged, shelf-stable snacks and drinks with the brand's own commercial label, including ingredients and allergens. Nothing refrigerated or perishable, nothing that needs preparation, no alcohol, cannabis, CBD or dietary supplements. Every brand must carry product liability insurance of at least \$1 million and add us as an additional insured, as a vendor, before it ships.
 >
-> **How we handle them.** The brand ships its sealed cases to one address: [STORAGE LOCATION TYPE: my apartment / a small self-storage unit] in [BOROUGH]. We count them and check dates, then keep the sealed cases at room temperature, clean, dry, off the floor and away from heat, from arrival until the campaign ends (usually two to three weeks, up to about four around the December holidays). Before delivery we move sealed units, unopened, from the brand's shipping cartons into one delivery box per office, and add a printed card that repeats the brand's own text and allergen line. We never open, alter, repack or relabel an individual unit, never cook, serve, portion or hand out food in cups, and run no tastings, demonstrations or events.
+> **How we handle them.** The brand ships its sealed cases to one address: [STORAGE LOCATION TYPE: my apartment / a small self-storage unit] in [BOROUGH]. We count them and check dates, then keep the sealed cases at room temperature, clean, dry, off the floor, away from heat and as the label directs, from arrival until the campaign ends (usually two to three weeks, up to about four around the December holidays). Before delivery we move sealed units, unopened, from the brand's shipping cartons into one delivery box per office, and add a printed card that repeats the brand's own text and allergen line. We never open, alter, repack or relabel an individual unit, never cook, serve, portion or hand out food in cups, and run no tastings, demonstrations or events.
 >
 > **Deliveries.** About once a month at first, on a Tuesday or Wednesday morning, to five to ten offices within walking distance of each other. The owner delivers by hand truck, using a car service or a rented van between stops [OWN CAR: I do not own a car / I own a car and may use it]. A courier company may do some deliveries later. At each office, the pantry owner puts the products in the pantry next to the card, or lets us place them. Employees take them if they want.
 >
@@ -41,7 +41,7 @@ Write each answer in the comparison table (section 3) as you go.
 
 **A. Fit**
 1. Which class or category would you write this under? Please put it in writing with the quote.
-2. Does the policy cover our operations as described, including storing other companies' sealed food products and delivering them to offices? Does it cover a claim that we mishandled a product, for example by storing it too warm? (Our brand agreement makes the brand defend product claims "except to the extent the claim is caused by our mishandling of the product", file 12, section 6, so that gap is ours.)
+2. Does the policy cover our operations as described, including storing other companies' sealed food products and delivering them to offices? Does it cover a claim that we mishandled a product, for example by storing it too warm? (Our brand agreement makes the brand defend product claims "except to the extent the claim is caused by our mishandling of the product", file 10, section 6, so that gap is ours.)
 3. Is the policy occurrence-based (not claims-made)?
 4. Are there exclusions for food, for products made by others, or for delivery work that would apply to us? Please name them.
 4a. Would a business owner's policy (general liability plus business property) cost about the same, and would it change the answer to question 15?
@@ -56,10 +56,10 @@ Write each answer in the comparison table (section 3) as you go.
 9. [Only if you own a car] Does the business use of my own car need my personal auto insurer's approval? (Ask your personal auto insurer too. Hired and non-owned auto coverage is for vehicles the business does not own.)
 
 **D. Additional insureds and certificates**
-10. Does the policy include a blanket additional-insured endorsement, which automatically adds anyone we are required by written contract to add? (IRMI defines it this way; https://www.irmi.com/term/insurance-definitions/blanket-additional-insured-endorsement, opened 2026-10-23.) Our contract is with the tenant office, not with the building. Would a building still qualify?
+10. Does the policy include a blanket additional-insured endorsement, which automatically adds anyone we are required by written contract to add? (IRMI defines it this way; https://www.irmi.com/term/insurance-definitions/blanket-additional-insured-endorsement, opened 2026-10-23.) We have no contract with the building, but our signed agreement with each tenant office commits us to add its building's owner and managing agent when the building requires it (office agreement, file 03, section 4). Would that trigger the blanket endorsement for the building?
 11. If not, how do we add a building by name, how much does each one cost, and how long does it take?
 12. Can you show "primary and non-contributory" and a "waiver of subrogation" in favor of a building when its contract requires it? Included, or extra cost?
-13. **The wording test.** Read or send the carrier the request block in `15-coi-request-own-carrier-building.md` (Step 3) and ask: "Could you issue an additional-insured endorsement and certificate for a building with this wording as written? If not, what would you issue instead?" Write the answer word for word.
+13. **The wording test.** Read or send the carrier the request block in `12-coi-request-own-carrier-building.md` (Step 3) and ask: "Could you issue an additional-insured endorsement and certificate for a building with this wording as written? If not, what would you issue instead?" Write the answer word for word.
 14. How fast are certificates issued: self-service online, same business day, or longer? Any cost per certificate?
 
 **E. Gaps to know about**
@@ -127,7 +127,7 @@ Write each answer in the comparison table (section 3) as you go.
 
 - [ ] Save the policy, the declarations page and every endorsement as PDFs in the company folder.
 - [ ] Record the policy number, carrier, premium, dates and certificate process in the company's admin sheet, and send the premium to the financial model (H) as an actual figure.
-- [ ] Save a sample certificate for file 15, and put the certificate PDF on your phone for drop day (plan, appendix J).
+- [ ] Save a sample certificate for file 12, and put the certificate PDF on your phone for drop day (plan, appendix J).
 - [ ] Put the renewal date in the calendar 30 days ahead.
 
 ## Sources
@@ -135,7 +135,7 @@ Write each answer in the comparison table (section 3) as you go.
 - plan.md (read 2026-10-23): legal table rows "General liability insurance", "Auto exposure", "Workers' compensation", "Food handling scope"; Phase 3 "Storage"; "Delivery by phase"; capital table (general liability \$500 to \$1,500 for one year, approximate).
 - CONTRACTS.md section 3 (derived dates: ship-by 2026-12-22; campaign zero drop 2027-01-12).
 - IRMI glossary, opened 2026-10-23: "blanket additional insured endorsement" ("automatically grants insured status to a person or organization that the named insured is required by contract to add as an insured"); "primary and noncontributory"; "waiver of subrogation"; "bailee coverage" ("inland marine coverage on property entrusted to the insured for storage, repair, or servicing"). https://www.irmi.com/term/insurance-definitions/
-- Storage and carton wording matched to the handling description in `14-coi-request-brand-product-liability.md`, and the delivery wording consistent with the operations line in `15-coi-request-own-carrier-building.md` (part A of this pack), so every insurer hears the same facts. The mishandling carve-out quoted in question 2 is from `12-brand-campaign-agreement.md`, section 6.
+- Storage and carton wording matched to the handling description in `11-coi-request-brand-product-liability.md`, and the delivery wording consistent with the operations line in `12-coi-request-own-carrier-building.md`, so every insurer hears the same facts. The mishandling carve-out quoted in question 2 is from `10-brand-campaign-agreement.md`, section 6.
 
 ## Changelog
 
@@ -143,3 +143,5 @@ Write each answer in the comparison table (section 3) as you go.
 - Round 2 (2026-10-24), broker pass: added the mishandling gap left by the brand agreement's indemnity carve-out; added the business owner's policy comparison; listed what a carrier needs to bind; added both to the comparison table.
 - Round 3 (2026-10-24), full read: removed a doubled "LLC" in the in-formation name; questions 10 to 14 named for later certificate requests; pantry-owner sentence made unambiguous; bind rule now "before any brand ships, latest 2026-12-21", since a brand paid at Gate 1 may ship early; removed an unverified claim about what carriers want; sources line corrected (14 for storage wording, 15 for delivery wording, 12 for the carve-out).
 - Round 4 (2026-10-24), final full read: no changes beyond wording.
+- Merge (2026-10-24): renumbered 20 to 06; version 0.5; cross-references updated to the new numbers; "part A/part B" wording removed.
+- Merge review (2026-10-24): broker, question 10 now cites the office agreement's written promise to name a building; inspector, the storage sentence follows the label, word for word as in files 07, 10 and 11.

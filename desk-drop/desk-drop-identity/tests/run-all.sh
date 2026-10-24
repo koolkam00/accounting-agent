@@ -17,7 +17,7 @@ expect() { # expect <exit-code> <name> <command...>
 T=templates/tent-card/samples; C=templates/case-label/samples
 
 expect 0 "tokens agree and meet contrast" node tests/check-tokens.js
-for s in basic allergen-25-words long-name short-name retailer-only code-only batch-5-offices; do
+for s in basic allergen-25-words long-name short-name retailer-only code-only batch-5-offices ingredient-list-37-words ingredient-list-74-words no-allergens-on-label; do
   expect 0 "tent card renders: $s" node render/render.js tent-card $T/SAMPLE-$s.json "$TMP/tc-$s.pdf"
 done
 expect 2 "tent card refuses an over-full card (stress)" node render/render.js tent-card $T/SAMPLE-stress-must-block.json "$TMP/stress.pdf"

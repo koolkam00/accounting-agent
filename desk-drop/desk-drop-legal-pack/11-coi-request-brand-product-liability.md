@@ -1,14 +1,16 @@
 **Draft for attorney review. Not legal advice.**
 
-# 14 · Certificate of insurance request to a brand: product liability, with us as additional insured
+# 11 · Certificate of insurance request to a brand: product liability, with us as additional insured
 
-Version 0.2 · 2026-10-24
+Version 0.5 · 2026-10-24
 
-**What it is for.** Product liability sits with the brand (plan, legal table). Before a brand's product ships, it must show product liability coverage of at least $1,000,000 and add the company as an additional insured (plan; brand agreement file 12, section 2(c)). This file is the request the founder sends, the version the brand forwards to its broker, a reminder, and the check to run when the certificate arrives.
+**What it is for.** Product liability sits with the brand (plan, legal table). Before a brand's product ships, it must show product liability coverage of at least \$1,000,000 and add the company as an additional insured (plan; brand agreement file 10, section 2(c)). This file is the request the founder sends, the version the brand forwards to its broker, a reminder, and the check to run when the certificate arrives.
 
 **When it is used.** In the "close and collect" email on the brand's yes, with the signed agreement and invoice (plan, Phase 2 step 4). It must be checked and filed before the ship-by date (T−10). For campaign zero, ship-by is Tuesday 2026-12-22 (derived, founder to confirm), so send the request no later than Tuesday 2026-12-08.
 
-**How to fill it in.** Replace the brackets. Our exact legal name goes on the "Additional insured" line once; it must match the filed Articles of Organization letter for letter, including "LLC". If the company is not yet formed, do not send this request yet: the brand agreement is signed only after formation (file 12 notes).
+**The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot on the "Additional insured" line of the block to forward. Replace it with the name on the filed Articles of Organization, letter for letter, including "LLC".
+
+**How to fill it in.** Replace the brackets. If the company is not yet formed, do not send this request yet: the brand agreement is signed only after formation (file 10 notes).
 
 ---
 
@@ -31,13 +33,13 @@ Version 0.2 · 2026-10-24
 >
 > **Named insured:** [BRAND LEGAL NAME], [BRAND ADDRESS]
 >
-> **Additional insured (vendor):** Desk Drop LLC, [POSTAL ADDRESS]
+> **Additional insured (vendor):** [COMPANY NAME: Desk Drop LLC], [POSTAL ADDRESS]
 >
 > **Certificate holder:** the additional insured above, same address.
 >
 > **Products:** [PRODUCT NAME AND SKU], or all of [BRAND]'s products.
 >
-> **Coverage to show:** commercial general liability including products-completed operations, or a separate product liability policy, with at least $1,000,000 each occurrence. Please show the products-completed operations aggregate, and whether the policy is written on an occurrence or claims-made basis.
+> **Coverage to show:** commercial general liability including products-completed operations, or a separate product liability policy, with at least \$1,000,000 each occurrence. Please show the products-completed operations aggregate, and whether the policy is written on an occurrence or claims-made basis.
 >
 > **Additional-insured status:** as a vendor, for "bodily injury" or "property damage" arising out of [BRAND]'s products that the additional insured distributes. ISO form CG 20 15 (Additional Insured – Vendors), or your policy's blanket vendors endorsement, is fine. Our signed campaign agreement with [BRAND], dated [AGREEMENT DATE], requires this coverage, if your blanket endorsement needs a written contract.
 >
@@ -45,7 +47,7 @@ Version 0.2 · 2026-10-24
 >
 > **Please send:** the certificate on your standard form (ACORD 25 is fine) and a copy of the endorsement that adds the additional insured. We are not asking for any wording on the certificate that the policy does not contain.
 >
-> **What the additional insured does with the product, so you can check the vendors endorsement fits:** it receives sealed, individually packaged, commercially labeled units; stores the sealed cases at room temperature, clean, dry, off the floor and away from heat, from arrival until the campaign ends (usually two to three weeks, up to about four around the December holidays); moves sealed units, unopened, from [BRAND]'s shipping cartons into one delivery box per office; and places them in office pantries, free to employees, next to a separate display card that repeats [BRAND]'s own text and allergen line. It never opens, alters, repacks or relabels a unit, puts nothing on a unit, and does no demonstrations or sampling cups. If moving sealed units between shipping cartons would fall under the endorsement's repackaging exclusion, please tell us and we will deliver in [BRAND]'s original cartons instead.
+> **What the additional insured does with the product, so you can check the vendors endorsement fits:** it receives sealed, individually packaged, commercially labeled units; stores the sealed cases at room temperature, clean, dry, off the floor, away from heat and as the label directs, from arrival until the campaign ends (usually two to three weeks, up to about four around the December holidays); moves sealed units, unopened, from [BRAND]'s shipping cartons into one delivery box per office; and places them in office pantries, free to employees, next to a separate display card that repeats [BRAND]'s own text and allergen line. It never opens, alters, repacks or relabels a unit, puts nothing on a unit, and does no demonstrations or sampling cups. If moving sealed units between shipping cartons would fall under the endorsement's repackaging exclusion, please tell us and we will deliver in [BRAND]'s original cartons instead.
 >
 > **Send to:** [FOUNDER NAME], [EMAIL]
 
@@ -65,8 +67,8 @@ If it still has not arrived by T−10, the product does not ship (brand agreemen
 
 Tick every line before confirming the ship date. If any line fails, reply to the broker with the line that failed.
 
-- [ ] **Named insured** matches the brand's legal name in the agreement (file 12, Part 1).
-- [ ] **Each occurrence** limit under general liability is $1,000,000 or more, and a **products-completed operations aggregate** is shown.
+- [ ] **Named insured** matches the brand's legal name in the agreement (file 10, Part 1).
+- [ ] The **each-occurrence** limit on the policy that carries products liability (general liability, or a separate product liability policy) is \$1,000,000 or more, and a **products-completed operations aggregate** is shown.
 - [ ] **Policy dates** cover the ship-by date through the window close date.
 - [ ] The policy is marked **occurrence**. If it is marked claims-made, it is still usable for now, but note it for the attorney hour.
 - [ ] The **"ADDL INSD"** column is marked on the line that carries products liability (general liability, or a separate product liability policy under "other"), and the description names our company as additional insured.
@@ -78,7 +80,7 @@ Then save the certificate and endorsement as `[BRAND]-COI-[YYYY-MM-DD].pdf` in t
 
 **Why the endorsement matters more than the certificate.** The ACORD 25 certificate itself says it "is issued as a matter of information only and confers no rights upon the certificate holder" and that if the holder is an additional insured, "the policy(ies) must be endorsed." The endorsement is what actually adds us.
 
-**Why we keep units sealed and unlabeled.** The ISO vendors endorsement excludes, among other things, any "express warranty unauthorized by" the brand, any "physical or chemical change in the product made intentionally by the vendor", "repackaging" (with narrow exceptions), products "labeled or relabeled" by or for the vendor, demonstrations, and the vendor's own sole negligence. Our handling rules (file 12, section 5) and the card using only the brand's own words keep us inside the coverage. Our own general liability policy (quote script in file 20; building certificates in file 15) is what responds to our own mistakes.
+**Why we keep units sealed and unlabeled.** The ISO vendors endorsement excludes, among other things, any "express warranty unauthorized by" the brand, any "physical or chemical change in the product made intentionally by the vendor", "repackaging" (with narrow exceptions), products "labeled or relabeled" by or for the vendor, demonstrations, and the vendor's own sole negligence. Our handling rules (file 10, section 5) and the card using only the brand's own words keep us inside the coverage. Our own general liability policy (quote script in file 06; building certificates in file 12) is what responds to our own mistakes.
 
 **What we deliberately do not ask for.** Primary and non-contributory wording, waiver of subrogation and notice-of-cancellation endorsements. They can cost a small brand time or money, and the plan does not require them. Ask the attorney whether to add them once the business runs more than a few campaigns.
 
@@ -86,8 +88,16 @@ Then save the certificate and endorsement as `[BRAND]-COI-[YYYY-MM-DD].pdf` in t
 
 ## Sources
 
-- Plan, legal table row "Product liability" ($1M minimum, additional insured, before product ships, "a brand that cannot produce one is not qualified"); Phase 2 "Close and collect", step 4. plan.md, read 2026-10-23.
+- Plan, legal table row "Product liability" (\$1M minimum, additional insured, before product ships, "a brand that cannot produce one is not qualified"); Phase 2 "Close and collect", step 4. plan.md, read 2026-10-23.
 - ISO CG 20 15a 11 10, Additional Insured – Vendors, insurer-hosted copy, https://www.mofbinsurance.com/Content/PDFs/PolicyForms/CPP/CG2015a.1110.pdf (opened and text extracted 2026-10-23). Quoted exclusions are from this edition. A search result says the current ISO edition is CG 20 15 12 19; not opened. Broker to confirm the edition on each brand's policy.
 - ACORD 25 (2014/01) certificate text, as reproduced in a New York City agency sample, https://www.nyc.gov/assets/dycd/downloads/pdf/FY2021_General_Liability_Insurance_Sample.pdf (opened and text extracted 2026-10-23).
 - New York Insurance Law section 502, https://www.nysenate.gov/legislation/laws/ISC/502 (opened 2026-10-23): no one may wilfully require a certificate on a form that is not approved, or require certificate terms the policy does not contain; requests for clarification of an endorsement are allowed. This is why the request asks for the standard form plus the endorsement and nothing custom.
 - How long a broker takes to issue a certificate, and whether it charges, was not researched: unknown, founder to ask the first brand's broker.
+
+---
+
+## Changelog
+
+- Rounds 1 to 9 (2026-10-23 to 24, part A drafting): request, broker block, reminder and five-minute check; handling description written to the ISO vendors endorsement's exclusions; standard form plus endorsement, nothing custom (NY Insurance Law 502).
+- Merge (2026-10-24): renumbered 14 to 11; company name moved into the `[COMPANY NAME: …]` slot; version 0.5.
+- Merge review (2026-10-24): broker, the limit check now covers a separate product liability policy as well as general liability. Inspector, storage follows the label's own instruction, the same sentence as files 06, 07 and 10.

@@ -1,14 +1,16 @@
 **Draft for attorney review. Not legal advice.**
 
-# 15 · Certificate of insurance request to our own carrier: a building as additional insured
+# 12 · Certificate of insurance request to our own carrier: a building as additional insured
 
-Version 0.2 · 2026-10-24
+Version 0.5 · 2026-10-24
 
 **What it is for.** Some Manhattan buildings will not let a vendor deliver until they hold a certificate of insurance naming the building, and often its managing agent, as additional insured (plan, legal table row "General liability insurance"; risk table "Building access and insurance demands"). This file gets the building's exact requirements from the office, asks our carrier or broker for the certificate, and checks it before drop day.
 
-**When it is used.** Only after our general liability policy is bound (plan: bind before the first product arrives; target $1M per occurrence and $2M aggregate, a plan figure, not a quote). Start the moment an office's intake says `coi_required = yes` or `unsure`, and no later than ten business days before that office's first drop. The plan puts certificate-only buildings "on the list for later", so for campaign zero this is used only if a signed office turns out to need it.
+**When it is used.** Only after our general liability policy is bound (plan: bind before the first product arrives; target \$1M per occurrence and \$2M aggregate, a plan figure, not a quote). Start the moment an office's intake says `coi_required = yes` or `unsure`, and no later than ten business days before that office's first drop. The plan puts certificate-only buildings "on the list for later", so for campaign zero this is used only if a signed office turns out to need it.
 
-**How to fill it in.** Replace the brackets. Copy the building's names and wording exactly as the building gives them; buildings check the names. Our legal name appears once, in the request block, and must match the filed Articles of Organization.
+**The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot on the "Named insured" line of the Step 3 request. Replace it with the name on the filed Articles of Organization.
+
+**How to fill it in.** Replace the brackets. Copy the building's names and wording exactly as the building gives them; buildings check the names.
 
 ---
 
@@ -49,7 +51,7 @@ If the carrier's online portal lets you issue certificates yourself, enter the s
 >
 > **Request for a certificate of insurance and additional-insured endorsement**
 >
-> **Named insured:** Desk Drop LLC · Policy number [POLICY NUMBER]
+> **Named insured:** [COMPANY NAME: Desk Drop LLC] · Policy number [POLICY NUMBER]
 >
 > **Certificate holder:** [EXACT NAME FROM BUILDING SHEET], [ADDRESS]
 >
@@ -60,7 +62,7 @@ If the carrier's online portal lets you issue certificates yourself, enter the s
 > **Requirements from the building:** [LIMITS, PRIMARY AND NON-CONTRIBUTORY, WAIVER OF SUBROGATION, OTHER, COPIED FROM THE SHEET]
 >
 > **Questions before you issue it:**
-> 1. Does our policy have a blanket additional-insured endorsement? If it applies only where we have a written contract with the additional insured, note that we have no contract with this building: our agreement is with the tenant. Would you need to add the building by name (for example ISO CG 20 26, Additional Insured – Designated Person or Organization)?
+> 1. Does our policy have a blanket additional-insured endorsement? Our signed agreement with the tenant, dated [AGREEMENT DATE], requires us to add the building's owner and managing agent as additional insureds when the building requires it (section 4 of that agreement; copy attached). We have no contract with the building itself. Does that satisfy the endorsement's written-contract condition, or would you need to add the building by name (for example ISO CG 20 26, Additional Insured – Designated Person or Organization)?
 > 2. Does our policy already include each of the building's other requirements listed above? If an endorsement is needed, what does it cost and how long does it take?
 > 3. Please send the certificate on your standard form (ACORD 25 is fine) and a copy of the endorsement that adds the additional insureds. We are not asking for any wording on the certificate that the policy does not contain.
 > 4. How soon can you issue it? We need it by [DATE], at least two business days before the first delivery on [FIRST DELIVERY DATE].
@@ -94,9 +96,17 @@ Attorney to confirm this wording. It must stay true: the plan requires workers' 
 
 ## Sources
 
-- Plan, legal table rows "General liability insurance" ($1M per occurrence, $2M aggregate, keep a certificate template ready, bind before the first product arrives), "Auto exposure" (hired and non-owned auto), "Workers' compensation" (not required with no employees; required the day you hire anyone); Phase 1 targeting rules ("Buildings that require a certificate of insurance for every delivery go on the list for later"); appendix J. plan.md, read 2026-10-23.
+- Plan, legal table rows "General liability insurance" (\$1M per occurrence, \$2M aggregate, keep a certificate template ready, bind before the first product arrives), "Auto exposure" (hired and non-owned auto), "Workers' compensation" (not required with no employees; required the day you hire anyone); Phase 1 targeting rules ("Buildings that require a certificate of insurance for every delivery go on the list for later"); appendix J. plan.md, read 2026-10-23.
 - ISO CG 20 26 04 13, Additional Insured – Designated Person or Organization, NYC sample copy, https://www.nyc.gov/assets/mome/pdf/Sample-MOME-ISO-Form-CG-20-26-04-13.pdf (opened and text extracted 2026-10-23): names the additional insured in a schedule; coverage is for liability "caused, in whole or in part, by your acts or omissions" in ongoing operations or premises; not broader than the contract requires.
 - ACORD 25 (2014/01) certificate text in a New York City agency sample, https://www.nyc.gov/assets/dycd/downloads/pdf/FY2021_General_Liability_Insurance_Sample.pdf (opened 2026-10-23): "confers no rights upon the certificate holder"; "If the certificate holder is an ADDITIONAL INSURED, the policy(ies) must be endorsed."
 - New York Insurance Law section 502, https://www.nysenate.gov/legislation/laws/ISC/502 (opened 2026-10-23): certificates must be on an approved form, cannot add terms the policy lacks, and cannot alter coverage.
 - New York Workers' Compensation Board, CE-200 request overview, https://www.wcb.ny.gov/content/ebiz/wc_db_exemptions/requestExemptionOverview.jsp (opened 2026-10-23): available to "entities operating in NY with no employees" and "can only be used to attest to a government entity"; valid only for the specific license, permit or contract.
 - Whether any given building accepts a no-employees statement is unknown: ask each building.
+
+---
+
+## Changelog
+
+- Rounds 1 to 9 (2026-10-23 to 24, part A drafting): pantry-owner email, requirement comparison, carrier request, check and no-employees statement; CE-200 ruled out for private buildings.
+- Merge (2026-10-24): renumbered 15 to 12; company name moved into the `[COMPANY NAME: …]` slot; version 0.5.
+- Merge review (2026-10-24): broker, question 1 now points the carrier to the office agreement's new section 4 promise to name the building, which is the written contract many blanket additional-insured endorsements require, and asks whether it is enough.

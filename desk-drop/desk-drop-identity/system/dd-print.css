@@ -61,7 +61,7 @@ mark.dd-ph {
 .dd-field { display: block; margin: 0 0 12px; }
 .dd-field span { display: block; font-weight: 700; margin-bottom: 3px; }
 .dd-field span i { font-style: normal; font-weight: 400; color: var(--dd-error); font-size: 12px; }
-.dd-field input, .dd-field textarea {
+.dd-field input, .dd-field textarea, .dd-field select {
   width: 100%; font: 400 14px/1.35 var(--dd-font-text); padding: 7px 8px;
   border: 1px solid #B9B3A8; border-radius: var(--dd-radius-1); background: #fff; color: var(--dd-ink);
 }

@@ -1,16 +1,18 @@
 **Draft for attorney review. Not legal advice.**
 
-# 30 · Single-member New York LLC operating agreement: notes for the founder
+# 05 · Single-member New York LLC operating agreement: notes for the founder
 
-Version 0.2 · 2026-10-24
+Version 0.5 · 2026-10-24
+
+**The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot in section 1.1.
 
 **What it is for.** New York requires every LLC's members to adopt a written operating agreement (NY LLC Law section 417(a)). This is a single-member, member-managed agreement for the company, plus Schedule A (the member) and Schedule B (the first written consent, which also adopts the agreements you signed before the company existed).
 
-**When it is used.** The day you file the Articles of Organization: at the first verbal brand yes (plan, order of operations), around Gate 0 (Friday 2026-11-13, derived, founder to confirm). Section 417(c) lets you sign it before, at the time of, or within 90 days after filing, but it cannot take effect before the company is formed. Sign it the same day you file and it takes effect on formation. You do not file it with the state. Keep the signed PDF with the Articles; banks often ask for it when you open the business account (common practice, not sourced).
+**When it is used.** The day you file the Articles of Organization: at the first verbal brand yes (plan, order of operations), around Gate 0 (Friday 2026-11-13, derived, founder to confirm). Section 417(c) lets you sign it before, at the time of, or within 90 days after filing, but it cannot take effect before the company is formed. Sign it the same day you file and it takes effect on formation. You do not file it with the state. If the attorney hour (file 08) falls after the filing day, sign this draft anyway and sign a short amendment if the attorney changes anything (section 14.2). Keep the signed PDF with the Articles; banks often ask for it when you open the business account (common practice, not sourced).
 
 **How to fill it in.**
-- Section 1.1: the name exactly as it will appear on the Articles, including "LLC". The name appears once in this file, there. If the name check (file 01) forces a rename, change that one line.
-- Section 1.3: the county the Articles name as the company's office. It sets where you publish (section 1.6). File 02, the formation checklist, compares publication costs by county. The plan notes that founders commonly organize in a lower-cost county using a registered agent's address there, and says to have a formation service or attorney confirm that fits you.
+- Section 1.1: replace the `[COMPANY NAME: …]` slot with the name exactly as it will appear on the Articles, including "LLC". If the name check (file 01) forces a rename, that is the one line to change.
+- Section 1.3: the county the Articles name as the company's office. It sets where you publish (section 1.6). File 04, the formation checklist, compares publication costs by county. The plan notes that founders commonly organize in a lower-cost county using a registered agent's address there, and says to have a formation service or attorney confirm that fits you.
 - Section 2 and Schedule A: your name, mailing address and opening contribution.
 - Section 12: a successor you trust, or leave the default (your estate's legal representative).
 - Schedule B, item 6: list every agreement signed for the company before formation (all office participation agreements so far).
@@ -31,7 +33,7 @@ Effective on the later of the date the Company is formed and the date signed bel
 
 ## 1. The company
 
-**1.1 Name.** The company's name is **Desk Drop LLC** (the "**Company**").
+**1.1 Name.** The company's name is **[COMPANY NAME: Desk Drop LLC]** (the "**Company**").
 
 **1.2 Formation.** The Company is formed under the New York Limited Liability Company Law (the "**LLC Law**") by filing Articles of Organization with the New York Department of State on [FILING DATE] (LLC Law section 203). This agreement takes effect when the Company is formed and not before (LLC Law section 417(c)).
 
@@ -77,7 +79,7 @@ Effective on the later of the date the Company is formed and the date signed bel
 
 **6.3 Decisions in writing.** The Company does not need to hold meetings or keep minutes. A written decision signed by the Member, on paper or electronically, is an act of the Company.
 
-**6.4 How the Company signs.** Every contract is in the Company's name, signed "[Company name], by [FOUNDER NAME], Member."
+**6.4 How the Company signs.** Every contract is in the Company's name and signed by the Member for the Company, for example "[COMPANY NAME], by [FOUNDER NAME], Member".
 
 ## 7. Keeping the Company separate
 
@@ -145,7 +147,7 @@ The Company's money is kept in accounts in the Company's name. Only the Member, 
 
 | Member | Mailing address | Opening contribution | Value | Interest | Date |
 | --- | --- | --- | --- | --- | --- |
-| [FOUNDER NAME] | [MEMBER MAILING ADDRESS] | [CASH, OR DESCRIBE PROPERTY] | $[AMOUNT] | 100% | [DATE] |
+| [FOUNDER NAME] | [MEMBER MAILING ADDRESS] | [CASH, OR DESCRIBE PROPERTY] | \$[AMOUNT] | 100% | [DATE] |
 
 ## Schedule B · First written decision of the sole Member
 
@@ -155,7 +157,7 @@ Effective when the Company is formed, the Member decides that the Company:
 2. Applies to the IRS for an employer identification number.
 3. Opens a business bank account in its own name at [BANK], with the Member as the only signer.
 4. Arranges publication and files the Certificate of Publication within 120 days after formation (section 1.6).
-5. Adopts and ratifies everything the Member did for the Company before formation to organize it, including paying the filing fee of $[AMOUNT] and any formation service fee of $[AMOUNT], and will reimburse the Member $[TOTAL] from the Company's account, recorded under section 7.
+5. Adopts and ratifies everything the Member did for the Company before formation to organize it, including paying the filing fee of \$[AMOUNT] and any formation service fee of \$[AMOUNT], and will reimburse the Member \$[TOTAL] from the Company's account, recorded under section 7.
 6. Adopts every agreement the Member signed for the Company before formation, as of the date of formation, so that the Company takes the Member's place in each, including:
 
 | Agreement | Other party | Signed on |
@@ -188,3 +190,11 @@ Effective when the Company is formed, the Member decides that the Company:
 - Section 705 (articles of dissolution): https://www.nysenate.gov/legislation/laws/LLC/705
 - IRS, Single Member Limited Liability Companies (disregarded entity unless Form 8832 election; Schedule C; EIN needed with employees): https://www.irs.gov/businesses/small-businesses-self-employed/single-member-limited-liability-companies
 - Six-year record retention in section 9 is a conservative default I chose, not a sourced requirement: accountant to confirm.
+
+---
+
+## Changelog
+
+- Rounds 1 to 9 (2026-10-23 to 24, part A drafting): member-managed single-member agreement, Schedules A and B; Schedule B adopts pre-formation agreements; death routed through the estate under LLC Law 701(a)(4); narrow incapacity powers.
+- Merge (2026-10-24): renumbered 30 to 05; company name moved into the `[COMPANY NAME: …]` slot; version 0.5.
+- Merge review (2026-10-24): attorney, section 6.4 now allows the "for the Company" signer line the office agreement uses before formation; note on signing before the attorney hour.

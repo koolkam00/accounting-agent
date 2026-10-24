@@ -100,6 +100,7 @@
   "brand_name": "[BRAND NAME]",
   "product_name": "",
   "card_sentences": "[TWO SENTENCES: WHO MAKES IT, WHY IT EXISTS]",
+  "allergen_source": "contains_statement",
   "allergen_line_verbatim": "[ALLERGEN STATEMENT, WORD FOR WORD FROM THE PACKAGE]",
   "may_contain_verbatim": "",
   "retailer_line": "",
@@ -135,7 +136,8 @@
     { group: 'Brand', key: 'brand_name', label: 'Brand name', required: true, maxChars: 28, help: 'As the brand writes it. From paid_brands.csv: brand_name.' },
     { group: 'Brand', key: 'product_name', label: 'Product (optional)', maxChars: 40, help: 'Flavor or product, e.g. "Sea Salt Lentil Crisps". From product_sku.' },
     { group: 'Brand', key: 'card_sentences', label: 'Two sentences: who makes it and why', required: true, multiline: true, maxChars: 200, help: 'From the brand, edited for plain style. No health, sales or "best" claims. From card_sentences.' },
-    { group: 'Allergens (copy word for word)', key: 'allergen_line_verbatim', label: 'Allergen statement, exactly as on the package', required: true, multiline: true, rows: 4, help: 'Include the word "Contains" if the package has it. Never shorten. If the package has no statement, type: No allergen statement on the package.' },
+    { group: 'Allergens (copy word for word)', key: 'allergen_source', label: 'Where the package declares allergens', options: [['contains_statement', 'A "Contains" statement (most packages)'], ['ingredient_list', 'Only inside the ingredient list (no "Contains" line)'], ['none_on_label', 'Nowhere: no allergen in the ingredients and no statement']], help: 'Read the package. If unsure, choose the ingredient list and copy all of it.' },
+    { group: 'Allergens (copy word for word)', key: 'allergen_line_verbatim', label: 'Allergen statement, exactly as on the package', multiline: true, rows: 4, help: 'Contains statement: copy it, starting with the word "Contains" if the package has it. Ingredient list: copy the whole list, starting with "Ingredients". Nowhere: leave this empty. Never shorten or reword.' },
     { group: 'Allergens (copy word for word)', key: 'may_contain_verbatim', label: '"May contain" or facility line, exactly as on the package', multiline: true, rows: 2, help: 'Leave empty only if the package has none.' },
     { group: 'Where to buy (one or both)', key: 'retailer_line', label: 'Retailer and street', help: 'In the form "Retailer Name, 123 Street Name". From retailer_line.' },
     { group: 'Where to buy (one or both)', key: 'discount_code', label: 'Discount code', help: 'From discount_code.' },
@@ -145,6 +147,16 @@
     { group: 'QR and IDs', key: 'office_id', label: 'Office ID', required: true, help: 'e.g. O-003. Printed tiny so cards for different offices never get mixed.' },
     { group: 'QR and IDs', key: 'campaign_id', label: 'Campaign ID', required: true, help: 'e.g. CMP-001.' }
   ];
+
+  // Where the package declares allergens decides the panel's label line. The text itself is
+  // always the package's own words, except for 'none_on_label', which prints a fixed pointer.
+  const ALLERGEN_LABEL = {
+    contains_statement: 'Allergens, as printed on the package. Always check the package.',
+    ingredient_list: 'Ingredients, as printed on the package; its allergens are declared here. Always check the package.',
+    none_on_label: 'Allergens'
+  };
+  const NONE_TEXT = 'No allergen statement appears on this package. Read the ingredients on the package before you eat.';
+  const src = (r) => ALLERGEN_LABEL[r.allergen_source] ? r.allergen_source : 'contains_statement';
 
   function findLine(r) {
     const ret = (r.retailer_line || '').trim();
@@ -184,8 +196,8 @@
           </div>
         </div>
         <div class="allergen">
-          <p class="allergen-label">Allergens, as printed on the package. Always check the package.</p>
-          <p class="allergen-text">${DD.text(r.allergen_line_verbatim || '[ALLERGEN STATEMENT, WORD FOR WORD FROM THE PACKAGE]')}</p>
+          <p class="allergen-label">${ALLERGEN_LABEL[src(r)]}</p>
+          <p class="allergen-text">${src(r) === 'none_on_label' ? DD.text(NONE_TEXT) : DD.text(r.allergen_line_verbatim || '[ALLERGEN STATEMENT, WORD FOR WORD FROM THE PACKAGE]')}</p>
           ${may ? `<p class="allergen-text">${DD.text(may)}</p>` : ''}
         </div>
         <div class="foot">
@@ -220,6 +232,14 @@
       <div class="sheet-note" style="left:.75in;top:10.6in;width:7in">${DD.text(r.brand_name || '')} · Card ${DD.text(r.office_id || '')} · ${DD.text(r.campaign_id || '')} · template v1.0</div>`;
     marks(sheet);
     sheet.querySelectorAll('.qr-slot').forEach(s => { s.innerHTML = DD.qrSvg(r.qr_url, QR_MAX); });
+    // allergen rules
+    const al = (r.allergen_line_verbatim || '').trim();
+    if (r.allergen_source && !ALLERGEN_LABEL[r.allergen_source]) DD.error(i, `allergen_source "${r.allergen_source}" is not one of contains_statement, ingredient_list, none_on_label.`);
+    if (src(r) !== 'none_on_label' && !al) DD.error(i, 'The allergen statement is empty. Copy it from the package, word for word.');
+    if (src(r) === 'none_on_label' && al) DD.error(i, 'You chose "Nowhere" for allergens but typed allergen text. Choose the right option or empty the box.');
+    if (src(r) === 'contains_statement' && al && !DD.isPlaceholder(al) && !/contain/i.test(al)) DD.warn(i, 'The allergen statement does not include the word "Contains". If the package has no "Contains" line, choose "Only inside the ingredient list" and copy the whole list.');
+    if (src(r) === 'ingredient_list' && al && !DD.isPlaceholder(al) && !/ingredient/i.test(al)) DD.warn(i, 'For the ingredient-list option, copy the whole list, starting with "Ingredients" as printed.');
+    if (src(r) !== 'none_on_label' && !(r.may_contain_verbatim || '').trim()) DD.warn(i, 'No "may contain" or shared-facility line entered. Leave it empty only if the package has none.');
     // field rules that are errors, not just warnings
     const ret = (r.retailer_line || '').trim(), code = (r.discount_code || '').trim(), site = (r.code_site || '').trim();
     if (!ret && !(code && site) && !site) DD.error(i, 'Add a retailer, or a code and its site. The card needs a place to buy.');
@@ -231,9 +251,9 @@
   }
 
   // ---------- fitting: the allergen panel is never touched ----------
-  function fit(sheet, r, i) {
-    const faces = sheet.querySelectorAll('.face');
-    const front = sheet.querySelector('.face.front');
+  // Fits one face. Returns { blocked, info, warns, errs } and touches nothing outside the face.
+  function fitFace(front, r, i) {
+    const warns = [], errs = [];
     const safe = front.querySelector('.safe');
     const stack = front.querySelector('.stack');
     const name = front.querySelector('.name');
@@ -266,13 +286,13 @@
       }
       if (best) {
         name.innerHTML = DD.text(best.a) + '<br>' + DD.text(best.b);
-        chosen = { px: Math.min(NAME_MAX * .8, Math.floor(100 * avail / best.wide)), w: 87.5, lines: 2 };
+        chosen = { px: Math.max(NAME_MIN, Math.min(NAME_MAX * .8, Math.floor(100 * avail / best.wide))), w: 87.5, lines: 2 };
       } else {
         chosen = { px: NAME_MIN, w: 75, lines: 1 };
       }
     }
     setName(chosen.px, chosen.w);
-    if (name.scrollWidth > avail + 1) DD.error(i, 'Brand name is too long for the card. Use a shorter form of the name.');
+    if (name.scrollWidth > avail + 1) errs.push('Brand name is too long for the card. Use a shorter form of the name.');
 
     // 2. vertical fit. The allergen panel is never touched. Everything else gives way, in this order:
     //    story size -> tighter gaps -> find-it line 11 to 10 pt -> QR size -> two-line name back to one
@@ -301,8 +321,8 @@
         }
       },
       () => { if (namePx > NAME_MIN) { namePx = Math.max(NAME_MIN, namePx - 2); return true; } },
-      () => { if (product && !product.classList.contains('dropped')) { product.classList.add('dropped'); DD.warn(i, 'The product line was left off so the allergen text keeps its locked size.'); return true; } },
-      () => { if (!story.classList.contains('dropped')) { story.classList.add('dropped'); DD.warn(i, 'The two sentences were left off so the allergen text keeps its locked size. Shorten them to bring them back.'); return true; } },
+      () => { if (product && !product.classList.contains('dropped')) { product.classList.add('dropped'); warns.push('The product line was left off so the allergen text keeps its locked size.'); return true; } },
+      () => { if (!story.classList.contains('dropped')) { story.classList.add('dropped'); warns.push('The two sentences were left off so the allergen text keeps its locked size. Shorten them to bring them back.'); return true; } },
     ];
     apply();
     let guard = 0;
@@ -312,36 +332,96 @@
       if (!changed) break;
       apply();
     }
-    // a story that is already short gets bigger type up to the max (keeps the card from looking empty)
     const blocked = overflow();
     front.classList.remove('measuring');
-    if (blocked) {
-      DD.error(i, 'Too much text for the card even at the smallest sizes. The allergen text is locked; shorten the product name or retailer line.');
-    }
-    // 3. guards on the allergen panel: locked size really applied, text really verbatim
+    const info = { name_px: namePx, name_width: chosen.w, name_lines: chosen.lines, story_pt: storyPt, qr_px: qr, find_pt: findPt, tight: front.classList.contains('tight'), story_dropped: !!(story && story.classList.contains('dropped')), product_dropped: !!(product && product.classList.contains('dropped')) };
+    return { blocked, info, warns, errs };
+  }
+
+  // Ingredient face, used only when a long ingredient list (the package's only allergen
+  // declaration) cannot fit on the front at 14 pt. Name, full list, "may contain", wordmark.
+  function ingredientFaceHTML(r) {
+    const may = (r.may_contain_verbatim || '').trim();
+    return `
+      <div class="dd-sample-banner">Sample. Not for placement. Illustrative placeholders, not results.</div>
+      <div class="safe"><div class="stack">
+        <div class="top-rule"></div>
+        <div class="name-block"><h1 class="name" style="font-size:40px">${DD.text(r.brand_name || '[BRAND NAME]')}</h1></div>
+        <div class="allergen">
+          <p class="allergen-label">${ALLERGEN_LABEL.ingredient_list}</p>
+          <p class="allergen-text">${DD.text(r.allergen_line_verbatim || '')}</p>
+          ${may ? `<p class="allergen-text">${DD.text(may)}</p>` : ''}
+        </div>
+        <div class="foot"><p class="find">QR code on the other side.</p>
+          <div class="by"><span>Brought to you by</span>${DD.wordmarkImg(0.13)}</div></div>
+      </div></div>
+      <div class="card-id">Card ${DD.text(r.office_id || '[OFFICE ID]')} · ${DD.text(r.campaign_id || '[CAMPAIGN ID]')}</div>`;
+  }
+  const POINTER_TEXT = 'This package declares its allergens in its ingredient list. The full list, word for word, is on the other side of this card.';
+
+  // Guards: the locked size really applied, and the package's words really shown unchanged.
+  function guard(face, r, i, expected) {
     const LOCK_PX = 14 / 72 * IN - 0.01;
-    front.querySelectorAll('.allergen-text').forEach(el => {
+    face.querySelectorAll('.allergen-text').forEach(el => {
       const px = parseFloat(getComputedStyle(el).fontSize);
       if (px < LOCK_PX) DD.error(i, `Allergen text renders at ${(px * 72 / IN).toFixed(1)} pt, under the locked 14 pt. Someone changed tokens.css; restore --dd-print-allergen-size: 14pt.`);
     });
     const norm = (t) => String(t || '').replace(/\s+/g, ' ').trim();
-    const shown = [...front.querySelectorAll('.allergen-text')].map(el => norm(el.innerText));
-    const given = [norm(r.allergen_line_verbatim), norm(r.may_contain_verbatim)].filter(Boolean);
-    if (r.allergen_line_verbatim && shown.join('|') !== given.join('|')) DD.error(i, 'The allergen panel does not show the allergen text exactly as entered.');
-    const panel = front.querySelector('.allergen');
-    if (panel.getBoundingClientRect().bottom > safe.getBoundingClientRect().bottom + 0.5) DD.error(i, 'The allergen panel is cut off at the bottom of the card.');
-    // copy the fitted front onto the back face (identical content)
+    const shown = [...face.querySelectorAll('.allergen-text')].map(el => norm(el.innerText));
+    const want = expected.map(norm).filter(Boolean);
+    if (want.length && shown.join('|') !== want.join('|')) DD.error(i, 'The allergen panel does not show the allergen text exactly as entered.');
+    const panel = face.querySelector('.allergen'), safe = face.querySelector('.safe');
+    if (panel && panel.getBoundingClientRect().bottom > safe.getBoundingClientRect().bottom + 0.5) DD.error(i, 'The allergen panel is cut off at the bottom of the card.');
+  }
+
+  function fit(sheet, r, i) {
+    const front = sheet.querySelector('.face.front');
     const back = sheet.querySelector('.face.back');
-    back.innerHTML = front.innerHTML;
-    if (blocked) faces.forEach(f => { const b = document.createElement('div'); b.className = 'blocker'; b.textContent = 'DO NOT PLACE. This card failed the fit check. Open it in Chrome to see why.'; f.appendChild(b); });
-    sheet.dataset.fit = JSON.stringify({ name_px: namePx, name_width: chosen.w, name_lines: chosen.lines, story_pt: storyPt, qr_px: qr, find_pt: findPt, tight: front.classList.contains('tight'), story_dropped: story.classList.contains('dropped'), product_dropped: !!(product && product.classList.contains('dropped')) });
+    const fresh = front.innerHTML;
+    const verbatim = [src(r) === 'none_on_label' ? NONE_TEXT : (r.allergen_line_verbatim || ''), r.may_contain_verbatim || ''];
+    let res = fitFace(front, r, i);
+    let split = false, backBlocked = false;
+    if (res.blocked && src(r) === 'ingredient_list' && (r.allergen_line_verbatim || '').trim()) {
+      // too long for the front: the full list moves to the other face, the front points to it
+      front.className = 'face front';
+      front.innerHTML = fresh;
+      front.querySelector('.allergen-label').textContent = 'Allergens';
+      const texts = front.querySelectorAll('.allergen-text');
+      texts[0].textContent = POINTER_TEXT;
+      if (texts[1]) texts[1].remove();
+      front.querySelector('.qr-slot').innerHTML = DD.qrSvg(r.qr_url, QR_MAX);
+      res = fitFace(front, r, i);
+      back.innerHTML = ingredientFaceHTML(r);
+      back.classList.add('measuring', 'tight');
+      const bs = back.querySelector('.safe'), bk = back.querySelector('.stack');
+      const bname = back.querySelector('.name');
+      if (bname.scrollWidth > bs.clientWidth) bname.style.fontStretch = '75%';
+      backBlocked = bk.offsetHeight > bs.clientHeight + 0.5;
+      back.classList.remove('measuring');
+      split = true;
+      guard(front, r, i, [POINTER_TEXT]);
+      guard(back, r, i, verbatim);
+      DD.warn(i, 'The ingredient list is too long for the front at 14 pt, so it prints in full on the other face and the front points to it. Stand the card where both faces can be read, and take the close photo of both faces.');
+    } else {
+      guard(front, r, i, verbatim);
+      back.innerHTML = front.innerHTML;
+    }
+    res.warns.forEach(m => DD.warn(i, m));
+    res.errs.forEach(m => DD.error(i, m));
+    const blocked = res.blocked || backBlocked;
+    if (blocked) {
+      DD.error(i, split ? 'The ingredient list is too long even for a whole face at 14 pt. This product cannot carry a card at the locked size; talk to the brand.'
+                        : 'Too much text for the card even at the smallest sizes. The allergen text is locked; shorten the product name or retailer line.');
+      sheet.querySelectorAll('.face').forEach(f => { const b = document.createElement('div'); b.className = 'blocker'; b.textContent = 'DO NOT PLACE. This card failed the fit check. Open it in Chrome to see why.'; f.appendChild(b); });
+    }
+    sheet.dataset.fit = JSON.stringify(Object.assign({}, res.info, { ingredients_on_back: split }));
   }
 
   DD.init({
     title: 'tent card',
     fields: FIELDS,
     confirmBeforePrint: 'I read the allergen text against the package itself, word for word',
-    confirmResetKeys: ['allergen_line_verbatim', 'may_contain_verbatim'],
+    confirmResetKeys: ['allergen_source', 'allergen_line_verbatim', 'may_contain_verbatim'],
     render, fit,
     sheetClass: '',
     fileStem: (r) => 'tent-card_' + (r.campaign_id || 'campaign') + '_' + (r.office_id || 'office'),

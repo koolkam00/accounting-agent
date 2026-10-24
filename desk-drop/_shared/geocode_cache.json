@@ -59,6 +59,16 @@
   "query": "101 Fifth Avenue",
   "source": "nyc-geosearch"
  },
+ "104 east 25th street": {
+  "bbl": "1008800084",
+  "confidence": 0.8,
+  "label": "104 EAST 25 STREET, New York, NY, USA",
+  "lat": 40.741024,
+  "lon": -73.984936,
+  "match": "fallback",
+  "query": "104 East 25th Street",
+  "source": "nyc-geosearch"
+ },
  "104 west 27th street": {
   "bbl": "1008020049",
   "confidence": 0.8,
@@ -1489,6 +1499,16 @@
   "query": "41 Union Square West",
   "source": "nyc-geosearch"
  },
+ "41 west 25th street": {
+  "bbl": "1008270012",
+  "confidence": 0.8,
+  "label": "41 WEST 25 STREET, New York, NY, USA",
+  "lat": 40.743977,
+  "lon": -73.99079,
+  "match": "fallback",
+  "query": "41 West 25th Street",
+  "source": "nyc-geosearch"
+ },
  "410 sixth avenue": {
   "bbl": "1005720005",
   "confidence": 0.8,
@@ -1667,6 +1687,16 @@
   "lon": -73.991754,
   "match": "fallback",
   "query": "5 Union Square West",
+  "source": "nyc-geosearch"
+ },
+ "50 west 17th street": {
+  "bbl": "1008180078",
+  "confidence": 0.8,
+  "label": "50 WEST 17 STREET, New York, NY, USA",
+  "lat": 40.738765,
+  "lon": -73.994763,
+  "match": "fallback",
+  "query": "50 West 17th Street",
   "source": "nyc-geosearch"
  },
  "50 west 23rd street": {

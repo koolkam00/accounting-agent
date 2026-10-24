@@ -40,6 +40,7 @@ FILL_BANNER = PatternFill("solid", fgColor="FCE4D6")
 F_BANNER = Font(bold=True, color="7A3A10")
 FILL_CALC = PatternFill("solid", fgColor="F3F3F3")
 FILL_KEY = PatternFill("solid", fgColor="E2F0D9")
+FILL_SCEN = PatternFill("solid", fgColor="DDEBF7")
 THIN = Side(style="thin", color="B7C4C8")
 BOX = Border(top=THIN, bottom=THIN, left=THIN, right=THIN)
 WRAP = Alignment(wrap_text=True, vertical="top")
@@ -282,6 +283,8 @@ def inp(key, label, value, unit, status, source, notes="", low=None, high=None, 
         CHANGED_CELLS.append(f"K{r}")
     if vlist:
         add_list_validation(ws, f"C{r}", "=" + REF[vlist])
+    for col in "ACDEFGJK":
+        ws[f"{col}{r}"].alignment = Alignment(vertical="top", wrap_text=ws[f"{col}{r}"].alignment.wrap_text)
     REF[key] = f"Inputs!$C${r}"
     row[0] += 1
     return r
@@ -314,6 +317,8 @@ inp("weeks_per_month", "Weeks per month", f"={R('weeks_per_year')}/{R('months_pe
 inp("hours_per_day", "Hours per day (converts Toggl durations)", 24, "hours", "conversion", "Calendar")
 inp("window_bd", "Campaign window", 5, "business days", "planning estimate", "plan.md, What brands buy: 'Five business days'", "T is day 1; the window closes at T+4.")
 inp("drop_prefix", "Drop ID prefix", "DRP-", "text", "convention", "CONTRACTS s6.5 (DRP-###)", "Toggl projects named DRP-001 etc. map to drops.")
+inp("office_window_days", "An office should get at most one drop in this many days", 28, "days", "derived, founder to confirm",
+    "plan.md, What has to be true #4: 'Offices accept one drop a month'", "Four weeks counts as monthly, so drops 28 days apart do not flag. Used for the office-fatigue warning on Schedule.")
 
 inp_section("2. Scenario in force")
 inp("active_scenario", "Scenario applied to drops after Gate 3 and to the steady state", "Plan base", "list", "setting",
@@ -393,6 +398,9 @@ inp("h_existing_office", "Office coordination per existing office", 1, "hours pe
 inp("rk_per_brand", "Receiving and kitting per brand", 0.5, "hours per brand", "derived, founder to confirm", P_HOURS, "(4 - 3) / (3 - 1): 1-brand drop 3 h, 3-brand drop 4 h.")
 inp("rep_per_brand", "Reporting and debriefs per brand", 2, "hours per brand", "planning estimate", P_HOURS, "'6 (2 per brand)'.")
 inp("admin_per_drop", "Admin and invoicing per drop", 2, "hours per drop", "planning estimate", P_HOURS)
+inp("discovery_hours_week", "Discovery hours per week, weeks 1 to 3 (not tied to a drop)", 15, "hours per week", "planning estimate",
+    "plan.md, Time budget: 'Phases 0 and 1 need 10 to 15 hours a week'", "High end. Weeks 4 to 7 selling and recruiting already sit in campaign zero's 57 hours. Used only in the six-month all-in view.", low=10, high=15)
+inp("discovery_weeks", "Discovery weeks", 3, "weeks", "planning estimate", "plan.md, Phase 0 (weeks 1 to 3)")
 
 # delivery-model table
 row[0] += 1
@@ -481,33 +489,51 @@ inp("sens_renew_step", "Renewal rate: step", 0.1, "share", "setting", "Model set
 
 # startup outlays table
 row[0] += 1
-section(ws, row[0], "11. Startup outlays (one-time, paid at their timing in the cash flow)", last_col="R")
+section(ws, row[0], "11. Startup outlays (one-time, paid at their timing in the cash flow). Formation, publication, licence, professional and filing figures come from the legal pack.", last_col="T")
 row[0] += 1
 header_row(ws, row[0], 1, ["key", "Item", "Working (USD)", "Unit", "Low", "High", "Status", "Source", "Notes", "Plan default", "Changed",
-                           "Timing (date)", "Timing basis", "Include (Y/N)", "Actual paid (USD)", "Actual paid date", "Cash amount used", "Cash date used"], height=32)
+                           "Timing (date)", "Timing basis", "Include (Y/N)", "Actual paid (USD)", "Actual paid date", "Cash amount used", "Cash date used",
+                           "Default include", "Default timing"], height=32)
 ws[f"K{row[0]}"].value = "Changed?"
 row[0] += 1
 su0 = row[0]
+G_CSV = "desk-drop-legal-pack/figures.csv (read 2026-10-24)"
 startup = [
-    ("su_llc", "LLC Articles of Organization (state filing fee)", 200, 200, 200, "planning estimate", P_CAP + " ($200 plus $50)", "",
-     D(2026, 11, 13), "Gate 0 pass (setup checklist); file at the first verbal brand yes"),
-    ("su_cert", "Certificate of Publication filing", 50, 50, 50, "planning estimate", P_CAP, "",
-     D(2026, 12, 28), "After six weeks of publication from Gate 0 (first business day after 2026-12-25)"),
-    ("su_pub", "Newspaper publication (two papers, six weeks)", 2000, 250, 2000, "planning estimate (high end)", P_CAP + "; Legal table",
-     "Albany County about $250, New York County up to $2,000. High end of a cost range by rule.", D(2026, 11, 13), "Publication starts at Gate 0 pass"),
-    ("su_license", "Food warehouse license (Article 28-D), if required", 400, 0, 400, "planning estimate (high end)", P_CAP + "; Legal table ($400 for two years)",
-     "Zero if the state says home storage of sealed cases does not need it, or if brands ship direct.", D(2026, 12, 11), "Before campaign one; state call at Gate 1"),
+    # key, item, working, low, high, status, source, notes, timing, timing basis, include
+    ("su_llc", "LLC Articles of Organization (state filing fee)", 200, 200, 200, "verified 2026-10-23 (legal pack)",
+     G_CSV + "; https://dos.ny.gov/limited-liability-company-articles-organization", "Plan capital table: $200 plus $50.",
+     D(2026, 11, 13), "Day 0 = first verbal brand yes, expected near Gate 0 (legal pack timing)", "Y"),
+    ("su_cert", "Certificate of Publication filing", 50, 50, 50, "verified 2026-10-23 (legal pack)",
+     G_CSV + "; https://dos.ny.gov/certificate-publication-domestic-limited-liability-company-0", "",
+     D(2027, 1, 11), "After the sixth weekly run: order by 2026-11-30, six runs (derived from the legal pack's timing; legal limit day 120)", "Y"),
+    ("su_pub", "Newspaper publication (two papers, six weeks), county not chosen", 1745, 200, 2000, "needs quote (legal pack)",
+     G_CSV + "; https://www.llcpublishers.com/pricing", "Legal pack working figure = New York County ($1,795 all-in less the $50 state fee). $345 if the attorney confirms Albany County. Plan table: $250 to $2,000.",
+     D(2026, 11, 30), "Ordered within 10 business days of filing (legal pack): 2026-11-30", "Y"),
+    ("su_license", "Food warehouse license (Article 28-D, two years), if required", 400, 0, 400, "fee verified 2026-10-23; need unknown (legal pack)",
+     G_CSV + "; https://www.nysenate.gov/legislation/laws/AGM/500-B", "Zero if the state says sealed cases at home need no license, or if brands ship direct.",
+     D(2026, 12, 11), "Before any brand ships (legal pack: latest 2026-12-21); plan: Gate 1", "Y"),
     ("su_print", "Printing and materials (hand truck, supplies, first card runs)", 300, 300, 300, "planning estimate", P_CAP,
-     "Read as startup supplies; per-drop kits are the $8 per office line.", D(2026, 12, 11), "Gate 1 pass: hand truck, supplies and first card run"),
-    ("su_domain", "Domain and email setup", 100, 100, 100, "planning estimate", P_CAP, "", D(2026, 10, 26), "Week 1, days 1 and 2"),
-    ("su_pro", "Attorney hour (two agreements) and accountant hour", 700, 500, 900, "planning estimate", "plan.md, Legal table and What I need from you #8 ('about $700')",
-     "Not in the plan's capital table; the plan asks for both before the first invoice.", D(2026, 11, 13), "Gate 0 pass: both hours booked, before the first invoice"),
-    ("su_tm", "Federal trademark application (one class)", 350, 350, 350, "planning estimate", "plan.md, Legal table ('roughly $350 per class')",
-     "Not in the plan's capital table. Set Include to N if campaign zero does not pass.", D(2027, 1, 22), "After campaign zero, if it passed (setup checklist)"),
+     "Read as startup supplies; per-drop kits are the $8 per office line.", D(2026, 12, 11), "Gate 1 pass: hand truck, supplies and first card run (plan setup checklist)", "Y"),
+    ("su_domain", "Domain and email setup", 100, 100, 100, "planning estimate", P_CAP, "", D(2026, 10, 26), "Week 1, days 1 and 2 (plan)", "Y"),
+    ("su_attorney", "Attorney hour (both agreements, name and formation questions)", 400, 300, 500, "plan estimate (legal pack)",
+     G_CSV + "; plan.md Legal table", "Not in the plan's capital table. Plan question 8 puts both hours at about $700.", D(2026, 11, 13), "Booked at Gate 0; held before the first invoice (legal pack)", "Y"),
+    ("su_accountant", "Accountant hour (sales tax, UBT, estimates)", 300, 200, 400, "plan estimate (legal pack)",
+     G_CSV + "; plan.md Legal table", "Not in the plan's capital table.", D(2026, 11, 13), "Booked at Gate 0; held before the first invoice (legal pack)", "Y"),
+    ("su_it204", "NYS LLC annual filing fee (IT-204-LL), single-member", 25, 25, 25, "verified 2026-10-23 (legal pack)",
+     G_CSV + "; https://www.tax.ny.gov/pdf/current_forms/it/it204lli.pdf", "Accountant confirms whether 2026 is owed. Not in the plan.", D(2027, 3, 15), "First possibly Mon 2027-03-15 for 2026 (legal pack)", "Y"),
+    ("su_hnoa", "Hired and non-owned auto add-on to the liability policy", None, None, None, "needs quote (legal pack)",
+     G_CSV + "; plan.md Legal table ('Small add-on. Ask the carrier.')", "Needed if car rides, a car service or a rented van carry product (campaign zero does). Blank counts as $0.",
+     D(2026, 12, 11), "With the general liability bind", "Y"),
+    ("su_addl_insured", "Additional-insured endorsements for buildings that require them", None, None, None, "needs quote (legal pack)",
+     G_CSV, "Zero if the policy has a blanket additional-insured endorsement. Blank counts as $0.", D(2026, 12, 11), "Before each such building's first drop", "Y"),
+    ("su_tm", "Federal trademark application (one class)", 350, 350, 850, "verified 2026-10-23 (legal pack)",
+     G_CSV + "; https://www.uspto.gov/learning-and-resources/fees-and-payment/uspto-fee-schedule",
+     "Excluded from the six months (Include = N): the legal pack times it after campaign zero passes and outside the first six months, and USPTO refused a prior DESK-DROP filing as descriptive. Set Y to include it at Gate 2.",
+     D(2027, 1, 22), "Only after campaign zero passes; attorney advises first (legal pack)", "N"),
 ]
 for i, s in enumerate(startup):
     r = su0 + i
-    key, item, working, low, high, status, src, notes, tdate, tbasis = s
+    key, item, working, low, high, status, src, notes, tdate, tbasis, incl = s
     put(ws, f"A{r}", key, font=F_NOTE)
     put(ws, f"B{r}", item, align=WRAP)
     as_input(put(ws, f"C{r}", working))
@@ -519,12 +545,14 @@ for i, s in enumerate(startup):
     put(ws, f"H{r}", src, align=WRAP)
     put(ws, f"I{r}", notes, align=WRAP)
     put(ws, f"J{r}", working, fmt=USD, font=F_NOTE)
-    put(ws, f"K{r}", f'=IF(C{r}&""=J{r}&"","","changed")', font=Font(color="9C0006", bold=True))
+    put(ws, f"K{r}", f'=IF(AND(C{r}&""=J{r}&"",N{r}&""=S{r}&"",L{r}&""=T{r}&""),"","changed")', font=Font(color="9C0006", bold=True))
+    put(ws, f"S{r}", incl, font=F_NOTE)
+    put(ws, f"T{r}", tdate, fmt=DATE, font=F_NOTE)
     CHANGED_CELLS.append(f"K{r}")
     as_input(put(ws, f"L{r}", tdate))
     ws[f"L{r}"].number_format = DATE
     put(ws, f"M{r}", tbasis, align=WRAP)
-    as_input(put(ws, f"N{r}", "Y"))
+    as_input(put(ws, f"N{r}", incl))
     as_input(put(ws, f"O{r}", None))
     ws[f"O{r}"].number_format = USD
     as_input(put(ws, f"P{r}", None))
@@ -544,11 +572,11 @@ put(ws, f"Q{r}", f"=SUM(Q{su0}:Q{sun})", fmt=USD, font=F_BOLD)
 REF["su_total"] = f"Inputs!$Q${r}"
 r += 2
 put(ws, f"B{r}", "Inputs changed from plan defaults", font=F_BOLD)
-put(ws, f"C{r}", f'=COUNTIF(K5:K{sun},"changed")', fmt=INT, font=F_BOLD)
-put(ws, f"D{r}", "cells (the delivery-model hour rates in section 7 are not flagged; Plan_Check shows whether they still reproduce the plan)", font=F_NOTE)
+put(ws, f"C{r}", f'=COUNTIF(K5:K{sun},"changed")+COUNTIF(Scenarios!$Q$10:$Q$21,"changed")', fmt=INT, font=F_BOLD)
+put(ws, f"D{r}", "cells here and on Scenarios (the delivery-model rates in section 7 are not flagged; Plan_Check shows whether they still reproduce the plan)", font=F_NOTE)
 REF["changed_count"] = f"Inputs!$C${r}"
 widths(ws, {"A": 18, "B": 50, "C": 15, "D": 18, "E": 10, "F": 10, "G": 25, "H": 44, "I": 60, "J": 12, "K": 9,
-            "L": 12, "M": 40, "N": 9, "O": 12, "P": 12, "Q": 12, "R": 12})
+            "L": 12, "M": 40, "N": 9, "O": 12, "P": 12, "Q": 12, "R": 12, "S": 9, "T": 12})
 ws.freeze_panes = "C5"
 
 # ==========================================================================
@@ -609,17 +637,24 @@ for i, (key, lab, vals, unit, fmt, note) in enumerate(levers):
         as_input(c)
         c.number_format = fmt
     put(ws, f"H{r}", f"=INDEX(C{r}:G{r},MATCH({R('active_scenario')},$C$5:$G$5,0))", fmt=fmt, font=F_BOLD, fill=FILL_KEY, border=BOX)
+    for j, v in enumerate(vals):
+        if isinstance(v, str):
+            v = v.replace("{self}", str(r))
+        put(ws, f"{CL(12 + j)}{r}", v, fmt=fmt, font=F_NOTE)
+    put(ws, f"Q{r}", "=IF(AND(" + ",".join(f'{CL(3 + j)}{r}&""={CL(12 + j)}{r}&""' for j in range(5)) + '),"","changed")', font=Font(color="9C0006", bold=True))
     put(ws, f"I{r}", unit)
     put(ws, f"J{r}", note, align=WRAP)
     ws.row_dimensions[r].height = 30
     REF[key] = f"Scenarios!$H${r}"
+header_row(ws, 5, 12, ["default: Plan base", "default: A", "default: B", "default: C", "default: D", "Changed?"], height=30)
+REF["scen_changed"] = "Scenarios!$Q$10:$Q$21"
 put(ws, "B23", "How it works", font=F_BOLD)
 put(ws, "B24", "The two decision-window drops on Schedule (DRP-004, DRP-005) take brands, renewals and new offices from the Active column. "
               "Type over those Schedule cells to replace the scenario with real plans. The steady-state view and the sensitivity tables use the Active column too. "
               "Drops before Gate 3 do not change with the scenario.", align=WRAP)
 ws.merge_cells("B24:J24")
 ws.row_dimensions[24].height = 48
-widths(ws, {"A": 3, "B": 46, "C": 18, "D": 22, "E": 22, "F": 22, "G": 18, "H": 14, "I": 14, "J": 60})
+widths(ws, {"A": 3, "B": 46, "C": 18, "D": 22, "E": 22, "F": 22, "G": 18, "H": 14, "I": 14, "J": 60, "K": 3, "L": 11, "M": 11, "N": 11, "O": 11, "P": 11, "Q": 10})
 ws.freeze_panes = "C6"
 
 # ==========================================================================
@@ -630,7 +665,8 @@ title(ws, "Drop schedule", "One row per drop. Edit dates, delivery model, office
 banner(ws, "A3", "Drop days are Tuesday or Wednesday only; no window may overlap a blackout (Lists). Set 'Actuals in' to Y once a drop's actuals are pasted, and the model switches that drop from plan to actual.", "T3")
 SCH_HDR = ["drop_id", "Label", "Basis", "Post-Gate-3 sequence", "Drop date", "Day", "Delivery model", "Tier", "Offices", "New offices",
            "Brands", "of which renewals", "of which founding-rate renewals", "Actuals in (Y/N)", "Notes",
-           "Tue or Wed?", "Window closes (T+4)", "Blackout clash?", "Units brands ship (incl. reserve)", "Row check"]
+           "Tue or Wed?", "Window closes (T+4)", "Blackout clash?", "Units brands ship (incl. reserve)", "Row check",
+           "Office slots on drops in the last four weeks", "Roster to date (new offices so far)", "Office fatigue", "Changed from the derived default?"]
 header_row(ws, 6, 1, SCH_HDR, height=45)
 sched = [
     ("DRP-001", "Campaign zero (founding)", "derived: CONTRACTS s3", None, D(2027, 1, 12), "founder", "founding", 5, 5, 2, 0, 0,
@@ -659,6 +695,8 @@ for i in range(N_DROPS):
         c = put(ws, f"{col}{r}", v)
         if col in "ABCDEGHIJKLMNO":
             as_input(c)
+            if isinstance(v, str) and v.startswith("="):
+                c.fill = FILL_SCEN
         if col == "E":
             c.number_format = DATE
         if col == "O":
@@ -669,13 +707,31 @@ for i in range(N_DROPS):
     put(ws, f"R{r}", f'=IF(E{r}="","",IF(COUNTIFS({R("bo_start")},"<="&Q{r},{R("bo_end")},">="&E{r})>0,"clash","ok"))')
     put(ws, f"S{r}", f'=IF(E{r}="","",N(K{r})*N(I{r})*{R("units_per_office")}*(1+{R("reserve_share")}))', fmt='#,##0')
     put(ws, f"T{r}", f'=IF(E{r}="",IF(N(K{r})>0,"date missing",""),IF(AND(P{r}="ok",R{r}="ok",N(J{r})<=N(I{r}),N(L{r})<=N(K{r}),N(M{r})<=N(L{r}),OR(N(K{r})=0,N(I{r})>0),G{r}<>"",H{r}<>""),"ok","check"))')
+    # office fatigue and change tracking
+    put(ws, f"U{r}", f'=IF(OR(E{r}="",N(K{r})=0),"",SUMIFS($I${DROP0}:$I${DROPN},$E${DROP0}:$E${DROPN},">"&E{r}-{R("office_window_days")},$E${DROP0}:$E${DROPN},"<="&E{r},$K${DROP0}:$K${DROPN},">0"))')
+    put(ws, f"V{r}", f'=IF(E{r}="","",SUMIFS($J${DROP0}:$J${DROPN},$E${DROP0}:$E${DROPN},"<="&E{r}))')
+    put(ws, f"W{r}", f'=IF(U{r}="","",IF(U{r}>V{r},"some offices get a second drop within four weeks","ok"))', align=WRAP)
+    dcols = "EGHIJKLM"
+    for j, col in enumerate(dcols):
+        dv = vals.get(col)
+        put(ws, f"{CL(27 + j)}{r}", dv, fmt=DATE if col == "E" else None, font=F_NOTE)
+    put(ws, f"X{r}", "=IF(AND(" + ",".join(f'{col}{r}&""={CL(27 + j)}{r}&""' for j, col in enumerate(dcols)) + '),"","changed")', font=Font(color="9C0006", bold=True))
     ws.row_dimensions[r].height = 42
+    for col in [CL(k) for k in range(1, 25)]:
+        ws[f"{col}{r}"].alignment = Alignment(vertical="top", wrap_text=True)
 add_list_validation(ws, f"G{DROP0}:G{DROPN}", "=" + R("L_models"))
 add_list_validation(ws, f"H{DROP0}:H{DROPN}", "=" + R("L_tiers"))
 add_list_validation(ws, f"N{DROP0}:N{DROPN}", "=" + R("L_yn"))
 ok_cf(ws, f"P{DROP0}:P{DROPN}", bad=['"not Tue/Wed"'])
 ok_cf(ws, f"R{DROP0}:R{DROPN}", bad=['"clash"'])
 ok_cf(ws, f"T{DROP0}:T{DROPN}", bad=['"check"', '"date missing"'])
+ok_cf(ws, f"W{DROP0}:W{DROPN}")
+ws.conditional_formatting.add(f"W{DROP0}:W{DROPN}", FormulaRule(formula=[f'LEFT(W{DROP0},LEN("some"))="some"'], fill=PatternFill("solid", fgColor="FCE4D6")))
+header_row(ws, 6, 27, ["default date", "default model", "default tier", "default offices", "default new offices", "default brands", "default renewals", "default founding renewals"], height=45)
+put(ws, "AA5", "Derived defaults (for the 'Changed' flag; do not edit)", font=F_NOTE)
+put(ws, "A4", "Yellow = your input. Blue = follows the scenario in force (Scenarios tab); type over it to replace. Red 'changed' = the row no longer matches the derived default.", font=F_NOTE)
+REF["sched_fatigue"] = f"Schedule!$W${DROP0}:$W${DROPN}"
+REF["sched_changed"] = f"Schedule!$X${DROP0}:$X${DROPN}"
 r = DROPN + 1
 put(ws, f"B{r}", "Totals", font=F_BOLD)
 for col in "IJKLM":
@@ -689,7 +745,7 @@ ws.row_dimensions[r + 2].height = 45
 REF.update({"sched_ids": f"Schedule!$A${DROP0}:$A${DROPN}", "sched_actuals": f"Schedule!$N${DROP0}:$N${DROPN}",
             "sched_check": f"Schedule!$T${DROP0}:$T${DROPN}", "sched_dates": f"Schedule!$E${DROP0}:$E${DROPN}"})
 widths(ws, {"A": 10, "B": 24, "C": 20, "D": 10, "E": 12, "F": 6, "G": 12, "H": 10, "I": 8, "J": 8, "K": 8, "L": 10, "M": 12,
-            "N": 9, "O": 50, "P": 11, "Q": 15, "R": 10, "S": 12, "T": 10})
+            "N": 9, "O": 50, "P": 11, "Q": 15, "R": 10, "S": 12, "T": 10, "U": 12, "V": 12, "W": 24, "X": 12})
 ws.freeze_panes = "C7"
 
 # ==========================================================================
@@ -831,11 +887,11 @@ for i in range(N_DROPS):
     write_engine_row(ws, r, ins)
     lag = f"N({R('payment_lag_days')})"
     run = f"{EC['run']}{r}"
-    ws[f"{CT['pay_fnd_date']}{r}"] = f'=IF({run}=0,"",WORKDAY(B{r},-{R("fnd_pay_lead_bd")},{R("holidays")})+{lag})'
+    ws[f"{CT['pay_fnd_date']}{r}"] = f'=IF(OR({run}=0,{CT["pay_fnd_amt"]}{r}=0),"",WORKDAY(B{r},-{R("fnd_pay_lead_bd")},{R("holidays")})+{lag})'
     ws[f"{CT['pay_fnd_amt']}{r}"] = f"={EC['rev_fnd']}{r}*{R('fnd_upfront_share')}"
-    ws[f"{CT['pay_dep_date']}{r}"] = f'=IF({run}=0,"",WORKDAY(B{r},-{R("std_sign_lead_bd")},{R("holidays")})+{lag})'
+    ws[f"{CT['pay_dep_date']}{r}"] = f'=IF(OR({run}=0,{CT["pay_dep_amt"]}{r}=0),"",WORKDAY(B{r},-{R("std_sign_lead_bd")},{R("holidays")})+{lag})'
     ws[f"{CT['pay_dep_amt']}{r}"] = f"={EC['rev_std']}{r}*{R('std_deposit_share')}"
-    ws[f"{CT['pay_bal_date']}{r}"] = f'=IF({run}=0,"",WORKDAY(B{r},{R("balance_lag_bd")},{R("holidays")})+{lag})'
+    ws[f"{CT['pay_bal_date']}{r}"] = f'=IF(OR({run}=0,{CT["pay_bal_amt"]}{r}=0),"",WORKDAY(B{r},{R("balance_lag_bd")},{R("holidays")})+{lag})'
     ws[f"{CT['pay_bal_amt']}{r}"] = f"={EC['rev_fnd']}{r}*(1-{R('fnd_upfront_share')})+{EC['rev_std']}{r}*(1-{R('std_deposit_share')})"
     for a, b in (("proc_fnd", "pay_fnd_amt"), ("proc_dep", "pay_dep_amt"), ("proc_bal", "pay_bal_amt")):
         ws[f"{CT[a]}{r}"] = f"={CT[b]}{r}*{R('processing_rate')}*{EC['proc_on']}{r}"
@@ -1226,9 +1282,9 @@ put(ws, "B7", "Month", font=F_BOLD)
 for i in range(N_WEEKS):
     L = CL(WK0 + i)
     put(ws, f"{L}4", i + 1, font=F_H, fill=FILL_H, align=CENTER)
-    put(ws, f"{L}5", f"={R('week1_start')}" if i == 0 else f"={CL(WK0 + i - 1)}5+{R('days_per_week')}", fmt='mm-dd')
-    put(ws, f"{L}6", f"={L}5+{R('days_per_week')}-1", fmt='mm-dd')
-    put(ws, f"{L}7", f'=TEXT({L}5,"mmm yy")', font=F_NOTE)
+    put(ws, f"{L}5", f"={R('week1_start')}" if i == 0 else f"={CL(WK0 + i - 1)}5+{R('days_per_week')}", fmt='mmm d')
+    put(ws, f"{L}6", f"={L}5+{R('days_per_week')}-1", fmt='mmm d')
+    put(ws, f"{L}7", f'=TEXT({L}5,"mmm yyyy")', font=F_NOTE)
 TOT = CL(WKN + 1)  # AC
 put(ws, f"{TOT}4", "Six months", font=F_H, fill=FILL_H, align=CENTER)
 
@@ -1320,7 +1376,7 @@ section(ws, 31, "Lowest point and capital", last_col=TOT)
 cfsum = [
     ("cf_low", "Lowest cumulative net cash flow (before founder cash)", f"=MIN(C27:{WKL}27)", USD),
     ("cf_low_week", "Week of the lowest point", f"=INDEX(C4:{WKL}4,MATCH(C32,C27:{WKL}27,0))", INT),
-    ("cf_low_date", "That week starts", f"=INDEX(C5:{WKL}5,MATCH(C32,C27:{WKL}27,0))", DDATE),
+    ("cf_low_date", "That week starts", f"=INDEX(C5:{WKL}5,MATCH(C32,C27:{WKL}27,0))", 'mmm d'),
     ("cf_need", "Peak cash need (the lowest point, as a positive number)", "=-MIN(0,C32)", USD),
     ("cf_reserve", "Reserve held back (plan)", f"={R('reserve_usd')}", USD),
     ("cf_commit", "Capital to commit: peak need plus reserve", "=C35+C36", USD),
@@ -1344,9 +1400,9 @@ put(ws, f"B{M0 + 2}", "Counted to", font=F_BOLD)
 N_MONTHS = 7
 for i in range(N_MONTHS):
     L = CL(3 + i)
-    put(ws, f"{L}{M0}", f"=DATE(YEAR({R('week1_start')}),MONTH({R('week1_start')}),1)" if i == 0 else f"=EDATE({CL(2 + i)}{M0},1)", fmt='mmm yyyy', font=F_H, fill=FILL_H)
-    put(ws, f"{L}{M0 + 1}", f"=MAX({L}{M0},{R('week1_start')})", fmt=DATE)
-    put(ws, f"{L}{M0 + 2}", f"=MIN(EOMONTH({L}{M0},0),{R('horizon_end')})", fmt=DATE)
+    put(ws, f"{L}{M0}", f"=DATE(YEAR({R('week1_start')}),MONTH({R('week1_start')}),1)" if i == 0 else f"=EDATE({CL(2 + i)}{M0},1)", fmt='mmm yy', font=F_H, fill=FILL_H)
+    put(ws, f"{L}{M0 + 1}", f"=MAX({L}{M0},{R('week1_start')})", fmt='mmm d')
+    put(ws, f"{L}{M0 + 2}", f"=MIN(EOMONTH({L}{M0},0),{R('horizon_end')})", fmt='mmm d')
 MT = CL(3 + N_MONTHS)  # J
 put(ws, f"{MT}{M0}", "Six months", font=F_H, fill=FILL_H)
 mrow = M0 + 3
@@ -1399,6 +1455,7 @@ ch.height, ch.width = 7.5, 24
 ch.add_data(Reference(ws, min_col=WK0, max_col=WKN, min_row=27, max_row=27), from_rows=True, titles_from_data=False)
 ch.set_categories(Reference(ws, min_col=WK0, max_col=WKN, min_row=4, max_row=4))
 ch.legend = None
+ch.x_axis.tickLblPos = "low"
 ws.add_chart(ch, f"E{M0 + 20}")
 
 # ==========================================================================
@@ -1408,14 +1465,14 @@ ws = WS["Capital"]
 title(ws, "Capital to the first six months", "The plan's capital table reproduced line by line, and where the model pays each line. The cash flow never reads this tab, so nothing here is counted twice.")
 header_row(ws, 4, 2, ["Item (plan capital table)", "Plan low", "Plan high", "Model working figure", "Where the model pays it", "Model cash inside the six months",
                       "Model less plan high", "Reading", "Legal pack status"], height=45)
-G_STATUS = "plan estimate; desk-drop-legal-pack/figures.csv not yet published (checked 2026-10-23)"
+G_STATUS = "legal pack figures.csv read 2026-10-24"
 lg = lambda line: f'SUMIFS({R("LG_amt")},{R("LG_line")},"{line}",{R("LG_date")},">="&{R("week1_start")},{R("LG_date")},"<="&{R("horizon_end")})'
 caprows = [
-    ("LLC filing and certificate of publication", 250, 250, f"={R('su_llc')}+{R('su_cert')}", "Startup outlays", f"={R('su_llc_cash')}+{R('su_cert_cash')}", "Reproduces.", G_STATUS),
-    ("Newspaper publication", 250, 2000, f"={R('su_pub')}", "Startup outlays", f"={R('su_pub_cash')}", "High end by rule (New York County).", G_STATUS),
+    ("LLC filing and certificate of publication", 250, 250, f"={R('su_llc')}+{R('su_cert')}", "Startup outlays", f"={R('su_llc_cash')}+{R('su_cert_cash')}", "Reproduces.", "verified 2026-10-23 ($200 and $50, dos.ny.gov)"),
+    ("Newspaper publication", 250, 2000, f"={R('su_pub')}", "Startup outlays", f"={R('su_pub_cash')}", "Legal pack working figure for New York County; $345 if Albany County is confirmed.", "needs quote: $200 to $2,000, working $1,745"),
     ("General liability insurance, one year", 500, 1500, f"={R('insurance_monthly')}*{R('months_per_year')}", "Overhead (Cash_Ledger, insurance)", "=" + lg("insurance"),
-     "The plan's own working figure, about $100 a month, sits inside the range.", G_STATUS),
-    ("Food warehouse license, if required", 0, 400, f"={R('su_license')}", "Startup outlays", f"={R('su_license_cash')}", "High end until the state answers.", G_STATUS),
+     "The plan's own working figure, about $100 a month, sits inside the range.", "needs quote: $500 to $1,500, working $1,200; bind by 2026-12-21"),
+    ("Food warehouse license, if required", 0, 400, f"={R('su_license')}", "Startup outlays", f"={R('su_license_cash')}", "High end until the state answers.", "fee verified 2026-10-23; whether required is unknown"),
     ("Printing and materials", 300, 300, f"={R('su_print')}", "Startup outlays", f"={R('su_print_cash')}", "Startup supplies; per-drop kits are separate.", "plan estimate"),
     ("Software, six months", 360, 360, f"={R('software_monthly')}*COUNTIFS({R('LG_line')},\"software\",{R('LG_amt')},\">0\")", "Overhead (Cash_Ledger, software)", "=" + lg("software"),
      "Six monthly payments inside the window.", "plan estimate"),
@@ -1423,7 +1480,7 @@ caprows = [
      f"=SUM(Drop_PnL!{EC['transport']}{DROP0}:{EC['transport']}{DROP0 + 2})",
      "Per-drop rates give $120 + $300 + $300 = $720; the plan's $600 lump does not reconcile to its own rates.", "plan estimate"),
     ("Domain and email", 100, 100, f"={R('su_domain')}", "Startup outlays", f"={R('su_domain_cash')}", "Reproduces.", "plan estimate"),
-    ("Reserve", 1000, 1000, f"={R('reserve_usd')}", "Not spent; added to capital to commit", f"={R('reserve_usd')}", "Held back, not an outflow.", "plan estimate"),
+    ("Reserve", 1000, 1000, f"={R('reserve_usd')}", "Not spent; added to capital to commit", None, "Held back, not an outflow.", "plan estimate"),
 ]
 for i, cr in enumerate(caprows):
     rr = 5 + i
@@ -1433,21 +1490,25 @@ for i, cr in enumerate(caprows):
     put(ws, f"E{rr}", cr[3], fmt=USD)
     put(ws, f"F{rr}", cr[4], align=WRAP)
     put(ws, f"G{rr}", cr[5], fmt=USD)
-    put(ws, f"H{rr}", f"=G{rr}-D{rr}", fmt=USD)
+    put(ws, f"H{rr}", f"=G{rr}-D{rr}" if cr[5] is not None else None, fmt=USD)
     put(ws, f"I{rr}", cr[6], align=WRAP)
     put(ws, f"J{rr}", cr[7], align=WRAP)
     ws.row_dimensions[rr].height = 32
 rt = 5 + len(caprows)   # 14
-put(ws, f"B{rt}", "Total (plan capital table)", font=F_BOLD)
-for L in "CDEGH":
+put(ws, f"B{rt}", "Total (plan capital table; model cash excludes the reserve)", font=F_BOLD)
+for L in "CDEG":
     put(ws, f"{L}{rt}", f"=SUM({L}5:{L}{rt - 1})", fmt=USD, font=F_BOLD)
 REF["cap_low"] = f"Capital!$C${rt}"
 REF["cap_high"] = f"Capital!$D${rt}"
 assert rt == 14
 section(ws, rt + 2, "Cash the model spends that the plan's capital table leaves out", last_col="J")
 extra = [
-    ("Attorney and accountant hours", 500, 900, f"={R('su_pro')}", "Startup outlays", f"={R('su_pro_cash')}", "The plan asks for about $700 before the first invoice."),
-    ("Trademark application, one class", 350, 350, f"={R('su_tm')}", "Startup outlays", f"={R('su_tm_cash')}", "After campaign zero, if it passed."),
+    ("Attorney hour", 300, 500, f"={R('su_attorney')}", "Startup outlays", f"={R('su_attorney_cash')}", "Legal pack plan estimate. The plan asks for both hours (about $700) before the first invoice."),
+    ("Accountant hour", 200, 400, f"={R('su_accountant')}", "Startup outlays", f"={R('su_accountant_cash')}", "Legal pack plan estimate."),
+    ("NYS LLC annual filing fee (IT-204-LL)", 25, 25, f"={R('su_it204')}", "Startup outlays", f"={R('su_it204_cash')}", "Legal pack, verified 2026-10-23; accountant confirms whether 2026 is owed."),
+    ("Hired and non-owned auto add-on (needs quote)", None, None, f"={R('su_hnoa')}", "Startup outlays", f"={R('su_hnoa_cash')}", "Legal pack: unknown until quoted. Campaign zero's car rides need it."),
+    ("Additional-insured endorsements (needs quote)", None, None, f"={R('su_addl_insured')}", "Startup outlays", f"={R('su_addl_insured_cash')}", "Legal pack: zero with a blanket endorsement."),
+    ("Trademark application, one class", 350, 850, f"={R('su_tm')}", "Startup outlays (Include = N)", f"={R('su_tm_cash')}", "Legal pack: after campaign zero passes, not in the first six months."),
     ("Storage unit, months inside the window", None, None, None, "Overhead (Cash_Ledger, storage)", "=" + lg("storage"), "Plan's standard drops carry a $75 storage allocation."),
     ("Display kits on scheduled drops", None, None, None, "Per drop", f"=-{R('cf_kit_total')}", "$8 per office per drop."),
     ("Transport on drops after the first three", None, None, None, "Per drop", f"=-{R('cf_tr_total')}-G11", "Direct-ship drops carry $0."),
@@ -1466,7 +1527,7 @@ for i, cr in enumerate(extra):
     put(ws, f"I{rr}", cr[6], align=WRAP)
 re_ = rt + 3 + len(extra)
 put(ws, f"B{re_}", "Total model outflows inside the six months (both tables, excluding the reserve)", font=F_BOLD)
-put(ws, f"G{re_}", f"=SUM(G5:G{rt - 2})+SUM(G{rt + 3}:G{re_ - 1})", fmt=USD, font=F_BOLD)
+put(ws, f"G{re_}", f"=SUM(G5:G{rt - 1})+SUM(G{rt + 3}:G{re_ - 1})", fmt=USD, font=F_BOLD)
 put(ws, f"B{re_ + 1}", "Same total read from Cash_Flow (all outflows, plan basis)", font=F_BOLD)
 put(ws, f"G{re_ + 1}", f"=-({R('cf_net_total')}-{R('cf_rec_plan_total')}-{R('cf_rec_act_total')})", fmt=USD, font=F_BOLD)
 put(ws, f"B{re_ + 2}", "Difference (should be 0 while no drop has actuals)", font=F_BOLD)
@@ -1835,7 +1896,7 @@ recon = [
     ("Brand wins a month ('six')", 6, f"={R('ss_wins_plan')}", 0.01, "All brands new in the plan's picture.", '0.0'),
     ("Qualified conversations a month ('about 30')", 30, f"={R('ss_conv_plan')}", 0.01, "6 wins / 20% close rate.", '0'),
     ("Roster ('about 20 offices')", 20, f"={R('ss_roster_plan')}", 0.01, "2 drops x 10 offices, one drop per office a month.", '0'),
-    ("Fixed overhead a month ('$200 to $350'), high end", 350, f"={R('ss_over_paid_plan')}", 150, "$60 software + $100 insurance + $150 storage + $0 phone = $310, inside the range. With home storage: $160, below it.", USD),
+    ("Fixed overhead a month ('$200 to $350'): midpoint, tolerance half the range", 275, f"={R('ss_over_paid_plan')}", 75, "$60 software + $100 insurance + $150 storage + $0 phone = $310, inside the range. With home storage: $160, below it.", USD),
     ("Standard campaigns a month to cover overhead ('one')", 1, f"={R('be_n_over')}", 0.01, "$310 / $1,075 contribution before allocations, rounded up.", '0'),
     ("Hours per brand win ('six')", 6, f"={R('h_win')}", 0.01, "5 conversations x 0.75 h + 2.25 h paperwork at a 20% close rate.", HRS),
     ("Capital, low end", 3360, f"={R('cap_low')}", 0.01, "Sum of the plan's low column.", USD),
@@ -1851,12 +1912,12 @@ for i, (lab, plan_v, model_f, tol, reason, fmt) in enumerate(recon):
     put(ws, f"D{rr}", model_f, fmt=fmt)
     put(ws, f"E{rr}", f"=D{rr}-C{rr}", fmt=fmt)
     put(ws, f"F{rr}", tol, fmt=fmt)
-    put(ws, f"G{rr}", f'=IF(ABS(E{rr})<=F{rr},"within rounding","differs: see reason")', font=F_BOLD)
+    put(ws, f"G{rr}", f'=IF(ABS(E{rr})<=F{rr},"within tolerance","differs: see reason")', font=F_BOLD)
     put(ws, f"H{rr}", reason, align=WRAP)
     ws.merge_cells(f"H{rr}:N{rr}")
     ws.row_dimensions[rr].height = 30
 Q_END = Q0 + 2 + len(recon) - 1
-ok_cf(ws, f"G{Q0 + 2}:G{Q_END}", good='"within rounding"', bad=['"differs: see reason"'])
+ok_cf(ws, f"G{Q0 + 2}:G{Q_END}", good='"within tolerance"', bad=['"differs: see reason"'])
 REF["pc_recon_status"] = f"Plan_Check!$G${Q0 + 2}:$G${Q_END}"
 REF["pc_recon_rows"] = (Q0 + 2, Q_END)
 engine_widths(ws)
@@ -1896,6 +1957,7 @@ for i, (k, lab, v, vl) in enumerate(calc_in):
         add_list_validation(ws, f"C{rr}", "=" + R(vl))
     CI[k] = f"$C${rr}"
 ER = 40
+put(ws, f"A{ER - 3}", "Engine row: the same formulas as every row on Drop_PnL. Read-only; the result table above reads it.", font=F_SEC)
 write_engine_header(ws, ER - 1)
 write_engine_row(ws, ER, {
     "id": "Calculator drop", "date": None, "model": f"={CI['model']}", "tier": f"={CI['tier']}", "offices": f"=N({CI['offices']})",
@@ -1946,7 +2008,7 @@ REF["ck_tol"] = "Checks!$D$3"
 err_rngs = [f"Drop_PnL!A{DROP0}:{CT['basis']}{DROPN + 1}", f"Plan_Check!A7:{LAST_ENGINE_COL}{7 + len(PC) - 1}", f"Steady_State!A7:{LAST_ENGINE_COL}17",
             f"Steady_State!B22:D{B0 + 20}", f"Cash_Flow!C5:{TOT}43", f"Cash_Flow!C{M0}:{MT}{mrow + 4}", f"Sensitivity!B6:G{T4_END}", f"Sensitivity!A{SXE}:{LAST_ENGINE_COL}{SXE}",
             f"Calculator!A{ER}:{LAST_ENGINE_COL}{ER}", "Drop_Actuals!A7:AL18", "Schedule!A7:T18", f"Inputs!A5:R{sun + 3}", "Scenarios!C10:H21",
-            "Capital!B5:J30", f"Hours_Log!H5:R{wl + 5}", "Pipeline!T5:V22", "Dashboard!A21:L100"]
+            "Capital!B5:J36", f"Hours_Log!H5:R{wl + 5}", "Pipeline!T5:V22", "Dashboard!A24:L110"]
 n_err = "+".join(f"SUMPRODUCT(ISERROR({r_})*1)" for r_ in err_rngs)
 sched_bad = f'COUNTIF({R("sched_check")},"check")+COUNTIF({R("sched_check")},"date missing")'
 nf = f"SUMPRODUCT((Drop_PnL!{EC['tier']}{DROP0}:{EC['tier']}{DROPN}=\"founding\")*Drop_PnL!{EC['new_fnd']}{DROP0}:{EC['new_fnd']}{DROPN})"
@@ -1984,7 +2046,7 @@ checks = [
     ("Data", "Actuals_DropCosts: rows whose drop_id is not on Schedule", f'=COUNTIF({R("DC_flag")},"not in schedule")', "=IF(D{r}=0,1,0)", ""),
     ("Plan", "Plan scenario rows 1 to 6 reproduce", f'=COUNTIF({R("pc_status")},"differs")', "=IF(D{r}=0,1,0)", "Expected only at plan defaults."),
     ("Plan", "Plan hour table reproduces cell by cell", f'=COUNTIF({R("pc_hours_match")},"no")', "=IF(D{r}=0,1,0)", "Expected only at plan defaults."),
-    ("Plan", "Reconciliation rows within rounding (the two documented differences excluded)",
+    ("Plan", "Reconciliation rows within tolerance (the two documented differences excluded)",
      f'=COUNTIF({R("pc_recon_status")},"differs: see reason")-COUNTIF(Plan_Check!G{Q0 + 2 + 9}:G{Q0 + 2 + 9},"differs: see reason")-COUNTIF(Plan_Check!G{Q_END}:G{Q_END},"differs: see reason")',
      "=IF(D{r}=0,1,0)", "Row 10 (processing contrast) and row 25 (transport lump) differ by design."),
 ]
@@ -2030,9 +2092,10 @@ put(ws, "G5", f'=IF({R("ck_integrity")}=0,"all integrity checks pass",{R("ck_int
 ws.merge_cells("G5:I5")
 ok_cf(ws, "G5", good='"all integrity checks pass"')
 # --- gate rows first, so the headline can point at them
-G0R = 21
-st_ge = lambda r_: f'=IF(G{r_}="",IF({R("as_of")}>B{r_},"miss","not yet"),IF(G{r_}>=D{r_},"pass",IF({R("as_of")}>B{r_},"miss","not yet")))'
-st_le = lambda r_: f'=IF(G{r_}="",IF({R("as_of")}>B{r_},"miss","not yet"),IF(G{r_}<=D{r_},"pass",IF({R("as_of")}>B{r_},"miss","not yet")))'
+N_HEAD = 14
+G0R = 9 + N_HEAD + 1
+st_ge = lambda r_: f'=IF(F{r_}="",IF({R("as_of")}>C{r_},"miss","not yet"),IF(F{r_}>=D{r_},"pass",IF({R("as_of")}>C{r_},"miss","not yet")))'
+st_le = lambda r_: f'=IF(F{r_}="",IF({R("as_of")}>C{r_},"miss","not yet"),IF(F{r_}<=D{r_},"pass",IF({R("as_of")}>C{r_},"miss","not yet")))'
 g2 = lambda rng: f'IFERROR(INDEX({rng},MATCH({R("g2_drop_id")},{R("DA_ids")},0)),"")'
 std_plan_c = f'SUMIFS({dp("contribution")},{dp("tier")},"standard",{dp("date")},"<="&{R("gate3_date")})'
 std_plan_h = f'SUMIFS({dp("hours")},{dp("tier")},"standard",{dp("date")},"<="&{R("gate3_date")})'
@@ -2055,7 +2118,8 @@ gates = [
     ("Gate 2", "gate2_date", "Brand campaigns under 5 survey responses per office (must be 0)", None, "", f'=IF(N({g2(R("DA_campaigns"))})=0,"",{g2(R("DA_under"))})', "le", INT, ""),
     ("Gate 2", "gate2_date", "Reports late (after T+7) or missing (must be 0)", None, "", f'=IF(N({g2(R("DA_campaigns"))})=0,"",{g2(R("DA_late"))})', "le", INT, ""),
     ("Gate 2", "gate2_date", "Brands that would buy again", "g2_rebuy", "", f'=IF(N({g2(R("DA_campaigns"))})=0,"",{g2(R("DA_rebuy"))})', "ge", INT, ""),
-    ("Gate 3", "gate3_date", "Renewals at $1,500 or more", "g3_renewals", f'=SUMIFS({dp("renewals")},{dp("date")},">"&{R("gate3_date")})', f"={R('pl_g3_renewals')}", "ge", INT,
+    ("Gate 3", "gate3_date", "Renewals at $1,500 or more, signed by the review date", "g3_renewals",
+     f'=SUMIFS({dp("renewals")},{dp("pay_dep_date")},"<="&{R("gate3_date")})-SUMIFS({dp("fnd_renewals")},{dp("pay_dep_date")},"<="&{R("gate3_date")})', f"={R('pl_g3_renewals')}", "ge", INT,
      "No renewal: redesign the evidence (velocity, redemptions), run one more drop. A second miss is a stop."),
     ("Gate 3", "gate3_date", "Contribution per founder hour, standard runs", "g3_per_hour", f'=IF({std_plan_h}>0,{std_plan_c}/{std_plan_h},"")',
      f'=IF({std_act_h}>0,{std_act_c}/{std_act_h},"")', "ge", PH, ""),
@@ -2065,51 +2129,62 @@ G3PH = G0R + 2 + len(gates) - 1
 section(ws, 7, "Headline", last_col="I")
 header_row(ws, 8, 2, ["Measure", "Value", "Detail"], height=22)
 nxt = f'MATCH(1,{dp("next_flag")},0)'
+live_c = f'SUMIFS({dp("live_contrib")},{dp("date")},"<="&{R("horizon_end")})'
+live_h = f'SUMIFS({dp("live_hours")},{dp("date")},"<="&{R("horizon_end")})'
+disc_h = f'{R("discovery_hours_week")}*{R("discovery_weeks")}'
 head = [
     ("Next scheduled drop", f'=IFERROR(INDEX({dp("id")},{nxt}),"none scheduled")', f'=IFERROR(TEXT(INDEX({dp("date")},{nxt}),"ddd yyyy-mm-dd")&", "&INDEX({dp("model")},{nxt})&", "&INDEX({dp("brands")},{nxt})&" brand(s), "&INDEX({dp("offices")},{nxt})&" offices","")', None),
     ("Its contribution per founder hour (plan)", f'=IFERROR(INDEX({dp("per_hour")},{nxt}),"n/a")', f'=IFERROR("revenue "&TEXT(INDEX({dp("revenue")},{nxt}),"$#,##0")&", "&TEXT(INDEX({dp("hours")},{nxt}),"0")&" founder hours","")', PH),
-    ("Standard runs to Gate 3: contribution per founder hour, plan", f"=F{G3PH}", f'="actual: "&IF(G{G3PH}="","not yet",TEXT(G{G3PH},"$#,##0.0"))&"; target "&TEXT({R("g3_per_hour")},"$#,##0")', PH),
+    ("Standard runs to Gate 3: contribution per founder hour, plan", f"=E{G3PH}", f'="actual: "&IF(F{G3PH}="","not yet",TEXT(F{G3PH},"$#,##0.0"))&"; target "&TEXT({R("g3_per_hour")},"$#,##0")', PH),
     ("Lowest point of cumulative cash (before founder cash)", f"={R('cf_low')}", f'="in week "&{R("cf_low_week")}&", starting "&TEXT({R("cf_low_date")},"ddd yyyy-mm-dd")', USD),
     ("Capital to commit: lowest point plus the reserve", f"={R('cf_commit')}", f'="reserve "&TEXT({R("reserve_usd")},"$#,##0")&" (plan)"', USD),
     ("Plan capital figure (high end of the plan's table)", f"={R('cap_high')}", f'="low end "&TEXT({R("cap_low")},"$#,##0")', USD),
-    ("Gap to the plan capital figure (positive = headroom)", f"={R('cf_gap')}", '=IF(C15>=0,"the plan figure covers the model need","the model needs more than the plan figure")', USD),
+    ("Gap to the plan capital figure (positive = headroom)", f"={R('cf_gap')}", '=IF(C{self}>=0,"the plan figure covers the model need","the model needs more than the plan figure")', USD),
     ("Founder cash committed", f"={R('cf_founder')}", f'=IF({R("founder_cash")}="","set it on Inputs (plan question 7)",IF({R("founder_cash")}>={R("cf_commit")},"covers capital to commit","short of capital to commit by "&TEXT({R("cf_commit")}-{R("founder_cash")},"$#,##0")))', USD),
+    ("Overhead paid but not absorbed by drops, six months", f"={R('cf_unabsorbed')}", f'="paid "&TEXT({R("cf_over_paid")},"$#,##0")&", allocated to drops "&TEXT({R("cf_alloc")},"$#,##0")&": the ramp-up months carry overhead with few drops"', USD),
+    ("Six months all-in: contribution after all overhead per founder hour", f'=IF({live_h}+{disc_h}>0,({live_c}-{R("cf_unabsorbed")})/({live_h}+{disc_h}),"n/a")',
+     f'="includes "&TEXT({disc_h},"0")&" discovery hours; after one-time startup outlays: "&IF({live_h}+{disc_h}>0,TEXT(({live_c}-{R("cf_unabsorbed")}-{R("su_total")})/({live_h}+{disc_h}),"$#,##0.0"),"n/a")&" per hour"', PH),
     ("Steady state, scenario in force: contribution per month", f"={R('ss_contrib')}", f'="per founder hour "&IF(ISNUMBER({R("ss_ph")}),TEXT({R("ss_ph")},"$#,##0.0"),"n/a")&"; net of all overhead "&TEXT({R("ss_net")},"$#,##0")&" a month"', USD),
+    ("Office-fatigue warnings on Schedule", f'=COUNTIF({R("sched_fatigue")},"some*")', '=IF(C{self}=0,"no office gets two drops within four weeks","drops where some offices get a second drop within four weeks (plan: one drop a month)")', INT),
+    ("Schedule rows changed or added since the derived default", f'=COUNTIF({R("sched_changed")},"changed")', '=IF(C{self}=0,"schedule is the derived default","edited by you")', INT),
     ("Inputs changed from plan defaults", f"={R('changed_count')}", f'=IF({R("ck_plan")}=0,"plan figures reproduce","plan reproduction differs in "&{R("ck_plan")}&" check(s); expected after edits")', INT),
 ]
+assert len(head) == N_HEAD
 for i, (lab, v, det, fmt) in enumerate(head):
     rr = 9 + i
     put(ws, f"B{rr}", lab)
     put(ws, f"C{rr}", v, fmt=fmt, font=F_BOLD, fill=FILL_KEY)
-    put(ws, f"D{rr}", det)
+    put(ws, f"D{rr}", det.replace("{self}", str(rr)))
     ws.merge_cells(f"D{rr}:I{rr}")
 # --- gates
 section(ws, G0R, "Gate dashboard (live values are actuals only)", last_col="I")
-header_row(ws, G0R + 1, 1, ["Gate", "Review date", "Test", "Threshold", "", "Model assumes", "Live value", "Status", "If it fails (plan)"], height=30)
+header_row(ws, G0R + 1, 1, ["Gate", "Test", "Review date", "Threshold", "Model assumes", "Live value", "Status", "If it fails (plan)", "", "", ""], height=30)
+ws.merge_cells(f"H{G0R + 1}:K{G0R + 1}")
 GR = {}
 for i, (g, dkey, test, thr, model_v, live, kind, fmt, fail) in enumerate(gates):
     rr = G0R + 2 + i
     put(ws, f"A{rr}", g, font=F_BOLD)
-    put(ws, f"B{rr}", f"={R(dkey)}", fmt=DATE)
-    put(ws, f"C{rr}", test, align=WRAP)
+    put(ws, f"B{rr}", test, align=WRAP)
+    put(ws, f"C{rr}", f"={R(dkey)}", fmt=DATE)
     put(ws, f"D{rr}", f"={R(thr)}" if thr else 0, fmt=fmt)
-    put(ws, f"F{rr}", model_v if model_v else "", fmt=fmt)
-    put(ws, f"G{rr}", live, fmt=fmt, font=F_BOLD)
-    put(ws, f"H{rr}", "info" if kind == "info" else (st_ge(rr) if kind == "ge" else st_le(rr)), font=F_BOLD)
-    put(ws, f"I{rr}", fail, align=WRAP, font=F_NOTE)
+    put(ws, f"E{rr}", model_v if model_v else "", fmt=fmt)
+    put(ws, f"F{rr}", live, fmt=fmt, font=F_BOLD)
+    put(ws, f"G{rr}", "info" if kind == "info" else (st_ge(rr) if kind == "ge" else st_le(rr)), font=F_BOLD, align=Alignment(horizontal="center"))
+    put(ws, f"H{rr}", fail, align=WRAP, font=F_NOTE)
+    ws.merge_cells(f"H{rr}:K{rr}")
     ws.row_dimensions[rr].height = 30
     GR.setdefault(g, []).append((rr, kind))
 GEND = G3PH
-status_cf(ws, f"H{G0R + 2}:H{GEND}")
+status_cf(ws, f"G{G0R + 2}:G{GEND}")
 GS = GEND + 2
 header_row(ws, GS, 1, ["Gate", "Review date", "Overall"], height=22)
 for i, g in enumerate(["Gate 0", "Gate 1", "Gate 2", "Gate 3"]):
     rr = GS + 1 + i
     rows_ = [r_ for r_, k in GR[g] if k != "info"]
-    miss = "+".join(f'IF(H{r_}="miss",1,0)' for r_ in rows_)
-    notyet = "+".join(f'IF(H{r_}="not yet",1,0)' for r_ in rows_)
+    miss = "+".join(f'IF(G{r_}="miss",1,0)' for r_ in rows_)
+    notyet = "+".join(f'IF(G{r_}="not yet",1,0)' for r_ in rows_)
     put(ws, f"A{rr}", g, font=F_BOLD)
-    put(ws, f"B{rr}", f"=B{GR[g][0][0]}", fmt=DATE)
+    put(ws, f"B{rr}", f"=C{GR[g][0][0]}", fmt=DATE)
     put(ws, f"C{rr}", f'=IF({miss}>0,"miss",IF({notyet}>0,"not yet","pass"))', font=F_BOLD)
     REF["gate_" + g[-1]] = f"Dashboard!$C${rr}"
 status_cf(ws, f"C{GS + 1}:C{GS + 4}")
@@ -2166,7 +2241,7 @@ goals = [
     ("Paid campaigns", "goal_campaigns", f'=SUMIFS({dp("brands")},{dp("date")},"<="&{R("horizon_end")})', f'=COUNTIF({R("AC_revenue_usd")},">0")'),
     ("Renewals", "goal_renewals", f'=SUMIFS({dp("renewals")},{dp("date")},"<="&{R("horizon_end")})', f'=COUNTIF({R("AC_renewed")},"Y")'),
     ("Active offices", "goal_offices", f'=SUMIFS({dp("new_offices")},{dp("date")},"<="&{R("horizon_end")})', f"={R('pl_active_offices')}"),
-    ("Contribution per founder hour, standard runs", "g3_per_hour", f"=F{G3PH}", f"=G{G3PH}"),
+    ("Contribution per founder hour, standard runs", "g3_per_hour", f"=E{G3PH}", f"=F{G3PH}"),
 ]
 for i, (lab, tk, pf, af) in enumerate(goals):
     rr = SG + 2 + i
@@ -2180,29 +2255,33 @@ status_cf(ws, f"F{SG + 2}:F{SG + 5}")
 REF["dash_goals"] = (SG + 2, SG + 5)
 # --- drop summary
 DS = SG + 8
-section(ws, DS, "Contribution per founder hour on each drop (live: actual where in, otherwise plan)", last_col="K")
-header_row(ws, DS + 1, 1, ["drop_id", "Drop date", "Basis", "Delivery model", "Brands", "Offices", "Revenue", "Hard costs", "Founder hours", "Contribution", "Per founder hour"], height=30)
+section(ws, DS, "Contribution per founder hour on each drop (live: actual where in, otherwise plan)", last_col="L")
+header_row(ws, DS + 1, 1, ["drop_id", "Label", "Drop date", "Basis", "Delivery model", "Brands", "Offices", "Revenue", "Hard costs", "Founder hours", "Contribution", "Per founder hour"], height=30)
 for i in range(N_DROPS):
     rr = DS + 2 + i
     s_ = DROP0 + i
+    blank = f'Drop_PnL!B{s_}=""'
     put(ws, f"A{rr}", f"=Drop_PnL!A{s_}")
-    put(ws, f"B{rr}", f"=Drop_PnL!B{s_}", fmt=DATE)
-    put(ws, f"C{rr}", f"=Drop_PnL!{CT['basis']}{s_}")
-    put(ws, f"D{rr}", f"=Drop_PnL!C{s_}")
-    put(ws, f"E{rr}", f"=Drop_PnL!{EC['brands']}{s_}")
-    put(ws, f"F{rr}", f"=Drop_PnL!{EC['offices']}{s_}", fmt=INT)
-    put(ws, f"G{rr}", f"=Drop_PnL!{CT['live_rev']}{s_}", fmt=USD)
-    put(ws, f"H{rr}", f"=Drop_PnL!{CT['live_cost']}{s_}", fmt=USD)
-    put(ws, f"I{rr}", f"=Drop_PnL!{CT['live_hours']}{s_}", fmt=HRS)
-    put(ws, f"J{rr}", f"=Drop_PnL!{CT['live_contrib']}{s_}", fmt=USD)
-    put(ws, f"K{rr}", f"=Drop_PnL!{CT['live_ph']}{s_}", fmt=PH, font=F_BOLD)
+    put(ws, f"B{rr}", f'=IF({blank},"",Schedule!B{s_}&"")')
+    put(ws, f"C{rr}", f'=IF({blank},"",Drop_PnL!B{s_})', fmt=DATE)
+    put(ws, f"D{rr}", f"=Drop_PnL!{CT['basis']}{s_}")
+    put(ws, f"E{rr}", f'=IF({blank},"",Drop_PnL!C{s_})')
+    for col, src, fmt in (("F", EC["brands"], None), ("G", EC["offices"], INT), ("H", CT["live_rev"], USD), ("I", CT["live_cost"], USD),
+                          ("J", CT["live_hours"], HRS), ("K", CT["live_contrib"], USD), ("L", CT["live_ph"], PH)):
+        put(ws, f"{col}{rr}", f'=IF({blank},"",Drop_PnL!{src}{s_})', fmt=fmt, font=F_BOLD if col == "L" else None)
 DSE = DS + 1 + N_DROPS
-put(ws, f"J{DS}", "Target per hour", font=F_BOLD, fill=FILL_SEC)
-put(ws, f"K{DS}", f"={R('g3_per_hour')}", fmt=USD, font=F_BOLD, fill=FILL_SEC)
-ws.conditional_formatting.add(f"K{DS + 2}:K{DSE}", FormulaRule(formula=[f'AND(ISNUMBER(K{DS + 2}),K{DS + 2}>=$K${DS})'], fill=PatternFill("solid", fgColor="C6EFCE")))
-ws.conditional_formatting.add(f"K{DS + 2}:K{DSE}", FormulaRule(formula=[f'AND(ISNUMBER(K{DS + 2}),K{DS + 2}<$K${DS})'], fill=PatternFill("solid", fgColor="FCE4D6")))
-put(ws, f"A{DSE + 2}", "Green: at or above the Gate 3 target per founder hour. Orange: below it. Campaign zero is expected to be below; the plan's own figure for it is $16.", font=F_NOTE)
-widths(ws, {"A": 12, "B": 50, "C": 18, "D": 14, "E": 14, "F": 14, "G": 14, "H": 13, "I": 48, "J": 12, "K": 12})
+rr = DSE + 1
+put(ws, f"A{rr}", "Total", font=F_BOLD)
+for col in "FGHIJK":
+    put(ws, f"{col}{rr}", f"=SUM({col}{DS + 2}:{col}{DSE})", fmt={"F": None, "G": INT, "J": HRS}.get(col, USD), font=F_BOLD)
+put(ws, f"L{rr}", f'=IF(J{rr}>0,K{rr}/J{rr},"n/a")', fmt=PH, font=F_BOLD)
+put(ws, f"K{DS}", "Target per hour", font=F_BOLD, fill=FILL_SEC)
+put(ws, f"L{DS}", f"={R('g3_per_hour')}", fmt=USD, font=F_BOLD, fill=FILL_SEC)
+ws.conditional_formatting.add(f"L{DS + 2}:L{DSE + 1}", FormulaRule(formula=[f'AND(ISNUMBER(L{DS + 2}),L{DS + 2}>=$L${DS})'], fill=PatternFill("solid", fgColor="C6EFCE")))
+ws.conditional_formatting.add(f"L{DS + 2}:L{DSE + 1}", FormulaRule(formula=[f'AND(ISNUMBER(L{DS + 2}),L{DS + 2}<$L${DS})'], fill=PatternFill("solid", fgColor="FCE4D6")))
+put(ws, f"A{DSE + 3}", "Green: at or above the Gate 3 target per founder hour. Orange: below it. Campaign zero is expected to be below; the plan's own figure for it is $16. "
+                     "The total row is per founder hour across all scheduled drops, before overhead that drops do not absorb.", font=F_NOTE)
+widths(ws, {"A": 11, "B": 54, "C": 13, "D": 13, "E": 13, "F": 12, "G": 12, "H": 12, "I": 12, "J": 13, "K": 13, "L": 13})
 ch2 = LineChart()
 ch2.title = "Cumulative net cash flow by week (before founder cash)"
 ch2.height, ch2.width = 7, 18
@@ -2211,7 +2290,8 @@ ch2.set_categories(Reference(WS["Cash_Flow"], min_col=WK0, max_col=WKN, min_row=
 ch2.legend = None
 ch2.y_axis.title = "USD"
 ch2.x_axis.title = "Week"
-ws.add_chart(ch2, f"B{DSE + 4}")
+ch2.x_axis.tickLblPos = "low"
+ws.add_chart(ch2, f"B{DSE + 5}")
 
 # ==========================================================================
 # README (built from _work/readme_text.py so the text is easy to edit)

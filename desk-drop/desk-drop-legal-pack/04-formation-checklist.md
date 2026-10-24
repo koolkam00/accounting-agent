@@ -1,8 +1,8 @@
 **Draft for attorney review. Not legal advice.**
 
-# 02 · Formation checklist: forming the New York LLC
+# 04 · Formation checklist: forming the New York LLC
 
-Version 0.4 · 2026-10-24
+Version 0.5 · 2026-10-24
 
 **The company in this file.** "The Company" means **[COMPANY NAME: Desk Drop LLC]**. This is the only place the name is set. The name is not cleared (see `01-name-check-log.md`). Decide it before you file: changing an LLC's name afterwards takes a \$60 Certificate of Amendment (LLC Law §1101(g), opened 2026-10-23), plus new bank, insurance and agreement paperwork.
 
@@ -21,7 +21,7 @@ Version 0.4 · 2026-10-24
 | Articles of Organization | \$200 | Verified 2026-10-23 (dos.ny.gov; LLC Law §1101(f)) | Day 0, first verbal brand yes |
 | Newspaper publication, two papers, six weeks | \$345 (Albany County) to \$1,745 (New York County), working figures; see the county table | Needs quote. Published prices re-checked 2026-10-23 | Order by business day 10 |
 | Certificate of Publication | \$50 | Verified 2026-10-23 (dos.ny.gov; LLC Law §1101(s)) | Target day 100, legal limit day 120 |
-| Operating agreement (file 30) | \$0 to sign; attorney review inside the attorney hour | Plan | Day 0; legal limit day 90 |
+| Operating agreement (file 05) | \$0 to sign; attorney review inside the attorney hour | Plan | Day 0; legal limit day 90 |
 | EIN from the IRS | \$0 | Verified 2026-10-23 (irs.gov) | Day 0, after the filing receipt |
 | Business bank account | Bank's fees, if any | Unknown, ask the bank | Day 1 to 5 |
 | Optional: faster state processing | \$25 (24 hours), \$75 (same day), \$150 (2 hours) | Verified 2026-10-23 (dos.ny.gov) | Only if a brand is waiting |
@@ -33,11 +33,11 @@ Total state fees: \$250. Total with publication: about \$595 (Albany County) to 
 ## 1 · Before you file (weeks 2 to 3)
 
 - [ ] **Name decided.** The name check (`01-name-check-log.md`) is on HOLD. Settle the name first.
-- [ ] **County of the LLC's office decided** (section 4). The Articles must state "the county within this state in which the office of the limited liability company is to be located" (LLC Law §203(e)(2), opened 2026-10-23). That county decides which newspapers you must use and so the cost. Ask the attorney before choosing a county you do not work from (question 1 below).
+- [ ] **County of the LLC's office decided** (section 4). The Articles must state "the county within this state in which the office of the limited liability company is to be located" (LLC Law §203(e)(2), opened 2026-10-23). That county decides which newspapers you must use and so the cost. Ask the attorney before choosing a county you do not work from (question 1 below). The attorney hour (file 08) is set for week 4, before the filing day, so this is answered in time.
 - [ ] **Mailing address for legal papers chosen: [POSTAL ADDRESS].** The Secretary of State is the LLC's agent for service of process and mails papers to an address you give. That address is printed in the newspaper notice for six weeks (LLC Law §206(a), opened 2026-10-23). Use a business mailing address, not a home address, if privacy matters to you.
 - [ ] **Effective date decided.** The LLC exists on the filing date, or on a later date you state, "not to exceed sixty days from the date of such filing" (LLC Law §203(d), opened 2026-10-23). Default: the filing date. The 120-day clock starts on the effective date.
 - [ ] **Purpose wording.** The newspaper notice must state the character or purpose of the business (LLC Law §206(a)). Ask the formation service or attorney for their standard wording.
-- [ ] **Operating agreement ready to sign** (`30-llc-operating-agreement.md`, part A of this pack).
+- [ ] **Operating agreement ready to sign** (`05-llc-operating-agreement.md`).
 - [ ] **Two publication quotes in hand** for the county you chose (section 3). Ask each for an all-in written price naming both newspapers.
 - [ ] **Founder login ready** for the Department of State's online filing (linked from https://dos.ny.gov/limited-liability-company-articles-organization as "e-corp-online-filing-system"; link not opened here). Needs your login and card.
 
@@ -49,7 +49,7 @@ Total state fees: \$250. Total with publication: about \$595 (Albany County) to 
 - [ ] **Get the EIN.** Free, online, after the LLC exists: "Use this tool to get an EIN directly from the IRS in minutes for free." and "You never have to pay a fee for an EIN." (irs.gov "Get an employer identification number", page updated 16-Oct-2026, opened 2026-10-23). Founder only: it asks for your own taxpayer number. Ignore websites that charge for this.
 - [ ] **Open the business bank account.** Bring the filing receipt, EIN letter, signed operating agreement and ID. The bank's exact list is unverified; ask the bank first.
 - [ ] **New York LLC Transparency Act: probably nothing to file.** The Department of State page lists the filing duty for "non-exempt limited liability companies that were formed under the law of a foreign country", effective January 1, 2026, with a "statutory filing fee of \$25" (https://dos.ny.gov/beneficial-owner-disclosure, opened 2026-10-23). Holland & Knight (2026-01-13) writes that U.S.-formed LLCs, including New York ones, are exempt, after the Governor vetoed a decoupling amendment on 2025-12-19. The attorney confirms in one line (question 3). Secondary sources describe a 30-day filing window for LLCs that are covered, so settle it within 30 days of filing.
-- [ ] **Only now:** sign the brand agreement in the Company's name and send the invoice (files 12 and 14, part A of this pack).
+- [ ] **Only now:** sign the brand agreement in the Company's name and send the invoice (files 10 and 11).
 
 ## 3 · Publish (order by business day 10)
 
@@ -116,13 +116,15 @@ Day counts are calendar days. Whether a weekend day 120 rolls forward is a legal
 
 | What | When | Cost | Source |
 | --- | --- | --- | --- |
-| New York LLC annual filing fee, Form IT-204-LL | By the 15th day of the third month after year end: Mon 2027-03-15 for 2026, if the LLC had any New York income, gain, loss or deduction in 2026; then every year | \$25 for a single-member LLC that is disregarded for federal tax | Form IT-204-LL instructions, tax.ny.gov, opened 2026-10-23. The accountant confirms whether a November 2026 LLC owes for 2026 (file 22) |
+| New York LLC annual filing fee, Form IT-204-LL | By the 15th day of the third month after year end: Mon 2027-03-15 for 2026, if the LLC had any New York income, gain, loss or deduction in 2026; then every year | \$25 for a single-member LLC that is disregarded for federal tax | Form IT-204-LL instructions, tax.ny.gov, opened 2026-10-23. The accountant confirms whether a November 2026 LLC owes for 2026 (file 09) |
 | Sales tax registration, only if the accountant says any of the fee is taxable | "at least 20 days before you begin business" | No fee mentioned on the page | TB-ST-360, tax.ny.gov, updated 2026-10-21, opened 2026-10-23 |
-| Estimated income tax payments | Accountant sets the dates and amounts | | File 22 |
+| Estimated income tax payments | Accountant sets the dates and amounts | | File 09 |
 | Biennial statement | Every two years, in the calendar month the Articles were filed (LLC Law §301(e)(1), opened 2026-10-23): November 2028 if filed in November 2026 | Fee unverified, founder to confirm on dos.ny.gov before it is due | LLC Law §301 |
-| General liability insurance bound | Before any brand ships. Latest Mon 2026-12-21, since brands are asked to ship by Tue 2026-12-22 (CONTRACTS section 3, derived); a brand that ships earlier moves this date up | Needs quote | File 20 |
+| General liability insurance bound | Before any brand ships. Latest Mon 2026-12-21, since brands are asked to ship by Tue 2026-12-22 (CONTRACTS section 3, derived); a brand that ships earlier moves this date up | Needs quote | File 06 |
 
 ## For the attorney hour (formation questions)
+
+These four are also in `08-attorney-hour-agenda.md`, the single agenda for the hour (items 1, 2, 4 and 14).
 
 1. **Office county.** I work from [BOROUGH] and have no office elsewhere. May the Articles name Albany County as the county of the office, and what must exist there (a registered agent, a street address)? If not, I publish in [BOROUGH]'s county.
 2. **Name.** The two questions in `01-name-check-log.md`.
@@ -146,3 +148,4 @@ Day counts are calendar days. Whether a weekend day 120 rolls forward is a legal
 - Round 2 (2026-10-24), attorney pass: replaced two statute summaries with verbatim quotes (§206 newspaper wording and the no-liability sentence); removed a legal conclusion about what a suspended LLC may do and sent it to the attorney; dropped advice on purpose wording; added the 30-day window for the Transparency Act; added "check how to submit" for the Certificate of Publication.
 - Round 3 (2026-10-24), full read: "Section 1" replaces "Steps 1 to 4"; suspension sentence rebuilt around the Department's own words; real-dates fill-in moved out of the table; insurance row now "before any brand ships, latest 2026-12-21"; dollar signs escaped so the county table renders as text, not math.
 - Round 4 (2026-10-24), final full read: no changes beyond wording.
+- Merge (2026-10-24): renumbered 02 to 04; version 0.5; cross-references updated to the new numbers; "part A/part B" wording removed.

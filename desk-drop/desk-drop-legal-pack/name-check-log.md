@@ -2,7 +2,9 @@
 
 # Name-check log (pointer)
 
-**Name checked:** `BRAND_NAME` = **Desk Drop** (working name, not cleared; the only place this file sets it).
+Version 0.5 · 2026-10-24
+
+**Name checked:** `BRAND_NAME = Desk Drop` (working name, not cleared; the only place this file sets it).
 
 The full log is **`01-name-check-log.md`** in this folder. This short file exists because CONTRACTS section 6.7 names this path for workstreams C (website) and D (identity). Keep the status line below in step with the full log.
 

@@ -2,9 +2,9 @@
 
 # 01 · Name-check log: trademark, state entity and domains
 
-Version 0.4 · 2026-10-24
+Version 0.5 · 2026-10-24
 
-**The name being checked.** `BRAND_NAME` = **Desk Drop** (working name, not cleared). This is the only place in this file where the name is set. Every search below used this name and its spellings: "desk drop", "deskdrop", "desk-drop", "desk drops", "deskdrops". To check a new name, change this line, rerun every row of the log, and keep this version as history.
+**The name being checked.** `BRAND_NAME = Desk Drop` (working name, not cleared). This is the only place in this file where the name is set. Every search below used this name and its spellings: "desk drop", "deskdrop", "desk-drop", "desk drops", "deskdrops". To check a new name, change this line, rerun every row of the log, and keep this version as history.
 
 **What it is for.** The plan's week-1 name check (Phase 0, "Week 1, days 1 and 2"): USPTO trademark search, New York Department of State entity search, and .com and .nyc domains. The result gates any print run (workstream D) and any public launch (workstream C). The short copy at `name-check-log.md` points here.
 
@@ -31,11 +31,13 @@ Version 0.4 · 2026-10-24
 
 ## Decision needed (blocking for D and C, not for discovery)
 
-Keep the working name, or pick a fallback before anything is printed or filed? The plan's own rule is: "If 'Desk Drop' is taken, pick a fallback now rather than after printing cards." Nobody has registered it, but another business uses it for food gifts delivered to offices, and the USPTO has called it descriptive.
+Keep the working name, or pick a fallback before anything is printed or filed? The plan's own rule is that if the working name is taken, "pick a fallback now rather than after printing cards". Nobody has registered it, but another business uses it for food gifts delivered to offices, and the USPTO has called it descriptive.
 
-**Recommended default:** treat it as taken. In week 1, shortlist two fallback names, preferably coined or unusual words rather than descriptions, and run this whole log on each (about an hour per name; the steps below and `_work/namecheck/scripts/` make it repeatable). Choose by the end of week 3 (Fri 2026-11-13, derived), before the LLC is filed. Keep the working name only if the attorney, shown this log, says the risk is acceptable; if you want that answer before filing, hold the name part of the attorney hour before the filing day rather than "before the first invoice". The LLC name is the costly one to change later: an amendment is \$60 (LLC Law §1101(g), opened 2026-10-23), plus new bank, insurance and agreement paperwork. Until you decide, private discovery calls under the working name can go ahead.
+**Recommended default:** treat it as taken. In week 1, shortlist two fallback names, preferably coined or unusual words rather than descriptions, and run this whole log on each (about an hour per name; the steps below and `_work/namecheck/scripts/` make it repeatable). Choose by the end of week 3 (Fri 2026-11-13, derived), before the LLC is filed. Keep the working name only if the attorney, shown this log, says the risk is acceptable. The attorney hour (`08-attorney-hour-agenda.md`, item 1) is set for week 4, before the filing day, so that answer arrives before the LLC name is fixed. The LLC name is the costly one to change later: an amendment is \$60 (LLC Law §1101(g), opened 2026-10-23), plus new bank, insurance and agreement paperwork. Until you decide, private discovery calls under the working name can go ahead.
 
 ## For the attorney hour
+
+Both questions are item 1 of `08-attorney-hour-agenda.md`, the single agenda for the hour.
 
 1. Does the existing "DeskDrop" chocolate-gifting business (thedeskdrop.com) create a likelihood-of-confusion risk for the working name, used for office snack sampling in New York? What would a fuller clearance search cost?
 2. Given the USPTO's descriptiveness refusal of DESK-DROP for office food delivery (serial 99174501, Office action of 2025-09-30), is a federal application for the working name worth \$350 per class (USPTO fee schedule, opened 2026-10-23), or should the business pick a more distinctive name now?
@@ -95,7 +97,7 @@ RDAP "404 Not found" means the registry holds no record today. It is not a promi
 
 ---
 
-**Rerun check, 2026-10-24 00:04:51 UTC.** `_work/namecheck/scripts/name_check.py "Desk Drop"` reran rows 3, 6, 7, 8 (USPTO, plus an exact-phrase search: 1 result, DESK-DROP, dead), 13 to 16 (Department of State data) and 17, 18, 19, 25, 26, 27 (domains) in one pass. Every result matched the rows above (raw files in `_work/namecheck/runs/deskdrop-20261024T000451Z/`). To check a fallback name, run the same command with the new name from the `desk-drop/` folder; it prints a table in this log's format and lists what it cannot run.
+**Rerun check, 2026-10-24 00:04:51 UTC.** `_work/namecheck/scripts/name_check.py` with the name above reran rows 3, 6, 7, 8 (USPTO, plus an exact-phrase search: 1 result, DESK-DROP, dead), 13 to 16 (Department of State data) and 17, 18, 19, 25, 26, 27 (domains) in one pass. Every result matched the rows above (raw files in `_work/namecheck/runs/deskdrop-20261024T000451Z/`). To check a fallback name, run the same command with the new name from the `desk-drop/` folder; it prints a table in this log's format and lists what it cannot run.
 
 ## Steps for the founder (rows marked "not run")
 
@@ -122,3 +124,4 @@ RDAP "404 Not found" means the registry holds no record today. It is not a promi
 - Round 2 (2026-10-24), trademark-attorney pass: recommended default changed from "keep for now" to "treat as taken, shortlist two fallbacks, decide before filing", following the plan's own rule; the name now appears only in its definition line and in the literal search queries; corrected "on office desks" to "to offices"; added rerun scripts.
 - Round 3 (2026-10-24), full read: "refused" now says it was a first Office action followed by abandonment; the other business is described as selling "food gifts delivered to offices"; the individual owner of DROPDESK is no longer named (business data only); rerun coverage stated row by row; dollar signs escaped so tables render.
 - Round 4 (2026-10-24), final full read: wording only (".nyc may require", "kept for the record", domain count 13, rerun step names the .com and .nyc rows).
+- Merge (2026-10-24): version 0.5; the name line now reads `BRAND_NAME = Desk Drop`, the pack-wide form, and the name appears once; the attorney question points to file 08, held in week 4 before filing.

@@ -33,3 +33,16 @@
 - Toggl CSV column names: NOT documented on pages opened -> unverified, founder to confirm. Import tab maps headers by name.
 - WebSearch budget exhausted for this run; only WebFetch/curl used.
 - LibreOffice 24.2 headless convert recalculates openpyxl formulas (tested).
+
+## Round 1 result (2026-10-24)
+- Audit 0 literals, 0 non-Sheets functions; 28/28 checks; low point -4,476 wk13; commit 5,476; gap 1,034.
+- legal pack figures.csv appeared 2026-10-24 (index v0.4). Pull: articles 200 verified; certificate 50 verified (by day 100);
+  publication 1,745 working (200-2,000) needs quote, order within 10 bd of filing; GL 1,200/yr (500-1,500) needs quote, bind latest 2026-12-21;
+  license 400 fee verified, requirement unknown; attorney 400 (300-500), accountant 300 (200-400) plan estimates; trademark 350 verified but
+  "not in the first six months"; IT-204-LL $25 verified, first possibly 2027-03-15; HNOA and additional-insured add-ons unknown (needs quote).
+
+## Round 1 critique -> round 2 fixes
+1 legal figures; 2 blank cash dates when amount 0; 3 month labels; 4 Capital reserve not cash; 5 recon wording + overhead range;
+6 Gate 3 model renewals signed by Gate 3; 7 office-fatigue flag (12 offices, two drops in 14 days); 8 scenario-driven cells styled;
+9 Scenarios defaults/changed; 10 schedule changed flags; 11 dashboard: unabsorbed overhead + all-in per hour incl. discovery;
+12 README: taxes, refunds not modeled; 13 tests; 14 visual; 15 deliverable files.

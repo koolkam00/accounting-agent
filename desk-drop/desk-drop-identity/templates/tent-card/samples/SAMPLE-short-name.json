@@ -2,6 +2,7 @@
   "brand_name": "SAMPLE Oaty",
   "product_name": "",
   "card_sentences": "SAMPLE A two-person oat bar company from the Bronx. They make one bar and want to know what you think of it.",
+  "allergen_source": "contains_statement",
   "allergen_line_verbatim": "SAMPLE Contains: wheat, milk, soy and sesame.",
   "may_contain_verbatim": "SAMPLE May contain peanuts and tree nuts.",
   "retailer_line": "SAMPLE Retailer, 123 Example Street",

@@ -1,12 +1,12 @@
 **Draft for attorney review. Not legal advice.**
 
-# 10 · Commercial-email footer and three-line checklist
+# 02 · Commercial-email footer and three-line checklist
 
-Version 0.2 · 2026-10-24 · Part of the legal pack, file 10 of the founder's order of use.
+Version 0.5 · 2026-10-24
 
 **What it is for.** Every cold email and follow-up to an office or a brand is commercial email under the federal CAN-SPAM Act, which has no exception for business-to-business email (FTC guide, opened 2026-10-23, source at the end). This file holds the footer to paste under every such email and the three rules to follow every time you send.
 
-**When it is used.** From the first outreach email in week 1 (Monday 2026-10-26, derived, founder to confirm) until the business stops sending commercial email. Set it up once in the email tool before the first send.
+**When it is used.** From the first outreach email in week 1 (Monday 2026-10-26, derived, founder to confirm) until the business stops sending commercial email. Set it up once in the email tool before the first send. It goes into use before the attorney hour (file 08, week 4). It follows the FTC's own guide point by point; the one judgment call, whether "This is a business pitch" identifies the email clearly enough, is item 12 for the attorney.
 
 ---
 
@@ -32,7 +32,7 @@ This is a business pitch, sent one to one. Not interested? Reply "no thanks" and
 
 ### Footer B: use under the brand-identity email signature
 
-The signature from the identity workstream already shows your name, the company, [PHONE], [WEBSITE] and [POSTAL ADDRESS]. Add only the last line:
+Use this under an email signature that already shows your name, the company, [PHONE] and [POSTAL ADDRESS] (the identity workstream's signature is meant to; check it does). Add only the last line:
 
 ```text
 This is a business pitch, sent one to one. Not interested? Reply "no thanks" and I won't email you again.
@@ -70,9 +70,17 @@ Keep the opt-out line at normal size and dark text. The FTC says the opt-out exp
 - **Which address to use for [POSTAL ADDRESS].** Every cold email will carry it, so a home address becomes public. A USPS post office box or a registered private mailbox both qualify under the FTC guide. The cost of either was not researched: needs quote, founder to decide. Use the same address in the identity workstream's signature.
 - **Emails that do not need the footer.** Messages whose main purpose is to run an agreed campaign (drop-day times, photo requests, invoices, the report) are "transactional or relationship" messages under the FTC guide and are exempt from most of the rules. The FTC reads that category narrowly: once an email also pitches something new (a renewal, another campaign), treat it as commercial and add the footer. Adding the footer to everything is simplest and costs nothing.
 - **LinkedIn messages** are not email, but honor a "no" there the same way: mark `do_not_contact = Y`.
-- **Penalties.** The FTC guide states up to $53,088 per separate email in violation (as adjusted in January 2024). This is why the rules are checked on every send, not occasionally.
+- **Penalties.** The FTC guide states up to \$53,088 per separate email in violation (as adjusted in January 2024). This is why the rules are checked on every send, not occasionally.
 - **Anyone sending for you.** If you ever use a sending service or a helper, you remain responsible (FTC guide: you "can't contract away your legal responsibility").
 
 ## Source
 
 - FTC, "CAN-SPAM Act: A Compliance Guide for Business", page dated August 2023, edited January 2024. https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business (opened 2026-10-23). Supports every rule above: header, subject, ad identification, postal address types, opt-out method, 10 business days, 30 days, no fee, no selling addresses, no B2B exception, transactional messages, penalty amount.
+
+---
+
+## Changelog
+
+- Rounds 1 to 9 (2026-10-23 to 24, part A drafting): footer A, footer B, HTML version and the three-line checklist from the FTC guide; reply-based opt-out; `BRAND_NAME` line matching the outreach workstream's variable.
+- Merge (2026-10-24): renumbered 10 to 02; version 0.5; dollar signs escaped.
+- Merge review (2026-10-24): attorney, the footer is used before the attorney hour, so its one judgment call is named as agenda item 12; footer B no longer claims the identity workstream's signature already exists.
