@@ -31,6 +31,7 @@ const DET = { FOUNDER_NAME: 'Patricia Example-Lee', PHONE: '(212) 555-0100', EMA
   /All filled in/.test(st) ? ok('details.html: status says all filled in, not saved yet') : bad('status before save', st);
   const sig = await p.innerHTML('#sig-outreach');
   sig.includes('Patricia Example-Lee') && sig.includes('(212) 555-0100') && sig.includes('PO Box 1234') && /no thanks/.test(sig) && !/\[WEBSITE\]/.test(sig) ? ok('the outreach signature on the page carries the details and Footer B, website left off') : bad('signature', sig);
+  await p.evaluate(() => window.scrollTo(0, 0));
   await p.screenshot({ path: path.join(__dirname, 'details-page.png'), fullPage: false });
   const [dl] = await Promise.all([p.waitForEvent('download'), p.click('#save')]);
   dl.suggestedFilename() === 'brand.js' ? ok('Save brand.js downloads a file named brand.js') : bad('download name', dl.suggestedFilename());
