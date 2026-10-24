@@ -2,7 +2,7 @@
 
 # Legal and admin pack: report back
 
-Version 0.5 · 2026-10-24 · Workstream G · folder `desk-drop/desk-drop-legal-pack/`
+Version 0.6 · 2026-10-24 · Workstream G · folder `desk-drop/desk-drop-legal-pack/` · updated after independent review round 1 (`_review/round-1.md`)
 
 Nothing was filed, sent, signed, bound, applied for, bought or published. No connector that writes anywhere was used, and there were no git writes. Every figure below carries a dated source or is marked as a plan estimate, a needed quote or unverified.
 
@@ -15,12 +15,12 @@ Thirteen documents, numbered in the plan's order of operations, plus the index. 
 | 00 | `00-index.md`: what each file is for and when | Start here |
 | 01 | `01-name-check-log.md`: USPTO, Department of State and domain searches, verbatim and dated | Week 1 |
 | 02 | `02-email-footer-and-checklist.md`: footer with [POSTAL ADDRESS] and opt-out line; three-line checklist | First outreach email, week 1 |
-| 03 | `03-office-participation-agreement.md`: one page, no penalties (rendered: 1 page) | An office's yes, weeks 3 to 5 |
+| 03 | `03-office-participation-agreement.md`: one page, no penalties (rendered: 1 page) | An office's yes, once the attorney has cleared the page (hour by Wed 2026-11-18); Phase 1, weeks 3 to 5 |
 | 04 | `04-formation-checklist.md`: LLC, EIN, bank, publication, 120-day deadline, six-county cost comparison | First verbal brand yes |
 | 05 | `05-llc-operating-agreement.md`: single-member, member-managed (rendered: 4 pages) | Filing day |
 | 06 | `06-gl-quote-request-script.md`: honest description, 20 questions, comparison table | Quotes at Gate 0; bind before any brand ships |
 | 07 | `07-food-safety-call-script-and-log.md`: exact question, facts, follow-ups, answer log | By Fri 2026-11-20; before any brand ships |
-| 08 | `08-attorney-hour-agenda.md`: ranked, time-boxed agenda with send-ahead note (new at merge) | Held by Fri 2026-11-20 |
+| 08 | `08-attorney-hour-agenda.md`: ranked, time-boxed agenda with send-ahead note (new at merge) | Held by Wed 2026-11-18, before the first office signs |
 | 09 | `09-accountant-question-list.md`: sales tax, UBT, estimates and 15 more | Held by Fri 2026-11-20 |
 | 10 | `10-brand-campaign-agreement.md`: campaign sheet plus fixed terms (rendered: 3 pages) | A brand's yes, after formation |
 | 11 | `11-coi-request-brand-product-liability.md`: to the brand, its broker block, reminder, check | With file 10 |
@@ -72,8 +72,8 @@ Where the plan was silent or ambiguous, I decided and list it here. Dates are de
 **Timing**
 1. The LLC is filed at the first verbal brand yes, expected between Gate 0 (Fri 2026-11-13) and Gate 1 (Fri 2026-12-11). File 04 gives dates for three filing days.
 2. Files are numbered in the plan's order-of-operations sentence. Two steps deliberately start earlier than their place: GL quotes at Gate 0, and the attorney hour before filing.
-3. Both professional hours are booked at Gate 0 and held by Fri 2026-11-20: the attorney before filing because the name and county change the filing; the accountant early because sales tax registration, if needed, must come "at least 20 days before you begin business" (TB-ST-360, opened 2026-10-23).
-4. Offices may sign the office page before the attorney hour. It carries no money and no penalties; if the attorney changes it in substance, offices get the new page to sign.
+3. Both professional hours are booked at Gate 0 (the attorney slot is asked for in week 3 and confirmed only if Gate 0 passes). The attorney hour is held early in week 4, by Wed 2026-11-18: before the first office signs, and before filing because the name and county change the filing. The accountant hour is held by Fri 2026-11-20, early because sales tax registration, if needed, must come "at least 20 days before you begin business" (TB-ST-360, opened 2026-10-23).
+4. Offices sign only after the attorney has cleared the office page (changed in review round 1). The plan finalizes the page at the Gate 0 pass, so signatures start in week 4 anyway; holding them to Wed 2026-11-18 costs at most two business days and spares pantry owners a page that reads "Draft for attorney review" at the top. If the hour slips, the draft goes out with a one-line cover note (file 03 notes). **Default: wait for the hour.**
 5. The state food safety call is recommended by Fri 2026-11-20, earlier than the plan's Gate 1 checklist. Insurance is bound and the state answer logged before any brand ships, latest Mon 2026-12-21 (ship-by Tue 2026-12-22).
 6. Storage time stated to brokers, the state and the accountant: "usually two to three weeks, up to about four around the December holidays". Volumes: about 550 units for campaign zero (2 brands × 275), up to about 1,650 later (3 brands × 10 offices × 55).
 
@@ -90,10 +90,10 @@ Where the plan was silent or ambiguous, I decided and list it here. Dates are de
 14. The office page promises to name a building's owner and managing agent as additional insureds when the building requires it. If our carrier cannot, we do not deliver there; the plan already puts certificate-only buildings "on the list for later".
 
 **Brand agreement**
-15. "Cancellation inside ten days of drop" means ten business days, measured against T−10, the ship-by date: before T−10, a full refund less \$100; on or after T−10, 50% kept.
-16. "60 days of shelf life" is measured on arrival (the T−5 check), or at the office for brand-direct drops.
-17. The founding lock is \$120 per office, paid in full before shipping, for the next two campaigns, unconditional and with no end date (decision D1 below). The plan's "if this one executes as promised" attaches to the statement and case study, not to the lock.
-18. The second standard payment is due within seven days of placement confirmation, the email that sends every office's placement photo; the report may wait for it.
+15. "Cancellation inside ten days of drop" means ten business days, measured against T−10, the ship-by date: before T−10, a full refund less \$100; on or after T−10, 50% kept. T−10 is about two calendar weeks before a Tuesday drop (campaign zero: Mon 2026-12-28 for Tue 2027-01-12), so a brand cancelling 11 to 13 calendar days out keeps less than under a calendar-day reading. Part 1 now prints the exact cancel-by date, so the brand never counts business days (review round 1). **Default: keep T−10**, because it is the day the brand ships, so 50% is never kept on product that has not left the brand. Question 6 below; attorney item 5.
+16. "60 days of shelf life at delivery" is measured on the drop day: a unit placed that day has at least 60 days left (changed in review round 1; it was "on arrival", which left about 53 days at placement).
+17. The founding lock ("\$600 for 5 offices (\$120 per office) ... locked for their next two campaigns") is \$120 per office for up to 10 offices, any office beyond 10 at \$150, paid in full before shipping, for the next two campaigns, unconditional and with no end date. Per-office matches the financial model's brief ("renew at the founding rate (\$120 per office)") and D's offer data (`per_office: 120`); the cap at 10 offices is new in review round 1. The plan's "if this one executes as promised" attaches to the statement and case study, not to the lock. **Default: this wording; add a 12-month booking window only after the attorney agrees** (decision D1).
+18. The second standard payment is due on placement confirmation, the plan's own term: it is invoiced the day we send the email with every office's placement photo, and the report may wait for it. The earlier "within seven days of" placement confirmation was softer than the plan and contradicted Part 1; it was dropped in review round 1. **Default: the plan's term** (decision D6).
 19. Prices exclude sales tax, shown on the invoice if it applies.
 20. If an office leaves and cannot be replaced, the brand gets that office's share back (\$120 founding, \$150 standard).
 21. A second missed T−3 lets either side treat the campaign as cancelled on or after T−10. Weather, illness or a building closure moves the drop to the next open Tuesday or Wednesday.
@@ -115,6 +115,12 @@ Where the plan was silent or ambiguous, I decided and list it here. Dates are de
 35. Operating agreement: member-managed; calendar fiscal year; six-year record retention (my default, accountant to confirm); death does not dissolve the company; a named successor has narrow powers during incapacity.
 36. Survey retention: consented emails passed to the brand within seven days after the survey closes, our copy deleted 30 days later, answers deleted after 12 months (the plan sets none).
 37. [POSTAL ADDRESS] is a USPS post office box or a registered private mailbox, not a home address. Its cost was not researched (`figures.csv`, `needs quote`).
+
+**Added in review round 1**
+38. The brand keeps its product liability cover, with us as additional insured, from its ship date until 12 months after the window closes, or the latest best-by date on the units if later. A claims-made policy needs a retroactive date on or before the ship date, and the brand keeps it in force or buys an extended reporting period for that time. The obligation survives the campaign (section 14). Why: released units stay in pantries and go home with employees, and an occurrence policy covers only injury during its own period (review round 1). **Default: keep** (decision D7; attorney item 16).
+39. A slipped drop never puts a window across a blackout: it moves to the first Tuesday or Wednesday whose five-day window is clear (CONTRACTS section 3; review round 1).
+40. The office's employer is named in its own `[OFFICE LEGAL NAME]` slot on the office page and in Schedule B of the operating agreement, so "Company" only ever means us (review round 1).
+41. Buildings: expect to add each building by name (CG 20 26) and budget the endorsement, because we will have no contract with any building. A reviewer's recollection that New York requires a direct contract for a blanket endorsement's "written contract with you" (Gilbane v. St. Paul, 2018) was not opened: unverified, attorney item 15.
 
 ## 5 · Changelog, one line per round
 

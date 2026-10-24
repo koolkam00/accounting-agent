@@ -11,7 +11,7 @@ import sys
 
 PACK = pathlib.Path(__file__).resolve().parent.parent
 HEADING = "Draft for attorney review. Not legal advice."
-VERSION = "Version 0.5 · 2026-10-24"
+VERSION = r"Version (0\.\d+) · (\d{4}-\d{2}-\d{2})"
 NAME = "Desk Drop"
 SLOT = "[COMPANY NAME: Desk Drop LLC]"
 BRAND_LINE = "`BRAND_NAME = Desk Drop`"
@@ -24,8 +24,14 @@ WEEKDAYS = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6
 
 docs = sorted(PACK.glob("[0-9][0-9]-*.md"))
 numbers = {p.name[:2] for p in docs}
-names = {p.name for p in docs} | {"name-check-log.md", "figures.csv", "README.md", "REPORT.md", "HANDOFF.md"}
+REQUIRED = ["README.md", "REPORT.md", "HANDOFF.md"]  # CONTRACTS section 1
+# a reference counts only if its target really exists
+names = {p.name for p in PACK.iterdir() if p.is_file()}
 findings = []
+warnings = []
+for req in REQUIRED:
+    if not (PACK / req).is_file():
+        findings.append(f"{req}: missing (CONTRACTS section 1 requires it)")
 
 
 def flag(p, msg):
@@ -47,8 +53,14 @@ for p in docs + [PACK / "name-check-log.md"]:
         for m in re.finditer(rf"<!-- {marker} START -->(.*?)<!-- {marker} END -->", t, re.S):
             if HEADING not in m.group(1):
                 flag(p, f"{marker} block lacks the review heading")
-    if VERSION not in t:
-        flag(p, "version line missing or different")
+    vm = re.search(VERSION, t)
+    if not vm:
+        flag(p, "version line missing or in the wrong form")
+    else:
+        for m in re.finditer(r"<!-- AGREEMENT START -->(.*?)<!-- AGREEMENT END -->", t, re.S):
+            bm = re.search(r"Version (0\.\d+)\.", m.group(1))
+            if bm and bm.group(1) != vm.group(1):
+                flag(p, f"agreement block says version {bm.group(1)}, file says {vm.group(1)}")
     # one name per document; index may have none
     n = t.count(NAME)
     if p.name == "00-index.md":
@@ -102,6 +114,42 @@ for p in docs + [PACK / "name-check-log.md"]:
     if p.name[:2] in STORAGE_FILES and STORAGE not in t:
         flag(p, "shared storage sentence missing")
 
+# README, REPORT, HANDOFF: heading, version, escaped dollars, references, weekdays
+for req in REQUIRED:
+    p = PACK / req
+    if not p.is_file():
+        continue
+    t = p.read_text()
+    if not t.startswith(f"**{HEADING}**"):
+        flag(p, "does not open with the review heading")
+    if not re.search(VERSION, t):
+        flag(p, "version line missing or in the wrong form")
+    for i, line in enumerate(strip_code(t).split("\n"), 1):
+        if re.search(r"(?<!\\)\$", line):
+            flag(p, f"unescaped $ on a prose line: {line.strip()[:80]}")
+            break
+    for m in re.finditer(r"\b(\d{2}-[a-z0-9-]+\.md)\b", t):
+        if m.group(1) not in names and req != "HANDOFF.md":
+            flag(p, f"reference to missing file {m.group(1)}")
+    for m in re.finditer(r"\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*\.? (\d{4}-\d{2}-\d{2})\b", t):
+        d = dt.date.fromisoformat(m.group(2))
+        if d.weekday() != WEEKDAYS[m.group(1)]:
+            flag(p, f"{m.group(0)} is really a {d.strftime('%A')}")
+
+# other workstreams' references to this pack (warnings only: their files, not ours)
+ROOT = PACK.parent
+for f in ROOT.rglob("*"):
+    if not f.is_file() or PACK in f.parents or "node_modules" in f.parts or f.suffix not in {".md", ".js", ".json", ".html", ".csv", ".txt"}:
+        continue
+    try:
+        txt = f.read_text(errors="ignore")
+    except OSError:
+        continue
+    for i, line in enumerate(txt.split("\n"), 1):
+        for m in re.finditer(r"desk-drop-legal-pack/([0-9]{2}-[a-z0-9-]+\.md)", line):
+            if m.group(1) not in names:
+                warnings.append(f"WARNING {f.relative_to(ROOT)}:{i} cites missing desk-drop-legal-pack/{m.group(1)}")
+
 # figures.csv shape (CONTRACTS 6.7)
 import csv
 with open(PACK / "figures.csv", newline="") as fh:
@@ -121,5 +169,8 @@ for r in rows:
 
 for f in findings:
     print(f)
-print(f"{len(docs) + 1} documents and figures.csv checked, {len(findings)} findings")
+for w in sorted(set(warnings)):
+    print(w)
+print(f"{len(docs) + 1} documents, {sum((PACK / r).is_file() for r in REQUIRED)} of {len(REQUIRED)} required files and figures.csv checked, "
+      f"{len(findings)} findings, {len(set(warnings))} warnings about other folders")
 sys.exit(1 if findings else 0)

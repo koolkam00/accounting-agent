@@ -2,7 +2,7 @@
 
 # Legal and admin pack: README
 
-Version 0.5 · 2026-10-24 · Workstream G
+Version 0.6 · 2026-10-24 · Workstream G
 
 Start with `00-index.md`: it says what each document is for and when you use it, in the plan's order of operations. This README says how to edit the pack and keep it consistent. `REPORT.md` is the report back (assumptions, changelog, questions). `HANDOFF.md` is what other workstreams take from here.
 
@@ -15,7 +15,7 @@ Nothing in this folder has been filed, sent, signed, bound, applied for or paid.
 | 00 | `00-index.md` | What each document is for and when it is used | Update a row when a file's timing changes |
 | 01 | `01-name-check-log.md` | Trademark, state entity and domain searches; the name gate for print (D) and launch (C) | To check a new name: change the `BRAND_NAME` line, run `python3 desk-drop-legal-pack/_work/namecheck/scripts/name_check.py "<name>"` from `desk-drop/`, paste its table in as new rows with the date, keep the old rows as history. Keep `name-check-log.md` in step |
 | 02 | `02-email-footer-and-checklist.md` | Footer and three-line CAN-SPAM checklist for every commercial email | Fill [POSTAL ADDRESS] once you choose it. The trading name is the one `BRAND_NAME` line |
-| 03 | `03-office-participation-agreement.md` | One-page office agreement, no penalties | Fill the top table from the office's intake row before sending. Keep it to one Letter page: re-render and look after any change |
+| 03 | `03-office-participation-agreement.md` | One-page office agreement, no penalties | Send only after the attorney clears it (file 08, by Wed 2026-11-18). Fill the top table from the office's intake row before sending (`company` goes in both [OFFICE LEGAL NAME] slots). Keep it to one Letter page: re-render and look after any change |
 | 04 | `04-formation-checklist.md` | Forming the LLC; county cost comparison; 120-day deadline | On the filing day, fill "Your real dates" in section 5 |
 | 05 | `05-llc-operating-agreement.md` | Single-member operating agreement with Schedules A and B | Fill sections 1.3, 2, 12.1 and the schedules; list every pre-formation office agreement in Schedule B, item 6 |
 | 06 | `06-gl-quote-request-script.md` | Honest description, 20 questions and a comparison table for three GL quotes | Fill the bracketed facts in section 1 (storage place, car) before the first call; never edit the description to get a cheaper class |
@@ -39,7 +39,7 @@ Nothing in this folder has been filed, sent, signed, bound, applied for or paid.
 4. **Dates** come from the canonical calendar (CONTRACTS section 3) and are "derived, founder to confirm". Replace them with real dates as they happen.
 5. **Sources.** Every researched fact names its source and the date it was opened (2026-10-23 unless stated). Anything that could not be opened says "unverified, founder to confirm". Plan figures say "plan".
 6. **Dollar signs** are written `\$` in the .md files so GitHub and pandoc do not read "\$600 ... \$1,500" as a formula.
-7. **Versions.** Each file shows "Version 0.5 · 2026-10-24". When you change a document's substance, raise its version (in the agreements, also in the first line of the agreement block) and add a changelog line.
+7. **Versions.** Each file shows a line such as "Version 0.6 · 2026-10-24" (files changed in review round 1 are 0.6; unchanged files stay 0.5). When you change a document's substance, raise its version (in the agreements, also in the first line of the agreement block; the check fails if the two differ) and add a changelog line.
 8. **Ladder words.** Delivered, placed, depleted, responded, scanned, purchased and incremental stay separate. Nothing promises sales, scans or responses.
 
 ## Checks and rendering
@@ -51,7 +51,7 @@ python3 desk-drop-legal-pack/_work/check_pack.py     # consistency checks; expec
 python3 desk-drop-legal-pack/_work/render_pack.py    # rebuilds rendered/ and _work/png/
 ```
 
-The check covers: the review heading at the top and in each block; the version line; the name once per file and in the right form; heading numbers; changelogs; placeholder case; ladder words; escaped dollar signs; every file reference resolves; every weekday matches its date; the shared storage sentence in 06, 07, 10 and 11; and the `figures.csv` columns and statuses. The renderer needs pandoc, node with Playwright, and poppler (`pdfinfo`, `pdftotext`, `pdftoppm`); it stops if any dollar amount goes missing between the .md and the PDF. Look at the page images in `_work/png/` after every render; the office page must stay on one page.
+The check covers: that `README.md`, `REPORT.md` and `HANDOFF.md` exist (CONTRACTS section 1); the review heading at the top and in each block; the version line, and that each agreement block's version matches its file; the name once per file and in the right form; heading numbers; changelogs; placeholder case; ladder words; escaped dollar signs; every file reference resolves; every weekday matches its date; the shared storage sentence in 06, 07, 10 and 11; and the `figures.csv` columns and statuses. It also prints, as warnings, any file in another workstream's folder that cites a `desk-drop-legal-pack/NN-….md` name that no longer exists (they are that workstream's to fix; the old-to-new map is in `HANDOFF.md`). The renderer needs pandoc, node with Playwright, and poppler (`pdfinfo`, `pdftotext`, `pdftoppm`); it stops if any dollar amount goes missing between the .md and the PDF. Look at the page images in `_work/png/` after every render; the office page must stay on one page.
 
 ## Steps that need you [FOUNDER]
 

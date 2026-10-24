@@ -2,7 +2,7 @@
 
 # 05 · Single-member New York LLC operating agreement: notes for the founder
 
-Version 0.5 · 2026-10-24
+Version 0.6 · 2026-10-24
 
 **The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot in section 1.1.
 
@@ -160,10 +160,10 @@ Effective when the Company is formed, the Member decides that the Company:
 5. Adopts and ratifies everything the Member did for the Company before formation to organize it, including paying the filing fee of \$[AMOUNT] and any formation service fee of \$[AMOUNT], and will reimburse the Member \$[TOTAL] from the Company's account, recorded under section 7.
 6. Adopts every agreement the Member signed for the Company before formation, as of the date of formation, so that the Company takes the Member's place in each, including:
 
-| Agreement | Other party | Signed on |
+| Agreement | Other party (office legal name) | Signed on |
 | --- | --- | --- |
-| Office participation agreement | [COMPANY] | [DATE] |
-| Office participation agreement | [COMPANY] | [DATE] |
+| Office participation agreement | [OFFICE LEGAL NAME] | [DATE] |
+| Office participation agreement | [OFFICE LEGAL NAME] | [DATE] |
 | [ADD ROWS AS NEEDED] | | |
 
 7. Will notify each other party in item 6 by email that the Company has taken over the agreement.
@@ -198,3 +198,4 @@ Effective when the Company is formed, the Member decides that the Company:
 - Rounds 1 to 9 (2026-10-23 to 24, part A drafting): member-managed single-member agreement, Schedules A and B; Schedule B adopts pre-formation agreements; death routed through the estate under LLC Law 701(a)(4); narrow incapacity powers.
 - Merge (2026-10-24): renumbered 30 to 05; company name moved into the `[COMPANY NAME: …]` slot; version 0.5.
 - Merge review (2026-10-24): attorney, section 6.4 now allows the "for the Company" signer line the office agreement uses before formation; note on signing before the attorney hour.
+- Review round 1 (2026-10-24), version 0.6: Schedule B's party column reads "Other party (office legal name)" with the [OFFICE LEGAL NAME] slot, matching the office page.

@@ -2,7 +2,7 @@
 
 # 07 · State food safety office: call script and answer log
 
-Version 0.5 · 2026-10-24
+Version 0.6 · 2026-10-24
 
 **The company in this file.** "The Company" means **[COMPANY NAME: Desk Drop LLC]** (not yet formed; see `04-formation-checklist.md`). This is the only place the name is set.
 
@@ -18,8 +18,8 @@ Version 0.5 · 2026-10-24
 
 - The license: "This license applies to any food warehouse facility within New York in which food is held for commercial distribution." Warehouses storing or distributing food other than raw agricultural commodities need an Article 28-D license (NY Department of Agriculture and Markets, Food Business Licensing, https://agriculture.ny.gov/food-business-licensing, opened 2026-10-23).
 - The definition: "'Food warehouse' shall mean any food establishment in which food is held for commercial distribution." (Agriculture and Markets Law §500-a(4), nysenate.gov, revision 2026-02-20, opened 2026-10-23). The same section's definition of a retail food store "does not include establishments which handle only pre-packaged, non-potentially hazardous foods". The warehouse definition has no such carve-out. That gap is why we ask.
-- The requirement: "No person shall maintain or operate a retail food store, food service establishment or food warehouse" without a license (Agriculture and Markets Law §500-b(1), revision 2026-02-20, opened 2026-10-23).
-- The fee: "The license fee shall be two hundred fifty dollars provided, however, that food warehouses shall pay a license fee of four hundred dollars." Licenses run "for two years from the date of issuance" (§500-b(3)).
+- The requirement: "No person shall maintain or operate a retail food store, food service establishment or food warehouse" without a license (Agriculture and Markets Law §500-b, opening paragraph, revision 2026-02-20, opened 2026-10-23; re-checked 2026-10-24).
+- The fee: "The license fee shall be two hundred fifty dollars provided, however, that food warehouses shall pay a license fee of four hundred dollars." (§500-b(3)). Licenses run "for two years from the date of issuance" (§500-b(2)).
 
 ## Who to call
 
@@ -37,7 +37,7 @@ Ask for someone who handles food warehouse licensing. Have this page, the facts 
 | How often | About once a month at first |
 | Conditions | Room temperature, clean, dry, off the floor, away from heat and as the label directs (for example, "store in a cool, dry place"). Sealed cases only |
 | Cleaning and pests | [describe: e.g. sealed plastic bins or shelving, no pets in the storage area, how often cleaned] |
-| Checks on arrival | Count, best-by dates (60 days minimum), lot numbers and damage, recorded the day the cases arrive (plan, campaign calendar, T minus 5) |
+| Checks on arrival | Count, best-by dates (at least 60 days left on the drop day), lot numbers and damage, recorded the day the cases arrive (plan, campaign calendar, T minus 5) |
 | Who owns the product | The brand supplies it. We do not buy it or resell it |
 | Who pays whom | The brand pays us a fee for placement, photos, a survey and a report. The offices pay nothing. Employees take products free |
 | Whether we sell food | No |
@@ -112,3 +112,4 @@ Fill one block per call. Write the answers word for word while you are on the ph
 - Round 4 (2026-10-24), final full read: no changes beyond wording.
 - Merge (2026-10-24): renumbered 21 to 07; version 0.5; cross-references updated to the new numbers; "part A/part B" wording removed.
 - Merge review (2026-10-24), inspector pass: storage now follows any instruction on the label; fact 8 adds that a placed unit never moves to another office (the same rule is in the brand agreement, section 9).
+- Review round 1 (2026-10-24), version 0.6: pinpoints corrected (the licensing requirement is §500-b's opening paragraph; the two-year term is §500-b(2), the fee §500-b(3)); the shelf-life check counts 60 days to the drop day, as the brand agreement now does.

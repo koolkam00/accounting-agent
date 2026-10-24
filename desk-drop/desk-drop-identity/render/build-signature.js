@@ -21,10 +21,12 @@
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
-const OUT = path.join(ROOT, 'signature');
+// test options: --brand <file> reads another brand.json, --out <dir> writes somewhere else
+const argOf = (k) => { const i = process.argv.indexOf(k); return i === -1 ? null : process.argv[i + 1]; };
+const OUT = path.resolve(argOf('--out') || path.join(ROOT, 'signature'));
 fs.mkdirSync(OUT, { recursive: true });
 
-const brand = JSON.parse(fs.readFileSync(path.join(ROOT, 'brand.json'), 'utf8'));
+const brand = JSON.parse(fs.readFileSync(argOf('--brand') || path.join(ROOT, 'brand.json'), 'utf8'));
 const c = brand.contact || {};
 const NAME = brand.BRAND_NAME;
 const TITLE = c.FOUNDER_TITLE || 'Founder';
@@ -50,7 +52,7 @@ const FONT = "'Atkinson Hyperlegible Next', Arial, Helvetica, sans-serif";
 const link = (href, text) => isPh(text) ? hl(text) : `<a href="${esc(href)}" style="color:${SOFT};text-decoration:none;">${esc(text)}</a>`;
 const site = c.WEBSITE === '' ? null : (c.WEBSITE || '[WEBSITE]');
 const telHref = 'tel:' + String(c.PHONE || '').replace(/[^\d+]/g, '');
-const contactLine = [link(telHref, c.PHONE || '[PHONE]'), link('mailto:' + (c.EMAIL || ''), c.EMAIL || '[EMAIL]'), site ? link(/^https?:/.test(site) ? site : 'https://' + site, site.replace(/^https?:\/\//, '')) : null].filter(Boolean).join(' &middot; ');
+const contactLine = [link(telHref, c.PHONE || '[PHONE]'), link('mailto:' + (c.EMAIL || ''), c.EMAIL || '[EMAIL]'), site ? link(/^https?:/.test(site) ? site : 'https://' + site, site.replace(/^https?:\/\//, '')) : null].filter(Boolean).map((x, k, all) => `<span style="white-space:nowrap;">${x}${k < all.length - 1 ? '&nbsp;&middot;' : ''}</span>`).join(' ');
 
 function sigTable(opts) {
   opts = opts || {};
@@ -102,7 +104,7 @@ const files = {
 };
 for (const [f, txt] of Object.entries(files)) fs.writeFileSync(path.join(OUT, f), txt);
 const sizes = Object.fromEntries(Object.entries(files).filter(([f]) => f.endsWith('.html')).map(([f, t]) => [f, sigTable({ outreach: f.includes('outreach') }).length]));
-console.log('Wrote signature/' + Object.keys(files).join(', signature/'));
+console.log('Wrote ' + path.relative(ROOT, OUT) + '/' + Object.keys(files).join(', '));
 console.log('Signature HTML sizes (characters, Gmail limit 10,000): ' + JSON.stringify(sizes));
 console.log('Footer B from: ' + footerSource);
 if (missing.length) console.log('Still placeholders in brand.json (highlighted yellow in the HTML): ' + missing.join(', '));
@@ -116,7 +118,7 @@ if (!process.argv.includes('--no-png')) {
     const frame = (w, inner, label) => `<html><body style="margin:0;background:#EEF0F3;font-family:Arial,sans-serif;">
       <div style="width:${w}px;margin:0;background:#fff;padding:18px 18px 22px;box-sizing:border-box;">
         <div style="font-size:12px;color:#666;margin-bottom:10px;">${label}</div>
-        <div style="font-size:14px;line-height:21px;color:#222;margin-bottom:14px;">Hi Jordan,<br><br>Thanks for the time today. The one-pager is attached.<br><br>Best,</div>
+        <div style="font-size:14px;line-height:21px;color:#222;margin-bottom:14px;">SAMPLE email text. Thanks for the time today; the one-pager is attached.<br><br>Best,</div>
         ${inner}
       </div></body></html>`;
     const shot = async (w, inner, label, file) => {
@@ -129,6 +131,6 @@ if (!process.argv.includes('--no-png')) {
     await shot(360, sigTable(), 'Preview: phone width, 360 px', 'preview-phone.png');
     await shot(640, sigTable({ outreach: true }), 'Preview: outreach signature', 'preview-outreach.png');
     await b.close();
-    console.log('Wrote signature/preview-desktop.png, preview-phone.png, preview-outreach.png');
+    console.log('Wrote ' + path.relative(ROOT, OUT) + '/preview-desktop.png, preview-phone.png, preview-outreach.png');
   })().catch((e) => { console.error(e); process.exit(1); });
 }

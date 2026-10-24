@@ -2,7 +2,7 @@
 
 # 01 · Name-check log: trademark, state entity and domains
 
-Version 0.5 · 2026-10-24
+Version 0.6 · 2026-10-24
 
 **The name being checked.** `BRAND_NAME = Desk Drop` (working name, not cleared). This is the only place in this file where the name is set. Every search below used this name and its spellings: "desk drop", "deskdrop", "desk-drop", "desk drops", "deskdrops". To check a new name, change this line, rerun every row of the log, and keep this version as history.
 
@@ -25,7 +25,7 @@ Version 0.5 · 2026-10-24
 ## What the checks found, in plain words
 
 1. **A business already trades as "DeskDrop" in an adjacent market.** The site thedeskdrop.com (deskdrop.co and trydeskdrop.com redirect to it) sells "custom-branded chocolate gifts" in jars, shipped to business recipients' desks, with a \$995 pilot for 25 gifts and "Nationwide shipping". It shows a 312 telephone area code (Chicago) and "© 2026 DeskDrop". Both businesses would deliver food to offices under the same two words. It has no USPTO filing that the searches found, but a business can hold rights from use alone. This is the main risk.
-2. **The USPTO has no live mark with both words, and treated them as descriptive.** The one filing with both words, DESK-DROP (serial 99174501, Elior, Inc.), covered online food ordering and "food and drink ... featuring office delivery". The USPTO refused it in a first Office action because the mark "merely describes" the services; Elior did not respond, and the application was abandoned on 2026-03-31. The examiner also wrote that a search "found no conflicting marks". In plain terms: the USPTO read "desk drop" as describing delivery to where people work. A federal registration of the working name for this business may meet the same refusal, and a descriptive name is hard to stop others from using.
+2. **The USPTO has no live mark with both words, and treated them as descriptive.** The one filing with both words, DESK-DROP (serial 99174501, Elior, Inc.), covered online food ordering and "food and drink ... featuring office delivery". The USPTO refused it in a first Office action because the mark "merely describes" the services. Elior asked for more time (granted 2025-12-29), then did not respond, and the application was abandoned on 2026-03-31. The examiner also wrote that a search "found no conflicting marks". In plain terms: the USPTO read "desk drop" as describing delivery to where people work. A federal registration of the working name for this business may meet the same refusal, and a descriptive name is hard to stop others from using.
 3. **The .com is taken; the .nyc looks open.** deskdrop.com has been registered since 2004 (no website answered). deskdrop.co is registered and points to the chocolate business above. deskdrop.nyc and deskdropnyc.com returned "not found" in the registries' own lookup services.
 4. **No New York entity uses the name.** The Department of State's own open register shows no active or past entity under any of the three spellings searched. The only name with both words is DROPDESK LLC (Nassau County, 2017). The Department's web search could not be run from here; the founder runs it (row 12).
 
@@ -125,3 +125,4 @@ RDAP "404 Not found" means the registry holds no record today. It is not a promi
 - Round 3 (2026-10-24), full read: "refused" now says it was a first Office action followed by abandonment; the other business is described as selling "food gifts delivered to offices"; the individual owner of DROPDESK is no longer named (business data only); rerun coverage stated row by row; dollar signs escaped so tables render.
 - Round 4 (2026-10-24), final full read: wording only (".nyc may require", "kept for the record", domain count 13, rerun step names the .com and .nyc rows).
 - Merge (2026-10-24): version 0.5; the name line now uses the pack-wide `BRAND_NAME` form and the name appears once; the attorney question points to file 08, held in week 4 before filing.
+- Review round 1 (2026-10-24), version 0.6: finding 2 now records Elior's granted extension (TSDR, 2025-12-29) before the abandonment, as row 9 already did.

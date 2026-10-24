@@ -2,7 +2,7 @@
 
 # 11 · Certificate of insurance request to a brand: product liability, with us as additional insured
 
-Version 0.5 · 2026-10-24
+Version 0.6 · 2026-10-24
 
 **The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot on the "Additional insured" line of the block to forward. Replace it with the name on the filed Articles of Organization, letter for letter, including "LLC".
 
@@ -39,11 +39,11 @@ Version 0.5 · 2026-10-24
 >
 > **Products:** [PRODUCT NAME AND SKU], or all of [BRAND]'s products.
 >
-> **Coverage to show:** commercial general liability including products-completed operations, or a separate product liability policy, with at least \$1,000,000 each occurrence. Please show the products-completed operations aggregate, and whether the policy is written on an occurrence or claims-made basis.
+> **Coverage to show:** commercial general liability including products-completed operations, or a separate product liability policy, with at least \$1,000,000 each occurrence. Please show the products-completed operations aggregate, and whether the policy is written on an occurrence or claims-made basis. If claims-made, please state the retroactive date.
 >
 > **Additional-insured status:** as a vendor, for "bodily injury" or "property damage" arising out of [BRAND]'s products that the additional insured distributes. ISO form CG 20 15 (Additional Insured – Vendors), or your policy's blanket vendors endorsement, is fine. Our signed campaign agreement with [BRAND], dated [AGREEMENT DATE], requires this coverage, if your blanket endorsement needs a written contract.
 >
-> **Policy period:** in force from [SHIP-BY DATE] through at least [WINDOW CLOSE DATE]. If the policy renews before then, please send the renewal certificate too.
+> **Period:** our agreement asks for this coverage, with the additional insured above, from [SHIP-BY DATE] until [COVER-UNTIL DATE: 12 months after WINDOW CLOSE DATE, or the latest best-by date on the units if later], because units given away in the campaign stay in office pantries and go home with employees after it ends. If the policy expires before that date, please send the renewal certificate and endorsement when it renews. If the policy is claims-made, its retroactive date must be on or before [SHIP-BY DATE], and the coverage must stay in force, or an extended reporting period be bought, through [COVER-UNTIL DATE].
 >
 > **Please send:** the certificate on your standard form (ACORD 25 is fine) and a copy of the endorsement that adds the additional insured. We are not asking for any wording on the certificate that the policy does not contain.
 >
@@ -59,7 +59,7 @@ Version 0.5 · 2026-10-24
 >
 > [FOUNDER NAME]
 
-If it still has not arrived by T−10, the product does not ship (brand agreement, section 2(c)). The product then cannot arrive by T−3, so the slip rule in section 8 moves the drop one week; tell every office the same day. If the certificate is still missing at the new T−10, the plan's rule applies (a brand that cannot produce a certificate is not qualified), and section 8 lets either side treat the campaign as cancelled by the brand.
+If the certificate has not arrived by T−10, the product does not ship until it does (brand agreement, section 2(c)). If that means the product cannot arrive by T−3, section 8 moves the drop one week; tell every office the same day. If the product then misses the new date's T−3, section 8 lets either side treat the campaign as cancelled by the brand. The plan's rule stands throughout: a brand that cannot produce a certificate is not qualified.
 
 ---
 
@@ -69,8 +69,8 @@ Tick every line before confirming the ship date. If any line fails, reply to the
 
 - [ ] **Named insured** matches the brand's legal name in the agreement (file 10, Part 1).
 - [ ] The **each-occurrence** limit on the policy that carries products liability (general liability, or a separate product liability policy) is \$1,000,000 or more, and a **products-completed operations aggregate** is shown.
-- [ ] **Policy dates** cover the ship-by date through the window close date.
-- [ ] The policy is marked **occurrence**. If it is marked claims-made, it is still usable for now, but note it for the attorney hour.
+- [ ] **Policy dates** cover the ship-by date through the window close date. If the policy ends before [COVER-UNTIL DATE] (12 months after window close, or the latest best-by date if later), put its expiry date in the calendar and ask the broker for the renewal certificate and endorsement then (record it as `coi_policy_end_date`, a suggested paid-brands column).
+- [ ] The policy is marked **occurrence**. If it is marked claims-made, it is still usable for now if the retroactive date is on or before the ship-by date; ask the broker to confirm that date in writing, and note it for the attorney hour (file 08, item 16).
 - [ ] The **"ADDL INSD"** column is marked on the line that carries products liability (general liability, or a separate product liability policy under "other"), and the description names our company as additional insured.
 - [ ] A **copy of the endorsement** is attached: either it names our company in its schedule, or it is blanket vendors wording that covers anyone the brand agreed in a written contract to add.
 - [ ] **Our name** on the certificate and endorsement matches the Articles of Organization exactly.
@@ -101,3 +101,4 @@ Then save the certificate and endorsement as `[BRAND]-COI-[YYYY-MM-DD].pdf` in t
 - Rounds 1 to 9 (2026-10-23 to 24, part A drafting): request, broker block, reminder and five-minute check; handling description written to the ISO vendors endorsement's exclusions; standard form plus endorsement, nothing custom (NY Insurance Law 502).
 - Merge (2026-10-24): renumbered 14 to 11; company name moved into the `[COMPANY NAME: …]` slot; version 0.5.
 - Merge review (2026-10-24): broker, the limit check now covers a separate product liability policy as well as general liability. Inspector, storage follows the label's own instruction, the same sentence as files 06, 07 and 10.
+- Review round 1 (2026-10-24), version 0.6: the period asked for now runs from the ship date to 12 months after the window closes, or the latest best-by date if later, matching brand agreement section 2(c), because released units stay in pantries; claims-made policies need a retroactive date on or before the ship date and coverage or a tail through that date; the note after Email 2 now follows sections 2(c) and 8 exactly (a late certificate delays shipping; only a missed T−3 moves the drop).

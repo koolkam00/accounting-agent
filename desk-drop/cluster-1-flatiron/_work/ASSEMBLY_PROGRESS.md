@@ -20,3 +20,12 @@ Working file so nothing is lost on context compaction. Not a deliverable.
   32BJ union + funds merge -> one row 25 W 18th. Instacart low, signed 111 W 33rd, near-miss.
 - To verify by web: Cure 345 PAS, WeWork 27 E 28th, Hub Seventeen 114 Fifth, WeWork 18 W 18th floors (WW Intl fl 7),
   K Health 387 PAS vs 298 Fifth, Ziff Davis 360 PAS, Select Office Suites fl 9-12 vs Pilot Fiber fl 12, Industrious 215 PAS floors, NeueHouse 104 vs 110 E 25th.
+- [x] resolutions.py, boundary.py, assemble.py written and run. Boundary final (round 1): main body x -362..376, s 13.45..30.5;
+  Union Square frame x 182..621, s 13.0..15.0. Area 1.04 km2.
+- Verified 2026-10-24: Cure (wewillcure.com residents page; operator Cure Experience Services LLC; Deerfield listed as resident),
+  WeWork 27 E 28th (LiquidSpace 'Confirmed Open' BUT not on wework.com NYC index -> low, possibly-closed),
+  Hub Seventeen (CO 2025-02-11 re-opened; hubseventeen.com is unrelated Nigerian org), WeWork 18 W 18th = five unnamed floors of 12,
+  K Health terms -> 387 PAS 9th fl (high), ziffdavis.com schema -> 360 PAS, Select Office Suites floors 9-12 vs Pilot Fiber fl 12 (excluded).
+  NOTE: one SEC EDGAR company page was opened via WebFetch by accident (no personal identifier sent). Do not use EDGAR again.
+- Counts round 1: 276 company rows; 179 candidates (61 high, 92 med, 26 low; 102 unknown band); 85 near-miss over-500; 6 outside; 5 coworking-excluded; 1 not-office.
+- Next: build.py (IDs, tabs, route, walk), maps.py, xlsx.py, spot checks, docs.

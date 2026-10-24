@@ -107,7 +107,7 @@
     { group: 'Brand', key: 'proposal_date', label: 'Proposal date', help: 'Today, YYYY-MM-DD. Send within 24 hours of the call.' },
     { group: 'Brand', key: 'category', label: 'Category', options: CATEGORIES, help: 'Category exclusivity: no other brand in this category in the same drop.' },
     { group: 'Campaign', key: 'tier', label: 'Tier', options: [['founding', 'Founding: $600 for 5 offices (first three brands only)'], ['standard', 'Standard: $1,500 for 10 offices']] },
-    { group: 'Campaign', key: 'extra_offices', label: 'Extra offices at $150 each', help: 'Usually 0.' },
+    { group: 'Campaign', key: 'extra_offices', label: `Extra offices at ${'$' + O.extra_office} each`, help: 'Usually 0.' },
     { group: 'Campaign', key: 'drop_date', label: 'Proposed drop date', required: true, help: 'YYYY-MM-DD, a Tuesday or Wednesday three to four weeks out. Every other date is worked out from it, using the CONTRACTS calendar rules.' },
     { group: 'Campaign', key: 'ship_by_requested', label: 'Ask them to ship by (optional)', help: 'Only if earlier than the latest ship-by date, e.g. to avoid holiday freight. YYYY-MM-DD.' },
     { group: 'The offices (no company names before signing)', key: 'offices', type: 'table', label: 'One row per office on this route', minRows: 1, maxRows: 14,

@@ -2,7 +2,7 @@
 
 # 04 · Formation checklist: forming the New York LLC
 
-Version 0.5 · 2026-10-24
+Version 0.6 · 2026-10-24
 
 **The company in this file.** "The Company" means **[COMPANY NAME: Desk Drop LLC]**. This is the only place the name is set. The name is not cleared (see `01-name-check-log.md`). Decide it before you file: changing an LLC's name afterwards takes a \$60 Certificate of Amendment (LLC Law §1101(g), opened 2026-10-23), plus new bank, insurance and agreement paperwork.
 
@@ -48,7 +48,7 @@ Total state fees: \$250. Total with publication: about \$595 (Albany County) to 
 - [ ] **Sign the operating agreement.** Members "shall adopt a written operating agreement", before, at or "within ninety days after the filing" of the Articles (LLC Law §417, opened 2026-10-23). Default: sign it the same day.
 - [ ] **Get the EIN.** Free, online, after the LLC exists: "Use this tool to get an EIN directly from the IRS in minutes for free." and "You never have to pay a fee for an EIN." (irs.gov "Get an employer identification number", page updated 16-Oct-2026, opened 2026-10-23). Founder only: it asks for your own taxpayer number. Ignore websites that charge for this.
 - [ ] **Open the business bank account.** Bring the filing receipt, EIN letter, signed operating agreement and ID. The bank's exact list is unverified; ask the bank first.
-- [ ] **New York LLC Transparency Act: probably nothing to file.** The Department of State page lists the filing duty for "non-exempt limited liability companies that were formed under the law of a foreign country", effective January 1, 2026, with a "statutory filing fee of \$25" (https://dos.ny.gov/beneficial-owner-disclosure, opened 2026-10-23). Holland & Knight (2026-01-13) writes that U.S.-formed LLCs, including New York ones, are exempt, after the Governor vetoed a decoupling amendment on 2025-12-19. The attorney confirms in one line (question 3). Secondary sources describe a 30-day filing window for LLCs that are covered, so settle it within 30 days of filing.
+- [ ] **New York LLC Transparency Act: probably nothing to file.** The Department of State page lists the filing duty for "non-exempt limited liability companies that were formed under the law of a foreign country", effective January 1, 2026, with a "statutory filing fee of \$25" (https://dos.ny.gov/beneficial-owner-disclosure, opened 2026-10-23). Holland & Knight (2026-01-13) writes that U.S.-formed LLCs, including New York ones, are exempt, after the Governor vetoed a decoupling amendment on 2025-12-19. The statute sets the window: "Within thirty days of an initial filing of articles of organization", a reporting company files a beneficial ownership disclosure and an exempt company files "an attestation of exemption" (LLC Law §1107(d), nysenate.gov, revision 2026-09-04, opened 2026-10-24). Whether a New York LLC owned by one U.S. individual is either one is the attorney's one-line answer (question 3; file 08, item 4). Settle it within 30 days of filing.
 - [ ] **Only now:** sign the brand agreement in the Company's name and send the invoice (files 10 and 11).
 
 ## 3 · Publish (order by business day 10)
@@ -119,7 +119,7 @@ Day counts are calendar days. Whether a weekend day 120 rolls forward is a legal
 | New York LLC annual filing fee, Form IT-204-LL | By the 15th day of the third month after year end: Mon 2027-03-15 for 2026, if the LLC had any New York income, gain, loss or deduction in 2026; then every year | \$25 for a single-member LLC that is disregarded for federal tax | Form IT-204-LL instructions, tax.ny.gov, opened 2026-10-23. The accountant confirms whether a November 2026 LLC owes for 2026 (file 09) |
 | Sales tax registration, only if the accountant says any of the fee is taxable | "at least 20 days before you begin business" | No fee mentioned on the page | TB-ST-360, tax.ny.gov, updated 2026-10-21, opened 2026-10-23 |
 | Estimated income tax payments | Accountant sets the dates and amounts | | File 09 |
-| Biennial statement | Every two years, in the calendar month the Articles were filed (LLC Law §301(e)(1), opened 2026-10-23): November 2028 if filed in November 2026 | Fee unverified, founder to confirm on dos.ny.gov before it is due | LLC Law §301 |
+| Biennial statement | Every two years, in the calendar month the Articles were filed (LLC Law §301(e)(1), opened 2026-10-23): November 2028 if filed in November 2026 | \$9 (LLC Law §1101(c), the statement filed "pursuant to section three hundred one"; dos.ny.gov biennial statements page, opened 2026-10-24: "The fee for filing a Biennial Statement for a business corporation or LLC is \$9.") | LLC Law §§301, 1101(c) |
 | General liability insurance bound | Before any brand ships. Latest Mon 2026-12-21, since brands are asked to ship by Tue 2026-12-22 (CONTRACTS section 3, derived); a brand that ships earlier moves this date up | Needs quote | File 06 |
 
 ## For the attorney hour (formation questions)
@@ -131,11 +131,13 @@ These four are also in `08-attorney-hour-agenda.md`, the single agenda for the h
 3. **LLC Transparency Act.** Confirm that a New York LLC whose only member is a U.S. individual files nothing, not even an exemption attestation, as of the filing date.
 4. **The 120-day rule.** How to count day 120 if it falls on a weekend, and what a suspended LLC cannot do in practice.
 
-## Sources, all opened 2026-10-23
+## Sources, opened 2026-10-23 unless stated
 
 - NY Department of State, Articles of Organization: https://dos.ny.gov/limited-liability-company-articles-organization (\$200; publication; operating agreement within 90 days; name availability search \$5; expedite \$25, \$75, \$150)
 - NY Department of State, Certificate of Publication: https://dos.ny.gov/certificate-publication-domestic-limited-liability-company-0 (\$50; 120 days; suspension)
 - NY Department of State, Beneficial Owner Disclosure: https://dos.ny.gov/beneficial-owner-disclosure
+- NY Department of State, Biennial Statements for business corporations and LLCs (\$9; filed every two years; opened 2026-10-24): https://dos.ny.gov/biennial-statements-business-corporations-and-limited-liability-companies
+- NY LLC Law §1107 (beneficial ownership disclosure; 30-day window in (d)) and §1106 (definitions), revision 2026-09-04, opened 2026-10-24: https://www.nysenate.gov/legislation/laws/LLC/1107
 - Holland & Knight, "New York LLC Transparency Act: Reporting Limited to Non-U.S. LLCs", 2026-01-13: https://www.hklaw.com/en/insights/publications/2026/01/new-york-llc-transparency-act-reporting-limited
 - NY LLC Law §203 (revision 2026-09-04), §206 (revision 2014-09-22), §301 (revision 2023-01-06), §417 (revision 2014-09-22), §1101 (revision 2015-04-24): https://www.nysenate.gov/legislation/laws/LLC/206 and the same path for each section number
 - IRS, Get an employer identification number (updated 16-Oct-2026): https://www.irs.gov/businesses/small-businesses-self-employed/get-an-employer-identification-number
@@ -149,3 +151,4 @@ These four are also in `08-attorney-hour-agenda.md`, the single agenda for the h
 - Round 3 (2026-10-24), full read: "Section 1" replaces "Steps 1 to 4"; suspension sentence rebuilt around the Department's own words; real-dates fill-in moved out of the table; insurance row now "before any brand ships, latest 2026-12-21"; dollar signs escaped so the county table renders as text, not math.
 - Round 4 (2026-10-24), final full read: no changes beyond wording.
 - Merge (2026-10-24): renumbered 02 to 04; version 0.5; cross-references updated to the new numbers; "part A/part B" wording removed.
+- Review round 1 (2026-10-24), version 0.6: biennial statement fee corrected to \$9 (LLC Law §1101(c) and the Department's page; the earlier note that it was not in §1101 was wrong); the Transparency Act's 30-day window now cites LLC Law §1107(d), which also asks an exempt company for an attestation of exemption, so the attorney question covers it.

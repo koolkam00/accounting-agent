@@ -161,6 +161,31 @@ HL0, HLN = 5, 1004                # Hours_Log data rows
 TG0, TGN = 10, 509                # Toggl_Import data rows
 PL0, PLN = 5, 1004                # Pipeline data rows
 
+# Paste areas and their helper blocks. Every helper block sits at least ten blank columns to the right of its
+# paste area, so an extra column in a pasted file lands in blank cells and is flagged on Checks (review R1-06).
+BUF = 10
+AC_COLS = ["campaign_id", "drop_id", "drop_date", "delivery_model", "tier", "brand_id", "offices", "units_received", "units_delivered", "units_placed",
+           "units_placed_within_1bd", "units_topped_up", "units_depleted_day5", "survey_responses", "survey_tried_yes", "qr_scans",
+           "code_redemptions_day30", "revenue_usd", "invoice_paid_date", "processing_fee_usd", "report_delivered_date", "brand_would_buy_again",
+           "renewed", "deposit_usd", "deposit_paid_date", "survey_responses_min_office"]
+DC_COLS = ["drop_id", "drop_date", "delivery_model", "offices", "brands", "kit_cost_usd", "transport_cost_usd", "other_direct_cost_usd", "notes"]
+HL_COLS = ["date", "drop_id", "campaign_id", "activity", "hours", "note"]
+PL_COLS = ["date", "side", "org_id", "org_name", "event", "value_number", "value_text", "controls_budget", "notes"]
+AC_H0 = len(AC_COLS) + BUF + 2    # 38 = AL: first Actuals_Campaigns helper (AA to AK stay blank)
+DC_H0 = len(DC_COLS) + BUF + 2    # 21 = U: Actuals_DropCosts helper (J to T stay blank)
+HT0 = len(HL_COLS) + BUF + 1      # 17 = Q: Hours_Log totals (G to P stay blank)
+PLH0 = len(PL_COLS) + BUF + 1     # 20 = T: Pipeline helpers (J to S stay blank)
+TG_LAST = 30                      # Toggl_Import paste area A:AD
+TGH0 = TG_LAST + 2                # 32 = AF: Toggl helpers
+PLC = {k: CL(PLH0 + i) for i, k in enumerate(["first", "g0b", "g0b_first", "op", "op_first", "g3", "g3_first", "oprobe", "bprobe"])}
+PLS = PLH0 + len(PLC) + 1         # 30 = AD: Pipeline summary block
+pr = lambda L: f"Pipeline!${L}${PL0}:${L}${PLN}"
+REF.update({"PL_date": pr("A"), "PL_side": pr("B"), "PL_org": pr("C"), "PL_event": pr("E"), "PL_value": pr("F"), "PL_text": pr("G"),
+            "PL_first": pr(PLC["first"]), "PL_g0b_first": pr(PLC["g0b_first"]), "PL_op_first": pr(PLC["op_first"]),
+            "PL_g3_first": pr(PLC["g3_first"]), "PL_oprobe": pr(PLC["oprobe"]), "PL_bprobe": pr(PLC["bprobe"])})
+sr = lambda L: f"Schedule!${L}${DROP0}:${L}${DROPN}"
+REF.update({"sched_ids": sr("A"), "sched_dates": sr("E"), "sched_tiers": sr("H"), "sched_actuals": sr("N"), "sched_check": sr("T")})
+
 # ==========================================================================
 # Lists
 # ==========================================================================
@@ -235,6 +260,15 @@ put(ws, "U5", "Wednesday")
 put(ws, "V5", 4)
 REF["wd_tue"] = "Lists!$V$4"
 REF["wd_wed"] = "Lists!$V$5"
+# expected header rows of the four paste files (HANDOFF.md); Checks compares each paste tab's row 4 with these
+put(ws, "A33", "Expected header row of each pasted file (HANDOFF.md). Checks compares row 4 of each paste tab with these. Do not edit.", font=F_BOLD)
+HDR_ROW = {}
+for i, (fname, cols) in enumerate([("campaign_actuals.csv", AC_COLS), ("drop_costs.csv", DC_COLS), ("hours_log.csv", HL_COLS), ("pipeline_log.csv", PL_COLS)]):
+    r = 34 + i
+    put(ws, f"A{r}", fname, font=F_BOLD)
+    for j, h in enumerate(cols):
+        put(ws, f"{CL(2 + j)}{r}", h, font=F_NOTE)
+    HDR_ROW[fname] = f"Lists!$B${r}:${CL(1 + len(cols))}${r}"
 widths(ws, {"A": 14, "B": 11, "C": 21, "D": 32, "E": 8, "F": 11, "G": 9, "H": 17, "I": 15, "J": 10, "K": 14, "L": 16,
             "N": 13, "O": 34, "Q": 13, "R": 13, "S": 52, "U": 30, "V": 6})
 
@@ -242,7 +276,7 @@ widths(ws, {"A": 14, "B": 11, "C": 21, "D": 32, "E": 8, "F": 11, "G": 9, "H": 17
 # Inputs
 # ==========================================================================
 ws = WS["Inputs"]
-title(ws, "Inputs", "Every assumption in one labeled cell. Yellow cells are inputs. Grey cells are calculated; do not type over them.")
+title(ws, "Inputs", "Every assumption in one labeled cell. Yellow cells are inputs. Blue cells are inputs that follow another cell by default; type over them to replace. Grey cells are calculated; do not type over them.")
 banner(ws, "A3", "All defaults are planning estimates from plan.md, never forecasts. 'Plan default' keeps the original figure; 'Changed' flags any cell you edit.", "K3")
 INP_HDR = ["key", "Assumption", "Value", "Unit", "Low", "High", "Status", "Source", "Notes", "Plan default", "Changed?"]
 row = [5]
@@ -257,7 +291,9 @@ def inp_section(text):
     row[0] += 1
 
 
-def inp(key, label, value, unit, status, source, notes="", low=None, high=None, fmt=None, calc=False, vlist=None):
+def inp(key, label, value, unit, status, source, notes="", low=None, high=None, fmt=None, calc=False, vlist=None, track=True, follows=False):
+    """track=False: no 'Plan default' copy (the company name and tagline must live in one cell only).
+    follows=True: the default is a formula that follows another cell (blue); typing over it is flagged 'changed'."""
     r = row[0]
     put(ws, f"A{r}", key, font=F_NOTE)
     put(ws, f"B{r}", label, align=WRAP)
@@ -267,6 +303,8 @@ def inp(key, label, value, unit, status, source, notes="", low=None, high=None, 
         c.border = BOX
     else:
         as_input(c)
+        if follows:
+            c.fill = FILL_SCEN
         if fmt:
             c.number_format = fmt
     put(ws, f"D{r}", unit)
@@ -277,10 +315,13 @@ def inp(key, label, value, unit, status, source, notes="", low=None, high=None, 
     put(ws, f"G{r}", status)
     put(ws, f"H{r}", source, align=WRAP)
     put(ws, f"I{r}", notes, align=WRAP)
-    if not calc:
+    if not calc and track:
         put(ws, f"J{r}", value, fmt=fmt, font=F_NOTE)
         put(ws, f"K{r}", f'=IF(C{r}&""=J{r}&"","","changed")', font=Font(color="9C0006", bold=True))
         CHANGED_CELLS.append(f"K{r}")
+    elif not calc:
+        put(ws, f"J{r}", "not tracked", font=F_NOTE)
+        put(ws, f"K{r}", f'=IF(C{r}="","missing","")', font=Font(color="9C0006", bold=True))
     if vlist:
         add_list_validation(ws, f"C{r}", "=" + REF[vlist])
     for col in "ACDEFGJK":
@@ -298,13 +339,15 @@ CTR3 = "CONTRACTS.md section 3 (canonical calendar)"
 
 inp_section("1. Company and calendar")
 inp("company_name", "Company name (working name, not yet cleared)", "Desk Drop", "text", "working name", "Prompt; CONTRACTS s2 rename-ability",
-    "The only cell that holds the company name. Rename here and every tab follows.")
-inp("tagline", "Tagline (working, may change)", "Emerging brands. Delivered to your workday.", "text", "working", "Prompt; CONTRACTS s2")
+    "The only cell that holds the company name. Rename here and every tab follows. Not counted as a change.", track=False)
+inp("tagline", "Tagline (working, may change)", "Emerging brands. Delivered to your workday.", "text", "working", "Prompt; CONTRACTS s2",
+    "The only cell that holds the tagline.", track=False)
 inp("week1_start", "Week 1 starts (Monday)", D(2026, 10, 26), "date", "derived, founder to confirm", CTR3, "Week n starts on this date plus 7 x (n - 1) days.", fmt=DATE)
 inp("gate0_date", "Gate 0 review (end of week 3)", D(2026, 11, 13), "date", "derived, founder to confirm", CTR3, fmt=DATE)
 inp("gate1_date", "Gate 1 review (end of week 7)", D(2026, 12, 11), "date", "derived, founder to confirm", CTR3, fmt=DATE)
-inp("gate2_date", "Gate 2 review (campaign zero report, T+7)", D(2027, 1, 22), "date", "derived, founder to confirm", CTR3,
-    "Moved from the plan's week 9 because campaign zero moved to 2027-01-12 (December blackout collision).", fmt=DATE)
+r_g2 = inp("gate2_date", "Gate 2 review (campaign zero report, T+7)", None, "date", "derived, founder to confirm", CTR3,
+           "Follows the Gate 2 drop on Schedule: its date plus the report deadline (T+7, 2027-01-22 by default). Moved from the plan's week 9 because campaign zero moved to 2027-01-12 (December blackout collision).",
+           fmt=DATE, follows=True)
 inp("gate3_date", "Gate 3 review", D(2027, 3, 12), "date", "derived, founder to confirm", CTR3, "Week 20; replaces the plan's week 16.", fmt=DATE)
 inp("decision_date", "Six-month decision (end of week 24)", D(2027, 4, 9), "date", "derived, founder to confirm", CTR3, fmt=DATE)
 r_ovr = inp("as_of_override", "As-of date override (blank = today)", None, "date", "setting", "Model setting",
@@ -316,6 +359,12 @@ inp("months_per_year", "Months per year", 12, "months", "conversion", "Calendar"
 inp("weeks_per_month", "Weeks per month", f"={R('weeks_per_year')}/{R('months_per_year')}", "weeks", "calculated", "Weeks per year / months per year", fmt='0.00', calc=True)
 inp("hours_per_day", "Hours per day (converts Toggl durations)", 24, "hours", "conversion", "Calendar")
 inp("window_bd", "Campaign window", 5, "business days", "planning estimate", "plan.md, What brands buy: 'Five business days'", "T is day 1; the window closes at T+4.")
+inp("debrief_bd", "Debrief this many business days after the drop (T+10)", 10, "business days", "planning estimate", CTR3 + " (debrief at T+10)",
+    "Used to flag a decision-window drop whose results land after the decision date (Schedule, Dashboard).")
+inp("pub_order_bd", "Newspaper publication ordered this many business days after the LLC filing", 10, "business days", "derived, founder to confirm",
+    "desk-drop-legal-pack/figures.csv, timing of the publication line (read 2026-10-24)", "Sets the publication payment date in section 11.")
+inp("pub_weeks", "Weekly newspaper runs before the Certificate of Publication is filed", 6, "weeks", "planning estimate",
+    "plan.md, Legal table: 'publish in two newspapers for six weeks'", "Sets the certificate's payment date in section 11.")
 inp("drop_prefix", "Drop ID prefix", "DRP-", "text", "convention", "CONTRACTS s6.5 (DRP-###)", "Toggl projects named DRP-001 etc. map to drops.")
 inp("office_window_days", "An office should get at most one drop in this many days", 28, "days", "derived, founder to confirm",
     "plan.md, What has to be true #4: 'Offices accept one drop a month'", "Four weeks counts as monthly, so drops 28 days apart do not flag. Used for the office-fatigue warning on Schedule.")
@@ -373,17 +422,20 @@ inp("kit_mail_per_office", "Mailing the display kit ahead (direct-ship)", None, 
 inp("kit_print_bd", "Kits printed this many business days before the drop", 3, "business days", "planning estimate", "plan.md, campaign calendar: T minus 3")
 inp("storage_choice", "Storage", "unit", "list", "setting", P_ECON, "unit = small storage unit; home = sealed cases at home, $0.", vlist="L_storage")
 inp("storage_monthly", "Storage unit per month", 150, "USD per month", "planning estimate", P_ECON, "Allocation is half: $75 a drop at two drops a month.", fmt=USD)
-inp("storage_start", "Storage unit rented from", D(2027, 2, 1), "date", "derived, founder to confirm", "Plan reading (b)",
-    "First day of the first standard drop's month. Campaign zero stays at home, which is how its $280 reproduces.", fmt=DATE)
+inp("storage_start", "Storage unit rented from", f'=IFERROR(EOMONTH(INDEX({R("sched_dates")},MATCH("standard",{R("sched_tiers")},0)),-1)+1,"")',
+    "date", "derived, founder to confirm", "Plan reading (b)",
+    "Follows Schedule: the first day of the month of the first standard drop (2027-02-01 by default). Campaign zero stays at home, which is how its $280 reproduces.",
+    fmt=DATE, follows=True)
 inp("storage_end", "Storage unit released (blank = keep)", None, "date", "setting", "Plan reading (c)",
     "Blank keeps the unit through the window, as the plan's direct-ship row keeps the $75.", fmt=DATE)
 inp("software_monthly", "Software per month", 60, "USD per month", "planning estimate", P_CAP + "; Tools table",
     "$360 for six months. Tools table sums to $7 to $81; the plan caps software under $60.", low=7, high=81, fmt=USD)
-inp("software_start", "Software paid from", D(2026, 10, 26), "date", "derived, founder to confirm", "plan.md, Week 1 setup", fmt=DATE)
+inp("software_start", "Software paid from", f"={R('week1_start')}", "date", "derived, founder to confirm", "plan.md, Week 1 setup", "Follows week 1.", fmt=DATE, follows=True)
 inp("insurance_monthly", "General liability insurance per month", 100, "USD per month", "planning estimate, needs quote", P_ECON,
     "'Roughly $100 a month'. Capital table range $500 to $1,500 a year, shown here per month.", low=500 / 12, high=125, fmt=USD)
 inp("insurance_billing", "Insurance billing", "annual", "list", "setting", P_CAP, "annual = one year's premium paid at bind (capital table 'one year').", vlist="L_insbill")
-inp("insurance_bind", "Insurance bound on", D(2026, 12, 11), "date", "derived, founder to confirm", "plan.md, setup checklist: 'At Gate 1 pass: Insurance bound'", fmt=DATE)
+inp("insurance_bind", "Insurance bound on", f"={R('gate1_date')}", "date", "derived, founder to confirm", "plan.md, setup checklist: 'At Gate 1 pass: Insurance bound'",
+    "Follows Gate 1. The legal pack's latest bind date is 2026-12-21.", fmt=DATE, follows=True)
 inp("phone_monthly", "Phone per month", 0, "USD per month", "planning estimate", "plan.md, Tools: 'Your phone', Google Voice $0", fmt=USD)
 inp("alloc_drops_month", "Drops per month used to allocate overhead to a drop", 2, "drops per month", "planning estimate", P_ECON,
     "Insurance $100 a month over two drops = $50; software $60 = $30; storage $150 = $75.")
@@ -453,7 +505,7 @@ inp("ss_model", "Steady-state delivery model", "courier", "list", "setting", "Pl
 inp("ss_offices", "Steady-state offices per drop", f"={R('std_offices_drop')}", "offices", "calculated", "Offices per standard drop (section 4)", calc=True)
 inp("founder_cash", "Cash the founder commits to the first six months", None, "USD", "needs founder decision", "plan.md, What I need from you #7",
     "Blank until you decide. The plan's range is $3,360 to $6,510.", fmt=USD)
-inp("founder_cash_date", "Founder cash goes in on", D(2026, 10, 26), "date", "setting", "Model setting", fmt=DATE)
+inp("founder_cash_date", "Founder cash goes in on", f"={R('week1_start')}", "date", "setting", "Model setting", "Follows week 1.", fmt=DATE, follows=True)
 inp("reserve_usd", "Reserve held back (not spent)", 1000, "USD", "planning estimate", P_CAP, fmt=USD)
 
 inp_section("9. Gate thresholds, decision rule and six-month goals")
@@ -482,6 +534,10 @@ inp("sc_c_misses", "Scenario C signal: drops with placement under the threshold"
 inp("goal_campaigns", "Six-month goal: paid campaigns", 6, "campaigns", "planning estimate", "plan.md, business on one page")
 inp("goal_renewals", "Six-month goal: renewals", 2, "renewals", "planning estimate", "plan.md, business on one page")
 inp("goal_offices", "Six-month goal: active offices", 12, "offices", "planning estimate", "plan.md, business on one page")
+# Gate 2 follows its drop on Schedule (review R1-14): drop date plus the report deadline in business days
+_g2f = f'=IFERROR(WORKDAY(INDEX({R("sched_dates")},MATCH({R("g2_drop_id")},{R("sched_ids")},0)),{R("g2_report_bd")},{R("holidays")}),"")'
+ws[f"C{r_g2}"].value = _g2f
+ws[f"J{r_g2}"].value = _g2f
 
 inp_section("10. Sensitivity axes")
 inp("sens_price_start", "Price per office: first row", 100, "USD per office", "setting", "Model setting", fmt=USD)
@@ -502,39 +558,48 @@ ws[f"K{row[0]}"].value = "Changed?"
 row[0] += 1
 su0 = row[0]
 G_CSV = "desk-drop-legal-pack/figures.csv (read 2026-10-24)"
+SU_KEYS = ["su_llc", "su_cert", "su_pub", "su_license", "su_print", "su_domain", "su_attorney", "su_accountant", "su_it204", "su_hnoa", "su_addl_insured", "su_tm"]
+SUR = {k: su0 + i for i, k in enumerate(SU_KEYS)}
+g0, g1 = f"={R('gate0_date')}", f"={R('gate1_date')}"
 startup = [
-    # key, item, working, low, high, status, source, notes, timing, timing basis, include
+    # key, item, working, low, high, status, source, notes, timing (date or formula), timing basis, include
     ("su_llc", "LLC Articles of Organization (state filing fee)", 200, 200, 200, "verified 2026-10-23 (legal pack)",
      G_CSV + "; https://dos.ny.gov/limited-liability-company-articles-organization", "Plan capital table: $200 plus $50.",
-     D(2026, 11, 13), "Day 0 = first verbal brand yes, expected near Gate 0 (legal pack timing)", "Y"),
+     g0, "Follows Gate 0. Day 0 = first verbal brand yes, expected near Gate 0 (legal pack timing)", "Y"),
     ("su_cert", "Certificate of Publication filing", 50, 50, 50, "verified 2026-10-23 (legal pack)",
      G_CSV + "; https://dos.ny.gov/certificate-publication-domestic-limited-liability-company-0", "",
-     D(2027, 1, 11), "After the sixth weekly run: order by 2026-11-30, six runs (derived from the legal pack's timing; legal limit day 120)", "Y"),
-    ("su_pub", "Newspaper publication (two papers, six weeks), county not chosen", 1745, 200, 2000, "needs quote (legal pack)",
-     G_CSV + "; https://www.llcpublishers.com/pricing", "Legal pack working figure = New York County ($1,795 all-in less the $50 state fee). $345 if the attorney confirms Albany County. Plan table: $250 to $2,000.",
-     D(2026, 11, 30), "Ordered within 10 business days of filing (legal pack): 2026-11-30", "Y"),
+     f"=L{SUR['su_pub']}+{R('pub_weeks')}*{R('days_per_week')}", "Follows publication: after the sixth weekly run (2027-01-11 by default; legal limit day 120)", "Y"),
+    ("su_pub", "Newspaper publication (two papers, six weeks), county not chosen", 2000, 250, 2000, "needs quote (plan high end until quoted)",
+     "plan.md, Economics: Capital table ($250 to $2,000, no working figure); " + G_CSV + "; https://www.llcpublishers.com/pricing",
+     "Default = the plan's high end, because the plan gives a range and no working figure; it stays until a quote or a verified figure arrives. "
+     "Alternative: the legal pack's working figure $1,745 for New York County (LLC Publishers $1,795 all-in less the $50 state fee; needs quote), or $345 if the attorney confirms Albany County.",
+     f"=WORKDAY(L{SUR['su_llc']},{R('pub_order_bd')},{R('holidays')})", "Follows the LLC filing: ordered within 10 business days (legal pack), 2026-11-30 by default", "Y"),
     ("su_license", "Food warehouse license (Article 28-D, two years), if required", 400, 0, 400, "fee verified 2026-10-23; need unknown (legal pack)",
      G_CSV + "; https://www.nysenate.gov/legislation/laws/AGM/500-B", "Zero if the state says sealed cases at home need no license, or if brands ship direct.",
-     D(2026, 12, 11), "Before any brand ships (legal pack: latest 2026-12-21); plan: Gate 1", "Y"),
+     g1, "Follows Gate 1. Before any brand ships (legal pack: latest 2026-12-21)", "Y"),
     ("su_print", "Printing and materials (hand truck, supplies, first card runs)", 300, 300, 300, "planning estimate", P_CAP,
-     "Read as startup supplies; per-drop kits are the $8 per office line.", D(2026, 12, 11), "Gate 1 pass: hand truck, supplies and first card run (plan setup checklist)", "Y"),
-    ("su_domain", "Domain and email setup", 100, 100, 100, "planning estimate", P_CAP, "", D(2026, 10, 26), "Week 1, days 1 and 2 (plan)", "Y"),
+     "Read as startup supplies; per-drop kits are the $8 per office line. Campaign zero also pays $40 of kits on its drop: if the first card run is those kits, $40 is counted twice (conservative). Both are plan figures.",
+     g1, "Follows Gate 1: hand truck, supplies and first card run (plan setup checklist)", "Y"),
+    ("su_domain", "Domain and email setup", 100, 100, 100, "planning estimate", P_CAP, "", f"={R('week1_start')}", "Follows week 1: days 1 and 2 (plan)", "Y"),
     ("su_attorney", "Attorney hour (both agreements, name and formation questions)", 400, 300, 500, "plan estimate (legal pack)",
-     G_CSV + "; plan.md Legal table", "Not in the plan's capital table. Plan question 8 puts both hours at about $700.", D(2026, 11, 13), "Booked at Gate 0; held before the first invoice (legal pack)", "Y"),
+     G_CSV + "; plan.md Legal table", "Not in the plan's capital table. Plan question 8 puts both hours at about $700; $400 plus the accountant's $300 keeps that figure.",
+     g0, "Follows Gate 0: booked then, held before the first invoice (legal pack)", "Y"),
     ("su_accountant", "Accountant hour (sales tax, UBT, estimates)", 300, 200, 400, "plan estimate (legal pack)",
-     G_CSV + "; plan.md Legal table", "Not in the plan's capital table.", D(2026, 11, 13), "Booked at Gate 0; held before the first invoice (legal pack)", "Y"),
+     G_CSV + "; plan.md Legal table", "Not in the plan's capital table. See the attorney line for the $700 pair.", g0, "Follows Gate 0: booked then, held before the first invoice (legal pack)", "Y"),
     ("su_it204", "NYS LLC annual filing fee (IT-204-LL), single-member", 25, 25, 25, "verified 2026-10-23 (legal pack)",
-     G_CSV + "; https://www.tax.ny.gov/pdf/current_forms/it/it204lli.pdf", "Accountant confirms whether 2026 is owed. Not in the plan.", D(2027, 3, 15), "First possibly Mon 2027-03-15 for 2026 (legal pack)", "Y"),
+     G_CSV + "; https://www.tax.ny.gov/pdf/current_forms/it/it204lli.pdf", "Accountant confirms whether 2026 is owed. Not in the plan.", D(2027, 3, 15),
+     "Statutory date: first possibly Mon 2027-03-15 for 2026 (legal pack)", "Y"),
     ("su_hnoa", "Hired and non-owned auto add-on to the liability policy", None, None, None, "needs quote (legal pack)",
      G_CSV + "; plan.md Legal table ('Small add-on. Ask the carrier.')", "Needed if car rides, a car service or a rented van carry product (campaign zero does). Blank counts as $0.",
-     D(2026, 12, 11), "With the general liability bind", "Y"),
+     f"={R('insurance_bind')}", "Follows the insurance bind date", "Y"),
     ("su_addl_insured", "Additional-insured endorsements for buildings that require them", None, None, None, "needs quote (legal pack)",
-     G_CSV, "Zero if the policy has a blanket additional-insured endorsement. Blank counts as $0.", D(2026, 12, 11), "Before each such building's first drop", "Y"),
+     G_CSV, "Zero if the policy has a blanket additional-insured endorsement. Blank counts as $0.", f"={R('insurance_bind')}", "Follows the insurance bind date; before each such building's first drop", "Y"),
     ("su_tm", "Federal trademark application (one class)", 350, 350, 850, "verified 2026-10-23 (legal pack)",
      G_CSV + "; https://www.uspto.gov/learning-and-resources/fees-and-payment/uspto-fee-schedule",
      "Excluded from the six months (Include = N): the legal pack times it after campaign zero passes and outside the first six months, and USPTO refused a prior DESK-DROP filing as descriptive. Set Y to include it at Gate 2.",
-     D(2027, 1, 22), "Only after campaign zero passes; attorney advises first (legal pack)", "N"),
+     f"={R('gate2_date')}", "Follows Gate 2: only after campaign zero passes; attorney advises first (legal pack)", "N"),
 ]
+assert [s[0] for s in startup] == SU_KEYS
 for i, s in enumerate(startup):
     r = su0 + i
     key, item, working, low, high, status, src, notes, tdate, tbasis, incl = s
@@ -555,6 +620,8 @@ for i, s in enumerate(startup):
     CHANGED_CELLS.append(f"K{r}")
     as_input(put(ws, f"L{r}", tdate))
     ws[f"L{r}"].number_format = DATE
+    if isinstance(tdate, str):
+        ws[f"L{r}"].fill = FILL_SCEN
     put(ws, f"M{r}", tbasis, align=WRAP)
     as_input(put(ws, f"N{r}", incl))
     as_input(put(ws, f"O{r}", None))
@@ -648,17 +715,21 @@ for i, (key, lab, vals, unit, fmt, note) in enumerate(levers):
     put(ws, f"Q{r}", "=IF(AND(" + ",".join(f'{CL(3 + j)}{r}&""={CL(12 + j)}{r}&""' for j in range(5)) + '),"","changed")', font=Font(color="9C0006", bold=True))
     put(ws, f"I{r}", unit)
     put(ws, f"J{r}", note, align=WRAP)
+    # 1 when the scenario in force leaves this lever blank (a 'needs quote' or 'founder to set' figure)
+    put(ws, f"R{r}", f'=IF(INDEX(C{r}:G{r},MATCH({R("active_scenario")},$C$5:$G$5,0))="",1,0)', fmt=INT)
     ws.row_dimensions[r].height = 30
     REF[key] = f"Scenarios!$H${r}"
-header_row(ws, 5, 12, ["default: Plan base", "default: A", "default: B", "default: C", "default: D", "Changed?"], height=30)
+    REF[key + "_blank"] = f"Scenarios!$R${r}"
+header_row(ws, 5, 12, ["default: Plan base", "default: A", "default: B", "default: C", "default: D", "Changed?", "Blank in force? (1 = needs a figure)"], height=30)
 REF["scen_changed"] = "Scenarios!$Q$10:$Q$21"
 put(ws, "B23", "How it works", font=F_BOLD)
 put(ws, "B24", "The two decision-window drops on Schedule (DRP-004, DRP-005) take brands, renewals and new offices from the Active column. "
               "Type over those Schedule cells to replace the scenario with real plans. The steady-state view and the sensitivity tables use the Active column too. "
-              "Drops before Gate 3 do not change with the scenario.", align=WRAP)
+              "Drops before Gate 3 do not change with the scenario. A lever left blank in the scenario in force counts as zero, and column R flags it: "
+              "scenario B's office-paid revenue is left out of the steady-state net until its cost to serve is quoted.", align=WRAP)
 ws.merge_cells("B24:J24")
-ws.row_dimensions[24].height = 48
-widths(ws, {"A": 3, "B": 46, "C": 18, "D": 22, "E": 22, "F": 22, "G": 18, "H": 14, "I": 14, "J": 60, "K": 3, "L": 11, "M": 11, "N": 11, "O": 11, "P": 11, "Q": 10})
+ws.row_dimensions[24].height = 62
+widths(ws, {"A": 3, "B": 46, "C": 18, "D": 22, "E": 22, "F": 22, "G": 18, "H": 14, "I": 14, "J": 60, "K": 3, "L": 11, "M": 11, "N": 11, "O": 11, "P": 11, "Q": 10, "R": 14})
 ws.freeze_panes = "C6"
 
 # ==========================================================================

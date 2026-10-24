@@ -2,7 +2,7 @@
 
 # 12 · Certificate of insurance request to our own carrier: a building as additional insured
 
-Version 0.5 · 2026-10-24
+Version 0.6 · 2026-10-24
 
 **The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot on the "Named insured" line of the Step 3 request. Replace it with the name on the filed Articles of Organization.
 
@@ -38,7 +38,7 @@ Record the answer in the office row (`coi_required`, notes) and keep the buildin
 | --- | --- |
 | General liability limits at or below our policy's limits | Go to Step 3 |
 | Limits above ours, or an umbrella or excess policy | Stop. We cannot meet it without buying more coverage. Tell the office, ask whether the office can receive at another point the building allows, or defer this office. Do not buy coverage without the founder's written yes and a quote |
-| Owner and managing agent "as additional insureds" | Normal. Go to Step 3 |
+| Owner and managing agent "as additional insureds" | Normal. Go to Step 3. Expect to need the building added by name (for example CG 20 26), because we have no contract with the building itself; budget the per-building endorsement (`figures.csv` item `additional_insured_building_endorsement_each`, needs quote) |
 | "Primary and non-contributory" or "waiver of subrogation" | Ask the carrier in Step 3 whether our policy already includes these or needs an endorsement, and at what cost. Stop at any cost and decide |
 | Workers' compensation | We have no employees, so we carry no workers' compensation policy. New York's CE-200 exemption certificate can be used only with a government entity, so it is not an answer to a private building. Ask the building whether a signed statement that the company has no employees is acceptable (template below) |
 | Auto liability | Relevant only if we drive a vehicle to its loading dock. Ask the carrier whether our policy has hired and non-owned auto coverage and whether it can appear on the certificate |
@@ -109,4 +109,5 @@ Attorney to confirm this wording. It must stay true: the plan requires workers' 
 
 - Rounds 1 to 9 (2026-10-23 to 24, part A drafting): pantry-owner email, requirement comparison, carrier request, check and no-employees statement; CE-200 ruled out for private buildings.
 - Merge (2026-10-24): renumbered 15 to 12; company name moved into the `[COMPANY NAME: …]` slot; version 0.5.
-- Merge review (2026-10-24): broker, question 1 now points the carrier to the office agreement's new section 4 promise to name the building, which is the written contract many blanket additional-insured endorsements require, and asks whether it is enough.
+- Merge review (2026-10-24): broker, question 1 now points the carrier to the office agreement's new section 4 promise to name the building, which may satisfy a blanket endorsement's written-contract condition; if the carrier says not, it adds the building by name (CG 20 26).
+- Review round 1 (2026-10-24), version 0.6: Step 2 now says to expect each building to be added by name and to budget the endorsement; the merge-review changelog line no longer states a legal conclusion. Whether New York reads "written contract with you" as needing a direct contract with the building (Gilbane, 2018) is unverified and is attorney item 15.

@@ -2,15 +2,21 @@
 
 # 03 · Office participation agreement: notes for the founder
 
-Version 0.5 · 2026-10-24
+Version 0.6 · 2026-10-24
 
 **The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot in the agreement's first line. Before sending, replace the slot with the exact name on the filed Articles of Organization, or, before filing, the name you will file.
 
 **What it is for.** The one page a founding office signs. It records what both sides agreed so nobody has to remember it. It is not a contract with penalties: the office never owes money or damages, and either side can leave on seven days' notice.
 
-**When it is used.** At step 4 of the plan's Phase 1 path from first call to signature: the pantry owner has said yes, and you send this with the intake form. Weeks 3 to 5 of the plan (2026-11-09 to 2026-11-27, derived, founder to confirm). This is likely before the company is formed; section 9 of the agreement handles that. It may also come before the attorney hour (file 08, held in week 4). That is acceptable for this page, which carries no money and no penalties: sign this draft, and if the attorney changes anything of substance, send the new page for a fresh signature or an "I agree" reply.
+**When it is used.** At step 4 of the plan's Phase 1 path from first call to signature: the pantry owner has said yes, and you send this with the intake form. Phase 1 is weeks 3 to 5 of the plan (2026-11-09 to 2026-11-27, derived, founder to confirm), but the plan finalizes this template at the Gate 0 pass (setup checklist), so the first signatures fall in week 4. This is likely before the company is formed; section 9 of the agreement handles that.
 
-**How to fill it in.** Everything above the numbered sections comes from the office intake form (columns in CONTRACTS 6.3: `company`, `office_address`, `floor_suite`, `pantry_owner_name`, `pantry_owner_title`, `contact_phone` and `contact_email` (ask for the pantry owner's own if `pantry_owner_is_contact = N`), `receiving_type`, `receiving_window`, `coi_required`). Fill those blanks before sending so the pantry owner only checks, ticks the naming boxes and signs. The tick boxes in section 6 map to `founding_roster_named` (Y if the first box is ticked).
+**Send it only after the attorney has cleared it.** The attorney hour takes this page right after the filing questions (file 08, held by Wed 2026-11-18, derived). Once the attorney clears it, remove the review heading from the signable block, raise the version, re-render, and log the date and the attorney's name in the changelog below (README convention 2). Until then the page carries "Draft for attorney review. Not legal advice." at the top, and a pantry owner who sees that on a page to sign is likely to forward it to someone else. An office that says yes before the hour: record `yes_in_principle`, send the intake form, and send the cleared page right after the hour. If the hour slips and an office is ready to sign, send the draft with this line in the cover email:
+
+> The line at the top is our own note that our lawyer has not finished reviewing our template. Nothing on this page asks you to pay anything, and you can leave on a week's notice.
+
+If the attorney then changes anything of substance, send the new page for a fresh signature or an "I agree" reply.
+
+**How to fill it in.** Everything above the numbered sections comes from the office intake form (columns in CONTRACTS 6.3: `company` (the office's legal name, for both [OFFICE LEGAL NAME] slots; ask if the intake has a trading name only), `office_address`, `floor_suite`, `pantry_owner_name`, `pantry_owner_title`, `contact_phone` and `contact_email` (ask for the pantry owner's own if `pantry_owner_is_contact = N`), `receiving_type`, `receiving_window`, `coi_required`). Fill those blanks before sending so the pantry owner only checks, ticks the naming boxes and signs. The tick boxes in section 6 map to `founding_roster_named` (Y if the first box is ticked).
 
 **How to send it.** As a PDF through the free e-signature tool the operations workstream sets up (rendered copy: `rendered/03-office-participation-agreement.pdf`). Put a signature field and a date field for each side, and tick-box fields for section 6. Sign second, the same day. If the pantry owner would rather not use an e-signature tool, section 10 lets them reply "I agree" to the email that carries the PDF; save that email with the PDF. Save the signed PDF and record `agreement_signed_date` and `agreement_file` in the signed-offices row.
 
@@ -36,23 +42,23 @@ Email to send each office once the company is formed (it is a relationship messa
 
 # Office Participation Agreement
 
-Between **[COMPANY NAME: Desk Drop LLC]** ("**we**", the "**Company**") and the office below ("**you**"). Version 0.5.
+Between **[COMPANY NAME: Desk Drop LLC]** ("**we**", the "**Company**") and the office named below ("**you**"). Version 0.6.
 
 **In short:** free products, nothing to pay, no penalties, no employee data, and either side can stop on a week's notice.
 
 | | |
 | --- | --- |
-| **Company and office address, floor** | [COMPANY] · [OFFICE ADDRESS], [FLOOR OR SUITE] |
+| **Office (your company's legal name), address, floor** | [OFFICE LEGAL NAME] · [OFFICE ADDRESS], [FLOOR OR SUITE] |
 | **Pantry owner (signs below)** | [NAME], [TITLE] · [PHONE] · [EMAIL] |
 | **Receiving window and delivery point** | [DAYS AND HOURS] · [WALK-UP / FRONT DESK / DOCK / OTHER] |
 | **Building needs our insurance certificate?** | [YES / NO / NOT SURE] |
 | **First drop planned for** | Week of [DROP DATE: Tue 2027-01-12]; we confirm by email |
 
-**1. What we bring.** Products from vetted emerging snack and drink brands, free, roughly monthly as brands are available (no set schedule). Each drop arrives on a Tuesday or Wednesday morning inside your receiving window, with a display card. After each drop we send you a summary of your team's feedback. We add to your pantry; we don't replace your current supplier.
+**1. What we bring.** Products from vetted emerging snack and drink brands, free, roughly monthly as brands are available (no set schedule). Each drop comes on a Tuesday or Wednesday morning in your receiving window, with a display card. After each drop we send you a summary of your team's feedback. We add to your pantry; we don't replace your supplier.
 
 **2. You choose.** You pick the categories you want. You may veto any brand, category or allergen at any time, and we check each product's label against your vetoes before offering it. For your first three drops, nothing comes unless you reply yes. After that, we email you each brand at least five business days ahead, and it comes unless you say no.
 
-**3. What you do for each drop.** Put it on the shelf within one business day of delivery. Send us one photo of it on the shelf, and one more on day 3 or day 5. Post the survey link once in Slack or by email. Help us reach five or more survey responses (no one has to answer). Give us a ten-minute debrief after the drop. Tell us how many people are usually in on a Tuesday.
+**3. What you do for each drop.** Put it on the shelf within one business day of delivery. Send us one photo of it on the shelf, and one more on day 3 or day 5. Post the survey link once in Slack or by email. Help us reach five or more survey responses (no one has to answer). Give us a ten-minute debrief after the drop. Tell us your usual Tuesday headcount.
 
 **4. Product standard.** Only individually packaged, sealed, shelf-stable products, commercially labeled with ingredients and allergens. Never alcohol, cannabis, CBD or THC, dietary supplements, refrigerated or perishable products, or products with health claims. We never open a package or change its label, and every display card repeats the product's allergen statement. Each brand must show us product liability insurance of at least \$1 million before it ships, and we will carry general liability insurance before your first drop. If your building requires it, we will name its owner and managing agent as additional insureds on that insurance and send it a certificate before our first delivery.
 
@@ -71,7 +77,7 @@ Between **[COMPANY NAME: Desk Drop LLC]** ("**we**", the "**Company**") and the 
 | For the office | For the Company |
 | --- | --- |
 | Signature: ____________________ Date: ________ | Signature: ____________________ Date: ________ |
-| [NAME], [TITLE] | [FOUNDER NAME], for the Company · [PHONE] · [EMAIL] |
+| [NAME], [TITLE], for [OFFICE LEGAL NAME] | [FOUNDER NAME], for the Company · [PHONE] · [EMAIL] |
 
 <!-- AGREEMENT END -->
 
@@ -81,4 +87,5 @@ Between **[COMPANY NAME: Desk Drop LLC]** ("**we**", the "**Company**") and the 
 
 - Rounds 1 to 9 (2026-10-23 to 24, part A drafting): one-page draft from the plan's appendix E; pre-formation clause; no remedies against the office; photo, naming and non-solicit terms aligned with the brand agreement (details in `REPORT.md`).
 - Merge (2026-10-24): renumbered 11 to 03; company name moved into the `[COMPANY NAME: …]` slot; version 0.5.
-- Merge review (2026-10-24): attorney, brand confidentiality is now our requirement on the brand, not a promise about the brand's conduct; signer shown as "for the Company", which is true before and after formation. Broker, we commit in writing to name a building that requires it, which gives a blanket additional-insured endorsement the written contract it needs (file 12). Pantry owner, an "In short" line, an "I agree" reply as a signature, and "can say yes to this" in place of a formal authority sentence.
+- Merge review (2026-10-24): attorney, brand confidentiality is now our requirement on the brand, not a promise about the brand's conduct; signer shown as "for the Company", which is true before and after formation. Broker, we commit in writing to name a building that requires it, which may satisfy a blanket endorsement's written-contract condition; if the carrier says not, it adds the building by name (CG 20 26; file 12). Pantry owner, an "In short" line, an "I agree" reply as a signature, and "can say yes to this" in place of a formal authority sentence.
+- Review round 1 (2026-10-24), version 0.6: the office is now "Office (your company's legal name)" with an [OFFICE LEGAL NAME] slot, also in the signature block, so "Company" means only us; the page is sent only after the attorney clears it (file 08, by Wed 2026-11-18), with a cover-email line if the hour slips; the merge-review changelog line no longer states a legal conclusion about blanket endorsements.
