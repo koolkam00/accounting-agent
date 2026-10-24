@@ -36,6 +36,23 @@ for (const k of Object.keys(vars)) {
   if (vars[k].startsWith('var(')) continue; // semantic aliases
   if (!JSON.stringify(json).includes(`"${k}"`)) problems.push(`${k} is in tokens.css but not in tokens.json`);
 }
+// v1.3 (review round 2, R2-10): one custom property, one meaning. A name defined twice in the
+// same block (or as a color in one block and a width in another) fails.
+{
+  const blocks = [...css.matchAll(/(:root[^{]*|@media[^{]*\{\s*:root[^{]*)\{([^}]*)\}/g)].map((m) => m[2]);
+  const kind = (v) => /^(#|rgb|hsl|var\(--dd-(ink|paper|cobalt|stone|mist|apricot|placeholder|error|sample))/.test(v) ? 'color' : /^-?[\d.]+(px|pt|in|rem|em|%)?$/.test(v) ? 'dimension' : 'other';
+  const seen = {};
+  blocks.forEach((b, bi) => {
+    const here = {};
+    for (const m of b.matchAll(/(--dd-[\w-]+):\s*([^;]+);/g)) {
+      if (here[m[1]]) problems.push(`${m[1]} is defined twice in the same block of tokens.css`);
+      here[m[1]] = true;
+      const k = kind(m[2].trim());
+      if (seen[m[1]] && seen[m[1]] !== k && k !== 'other' && seen[m[1]] !== 'other') problems.push(`${m[1]} is a ${seen[m[1]]} in one block of tokens.css and a ${k} in another`);
+      if (!seen[m[1]] || seen[m[1]] === 'other') seen[m[1]] = k;
+    }
+  });
+}
 // build-brand.js color constants
 const pairs = { ink: 'ink', paperWarm: 'paper-warm', cobalt: 'cobalt', cobaltLight: 'cobalt-light' };
 for (const [jsKey, tok] of Object.entries(pairs)) {

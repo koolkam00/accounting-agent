@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# build-pdfs.sh: rebuilds every generated file from the templates and brand.json (v1.1, 2026-10-24):
+# build-pdfs.sh: rebuilds every generated file from the templates and brand.json (v1.3, 2026-10-24):
 #   wordmark, system/brand.js, signature/, avatar/, every PDF in pdf/, a PNG of every PDF page in
 #   pdf/png/, and the spec sheets in specs/.
 # Run from anywhere after any change (including a rename):
@@ -15,6 +15,7 @@ node render/build-avatar.js
 T=templates/tent-card/samples; C=templates/case-label/samples
 node render/render.js tent-card $T/SAMPLE-basic.json pdf/tent-card-SAMPLE-home-print.pdf --face-png pdf/tent-card-SAMPLE-face.png --png pdf/tent-card-SAMPLE-sheet.png --dpi 150
 node render/render.js tent-card $T/SAMPLE-allergen-25-words.json pdf/tent-card-SAMPLE-allergen-25-words.pdf --face-png pdf/tent-card-SAMPLE-allergen-25-words-face.png --dpi 150
+node render/render.js tent-card $T/SAMPLE-two-flavors.json pdf/tent-card-SAMPLE-two-flavors.pdf --face-png pdf/tent-card-SAMPLE-two-flavors-face.png --dpi 150
 node render/render.js tent-card $T/SAMPLE-basic.json pdf/tent-card-SAMPLE-pro-bleed.pdf --mode pro
 node render/render.js tent-card $T/SAMPLE-batch-5-offices.json pdf/tent-card-SAMPLE-batch-5-offices.pdf
 # the blank form has no buy path yet, which is an error for a real card, so --force draws it anyway

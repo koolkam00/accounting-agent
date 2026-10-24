@@ -72,17 +72,25 @@
   ],
   "retailers": [
     {
-      "retailer_name": "SAMPLE Retailer",
-      "street": "SAMPLE 123 Example Street",
-      "distance": "SAMPLE 3 to 8 blocks"
+      "retailer_name": "SAMPLE Whole Foods Market Union Square",
+      "street": "4 Union Square South",
+      "distance": "SAMPLE inside the cluster",
+      "map_number": "1"
     },
     {
-      "retailer_name": "SAMPLE Second Retailer",
-      "street": "SAMPLE 45 Example Avenue",
-      "distance": "SAMPLE 2 to 6 blocks"
+      "retailer_name": "SAMPLE Whole Foods Market NoMad",
+      "street": "63 Madison Avenue",
+      "distance": "SAMPLE inside the cluster",
+      "map_number": "2"
+    },
+    {
+      "retailer_name": "SAMPLE LifeThyme Natural Market",
+      "street": "410 Sixth Avenue",
+      "distance": "SAMPLE 5 blocks outside",
+      "map_number": "3"
     }
   ],
   "online_site": "example.com",
-  "map_image": "",
-  "map_caption": ""
+  "map_image": "maps/SAMPLE-brightside-map-from-B.png",
+  "map_caption": "SAMPLE map: workstream B (cluster-1-flatiron/brand-maps), stores picked for a layout test"
 }

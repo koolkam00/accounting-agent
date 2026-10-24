@@ -19,8 +19,10 @@
       "survey_responses": "9",
       "qr_scans": "14",
       "placement_photo": "photos/SAMPLE-wide-1.jpg",
+      "placement_photo_date": "2027-02-09",
       "later_photo": "photos/SAMPLE-close-1.jpg",
-      "later_photo_day": "5"
+      "later_photo_day": "5",
+      "later_photo_date": "2027-02-16"
     },
     {
       "office_label": "B",
@@ -34,8 +36,10 @@
       "survey_responses": "6",
       "qr_scans": "7",
       "placement_photo": "photos/SAMPLE-wide-2.jpg",
+      "placement_photo_date": "2027-02-09",
       "later_photo": "photos/SAMPLE-close-2.jpg",
-      "later_photo_day": "5"
+      "later_photo_day": "5",
+      "later_photo_date": "2027-02-16"
     },
     {
       "office_label": "C",
@@ -49,8 +53,10 @@
       "survey_responses": "8",
       "qr_scans": "11",
       "placement_photo": "photos/SAMPLE-wide-1.jpg",
+      "placement_photo_date": "2027-02-10",
       "later_photo": "photos/SAMPLE-close-1.jpg",
-      "later_photo_day": "5"
+      "later_photo_day": "5",
+      "later_photo_date": "2027-02-16"
     },
     {
       "office_label": "D",
@@ -64,8 +70,10 @@
       "survey_responses": "4",
       "qr_scans": "5",
       "placement_photo": "photos/SAMPLE-wide-2.jpg",
+      "placement_photo_date": "2027-02-11",
       "later_photo": "",
-      "later_photo_day": "5"
+      "later_photo_day": "5",
+      "later_photo_date": ""
     },
     {
       "office_label": "E",
@@ -79,8 +87,10 @@
       "survey_responses": "7",
       "qr_scans": "9",
       "placement_photo": "photos/SAMPLE-wide-1.jpg",
+      "placement_photo_date": "2027-02-09",
       "later_photo": "photos/SAMPLE-close-1.jpg",
-      "later_photo_day": "5"
+      "later_photo_day": "5",
+      "later_photo_date": "2027-02-16"
     },
     {
       "office_label": "F",
@@ -94,8 +104,10 @@
       "survey_responses": "12",
       "qr_scans": "18",
       "placement_photo": "photos/SAMPLE-wide-2.jpg",
+      "placement_photo_date": "2027-02-09",
       "later_photo": "photos/SAMPLE-close-2.jpg",
-      "later_photo_day": "3"
+      "later_photo_day": "3",
+      "later_photo_date": "2027-02-11"
     },
     {
       "office_label": "G",
@@ -109,8 +121,10 @@
       "survey_responses": "9",
       "qr_scans": "10",
       "placement_photo": "photos/SAMPLE-wide-1.jpg",
+      "placement_photo_date": "2027-02-10",
       "later_photo": "photos/SAMPLE-close-1.jpg",
-      "later_photo_day": "5"
+      "later_photo_day": "5",
+      "later_photo_date": "2027-02-16"
     },
     {
       "office_label": "H",
@@ -124,8 +138,10 @@
       "survey_responses": "11",
       "qr_scans": "15",
       "placement_photo": "photos/SAMPLE-wide-2.jpg",
+      "placement_photo_date": "2027-02-09",
       "later_photo": "photos/SAMPLE-close-2.jpg",
-      "later_photo_day": "3"
+      "later_photo_day": "3",
+      "later_photo_date": "2027-02-11"
     },
     {
       "office_label": "I",
@@ -139,8 +155,10 @@
       "survey_responses": "5",
       "qr_scans": "6",
       "placement_photo": "photos/SAMPLE-wide-1.jpg",
+      "placement_photo_date": "2027-02-09",
       "later_photo": "photos/SAMPLE-close-1.jpg",
-      "later_photo_day": "5"
+      "later_photo_day": "5",
+      "later_photo_date": "2027-02-16"
     },
     {
       "office_label": "J",
@@ -154,8 +172,10 @@
       "survey_responses": "6",
       "qr_scans": "8",
       "placement_photo": "photos/SAMPLE-wide-2.jpg",
+      "placement_photo_date": "",
       "later_photo": "photos/SAMPLE-close-2.jpg",
-      "later_photo_day": "5"
+      "later_photo_day": "5",
+      "later_photo_date": ""
     }
   ],
   "survey_tried_yes": "58",

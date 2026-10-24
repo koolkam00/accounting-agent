@@ -37,7 +37,11 @@ P = {
     "car_detour_factor": 1.3,            # assumption: one-way streets and turns
     "walk_session_cap_min": 90.0,
     "same_building_transfer_min": 3.0,   # assumption: down one elevator and up another with a hand truck
+    "cases_per_load": 5,                 # review round 2 (R2-06): plan.md puts five offices at five to eight cases and two car rides; 5 cases a load for drinks
+    "reload_minutes": 20.0,              # review round 2 (R2-06): assumption, to be timed on the walk: meet the car or van, reload, re-strap
 }
+RELOAD_POINT = ("Reload point (model): the second five cases ride in a car or van that meets you at the kerb of the last stop "
+                "of load 1, or wait at the consolidation address if it is inside the cluster. Founder to choose and time it.")
 NBER_URL = "https://www.nber.org/digest/202506/impact-new-york-citys-congestion-pricing-program"
 MUTCD_URL = "https://mutcd.fhwa.dot.gov/htm/2009/part4/part4e.htm"
 
@@ -46,6 +50,8 @@ CONTRACT_COMPANY = ["company_id", "company_name", "website", "industry", "buildi
                     "address_source_url", "address_source_date", "second_source_url", "confidence", "in_coworking",
                     "coworking_id", "linkedin_company_url", "notes", "found_date"]
 EXTRA_COMPANY = ["hq_city", "hq_in_nyc", "hq_source_url",
+                 "headcount_count", "headcount_check", "headcount_second_count", "headcount_second_source_url",
+                 "headcount_second_source_date", "parent_company", "parent_company_source",
                  "building_lobby_type", "candidate_status", "lease_status", "move_in_date", "headcount_source_date", "headcount_unknown_reason",
                  "address_source_type", "second_source_date", "coworking_check", "bbl", "blocks_outside",
                  "leased_sf_mentioned", "research_slice"]
@@ -53,7 +59,7 @@ CONTRACT_BUILDING = ["building_id", "street_address", "building_name", "lat", "l
                      "coi_required", "coi_source_url", "candidate_company_count", "verified_on_foot", "notes"]
 EXTRA_BUILDING = ["bbl", "also_known_as", "zip", "in_boundary", "candidate_company_ids", "other_company_count",
                   "coworking_ids", "retailer_ids", "pluto_numfloors", "pluto_yearbuilt", "pluto_bldgclass",
-                  "pluto_office_sqft", "pluto_address", "pin_check", "research_slices"]
+                  "pluto_office_sqft", "pluto_address", "pin_check", "entrance_note", "research_slices"]
 CONTRACT_COWORK = ["coworking_id", "operator", "location_name", "street_address", "lat", "lon", "pantry_control",
                    "pantry_source_url", "source_url", "source_date", "confidence", "notes"]
 EXTRA_COWORK = ["in_boundary", "blocks_outside", "status", "floors", "building_id", "bbl", "tenant_company_ids",
@@ -139,6 +145,7 @@ def main():
     # described by coworking_check plus the building's coworking_ids.
     c["coworking_id"] = [wmap.get(t, "") if (t and ic == "Y") else "" for t, ic in zip(c._cw_temp, c.in_coworking)]
     w["building_id"] = w.bbl.map(lambda k: bid.get(k, ""))
+    w["notes"] = w.apply(lambda x: (x.notes + (" " + x.pin_note if x.get("pin_note") else "")).strip(), axis=1)
     w["tenant_company_ids"] = w.coworking_id.map(lambda k: "; ".join(c[(c.coworking_id == k) & (c.in_coworking == "Y")].company_id))
     b["coworking_ids"] = b.bbl.map(lambda k: "; ".join(w[w.bbl == k].coworking_id))
 
@@ -185,6 +192,7 @@ def main():
         else:
             pc.append("no PLUTO match")
     b["pin_check"] = [p + ("; " + n if n else "") for p, n in zip(pc, b.get("pin_note", [""] * len(b)))]
+    b["entrance_note"] = b.apply(entrance_note, axis=1)
     lob_by_bbl = dict(zip(b.bbl, b.lobby_type))
     allb = pd.read_csv(os.path.join(OUT, "master_buildings.csv"), dtype=str).fillna("")
     lob_all = dict(zip(allb.bbl, allb.lobby_type))
@@ -192,15 +200,33 @@ def main():
     c["zip"] = c.apply(lambda x: x.zip or (b[b.bbl == x.bbl].zip.iloc[0] if (b.bbl == x.bbl).any() else ""), axis=1)
 
     # ---------------- route
-    route, legs = model_route(c, b)
+    try:
+        route, legs = model_route(c, b)
+        route_rule = "one 40-75 and one 76-150 office"
+        main_bands = ("40-75", "76-150")
+    except ValueError:
+        # review round 2: after the second headcounts no high-confidence, occupied 40-75 office with a sourced band
+        # remains, so the main route asks for a 76-150 office and three bands; the high-or-medium variant keeps both
+        main_bands = ("76-150",)
+        route, legs = model_route(c, b, bands_required=main_bands)
+        route_rule = ("one 76-150 office and at least three bands (no high-confidence, occupied 40-75 office with a sourced band "
+                      "remains after review round 2's second headcounts; the high-or-medium variant below keeps a 40-75 office)")
     variants = {}
     for key, kw in (("no_security_minimum", {"min_security": 0}),
                     ("no_band_rule", {"bands_required": ()}),
                     ("high_or_medium", {"confs": ("high", "medium")}),
                     ("high_or_medium_no_security_minimum", {"confs": ("high", "medium"), "min_security": 0})):
-        rv, _ = model_route(c, b, kicks=120, **kw)
+        kw = dict(kw)
+        if "bands_required" not in kw and "confs" not in kw:
+            kw["bands_required"] = main_bands
+        try:
+            rv, _ = model_route(c, b, kicks=120, **kw)
+        except ValueError:
+            kw["bands_required"] = main_bands
+            rv, _ = model_route(c, b, kicks=120, **kw)
         tot = rv.leg_minutes_est.sum() + P["minutes_per_stop"] * len(rv)
-        variants[key] = {"total_minutes": round(float(tot), 1), "end": rv.depart_est.iloc[-1],
+        variants[key] = {"total_minutes": round(float(tot + rv.reload_minutes_before.sum()), 1), "total_one_load": round(float(tot), 1),
+                         "end": rv.depart_est.iloc[-1],
                          "stops": "; ".join(f"{x.company_name} ({x.street_address})" for x in rv.itertuples())}
         print("variant", key, variants[key]["total_minutes"], variants[key]["end"])
     # ---------------- walk
@@ -222,7 +248,7 @@ def main():
     route.to_csv(os.path.join(ROOT, "route.csv"), index=False)
     walk.drop(columns=["_s", "_x"]).to_csv(os.path.join(ROOT, "walk.csv"), index=False)
     b_other.to_csv(os.path.join(ROOT, "_work", "buildings_no_candidate.csv"), index=False)
-    json.dump({"legs": legs, "params": P, "variants": variants}, open(os.path.join(OUT, "route_legs.json"), "w"), indent=1)
+    json.dump({"legs": legs, "params": P, "variants": variants, "rule": route_rule}, open(os.path.join(OUT, "route_legs.json"), "w"), indent=1)
     # grid coordinates for the map builder
     for name, df in (("companies", c), ("buildings", b), ("coworking", w), ("retailers", r)):
         df.to_csv(os.path.join(OUT, f"final_{name}.csv"), index=False)
@@ -246,6 +272,8 @@ def company_count(x):
     """Company-wide count cited for a near-miss row: (number, where it comes from)."""
     if x.company_name in R.NEAR_COUNT_OVERRIDES:
         return R.NEAR_COUNT_OVERRIDES[x.company_name]
+    if x.get("headcount_check") == "over-500-second-source" and str(x.get("headcount_count", "")).isdigit():
+        return int(x.headcount_count), "Revelio Labs page in headcount_source_url, as of March 2026, added at review round 2"
     for rx in COUNT_RX:
         m = re.search(rx, x.notes, re.I)
         if m:
@@ -268,6 +296,8 @@ def near_class(x):
 
 
 def nyc_may_fit(x):
+    if x.company_name in R.NYC_MAY_FIT_R2:
+        return "Y"
     return "Y" if re.search(r"NYC office (itself )?may|in New York|NYC office size unknown|NYC team|New York headcount",
                             x.notes) else "N"
 
@@ -438,6 +468,8 @@ def model_route(c, b, min_security=2, bands_required=("40-75", "76-150"), confs=
         cur, S = improve(S)
         if cur < 1e9 and (best is None or cur < best[0] - 1e-9):
             best = (cur, sorted(S))
+    if best is None:
+        raise ValueError("no ten-stop set meets the route constraints")
     # iterated local search (review round 1): kick the best set by two random swaps, re-improve, keep the better
     rng = random.Random(20261024)
     for _ in range(ILS_KICKS if kicks is None else kicks):
@@ -453,6 +485,7 @@ def model_route(c, b, min_security=2, bands_required=("40-75", "76-150"), confs=
     rows, legs = [], []
     t = 8 * 60.0
     prev = None
+    ent = dict(zip(b.building_id, b.get("entrance_note", [""] * len(b))))
     for k, i in enumerate(seq):
         x = recs[i]
         if prev is None:
@@ -460,9 +493,15 @@ def model_route(c, b, min_security=2, bands_required=("40-75", "76-150"), confs=
             lm, cm = 0.0, None
         else:
             lg = L[prev][i]
-            lm = T[prev][i]
-            cm = None if lg.get("same_building") else car_minutes(lg)
-        t += lm
+            # review round 2 (R2-09): the same rounded formula as the Route tab (whole metres, one decimal)
+            if lg.get("same_building"):
+                lm = P["same_building_transfer_min"]
+            else:
+                lm = round(round(lg["metres"]) / P["hand_truck_pace_m_per_min"]
+                           + (lg["avenue_crossings"] * P["wait_avenue_crossing_s"] + lg["street_crossings"] * P["wait_street_crossing_s"]) / 60.0, 1)
+            cm = None if lg.get("same_building") else round(P["car_overhead_min"] + round(lg["metres"]) * P["car_detour_factor"] / (P["car_speed_mph"] * 1609.344 / 60.0), 1)
+        reload = P["reload_minutes"] if (k > 0 and k % int(P["cases_per_load"]) == 0) else 0.0
+        t += lm + reload
         arrive = t
         t += P["minutes_per_stop"]
         rows.append({
@@ -474,10 +513,14 @@ def model_route(c, b, min_security=2, bands_required=("40-75", "76-150"), confs=
             "street_crossings": lg["street_crossings"], "same_building": "Y" if lg.get("same_building") else ("" if prev is None else "N"),
             "leg_minutes_est": round(lm, 1),
             "car_minutes_est": round(cm, 1) if cm is not None else "",
+            "load": 1 + k // int(P["cases_per_load"]),
+            "reload_minutes_before": reload,
             "car_faster": ("Y" if cm is not None and cm < lm else "N") if prev is not None else "",
             "stop_minutes": P["minutes_per_stop"],
             "arrive_est": hhmm(arrive), "depart_est": hhmm(t),
             "receiving_window_from_intake": "",
+            "entrance_note": ent.get(x["building_id"], ""),
+            "notes": RELOAD_POINT if reload else "",
             "label": "estimate",
         })
         legs.append({"stop": k + 1, "path": router.path_lonlat(lg["path"])})
@@ -502,7 +545,8 @@ def two_opt(seq, T, fixed_prev=None):
 
 
 def hhmm(t):
-    t = round(t)
+    # review round 2 (R2-09): truncate to the minute, as the Route tab's hh:mm cells display
+    t = int(math.floor(t + 1e-6))
     return f"{t // 60:02d}:{t % 60:02d}"
 
 
@@ -512,6 +556,25 @@ def greedy(g, s0, D):
         nx = min(rest, key=lambda j: D[seq[-1]][j])
         seq.append(nx); rest.remove(nx)
     return seq
+
+
+def _pretty_street(lab):
+    m = re.match(r"^([EW]) (\d+) ST$", lab or "")
+    if not m:
+        return lab
+    k = int(m.group(2))
+    suf = "th" if 10 <= k % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(k % 10, "th")
+    return f"{'East' if m.group(1) == 'E' else 'West'} {k}{suf} Street"
+
+
+def entrance_note(x):
+    """Review round 2 (R2-10): a corner building's address names the avenue; say so where the founder reads the pin."""
+    side = x.get("corner_side_street", "")
+    if not side:
+        return ""
+    ave = re.sub(r"^\d+[A-Za-z]?\s+", "", x.street_address.split(",")[0])
+    return (f"Corner building: the address is on {ave}, and the building also fronts {_pretty_street(side)}. "
+            f"The pin sits on the {ave} side; check which door takes deliveries.")
 
 
 # ------------------------------------------------------------------ walk plan
@@ -547,6 +610,8 @@ def walk_plan(b, w, r, c):
         n = x.candidate_company_count
         add(x.bbl or x.building_id, "building", x.building_id, x.building_name, x.street_address, x.lat, x.lon, x.grid_s,
             x.grid_x, min(6.0, 3.0 + 0.5 * max(0, n - 1)), "BUILDING: " + CHECK_BUILDING, 1)
+        if x.get("entrance_note"):
+            stops[x.bbl or x.building_id]["checks"].insert(0, "ENTRANCE: " + x.entrance_note)
     for _, x in w[w.in_boundary == "Y"].iterrows():
         add(x.bbl or x.coworking_id, "coworking", x.coworking_id, x.location_name, x.street_address.split(",")[0], x.lat,
             x.lon, x.grid_s, x.grid_x, 3.0, "COWORKING: " + CHECK_COWORK, 1)

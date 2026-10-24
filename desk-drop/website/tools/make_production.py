@@ -5,6 +5,8 @@ Then upload the publish/ folder (not site/) to the production environment (SETUP
 
 site/ stays the staging source and is never changed. The copy differs from it in these ways:
   - site.config.js has STAGING: false.
+  - Founding tier: with FOUNDING_TIER_OPEN false, every data-founding element is removed and
+    the data-standard-only text is kept; with it true, the data-standard-only text is removed.
   - Every page: the noindex robots tag is removed; the name, tagline, contact details and status
     line from site.config.js are written into the HTML (title, og:site_name, header, footer,
     notices), so visitors without JavaScript and link previews (Slack, LinkedIn, iMessage) see
@@ -14,6 +16,8 @@ site/ stays the staging source and is never changed. The copy differs from it in
     for missing nested paths such as /brands/x, where relative links would break.
   - robots.txt and sitemap.xml are the production versions from tools/production/, with DOMAIN.
   - _headers loses its STAGING ONLY block (X-Robots-Tag: noindex).
+  - Staging-only elements (staging bar, photo slot, the forms' staging note) and HTML comments
+    are deleted (review round 3), so the raw HTML carries no staging or internal wording.
 A rename is still one edit: change BRAND_NAME in site/site.config.js and run this again.
 
 It first runs the source checks in tools/preflight.py and stops if anything blocks.
@@ -56,11 +60,32 @@ def add_class(attrs, cls):
     return attrs + ' class="%s"' % cls
 
 
+def remove_marked(src, attr):
+    """Remove every element whose start tag carries the attribute `attr` (for example
+    data-founding), with everything inside it. Counts nested tags of the same name."""
+    return preflight.remove_elements(src, r"\s%s(?:[\s=>])" % re.escape(attr), attr)
+
+
 def stamp(page, src, cfg, domain):
     """Write config values into one page's HTML (the same fills boot.js makes at run time)."""
     name = js_value(cfg, "BRAND_NAME") or ""
+    # Founding tier (review round 2, R2-04): keep only the copy that applies, so visitors without
+    # JavaScript, link previews and anything reading the raw HTML see the right offer. The class
+    # on <html> keeps the CSS (two price cards in a row) the same as with JavaScript.
+    if js_value(cfg, "FOUNDING_TIER_OPEN") is False:
+        src = remove_marked(src, "data-founding")
+        src = re.sub(r"\sdata-standard-only(?=[\s>])", "", src)
+        src = re.sub(r"<html\b([^>]*)>", lambda m: "<html%s>" % add_class(m.group(1), "founding-closed"), src, count=1)
+    else:
+        src = remove_marked(src, "data-standard-only")
     # Robots: production is indexable.
     src = re.sub(r'<meta name="robots"[^>]*>(<!--.*?-->)?\n?', "", src)
+    # Staging-only elements (review round 3, R3-05): the staging bar ("not yet cleared"), the photo
+    # slot and the forms' "submissions are not live yet" note. CSS hides them in production, but
+    # link unfurlers, scrapers and summarizers read the raw HTML. Safe because the preflight
+    # refuses an empty FORM_ENDPOINT. HTML comments (builder notes, generator markers) go too.
+    src = preflight.strip_staging(src)
+    src = re.sub(r"[ \t]*<!--.*?-->[ \t]*\n?", "", src, flags=re.S)
     # Title suffix and og:site_name.
     src = re.sub(r"<title>(.*?)</title>", lambda m: "<title>%s</title>" % (
         m.group(1) if name in html.unescape(m.group(1)) else m.group(1) + " · " + html.escape(name)), src, count=1)

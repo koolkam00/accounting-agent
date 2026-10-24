@@ -113,6 +113,21 @@
       if (!started) { started = true; count(kind + "-intake-started", true); }
     });
 
+    // Size notes (review round 3, R3-04): a gentle, non-blocking line when a number is outside
+    // the range the page states, for example an office under 30 or over 250 people.
+    var sizeNotes = form.querySelectorAll("[data-size-note]");
+    function updateSizeNotes() {
+      for (var j = 0; j < sizeNotes.length; j++) {
+        var note = sizeNotes[j], el = form.elements[note.getAttribute("data-size-note")];
+        var n = el ? parseInt(String(el.value).replace(/[\s,]/g, ""), 10) : NaN;
+        var out = !isNaN(n) && n >= 1 && (n < +note.getAttribute("data-min") || n > +note.getAttribute("data-max"));
+        var text = out ? "Offices this size can't join yet. You can still send the form, and we will reply." : "";
+        if (note.textContent !== text) note.textContent = text;
+      }
+    }
+    form.addEventListener("input", updateSizeNotes);
+    updateSizeNotes();
+
     function visible(el) { return !el.closest("[hidden]"); }
 
     function errTarget(name) {

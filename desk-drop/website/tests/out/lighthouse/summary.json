@@ -10,10 +10,10 @@
     "seo_failed_audits": [
       "is-crawlable"
     ],
-    "lcp_ms": 1662,
+    "lcp_ms": 1653,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 113495
+    "bytes": 119239
   },
   {
     "mode": "staging",
@@ -26,26 +26,26 @@
     "seo_failed_audits": [
       "is-crawlable"
     ],
-    "lcp_ms": 1814,
+    "lcp_ms": 1959,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 149160
+    "bytes": 156976
   },
   {
     "mode": "staging",
     "preset": "mobile",
     "page": "offices",
-    "performance": 100,
+    "performance": 99,
     "accessibility": 100,
     "best_practices": 100,
     "seo": 66,
     "seo_failed_audits": [
       "is-crawlable"
     ],
-    "lcp_ms": 1656,
+    "lcp_ms": 1805,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 131303
+    "bytes": 138666
   },
   {
     "mode": "staging",
@@ -58,10 +58,10 @@
     "seo_failed_audits": [
       "is-crawlable"
     ],
-    "lcp_ms": 1502,
+    "lcp_ms": 1651,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 114019
+    "bytes": 120209
   },
   {
     "mode": "staging",
@@ -74,10 +74,10 @@
     "seo_failed_audits": [
       "is-crawlable"
     ],
-    "lcp_ms": 1669,
+    "lcp_ms": 1652,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 114409
+    "bytes": 120355
   },
   {
     "mode": "staging",
@@ -90,10 +90,10 @@
     "seo_failed_audits": [
       "is-crawlable"
     ],
-    "lcp_ms": 1660,
+    "lcp_ms": 1652,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 110598
+    "bytes": 116342
   },
   {
     "mode": "staging",
@@ -106,10 +106,10 @@
     "seo_failed_audits": [
       "is-crawlable"
     ],
-    "lcp_ms": 369,
+    "lcp_ms": 368,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 113495
+    "bytes": 119239
   },
   {
     "mode": "staging",
@@ -122,10 +122,10 @@
     "seo_failed_audits": [
       "is-crawlable"
     ],
-    "lcp_ms": 408,
+    "lcp_ms": 447,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 149160
+    "bytes": 156976
   },
   {
     "mode": "staging",
@@ -138,15 +138,31 @@
     "seo_failed_audits": [
       "is-crawlable"
     ],
-    "lcp_ms": 408,
+    "lcp_ms": 410,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 131303
+    "bytes": 138666
   },
   {
     "mode": "staging",
     "preset": "desktop",
     "page": "privacy",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 63,
+    "seo_failed_audits": [
+      "is-crawlable"
+    ],
+    "lcp_ms": 371,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 120209
+  },
+  {
+    "mode": "staging",
+    "preset": "desktop",
+    "page": "survey-privacy",
     "performance": 100,
     "accessibility": 100,
     "best_practices": 100,
@@ -157,23 +173,7 @@
     "lcp_ms": 367,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 114019
-  },
-  {
-    "mode": "staging",
-    "preset": "desktop",
-    "page": "survey-privacy",
-    "performance": 100,
-    "accessibility": 100,
-    "best_practices": 100,
-    "seo": 63,
-    "seo_failed_audits": [
-      "is-crawlable"
-    ],
-    "lcp_ms": 365,
-    "cls": 0,
-    "tbt_ms": 0,
-    "bytes": 114409
+    "bytes": 120355
   },
   {
     "mode": "staging",
@@ -186,57 +186,15 @@
     "seo_failed_audits": [
       "is-crawlable"
     ],
-    "lcp_ms": 363,
+    "lcp_ms": 364,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 110598
+    "bytes": 116342
   },
   {
     "mode": "production",
     "preset": "mobile",
     "page": "index",
-    "performance": 100,
-    "accessibility": 100,
-    "best_practices": 100,
-    "seo": 100,
-    "seo_failed_audits": [],
-    "lcp_ms": 1504,
-    "cls": 0,
-    "tbt_ms": 0,
-    "bytes": 113496
-  },
-  {
-    "mode": "production",
-    "preset": "mobile",
-    "page": "brands",
-    "performance": 100,
-    "accessibility": 100,
-    "best_practices": 100,
-    "seo": 100,
-    "seo_failed_audits": [],
-    "lcp_ms": 1657,
-    "cls": 0,
-    "tbt_ms": 0,
-    "bytes": 149161
-  },
-  {
-    "mode": "production",
-    "preset": "mobile",
-    "page": "offices",
-    "performance": 100,
-    "accessibility": 100,
-    "best_practices": 100,
-    "seo": 100,
-    "seo_failed_audits": [],
-    "lcp_ms": 1658,
-    "cls": 0,
-    "tbt_ms": 0,
-    "bytes": 131304
-  },
-  {
-    "mode": "production",
-    "preset": "mobile",
-    "page": "privacy",
     "performance": 100,
     "accessibility": 100,
     "best_practices": 100,
@@ -245,7 +203,49 @@
     "lcp_ms": 1656,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 114020
+    "bytes": 119530
+  },
+  {
+    "mode": "production",
+    "preset": "mobile",
+    "page": "brands",
+    "performance": 99,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100,
+    "seo_failed_audits": [],
+    "lcp_ms": 1956,
+    "cls": 0,
+    "tbt_ms": 7,
+    "bytes": 157024
+  },
+  {
+    "mode": "production",
+    "preset": "mobile",
+    "page": "offices",
+    "performance": 99,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100,
+    "seo_failed_audits": [],
+    "lcp_ms": 1802,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 138901
+  },
+  {
+    "mode": "production",
+    "preset": "mobile",
+    "page": "privacy",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100,
+    "seo_failed_audits": [],
+    "lcp_ms": 1657,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 120625
   },
   {
     "mode": "production",
@@ -256,10 +256,10 @@
     "best_practices": 100,
     "seo": 100,
     "seo_failed_audits": [],
-    "lcp_ms": 1654,
+    "lcp_ms": 1655,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 114410
+    "bytes": 120440
   },
   {
     "mode": "production",
@@ -270,10 +270,10 @@
     "best_practices": 100,
     "seo": 100,
     "seo_failed_audits": [],
-    "lcp_ms": 1501,
+    "lcp_ms": 1654,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 110599
+    "bytes": 116397
   },
   {
     "mode": "production",
@@ -284,10 +284,10 @@
     "best_practices": 100,
     "seo": 100,
     "seo_failed_audits": [],
-    "lcp_ms": 363,
+    "lcp_ms": 371,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 113496
+    "bytes": 119530
   },
   {
     "mode": "production",
@@ -298,10 +298,10 @@
     "best_practices": 100,
     "seo": 100,
     "seo_failed_audits": [],
-    "lcp_ms": 415,
+    "lcp_ms": 449,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 149161
+    "bytes": 157024
   },
   {
     "mode": "production",
@@ -312,10 +312,10 @@
     "best_practices": 100,
     "seo": 100,
     "seo_failed_audits": [],
-    "lcp_ms": 417,
+    "lcp_ms": 401,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 131304
+    "bytes": 138901
   },
   {
     "mode": "production",
@@ -326,10 +326,10 @@
     "best_practices": 100,
     "seo": 100,
     "seo_failed_audits": [],
-    "lcp_ms": 369,
+    "lcp_ms": 362,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 114020
+    "bytes": 120625
   },
   {
     "mode": "production",
@@ -343,7 +343,7 @@
     "lcp_ms": 368,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 114410
+    "bytes": 120440
   },
   {
     "mode": "production",
@@ -354,9 +354,9 @@
     "best_practices": 100,
     "seo": 100,
     "seo_failed_audits": [],
-    "lcp_ms": 368,
+    "lcp_ms": 367,
     "cls": 0,
     "tbt_ms": 0,
-    "bytes": 110599
+    "bytes": 116397
   }
 ]

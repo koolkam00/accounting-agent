@@ -21,6 +21,15 @@ S["candidates_by_band"] = cand.headcount_band.value_counts().to_dict()
 S["candidates_conf_band"] = pd.crosstab(cand.confidence, cand.headcount_band).to_dict()
 S["candidates_by_lease"] = cand.lease_status.value_counts().to_dict()
 S["candidates_scope"] = cand.headcount_scope.value_counts().to_dict()
+# review round 2: second headcounts, HQ outside New York, parents
+banded = cand[cand.headcount_band.isin(["40-75", "76-150", "151-250", "251-500", "under-40"])]
+S["candidates_banded"] = len(banded)
+S["candidates_by_check"] = cand.headcount_check.value_counts().to_dict()
+S["banded_hq_not_nyc"] = int((banded.hq_in_nyc == "N").sum())
+S["banded_hq_unknown"] = int((banded.hq_in_nyc == "unknown").sum())
+S["candidates_with_parent"] = int((cand.parent_company != "unknown").sum())
+S["moved_to_near_miss_r2"] = sorted(n[n.headcount_check == "over-500-second-source"].company_name)
+S["occupied_banded"] = int(((banded.lease_status == "occupied")).sum())
 S["status_counts"] = allc.candidate_status.value_counts().to_dict()
 def area(s):
     s = float(s)
@@ -58,8 +67,19 @@ S["route"] = {"stops": len(route), "stop_minutes": 15 * len(route), "walking_min
               "lobby": route.lobby_type.value_counts().to_dict(), "bands": route.headcount_band.value_counts().to_dict(),
               "at_12_min_stops": round(legsum + 12 * len(route), 1),
               "nine_stops": round(route.leg_minutes_est.astype(float).iloc[:9].sum() + 15 * 9, 1)}
+# review round 2 (R2-06): reloads between loads of build.P["cases_per_load"] cases
+rel = float(route.reload_minutes_before.astype(float).sum())
+S["route"]["reload_minutes"] = round(rel, 1)
+S["route"]["reloads"] = int((route.reload_minutes_before.astype(float) > 0).sum())
+S["route"]["cases_per_load"] = int(build.P["cases_per_load"])
+S["route"]["total_one_load"] = S["route"]["total_minutes"]
+S["route"]["total_minutes"] = round(S["route"]["total_minutes"] + rel, 1)
+S["route"]["end_one_load"] = build.hhmm(8 * 60 + S["route"]["total_one_load"])
 S["route"]["over_minutes"] = round(S["route"]["total_minutes"] - 180)
-S["route"]["variants"] = json.load(open(os.path.join(HERE, "out", "route_legs.json"))).get("variants", {})
+S["route"]["over_one_load"] = round(S["route"]["total_one_load"] - 180)
+_rl = json.load(open(os.path.join(HERE, "out", "route_legs.json")))
+S["route"]["variants"] = _rl.get("variants", {})
+S["route"]["rule"] = _rl.get("rule", "")
 S["route"]["stop_list"] = [f"{x.stop}. {x.company_name}, {x.street_address} ({x.lobby_type}; {x.headcount_band})" for x in route.itertuples()]
 # review round 1 numbers
 band4 = ["40-75", "76-150", "151-250", "251-500"]
@@ -75,6 +95,9 @@ allpins = pd.concat([c[["notes"]], n[["notes"]], b[["pin_check"]].rename(columns
 S["pins_moved_frontage"] = {f: int(d[col].str.contains("Pin moved to frontage at review round 1").sum())
                             for f, d, col in (("companies", c, "notes"), ("near_miss", n, "notes"), ("buildings", b, "pin_check"),
                                               ("coworking", w, "notes"), ("retailers", r, "notes"))}
+S["corner_pins"] = {f: int(d[col].str.contains("Review round 2: corner lot").sum())
+                     for f, d, col in (("companies", c, "notes"), ("near_miss", n, "notes"), ("buildings", b, "pin_check"),
+                                       ("coworking", w, "notes"), ("retailers", r, "notes"))}
 S["pins_published_coordinate"] = int(r.notes.str.contains("store's own published coordinate").sum())
 S["public_walk_minutes"] = {x.retailer_name: int(x.walk_minutes_from_cluster_edge) for x in r[r.public_map == "Y"].itertuples()}
 S["coworking_high_with_second"] = int(((w.confidence == "high") & (w.second_source_url != "")).sum())

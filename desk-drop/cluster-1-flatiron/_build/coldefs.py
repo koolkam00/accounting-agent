@@ -17,12 +17,12 @@ COMMON = {
 COMPANIES = {
     "company_id": "Stable ID, B-C-### (CONTRACTS 6.1). Shared numbering with Near-miss.",
     "company_name": "Company name as the source gives it; a merged row names both entities.",
-    "website": "Company website, only if it was opened and matched the company; blank if unverified.",
+    "website": "Company website, only if it was opened and matched the company; 'unknown' if unverified (never blank).",
     "industry": "Short industry label from the research slice.",
     "building_id": "B-B-### of the building row in the Buildings tab; blank if the building is not in that tab (near-miss rows outside the line).",
-    "floor": "Floor or suite as sourced; 'unknown' or blank when no source names it.",
+    "floor": "Floor or suite as sourced; 'unknown' when no source names it (never blank).",
     "zip": "ZIP code from a source for the building, else from NYC PLUTO (2026 v2) for the tax lot.",
-    "headcount_band": "40-75, 76-150, 151-250, 251-500, under-40, over-500 or unknown. From a sourced count only (mostly Built In 'Total Employees'); never estimated from floor area. Not an onsite or Tuesday count.",
+    "headcount_band": "40-75, 76-150, 151-250, 251-500, under-40, over-500 or unknown. From a sourced count only (mostly Built In 'Total Employees'); never estimated from floor area. Not an onsite or Tuesday count. Review round 2: kept only when a second count agrees or no second count was found (see headcount_check); unknown when two counts disagree.",
     "headcount_scope": "whole-company (the count covers the whole firm), nyc-office (the source counts the New York office), or unknown.",
     "headcount_source_url": "Where the count came from.",
     "address_source_url": "Source that places the company at the address.",
@@ -34,7 +34,7 @@ COMPANIES = {
     "building_lobby_type": "The building's lobby_type (Buildings tab), copied here so the Clay import needs no join.",
     "candidate_status": "candidate (in the boundary, 40-500 or unknown band, not in coworking); excluded-coworking; excluded-not-office (for example a mailbox suite); near-miss-over-500; near-miss-outside.",
     "lease_status": "occupied (a source shows the company in the space); occupancy-unconfirmed (lease press only); signed-not-occupied (a source says the move is ahead, or the company's own site still shows its old address); moving-out (a newer source says it signed elsewhere).",
-    "move_in_date": "For signed-not-occupied rows: the move-in date or season if a source states it, else 'unknown'.",
+    "move_in_date": "For signed-not-occupied and moving-out rows: YYYY-MM if a source states the month, else 'unknown' (a planned season is written in notes). Blank when the row is occupied or occupancy-unconfirmed.",
     "headcount_source_date": "Date of the headcount source.",
     "headcount_unknown_reason": "Why the band is unknown, for every unknown row.",
     "address_source_type": "company-site, leasing-press, builtin, building-site, press-release, wikipedia or other.",
@@ -43,6 +43,19 @@ COMPANIES = {
     "leased_sf_mentioned": "Office sizes (square feet) that appear in the sourced notes. A fact from the source, not a headcount.",
     "research_slice": "Which research slice found the row (S1 14th-18th St, S2 18th-22nd, S3 22nd-26th, S4 26th-30th; two values if merged).",
     "near_miss_reason": "Near-miss tab only: why the row is outside the candidate list.",
+    "near_miss_class": "Near-miss tab only: just-over-500 (501 to 1,000, the brief's 'just over 500'), over-1,000 (1,001 to 4,999), not-near (5,000 or more), over-500-count-not-cited, or outside-line (past the boundary).",
+    "company_wide_count_cited": "Near-miss tab only: the company-wide count the class rests on (Built In, Wikipedia, the company's own page or, from review round 2, the Revelio Labs page in headcount_source_url).",
+    "nyc_office_may_fit": "Near-miss tab only: Y where a source suggests the New York office alone could fit the 40-250 band (a small NYC lease against an HQ elsewhere, or the source says so). A flag for a founder look, not a size estimate.",
+    "hq_city": "Where the company is based: the HQ city on its Built In offices page (opened 2026-10-24); where Built In is silent (review round 2), from the row's own sources, the company's page or the Revelio Labs page. 'unknown' when none says.",
+    "hq_in_nyc": "Y if hq_city is New York, N if elsewhere, unknown. A whole-company band for an N row can be far larger than the New York office.",
+    "hq_source_url": "Page that gives hq_city ('row notes' when the row's own research notes state it).",
+    "headcount_count": "The count the band rests on, as the source prints it (blank when the band is unknown and no count was cited).",
+    "headcount_check": "Review round 2: agree (a second, independent count falls in the same band), disagree (it falls in another band, so the band is unknown), over-500-second-source (the second count is over 500, so the row moved to Near-miss), scope-differs (one count is the NYC office, the other the whole company), single-source (no second count found) or no-count.",
+    "headcount_second_count": "The second count (a trailing + means 'at least'). For over-500-second-source rows the roles swap: the Revelio count is headcount_count and the older first count is here.",
+    "headcount_second_source_url": "Source of headcount_second_count: a Revelio Labs public page (reveliolabs.com/companies/<slug>/employees, matched on legal name and description), the company's own page, or for swapped rows the original Built In page.",
+    "headcount_second_source_date": "Date of that source: 2026-08-31 for Revelio pages (their publication date; the figures are 'as of March 2026'; opened 2026-10-24), the page's own year or the date opened for a company page.",
+    "parent_company": "Owner of the company where a source names one (for example a P&G or LVMH brand), else 'unknown'. A parent far over 500 matters to 'firms under 500 preferred'.",
+    "parent_company_source": "Source for parent_company ('row notes' when the row's research notes state it).",
 }
 
 BUILDINGS = {
@@ -65,6 +78,7 @@ BUILDINGS = {
     "pluto_office_sqft": "Office floor area on the lot, PLUTO.",
     "pluto_address": "The tax lot's primary address in PLUTO (can differ for a block-through lot).",
     "pin_check": "Distance from the pin to the PLUTO lot centroid, plus any pin move.",
+    "entrance_note": "Review round 2: for a corner building whose address names the avenue, which streets it fronts and that the pin sits on the address side. Check the delivery door on the walk.",
     "research_slices": "Slices that recorded the building.",
     "zip": "ZIP code from PLUTO.",
 }
@@ -78,7 +92,8 @@ COWORKING = {
     "status": "open, open-unverified, unverified (only a legacy page), or possibly-closed (sources conflict).",
     "floors": "Floors the operator holds, as sourced.",
     "tenant_company_ids": "B-C-### of companies flagged as inside this site.",
-    "second_source_url": "Independent confirmation where one exists (new rows only; older rows cite theirs in notes).",
+    "second_source_url": "Independent confirmation where one exists. Every high row has one (review round 1).",
+    "building_id": "B-B-### of the Buildings-tab building that holds the site; blank for sites outside the boundary.",
     "exclusive_food_contract_signal": "Any named food or drink supplier or in-house cafe that may limit outside placements. No exclusive contract was found anywhere.",
     "research_id": "The places researcher's temporary ID (W-##), kept for traceability.",
 }
@@ -98,11 +113,20 @@ RETAILERS = {
     "emerging_brand_evidence": "What the store or chain says about local or emerging products; no store-level brand list was checked.",
     "operating_evidence_url": "Page showing the store is open.",
     "research_id": "The places researcher's temporary ID (R-##).",
+    "public_description": "Plain public wording of the store format for the public map (from the store's own site or licence record); blank for stores not on the public map.",
+    "walk_minutes_from_cluster_edge": "Walking minutes from the nearest boundary edge: blocks outside x 79.4 m / 73 m a minute, rounded, at least 1 outside the line; 0 inside.",
 }
 
 ROUTE = {
     "stop": "Stop number, in delivery order.",
     "company_id": "Candidate company at the stop (high confidence, occupied, band known).",
+    "company_name": "That company's name (an example only; none has been contacted).",
+    "building_id": "B-B-### of its building.",
+    "floor": "Its floor as sourced, or unknown.",
+    "load": "Review round 2: which hand-truck load the stop is in (cases_per_load stops per load).",
+    "reload_minutes_before": "Review round 2: reload time before this stop (reload_minutes at the first stop of each new load, else 0).",
+    "entrance_note": "The building's entrance note, for corner buildings.",
+    "notes": "Where the model reloads, and how.",
     "lobby_type": "From the Buildings tab. Order rule: walk-up, then unknown, then loading dock, then security desk last.",
     "headcount_band": "Whole-company band; the onsite Tuesday count comes from intake.",
     "leg_metres_est": "Estimated walking metres from the previous stop along the street grid (to the corner and across, never mid-block).",
@@ -120,7 +144,7 @@ ROUTE = {
 }
 
 WALK = {
-    "session": "90-minute session number. Sessions 1 to 8 cover everything inside the boundary; 9 to 11 cover stores outside it.",
+    "session": "90-minute session number. The core sessions come first and cover everything inside the boundary; the outer sessions after them cover the stores outside it (see the session summary to the right).",
     "phase": "core (inside the boundary) or outer retailers (within ten blocks).",
     "order": "Visit order across the whole walk.",
     "stops_here": "Every item at this address: buildings, coworking sites, stores.",
@@ -139,7 +163,11 @@ WALK = {
     "receiving_hours": "Founder fills on foot.",
     "emerging_set_photo_taken": "Founder fills on foot (stores).",
     "founder_notes": "Founder fills on foot.",
+    "session_summary": "Session summary (right of the table): session number.",
+    "stops": "Session summary: stops in the session (formula).",
+    "minutes_est": "Session summary: estimated minutes, walking plus dwell (formula).",
 }
+WALK_SUMMARY = ["session_summary", "phase", "stops", "minutes_est", "start_point", "end_point"]
 
 
 def define(tab, col):

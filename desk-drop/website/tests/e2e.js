@@ -48,7 +48,8 @@ const results = { date: new Date().toISOString(), checks: [], timing: {} };
 function ok(name, extra) { results.checks.push({ name, pass: true, ...(extra || {}) }); console.log('ok -', name); }
 
 // Realistic SAMPLE answers (CONTRACTS: sample text starts with SAMPLE).
-const OFFICE = { company: 'SAMPLE Studio', contact_name: 'SAMPLE Jo Park', contact_title: 'Office Manager', contact_email: 'sample.jo@example.com', office_address: '123 Fifth Avenue', tuesday_headcount: '60' };
+// Required office fields only (P9 times the required path). The titles are optional since review round 2 (R2-10).
+const OFFICE = { company: 'SAMPLE Studio', contact_name: 'SAMPLE Jo Park', contact_email: 'sample.jo@example.com', office_address: '123 Fifth Avenue', tuesday_headcount: '60' };
 const BRAND = { brand_name: 'SAMPLE Brightside', website: 'example.com', product_sku: 'SAMPLE Sea Salt Lentil Crisps, 1 oz', hq_city: 'Queens, NY', contact_name: 'SAMPLE Sam Lee', contact_title: 'Founder', contact_email: 'sample.sam@example.com', q7_why_now: 'SAMPLE New store opening on 14th Street' };
 
 async function main() {
@@ -144,6 +145,121 @@ async function main() {
       await ctx.close();
     }
 
+    // ---------- P9 (restated in review round 2): both pantry-owner paths, reading the hero, scrolling ----------
+    {
+      const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+      await ctx.route('**/site.config.js', r => r.fulfill({ contentType: 'application/javascript', body: config(LIVE) }));
+      const page = await ctx.newPage();
+      let taps = 0, chars = 0;
+      const settle = () => page.evaluate(() => new Promise(res => { let last = -1, same = 0; (function f() { if (scrollY === last && ++same > 4) return res(); if (scrollY !== last) same = 0; last = scrollY; requestAnimationFrame(f); })(); }));
+      const press = async sel => { await settle(); await page.tap(sel); taps++; };
+      const type = async (sel, text) => { await press(sel); await page.keyboard.type(text); chars += text.length; };
+      await page.goto(SITE + 'offices.html', { waitUntil: 'networkidle' });
+      const geo = await page.evaluate(() => ({ heroWords: document.querySelector('main .hero').innerText.split(/\s+/).filter(Boolean).length,
+        introWords: [...document.querySelectorAll('#join > .wrap > p:not([hidden])')].filter(e => e.offsetParent).map(e => e.innerText).join(' ').split(/\s+/).filter(Boolean).length,
+        formHeight: document.querySelector('#office-form').getBoundingClientRect().height, vh: innerHeight }));
+      await press('.hero-actions a[href="#join"]');
+      const f = '#office-form ';
+      for (const [k, v] of Object.entries(OFFICE)) await type(`${f}[name="${k}"]`, v);
+      await press(`${f}input[name="pantry_owner_is_contact"][value="N"]`);
+      const OWNER = 'SAMPLE Ana Ruiz';
+      await type(`${f}[name="pantry_owner_name"]`, OWNER);
+      await press(`${f}input[name="receiving_type"][value="front desk"]`);
+      await press(`${f}input[name="ui_receiving_window"][value="9 to 11 am"]`);
+      await press(`${f}input[name="coi_required"][value="unsure"]`);
+      await press(`${f}input[name="survey_channel"][value="slack"]`);
+      await press(`${f}button[type="submit"]`);
+      await page.waitForSelector('#join .form-done:not([hidden])', { timeout: 10000 });
+      await wait(300);
+      const rows = readCsv(path.join(OUT, 'office_intake.csv'));
+      const o = Object.fromEntries(rows[0].map((c, i) => [c, rows[rows.length - 1][i]]));
+      assert.strictEqual(o.pantry_owner_is_contact, 'N'); assert.strictEqual(o.pantry_owner_name, OWNER); assert.strictEqual(o.pantry_owner_title, '');
+      // Rates fixed in the pass bar: 2.5 typed characters a second, 1.5 s a tap, 1.5 s a scroll swipe
+      // of half a screen, and reading the hero and the form intro at 250 words a minute.
+      const swipes = Math.ceil(geo.formHeight / (geo.vh / 2));
+      const readS = (geo.heroWords + geo.introWords) / 250 * 60;
+      const est = (c, t) => Math.round((c / 2.5 + t * 1.5 + swipes * 1.5 + readS) * 10) / 10;
+      const yes = results.timing.phone;
+      const p9 = { hero_words: geo.heroWords, intro_words: geo.introWords, reading_s: Math.round(readS * 10) / 10, form_height_px: Math.round(geo.formHeight), swipes,
+        yes_me: { typed_chars: yes.typed_chars, taps: yes.taps_before_submit, estimate_s: est(yes.typed_chars, yes.taps_before_submit) },
+        someone_else: { typed_chars: chars, taps, estimate_s: est(chars, taps) } };
+      results.timing.p9 = p9;
+      assert(p9.yes_me.estimate_s <= 90 && p9.someone_else.estimate_s <= 90, 'P9 over 90 s: ' + JSON.stringify(p9));
+      ok(`P9 office form on a phone: "Yes, me" ${p9.yes_me.estimate_s} s, "Someone else" ${p9.someone_else.estimate_s} s (reading ${p9.reading_s} s, ${swipes} swipes), both under 90; pantry owner's title left blank is accepted`, { p9 });
+      await ctx.close();
+    }
+
+    // ---------- P21 (added in review round 3, R3-08): the brand page's two-minute target ----------
+    // A brand founder understands the offer, the price and the report in two minutes on a phone.
+    // Path: read the hero, tap "See the price", read the price cards and the two lines under them
+    // (sales tax; no free pilots and what you supply), scroll on to the report contents and read its
+    // heading, intro line and list. Rates as P9: 250 words a minute, 1.5 s a tap, 1.5 s a half-screen
+    // swipe (from the top of the price section to the bottom of the report list). Founding tier open
+    // (three cards, the longer case). The scroll-from-the-top figure without the jump link is recorded too.
+    {
+      const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+      await ctx.route('**/site.config.js', r => r.fulfill({ contentType: 'application/javascript', body: config(LIVE) }));
+      const page = await ctx.newPage();
+      await page.goto(SITE + 'brands.html', { waitUntil: 'networkidle' });
+      const g = await page.evaluate(() => {
+        const w = t => t.split(/\s+/).filter(Boolean).length;
+        const vis = e => e.offsetParent !== null;
+        const y = e => e.getBoundingClientRect().top + scrollY;
+        const cards = [...document.querySelectorAll('#price .price-card')].filter(vis);
+        const under = [...document.querySelectorAll('#price .price-grid ~ p')].filter(vis).slice(0, 2);
+        const rep = document.querySelector('#report');
+        const list = rep.querySelector('.report-sections');
+        return { hero: w(document.querySelector('main .hero').innerText), cards: cards.length, cardWords: cards.reduce((a, c) => a + w(c.innerText), 0),
+          underWords: under.reduce((a, e) => a + w(e.innerText), 0), underText: under.map(e => e.innerText.slice(0, 40)),
+          reportWords: w(rep.querySelector('h2').innerText) + w(rep.querySelector('h2 + p').innerText) + w(list.innerText),
+          priceTop: y(document.querySelector('#price')), reportBottom: list.getBoundingClientRect().bottom + scrollY, vh: innerHeight };
+      });
+      await page.tap('.hero-actions a[href="#price"]');
+      await page.evaluate(() => new Promise(res => { let last = -1, same = 0; (function f() { if (scrollY === last && ++same > 4) return res(); if (scrollY !== last) same = 0; last = scrollY; requestAnimationFrame(f); })(); }));
+      const landed = await page.evaluate(() => ({ top: Math.round(document.querySelector('#price').getBoundingClientRect().top), hash: location.hash }));
+      assert(landed.hash === '#price' && Math.abs(landed.top) < 120, '"See the price" lands on the price section: ' + JSON.stringify(landed));
+      const words = g.hero + g.cardWords + g.underWords + g.reportWords;
+      const readS = words / 250 * 60;
+      const swipes = Math.ceil((g.reportBottom - g.priceTop) / (g.vh / 2));
+      const est = Math.round((readS + 1.5 + swipes * 1.5) * 10) / 10;
+      const swipesTop = Math.ceil(g.reportBottom / (g.vh / 2));
+      const estTop = Math.round((readS + swipesTop * 1.5) * 10) / 10;
+      const p21 = { hero_words: g.hero, price_cards: g.cards, card_words: g.cardWords, under_card_words: g.underWords, report_words: g.reportWords, words,
+        reading_s: Math.round(readS * 10) / 10, price_top_px: Math.round(g.priceTop), report_list_bottom_px: Math.round(g.reportBottom), swipes, estimate_s: est,
+        from_top_without_jump: { swipes: swipesTop, estimate_s: estTop } };
+      results.timing.p21 = p21;
+      assert(g.cards === 3 && g.underWords > 20, 'P21 measured the founding-open page with the lines under the cards: ' + JSON.stringify(g));
+      assert(est <= 120, 'P21 over 120 s: ' + JSON.stringify(p21));
+      ok(`P21 brand page on a phone: offer, price and report in ${est} s (${words} words, reading ${p21.reading_s} s, 1 tap, ${swipes} swipes), under 120; scrolling from the top without the jump link: ${estTop} s`, { p21 });
+      await ctx.close();
+    }
+
+    // ---------- R3-04: out-of-range headcount note; thank-you promises nothing to a sender who is ruled out ----------
+    {
+      const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+      await ctx.route('**/site.config.js', r => r.fulfill({ contentType: 'application/javascript', body: config(LIVE) }));
+      const page = await ctx.newPage();
+      await page.goto(SITE + 'offices.html', { waitUntil: 'networkidle' });
+      const note = '#o-tuesday_headcount-note';
+      const h = '#office-form [name="tuesday_headcount"]';
+      const states = [];
+      for (const v of ['300', '25', '1,20', '60', '30', '250']) {
+        await page.fill(h, v);
+        states.push([v, (await page.textContent(note)).trim()]);
+      }
+      const msg = "Offices this size can't join yet. You can still send the form, and we will reply.";
+      assert.deepStrictEqual(states, [['300', msg], ['25', msg], ['1,20', ''], ['60', ''], ['30', ''], ['250', '']], 'size note: ' + JSON.stringify(states));
+      assert.strictEqual(await page.getAttribute(note, 'aria-live'), 'polite');
+      assert(/o-tuesday_headcount-note/.test(await page.getAttribute(h, 'aria-describedby')), 'note tied to the field');
+      const done = await page.textContent('#join .form-done');
+      assert(/If your office fits \(40 to 250 people on a Tuesday, inside the area on the map\), that email carries the one-page participation agreement\. If it doesn't fit yet, we will say so plainly\./.test(done.replace(/\s+/g, ' ')), 'office thank-you is conditional: ' + done);
+      await page.goto(SITE + 'brands.html', { waitUntil: 'networkidle' });
+      const bdone = (await page.textContent('#apply .form-done')).replace(/\s+/g, ' ');
+      assert(/If the seven checks fit, we will suggest a 20-minute call/.test(bdone) && !/Next step: a 20-minute call/.test(bdone), 'brand thank-you is conditional: ' + bdone);
+      await ctx.close();
+      ok('offices: a headcount under 30 or over 250 shows a polite, non-blocking note (tied to the field); both thank-you messages are conditional on fit');
+    }
+
     // ---------- staging: the real config sends nothing ----------
     {
       const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
@@ -180,14 +296,14 @@ async function main() {
       assert(await page.isVisible('#office-form .error-summary'));
       assert.strictEqual(await page.evaluate(() => document.activeElement.classList.contains('error-summary')), true, 'focus on error summary');
       const items = await page.$$eval('#office-form .error-summary li', l => l.map(x => x.textContent));
-      assert.strictEqual(items.length, 13, 'all 13 problems listed: ' + items.join(' | '));
+      assert.strictEqual(items.length, 11, 'all 11 problems listed (both titles are optional): ' + items.join(' | '));
       assert.strictEqual(await page.getAttribute('#o-company', 'aria-invalid'), 'true');
       assert.strictEqual(await page.getAttribute('#o-pantry_owner_name', 'aria-invalid'), 'true');
       await page.waitForTimeout(900); // let the smooth scroll to the summary finish
       await page.screenshot({ path: path.join(SHOTS, 'office-errors-desktop.png') });
       await page.click('#office-form .error-summary li:first-child a');
       assert.strictEqual(await page.evaluate(() => document.activeElement.id), 'o-company', 'summary link focuses the field');
-      ok('empty office form: error summary with 13 linked items, focus management, aria-invalid', { items });
+      ok('empty office form: error summary with 11 linked items, focus management, aria-invalid', { items });
       await page.fill('#o-tuesday_headcount', 'about sixty');
       await page.fill('#o-contact_email', 'jo at example');
       await page.click('#office-form button[type="submit"]');
@@ -234,7 +350,7 @@ async function main() {
       const page = await ctx.newPage();
       await page.goto(SITE + 'brands.html', { waitUntil: 'networkidle' });
       const txt = await page.evaluate(() => document.body.innerText);
-      assert(!/founding (price|tier|brand)|founding ·|\$600 for|\$120/i.test(txt), 'founding tier still mentioned: ' + (txt.match(/.{40}(founding (price|tier|brand)|\$600 for|\$120).{40}/i) || [''])[0]);
+      assert(!/founding (price|tier|brand)|founding ·|\$600 for|\$120|5 or 10/i.test(txt), 'founding tier still mentioned: ' + (txt.match(/.{40}(founding (price|tier|brand)|\$600 for|\$120).{40}/i) || [''])[0]);
       assert(txt.includes('$1,500') && txt.includes('$150'));
       assert.strictEqual(await page.$$eval('.price-card', l => l.filter(e => e.offsetParent).length), 2);
       assert.strictEqual(await page.$('meta[name="robots"]'), null, 'no robots meta when STAGING is false');
@@ -257,6 +373,9 @@ async function main() {
       const fit6 = await page.innerText('.fit-list li:nth-child(6)');
       assert(q6.includes('$1,500') && !q6.includes('$600'), 'q6 legend: ' + q6);
       assert(fit6.includes('$1,500') && !fit6.includes('$600'), 'check 6: ' + fit6);
+      const fit4 = await page.innerText('.fit-list li:nth-child(4)');
+      const q4 = await page.innerText('#b-q4_can_ship_275_in_10bd legend');
+      assert(fit4.includes('550') && !fit4.includes('275') && q4.includes('550') && !q4.includes('275'), 'check 4 and question 4 follow the tier: ' + fit4 + ' | ' + q4);
       await page.click('#brand-form button[type="submit"]');
       const q6err = await page.$$eval('#brand-form .error-summary li', l => l.map(x => x.textContent).find(t => t.startsWith('6.')));
       assert(q6err && q6err.includes('$1,500') && !q6err.includes('$600'), 'error summary label for q6: ' + q6err);
@@ -273,7 +392,7 @@ async function main() {
       const last = Object.fromEntries(rows[0].map((c, i) => [c, rows[rows.length - 1][i]]));
       assert.strictEqual(last.form_version, 'brand-2.0', 'form_version once the founding tier is closed');
       assert.strictEqual(last.q6_contact_can_approve_600, 'N');
-      ok('founding tier closed: question 6 and check 6 ask about $1,500 (error summary too), and the row is marked brand-2.0');
+      ok('founding tier closed: questions and checks 4 and 6 ask about 550 units and $1,500 (error summary too), and the row is marked brand-2.0');
       await ctx.close();
     }
 
@@ -314,6 +433,10 @@ async function main() {
           assert(!/\[(EMAIL|FOUNDER NAME|POSTAL ADDRESS|PHONE|LINKEDIN URL|COMPANY NAME)\]/.test(r.text), p + ': config placeholder left in the production copy');
           assert.strictEqual(r.footerMail, 'hello@sample.example');
           assert.strictEqual(r.phoneLines, 0, p + ': PHONE "" hides the phone lines');
+          // Review round 3 (R3-05): what link unfurlers and scrapers read. No staging text, internal note or builder comment in the raw HTML.
+          const raw = fs.readFileSync(path.join(pub, (p === 'index' ? 'index' : p) + '.html'), 'utf8');
+          const bad = raw.replace(/<!-- PRODUCTION COPY[^>]*-->/, '').match(/Staging|not yet cleared|working name|SETUP\.md|legal pack|draft notice|staging-bar|staging-only|data-staging-form|<!--/i);
+          assert(!bad, p + ': staging or internal wording in the production HTML: ' + (bad && bad[0]));
         }
         for (const [p, form] of [['offices', '#office-form'], ['brands', '#brand-form']]) {
           await page.goto(CF + p, { waitUntil: 'load' });
@@ -325,10 +448,48 @@ async function main() {
           await wait(300);
           assert.strictEqual(page.url(), CF + p, p + ': Enter without JavaScript does not send the form or put answers in the address bar');
         }
+        // Founding tier open (shipped setting): only the founding amounts are in the HTML.
+        await page.goto(CF + 'brands', { waitUntil: 'load' });
+        const open = await page.evaluate(() => ({ fit4: document.querySelector('.fit-list li:nth-child(4)').textContent, fit6: document.querySelector('.fit-list li:nth-child(6)').textContent,
+          q4: document.querySelector('#b-q4_can_ship_275_in_10bd legend').textContent, cards: document.querySelectorAll('.price-card').length, html: document.documentElement.outerHTML }));
+        assert(open.fit4.includes('275') && !open.fit4.includes('550'), 'check 4 (founding open): ' + open.fit4);
+        assert(open.fit6.includes('$600') && !open.fit6.includes('$1,500'), 'check 6 (founding open): ' + open.fit6);
+        assert(open.q4.includes('275') && !open.q4.includes('550'), 'question 4 (founding open): ' + open.q4);
+        assert.strictEqual(open.cards, 3);
+        assert(!open.html.includes('data-standard-only'), 'founding open: standard-only text removed from the HTML');
         const sm = fs.readFileSync(path.join(pub, 'sitemap.xml'), 'utf8');
         assert(sm.includes('<loc>https://sample.example/brands</loc>') && !sm.includes('.html'), 'sitemap lists extension-less URLs');
         await ctx.close();
-        ok('production copy without JavaScript: name, title, og:site_name, contact details and canonical (extension-less) are in the HTML; no noindex; forms cannot be sent and say why');
+        ok('production copy without JavaScript: name, title, og:site_name, contact details and canonical (extension-less) are in the HTML; no noindex; no staging text, internal note or comment in the raw HTML; forms cannot be sent and say why');
+
+        // P14 without JavaScript (review round 2, R2-04): the founding tier retired in the production copy.
+        const pubClosed = buildSample(path.join(__dirname, 'out', 'tmp', 'publish-closed-' + Date.now()), { foundingClosed: true });
+        const cf2 = http.createServer((req, res) => {
+          let u = decodeURIComponent(req.url.split('?')[0]); if (u.endsWith('/')) u += 'index.html';
+          let f = path.join(pubClosed, u); if (!fs.existsSync(f) && fs.existsSync(f + '.html')) f += '.html';
+          if (!f.startsWith(pubClosed) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); return res.end(); }
+          res.writeHead(200, { 'Content-Type': types[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res);
+        }).listen(8130, '127.0.0.1');
+        try {
+          const ctx3 = await browser.newContext({ viewport: { width: 1280, height: 800 }, javaScriptEnabled: false });
+          const p3 = await ctx3.newPage();
+          await p3.goto('http://127.0.0.1:8130/brands', { waitUntil: 'load' });
+          const c = await p3.evaluate(() => ({ text: document.body.innerText, html: document.documentElement.outerHTML, rootClass: document.documentElement.className,
+            cards: [...document.querySelectorAll('.price-card')].filter(e => e.offsetParent).length,
+            fit4: document.querySelector('.fit-list li:nth-child(4)').textContent, fit6: document.querySelector('.fit-list li:nth-child(6)').textContent,
+            q4: document.querySelector('#b-q4_can_ship_275_in_10bd legend').textContent, q6: document.querySelector('#b-q6_contact_can_approve_600 legend').textContent }));
+          assert(!/\$600|\$120|founding (price|tier|brand)|founding ·|about 275|5 or 10/i.test(c.text), 'founding offer still in the text without JavaScript: ' + (c.text.match(/.{40}(\$600|\$120|founding|about 275).{40}/i) || [''])[0]);
+          assert(!/data-founding|\$600|\$120/.test(c.html), 'founding offer still in the raw HTML');
+          assert(/\bfounding-closed\b/.test(c.rootClass), '<html> carries founding-closed');
+          assert.strictEqual(c.cards, 2, 'two price cards (standard, extra office)');
+          assert(c.fit4.includes('550') && c.q4.includes('550'), 'check 4 and question 4 ask about 550: ' + c.fit4 + ' | ' + c.q4);
+          assert(c.fit6.includes('$1,500') && c.q6.includes('$1,500'), 'check 6 and question 6 ask about $1,500');
+          await p3.screenshot({ path: path.join(SHOTS, 'brands-founding-closed-nojs-desktop.png'), fullPage: false });
+          await p3.goto('http://127.0.0.1:8130/', { waitUntil: 'load' });
+          assert(!/founding price|\$600/i.test(await p3.evaluate(() => document.body.innerText)), 'home page still shows the founding price without JavaScript');
+          await ctx3.close();
+          ok('production copy with the founding tier retired, JavaScript off: no $600 or $120 anywhere in the HTML, two price cards, checks 4 and 6 ask about 550 units and $1,500');
+        } finally { cf2.close(); }
 
         const ctx2 = await browser.newContext({ viewport: { width: 390, height: 844 } });
         const p2 = await ctx2.newPage();

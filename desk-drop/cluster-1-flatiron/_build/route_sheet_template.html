@@ -35,7 +35,7 @@ const pts=[];
 R.forEach((s,i)=>{const ll=[+s.lat,+s.lon];pts.push(ll);
  const off=[[0,0],[14,-14],[-14,14],[14,14],[-14,-14]][R.slice(0,i).filter(q=>Math.abs(+q.lat-+s.lat)<0.0002&&Math.abs(+q.lon-+s.lon)<0.0003).length%5];
  L.marker(ll,{icon:L.divIcon({className:'',html:`<div class="n" style="transform:translate(${off[0]}px,${off[1]}px)">${s.stop}</div>`,iconSize:[30,30],iconAnchor:[15,15]})}).addTo(m);
- document.getElementById('tb').insertAdjacentHTML('beforeend',`<tr><td>${s.stop}</td><td>${s.company_name}</td><td>${s.street_address}${s.floor&&s.floor.length<=12&&!/unknown|not/.test(s.floor)?', fl '+s.floor:''}</td><td class="${s.lobby_type==='security desk'?'sec':''}">${s.lobby_type}</td><td>${s.arrive_est}</td><td>${s.stop==1?'start':s.leg_minutes_est+' min'}</td></tr>`);});
+ document.getElementById('tb').insertAdjacentHTML('beforeend',`<tr><td>${s.stop}</td><td>${s.company_name}</td><td>${s.street_address}${s.floor&&s.floor.length<=12&&!/unknown|not/.test(s.floor)?', fl '+s.floor:''}</td><td class="${s.lobby_type==='security desk'?'sec':''}">${s.lobby_type}</td><td>${s.arrive_est}</td><td>${s.stop==1?'start':s.leg_minutes_est+' min'}${Number(s.reload_minutes_before)>0?' + '+s.reload_minutes_before+' min reload':''}</td></tr>`);});
 m.fitBounds(L.latLngBounds(pts).pad(0.12));
 document.getElementById('tot').textContent=TOT;
 </script></body></html>

@@ -50,7 +50,8 @@ def main():
     for _, x in b.iterrows():
         F.append(feat(pt(x.lat, x.lon), {"layer": "building", **{k: x[k] for k in (
             "building_id", "building_name", "street_address", "also_known_as", "lobby_type", "lobby_source_url", "coi_required",
-            "candidate_company_count", "candidate_company_ids", "coworking_ids", "retailer_ids", "pluto_numfloors", "bbl")}}))
+            "candidate_company_count", "candidate_company_ids", "coworking_ids", "retailer_ids", "pluto_numfloors", "bbl",
+            "entrance_note")}}))
     for df, layer in ((c, "company"), (n, "near-miss")):
         for _, x in df.iterrows():
             F.append(feat(pt(x.lat, x.lon), {"layer": layer, **{k: x[k] for k in (
@@ -67,7 +68,8 @@ def main():
             "confidence", "source_url", "candidates_within_5_blocks", "public_map")}}))
     for _, x in route.iterrows():
         F.append(feat(pt(x.lat, x.lon), {"layer": "route-stop", **{k: x[k] for k in (
-            "stop", "company_id", "company_name", "street_address", "lobby_type", "arrive_est", "depart_est", "leg_minutes_est")}}))
+            "stop", "company_id", "company_name", "street_address", "lobby_type", "arrive_est", "depart_est", "leg_minutes_est",
+            "reload_minutes_before", "entrance_note")}}))
     line = []
     for lg in legs:
         line += lg["path"] if not line else lg["path"][1:]
@@ -154,6 +156,7 @@ def write_kml_layers(bfeat, b, c, w, r, route, line, walk, pub_r):
                       for y in cs.itertuples() if y.candidate_status == "candidate")
         desc = (f"<b>{esc(x.building_id)}</b> {esc(x.street_address)}<br>Lobby: {esc(x.lobby_type)}"
                 f"{' (' + esc(x.lobby_source_url) + ')' if x.lobby_source_url else ''}<br>COI required: {esc(x.coi_required)}<br>"
+                f"{esc(x.entrance_note) + '<br>' if x.entrance_note else ''}"
                 f"Candidates: {esc(x.candidate_company_count)}<ul>{lst}</ul>Coworking here: {esc(x.coworking_ids or 'none')}<br>{priv_note}")
         pms.append(placemark(f"{x.building_id} {x.building_name}", desc, "lob-" + x.lobby_type.replace(" ", "-"), point_xml(x.lat, x.lon)))
     open(os.path.join(K, "2-private-buildings.kml"), "w").write(doc("Cluster 1 buildings (PRIVATE)", styles, pms, priv_note))
@@ -173,7 +176,9 @@ def write_kml_layers(bfeat, b, c, w, r, route, line, walk, pub_r):
     styles = [icon_style("stop", "#1F1D1A", 1.2, "placemark_circle"),
               '<Style id="rline"><LineStyle><color>ff0074e3</color><width>4</width></LineStyle></Style>']
     pms = [placemark(f"Stop {x.stop}: {x.company_name}",
-                     f"{esc(x.street_address)}<br>Lobby: {esc(x.lobby_type)}<br>Arrive {esc(x.arrive_est)}, leave {esc(x.depart_est)} (estimates)<br>Leg from previous: {esc(x.leg_minutes_est)} min (estimate)<br>{priv_note}",
+                     f"{esc(x.street_address)}<br>Lobby: {esc(x.lobby_type)}<br>Arrive {esc(x.arrive_est)}, leave {esc(x.depart_est)} (estimates)<br>Leg from previous: {esc(x.leg_minutes_est)} min (estimate)<br>"
+                     f"{('Reload before this stop: ' + esc(x.reload_minutes_before) + ' min (estimate)<br>') if float(x.reload_minutes_before or 0) > 0 else ''}"
+                     f"{(esc(x.entrance_note) + '<br>') if x.entrance_note else ''}{priv_note}",
                      "stop", point_xml(x.lat, x.lon)) for x in route.itertuples()]
     coords = " ".join(f"{lo},{la},0" for lo, la in line)
     pms.append(placemark("Model route line", "Grid walking path, estimate", "rline", f"<LineString><tessellate>1</tessellate><coordinates>{coords}</coordinates></LineString>"))
@@ -215,12 +220,14 @@ def write_route_sheet(route, line):
     over = round(S["total_minutes"] - 180)
     fit = (f"fits the 3-hour window with about {-over} min spare." if over < 0 else
            "uses the whole 3-hour window, with no slack." if over == 0 else
-           f"over the 3-hour window by about {over} min, which is inside the model's error.")
-    tot = (f"Total {S['total_minutes']:.0f} min: {S['stop_minutes']} at stops + {S['walking_minutes']} walking ({S['metres']} m, sidewalk to sidewalk). "
-           f"Finishes about {S['end']}: {fit} With 12-minute stops: {S['at_12_min_stops']:.0f} min. "
+           f"over the 3-hour window by about {over} min.")
+    tot = (f"Total {S['total_minutes']:.0f} min: {S['stop_minutes']} at stops + {S['walking_minutes']} walking ({S['metres']} m) + "
+           f"{S['reload_minutes']:.0f} reloading ({S['reloads']} reload, {S['cases_per_load']} cases a load). Finishes about {S['end']}: {fit} "
+           f"On one loop with no reload (light snacks): {S['total_one_load']:.0f} min. "
+           f"Ten stops do not fit 8 to 11 am on one loop with drinks: split them across Tuesday and Wednesday, or hand the second loop to a courier. "
            f"Legs where a car is faster: {S['car_faster_legs']}.")
     page = open(os.path.join(HERE, "route_sheet_template.html")).read()
-    rows = route[["stop", "company_name", "street_address", "floor", "lobby_type", "arrive_est", "leg_minutes_est", "lat", "lon"]].to_dict("records")
+    rows = route[["stop", "company_name", "street_address", "floor", "lobby_type", "arrive_est", "leg_minutes_est", "reload_minutes_before", "lat", "lon"]].to_dict("records")
     page = (page.replace("__BRAND_NAME__", BRAND_NAME).replace("__ROUTE__", json.dumps(rows)).replace("__LINE__", json.dumps(line))
             .replace("__TOT__", json.dumps(tot)).replace("__LEAFLET_JS__", LEAFLET_JS).replace("__LEAFLET_JS_SRI__", LEAFLET_JS_SRI)
             .replace("__LEAFLET_CSS__", LEAFLET_CSS).replace("__LEAFLET_CSS_SRI__", LEAFLET_CSS_SRI))

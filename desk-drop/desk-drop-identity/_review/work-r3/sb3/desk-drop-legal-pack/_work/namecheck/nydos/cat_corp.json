@@ -1,0 +1,1616 @@
+{
+  "results" :
+    [
+      {
+        "resource" :
+          {
+            "name" : "Corporations and Other Entities: All Filings - Name Status History",
+            "id" : "ekwr-p59j",
+            "resource_name" : null,
+            "parent_fxf" : [],
+            "description" : "This data contains Corporation and Other Business Entity Name information for each entity.   Each record contains a current or previous name for an entity in the electronic database.  The records include the Department of State ID number, Date Filed, Name Type and Name Status.",
+            "attribution" : "New York State Department of State",
+            "attribution_link" : "https://www.dos.ny.gov",
+            "contact_email" : null,
+            "type" : "dataset",
+            "updatedAt" : "2026-10-20T19:09:50.000Z",
+            "createdAt" : "2021-06-28T15:04:18.000Z",
+            "metadata_updated_at" : "2026-10-20T18:48:57.000Z",
+            "data_updated_at" : "2026-10-20T19:09:50.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 701,
+                "page_views_last_month" : 26515,
+                "page_views_total" : 53000,
+                "page_views_last_week_log" : 9.45532722030456,
+                "page_views_last_month_log" : 14.694575537525989,
+                "page_views_total_log" : 15.693731959629641
+              },
+            "columns_name" :
+              [
+                "Date Filed",
+                "DOS ID Number",
+                "Filing Num",
+                "Name Type",
+                "Entity Name",
+                "Name Status"
+              ],
+            "columns_field_name" :
+              [
+                "date_filed",
+                "corpid_num",
+                "film_num",
+                "name_type",
+                "corp_name",
+                "name_status"
+              ],
+            "columns_datatype" :
+              [ "Calendar date", "Number", "Text", "Text", "Text", "Text" ],
+            "columns_description" :
+              [
+                "The date the document was filed by Department of State",
+                "DOS Unique ID number for each entity",
+                "Unique ID Number for each document filed",
+                "Type of name:  either “A” (actual) or “F” (fictitious)",
+                "Name of entity based on Name Type",
+                "Status of the name:  either “A” (active) or “I” (Inactive)"
+              ],
+            "columns_format" :
+              [
+                { "view" : "date", "align" : "center" },
+                { "noCommas" : "true", "align" : "center" },
+                {},
+                { "align" : "center" },
+                {},
+                { "align" : "center" }
+              ],
+            "download_count" : 95929,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2021-06-28T15:08:12.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" :
+              [
+                "limited partnership",
+                "limited liability company",
+                "corporation business entity",
+                "not-for-profit corporation",
+                "llc",
+                "limited liability partnership"
+              ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Disclaimers_Limitations",
+                  "value" : "The New York State Department of State recognizes the possibility of human and/or mechanical error in producing this dataset.  New York State Department of State, its employees, officers and agents make no representation, warranty or guarantee as to the accuracy, completeness, currency or suitability of the data for any purpose, real or implied.    As the Department relies upon information provided to it, the information's completeness or accuracy cannot be guaranteed. This dataset contains all relevant filing records in the electronic database."
+                },
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Department of State"
+                },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "Corporations@dos.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Current and previous names of entities in the NYS DOS Corporations and Other Entities electronic database  "
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Weekly"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "NYS DOS Division of Corporations"
+                },
+                { "key" : "Dataset-Summary_Time-Period", "value" : "Current" },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "State, Department of"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/ekwr-p59j",
+        "link" : "https://data.ny.gov/Economic-Development/Corporations-and-Other-Entities-All-Filings-Name-S/ekwr-p59j",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "Active Corporations:  Beginning 1800",
+            "id" : "n9v6-gdp6",
+            "resource_name" : null,
+            "parent_fxf" : [],
+            "description" : "The Department of State keeps a record of every filing for every incorporated business in the state of New York. This dataset contains information on all active corporations as of the last business day of the specified month and year.",
+            "attribution" : "New York State Department of State",
+            "attribution_link" : "http://www.dos.ny.gov/corps/bus_entity_search.html",
+            "contact_email" : null,
+            "type" : "dataset",
+            "updatedAt" : "2026-10-23T12:32:32.000Z",
+            "createdAt" : "2013-02-14T19:00:49.000Z",
+            "metadata_updated_at" : "2026-10-23T11:27:43.000Z",
+            "data_updated_at" : "2026-10-23T12:32:32.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 2213,
+                "page_views_last_month" : 12761,
+                "page_views_total" : 337641,
+                "page_views_last_week_log" : 11.112439506781554,
+                "page_views_last_month_log" : 13.639566818681828,
+                "page_views_total_log" : 18.36513484952132
+              },
+            "columns_name" :
+              [
+                "Registered Agent Address 2",
+                "DOS ID",
+                "Registered Agent Address 1",
+                "DOS Process State",
+                "DOS Process Address 2",
+                "County",
+                "Initial DOS Filing Date",
+                "Current Entity Name",
+                "CEO Address 2",
+                "Jurisdiction",
+                "Registered Agent State",
+                "Registered Agent Zip",
+                "Location Name",
+                "DOS Process Name",
+                "CEO Name",
+                "Location Zip",
+                "DOS Process Address 1",
+                "CEO Address 1",
+                "CEO Zip",
+                "Location City",
+                "Location State",
+                "Registered Agent Name",
+                "Entity Type",
+                "Location Address 2",
+                "CEO State",
+                "DOS Process Zip",
+                "Location Address 1",
+                "Registered Agent City",
+                "CEO City",
+                "DOS Process City"
+              ],
+            "columns_field_name" :
+              [
+                "registered_agent_address_2",
+                "dos_id",
+                "registered_agent_address_1",
+                "dos_process_state",
+                "dos_process_address_2",
+                "county",
+                "initial_dos_filing_date",
+                "current_entity_name",
+                "chairman_address_2",
+                "jurisdiction",
+                "registered_agent_state",
+                "registered_agent_zip",
+                "location_name",
+                "dos_process_name",
+                "chairman_name",
+                "location_zip",
+                "dos_process_address_1",
+                "chairman_address_1",
+                "chairman_zip",
+                "location_city",
+                "location_state",
+                "registered_agent_name",
+                "entity_type",
+                "location_address_2",
+                "chairman_state",
+                "dos_process_zip",
+                "location_address_1",
+                "registered_agent_city",
+                "chairman_city",
+                "dos_process_city"
+              ],
+            "columns_datatype" :
+              [
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Calendar date",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text"
+              ],
+            "columns_description" :
+              [
+                "Address: line 2 for registered agent.\n",
+                "Unique ID number for each corporation.\n",
+                "Address: line 1 for registered agent.\n",
+                "Address: state (abbreviation) for service of process\naddress.",
+                "Address: line 2 for service of process address.\n",
+                "County where entity is incorporated.\n",
+                "Date of incorporation.\n",
+                "Current name of corporation.\n",
+                "Address: line 2 for CEO\naddress.\n",
+                "State or country of jurisdiction.\n",
+                "Address: state (abbreviation) for registered agent.\n",
+                "Address: zip (both 5 and 9 digit zip codes appear here) for registered agent.\n",
+                "Address: name line of physical location.",
+                "Address: name line for service of process address.\n",
+                "Address: name line for CEO address.\n",
+                "Address: zip (both 5 and 9 digit zip codes appear here) of physical location.\n",
+                "Address: line 1 for service of process address.\n",
+                "Address: line 1 for CEO\naddress.",
+                "Address: zip (both 5 and 9 digit zip codes appear here) for CEO address",
+                "Address: city of physical location.",
+                "Address: state (abbreviation) of physical location.",
+                "Address: name line for registered agent.\n",
+                "Type\nof incorporation.\n",
+                "Address: line 2 of physical location.\n",
+                "Address: state (abbreviation) for \nCEO address.\n",
+                "Address: zip (both 5 and 9 digit zip codes appear here) for service of process address.",
+                "Address: line 1 of physical location.\n",
+                "Address: city for registered agent.\n",
+                "Address: city for CEO\naddress",
+                "Address: city for service of process address.\n"
+              ],
+            "columns_format" :
+              [
+                { "align" : "left" },
+                {
+                  "precisionStyle" : "standard",
+                  "noCommas" : "true",
+                  "align" : "center"
+                },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "view" : "date", "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" }
+              ],
+            "download_count" : 112475,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2021-01-12T00:22:13.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" :
+              [
+                "limited liability company",
+                "limited partnership",
+                "limited liability partnership",
+                "corporation",
+                "integrity"
+              ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "Department of State, Division of Corporations"
+                },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "dos.dl.ITServices.CorpUCC@dos.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Corporation"
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Monthly"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "Division of Corporations"
+                },
+                {
+                  "key" : "Dataset-Summary_Time-Period",
+                  "value" : "Data is accurate as of the last business day of the month and year specified in the dataset name."
+                },
+                { "key" : "Local-Data_County-Filter", "value" : "Yes" },
+                { "key" : "Local-Data_County_Column", "value" : "county" },
+                { "key" : "Local-Data_Municipality-Filter", "value" : "Yes" },
+                {
+                  "key" : "Local-Data_Municipality_Column",
+                  "value" : "location_city"
+                },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "State, Department of"
+                },
+                {
+                  "key" : "Notes_Notes",
+                  "value" : "This data does not include information on inactive corporations."
+                },
+                {
+                  "key" : "Disclaimers_Limitations",
+                  "value" : "Current Entity Name: Contains only the name by which the corporation is currently known. The corporation may have been known under other names in the past. County: Contains the current county of incorporation. Counties of incorporation are subject to change at the whim of the corporation. Service of Process Address: This address is the location to which legal documents are sent and may not reflect the physical location of the corporation or any of its officers."
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/n9v6-gdp6",
+        "link" : "https://data.ny.gov/Economic-Development/Active-Corporations-Beginning-1800/n9v6-gdp6",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "Corporations and Other Entities: All Filings – Entity Status History",
+            "id" : "3gg2-jgnp",
+            "resource_name" : null,
+            "parent_fxf" : [],
+            "description" : "This data contains Corporations and Other Entity Status information for each entity in the NYS DOS Corporation and Other Entities electronic database.  Each line contains the Department of State ID number, Date Filed, and Status of the entity after the filing of the document indicated.",
+            "attribution" : "New York State Department of State",
+            "attribution_link" : "https://www.dos.ny.gov",
+            "contact_email" : null,
+            "type" : "dataset",
+            "updatedAt" : "2026-10-20T18:51:08.000Z",
+            "createdAt" : "2021-06-17T22:13:53.000Z",
+            "metadata_updated_at" : "2026-10-20T17:57:04.000Z",
+            "data_updated_at" : "2026-10-20T18:51:08.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 475,
+                "page_views_last_month" : 6147,
+                "page_views_total" : 22122,
+                "page_views_last_week_log" : 8.894817763307945,
+                "page_views_last_month_log" : 12.585901449690772,
+                "page_views_total_log" : 14.433259415739311
+              },
+            "columns_name" :
+              [
+                "Status",
+                "DOS ID Number",
+                "Mod Cert Code",
+                "Filing Num",
+                "Date Filed"
+              ],
+            "columns_field_name" :
+              [
+                "status",
+                "corpid_num",
+                "mod_cert_code",
+                "film_num",
+                "date_filed"
+              ],
+            "columns_datatype" :
+              [ "Text", "Number", "Text", "Text", "Calendar date" ],
+            "columns_description" :
+              [
+                "Indicates whether the entity is active, inactive, or suspended according to the records of the Department of State",
+                "DOS Unique ID number for each entity assigned by the Department of State",
+                "The Mod Cert Code is a provides a description of the type of document filed",
+                "Unique ID Number for each document filed ",
+                "The date the document was filed by Department of State "
+              ],
+            "columns_format" :
+              [
+                {},
+                { "noCommas" : "true", "align" : "center" },
+                {},
+                {},
+                { "view" : "date", "align" : "center" }
+              ],
+            "download_count" : 11467,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2021-06-17T22:32:13.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" :
+              [
+                "limited liability partnership",
+                "corporations",
+                "business entity",
+                "limited partnership",
+                "not-for-profit corporation",
+                "limited liability company (llc)"
+              ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Disclaimers_Limitations",
+                  "value" : "The New York State Department of State recognizes the possibility of human and/or mechanical error in producing this dataset.  New York State Department of State, its employees, officers and agents make no representation, warranty or guarantee as to the accuracy, completeness, currency or suitability of the data for any purpose, real or implied.   The Department relies upon information provided to it.  Therefore, the information's completeness or accuracy cannot be guaranteed. This dataset contains all relevant filing records in the electronic database."
+                },
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Department of State"
+                },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "Corporations@dos.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Status of entities after the filing of a document"
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Weekly"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "NYS DOS Division of Corporations"
+                },
+                { "key" : "Dataset-Summary_Time-Period", "value" : "Current" },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "State, Department of"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/3gg2-jgnp",
+        "link" : "https://data.ny.gov/Economic-Development/Corporations-and-Other-Entities-All-Filings-Entity/3gg2-jgnp",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "Department of State Initial Business Filings, Stacked Bar Chart: Beginning 1991",
+            "id" : "s96z-69hv",
+            "resource_name" : null,
+            "parent_fxf" : [ "m7i3-tv6j" ],
+            "description" : "The dataset includes demographic information setting forth the number of filings made by business entities with the Department of State’s Division of Corporations.  Such filings are categorized by type and filer.",
+            "attribution" : "Department of State",
+            "attribution_link" : "http://www.dos.ny.gov/corps/index.html",
+            "contact_email" : null,
+            "type" : "chart",
+            "updatedAt" : "2026-04-23T18:57:31.000Z",
+            "createdAt" : "2025-01-09T00:52:28.000Z",
+            "metadata_updated_at" : "2026-04-23T18:57:31.000Z",
+            "data_updated_at" : "2024-07-06T06:00:53.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 24,
+                "page_views_last_month" : 267,
+                "page_views_total" : 34599,
+                "page_views_last_week_log" : 4.643856189774724,
+                "page_views_last_month_log" : 8.066089190457772,
+                "page_views_total_log" : 15.078484417411449
+              },
+            "columns_name" : [],
+            "columns_field_name" : [],
+            "columns_datatype" : [],
+            "columns_description" : [],
+            "columns_format" : [],
+            "download_count" : 445,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "visualization_canvas_chart",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2025-01-09T00:54:07.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" :
+              [
+                "amendment",
+                "publication",
+                "biennial",
+                "authority",
+                "incorporation"
+              ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Additional-Resources_See-Also",
+                  "value" : "www.dos.ny.gov/corps/pdfs/formingbus.pdf"
+                },
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Department of State"
+                },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "corporations@dos.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Filings by type"
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Monthly"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "Division of Corporations, State Records and UCC"
+                },
+                {
+                  "key" : "Dataset-Summary_Time-Period",
+                  "value" : "Beginning 1991"
+                },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "State, Department of"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/s96z-69hv",
+        "link" : "https://data.ny.gov/Economic-Development/Department-of-State-Initial-Business-Filings-Stack/s96z-69hv",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "Corporations and Other Entities: All Filings",
+            "id" : "63wc-4exh",
+            "resource_name" : null,
+            "parent_fxf" : [],
+            "description" : "This data contains all Corporations and Other Entity filings in the Department of State electronic database. Each record contains the Department of State ID number, Filing ID, Date Filed, Effective Date, Entity Name, the law under which the filing was made and other pertinent filing information.",
+            "attribution" : "New York State Department of State",
+            "attribution_link" : "https://dos.ny.gov",
+            "contact_email" : null,
+            "type" : "dataset",
+            "updatedAt" : "2026-10-20T23:13:06.000Z",
+            "createdAt" : "2021-06-17T21:25:39.000Z",
+            "metadata_updated_at" : "2026-10-20T19:31:48.000Z",
+            "data_updated_at" : "2026-10-20T23:13:06.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 800,
+                "page_views_last_month" : 64995,
+                "page_views_total" : 100245,
+                "page_views_last_week_log" : 9.64565843240871,
+                "page_views_last_month_log" : 15.988063313725416,
+                "page_views_total_log" : 16.613185146076667
+              },
+            "columns_name" :
+              [
+                "Entity Name",
+                "Foreign Formation Date",
+                "Dis Eff Date",
+                "Eff Date",
+                "Document Type",
+                "Date Filed",
+                "Filing Num",
+                "DOS ID Number",
+                "Approved Date",
+                "Mod Cert Code",
+                "Law",
+                "Amd Withdr Prtnr Flag",
+                "Duration Date",
+                "Restate Cert Flag",
+                "Amd For Juris Flag",
+                "Entity Type",
+                "Constituent Flag",
+                "Amd Chair Flag",
+                "Fict Name",
+                "Amd Reg Agt Flag",
+                "Amd Prov. Flag",
+                "Amd NFP Category Flag",
+                "Amd Foreign formation Date Flag",
+                "Amd Fict Name Flag",
+                "Amd Dura Flag",
+                "Cnty Prin Ofc",
+                "NFP Category",
+                "Amd Loc. Flag",
+                "Amd Name Flag",
+                "Amd Purps. Flag",
+                "Amd SOP Address Flag",
+                "Jurisdiction",
+                "Amd Admit Prtnr Flag",
+                "Card File Flag",
+                "Amd Share Flag",
+                "Amd Cnty Flag",
+                "Admin Name Flag"
+              ],
+            "columns_field_name" :
+              [
+                "corp_name",
+                "for_inc_date",
+                "dis_eff_date",
+                "eff_date",
+                "documenttype",
+                "date_filed",
+                "film_num",
+                "corpid_num",
+                "approved_date",
+                "mod_certcode",
+                "law",
+                "amd_withdr_prtnr_flag",
+                "dura_date",
+                "restate_cert_flag",
+                "amd_for_juris_flag",
+                "entitytype",
+                "constituent_flag",
+                "amd_chair_flag",
+                "fict_name",
+                "amd_reg_agt_flag",
+                "amd_prov_flag",
+                "amd_nfp_type_flag",
+                "amd_for_inc_date_flag",
+                "amd_fict_name_flag",
+                "amd_dura_flag",
+                "cnty_prin_ofc",
+                "nfp_type",
+                "amd_loc_flag",
+                "amd_corp_name_flag",
+                "amd_purps_flag",
+                "amd_procs_info_flag",
+                "juris",
+                "amd_admit_prtnr_flag",
+                "dead_file_flag",
+                "amd_stock_flag",
+                "amd_cnty_flag",
+                "admin_name_flag"
+              ],
+            "columns_datatype" :
+              [
+                "Text",
+                "Text",
+                "Text",
+                "Calendar date",
+                "Text",
+                "Calendar date",
+                "Text",
+                "Number",
+                "Calendar date",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text"
+              ],
+            "columns_description" :
+              [
+                "True/Real name of an entity",
+                "Date on which a foreign entity was formed in the jurisdiction of its formation",
+                "Date on which a dissolution becomes effective",
+                "Effective Date of the document filed ",
+                "Type of document filed (e.g., “certificate of incorporation”)",
+                "The date the document was filed by Department of State",
+                "Unique ID Number for each document filed",
+                "DOS Unique ID number for each entity",
+                "Date the document was approved by the Department of State for filing",
+                "The mod cert code, taken together with the information in the LAW field, is a description of the type of document represented by this record",
+                "The law under which the document was filed",
+                "'X' indicates the withdraw of a general partner from a limited partnership",
+                "The date on which a corporation is dissolved by expiration of its period of duration or the date after which the Limited Liability Company or Limited Partnership is to dissolve",
+                "'X' indicates the filing is a Restated Certificate of Incorporation",
+                "‘X' indicates a change to the foreign entity’s jurisdiction of formation",
+                "Type of entity (e.g., “business corporation”)",
+                "A 'C' indicates that the entity is a constituent of a merger or consolidation and that additional information for the constituent is not in the Database, is not available, or is maintained in the DOS Card File",
+                "'X' indicates the addition or amendment to the Name and/or business address of the Chief Executive Office ",
+                "Fictitious name of foreign entity, if any",
+                "'X' indicates a change in the Registered Agent’s address",
+                "'X' indicates a change to a provision in the document indicated. This is a catch-all for amendments or changes not covered by other amendment flags",
+                "'X' indicates a change to the Not-For-Profit Corporation category",
+                "'X' indicates a change to the formation date of a foreign entity.  This is the date when a foreign entity was formed in the jurisdiction of its formation  ",
+                "Fictitious name indicator for the filing.  '1' means maintain the fictitious name, '2' means the fictitious name was amended or changed, '3' means the fictitious name is being dropped or deactivated, '4' means a fictitious name was added to the entity",
+                "'X' indicates a change in Corporation’s duration date or the latest date of dissolution for a Limited Liability Company or Limited Partnership ",
+                "County in which the office or principal office of the entity is to be located",
+                "Category (“Charitable” or “Non-Charitable”) of the Not-for-Profit Corporation",
+                "'X' indicates change to the Business Corporation’s principal executive office",
+                "'X' indicates a change in the Entity Name",
+                "'X' indicates an amendment to the Purpose of an entity",
+                "'X' indicates a change to the Service of Process address",
+                "State or country of formation",
+                "'X' indicates the addition of a general partner to a limited partnership",
+                "Indicates the Corporations and Other Business Entity Database does not include the entire filing record history for the entity.  'F' means the document is the first record in the filing history and that other prior document(s) are not on file with DOS.  'D' means that only part of the filing history is in the Database and that the DOS Card Index includes information on other documents filed with DOS",
+                "'X' indicates a change in the Share information",
+                "'X' indicates a change in County.",
+                "'X' indicated that during a previous data conversion this filing has the correct name of the entity.  This flag does not affect the current name of the entity."
+              ],
+            "columns_format" :
+              [
+                {},
+                {},
+                {},
+                { "view" : "date", "align" : "center" },
+                {},
+                { "view" : "date", "align" : "center" },
+                {},
+                {},
+                { "view" : "date", "align" : "center" },
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {}
+              ],
+            "download_count" : 159884,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2021-06-17T21:27:06.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" :
+              [
+                "limited liability partnership",
+                "limited liability company (llc)",
+                "business entity",
+                "business filings",
+                "corporations",
+                "not-for-profit corporation",
+                "limited partnership"
+              ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Disclaimers_Limitations",
+                  "value" : "New York State Department of State, its employees, officers and agents make no representation, warranty or guarantee as to the accuracy, completeness, currency or suitability of the data for any purpose, real or implied.   The Department relies upon information provided to it. Therefore, the information's completeness or accuracy cannot be guaranteed. "
+                },
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Department of State"
+                },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "Corporations@dos.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Individual Entity Filings "
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Weekly"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "NYS DOS Division of Corporations, State Records and Uniform Commercial Code"
+                },
+                { "key" : "Dataset-Summary_Time-Period", "value" : "Current" },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "State, Department of"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/63wc-4exh",
+        "link" : "https://data.ny.gov/Economic-Development/Corporations-and-Other-Entities-All-Filings/63wc-4exh",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "Active Corporations: Beginning 1800",
+            "id" : "exzd-3inm",
+            "resource_name" : null,
+            "parent_fxf" : [ "n9v6-gdp6" ],
+            "description" : "The Department of State keeps a record of every filing for every incorporated business in the state of New York. This dataset contains information on all active corporations as of the last business day of the specified month and year.",
+            "attribution" : "Department of State",
+            "attribution_link" : null,
+            "contact_email" : null,
+            "type" : "story",
+            "updatedAt" : "2025-06-09T23:11:18.157Z",
+            "createdAt" : "2023-07-20T17:35:39.000Z",
+            "metadata_updated_at" : "2025-06-09T23:11:18.000Z",
+            "data_updated_at" : "2025-06-09T23:11:18.157Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 118,
+                "page_views_last_month" : 575,
+                "page_views_total" : 25924,
+                "page_views_last_week_log" : 6.894817763307944,
+                "page_views_last_month_log" : 9.169925001442314,
+                "page_views_total_log" : 14.662056368587951
+              },
+            "columns_name" : [],
+            "columns_field_name" : [],
+            "columns_datatype" : [],
+            "columns_description" : [],
+            "columns_format" : [],
+            "download_count" : 57,
+            "provenance" : "official",
+            "lens_view_type" : "story",
+            "lens_display_type" : "story",
+            "locked" : false,
+            "backend" : "not_a_dataset",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2023-07-20T17:35:41.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" : [],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "State, Department of"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/stories/s/exzd-3inm",
+        "link" : "https://data.ny.gov/stories/s/exzd-3inm",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "Corporations and Other Entities: All Filings - Address",
+            "id" : "2tms-hftb",
+            "resource_name" : null,
+            "parent_fxf" : [],
+            "description" : "This data contains Corporation and Other Business Entity address information for filings in the electronic database. Each record contains an address collected and stored from a filed document.",
+            "attribution" : "New York State Department of State",
+            "attribution_link" : "https://www.dos.ny.gov",
+            "contact_email" : null,
+            "type" : "dataset",
+            "updatedAt" : "2026-10-21T00:43:00.000Z",
+            "createdAt" : "2021-06-17T21:43:22.000Z",
+            "metadata_updated_at" : "2026-10-21T00:23:32.000Z",
+            "data_updated_at" : "2026-10-21T00:43:00.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 565,
+                "page_views_last_month" : 3030,
+                "page_views_total" : 25672,
+                "page_views_last_week_log" : 9.144658242831882,
+                "page_views_last_month_log" : 11.56557813678433,
+                "page_views_total_log" : 14.647964270407664
+              },
+            "columns_name" :
+              [
+                "Addr2",
+                "ZIP5",
+                "Country",
+                "Date Filed",
+                "State",
+                "DOS ID Number",
+                "Filing Number",
+                "Name",
+                "ZIP4",
+                "Addr1",
+                "City, town or village",
+                "Addr Type"
+              ],
+            "columns_field_name" :
+              [
+                "addr2",
+                "zip5",
+                "country",
+                "date_filed",
+                "state",
+                "corpid_num",
+                "film_num",
+                "name",
+                "zip4",
+                "addr1",
+                "city",
+                "addr_type"
+              ],
+            "columns_datatype" :
+              [
+                "Text",
+                "Text",
+                "Text",
+                "Calendar date",
+                "Text",
+                "Number",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Number"
+              ],
+            "columns_description" :
+              [
+                "Address Line 2",
+                "ZIP 5",
+                "Country of Address",
+                "The date the document was filed by Department of State",
+                "State",
+                "DOS Unique ID number for each entity",
+                "Unique ID Number for each document filed",
+                "Address Name",
+                "ZIP 4",
+                "Address Line 1",
+                "City, town or village",
+                "Type of address: 1 - Service of Process, 2 - Registered Agent, 3 – Chief Executive Officer, 4 – Principal Executive Office"
+              ],
+            "columns_format" :
+              [
+                {},
+                {},
+                {},
+                { "view" : "date", "align" : "center" },
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {}
+              ],
+            "download_count" : 146971,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2021-06-17T21:44:40.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" :
+              [
+                "address",
+                "and limited liability partnership",
+                "business entity",
+                "not-for-profit corporation",
+                "limited partnership",
+                "limited liability company (llc)",
+                "corporations"
+              ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Disclaimers_Limitations",
+                  "value" : "The New York State Department of State recognizes the possibility of human and/or mechanical error in producing this dataset.  New York State Department of State, its employees, officers and agents make no representation, warranty or guarantee as to the accuracy, completeness, currency or suitability of the data for any purpose, real or implied.   The Department relies upon information provided to it. Therefore, the information's completeness or accuracy cannot be guaranteed. This dataset contains all relevant filing records in the electronic database."
+                },
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Department of State"
+                },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "Corporations@dos.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Addresses stored from entity filings "
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Weekly"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "NYS DOS Division of Corporations, State Records and Uniform Commercial Code"
+                },
+                { "key" : "Dataset-Summary_Time-Period", "value" : "Current" },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "State, Department of"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/2tms-hftb",
+        "link" : "https://data.ny.gov/Economic-Development/Corporations-and-Other-Entities-All-Filings-Addres/2tms-hftb",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "Public Cemetery Locations Map",
+            "id" : "k8ru-z4z4",
+            "resource_name" : null,
+            "parent_fxf" : [ "bvve-d2q8" ],
+            "description" : "Provides a listing of the locations of public cemetery corporations as defined in Not-for-Profit Corporation Law section 1502(a) that are registered with or have been registered with the Division of Cemeteries.",
+            "attribution" : "New York State Department of State",
+            "attribution_link" : "https://www.dos.ny.gov/cmty/",
+            "contact_email" : null,
+            "type" : "map",
+            "updatedAt" : "2026-04-23T19:06:59.000Z",
+            "createdAt" : "2021-01-06T17:34:55.000Z",
+            "metadata_updated_at" : "2026-04-23T19:06:59.000Z",
+            "data_updated_at" : "2026-01-20T15:38:19.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 34,
+                "page_views_last_month" : 123,
+                "page_views_total" : 13985,
+                "page_views_last_week_log" : 5.129283016944966,
+                "page_views_last_month_log" : 6.954196310386876,
+                "page_views_total_log" : 13.771695789850023
+              },
+            "columns_name" : [],
+            "columns_field_name" : [],
+            "columns_datatype" : [],
+            "columns_description" : [],
+            "columns_format" : [],
+            "download_count" : 11,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "visualization_canvas_map",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2021-01-06T17:35:13.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Government & Finance",
+            "domain_tags" :
+              [
+                "cremations",
+                "crematories",
+                "crematory",
+                "interments",
+                "cemeteries",
+                "cemetery"
+              ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Department of State"
+                },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "CemeteryReports@dos.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Row represents a location associated with a cemetery corporation."
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Annually"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "Division of Cemeteries"
+                },
+                { "key" : "Dataset-Summary_Time-Period", "value" : "Current" },
+                { "key" : "Local-Data_County-Filter", "value" : "No" },
+                { "key" : "Local-Data_Municipality-Filter", "value" : "Yes" },
+                {
+                  "key" : "Local-Data_Municipality_Column",
+                  "value" : "citytownname"
+                },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "State, Department of"
+                },
+                {
+                  "key" : "Notes_Notes",
+                  "value" : "The organic statute defining public cemetery corporations and associated requirements are provided in Not-for-Profit Corporation Law Article 15."
+                },
+                {
+                  "key" : "Disclaimers_Limitations",
+                  "value" : "Electronic tabulation of physical location of cemetery corporations is incomplete.  Locations are provided only for locations recorded in the Division’s electronic records."
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/k8ru-z4z4",
+        "link" : "https://data.ny.gov/Government-Finance/Public-Cemetery-Locations-Map/k8ru-z4z4",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "Corporations and Other Entities: All Filings - Stock",
+            "id" : "kiwr-v7e8",
+            "resource_name" : null,
+            "parent_fxf" : [],
+            "description" : "This data contains Corporations stock information. Each line contains an individual class of stock authorized by an entity. The data includes the Department of State ID number, Filing ID, Date Filed, Number of Shares , Type of Shares, and Par Value of each share that has a Par Value.",
+            "attribution" : "New York State Department of State",
+            "attribution_link" : "https://www.dos.ny.gov",
+            "contact_email" : null,
+            "type" : "dataset",
+            "updatedAt" : "2026-10-20T19:02:06.000Z",
+            "createdAt" : "2021-06-17T22:20:19.000Z",
+            "metadata_updated_at" : "2026-10-20T18:32:22.000Z",
+            "data_updated_at" : "2026-10-20T19:02:06.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 107,
+                "page_views_last_month" : 926,
+                "page_views_total" : 7682,
+                "page_views_last_week_log" : 6.754887502163469,
+                "page_views_last_month_log" : 9.85642552862553,
+                "page_views_total_log" : 12.907454038318624
+              },
+            "columns_name" :
+              [
+                "DOS ID Number",
+                "Share Type",
+                "Share Par Value",
+                "Date Filed",
+                "Filing Num",
+                "Stock Num Shrs"
+              ],
+            "columns_field_name" :
+              [
+                "corpid_num",
+                "stock_type",
+                "stock_val_shr",
+                "date_filed",
+                "film_num",
+                "stock_num_shrs"
+              ],
+            "columns_datatype" :
+              [
+                "Number",
+                "Text",
+                "Number",
+                "Calendar date",
+                "Text",
+                "Number"
+              ],
+            "columns_description" :
+              [
+                "DOS Unique ID number for each corporation",
+                "Type of Shares.   “CAP” means the total par value of shares with par value. “NO PAR VALUE” which means shares that have no par value. “PAR VALUE” means the shares have a stated par value. “ERR” means the share information is not included in the Dataset.",
+                "Par Value of shares that have a Par Value",
+                "The date the document was filed by Department of State",
+                "Unique Filing ID Number assigned to each document filed by the Department of State",
+                "Number of shares "
+              ],
+            "columns_format" :
+              [
+                { "noCommas" : "true", "align" : "center" },
+                {},
+                { "align" : "right" },
+                { "view" : "date", "align" : "center" },
+                {},
+                { "align" : "right" }
+              ],
+            "download_count" : 4601,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2021-06-17T22:25:39.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" : [ "corporations", "business entity", "share" ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Disclaimers_Limitations",
+                  "value" : "The New York State Department of State recognizes the possibility of human and/or mechanical error in producing this dataset.  New York State Department of State, its employees, officers and agents make no representation, warranty or guarantee as to the accuracy, completeness, currency or suitability of the data for any purpose, real or implied.   The Department relies upon information provided to it. Therefore, the information's completeness or accuracy cannot be guaranteed. This dataset contains all relevant filing records in the electronic database."
+                },
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Department of State"
+                },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "Corporations@dos.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Individual classes of stock authorized by an entity in the electronic database"
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Weekly"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "NYS DOS Division of Corporations"
+                },
+                { "key" : "Dataset-Summary_Time-Period", "value" : "Current" },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "State, Department of"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/kiwr-v7e8",
+        "link" : "https://data.ny.gov/Economic-Development/Corporations-and-Other-Entities-All-Filings-Stock/kiwr-v7e8",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "Corporations and Other Entities: All Filings - Constituent",
+            "id" : "dnbf-xifz",
+            "resource_name" : null,
+            "parent_fxf" : [],
+            "description" : "This data contains information solely on merger or consolidation constituents that did not survive the merger or consolidation. Each line contains the Department of State ID number, Filing ID, Date Filed (of the certificate of merger or consolidation), Constituent Indicator,  Entity Name, Effective Date of the merger or consolidation and the indicator of the entity type.",
+            "attribution" : "New York State Department of State",
+            "attribution_link" : "https://www.dos.ny.gov",
+            "contact_email" : null,
+            "type" : "dataset",
+            "updatedAt" : "2026-10-20T18:16:33.000Z",
+            "createdAt" : "2021-06-17T22:37:10.000Z",
+            "metadata_updated_at" : "2026-10-20T18:16:04.000Z",
+            "data_updated_at" : "2026-10-20T18:16:33.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 117,
+                "page_views_last_month" : 658,
+                "page_views_total" : 8642,
+                "page_views_last_week_log" : 6.882643049361842,
+                "page_views_last_month_log" : 9.364134655008051,
+                "page_views_total_log" : 13.077316445881026
+              },
+            "columns_name" :
+              [
+                "Eff Date",
+                "Mod Cert Code",
+                "Date Filed",
+                "Filing Num",
+                "Const Entity Type",
+                "Constituent Flag",
+                " DOS ID Number",
+                "Entity Name"
+              ],
+            "columns_field_name" :
+              [
+                "eff_date",
+                "mod_cert_code",
+                "date_filed",
+                "film_num",
+                "const_corp_type",
+                "constituent_flag",
+                "corpid_num",
+                "corp_name"
+              ],
+            "columns_datatype" :
+              [
+                "Calendar date",
+                "Text",
+                "Calendar date",
+                "Text",
+                "Text",
+                "Text",
+                "Number",
+                "Text"
+              ],
+            "columns_description" :
+              [
+                "Effective date of document filed",
+                "The mod cert code is a partial description of the type of document filed",
+                "The date the document was filed by Department of State",
+                "Unique Filing ID Number assigned to each document filed by the Department of State ",
+                "Numeric indicator of entity type",
+                "“C” indicates that the entity was a constituent of a merger or consolidation for which additional information is not in the Database or is not available",
+                "Unique ID number for each entity assigned -the Department of State",
+                "Name of the constituent entity"
+              ],
+            "columns_format" :
+              [
+                {},
+                {},
+                { "view" : "date", "align" : "center" },
+                {},
+                {},
+                {},
+                { "noCommas" : "true", "align" : "center" },
+                {}
+              ],
+            "download_count" : 21500,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2021-09-20T20:23:09.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" :
+              [
+                "not-for-profit corporation",
+                "corporations",
+                "limited liability company (llc)",
+                "limited partnership",
+                "and certificate of consolidation",
+                "business entity",
+                "certificate of merger",
+                "constituent"
+              ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Disclaimers_Limitations",
+                  "value" : "New York State Department of State, its employees, officers and agents make no representation, warranty or guarantee as to the accuracy, completeness, currency or suitability of the data for any purpose, real or implied.   The Department relies upon information provided to it. Therefore, the information's completeness or accuracy cannot be guaranteed. This dataset contains all relevant filing records in the electronic database."
+                },
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Department of State"
+                },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "Corporations@dos.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Individual constituents in a merger or consolidation   "
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Weekly"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "NYS DOS Division of Corporations"
+                },
+                { "key" : "Dataset-Summary_Time-Period", "value" : "Current" },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "State, Department of"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/dnbf-xifz",
+        "link" : "https://data.ny.gov/Economic-Development/Corporations-and-Other-Entities-All-Filings-Consti/dnbf-xifz",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      }
+    ],
+  "resultSetSize" : 91,
+  "timings" : { "serviceMillis" : 23, "searchMillis" : [ 2, 8 ] },
+  "warnings" : []
+}

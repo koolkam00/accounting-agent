@@ -1,0 +1,72 @@
+{
+ "brand_name": "SAMPLE Brightside",
+ "product_sku": "SAMPLE Sea Salt Lentil Crisps, 1 oz bags",
+ "prepared_for": "SAMPLE Contact, Founder",
+ "proposal_date": "2026-12-01",
+ "category": "chips-crisps",
+ "tier": "founding",
+ "extra_offices": "0",
+ "drop_date": "2027-01-12",
+ "ship_by_requested": "",
+ "offices": [
+  {
+   "neighborhood": "Flatiron",
+   "industry": "Software",
+   "headcount_band": "76-150",
+   "planned_units": "55"
+  },
+  {
+   "neighborhood": "NoMad",
+   "industry": "Architecture",
+   "headcount_band": "40-75",
+   "planned_units": "40"
+  },
+  {
+   "neighborhood": "Flatiron",
+   "industry": "Media",
+   "headcount_band": "76-150",
+   "planned_units": "50"
+  },
+  {
+   "neighborhood": "Union Square",
+   "industry": "Nonprofit",
+   "headcount_band": "40-75",
+   "planned_units": "40"
+  },
+  {
+   "neighborhood": "NoMad",
+   "industry": "Design studio",
+   "headcount_band": "151-250",
+   "planned_units": "65"
+  }
+ ],
+ "retailers": [
+  {
+   "retailer_name": "Eden Gourmet Marketplace Union Square",
+   "street": "7 East 14th Street",
+   "distance": "inside the cluster",
+   "map_number": "1"
+  },
+  {
+   "retailer_name": "Morton Williams (278 Park Avenue South)",
+   "street": "278 Park Avenue South",
+   "distance": "inside the cluster",
+   "map_number": "2"
+  },
+  {
+   "retailer_name": "Westside Market NYC (170 West 23rd St)",
+   "street": "170 West 23rd Street",
+   "distance": "2 blocks outside",
+   "map_number": "3"
+  },
+  {
+   "retailer_name": "Trader Joe's Union Square (store 540)",
+   "street": "142 East 14th Street",
+   "distance": "inside the cluster",
+   "map_number": "4"
+  }
+ ],
+ "online_site": "example.com",
+ "map_image": "../sb/desk-drop-identity/templates/proposal/samples/maps/SAMPLE-brightside-map-from-B.png",
+ "map_caption": "SAMPLE map: workstream B's script, its four longest store names"
+}

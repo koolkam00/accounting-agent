@@ -1,0 +1,19 @@
+{
+  "_readme": "THE ONE PLACE THE NAME LIVES. Edit BRAND_NAME or TAGLINE here, then run: node render/build-brand.js  (it rebuilds the wordmark SVG and PNG files and system/brand.js). Then find-and-replace the old name in the .md guides. Contact values stay as [BRACKETS] until the founder fills them.",
+  "BRAND_NAME": "Shelfwise",
+  "TAGLINE": "Emerging brands. Delivered to your workday.",
+  "WORDMARK_LINE_BREAK": "",
+  "SIGNATURE_LOGO_URL": "",
+  "_readme_SIGNATURE_LOGO_URL": "Optional. The public web address of wordmark/png/wordmark-light-on-white-600w.png once it is hosted on your site. Empty = signature/signature-with-logo.html shows a [DOMAIN] slot; use signature.html until then.",
+  "contact": {
+    "FOUNDER_NAME": "Sam Rivera",
+    "FOUNDER_TITLE": "",
+    "PHONE": "(212) 555-0147",
+    "EMAIL": "sam@shelfwise.example",
+    "WEBSITE": "",
+    "DOMAIN": "[DOMAIN]",
+    "POSTAL_ADDRESS": "PO Box 1234, New York, NY 10010"
+  },
+  "_readme_contact": "Your details, used by every document and both signatures. Fill them here (then run bash render/build-pdfs.sh) or in details.html in Chrome. FOUNDER_TITLE is optional: empty prints \"Founder\". WEBSITE set to \"\" (empty) leaves the website off everything until the site is public.",
+  "name_status": "Working name, not cleared. No commercial print run until desk-drop-legal-pack/name-check-log.md clears it."
+}

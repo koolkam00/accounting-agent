@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Desk Drop",
+    "line_break": "",
+    "aspect": 6.24,
+    "advice": "Horizontal lockup is within 7:1."
+  },
+  {
+    "name": "Dropp",
+    "line_break": "",
+    "aspect": 4.31,
+    "advice": "Horizontal lockup is within 7:1."
+  },
+  {
+    "name": "Desk Drop Collective",
+    "line_break": "",
+    "aspect": 11.3,
+    "advice": "Horizontal lockup is wider than 7:1. Use the stacked lockup in square or narrow spaces, or set WORDMARK_LINE_BREAK."
+  },
+  {
+    "name": "Desk Drop Collective",
+    "line_break": "Desk Drop|Collective",
+    "aspect": 3.62,
+    "advice": "Horizontal lockup is within 7:1."
+  }
+]

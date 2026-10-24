@@ -9,27 +9,27 @@
     "coordinates": [
      [
       [
-       -73.99773,
-       40.737252
+       -73.997729,
+       40.737251
       ],
       [
-       -73.992114,
+       -73.992112,
        40.734846
       ],
       [
-       -73.992322,
+       -73.99232,
        40.734566
       ],
       [
-       -73.987789,
+       -73.987787,
        40.732625
       ],
       [
-       -73.986864,
+       -73.986862,
        40.733868
       ],
       [
-       -73.989394,
+       -73.989392,
        40.734952
       ],
       [
@@ -37,12 +37,12 @@
        40.744591
       ],
       [
-       -73.989845,
-       40.747855
+       -73.989846,
+       40.747854
       ],
       [
-       -73.99773,
-       40.737252
+       -73.997729,
+       40.737251
       ]
      ]
     ]
@@ -80,29 +80,6 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     -73.99152,
-     40.730604
-    ]
-   },
-   "properties": {
-    "kind": "retailer",
-    "retailer_id": "B-R-024",
-    "name": "Wegmans Astor Place",
-    "address": "770 Broadway",
-    "buy_path_tier": "A",
-    "shelf_set": "Large supermarket with natural, organic and specialty sections",
-    "inside_boundary": "N",
-    "blocks_outside": "4",
-    "walk_minutes_from_cluster_edge": 5,
-    "as_of": "2026-10-24",
-    "map_number": 2
-   }
-  },
-  {
-   "type": "Feature",
-   "geometry": {
-    "type": "Point",
-    "coordinates": [
      -73.990892,
      40.734732
     ]
@@ -118,7 +95,7 @@
     "blocks_outside": "0",
     "walk_minutes_from_cluster_edge": 0,
     "as_of": "2026-10-24",
-    "map_number": 3
+    "map_number": 2
    }
   },
   {
@@ -141,7 +118,7 @@
     "blocks_outside": "3",
     "walk_minutes_from_cluster_edge": 3,
     "as_of": "2026-10-24",
-    "map_number": 4
+    "map_number": 3
    }
   },
   {
@@ -164,6 +141,29 @@
     "blocks_outside": "0",
     "walk_minutes_from_cluster_edge": 0,
     "as_of": "2026-10-24",
+    "map_number": 4
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.991994,
+     40.730835
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-024",
+    "name": "Wegmans Astor Place",
+    "address": "770 Broadway",
+    "buy_path_tier": "B",
+    "shelf_set": "Large supermarket with natural, organic and specialty sections",
+    "inside_boundary": "N",
+    "blocks_outside": "4",
+    "walk_minutes_from_cluster_edge": 5,
+    "as_of": "2026-10-24",
     "map_number": 5
    }
   },
@@ -172,8 +172,8 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     -73.998678,
-     40.734279
+     -73.998798,
+     40.73434
     ]
    },
    "properties": {
@@ -264,8 +264,8 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     -73.983582,
-     40.737638
+     -73.983719,
+     40.737696
     ]
    },
    "properties": {
@@ -276,7 +276,7 @@
     "buy_path_tier": "B",
     "shelf_set": "Gourmet and specialty grocer",
     "inside_boundary": "N",
-    "blocks_outside": "4",
+    "blocks_outside": "3",
     "walk_minutes_from_cluster_edge": 4,
     "as_of": "2026-10-24",
     "map_number": 10
@@ -310,8 +310,8 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     -73.989863,
-     40.742166
+     -73.989477,
+     40.741986
     ]
    },
    "properties": {
@@ -333,8 +333,8 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     -73.991183,
-     40.744352
+     -73.991431,
+     40.744457
     ]
    },
    "properties": {

@@ -68,7 +68,7 @@
             <li>A named pantry owner and a receiving window.</li>
             <li>On the shelf within one business day of delivery.</li>
             <li>One placement photo, then one more on day 3 or 5.</li>
-            <li>One Slack or email post of the survey link, and five or more responses.</li>
+            <li>One Slack or email post of the survey link, and your help reaching five or more responses.</li>
             <li>A ten-minute debrief, and your Tuesday headcount.</li>
           </ul>
           <p class="muted">Never asked of you: payment, your employees' contact details, exclusivity, or storing anything beyond the drop. Leave any time with a week's notice.</p>
@@ -84,7 +84,7 @@
         <li><h3>This form</h3><p>Categories, vetoes, Tuesday headcount, receiving window.</p></li>
         <li><h3>A brand, proposed</h3><p>We tell you the brand first. For your first three drops, nothing comes unless you reply yes. After that, it comes unless you say no.</p></li>
         <li><h3>Drop day</h3><p>A Tuesday or Wednesday morning: one labeled case and a display card arrive.</p></li>
-        <li><h3>Feedback</h3><p>Five business days later the survey closes, and you get your team's feedback.</p></li>
+        <li><h3>Feedback</h3><p>On day 5 of the window the survey closes, and you get your team's feedback.</p></li>
       </ol>
       <p class="section-intro"><strong>What you sign:</strong> a one-page participation agreement listing what each side commits to. No fees either way, no penalties.</p>
     </div>
@@ -93,10 +93,10 @@
   <section class="section form-section" id="join" aria-labelledby="join-h">
     <div class="wrap form-wrap">
       <h2 id="join-h">Sign up your office</h2>
-      <p>About 90 seconds: 11 required answers, five of them one tap.</p>
+      <p>About 90 seconds: 10 required answers, five of them one tap.</p>
       <p class="founder-line">Run by <span data-config="FOUNDER_NAME"></span>, founder. You deal with me for every drop: <a data-config="CONTACT_EMAIL" data-config-mailto></a><span data-config-line="PHONE"> · <a data-config="PHONE" data-config-tel></a></span></p>
-      <p class="form-staging" data-staging-form>Staging: submissions are not live yet. This form sends nothing.</p>
-      <noscript><p class="form-staging is-shown">This form needs JavaScript, which is off in your browser. Please email us instead, at the address at the bottom of this page.</p></noscript>
+      <p class="form-alert" data-staging-form>Staging: submissions are not live yet. This form sends nothing.</p>
+      <noscript><p class="form-alert is-shown">This form needs JavaScript, which is off in your browser. Please email us instead, at the address at the bottom of this page.</p></noscript>
 
       <form class="intake" id="office-form" data-form="office" method="post" novalidate>
         <div class="error-summary" tabindex="-1" hidden>
@@ -117,9 +117,9 @@
             <input type="text" id="o-contact_name" name="contact_name" required maxlength="120" autocomplete="name" aria-describedby="o-contact_name-err">
           </div>
           <div class="field">
-            <label for="o-contact_title">Your title</label>
+            <label for="o-contact_title">Your title <span class="opt">(optional)</span></label>
             <span class="err" id="o-contact_title-err"></span>
-            <input type="text" id="o-contact_title" name="contact_title" required maxlength="120" autocomplete="organization-title" aria-describedby="o-contact_title-err">
+            <input type="text" id="o-contact_title" name="contact_title" maxlength="120" autocomplete="organization-title" aria-describedby="o-contact_title-err">
           </div>
           <div class="field">
             <label for="o-contact_email">Work email</label>
@@ -151,7 +151,8 @@
             <label for="o-tuesday_headcount">People in the office on a typical Tuesday</label>
             <span class="hint" id="o-tuesday_headcount-hint">A rough count is fine. We size each drop to it.</span>
             <span class="err" id="o-tuesday_headcount-err"></span>
-            <input type="text" id="o-tuesday_headcount" name="tuesday_headcount" class="short" required maxlength="6" inputmode="numeric" autocomplete="off" data-type="int" aria-describedby="o-tuesday_headcount-hint o-tuesday_headcount-err">
+            <input type="text" id="o-tuesday_headcount" name="tuesday_headcount" class="short" required maxlength="6" inputmode="numeric" autocomplete="off" data-type="int" aria-describedby="o-tuesday_headcount-hint o-tuesday_headcount-err o-tuesday_headcount-note">
+            <span class="size-note" id="o-tuesday_headcount-note" data-size-note="tuesday_headcount" data-min="30" data-max="250" aria-live="polite"></span>
           </div>
           <fieldset class="choice" id="o-pantry_owner_is_contact" data-name="pantry_owner_is_contact" aria-describedby="o-pantry_owner_is_contact-hint o-pantry_owner_is_contact-err">
             <legend>Are you the pantry owner?</legend>
@@ -169,9 +170,9 @@
               <input type="text" id="o-pantry_owner_name" name="pantry_owner_name" maxlength="120" autocomplete="off" data-required-if="pantry_owner_is_contact=N" aria-describedby="o-pantry_owner_name-err">
             </div>
             <div class="field">
-              <label for="o-pantry_owner_title">Pantry owner's title</label>
+              <label for="o-pantry_owner_title">Pantry owner's title <span class="opt">(optional)</span></label>
               <span class="err" id="o-pantry_owner_title-err"></span>
-              <input type="text" id="o-pantry_owner_title" name="pantry_owner_title" maxlength="120" autocomplete="off" data-required-if="pantry_owner_is_contact=N" aria-describedby="o-pantry_owner_title-err">
+              <input type="text" id="o-pantry_owner_title" name="pantry_owner_title" maxlength="120" autocomplete="off" aria-describedby="o-pantry_owner_title-err">
             </div>
           </div>
         </fieldset>
@@ -255,14 +256,15 @@
           </fieldset>
           <div class="field">
             <label for="o-vetoes">Anything you never want? <span class="opt">(optional)</span></label>
-            <span class="hint" id="o-vetoes-hint">Brands, ingredients or categories. For example: nothing with peanuts.</span>
+            <span class="hint" id="o-vetoes-hint">Brands, ingredients or categories, for example: nothing with peanuts. Name the ingredient, not the person: please don't tell us who has an allergy.</span>
             <span class="err" id="o-vetoes-err"></span>
             <textarea id="o-vetoes" name="vetoes" rows="2" maxlength="1000" aria-describedby="o-vetoes-hint o-vetoes-err"></textarea>
           </div>
           <div class="field">
             <label for="o-notes">Anything else? <span class="opt">(optional)</span></label>
+            <span class="hint" id="o-notes-hint">Please don't include anyone's health or personal details.</span>
             <span class="err" id="o-notes-err"></span>
-            <textarea id="o-notes" name="notes" rows="2" maxlength="2000" aria-describedby="o-notes-err"></textarea>
+            <textarea id="o-notes" name="notes" rows="2" maxlength="2000" aria-describedby="o-notes-hint o-notes-err"></textarea>
           </div>
         </fieldset>
 
@@ -277,14 +279,14 @@
 
       <div class="form-done" tabindex="-1" hidden>
         <h3>Thanks. We have your answers.</h3>
-        <p>Next, we will email you from <a data-config="CONTACT_EMAIL" data-config-mailto></a> with the one-page participation agreement. Nothing starts until you sign it, and you can leave any time with a week's notice.</p>
+        <p>We will email you from <a data-config="CONTACT_EMAIL" data-config-mailto></a>. If your office fits (40 to 250 people on a Tuesday, inside the area on the map), that email carries the one-page participation agreement. If it doesn't fit yet, we will say so plainly. Nothing starts until you sign, and you can leave any time with a week's notice.</p>
       </div>
 
       <aside class="form-notice" aria-labelledby="o-notice-h">
         <p class="draft-flag">Draft for attorney review. Not legal advice.</p>
         <h3 id="o-notice-h">What this form collects, and why</h3>
-        <p>Your business contact details, so we can reply. Your office's address, Tuesday headcount, pantry owner, receiving details, building rules and preferences, so we can plan deliveries and match brands. Nothing about your employees.</p>
-        <p>Your answers go to a private Google Sheet and one email to our inbox, seen only by <span data-config="FOUNDER_NAME"></span>. We do not sell them. A brand sees your office's neighborhood, industry and headcount when we propose a campaign, and learns your company's name only after it signs up for a drop at your office. If we do not end up working together, we delete your answers within 12 months. To see, correct or delete them, email <a data-config="CONTACT_EMAIL" data-config-mailto></a>. More in our <a href="privacy.html">privacy notice</a>.</p>
+        <p>Your business contact details, so we can reply. Your office's address, Tuesday headcount, pantry owner, receiving details, building rules and preferences, so we can plan deliveries and match brands. Nothing about your employees, beyond the pantry owner's name and title if it isn't you. Please don't tell us about anyone's health: a veto by ingredient is enough.</p>
+        <p>Your answers go to a private Google Sheet, and a short email (your company and email address only) tells our inbox you wrote. Only <span data-config="FOUNDER_NAME"></span> sees them. We do not sell them. A brand sees your office's neighborhood, industry and headcount when we propose a campaign, and learns your company's name only after it signs up for a drop at your office. If we do not end up working together, we delete your answers and that email within 12 months. To see, correct or delete them, email <a data-config="CONTACT_EMAIL" data-config-mailto></a>. More in our <a href="privacy.html">privacy notice</a>.</p>
       </aside>
     </div>
   </section>

@@ -1,0 +1,10 @@
+{"bbl": "1008500001", "confidence": 0.8, "label": "149 FIFTH AVENUE, New York, NY, USA", "lat": 40.740215, "lon": -73.990004, "match": "fallback", "query": "149 Fifth Avenue", "source": "nyc-geosearch"}
+{"bbl": "1008220031", "confidence": 0.8, "label": "156 FIFTH AVENUE, New York, NY, USA", "lat": 40.740038, "lon": -73.991401, "match": "fallback", "query": "156 Fifth Avenue", "source": "nyc-geosearch"}
+{"bbl": "1008220058", "confidence": 0.8, "label": "30 WEST 21 STREET, New York, NY, USA", "lat": 40.74082, "lon": -73.992366, "match": "fallback", "query": "30 West 21st Street", "source": "nyc-geosearch"}
+{"bbl": "1008510035", "confidence": 0.8, "label": "300 PARK AVENUE SOUTH, New York, NY, USA", "lat": 40.739848, "lon": -73.987027, "match": "fallback", "query": "300 Park Avenue South", "source": "nyc-geosearch"}
+{"bbl": "1008820085", "confidence": 0.8, "label": "381 PARK AVENUE SOUTH, New York, NY, USA", "lat": 40.742351, "lon": -73.984127, "match": "fallback", "query": "381 Park Avenue South", "source": "nyc-geosearch"}
+{"bbl": "1008220009", "confidence": 0.8, "label": "37 WEST 20 STREET, New York, NY, USA", "lat": 40.740813, "lon": -73.993107, "match": "fallback", "query": "37 West 20th Street", "source": "nyc-geosearch"}
+{"bbl": "1008430020", "confidence": 0.8, "label": "19 UNION SQUARE WEST, New York, NY, USA", "lat": 40.736171, "lon": -73.991456, "match": "fallback", "query": "19 Union Square West", "source": "nyc-geosearch"}
+{"bbl": "1005567502", "confidence": 0.8, "label": "84 THIRD AVENUE, New York, NY, USA", "lat": 40.731868, "lon": -73.988569, "match": "fallback", "query": "84 Third Avenue", "source": "nyc-geosearch"}
+{"bbl": "1005720005", "confidence": 0.8, "label": "410 SIXTH AVENUE, New York, NY, USA", "lat": 40.733799, "lon": -73.999072, "match": "fallback", "query": "410 Sixth Avenue", "source": "nyc-geosearch"}
+{"bbl": "1007987502", "confidence": 0.8, "label": "170 WEST 23 STREET, New York, NY, USA", "lat": 40.743555, "lon": -73.995461, "match": "fallback", "query": "170 West 23rd Street", "source": "nyc-geosearch"}

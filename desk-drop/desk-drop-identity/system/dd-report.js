@@ -1,5 +1,6 @@
 /*
-  dd-report.js: the one-page campaign report (v1.2, 2026-10-24). Load after dd-template.js,
+  dd-report.js: the one-page campaign report (v1.3, 2026-10-24; review round 2: photo dates are
+  printed only where recorded, and a late office's photo is never captioned "day 1"). Load after dd-template.js,
   dd-dates.js and dd-docs.js. Used by templates/report/report.html and, in mock mode, by the
   proposal's mock page, so the mock is always exactly the real layout.
 
@@ -31,7 +32,7 @@
     'Incremental purchases were not measured, so this report does not show whether the campaign caused any sale.';
 
   const BANDS = { '40-75': '40 to 75', '76-150': '76 to 150', '151-250': '151 to 250', '251-500': '251 to 500', 'under-40': 'under 40', 'over-500': 'over 500', 'unknown': 'unknown' };
-  R.BAND_OPTIONS = [['[BAND]', 'choose'], ['40-75', '40 to 75'], ['76-150', '76 to 150'], ['151-250', '151 to 250'], ['under-40', 'under 40'], ['251-500', '251 to 500'], ['unknown', 'unknown']];
+  R.BAND_OPTIONS = [['[HEADCOUNT BAND]', 'choose'], ['40-75', '40 to 75'], ['76-150', '76 to 150'], ['151-250', '151 to 250'], ['under-40', 'under 40'], ['251-500', '251 to 500'], ['unknown', 'unknown']];
   const band = (v) => BANDS[String(v || '').trim()] || String(v || '');
 
   // ---- numbers ----
@@ -59,6 +60,27 @@
     });
   }
 
+  // A recorded photo date (YYYY-MM-DD), or null when empty or not a date. Never computed.
+  const photoDate = (v) => { const t = String(v == null ? '' : v).trim(); return ph(t) ? null : Dt.parse(t); };
+  // Caption parts for one office's photos. A date is printed only where it was recorded; the
+  // placement photo of an office placed late is never called "day 1".
+  function captions(o, d) {
+    const late = String(o.placed_within_1bd || '').trim() === 'N';
+    const pd = photoDate(o.placement_photo_date), ld = photoDate(o.later_photo_date);
+    const pk = d.ok && pd ? Dt.dayOf(d.d1, pd) : null, lk = d.ok && ld ? Dt.dayOf(d.d1, ld) : null;
+    const lday = lk != null ? lk : (String(o.later_photo_day || '5').trim() === '3' ? 3 : 5);
+    return {
+      late,
+      // page 1, short: "A · day 2" with a recorded date; "A · placed" (or "placed*" when late) without
+      placeShort: pk != null ? `day ${pk}${late ? '*' : ''}` : `placed${late ? '*' : ''}`,
+      laterShort: `day ${lday}`,
+      // page 2, full
+      placeLong: pd ? `placement photo · ${Dt.fmt(pd)}${pk != null ? ` (day ${pk})` : ''}` : `placement photo · ${late ? 'placed after the first business day' : 'placed within one business day'}; date not recorded`,
+      laterLong: ld ? `later photo · ${Dt.fmt(ld)}${lk != null ? ` (day ${lk})` : ''}` : `later photo · day ${lday}; date not recorded`
+    };
+  }
+  R.captions = captions;
+
   // ---- checks (errors block the PDF, warnings show in the panel and the render output) ----
   R.validate = function (r, i) {
     const rows = Array.isArray(r.offices) ? r.offices : [];
@@ -82,6 +104,27 @@
         if (ph(v)) D.placeholder(i, `${L}: ${what}`);
         else if (!v) D.warn(i, `${L}: no ${what}. The report says "No photo received". Attach it if you have it.`);
       }
+      // photo dates (optional): printed only when recorded, and checked against the roster
+      const dd = dates(r);
+      const pd = photoDate(o.placement_photo_date), ld = photoDate(o.later_photo_date);
+      for (const [v, what] of [[o.placement_photo_date, 'placement photo date'], [o.later_photo_date, 'later photo date']]) {
+        const t = String(v == null ? '' : v).trim();
+        if (t && ph(t)) D.placeholder(i, `${L}: ${what}`);
+        else if (t && !Dt.parse(t)) D.error(i, `${L}: ${what} "${t}" must be a date in the form YYYY-MM-DD, or empty if you do not know it.`);
+      }
+      if (dd.ok && pd) {
+        const T = dd.d1, T1 = Dt.addBD(T, 1);
+        if (pd < T) D.error(i, `${L}: the placement photo date ${Dt.fmt(pd)} is before the drop date ${Dt.fmt(T)}.`);
+        else if (p1 === 'Y' && pd > T1) D.error(i, `${L}: the placement photo is dated ${Dt.fmt(pd)}, after the first business day (${Dt.fmt(T1)}), but "placed within one business day" is Y. Fix one of them.`);
+        else if (p1 === 'N' && pd <= T1) D.error(i, `${L}: the placement photo is dated ${Dt.fmt(pd)}, within one business day, but "placed within one business day" is N. Fix one of them.`);
+      }
+      if (dd.ok && ld) {
+        if (pd && ld < pd) D.error(i, `${L}: the later photo date ${Dt.fmt(ld)} is before the placement photo date ${Dt.fmt(pd)}.`);
+        else if (ld < dd.d1) D.error(i, `${L}: the later photo date ${Dt.fmt(ld)} is before the drop date.`);
+        const k = Dt.dayOf(dd.d1, ld), want = String(o.later_photo_day || '5').trim() === '3' ? 3 : 5;
+        if (k != null && k !== want) D.warn(i, `${L}: the later photo is dated ${Dt.fmt(ld)}, which is day ${k}, but "Later photo taken on" says day ${want}. The caption prints the date and day ${k}.`);
+        if (ld > dd.day5) D.warn(i, `${L}: the later photo is dated ${Dt.fmt(ld)}, after the window closed (${Dt.fmt(dd.day5)}). Say so in "What we learned" if it matters.`);
+      }
     });
     const total = sum(rows, 'survey_responses');
     const ty = n(r.survey_tried_yes);
@@ -97,9 +140,9 @@
       const c = String(r[k] || '');
       if (/[\w.+-]+@[\w-]+\.[\w.]+/.test(c) || /\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}/.test(c)) D.error(i, `Comment ${j + 1} contains what looks like an email address or phone number. Choose a different comment; never edit a comment's words.`);
     });
-    X.checkClaims(i, '"What we learned"', r.learned);
-    X.checkClaims(i, '"Recommendation"', r.recommendation);
-    X.checkClaims(i, '"Retailer velocity"', r.retailer_velocity);
+    X.checkClaims(i, '"What we learned"', r.learned, r);
+    X.checkClaims(i, '"Recommendation"', r.recommendation, r);
+    X.checkClaims(i, '"Retailer velocity"', r.retailer_velocity, r);
     const d = dates(r);
     if (d.ok) { d.cal.errors.forEach((m) => D.error(i, m)); d.cal.warnings.forEach((m) => D.warn(i, m)); }
   };
@@ -150,7 +193,7 @@
 
     const cell = (o, key, dflt) => { const s = String(o[key] == null ? '' : o[key]).trim(); return s ? D.text(s) : (dflt != null ? dflt : '<mark class="dd-ph">[N]</mark>'); };
     const body = rows.map((o, k) => `<tr>
-        <td><b>${label(o, k)}</b></td><td>${cell(o, 'industry', '<mark class="dd-ph">[INDUSTRY]</mark>')}</td><td class="nowrap">${o.headcount_band ? D.text(band(o.headcount_band)) : '<mark class="dd-ph">[BAND]</mark>'}</td>
+        <td><b>${label(o, k)}</b></td><td>${cell(o, 'industry', '<mark class="dd-ph">[INDUSTRY]</mark>')}</td><td class="${o.headcount_band && !ph(o.headcount_band) ? 'nowrap' : 'ph-wrap'}">${o.headcount_band ? D.text(band(o.headcount_band)) : '<mark class="dd-ph">[HEADCOUNT BAND]</mark>'}</td>
         <td class="r num">${cell(o, 'units_delivered')}</td>
         <td class="r num">${String(o.placed_within_1bd || '').trim() === 'N' ? '<span class="late">*</span>' : ''}${cell(o, 'units_placed')}</td>
         <td class="r num">${cell(o, 'units_topped_up', '0')}</td>
@@ -163,16 +206,17 @@
 `;
 
     const many = rows.length > 5;
-    const dayOf = (o) => String(o.later_photo_day || '5').trim() === '3' ? '3' : '5';
+    const cap = (o) => captions(o, d);
     // up to five offices: a pair per office. Six or more: a strip, one column per office,
-    // placement (day 1) on the top row and the later photo below, so ten or twelve offices fit.
+    // the placement photo on the top row and the later photo below, so ten or twelve offices fit.
+    // v1.3: no caption says "day 1" unless a recorded photo date says so (review round 2, R2-02).
     const thumbs = !many ? rows.map((o, k) => `<div class="ev">
         <div class="ev-pair">
-          <figure>${photo(mock ? '[PHOTO]' : o.placement_photo, 'ev-img')}<figcaption>${label(o, k)} · day 1</figcaption></figure>
-          <figure>${photo(mock ? '[PHOTO]' : o.later_photo, 'ev-img')}<figcaption>${label(o, k)} · day ${dayOf(o)}</figcaption></figure>
+          <figure>${photo(mock ? '[PHOTO]' : o.placement_photo, 'ev-img')}<figcaption>${label(o, k)} · ${cap(o).placeShort}</figcaption></figure>
+          <figure>${photo(mock ? '[PHOTO]' : o.later_photo, 'ev-img')}<figcaption>${label(o, k)} · ${cap(o).laterShort}</figcaption></figure>
         </div></div>`).join('')
-      : `<span class="evs-l">Day 1<br><i>the pantry</i></span>${rows.map((o, k) => `<figure class="evs-c">${photo(mock ? '[PHOTO]' : o.placement_photo, 'ev-img')}<span class="evs-tag">${label(o, k)}</span></figure>`).join('')}
-         <span class="evs-l evs-later">Day 3 or 5<br><i>card and product</i></span>${rows.map((o, k) => `<figure class="evs-c evs-later">${photo(mock ? '[PHOTO]' : o.later_photo, 'ev-img')}<span class="evs-tag">${label(o, k)} · day ${dayOf(o)}</span></figure>`).join('')}`;
+      : `<span class="evs-l">Placement<br><i>the pantry</i></span>${rows.map((o, k) => `<figure class="evs-c">${photo(mock ? '[PHOTO]' : o.placement_photo, 'ev-img')}<span class="evs-tag">${label(o, k)}${/^day/.test(cap(o).placeShort) ? ' · ' + cap(o).placeShort : (cap(o).late ? '*' : '')}</span></figure>`).join('')}
+         <span class="evs-l evs-later">Day 3 or 5<br><i>card and product</i></span>${rows.map((o, k) => `<figure class="evs-c evs-later">${photo(mock ? '[PHOTO]' : o.later_photo, 'ev-img')}<span class="evs-tag">${label(o, k)} · ${cap(o).laterShort}</span></figure>`).join('')}`;
     const anyPhoto = !mock && rows.some((o) => D.imgSrc(o.placement_photo) || D.imgSrc(o.later_photo));
     const got = (key) => rows.filter((o) => D.imgSrc(o[key])).length;
     const pending = !mock && rows.some((o) => ph(o.placement_photo) || ph(o.later_photo));
@@ -228,7 +272,7 @@
         </section>
         <section class="sec lim"><p class="lim-p"><b class="lim-h">Limitations.</b> <span class="lim-text">${D.escape(R.LIMITATIONS)}</span></p></section>
       </div>
-      ${X.footer(`Prepared by ${D.text(r.prepared_by || D.contact('FOUNDER_NAME'))} · ${X.contact(' · ', ['PHONE', 'EMAIL'])}`, `${X.brandName()} · report template v1.2`)}
+      ${X.footer(`Prepared by ${D.text(r.prepared_by || D.contact('FOUNDER_NAME'))} · ${X.contact(' · ', ['PHONE', 'EMAIL'])}`, `${X.brandName()} · report template v1.3`)}
     </div>`;
   };
 
@@ -237,18 +281,20 @@
     const rows = Array.isArray(r.offices) ? r.offices : [];
     if (!rows.some((o) => D.imgSrc(o.placement_photo) || D.imgSrc(o.later_photo))) return '';
     const d = dates(r);
-    const when = (o, first) => d.ok ? Dt.fmt(first ? d.d1 : (String(o.later_photo_day || '5').trim() === '3' ? d.day3 : d.day5)) : '';
+    // v1.3 (review round 2, R2-02): a date is printed only when the photo's date was recorded.
+    // It is never worked out from the drop date, and a late office is never captioned "day 1".
     const cells = rows.map((o, k) => {
       const L = D.text(o.office_label || String.fromCharCode(65 + k));
-      return `<figure class="ap">${photo(o.placement_photo, 'ap-img')}<figcaption><b>${L}</b> · day 1, placement${when(o, true) ? ' · ' + when(o, true) : ''}</figcaption></figure>
-              <figure class="ap">${photo(o.later_photo, 'ap-img')}<figcaption><b>${L}</b> · day ${String(o.later_photo_day || '5').trim() === '3' ? '3' : '5'}${when(o, false) ? ' · ' + when(o, false) : ''}</figcaption></figure>`;
+      const c = captions(o, d);
+      return `<figure class="ap">${photo(o.placement_photo, 'ap-img')}<figcaption><b>${L}</b> · ${c.placeLong}</figcaption></figure>
+              <figure class="ap">${photo(o.later_photo, 'ap-img')}<figcaption><b>${L}</b> · ${c.laterLong}</figcaption></figure>`;
     }).join('');
     return `<div class="page rpt-ap">
       <div class="dd-sample-banner">Sample. Illustrative placeholders, not results.</div>
       ${X.header({ kicker: 'Campaign report · evidence', meta: `${D.text(r.campaign_id || '[CAMPAIGN ID]')} · ${show(r.brand_name, '[BRAND]')}` })}
-      <div class="bd"><h2>Evidence: every photo</h2><p class="note">Two photos per office, as taken. No identifiable people. Cropped to fit; the original files are available on request.</p>
+      <div class="bd"><h2>Evidence: every photo</h2><p class="note">Two photos per office. Dates are shown where recorded. No identifiable people. Cropped to fit; the original files are available on request.</p>
         <div class="apg">${cells}</div></div>
-      ${X.footer(`Page 2 of the report for ${D.text(r.campaign_id || '[CAMPAIGN ID]')}`, `${X.brandName()} · report template v1.2`)}
+      ${X.footer(`Page 2 of the report for ${D.text(r.campaign_id || '[CAMPAIGN ID]')}`, `${X.brandName()} · report template v1.3`)}
     </div>`;
   };
 
@@ -283,11 +329,19 @@
       () => { if (canMove && !moved) { moved = true; set(); return true; } },             // last resort
     ];
     const ok = X.fitPages(sheet, i, steps, pg.classList.contains('mock') ? 'The mock report page' : 'The report', [pg]);
-    if (moved) D.warn(i, 'To keep the comments whole, every photo thumbnail moved to page 2; page 1 keeps the count of photos received. Shorten "What we learned" or the recommendation to bring the day-1 photos back.');
+    if (moved) D.warn(i, 'To keep the comments whole, every photo thumbnail moved to page 2; page 1 keeps the count of photos received. Shorten "What we learned" or the recommendation to bring the placement photos back.');
     else if (laterMoved) D.warn(i, 'To keep the comments whole, the later photos moved to page 2; page 1 keeps every placement photo.');
+    // page 2 (evidence): the photos shrink to fit, 1.25 in down to 0.8 in tall; never off the page
+    const ap = sheet.querySelector('.page.rpt-ap');
+    let apIn = 1.25;
+    if (ap) {
+      const setAp = () => ap.querySelectorAll('.ap-img').forEach((e) => { e.style.height = apIn + 'in'; });
+      setAp();
+      X.fitPages(sheet, i, [() => { if (apIn > 0.8 + 0.001) { apIn = Math.round((apIn - 0.05) * 100) / 100; setAp(); return true; } }], 'The evidence page', [ap]);
+    }
     const lim = pg.querySelector('.lim-text');
     if (!lim || lim.textContent !== R.LIMITATIONS) D.error(i, 'The limitations paragraph is missing or changed. It is fixed text in system/dd-report.js.');
-    if (!pg.classList.contains('mock')) sheet.dataset.fit = JSON.stringify({ comment_pt: cmPt, thumb_in: thumbIn, learned_pt: lrPt, tight, later_photos_on_page_2: laterMoved || moved, thumbnails_on_page_2: moved, fits: ok });
+    if (!pg.classList.contains('mock')) sheet.dataset.fit = JSON.stringify({ comment_pt: cmPt, thumb_in: thumbIn, learned_pt: lrPt, tight, later_photos_on_page_2: laterMoved || moved, thumbnails_on_page_2: moved, evidence_photo_in: ap ? apIn : null, fits: ok });
     return ok;
   };
 
@@ -311,6 +365,7 @@
   .rpt table.roster .late-note { font-weight: 400; font-size: 7.5pt; color: var(--dd-ink-soft); white-space: nowrap; }
   .rpt table.roster th { font-size: 7pt; line-height: 1.15; padding: .02in .04in .03in; }
   .rpt table.roster td { padding: .025in .04in; overflow-wrap: anywhere; }
+  .rpt table.roster td.ph-wrap { overflow-wrap: normal; }   /* "[HEADCOUNT BAND]" breaks at the space, never mid-word */
   .rpt.tight table.roster td { padding: .008in .04in; line-height: 1.08; }
   .rpt table.roster .late { font-weight: 700; margin-right: .02in; }
   .rpt.tight .sec + .sec { margin-top: .09in; }
@@ -365,6 +420,6 @@
   .rpt .rung .rv-off { font-size: 9.5pt; white-space: nowrap; }
   .rpt-ap .apg { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .1in .1in; margin-top: .1in; }
   .rpt-ap .ap-img { width: 100%; height: 1.25in; }
-  .rpt-ap figcaption { font-size: 7pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rpt-ap figcaption { font-size: 7pt; line-height: 1.25; margin-top: .02in; }
   `;
 })();

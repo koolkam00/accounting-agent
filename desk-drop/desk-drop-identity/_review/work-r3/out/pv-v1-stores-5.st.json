@@ -1,0 +1,70 @@
+{
+  "ready": true,
+  "errors": [],
+  "warnings": [],
+  "sample": true,
+  "placeholders": [],
+  "fit": [
+    {
+      "arrangement": "terms-right",
+      "map_in": 1,
+      "tight": true,
+      "compact": true,
+      "tried": [
+        {
+          "name": "standard",
+          "over_in": 0.65,
+          "map_in": 0.95
+        },
+        {
+          "name": "terms-right",
+          "over_in": 0.01,
+          "map_in": 1
+        },
+        {
+          "name": "send-right",
+          "over_in": 0.66,
+          "map_in": 0.95
+        },
+        {
+          "name": "wide-roster",
+          "over_in": 0,
+          "map_in": 0.95
+        },
+        {
+          "name": "wide-roster-terms-right",
+          "over_in": 0.19,
+          "map_in": 0.95
+        },
+        {
+          "name": "wide-roster-wide-buy",
+          "over_in": 0.67,
+          "map_in": 0.95
+        },
+        {
+          "name": "wide-roster-wide-buy-price-left",
+          "over_in": 0.36,
+          "map_in": 0.95
+        },
+        {
+          "name": "wide-buy",
+          "over_in": 0.83,
+          "map_in": 0.95
+        },
+        {
+          "name": "wide-timeline",
+          "over_in": 0.95,
+          "map_in": 0.95
+        },
+        {
+          "name": "wide-roster-wide-timeline",
+          "over_in": 0.29,
+          "map_in": 0.95
+        }
+      ]
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/proposal/proposal.html",
+  "records": 1
+}

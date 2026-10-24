@@ -71,9 +71,42 @@ for (const [t, f] of [['report', 'BLANK-placeholders'], ['proposal', 'BLANK-plac
   /No photo received/.test(text(out).split('\f')[1] || '') ? ok('a missing photo is reported as "No photo received", not hidden') : bad('missing photo not reported');
 }
 
-// ---------- 3. negative cases: the template must refuse (exit 2) ----------
+// ---------- 2b. photo captions never contradict the roster (review round 2, R2-02) ----------
 // photo paths are relative to the sample file; a test JSON lives elsewhere, so make them absolute
-const r10 = () => { const d = load('report', 'SAMPLE-10-offices-long-comments'); d.offices.forEach((o) => ['placement_photo', 'later_photo'].forEach((k) => { if (o[k] && !o[k].startsWith('[')) o[k] = path.join(ROOT, 'templates/report/samples', o[k]); })); return d; };
+const absPhotos = (d) => { d.offices.forEach((o) => ['placement_photo', 'later_photo'].forEach((k) => { if (o[k] && !o[k].startsWith('[')) o[k] = path.join(ROOT, 'templates/report/samples', o[k]); })); return d; };
+const r5 = (dated) => {
+  const d = load('report', 'SAMPLE-5-offices');
+  d.offices.forEach((o, k) => { o.placement_photo = `photos/SAMPLE-wide-${(k % 2) + 1}.jpg`; o.later_photo = `photos/SAMPLE-close-${(k % 2) + 1}.jpg`; if (!dated) { o.placement_photo_date = ''; o.later_photo_date = ''; } });
+  return absPhotos(d);
+};
+{
+  // no photo dates recorded; office D placed late (N): no caption may say "day 1" or print a date
+  const out = path.join(TMP, 'r5-nodates.pdf');
+  const r = render('report', r5(false), out);
+  const [p1, p2] = r.code === 0 ? text(out).split('\f') : ['', ''];
+  r.code === 0 && /D · placed\*/.test(p1) && !/· day 1/.test(p1) ? ok('page 1, no photo dates: the late office\'s photo reads "D · placed*", and no caption says "day 1"') : bad('page 1 captions without dates', r.out.slice(0, 300) + ' | ' + (p1.match(/[A-E] · [a-z]+ ?\d?\*?/g) || []).join(', '));
+  r.code === 0 && /D · placement photo · placed after the first business day; date not recorded/.test(p2) && !/day 1/.test(p2) && !/\d{4}-\d{2}-\d{2}/.test(p2) && /Dates are shown where recorded/.test(p2)
+    ? ok('page 2, no photo dates: the late office says "placed after the first business day; date not recorded"; no date is worked out, no "day 1"') : bad('page 2 captions without dates', p2.slice(0, 600));
+  // the shipped sample records the dates: D's placement photo is dated T+2 (day 3)
+  const out2 = path.join(TMP, 'r5-dates.pdf');
+  const r2 = render('report', r5(true), out2);
+  const q = r2.code === 0 ? text(out2).split('\f') : ['', ''];
+  r2.code === 0 && /D · placement photo · Thu 2027-01-14 \(day 3\)/.test(q[1]) && /A · placement photo · Tue 2027-01-12 \(day 1\)/.test(q[1]) && /E · placement photo · placed within one business day; date not recorded/.test(q[1]) && /D · day 3\*/.test(q[0])
+    ? ok('with recorded dates: "D · placement photo · Thu 2027-01-14 (day 3)", "A · ... Tue 2027-01-12 (day 1)"; an office without dates says "date not recorded"') : bad('captions with recorded dates', r2.out.slice(0, 300) + ' | ' + q[1].slice(0, 500));
+}
+for (const [name, edit, want] of [
+  ['a placement photo dated after T+1 while "placed within one business day" is Y', (d) => { d.offices[0].placement_photo_date = '2027-01-14'; }, /after the first business day .* but "placed within one business day" is Y/],
+  ['a placement photo dated within T+1 while "placed within one business day" is N', (d) => { d.offices[3].placement_photo_date = '2027-01-12'; }, /within one business day, but "placed within one business day" is N/],
+  ['a placement photo dated before the drop', (d) => { d.offices[1].placement_photo_date = '2027-01-11'; }, /before the drop date/],
+  ['a photo date that is not YYYY-MM-DD', (d) => { d.offices[2].later_photo_date = '19 Jan'; }, /must be a date in the form YYYY-MM-DD/],
+]) {
+  const d = r5(true); edit(d);
+  const r = render('report', d, path.join(TMP, 'pdate.pdf'));
+  r.code === 2 && want.test((r.status && r.status.errors || []).join(' ')) ? ok(`refused: report with ${name}`) : bad(`not refused: report with ${name} (exit ${r.code})`, (r.status && r.status.errors || []).join(' ') || r.out);
+}
+
+// ---------- 3. negative cases: the template must refuse (exit 2) ----------
+const r10 = () => absPhotos(load('report', 'SAMPLE-10-offices-long-comments'));
 const neg = [
   ['report: placed more than delivered', 'report', (() => { const d = r10(); d.offices[0].units_placed = '60'; return d; })(), /placed \(60\) is more than delivered/],
   ['report: depleted more than placed plus topped up', 'report', (() => { const d = r10(); d.offices[1].units_depleted_day5 = '45'; return d; })(), /depleted by day 5 \(45\)/],
@@ -81,6 +114,9 @@ const neg = [
   ['report: a Monday drop date', 'report', (() => { const d = r10(); d.drop_date = '2027-02-08'; return d; })(), /not a Tuesday or Wednesday/],
   ['report: window in the December blackout', 'report', (() => { const d = r10(); d.drop_date = '2026-12-15'; return d; })(), /blackout/],
   ['report: more "tried" than responses', 'report', (() => { const d = r10(); d.survey_tried_yes = '90'; return d; })(), /more than the survey responses/],
+  ['report: a sales-lift and acquisition claim in "What we learned" (R2-05)', 'report', (() => { const d = r10(); d.learned = 'SAMPLE The campaign drove a 20% sales lift.\nSAMPLE It acquired new customers.'; return d; })(), /Claims check, What we learned: "sales lift"/],
+  ['report: "Guaranteed to grow sales" in the recommendation (R2-05)', 'report', (() => { const d = r10(); d.recommendation = 'SAMPLE Renew. Guaranteed to grow sales.'; return d; })(), /Claims check, Recommendation: "guaranteed", "grow sales"/],
+  ['proposal: a structure or function claim in the product line (R2-05)', 'proposal', (() => { const d = load('proposal', 'SAMPLE-founding'); d.product_sku = 'SAMPLE Gut Health Crisps, supports digestion'; return d; })(), /Claims check, The product line/],
   ['report: far too much text refuses instead of shrinking past the floors', 'report', (() => { const d = r10(); const long = 'SAMPLE ' + 'This is a very long verbatim comment that keeps going and going. '.repeat(16); d.comment_1 = long; d.comment_2 = long; d.comment_3 = long; return d; })(), /runs past the bottom of the page/],
   ['proposal: wrong number of offices for the tier', 'proposal', (() => { const d = load('proposal', 'SAMPLE-founding'); d.offices = d.offices.slice(0, 4); return d; })(), /lists 4 offices/],
   ['proposal: asked ship-by later than T-10', 'proposal', (() => { const d = load('proposal', 'SAMPLE-founding'); d.ship_by_requested = '2027-01-04'; return d; })(), /later than the latest ship-by/],
@@ -121,6 +157,14 @@ for (const [name, file, n] of [
   ['proposal: standard plus 1 extra, 11 offices, map, 2 stores', 'proposal-standard-11-map-2stores', 11],
   ['proposal: standard plus 2 extra, 12 offices, map, 4 stores', 'proposal-standard-12-map-4stores', 12],
   ['proposal: founding, 5 offices, map, 4 stores', 'proposal-founding-map-4stores', 5],
+  // review round 2 (R2-03): real store names from workstream B's retailers.csv with B's own maps
+  ['proposal: 10 offices, B\'s map, the four longest store names in B\'s retailers.csv', 'proposal-standard-10-B-map-4-longest-stores', 10],
+  ['proposal: 12 offices, B\'s map, the four longest store names in B\'s retailers.csv', 'proposal-standard-12-B-map-4-longest-stores', 12],
+  ['proposal: 10 offices, B\'s SAMPLE map, the round-2 reviewer\'s four stores (Whole Foods twice, Eataly, Trader Joe\'s)', 'proposal-standard-10-B-map-reviewer-stores', 10],
+  ['proposal: 12 offices, B\'s SAMPLE map, the round-2 reviewer\'s four stores', 'proposal-standard-12-B-map-reviewer-stores', 12],
+  // review round 3 (R3-03): the round-3 reviewer's sets of real stores in and near the cluster, names
+  // exactly as B's retailers.csv writes them, with "inside the cluster" as the distance
+  ...['v5', 'v6', 'v1'].flatMap((v) => [10, 12].map((n) => [`proposal: ${n} offices, B's map, the round-3 reviewer's store set ${v} (real names from retailers.csv, "inside the cluster")`, `proposal-standard-${n}-B-map-R3-${v}-stores`, n])),
 ]) {
   const out = path.join(TMP, file + '.pdf');
   const r = render('proposal', C(file), out);
@@ -133,6 +177,46 @@ for (const [name, file, n] of [
   d.map_image = path.resolve(__dirname, 'cases', d.map_image);
   const r = render('proposal', d, path.join(TMP, 'p13.pdf'));
   r.code === 2 && /more than one proposal holds \(12\)/.test((r.status && r.status.errors || []).join(' ')) ? ok('proposal: 13 offices is refused with a plain message (12 is the tested maximum)') : bad('13-office proposal', r.out.slice(0, 400));
+}
+
+// ---------- 3b2. review round 3 (R3-03): store names, distances and a refusal that says what to shorten ----------
+{
+  const out = path.join(TMP, 'r3v1.pdf');
+  const r = render('proposal', C('proposal-standard-10-B-map-R3-v1-stores'), out);
+  const p1 = r.code === 0 ? text(out).split('\f')[0] : '';
+  r.code === 0 && /Morton Williams, 278 Park Avenue South/.test(p1) && /Trader Joe's Union Square, 142 East 14th Street/.test(p1) && /Eden Gourmet Marketplace Union Square, 7 East 14th Street/.test(p1) && !/\(store 540\)|\(278 Park|\(formerly/.test(p1)
+    ? ok('proposal: a bracket that repeats the street or a store number, or a "formerly" note, is left off the store name; the street prints beside it') : bad('store names without the repeated bracket', r.out.slice(0, 300) + ' | ' + p1.slice(0, 400));
+  const d = JSON.parse(fs.readFileSync(C('proposal-standard-10-B-map-R3-v1-stores'), 'utf8')); d.map_image = path.resolve(__dirname, 'cases', d.map_image); d.retailers[0].display_name = 'Eden Gourmet (Union Sq.)';
+  const out2 = path.join(TMP, 'r3dn.pdf'); const r2 = render('proposal', d, out2);
+  r2.code === 0 && /Eden Gourmet \(Union Sq\.\), 7 East 14th Street/.test(text(out2).split('\f')[0]) ? ok('proposal: "Shown as" (display_name) prints in place of the store\'s name') : bad('display_name', r2.out.slice(0, 300));
+  const r3 = render('proposal', C('proposal-standard-12-must-refuse-long-stores'), path.join(TMP, 'r3ref.pdf'));
+  const e3 = (r3.status && r3.status.errors || []).join(' ');
+  r3.code === 2 && /runs past the bottom of the page by (?:\d\.\d\d in|less than 0\.01 in)/.test(e3) && /Stores? [\d, and]+ runs? to two lines/.test(e3) && /"Shown as"/.test(e3) && /The longest parts: "/.test(e3)
+    ? ok(`proposal: a page that cannot fit is refused with how much is over and what to shorten ("${e3.slice(0, 90)}...")`) : bad('proposal refusal message', e3 || r3.out.slice(0, 300));
+}
+
+// ---------- 3c. review round 2: the shipped standard sample shows B's map; the mock page follows the route ----------
+{
+  const out = path.join(TMP, 'std.pdf');
+  const r = render('proposal', S('proposal', 'SAMPLE-standard-10-offices'), out);
+  const [p1] = r.code === 0 ? text(out).split('\f') : [''];
+  const f = r.status && r.status.fit && r.status.fit[0];
+  r.code === 0 && f && f.map_in >= 0.95 && /# STORE/i.test(p1.replace(/\s+/g, ' ')) && /1 SAMPLE Whole Foods Market Union Square/.test(p1)
+    ? ok(`the shipped standard proposal shows workstream B's SAMPLE map (${f.map_in} in tall) and numbers its stores to match the pins (R2-07)`) : bad('standard sample map and # column', r.out.slice(0, 300) + ' | ' + p1.slice(0, 300));
+  const d = JSON.parse(fs.readFileSync(C('proposal-standard-12-B-map-reviewer-stores'), 'utf8'));
+  d.map_image = path.resolve(__dirname, 'cases', d.map_image);
+  const out2 = path.join(TMP, 'mock12.pdf');
+  const r2 = render('proposal', d, out2);
+  const p2 = r2.code === 0 ? text(out2).split('\f')[1] : '';
+  const inds = d.offices.map((o) => o.industry);
+  r2.code === 0 && /Standard, 12 offices/.test(p2) && inds.every((x) => p2.includes(x)) && /All 12 offices/.test(p2) && /625/.test(p2)
+    ? ok('a 12-office proposal\'s mock page shows the same 12 offices, industries and units as page 1 (R2-12)') : bad('mock page follows the route', p2.slice(0, 400));
+}
+{
+  const o = path.join(TMP, 'office.pdf'), b = path.join(TMP, 'brand.pdf');
+  render('office-one-pager', S('office-one-pager', 'BLANK-placeholders'), o); render('brand-one-pager', S('brand-one-pager', 'BLANK-placeholders'), b);
+  /The survey closes on day 5/.test(text(o)) && !/Five business days later/.test(text(o)) ? ok('office one-pager: "The survey closes on day 5" (T+4, R2-11)') : bad('office one-pager survey wording');
+  /within five business days of our invoice, before you ship/.test(text(b)) ? ok('brand one-pager: founding paid "within five business days of our invoice, before you ship" (agreement v0.8, R2-13)') : bad('brand one-pager founding line');
 }
 
 // ---------- 4. --final ----------
@@ -170,11 +254,12 @@ for (const [label, det] of [
   for (const [t, file] of [['brand-one-pager', C('brand-one-pager-guide-roster')], ['brand-one-pager', C('brand-one-pager-none-signed')], ['brand-one-pager', S('brand-one-pager', 'BLANK-placeholders')],
     ['office-one-pager', S('office-one-pager', 'BLANK-placeholders')], ['discovery-one-pager', S('discovery-one-pager', 'DEFAULT')],
     ['proposal', S('proposal', 'SAMPLE-founding')], ['proposal', S('proposal', 'SAMPLE-standard-10-offices')], ['proposal', C('proposal-standard-12-map-4stores')], ['proposal', C('proposal-founding-map-4stores')],
+    ['proposal', C('proposal-standard-12-B-map-R3-v1-stores')], ['proposal', C('proposal-standard-12-B-map-R3-v6-stores')], ['proposal', C('proposal-standard-10-B-map-R3-v5-stores')],
     ['report', S('report', 'SAMPLE-5-offices')], ['report', S('report', 'SAMPLE-10-offices-long-comments')], ['report', C('report-12-offices')]]) {
     const r = render(t, file, path.join(TMP, 'real.pdf'), [], T);
     if (r.code !== 0) fails.push(`${t} ${path.basename(file)}: exit ${r.code} ${(r.status && r.status.errors || []).join(' ')}`);
   }
-  fails.length ? bad(`with ${label} in brand.json, every document still fits`, fails.join('\n')) : ok(`with ${label} in brand.json, all 12 document cases fit (brand one-pager with the guide's own roster example, proposals with a map, 12-office report)`);
+  fails.length ? bad(`with ${label} in brand.json, every document still fits`, fails.join('\n')) : ok(`with ${label} in brand.json, all 15 document cases fit (brand one-pager with the guide's own roster example, proposals with a map, including the round-3 reviewer's real store sets at 10 and 12 offices, 12-office report)`);
   if (label.startsWith('real')) {
     // R1-07: a finished proposal's mock page shows the brand's own name and nothing yellow
     const d = JSON.parse(JSON.stringify(load('proposal', 'SAMPLE-founding')).replace(/SAMPLE[ -]?/g, ''));

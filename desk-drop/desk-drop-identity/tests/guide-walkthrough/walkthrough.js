@@ -42,7 +42,7 @@ const BRAND = {
   await page.waitForTimeout(400);
   log.push('After typing: ' + (await status()).replace(/\n/g, ' | '));
   await page.screenshot({ path: path.join(OUT, '2-filled.png') });
-  await page.check('input[data-act="confirm"]'); actions++;
+  for (const cb of await page.$$('input[data-act="confirm"]')) { await cb.check(); actions++; }   // v1.4: two tick boxes
   await page.waitForTimeout(200);
   const finalStatus = await status();
   log.push('After ticking the allergen check: ' + finalStatus.replace(/\n/g, ' | '));

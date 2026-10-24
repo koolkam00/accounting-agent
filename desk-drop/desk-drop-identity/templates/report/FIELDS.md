@@ -1,6 +1,6 @@
 # Campaign report: field list and render command
 
-Template: `templates/report/report.html` (v1.2, 2026-10-24). Renderer: `system/dd-report.js` (the same code draws the proposal's mock page). One JSON object is one report. Layout: plan.md appendix M and "Measurement and the brand report".
+Template: `templates/report/report.html` (v1.3, 2026-10-24). Renderer: `system/dd-report.js` (the same code draws the proposal's mock page). One JSON object is one report. Layout: plan.md appendix M and "Measurement and the brand report".
 
 The operations workstream (F) fills this from its tracker. Keys use the CONTRACTS section 6.5 column names wherever one exists.
 
@@ -32,8 +32,12 @@ The operations workstream (F) fills this from its tracker. Keys use the CONTRACT
 | `survey_responses` | yes | per-office `survey_responses` | Whole number. Under 5 warns (the office's commitment); it is reported as it is. |
 | `qr_scans` | yes | per-office `qr_scans` | Whole number, from the office's short link. |
 | `placement_photo` | yes | photo file | Path relative to the JSON file, or a picture chosen in the panel. `[PHOTO]` = not attached yet (blocks `--final`). Empty = the office sent none: prints "No photo received". |
+| `placement_photo_date` | no | the photo's own date, or the tracker | `YYYY-MM-DD`. **Printed only when filled; never worked out from the drop date.** Error if before the drop date; error if after T+1 while `placed_within_1bd` is `Y`, or within T+1 while it is `N`. Empty: page 2 says "date not recorded" and whether the office placed within one business day. |
 | `later_photo` | yes | photo file | Same rules. |
-| `later_photo_day` | no | | `5` (default) or `3`. |
+| `later_photo_day` | no | | `5` (default) or `3`: the day you asked the office for the close shot. |
+| `later_photo_date` | no | the photo's own date, or the tracker | `YYYY-MM-DD`, same rule: printed only when filled. The caption then gives the window day worked out from that date ("day 3"); a mismatch with `later_photo_day` warns, and so does a date after the window closed. |
+
+**Photo captions (v1.3, review round 2).** Page 1: "A · placed" (with `*` when `placed_within_1bd` is `N`, explained under the roster), or "A · day 2" when the placement photo's date is recorded; the later photo is "A · day 5" (or the day its recorded date falls on). The strip's top row is headed "Placement", not "Day 1". Page 2: "A · placement photo · Wed 2027-01-13 (day 2)" with a recorded date, else "A · placement photo · placed within one business day; date not recorded" (or "placed after the first business day"). No caption says "day 1" unless a recorded date is the drop day.
 
 ## Survey and purchase fields
 
@@ -48,8 +52,9 @@ The operations workstream (F) fills this from its tracker. Keys use the CONTRACT
 | `code_redemptions_to_date` | the brand; `campaign_actuals.code_redemptions_day30` at day 30 | Count the brand reports. |
 | `code_redemptions_as_of` | | Date of the brand's count. Empty prints the report date. |
 | `retailer_velocity` | the brand | Optional text: only store-level sales the brand shares, with its source. Labelled "suggestive only". |
-| `learned` | founder | Three lines, one bullet each. Checked for claims and soft-ladder words. |
+| `learned` | founder | Three lines, one bullet each. Checked for claims and soft-ladder words (an error, v1.3). |
 | `recommendation` | founder | Renew into which offices, adjust what, or stop. |
+| `claims_reviewed`, `claims_review_reason` | founder | v1.3. `learned`, `recommendation` and `retailer_velocity` go through the one shared claims list (health claims, structure or function wording, "guaranteed", sales lift, ROI, conversions, acquisition, "new customers", "drove/grew sales"). **A hit is an error (exit 2).** Only when the words are not a claim: `Y` plus a sentence of reason turns it into a warning. |
 
 ## Fixed parts (not fields)
 
@@ -58,9 +63,9 @@ The operations workstream (F) fills this from its tracker. Keys use the CONTRACT
 
 ## Give-way order when the page is full
 
-Up to five offices, page 1 shows a pair of photos per office (0.78 in tall, down to 0.5 in). Six to twelve offices get a strip: one column per office, the day-1 photo above and the day 3 or 5 photo below (0.5 in tall, down to 0.38 in). Then: comments 8.75 to 8.25 pt, tighter spacing, the "learned" lines 9.5 to 8.5 pt; the later row moves to the evidence page while the day-1 row stays; comments to 8 pt; last resort, every thumbnail moves to the evidence page and page 1 keeps the count of photos received. Never changed: the numbers, the ladder, the comments' words, the limitations paragraph. If it still does not fit, no PDF is written (exit 2). `fit[0]` reports `comment_pt`, `thumb_in`, `learned_pt`, `tight`, `later_photos_on_page_2`, `thumbnails_on_page_2`.
+Up to five offices, page 1 shows a pair of photos per office (0.78 in tall, down to 0.5 in). Six to twelve offices get a strip: one column per office, the placement photo above and the day 3 or 5 photo below (0.5 in tall, down to 0.38 in). Then: comments 8.75 to 8.25 pt, tighter spacing, the "learned" lines 9.5 to 8.5 pt; the later row moves to the evidence page while the placement row stays; comments to 8 pt; last resort, every thumbnail moves to the evidence page and page 1 keeps the count of photos received. Never changed: the numbers, the ladder, the comments' words, the limitations paragraph. If it still does not fit, no PDF is written (exit 2). `fit[0]` reports `comment_pt`, `thumb_in`, `learned_pt`, `tight`, `later_photos_on_page_2`, `thumbnails_on_page_2`, `evidence_photo_in` (page 2's photo height, 1.25 down to 0.8 in).
 
-Tested (v1.2): the 10-office sample with three 55- to 75-word comments keeps both photo rows on page 1; 10 offices with three 70-word comments plus a retailer-velocity line, and 11 or 12 offices, keep the day-1 row; 10 offices with 100-word "learned" and a 55-word recommendation still fit, with the photos on page 2 (`tests/documents/cases/`).
+Tested (v1.2): the 10-office sample with three 55- to 75-word comments keeps both photo rows on page 1; 10 offices with three 70-word comments plus a retailer-velocity line, and 11 or 12 offices, keep the placement row; 10 offices with 100-word "learned" and a 55-word recommendation still fit, with the photos on page 2 (`tests/documents/cases/`).
 
 ## Render command
 

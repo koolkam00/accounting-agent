@@ -31,8 +31,9 @@
   --s-panel: var(--dd-cobalt-tint);
   --s-field-border: var(--dd-stone);
   --s-hairline: var(--dd-hairline);
-  /* Not var(--dd-rule): tokens.css defines --dd-rule twice (a color, then 2px), and the width wins. */
-  --s-rule: var(--dd-text);
+  /* The identity tokens v1.3 renamed the rule color to --dd-rule-color (--dd-rule is the 2px width).
+     The fallback keeps the same color if an older tokens.css is copied in. */
+  --s-rule: var(--dd-rule-color, var(--dd-text));
   --s-error: #B3261E;
   --s-highlight: #FFE45C;
   --s-on-highlight: #1F1D1A;
@@ -218,6 +219,7 @@ main:focus { outline: none; }
 .rung-none { background: transparent; border: 2px dashed var(--s-muted); border-top: 4px solid var(--s-muted); }
 
 /* ---------- Price ---------- */
+.price-note { font-size: var(--dd-text-sm); color: var(--s-muted); }
 .price-grid { display: grid; gap: var(--dd-space-4); margin-bottom: var(--dd-space-5); grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 860px) { .price-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .founding-closed .price-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .price-card { background: var(--s-panel); padding: var(--dd-space-5); border-radius: var(--s-radius); }
@@ -315,8 +317,8 @@ main:focus { outline: none; }
 /* ---------- Forms ---------- */
 .form-section { background: var(--s-surface); }
 .form-wrap { max-width: 44rem; }
-.form-staging { background: var(--s-highlight); color: var(--s-on-highlight); padding: var(--dd-space-3) var(--dd-space-4); border-radius: var(--dd-radius-1); font-weight: var(--dd-weight-semibold); margin-bottom: var(--dd-space-5); display: none; }
-.form-staging.is-shown { display: block; }
+.form-alert { background: var(--s-highlight); color: var(--s-on-highlight); padding: var(--dd-space-3) var(--dd-space-4); border-radius: var(--dd-radius-1); font-weight: var(--dd-weight-semibold); margin-bottom: var(--dd-space-5); display: none; }
+.form-alert.is-shown { display: block; }
 .intake fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 .intake .group { margin: 0 0 var(--dd-space-6); }
 .intake .group > legend { font-family: var(--dd-font-display); font-weight: var(--dd-weight-display); font-size: 1.375rem; padding: 0; margin-bottom: var(--dd-space-4); }
@@ -324,6 +326,9 @@ main:focus { outline: none; }
 .field > label, .choice > legend { display: block; font-weight: var(--dd-weight-bold); margin-bottom: var(--dd-space-1); padding: 0; }
 .opt { font-weight: var(--dd-weight-regular); color: var(--s-muted); }
 .hint { display: block; color: var(--s-muted); font-size: var(--dd-text-sm); margin: 0 0 var(--dd-space-2); }
+.size-note { display: block; font-size: var(--dd-text-sm); font-weight: var(--dd-weight-semibold); }
+.size-note:empty { display: none; }
+.size-note:not(:empty) { margin-top: var(--dd-space-2); }
 .intake input[type="text"], .intake input[type="email"], .intake input[type="tel"], .intake input[type="url"], .intake select, .intake textarea {
   display: block; width: 100%; min-height: 48px; padding: 10px 12px;
   font: inherit; font-size: 1.0625rem; color: var(--s-text); background: var(--s-surface);

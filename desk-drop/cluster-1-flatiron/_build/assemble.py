@@ -83,7 +83,7 @@ def apply_merges(c):
 
 
 def apply_overrides(c):
-    for name, o in list(R.OVERRIDES.items()) + list(R.REVIEW1_OVERRIDES.items()):
+    for name, o in list(R.OVERRIDES.items()) + list(R.REVIEW1_OVERRIDES.items()) + list(R.REVIEW2_OVERRIDES.items()):
         idx = c.index[c.company_name == name]
         assert len(idx) == 1, name
         i = idx[0]
@@ -116,6 +116,13 @@ def lease_fields(c):
             c.at[i, "lease_status"], c.at[i, "move_in_date"] = v
         else:
             c.at[i, "lease_status"] = v
+    # R2-11: move_in_date is YYYY-MM or unknown (blank when occupied); a planned season moves into the notes
+    for i, r in c.iterrows():
+        v = str(c.at[i, "move_in_date"] or "")
+        if v and v != "unknown" and not re.fullmatch(r"\d{4}-\d{2}", v):
+            txt = R.MOVE_IN_FREE_TEXT.get(r.company_name, f"Move date given by the row's sources as '{v}'.")
+            c.at[i, "move_in_date"] = "unknown"
+            c.at[i, "notes_assembly"] = (c.at[i, "notes_assembly"] + " " + txt).strip()
     return c
 
 
@@ -140,14 +147,16 @@ def audit_confidence(c):
         if conf == "high":
             if not recent:
                 new = "low"; why.append("no source under 24 months old")
-            elif not recent_dated:
-                new = "medium"; why.append("the only current source is an undated third-party profile (Built In, Deskpass or LiquidSpace), which cannot carry a high")
+            elif not recent_dated:  # review round 2 (R2-04): an undated profile is never the under-24-month source
+                new = "low"; why.append("the only current source is an undated third-party profile (Built In, Deskpass or LiquidSpace), which can only confirm a dated or own-site source")
             elif not independent:
                 new = "medium"; why.append("second source is the same publisher or missing")
             elif same_release and r.research_slice.startswith("S1") and r.company_name in ("Selldorf Architects",):
                 new = "medium"; why.append("both articles trace to one broker announcement")
         if conf == "medium" and not recent:
             new = "low"; why.append("no source under 24 months old")
+        elif conf == "medium" and not recent_dated:  # review round 2 (R2-04)
+            new = "low"; why.append("review round 2: the only source dated within 24 months is an undated third-party profile (Built In, Deskpass or LiquidSpace), which can only confirm a dated or own-site source")
         if new != conf:
             c.at[i, "confidence"] = new
             c.at[i, "notes_assembly"] = (c.at[i, "notes_assembly"] + f" Confidence lowered at assembly from {conf} to {new}: {'; '.join(why)}.").strip()
@@ -202,6 +211,100 @@ def hq_fields(c):
         else:
             hc.append("unknown"); hn.append("unknown"); hu.append(row.url if row is not None else "")
     c["hq_city"], c["hq_in_nyc"], c["hq_source_url"] = hc, hn, hu
+    # R2-07: where Built In is silent, the row's own sources, the company's page or the Revelio page
+    for i, r in c.iterrows():
+        if r.company_name in R.HQ_R2 and c.at[i, "hq_in_nyc"] == "unknown":
+            c.at[i, "hq_city"], c.at[i, "hq_in_nyc"], c.at[i, "hq_source_url"] = R.HQ_R2[r.company_name]
+    pc, ps = [], []
+    for _, r in c.iterrows():
+        p_ = R.PARENT_R2.get(r.company_name)
+        pc.append(p_[0] if p_ else "unknown"); ps.append(p_[1] if p_ else "")
+    c["parent_company"], c["parent_company_source"] = pc, ps
+    return c
+
+
+BAND_EDGES = [(40, 75, "40-75"), (76, 150, "76-150"), (151, 250, "151-250"), (251, 500, "251-500")]
+FIRST_COUNT_RX = [r"([\d][\d,]*)\+?'? total employees", r"'([\d][\d,]*)-person firm'", r"upwards of (\d+) employees",
+                  r"(\d[\d,]*) full-time employees", r"about (\d+) employees", r"'?(\d+) employees'?", r"(\d+)-person office"]
+
+
+def band_of(n):
+    if n < 40:
+        return "under-40"
+    if n > 500:
+        return "over-500"
+    return next(b for lo, hi, b in BAND_EDGES if lo <= n <= hi)
+
+
+def first_label(url):
+    d = domain(url)
+    if "builtin" in d:
+        return "Built In"
+    if "sec.gov" in d:
+        return "the FY2025 10-K"
+    if "wikipedia" in d:
+        return "Wikipedia"
+    if "commercialobserver" in d:
+        return "Commercial Observer"
+    return "the company's own page"
+
+
+def headcount_second(c):
+    """Review round 2 (R2-02, R2-03): test every sourced band against a second, independent count.
+    Same band: kept, headcount_check = agree. Second count over 500 against a third-party first source: the row
+    becomes over-500 and goes to Near-miss. Any other disagreement: the band becomes unknown, with both counts."""
+    for col in ("headcount_count", "headcount_check", "headcount_second_count", "headcount_second_source_url", "headcount_second_source_date"):
+        c[col] = ""
+    for i, r in c.iterrows():
+        name = r.company_name
+        if r.headcount_band not in ("40-75", "76-150", "151-250", "251-500", "under-40"):
+            c.at[i, "headcount_check"] = "single-source" if r.headcount_band == "over-500" else "no-count"
+            continue
+        first = R.HEADCOUNT_FIRST_COUNT.get(name)
+        if first is None:
+            for rx in FIRST_COUNT_RX:
+                m = re.search(rx, r.notes)
+                if m:
+                    first = int(m.group(1).replace(",", "")); break
+        c.at[i, "headcount_count"] = str(first) if first is not None else ""
+        sec = R.HEADCOUNT_SECOND.get(name)
+        if not sec:
+            c.at[i, "headcount_check"] = "single-source"
+            continue
+        n2 = sec["count"]
+        lower_bound = sec["kind"] == "own-site"  # '130+', '150+': at least one more than the figure
+        b2 = band_of(n2 + 1 if lower_bound else n2)
+        flab = first_label(r.headcount_source_url)
+        c.at[i, "headcount_second_count"] = f"{n2}+" if lower_bound else str(n2)
+        c.at[i, "headcount_second_source_url"], c.at[i, "headcount_second_source_date"] = sec["url"], sec["date"]
+        add = ""
+        if name in R.SCOPE_DIFFERS_KEEP:
+            c.at[i, "headcount_check"] = "scope-differs"
+            add = (f"Review round 2: second count {sec['label']} is whole-company; the band rests on the NYC-office count "
+                   f"({first}), so the two are not compared.")
+        elif b2 == r.headcount_band:
+            c.at[i, "headcount_check"] = "agree"
+            add = f"Review round 2: a second count agrees with the band: {sec['label']}."
+        elif b2 == "over-500" and name not in R.FIRST_SOURCE_OWN:
+            old_b, old_u, old_d = r.headcount_band, r.headcount_source_url, r.headcount_source_date
+            c.at[i, "headcount_band"], c.at[i, "headcount_scope"] = "over-500", "whole-company"
+            c.at[i, "headcount_source_url"], c.at[i, "headcount_source_date"] = sec["url"], sec["date"]
+            c.at[i, "headcount_count"] = str(n2)
+            c.at[i, "headcount_second_count"] = str(first) if first is not None else ""
+            c.at[i, "headcount_second_source_url"], c.at[i, "headcount_second_source_date"] = old_u, old_d
+            c.at[i, "headcount_check"] = "over-500-second-source"
+            fit = R.NYC_MAY_FIT_R2.get(name)
+            add = (f"Review round 2: band moved from {old_b} to over-500, so the row moves to Near-miss. {sec['label']}. "
+                   f"{flab} shows {first} total employees (stale against Revelio; it is now the second source)."
+                   + (f" {fit}; the NYC office alone may fit the 40-250 band, founder to confirm." if fit else ""))
+        else:
+            c.at[i, "headcount_band"], c.at[i, "headcount_scope"] = "unknown", "unknown"
+            c.at[i, "headcount_check"] = "disagree"
+            reason = (f"Sources disagree: {flab} shows {first} ({r.headcount_band}) and {sec['label']} "
+                      f"({b2}). Band left unknown; founder to confirm at intake.")
+            R.UNKNOWN_BAND_REASON[name] = reason
+            add = f"Review round 2: band changed from {r.headcount_band} to unknown. " + reason
+        c.at[i, "notes_assembly"] = (c.at[i, "notes_assembly"] + " " + add).strip()
     return c
 
 
@@ -275,6 +378,8 @@ def merge_buildings(b, c, pl):
         coi = coi_rows.coi_required.iloc[0] if len(coi_rows) else "unknown"
         coi_url = coi_rows.coi_source_url.iloc[0] if len(coi_rows) else ""
         notes = " ".join(f"[{r.research_slice}] {r.notes}" for r in g.itertuples() if r.notes)
+        for o_, n_ in R.BUILDING_NOTE_EDITS:  # R2-05
+            notes = notes.replace(o_, n_)
         if conflict:
             notes = f"Lobby sources differ ({'; '.join(sorted(types))}); the stricter type is shown. " + notes
         gr = g[g.street_address == canon].iloc[0]
@@ -416,6 +521,16 @@ def load_retailers():
     r = pd.read_csv(os.path.join(WORK, "retailers_research.csv"), dtype=str).fillna("")
     r["buy_path_tier"] = r.notes.str.extract(r"Buy-path tier ([ABC])", expand=False).fillna("")
     for i, x in r.iterrows():
+        for f, v in R.RETAILER_REVIEW2.get(x.retailer_name, {}).items():
+            if f == "notes_replace":
+                for o_, n_ in v:
+                    assert o_ in r.at[i, "notes"], (x.retailer_name, o_)
+                    r.at[i, "notes"] = r.at[i, "notes"].replace(o_, n_)
+            elif f == "notes_add":
+                r.at[i, "notes"] = (r.at[i, "notes"] + " " + v).strip()
+            else:
+                r.at[i, f] = v
+    for i, x in r.iterrows():
         for f, v in R.RETAILER_REVIEW1.get(x.retailer_name, {}).items():
             if f == "notes_add":
                 r.at[i, "notes"] = (r.at[i, "notes"] + " " + v).strip()
@@ -489,6 +604,23 @@ def fix_pins(df, label):
         df.at[i, "lat"], df.at[i, "lon"] = f"{la:.6f}", f"{lo:.6f}"
         df.at[i, "pin_note"] = (f"Pin moved at assembly from street index {s:.2f} to the {'north' if north else 'south'} "
                                 f"frontage of {k}th St named by the address (tax lot unchanged; the geocoder had placed it on the far side of the lot).")
+    # review round 2 (R2-10): a corner lot's centroid sits nearer the cross street than the avenue its address
+    # names; move it to the avenue frontage near that corner and remember the cross street for the entrance note
+    df["corner_side_street"] = ""
+    for i, r in df.iterrows():
+        if not r.lat:
+            continue
+        name_key = r.get("retailer_name", "") or r.get("location_name", "")
+        if name_key in R.PIN_OVERRIDES:
+            continue
+        addr = r.street_address.split(",")[0]
+        res = frontage.corner(addr, df.at[i, "lat"], df.at[i, "lon"])
+        if res:
+            la, lo, how, side = res
+            df.at[i, "lat"], df.at[i, "lon"] = f"{la:.6f}", f"{lo:.6f}"
+            df.at[i, "pin_note"] = (str(df.at[i, "pin_note"] or "") + f" Review round 2: {how}. Tax lot unchanged.").strip()
+            df.at[i, "corner_side_street"] = side
+            PIN_LOG.append((label, addr, "corner"))
     return df
 
 
@@ -504,6 +636,7 @@ def main():
     c = note_edits(c)
     c = normalise_company_fields(c)
     c = hq_fields(c)
+    c = headcount_second(c)
 
     b_raw = load_buildings()
     # company rows whose tax lot has no slice building row: add a bare row from the company data

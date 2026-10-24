@@ -1,0 +1,31 @@
+[
+  {
+    "label_type": "office",
+    "office_name": "[OFFICE NAME]",
+    "office_address": "[OFFICE ADDRESS]",
+    "floor_suite": "[FLOOR OR SUITE]",
+    "deliver_to": "[PANTRY OWNER]",
+    "brand_name": "[BRAND]",
+    "product_name": "[PRODUCT AND PACK SIZE]",
+    "units_in_case": "[N]",
+    "case_number": "[CASE NO]",
+    "case_total": "[TOTAL]",
+    "drop_date": "[DROP DATE]",
+    "office_id": "[OFFICE ID]",
+    "campaign_id": "[CAMPAIGN ID]",
+    "drop_id": "[DROP ID]",
+    "phone": ""
+  },
+  {
+    "label_type": "reserve",
+    "brand_name": "[BRAND]",
+    "product_name": "[PRODUCT AND PACK SIZE]",
+    "units_in_case": "[N]",
+    "case_number": "",
+    "case_total": "",
+    "drop_date": "[DROP DATE]",
+    "campaign_id": "[CAMPAIGN ID]",
+    "drop_id": "[DROP ID]",
+    "phone": ""
+  }
+]

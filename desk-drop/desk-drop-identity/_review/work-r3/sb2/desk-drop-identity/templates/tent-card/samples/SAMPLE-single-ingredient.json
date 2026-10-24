@@ -1,0 +1,15 @@
+{
+  "brand_name": "SAMPLE Clearwater",
+  "product_name": "SAMPLE Sparkling Spring Water, 12 oz",
+  "card_sentences": "SAMPLE A family spring in the Catskills, canned an hour from the city. They wanted water that tastes like where it comes from.",
+  "allergen_source": "single_ingredient",
+  "allergen_line_verbatim": "SAMPLE Sparkling Spring Water",
+  "may_contain_verbatim": "",
+  "retailer_line": "SAMPLE Retailer, 123 Example Street",
+  "discount_code": "SAMPLEDESK15",
+  "code_site": "example.com",
+  "qr_url": "https://example.com/s/SAMPLE-O-001",
+  "qr_display": "",
+  "office_id": "SAMPLE-O-001",
+  "campaign_id": "SAMPLE-CMP-001"
+}

@@ -124,6 +124,9 @@ def leg(a, b):
             # walk along A's street to the best avenue, up/down it, then along B's street
             cand = avenues_at((sa + sb) / 2)
             xt = min(cand, key=lambda ax: abs(xa - ax) + abs(ax - xb) + 0.001 * abs(ax - xb))
+            # review round 2 (R2-09): walk up the avenue on the origin's own sidewalk, so a destination on the
+            # far side of that avenue counts the crossing (860 Broadway, east side, to W 18th St crosses Broadway)
+            xt += 12 if xa > xt else -12
             P += [(sa, xt), (sb, xt), (sb, xb)]
     elif ka in ("street", "free") and kb == "avenue":
         P += [(sa, xb), (sb, xb)]

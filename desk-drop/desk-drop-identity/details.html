@@ -135,7 +135,7 @@
     const DEF = { FOUNDER_NAME: '[FOUNDER NAME]', PHONE: '[PHONE]', EMAIL: '[EMAIL]', WEBSITE: '[WEBSITE]', DOMAIN: '[DOMAIN]', POSTAL_ADDRESS: '[POSTAL ADDRESS]' };
     boxes.forEach((b) => {
       const k = b.dataset.k, v = b.value.trim();
-      if (k === 'FOUNDER_TITLE') { if (v) c[k] = v; else delete c[k]; return; }
+      if (k === 'FOUNDER_TITLE') { if (v) c[k] = v; else if (k in (B.contact || {})) c[k] = ''; else delete c[k]; return; }
       c[k] = v || DEF[k];
     });
     if (noSite.checked) c.WEBSITE = '';

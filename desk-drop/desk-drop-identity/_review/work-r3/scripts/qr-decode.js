@@ -1,0 +1,2 @@
+const jsQR=require('/home/user/accounting-agent/desk-drop/desk-drop-identity/_review/work-r2/copy3/desk-drop-identity/qrdec/node_modules/jsqr'); const {PNG}=require('/home/user/accounting-agent/desk-drop/desk-drop-identity/_review/work-r2/copy3/desk-drop-identity/qrdec/node_modules/pngjs'); const fs=require('fs');
+for (const f of process.argv.slice(2)) { const p=PNG.sync.read(fs.readFileSync(f)); const r=jsQR(new Uint8ClampedArray(p.data),p.width,p.height); console.log(f, r?r.data:'NO DECODE'); }

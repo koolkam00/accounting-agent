@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-24T03:25:10.059Z",
+  "date": "2026-10-24T05:19:00.351Z",
   "axe": [
     {
       "where": "index phone light",
@@ -245,8 +245,8 @@
   "weight": [
     {
       "page": "index",
-      "total_bytes": 117251,
-      "total_kb": 114.5,
+      "total_bytes": 118599,
+      "total_kb": 115.8,
       "requests": 8,
       "files": [
         {
@@ -255,15 +255,19 @@
         },
         {
           "url": "assets/css/tokens.css",
-          "bytes": 5296
+          "bytes": 5399
         },
         {
           "url": "assets/css/site.css",
-          "bytes": 26305
+          "bytes": 26664
         },
         {
           "url": "assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2",
           "bytes": 34186
+        },
+        {
+          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
+          "bytes": 21938
         },
         {
           "url": "site.config.js",
@@ -274,40 +278,36 @@
           "bytes": 5009
         },
         {
-          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
-          "bytes": 21938
-        },
-        {
           "url": "assets/js/site.js",
-          "bytes": 14499
+          "bytes": 15385
         }
       ]
     },
     {
       "page": "brands",
-      "total_bytes": 174746,
-      "total_kb": 170.7,
+      "total_bytes": 177199,
+      "total_kb": 173,
       "requests": 9,
       "files": [
         {
           "url": "brands.html",
-          "bytes": 43266
-        },
-        {
-          "url": "assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2",
-          "bytes": 34186
-        },
-        {
-          "url": "assets/css/tokens.css",
-          "bytes": 5296
+          "bytes": 44371
         },
         {
           "url": "assets/css/site.css",
-          "bytes": 26305
+          "bytes": 26664
+        },
+        {
+          "url": "assets/css/tokens.css",
+          "bytes": 5399
         },
         {
           "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
           "bytes": 21938
+        },
+        {
+          "url": "assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2",
+          "bytes": 34186
         },
         {
           "url": "site.config.js",
@@ -319,7 +319,7 @@
         },
         {
           "url": "assets/js/site.js",
-          "bytes": 14499
+          "bytes": 15385
         },
         {
           "url": "assets/img/cluster-map.svg",
@@ -329,65 +329,65 @@
     },
     {
       "page": "offices",
-      "total_bytes": 135919,
-      "total_kb": 132.7,
+      "total_bytes": 138026,
+      "total_kb": 134.8,
       "requests": 8,
       "files": [
         {
           "url": "offices.html",
-          "bytes": 25302
+          "bytes": 26061
         },
         {
           "url": "assets/css/tokens.css",
-          "bytes": 5296
+          "bytes": 5399
         },
         {
           "url": "assets/css/site.css",
-          "bytes": 26305
-        },
-        {
-          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
-          "bytes": 21938
+          "bytes": 26664
         },
         {
           "url": "site.config.js",
           "bytes": 3384
         },
         {
-          "url": "assets/js/boot.js",
-          "bytes": 5009
-        },
-        {
           "url": "assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2",
           "bytes": 34186
         },
         {
+          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
+          "bytes": 21938
+        },
+        {
+          "url": "assets/js/boot.js",
+          "bytes": 5009
+        },
+        {
           "url": "assets/js/site.js",
-          "bytes": 14499
+          "bytes": 15385
         }
       ]
     },
     {
       "page": "privacy",
-      "total_bytes": 117775,
-      "total_kb": 115,
+      "total_bytes": 119569,
+      "total_kb": 116.8,
       "requests": 8,
       "files": [
         {
           "url": "privacy.html",
-          "bytes": 7158
-        },
-        {
-          "url": "assets/css/site.css",
-          "bytes": 26305
+          "bytes": 7604
         },
         {
           "url": "assets/css/tokens.css",
-          "bytes": 5296
+          "bytes": 5399
         },
         {
-          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
-          "bytes": 21938
+          "url": "assets/css/site.css",
+          "bytes": 26664
+        },
+        {
+          "url": "site.config.js",
+          "bytes": 3384
         },
         {
           "url": "assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2",
@@ -398,36 +398,40 @@
           "bytes": 5009
         },
         {
-          "url": "site.config.js",
-          "bytes": 3384
+          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
+          "bytes": 21938
         },
         {
           "url": "assets/js/site.js",
-          "bytes": 14499
+          "bytes": 15385
         }
       ]
     },
     {
       "page": "survey-privacy",
-      "total_bytes": 118376,
-      "total_kb": 115.6,
+      "total_bytes": 119715,
+      "total_kb": 116.9,
       "requests": 8,
       "files": [
         {
           "url": "survey-privacy.html",
-          "bytes": 7759
-        },
-        {
-          "url": "assets/css/tokens.css",
-          "bytes": 5296
+          "bytes": 7750
         },
         {
           "url": "assets/css/site.css",
-          "bytes": 26305
+          "bytes": 26664
+        },
+        {
+          "url": "assets/css/tokens.css",
+          "bytes": 5399
         },
         {
           "url": "assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2",
           "bytes": 34186
+        },
+        {
+          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
+          "bytes": 21938
         },
         {
           "url": "site.config.js",
@@ -438,19 +442,15 @@
           "bytes": 5009
         },
         {
-          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
-          "bytes": 21938
-        },
-        {
           "url": "assets/js/site.js",
-          "bytes": 14499
+          "bytes": 15385
         }
       ]
     },
     {
       "page": "404",
-      "total_bytes": 114354,
-      "total_kb": 111.7,
+      "total_bytes": 115702,
+      "total_kb": 113,
       "requests": 8,
       "files": [
         {
@@ -459,31 +459,31 @@
         },
         {
           "url": "assets/css/tokens.css",
-          "bytes": 5296
-        },
-        {
-          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
-          "bytes": 21938
+          "bytes": 5399
         },
         {
           "url": "assets/css/site.css",
-          "bytes": 26305
-        },
-        {
-          "url": "site.config.js",
-          "bytes": 3384
-        },
-        {
-          "url": "assets/js/boot.js",
-          "bytes": 5009
+          "bytes": 26664
         },
         {
           "url": "assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2",
           "bytes": 34186
         },
         {
+          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
+          "bytes": 21938
+        },
+        {
+          "url": "assets/js/boot.js",
+          "bytes": 5009
+        },
+        {
+          "url": "site.config.js",
+          "bytes": 3384
+        },
+        {
           "url": "assets/js/site.js",
-          "bytes": 14499
+          "bytes": 15385
         }
       ]
     }

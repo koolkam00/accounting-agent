@@ -58,7 +58,7 @@
   "gets": "One to three vetted emerging brands per drop, free, roughly monthly as supply allows.\nOnly the categories you choose, and a veto on any brand.\nOne contact. Deliveries on Tuesday or Wednesday mornings, in your receiving window.\nA display card, so your team knows what it is and what is in it.\nYour team's feedback, summarized for you after each drop.",
   "gives": "A named pantry owner and a receiving window.\nOn the shelf within one business day of delivery.\nTwo photos: the pantry the day you place it, the card and product on day 3 or 5.\nOne Slack or email post of the survey link; five or more responses.\nA ten-minute debrief, and your Tuesday headcount.",
   "never": "Never asked of you: payment, employees' contact details, exclusivity, or storing anything beyond the drop.",
-  "steps": "A short intake form: categories, vetoes, Tuesday headcount, receiving window.\nWe propose a brand. You approve it by reply, or veto it.\nA Tuesday or Wednesday morning: one labeled case and a display card arrive.\nFive business days later the survey closes, and you get your team's feedback.",
+  "steps": "A short intake form: categories, vetoes, Tuesday headcount, receiving window.\nWe propose a brand. You approve it by reply, or veto it.\nA Tuesday or Wednesday morning: one labeled case and a display card arrive.\nThe survey closes on day 5, and you get your team's feedback.",
   "product": "Sealed, individually packaged, shelf-stable, labeled with ingredients and allergens.\nNever alcohol, cannabis or CBD, supplements, anything refrigerated or needing preparation, or health claims.",
   "privacy": "No personal data about your employees. The survey is anonymous: no login, no email. An optional newsletter box, unticked, sends an email to the brand only if someone ticks it.",
   "founding": "Your first drop in the week named above, with a brand you approved.\nNamed on the founding roster only if you say yes.\nVeto and category profile, changeable any time.\nLeave any time with a week's notice.",
@@ -81,7 +81,7 @@
     { group: 'This office', key: 'prepared_for', label: 'Office name (optional)', help: 'Prints "Prepared for ..." in the header. Leave empty for a general copy.' },
     { group: 'This office', key: 'first_drop', label: 'Proposed first drop', required: true, help: 'A specific week, e.g. "week of Mon 2027-01-11". Tuesday or Wednesday drops only, no blackout weeks (CONTRACTS section 3).' },
     { group: 'Picture', key: 'visual', label: 'Picture on the page', options: [['card', 'A drawing of the display card (no photo needed)'], ['photo', 'A real photo of the card on a shelf']] },
-    { group: 'Picture', key: 'photo', type: 'image', label: 'Photo (if you chose a real photo)', help: 'Your own photo of the card on a real pantry shelf. No identifiable people. Never a stock photo.' },
+    { group: 'Picture', key: 'photo', type: 'image', label: 'Photo (if you chose a real photo)', emptyText: 'None. With "A real photo" chosen above, the page shows a yellow photo slot until you add one.', help: 'Your own photo of the card on a real pantry shelf. No identifiable people. Never a stock photo.' },
     { group: 'Picture', key: 'photo_caption', label: 'Photo caption' },
     { group: C, key: 'headline', label: 'Headline', multiline: true, rows: 2, maxChars: 70 },
     { group: C, key: 'lead', label: 'Lead (under the headline)', multiline: true, rows: 3, maxChars: 170 },
@@ -105,7 +105,7 @@
       ? `<figure class="vis">${X.imgSlot(r.photo, '', 'photo')}<figcaption>${X.t(r.photo_caption || '')}</figcaption></figure>`
       : `<figure class="vis">${X.cardDiagram({ widthIn: 2.9, pins: false })}<figcaption>${X.t(r.card_caption)}</figcaption></figure>`;
     if (photo && !DD.imgSrc(r.photo)) DD.placeholder(i, 'photo');
-    ['headline', 'lead', 'gets', 'gives', 'steps', 'product', 'founding', 'next'].forEach((k) => X.checkClaims(i, `"${FIELDS.find((f) => f.key === k).label}"`, r[k]));
+    ['headline', 'lead', 'gets', 'gives', 'steps', 'product', 'founding', 'next'].forEach((k) => X.checkClaims(i, `"${FIELDS.find((f) => f.key === k).label}"`, r[k], r));
     sheet.innerHTML = `<div class="page op">
       <div class="dd-sample-banner">Sample. Illustrative placeholders, not results.</div>
       ${X.header({ kicker: 'For office and workplace managers', meta: r.prepared_for ? `Prepared for ${DD.text(r.prepared_for)}` : 'Founding offices · Flatiron, NoMad and Union Square' })}

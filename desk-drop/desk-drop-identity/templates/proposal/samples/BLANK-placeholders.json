@@ -12,31 +12,31 @@
     {
       "neighborhood": "[NEIGHBORHOOD]",
       "industry": "[INDUSTRY]",
-      "headcount_band": "[BAND]",
+      "headcount_band": "[HEADCOUNT BAND]",
       "planned_units": "[N]"
     },
     {
       "neighborhood": "[NEIGHBORHOOD]",
       "industry": "[INDUSTRY]",
-      "headcount_band": "[BAND]",
+      "headcount_band": "[HEADCOUNT BAND]",
       "planned_units": "[N]"
     },
     {
       "neighborhood": "[NEIGHBORHOOD]",
       "industry": "[INDUSTRY]",
-      "headcount_band": "[BAND]",
+      "headcount_band": "[HEADCOUNT BAND]",
       "planned_units": "[N]"
     },
     {
       "neighborhood": "[NEIGHBORHOOD]",
       "industry": "[INDUSTRY]",
-      "headcount_band": "[BAND]",
+      "headcount_band": "[HEADCOUNT BAND]",
       "planned_units": "[N]"
     },
     {
       "neighborhood": "[NEIGHBORHOOD]",
       "industry": "[INDUSTRY]",
-      "headcount_band": "[BAND]",
+      "headcount_band": "[HEADCOUNT BAND]",
       "planned_units": "[N]"
     }
   ],

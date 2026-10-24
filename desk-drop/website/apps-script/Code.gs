@@ -3,7 +3,8 @@
  * ---------------------------------------------------------------------
  * doPost writes ONE row to the "office_intake" or "brand_intake" tab of the spreadsheet
  * this script is attached to, with the columns of CONTRACTS.md section 6.3 in exact
- * order, then sends ONE email notification for that row.
+ * order, then sends ONE short email notification for that row (company or brand, contact
+ * email and the row link only: the Sheet is the one full copy of the answers).
  *
  * Setup (founder, needs your Google login): ../SETUP.md section 3. In short:
  *   1. Create a Google Sheet. Extensions > Apps Script. Paste this file over Code.gs.
@@ -28,7 +29,16 @@ var SETTINGS = {
   NOTIFY_TO: "",              // empty = the Google account that deployed the script
   TIMEZONE: "America/New_York",
   RATE_LIMIT_PER_10_MIN: 30,  // more than this many accepted submissions in 10 minutes = "busy"
-  DUPLICATE_WINDOW_SECONDS: 21600
+  DUPLICATE_WINDOW_SECONDS: 21600,
+  // Text starting with = + - @ gets a leading apostrophe, so Sheets never runs it as a formula.
+  // The cells are also set to plain text first. If the SETUP.md section 3 step 6 check shows the
+  // apostrophe inside the stored value, set this to false, redeploy and run the check again.
+  APOSTROPHE_GUARD: true,
+  // The form notices promise: "If we do not end up working together, we delete your answers,
+  // and the email about them, within 12 months." markRowsToDelete() highlights rows older than
+  // this and lists the Gmail search for each row's notification (SETUP.md section 3).
+  RETENTION_DAYS: 365,
+  RETENTION_HIGHLIGHT: "#F4CCCC"
 };
 
 // SCHEMA is strict JSON between the two markers. tests/ read it from this file, so edit it here only.
@@ -41,7 +51,7 @@ var SCHEMA = /*SCHEMA-JSON-START*/{
       "fields": {
         "company": {"label": "Company", "required": true, "max": 200},
         "contact_name": {"label": "Contact name", "required": true, "max": 120},
-        "contact_title": {"label": "Contact title", "required": true, "max": 120},
+        "contact_title": {"label": "Contact title", "max": 120},
         "contact_email": {"label": "Work email", "required": true, "type": "email", "max": 254},
         "contact_phone": {"label": "Work phone", "type": "phone", "max": 40},
         "office_address": {"label": "Office address", "required": true, "max": 200},
@@ -49,7 +59,7 @@ var SCHEMA = /*SCHEMA-JSON-START*/{
         "tuesday_headcount": {"label": "People in on a Tuesday", "required": true, "type": "int", "min_value": 1, "max_value": 10000},
         "pantry_owner_is_contact": {"label": "Contact is the pantry owner", "required": true, "enum": ["Y", "N"]},
         "pantry_owner_name": {"label": "Pantry owner name", "required_if": {"pantry_owner_is_contact": "N"}, "max": 120},
-        "pantry_owner_title": {"label": "Pantry owner title", "required_if": {"pantry_owner_is_contact": "N"}, "max": 120},
+        "pantry_owner_title": {"label": "Pantry owner title", "max": 120},
         "receiving_type": {"label": "Receiving", "required": true, "enum": ["walk-up", "front desk", "loading dock", "other"]},
         "receiving_window": {"label": "Receiving window", "required": true, "max": 120},
         "coi_required": {"label": "Certificate of insurance needed", "required": true, "enum": ["yes", "no", "unsure"]},
@@ -86,9 +96,9 @@ var SCHEMA = /*SCHEMA-JSON-START*/{
         "q1_sealed_shelf_stable_60d": {"label": "1. Sealed, shelf-stable, 60+ days", "required": true, "enum": ["Y", "N", "unsure"]},
         "q2_labeled_ingredients_allergens": {"label": "2. Ingredients and 9 allergens labeled", "required": true, "enum": ["Y", "N", "unsure"]},
         "q3_buy_path_near_cluster": {"label": "3. Buy path near the cluster", "required": true, "enum": ["Y", "N", "unsure"]},
-        "q4_can_ship_275_in_10bd": {"label": "4. Can ship 275 units in 10 business days", "required": true, "enum": ["Y", "N", "unsure"]},
+        "q4_can_ship_275_in_10bd": {"label": "4. Can ship 275 (founding) or 550 (standard) in 10 business days", "required": true, "enum": ["Y", "N", "unsure"]},
         "q5_product_liability_insurance": {"label": "5. Product liability insurance", "required": true, "enum": ["Y", "N", "unsure"]},
-        "q6_contact_can_approve_600": {"label": "6. Can approve $600 alone", "required": true, "enum": ["Y", "N", "unsure"]},
+        "q6_contact_can_approve_600": {"label": "6. Can approve $600 (founding) or $1,500 (standard) alone", "required": true, "enum": ["Y", "N", "unsure"]},
         "q7_why_now": {"label": "7. Why New York, why now", "required": true, "multiline": true, "max": 1000},
         "excluded_category_confirmed": {"label": "Not an excluded product", "required": true, "enum": ["Y"]},
         "notes": {"label": "Notes", "multiline": true, "max": 2000}
@@ -184,7 +194,7 @@ function handle_(params, multi) {
     if (!ensureHeader_(sheet, def.columns, false)) return { ok: false, error: "sheet_header_mismatch" };
 
     var values = def.columns.map(function (col) { return cell_(row[col]); });
-    var rowNumber = sheet.getLastRow() + 1;
+    var rowNumber = nextRow_(sheet);
     var range = sheet.getRange(rowNumber, 1, 1, values.length);
     // Plain-text format first, so Sheets never turns "3-4" into a date or a long number into 1E+12.
     range.setNumberFormats([def.columns.map(function (col) { return typeof row[col] === "number" ? "0" : "@"; })]);
@@ -287,7 +297,17 @@ function matches_(row, when) {
 function cell_(v) {
   if (v === undefined || v === null) return "";
   if (typeof v === "number") return v;
-  return /^[=+\-@]/.test(v) ? "'" + v : v;
+  return SETTINGS.APOSTROPHE_GUARD && /^[=+\-@]/.test(v) ? "'" + v : v;
+}
+
+/** The first row after the last one with a submitted_at (column A). Columns another workstream
+ *  adds after the contract columns, even with formulas filled down, do not push rows lower. */
+function nextRow_(sheet) {
+  var last = sheet.getLastRow();
+  if (last < 2) return 2;
+  var colA = sheet.getRange(1, 1, last, 1).getValues();
+  for (var i = colA.length - 1; i >= 1; i--) if (String(colA[i][0]).trim() !== "") return i + 2;
+  return 2;
 }
 
 function ensureHeader_(sheet, columns, writeIfEmpty) {
@@ -299,6 +319,75 @@ function ensureHeader_(sheet, columns, writeIfEmpty) {
   var have = sheet.getRange(1, 1, 1, columns.length).getValues()[0].map(function (x) { return String(x); });
   for (var i = 0; i < columns.length; i++) if (have[i] !== columns[i]) return false;
   return true;
+}
+
+/* ------------------------------------------------------------------ retention */
+
+/**
+ * Run from the editor, or monthly by installRetentionReminder(). Highlights every row whose
+ * submitted_at is more than SETTINGS.RETENTION_DAYS old, in both tabs, and emails one summary
+ * with the Gmail search that finds each row's notification email.
+ * It deletes nothing: check each highlighted company against the operations tracker, delete the
+ * rows of companies that never signed (offices) or paid (brands) and their notification emails,
+ * and clear the highlight on the rest (SETUP.md section 3, step 10).
+ */
+function markRowsToDelete(now) {
+  var ss = spreadsheet_();
+  var cutoff = (now instanceof Date ? now : new Date()).getTime() - SETTINGS.RETENTION_DAYS * 86400000;
+  var lines = [];
+  var total = 0;
+  Object.keys(SCHEMA.forms).forEach(function (key) {
+    var def = SCHEMA.forms[key];
+    var sheet = ss.getSheetByName(def.sheet);
+    if (!sheet || sheet.getLastRow() < 2) return;
+    var col = def.columns.indexOf("submitted_at") + 1;
+    var nameCol = def.columns.indexOf(nameKey_(def));
+    var data = sheet.getRange(2, 1, sheet.getLastRow() - 1, def.columns.length).getValues();
+    data.forEach(function (r, i) {
+      var t = new Date(String(r[col - 1])).getTime();
+      if (!isNaN(t) && t < cutoff) {
+        sheet.getRange(i + 2, 1, 1, def.columns.length).setBackground(SETTINGS.RETENTION_HIGHLIGHT);
+        var row = {};
+        row[nameKey_(def)] = r[nameCol];
+        lines.push(def.sheet + " row " + (i + 2) + ": " + String(r[nameCol]) + " (" + String(r[col - 1]).slice(0, 10) + ")" +
+          "\n    notification email, Gmail search: " + gmailSearch_(def, row));
+        total++;
+      }
+    });
+  });
+  var summary = total + " row(s) older than " + SETTINGS.RETENTION_DAYS + " days";
+  if (total) {
+    try {
+      MailApp.sendEmail({ to: notifyTo_(), name: "Website intake", subject: "Intake rows to review for deletion: " + total,
+        body: summary + ", highlighted in the Sheet. For each company that never signed (offices) or paid (brands): " +
+          "delete its row, then paste its Gmail search into Gmail and delete the notification email it finds (and empty the Trash). " +
+          "Clear the highlight on the rest. Delete this summary too when you are done.\n\n" +
+          lines.join("\n") + "\n\n" + ss.getUrl() });
+    } catch (err) {
+      console.error("retention: summary email failed: " + err);
+    }
+  }
+  return summary;
+}
+
+/** The column that names the sender's business: company (office) or brand_name (brand). */
+function nameKey_(def) {
+  return def.columns.indexOf("company") >= 0 ? "company" : "brand_name";
+}
+
+/** The Gmail search that finds one row's notification email, wherever it was filed. */
+function gmailSearch_(def, row) {
+  var prefix = def.subject.split("{")[0];
+  return 'in:anywhere subject:"' + (prefix + str_(row[nameKey_(def)])).replace(/"/g, " ").trim() + '"';
+}
+
+/** Run once from the editor: runs markRowsToDelete() on the 1st of every month, around 9 am. */
+function installRetentionReminder() {
+  ScriptApp.getProjectTriggers().forEach(function (tr) {
+    if (tr.getHandlerFunction() === "markRowsToDelete") ScriptApp.deleteTrigger(tr);
+  });
+  ScriptApp.newTrigger("markRowsToDelete").timeBased().onMonthDay(1).atHour(9).create();
+  return "Monthly retention check installed (1st of each month, about 9 am).";
 }
 
 function spreadsheet_() {
@@ -313,7 +402,10 @@ function notifyTo_() {
   return SETTINGS.NOTIFY_TO || Session.getEffectiveUser().getEmail();
 }
 
-/** Exactly one email per accepted submission. A mail failure never loses the row. */
+/** Exactly one email per accepted submission. A mail failure never loses the row.
+ *  Review round 3 (R3-02): the email carries only the company or brand, the contact email and
+ *  the row link, not the answers. The Sheet stays the one full copy, so the 12-month deletion
+ *  promise and a deletion request cover one row plus this one short email. */
 function notify_(def, row, ss, rowNumber) {
   try {
     if (MailApp.getRemainingDailyQuota() < 1) {
@@ -321,12 +413,18 @@ function notify_(def, row, ss, rowNumber) {
       return;
     }
     var subject = def.subject.replace(/\{(\w+)\}/g, function (_, k) { return str_(row[k]); });
-    var lines = def.columns.map(function (col) {
-      var label = def.fields[col] ? def.fields[col].label + " (" + col + ")" : col;
-      return label + ": " + str_(row[col]);
-    });
-    var body = lines.join("\n") + "\n\nTab " + def.sheet + ", row " + rowNumber + ": " + ss.getUrl() +
-      "\n\nReply to this email to answer the sender directly.";
+    var office = nameKey_(def) === "company";
+    var body = [
+      (office ? "New office sign-up" : "New brand application") + " from the website.",
+      "",
+      (office ? "Company: " : "Brand: ") + str_(row[nameKey_(def)]),
+      "Contact email: " + str_(row.contact_email),
+      "",
+      "All the answers are in the Sheet, and only there: tab " + def.sheet + ", row " + rowNumber + ": " + ss.getUrl(),
+      "",
+      "Reply to this email to answer the sender directly.",
+      "If you later delete this row (the 12-month promise, or the sender asks), delete this email too. Gmail search: " + gmailSearch_(def, row)
+    ].join("\n");
     var msg = { to: notifyTo_(), subject: subject, body: body, name: "Website intake" };
     if (row.contact_email) msg.replyTo = row.contact_email;
     MailApp.sendEmail(msg);

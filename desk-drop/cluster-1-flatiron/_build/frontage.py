@@ -258,3 +258,67 @@ def frontage(addr, lat, lon):
     la, lo = grid.from_m(*F)
     return la, lo, (f"pin moved to frontage: the lot's position along {label} kept, set {off:.0f} m from the centreline "
                     f"on the side CSCL gives house number {hn} ({math.dist(F, P0):.0f} m from the old pin)")
+
+
+# ------------------------------------------------------------------ review round 2 (R2-10): corner lots
+CORNER_SIDE_MIN_M = 26.0   # from the side street's centreline: about half a 60 ft roadway, the sidewalk and 12 m inside
+CORNER_INSIDE_M = 4.0      # just inside the avenue building line, so the pin reads as the avenue frontage
+
+
+def side_streets(P):
+    """(distance, label) of the nearest numbered cross streets beside point P (metres)."""
+    s, _ = grid.sx(*grid.from_m(*P))
+    out = []
+    for k in (int(math.floor(s)), int(math.ceil(s))):
+        for ew in ("E", "W"):
+            d, _ = beside(P, f"{ew} {k} ST")
+            if d is not None:
+                out.append((d, f"{ew} {k} ST"))
+    return sorted(out)
+
+
+def corner(addr, lat, lon):
+    """For an avenue address whose pin sits nearer a cross street than the avenue (a corner lot's
+    centroid), return (lat, lon, note, side_label) on the avenue frontage near that corner; else None."""
+    pa = parse(addr)
+    if not pa or not lat:
+        return None
+    hn, label, kind = pa
+    if kind != "avenue":
+        return None
+    P0 = grid.to_m(float(lat), float(lon))
+    d_addr = dist_to(P0, label)
+    sides = side_streets(P0)
+    if d_addr is None or not sides or sides[0][0] >= d_addr:
+        return None
+    d_side, side_label = sides[0]
+    cands = address_segments(hn, label)
+    if not cands:
+        return None
+    best = None
+    for s, side in cands:
+        for A, B in zip(s["pts"], s["pts"][1:]):
+            d, t, _ = _proj(P0, A, B)
+            if best is None or d < best[0]:
+                best = (d, s, side, A, B, t)
+    d, s, side, A, B, t = best
+    L = math.dist(A, B) or 1.0
+    ux, uy = (B[0] - A[0]) / L, (B[1] - A[1]) / L
+    Q = (A[0] + t * (B[0] - A[0]), A[1] + t * (B[1] - A[1]))
+    nx, ny = (-uy, ux) if side == "L" else (uy, -ux)
+    w = (s["w_ft"] or 60.0) * 0.3048
+    off = w / 2 + SIDEWALK_M + CORNER_INSIDE_M
+    F = (Q[0] + nx * off, Q[1] + ny * off)
+    # slide along the avenue, away from the cross street, until the pin is CORNER_SIDE_MIN_M from it
+    for _ in range(40):
+        ds, _ = beside(F, side_label)
+        if ds is None or ds >= CORNER_SIDE_MIN_M:
+            break
+        G1 = (F[0] + ux * 1.0, F[1] + uy * 1.0)
+        G2 = (F[0] - ux * 1.0, F[1] - uy * 1.0)
+        F = max((G1, G2), key=lambda G: beside(G, side_label)[0] or 0)
+    la, lo = grid.from_m(*F)
+    ds_new = beside(F, side_label)[0]
+    return la, lo, (f"corner lot: the lot-centroid pin sat {d_side:.0f} m from {side_label} but {d_addr:.0f} m from {label}, "
+                    f"so it was moved to the {label} frontage near the corner ({off:.0f} m from the {label} centreline, "
+                    f"{ds_new:.0f} m from {side_label}; {math.dist(F, P0):.0f} m from the old pin)"), side_label

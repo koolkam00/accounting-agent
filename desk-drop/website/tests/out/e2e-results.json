@@ -1,22 +1,22 @@
 {
-  "date": "2026-10-24T03:24:30.379Z",
+  "date": "2026-10-24T05:18:14.584Z",
   "checks": [
     {
       "name": "office form submitted at phone width: one row, exact columns, one notification",
       "pass": true,
       "row": {
-        "submitted_at": "2026-10-23T23:24:35-04:00",
+        "submitted_at": "2026-10-24T01:18:19-04:00",
         "form_version": "office-1.0",
         "company": "SAMPLE Studio",
         "contact_name": "SAMPLE Jo Park",
-        "contact_title": "Office Manager",
+        "contact_title": "",
         "contact_email": "sample.jo@example.com",
         "contact_phone": "",
         "office_address": "123 Fifth Avenue",
         "floor_suite": "",
         "tuesday_headcount": "60",
         "pantry_owner_name": "SAMPLE Jo Park",
-        "pantry_owner_title": "Office Manager",
+        "pantry_owner_title": "",
         "pantry_owner_is_contact": "Y",
         "receiving_type": "front desk",
         "receiving_window": "9 to 11 am",
@@ -32,7 +32,7 @@
       "name": "brand form submitted at phone width: one row, exact columns, one notification",
       "pass": true,
       "row": {
-        "submitted_at": "2026-10-23T23:24:40-04:00",
+        "submitted_at": "2026-10-24T01:18:25-04:00",
         "form_version": "brand-1.0",
         "brand_name": "SAMPLE Brightside",
         "website": "https://example.com",
@@ -74,18 +74,18 @@
       "name": "office form submitted at desktop width: one row, exact columns, one notification",
       "pass": true,
       "row": {
-        "submitted_at": "2026-10-23T23:24:44-04:00",
+        "submitted_at": "2026-10-24T01:18:28-04:00",
         "form_version": "office-1.0",
         "company": "SAMPLE Studio",
         "contact_name": "SAMPLE Jo Park",
-        "contact_title": "Office Manager",
+        "contact_title": "",
         "contact_email": "sample.jo@example.com",
         "contact_phone": "",
         "office_address": "123 Fifth Avenue",
         "floor_suite": "",
         "tuesday_headcount": "60",
         "pantry_owner_name": "SAMPLE Jo Park",
-        "pantry_owner_title": "Office Manager",
+        "pantry_owner_title": "",
         "pantry_owner_is_contact": "Y",
         "receiving_type": "front desk",
         "receiving_window": "9 to 11 am",
@@ -101,7 +101,7 @@
       "name": "brand form submitted at desktop width: one row, exact columns, one notification",
       "pass": true,
       "row": {
-        "submitted_at": "2026-10-23T23:24:49-04:00",
+        "submitted_at": "2026-10-24T01:18:34-04:00",
         "form_version": "brand-1.0",
         "brand_name": "SAMPLE Brightside",
         "website": "https://example.com",
@@ -140,21 +140,65 @@
       "pass": true
     },
     {
+      "name": "P9 office form on a phone: \"Yes, me\" 80.6 s, \"Someone else\" 88.1 s (reading 25.7 s, 7 swipes), both under 90; pantry owner's title left blank is accepted",
+      "pass": true,
+      "p9": {
+        "hero_words": 81,
+        "intro_words": 26,
+        "reading_s": 25.7,
+        "form_height_px": 2533,
+        "swipes": 7,
+        "yes_me": {
+          "typed_chars": 66,
+          "taps": 12,
+          "estimate_s": 80.6
+        },
+        "someone_else": {
+          "typed_chars": 81,
+          "taps": 13,
+          "estimate_s": 88.1
+        }
+      }
+    },
+    {
+      "name": "P21 brand page on a phone: offer, price and report in 118.3 s (443 words, reading 106.3 s, 1 tap, 7 swipes), under 120; scrolling from the top without the jump link: 124.3 s",
+      "pass": true,
+      "p21": {
+        "hero_words": 156,
+        "price_cards": 3,
+        "card_words": 121,
+        "under_card_words": 41,
+        "report_words": 125,
+        "words": 443,
+        "reading_s": 106.3,
+        "price_top_px": 2139,
+        "report_list_bottom_px": 4761,
+        "swipes": 7,
+        "estimate_s": 118.3,
+        "from_top_without_jump": {
+          "swipes": 12,
+          "estimate_s": 124.3
+        }
+      }
+    },
+    {
+      "name": "offices: a headcount under 30 or over 250 shows a polite, non-blocking note (tied to the field); both thank-you messages are conditional on fit",
+      "pass": true
+    },
+    {
       "name": "staging config: notice shown, message on submit, no request, no row, robots noindex",
       "pass": true
     },
     {
-      "name": "empty office form: error summary with 13 linked items, focus management, aria-invalid",
+      "name": "empty office form: error summary with 11 linked items, focus management, aria-invalid",
       "pass": true,
       "items": [
         "Company: Please fill this in.",
         "Your name: Please fill this in.",
-        "Your title: Please fill this in.",
         "Work email: Please fill this in.",
         "Office street address: Please fill this in.",
         "People in the office on a typical Tuesday: Please fill this in.",
         "Pantry owner's name: Please fill this in.",
-        "Pantry owner's title: Please fill this in.",
         "How do deliveries reach your office? Please choose one.",
         "Best time to receive, on a Tuesday or Wednesday morning: Please choose one.",
         "Does your building ask for a certificate of insurance before a delivery? Please choose one.",
@@ -179,11 +223,15 @@
       "pass": true
     },
     {
-      "name": "founding tier closed: question 6 and check 6 ask about $1,500 (error summary too), and the row is marked brand-2.0",
+      "name": "founding tier closed: questions and checks 4 and 6 ask about 550 units and $1,500 (error summary too), and the row is marked brand-2.0",
       "pass": true
     },
     {
-      "name": "production copy without JavaScript: name, title, og:site_name, contact details and canonical (extension-less) are in the HTML; no noindex; forms cannot be sent and say why",
+      "name": "production copy without JavaScript: name, title, og:site_name, contact details and canonical (extension-less) are in the HTML; no noindex; no staging text, internal note or comment in the raw HTML; forms cannot be sent and say why",
+      "pass": true
+    },
+    {
+      "name": "production copy with the founding tier retired, JavaScript off: no $600 or $120 anywhere in the HTML, two price cards, checks 4 and 6 ask about 550 units and $1,500",
       "pass": true
     },
     {
@@ -193,14 +241,48 @@
   ],
   "timing": {
     "phone": {
-      "required_text_fields": 6,
-      "typed_chars": 80,
-      "taps_before_submit": 13
+      "required_text_fields": 5,
+      "typed_chars": 66,
+      "taps_before_submit": 12
     },
     "desktop": {
-      "required_text_fields": 6,
-      "typed_chars": 80,
-      "taps_before_submit": 13
+      "required_text_fields": 5,
+      "typed_chars": 66,
+      "taps_before_submit": 12
+    },
+    "p9": {
+      "hero_words": 81,
+      "intro_words": 26,
+      "reading_s": 25.7,
+      "form_height_px": 2533,
+      "swipes": 7,
+      "yes_me": {
+        "typed_chars": 66,
+        "taps": 12,
+        "estimate_s": 80.6
+      },
+      "someone_else": {
+        "typed_chars": 81,
+        "taps": 13,
+        "estimate_s": 88.1
+      }
+    },
+    "p21": {
+      "hero_words": 156,
+      "price_cards": 3,
+      "card_words": 121,
+      "under_card_words": 41,
+      "report_words": 125,
+      "words": 443,
+      "reading_s": 106.3,
+      "price_top_px": 2139,
+      "report_list_bottom_px": 4761,
+      "swipes": 7,
+      "estimate_s": 118.3,
+      "from_top_without_jump": {
+        "swipes": 12,
+        "estimate_s": 124.3
+      }
     }
   }
 }

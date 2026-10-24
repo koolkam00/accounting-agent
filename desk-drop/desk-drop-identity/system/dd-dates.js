@@ -1,5 +1,5 @@
 /*
-  dd-dates.js: the campaign calendar rules from CONTRACTS.md section 3 (v1.1, 2026-10-24; unchanged in v1.2).
+  dd-dates.js: the campaign calendar rules from CONTRACTS.md section 3 (v1.1, 2026-10-24; v1.3 adds dayOf).
   Used by the proposal and the report to work out dates from the drop day, and by the tests.
 
   - Business days: Monday to Friday, not a US federal holiday in HOLIDAYS.
@@ -70,6 +70,15 @@
     return out;
   }
 
+  // Which day of the window a date is: T is day 1, T+2 is day 3. Counts business days.
+  // Returns null for a date before T or one that is not a business day (v1.3, review round 2).
+  function dayOf(T, d) {
+    if (!T || !d || d < T || !isBusinessDay(d)) return null;
+    let n = 1;
+    for (let x = addDays(T, 1); x <= d; x = addDays(x, 1)) if (isBusinessDay(x)) n++;
+    return n;
+  }
+
   // A date field may hold a plain date ("2027-01-12") or a bracketed slot
   // ("[DROP DATE: Tue 2027-01-12]"). Returns { iso, slot } where slot = true for the bracketed form.
   function readDateField(v) {
@@ -78,6 +87,6 @@
     return { iso: m ? m[1] : '', slot: /^\[/.test(s) };
   }
 
-  const api = { HOLIDAYS, HOLIDAYS_UNTIL, parse, iso, fmt, addDays, addBD, isBusinessDay, blackout, campaign, readDateField, july4Week };
+  const api = { HOLIDAYS, HOLIDAYS_UNTIL, parse, iso, fmt, addDays, addBD, isBusinessDay, blackout, campaign, readDateField, july4Week, dayOf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.DDDates = api;
 })(typeof window !== 'undefined' ? window : this);

@@ -1,0 +1,16 @@
+{
+ "brand_name": "SAMPLE Marigold & Moss Provisions",
+ "product_name": "SAMPLE Smoked Paprika Chickpea Puffs",
+ "card_sentences": "SAMPLE Two cousins in Sunset Park started roasting chickpeas in a rented kitchen in 2022. They wanted a crunchy, savory snack that tastes like their grandmother's cooking.",
+ "allergen_source": "contains_statement",
+ "allergen_line_verbatim": "SAMPLE Contains: wheat, milk, egg, soy, sesame, peanuts and tree nuts (almonds, cashews, walnuts, pecans, pistachios, hazelnuts), fish (anchovy) and crustacean shellfish (shrimp, crab) from seasoning.",
+ "may_contain_verbatim": "SAMPLE May contain mustard, celery and oats. Made in a facility that also processes other tree nuts and lupin.",
+ "retailer_line": "SAMPLE Whole Foods Market Union Square, 4 Union Square South",
+ "discount_code": "SAMPLEMARIGOLD20",
+ "code_site": "marigoldandmoss.example.com",
+ "qr_url": "https://example.com/s/SAMPLE-O-007",
+ "qr_display": "",
+ "office_id": "SAMPLE-O-007",
+ "campaign_id": "SAMPLE-CMP-002",
+ "brand_logo": "/home/user/accounting-agent/desk-drop/desk-drop-identity/_review/work-r3/sb/desk-drop-identity/templates/tent-card/samples/logos/SAMPLE-logo-wide.svg"
+}

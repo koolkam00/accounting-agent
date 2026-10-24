@@ -1,0 +1,394 @@
+There is no extension of time to file Form IT-204-LL or pay the 
+annual fee. If you fail to timely file Form IT-204-LL, or fail to pay 
+the full amount of the filing fee by the due date, you may be 
+subject to penalties and interest.
+E-file mandate
+You may be required to electronically file Form IT-204-LL, using 
+New York State-approved software.
+Partnerships must electronically file if they meet all three of the 
+following conditions:
+• prepare tax documents themselves, without the assistance of 
+a tax professional;
+• use approved e-file tax software to prepare their return or 
+extension; and
+• have broadband Internet access.
+For more information, see Electronic filing mandate for business 
+taxpayers.
+Additional filing requirements
+Both domestic LLCs and LLPs are required to register with the 
+New York State Department of State. In addition, foreign LLCs 
+and LLPs that wish to carry on or conduct business or activities 
+in New York State must register with the Department of State. If 
+you have questions concerning the registration process:
+• visit the Department of State website at dos.ny.gov,
+• write to the New York State Department of State, 
+One Commerce Plaza, 99 Washington Avenue, 
+Albany NY 12231-0001, or
+• call 518-473-2492.
+New York personal income tax and corporation franchise taxes 
+conform with the federal income tax classifications of LLCs and 
+LLPs. An LLC or LLP must file a New York State partnership 
+return using Form IT-204 if it:
+• is treated as a partnership for federal income tax purposes, 
+and
+• meets the filing requirements (see Form IT-204-I, Instructions 
+for Form IT-204).
+Partnership returns for calendar year 2025 are due March 16, 
+2026. Fiscal-year partnership returns are due the 15th day of the 
+third month after the end of the tax year.
+New York City
+For information regarding the tax treatment of an LLC or LLP 
+for purposes of the New York City Business Corporation Tax, 
+New York City General Corporation Tax, and the New York City 
+Unincorporated Business Tax, visit the NYC Department of 
+Finance website at www.nyc.gov/finance.
+Specific instructions
+Identification number
+In the box, enter your employer identification number or the New 
+York State temporary number issued by the New York State Tax 
+Department.
+However, if your LLC is considered a disregarded entity for 
+federal income tax purposes and has not been previously 
+General information
+Who must file
+You must file Form IT-204-LL, Partnership, Limited Liability 
+Company, and Limited Liability Partnership Filing Fee Payment 
+Form, if you are a:
+• limited liability company (LLC) that is a disregarded entity for 
+federal income tax purposes that has income, gain, loss, or 
+deduction from New York State sources; or
+• domestic or foreign LLC (including a limited liability investment 
+company [LLIC] or a limited liability trust company [LLTC]), 
+or limited liability partnership (LLP) that is required to file a 
+New York State partnership return and that has income, gain, 
+loss, or deduction from New York State sources; or
+• regular partnership (those that are not an LLC or LLP) that is 
+required to file a New York partnership return that has income, 
+gain, loss, or deduction from New York State sources, and 
+had New York source gross income for the preceding tax year 
+of at least $1 million.
+Do not file Form IT-204-LL if you are:
+• a partnership, LLC, or LLP with no income, gain, loss, or 
+deduction from New York sources who is filing a partnership 
+return solely because you have a New York resident partner; 
+or
+• a partnership, LLC, or LLP with no income, gain, loss, or 
+deduction from New York sources regardless of whether or 
+not you are formed under the laws of New York State or are 
+dormant; or
+• an LLC or LLP that has elected to be treated as a corporation 
+for federal income tax purposes.
+Filing fee calculation
+The filing fee is based on the New York source gross income for 
+the tax year immediately preceding the tax year for which the 
+fee is due. You cannot prorate the filing fee if the partnership, 
+LLC, or LLP has a short tax year for federal tax purposes.
+If your LLC or LLP did not have any New York source gross 
+income for the preceding tax year, the filing fee is $25.
+If your LLC is treated as a disregarded entity for federal income 
+tax purposes and has any income, gain, loss, or deduction from 
+New York sources, the filing fee is $25.
+New York Source gross income
+New York source gross income is defined as the sum of the 
+partners’ or members’ shares of federal gross income from 
+the partnership, LLP, or LLC, derived from or connected with 
+New York State sources without any allowance or deduction for 
+cost of goods sold, determined in accordance with the provisions 
+of § 631 of the New York State Tax Law as if those provisions 
+and any related provisions expressly referred to a computation 
+of federal gross income from New York sources.
+When to file
+You must file Form IT-204-LL and pay the filing fee in full on 
+or before the 15th day of the third month following the close of 
+your calendar or fiscal tax year. When the due date falls on a 
+Saturday, Sunday, or legal holiday, you must file and pay no later 
+than the next business day.
+IT-204-LL-I
+Department of Taxation and Finance
+Instructions for Form IT-204-LL
+Partnership, Limited Liability Company, and 
+Limited Liability Partnership Filing Fee 
+Payment Form
+Page 2 of 4 IT-204-LL-I (2025)
+assigned an employer identification number or a New York State 
+temporary number, then enter your Social Security number.
+If you were issued a temporary number but now have an 
+employer identification number, enter it here and update your 
+business information with the Tax Department if you have not 
+already done so.
+Note: To obtain an employer identification number, contact the 
+Internal Revenue Service.
+Change of business information
+If you marked an X in the box to indicate a change of address, 
+enter your new address in the spaces provided, and report 
+any other changes, including your business name, ID number, 
+mailing address, physical address, telephone number, or 
+owner/officer information on Form DTF-95, Business Tax 
+Account Update. If only your address has changed, you may 
+use Form DTF-96, Report of Address Change for Business Tax 
+Accounts, to correct your address for this and all other tax types. 
+You can get these forms from our website or by phone. See 
+Need help? for the phone number and Web address.
+Special condition code
+No special condition code exists at this time.
+Part 1: General information
+Amended Form IT-204-LL
+You must file an amended Form IT-204-LL to correct an error on 
+your previously filed Form IT-204-LL or to report changes. Mark 
+an X in this box if you are amending Form IT-204-LL. Submit an 
+explanation of the error or changes with the form.
+Important: If you disagree with a bill you received from the 
+Tax Department, do not file an amended form. Follow the 
+instructions you received with the bill, or, to learn more, see 
+Disagree with a bill or action or visit www.tax.ny.gov (search: 
+disagree).
+Refund
+Mark an X in this box to request a refund of any overpayment 
+resulting from your amended Form IT-204-LL. Submit your 
+request in writing and file it within three years from the date you 
+filed your original form, or two years from the date you paid the 
+fee, whichever is later.
+Final Form IT-204-LL
+Mark an X in this box if this is your final Form IT-204-LL. If the 
+LLC or LLP is registered with the Department of State, you 
+must also contact the Department of State at 518-473-2492 to 
+terminate the registration.
+Line 1
+Income from New York State sources
+Income from New York State sources includes:
+• income attributable to the ownership of any interest in real 
+property located in New York State, including all or a portion of 
+the gain or loss from the sale or exchange of an interest in an 
+entity, if the entity owns:
+– real property in New York State; or
+– shares of stock in a cooperative housing corporation where 
+the cooperative units relating to the shares are located in 
+New York, provided that the sum of the fair market values 
+of such real property, cooperative shares, and related 
+cooperative units equals or exceeds 50% of the fair market 
+value of the assets the entity has owned for at least two 
+years as of the date of the sale or exchange (for additional 
+information, see TSB-M-18(1)I, Definition of New York 
+Source Income of a Nonresident Individual Expanded); 
+• income attributable to the ownership of tangible personal 
+property located in New York State;
+• income attributable to the ownership of any interest in 
+intangible personal property to the extent that it is used in a 
+business, trade, profession, or occupation carried on in New 
+York State;
+• income attributable to a business, trade, profession, or 
+occupation carried on in New York State;
+• any gain from the sale, transfer, or other disposition of shares 
+of stock in a cooperative housing corporation in connection 
+with the grant or transfer of a proprietary leasehold, when the 
+real property comprising the units of such cooperative housing 
+corporation is located in New York State, whether or not 
+connected with a business; and
+• any gain you recognized for federal income tax purposes from 
+the sale or transfer of a partnership interest, where the sale or 
+transfer:
+– is subject to the provisions of Internal Revenue Code (IRC) 
+section 1060, and
+– occurred on or after April 10, 2017.
+Determine the amount of the gain to be included in New York 
+source income using the applicable methods and rules in 
+place under Article 22 in the year that the assets were sold or 
+transferred.
+For additional information, see TSB-M-18(2)I, Nonresident 
+Partner’s Treatment of Gain or Loss on Certain Sales or 
+Transfers of a Partnership or Membership Interest.
+Note: Mark an X in the Yes box even if your partnership, LLC, 
+or LLP has a net loss derived from New York sources during the 
+tax year.
+Business, trade, profession, or occupation carried on 
+in New York State
+A partnership carries on a business, trade, profession, or 
+occupation within New York State if:
+• it maintains or operates an office, shop, store, warehouse, 
+factory, agency, or other place in New York State where its 
+affairs are systematically and regularly carried on, or
+• it performs a series of acts or transactions in New York 
+State with regularity and continuity for livelihood or profit, as 
+distinguished from isolated or incidental transactions.
+Part 2: Partnerships and LLCs and LLPs 
+treated as partnerships for federal income 
+tax purposes
+LLCs that are disregarded entities for federal income tax 
+purposes: Skip Part 2 and continue with Part 3.
+(continued)
+IT-204-LL-I (2025) Page 3 of 4
+Line 4
+Use the New York source gross income worksheet to calculate 
+your modified federal and New York source gross income for tax 
+year 2024.
+In column A, lines 1 through 13 of the worksheet, enter the 
+amounts from the applicable federal schedules as instructed.
+In column B of the worksheet, enter the portion of column A (if 
+any) that relates to New York sources. 
+ 1 Enter the amount from federal Form 1065, line 1c  ....................................... 1.
+ 2 Enter the amount from federal Form 1065, Schedule K, line 5 ..................... 2.
+ 3 Enter the amount from federal Form 1065, Schedule K, line 6a ................... 3.
+ 4 Enter the amount from federal Form 1065, Schedule K, line 7 ..................... 4.
+ 5 Enter any income (not losses) included on federal Form 1065, 
+  Schedule K, line 11 ........................................................................................ 5.
+ 6 Add the gain (not loss) amounts from federal Form 8949, column (h), 
+and the gains (not losses) from federal Form 1065, Schedule D, 
+  lines 1a, column (h); 4, 5, 8a, column (h); 11, 12, and 14. ............................. 6.
+ 7 Add the gain (not loss) amounts from federal Form 4797, column (g), 
+  lines 2 through 6, 10, and 13 through 16 ....................................................... 7.
+ 8 Enter the amount from federal Form 8825, line 18a  ..................................... 8.
+ 9 Enter the income (not loss) from federal Schedule F (Form 1040), line 9 ..... 9.
+ 10 Enter the amount from federal Schedule F (Form 1040), line 1b .................. 10.
+ 11 Enter any income (not losses) included on federal Form 1065, 
+  Schedule K, line 3a, not included above ....................................................... 11.
+ 12 Enter any income (not losses) included on federal Form 1065, 
+  line 4, from estates and trusts not included above  ....................................... 12.
+ 13 Enter any income (not losses) included on federal Form 1065, line 7, 
+not included above ........................................................................................ 13.
+ 14 New York source gross income from lower tiered partnerships  .................... 14.
+ 15 Total (add column B, lines 1 through 14); enter the amount here and  
+on Form IT-204-LL, line 4 .............................................................................. 15.
+Enter 2024 amounts
+A 
+Modified 
+federal gross income
+B
+New York source 
+gross income
+New York source gross income worksheet
+Tiered partnerships: Do not include on lines 1 through 13 of 
+the worksheet income from any partnership in which you are a 
+partner. Enter the amount provided to you by the partnership on 
+line 14 of the worksheet.
+If you did not have any New York source gross income for tax 
+year 2024, enter 0 on line 4.
+Line 5: NYS filing fee
+LLC and LLP: Find the amount of the New York source gross 
+income, reported on line 4 of Form IT-204-LL, in the table below, 
+and enter the corresponding amount of the NYS filing fee on line 5. 
+If you entered 0 on line 4 of Form IT-204-LL, enter 25 on line 5. 
+LLC and LLP filing fee table
+If the New York source 
+gross income on line 4 
+is more than:
+but not
+more than:
+LLC/LLP 
+enter on
+line 5:
+$  0 $  100,000 25
+100,000 250,000 50
+250,000 500,000 175
+500,000 1,000,000 500
+1,000,000 5,000,000 1,500
+5,000,000 25,000,000 3,000
+25,000,000 4,500
+Regular partnership: Find the amount of the New York source 
+gross income, reported on line 4 of Form IT-204-LL, in the 
+table below, and enter the corresponding amount of the NYS 
+filing fee on line 5. If the amount entered on line 4 is less than 
+$1,000,000, or the partnership had no New York source gross 
+income, no NYS filing fee is due. Do not file this form.
+Regular partnership filing fee table
+If the New York source
+gross income on
+line 4 is:
+Regular 
+partnership 
+enter on
+line 5:
+$1,000,000 500
+If the New York 
+source gross 
+income on line 4 is 
+more than:
+but not 
+more than:
+enter on 
+line 5:
+$ 1,000,000 $ 5,000,000 1,500
+5,000,000 25,000,000 3,000
+25,000,000 4,500
+Page 4 of 4 IT-204-LL-I (2025)
+Part 4: Payment amount
+Line 8: Payment amount
+Enter the amount from line 5 or line 7. Make check or money 
+order for this amount payable to NYS filing fee; write your EIN 
+or SSN and 2025 filing fee on the remittance and submit it with 
+this form.
+Fee for payments returned by banks
+The law allows the Tax Department to charge a $50 fee when 
+a check, money order, or electronic payment is returned by 
+a bank for nonpayment. However, if an electronic payment is 
+returned as a result of an error by the bank or the department, 
+the department will not charge the fee.
+If your payment is returned, we will send a separate bill for 
+$50 for each return or other tax document associated with the 
+returned payment.
+Signatures
+A general partner must sign Form IT-204-LL.
+Enter your daytime telephone number including the area code. 
+This entry will enable the Tax Department to correct minor errors 
+or omissions by calling you rather than writing or sending back 
+your form.
+Paid preparer’s signature
+If you pay someone to prepare your form, the paid preparer must 
+also sign it and fill in the other blanks in the paid preparer’s area 
+of your form. A person who prepares your form and does not 
+charge you should not fill in the paid preparer’s area.
+Paid preparer’s responsibilities: Under the law, all paid 
+preparers must sign and complete the paid preparer section of 
+the form. Paid preparers may be subject to civil and/or criminal 
+sanctions if they fail to complete this section in full.
+When completing this section, enter your New York tax preparer 
+registration identification number (NYTPRIN) if you are required 
+to have one. If you are not required to have a NYTPRIN, enter 
+in the NYTPRIN excl. code box one of the specified 2-digit 
+codes listed below that indicates why you are exempt from the 
+registration requirement. You must enter a NYTPRIN or an 
+exclusion code. Also, you must enter your federal preparer tax 
+identification number (PTIN) if you have one; if not, you must 
+enter your Social Security number. 
+For more information, see Tax preparer registration requirements 
+or visit www.tax.ny.gov (search: registration).
+Code Exemption type Code Exemption type
+01 Attorney 02 Employee of attorney
+03 CPA 04 Employee of CPA
+05 PA (Public Accountant) 06 Employee of PA
+07 Enrolled agent 08 Employee of enrolled 
+agent
+09 Volunteer tax preparer 10 Employee of business 
+preparing that business’ 
+return
+Where to file
+If you are not required to file electronically, mail your completed 
+form and payment to:
+STATE PROCESSING CENTER
+PO BOX 15310
+ALBANY NY  12212-5310
+Private delivery services – See Publication 55, Designated 
+Private Delivery Services.
+Privacy notification
+New York State Law requires all government agencies that 
+maintain a system of records to provide notification of the legal 
+authority for any request for personal information, the principal 
+purpose(s) for which the information is to be collected, and 
+where it will be maintained. To view this information, visit our 
+website, or, if you do not have Internet access, call and request 
+Publication 54, Privacy Notification. See Need help? for the Web 
+address and telephone number.
+Need help?
+Visit our website at www.tax.ny.gov
+• get information and manage your taxes online
+• check for new online services and features
+Telephone assistance
+Automated income tax refund status: 518-457-5149
+Personal Income Tax Information 
+Center:
+518-457-5181
+To order forms and publications: 518-457-5431
+Text telephone (TTY) or TDD 
+equipment users:
+Dial 7-1-1 for the 
+New York Relay 
+Service

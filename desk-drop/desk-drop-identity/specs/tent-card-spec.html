@@ -11,7 +11,7 @@
 <section class="page">
   <header class="hd">
     <img class="wm" src="../wordmark/wordmark-light.svg" alt="">
-    <div><h1>Tent card: print spec</h1><p class="sub">Template v1.2 · 2026-10-23 · file: templates/tent-card/tent-card.html</p></div>
+    <div><h1>Tent card: print spec</h1><p class="sub">Template v1.3 · 2026-10-24 · file: templates/tent-card/tent-card.html</p></div>
   </header>
   <p class="warn"><b>No commercial print run until the name is cleared</b> (desk-drop-legal-pack/name-check-log.md). Home test prints are fine.</p>
 
@@ -45,7 +45,7 @@
       <tr><th>Flat size</th><td>7 x 10 in, one card per US Letter sheet, centred (0.75 in side margins, 0.5 in top and bottom).</td></tr>
       <tr><th>Fold</th><td>Tent fold across the middle (5 in from each short edge), print on the outside. Score first along a ruler with a bone folder or the back of a butter knife, then fold.</td></tr>
       <tr><th>Bleed</th><td>None for home printing: nothing touches the trim, so a slightly off cut does not show. Print-shop file (<code>--mode pro</code>): page 7.25 x 10.25 in with 0.125 in bleed on all sides, no marks.</td></tr>
-      <tr><th>Safe area</th><td>0.25 in inside the trim on every edge, including the fold. All text and the QR stay inside it.</td></tr>
+      <tr><th>Safe area</th><td>0.25 in inside the trim on every edge, including the fold. All text and the QR stay inside it, with one deliberate exception: the card ID line (and "this side faces the room") sits in the bottom margin, 0.12 in from the trim, twice a 1/16 in cutting tolerance. It is for whoever kits and places the card, not for the reader.</td></tr>
       <tr><th>Marks</th><td>Corner crop marks offset 0.08 in, 0.22 in long. FOLD marks in both side margins.</td></tr>
       <tr><th>Faces</th><td>Both faces carry the same content, so either side can face the room. Each sheet's top margin repeats the print settings; the bottom margin names the brand, card ID and campaign.</td></tr>
       <tr><th>Numbers</th><td>The text face draws zero with a slash (0) so office IDs like O-001 cannot be misread.</td></tr>
@@ -65,25 +65,27 @@
   <h2>Type sizes on the card (minimums are floors)</h2>
   <table class="spec type">
     <tr><th>Element</th><th>Face</th><th>Size</th><th>Rule</th></tr>
+    <tr><td>Flavor name (two-flavor card only)</td><td>Atkinson Bold</td><td>10 pt</td><td>Each flavor's name as on its package, above its own statement. Both statements locked at 14 pt; if they do not fit, one card per flavor.</td></tr>
     <tr class="lock"><td>Allergen statement and "may contain" line</td><td>Atkinson Hyperlegible Next SemiBold, black</td><td><b>14 pt, LOCKED</b></td><td>Copied word for word from the package. Never shortened, never smaller. Everything else gives way to it. The template refuses to print if it would render under 14 pt or if the text differs from what was entered.</td></tr>
     <tr><td>Brand name</td><td>Bricolage Grotesque ExtraBold</td><td>36 to 72 pt</td><td>One line where possible; narrows to 75% width before it shrinks, and widens again at each smaller size if it can; two balanced lines only as a last resort.</td></tr>
-    <tr><td>Brand logo (optional)</td><td>The brand's own file (SVG, or PNG at least 300 px tall)</td><td>0.55 to 0.9 in tall</td><td>Never wider than the safe area. A wide logo (2.2 times wider than tall or more) replaces the typed name; a square or stacked logo prints beside the typed name.</td></tr>
+    <tr><td>Brand logo (optional)</td><td>The brand's own file (SVG, or PNG at least 300 px tall)</td><td>Wide logo 0.75 to 0.9 in tall; compact logo 0.55 to 0.9 in</td><td>Never wider than the safe area. A wide logo (2.2:1 or wider) replaces the typed name, so it stops at 0.75 in; a compact one prints beside the name.</td></tr>
     <tr><td>"Take one."</td><td>Bricolage Grotesque ExtraBold, cobalt</td><td>22 pt</td><td>Fixed copy.</td></tr>
     <tr><td>Two sentences</td><td>Atkinson Hyperlegible Next Regular</td><td>12 to 15 pt</td><td>200 characters or fewer.</td></tr>
     <tr><td>"Tell us what you think", product line</td><td>Atkinson Bold / SemiBold</td><td>13 pt</td><td></td></tr>
     <tr><td>Find it at ... or use code ...</td><td>Atkinson SemiBold</td><td>10 to 11 pt</td><td>Works with the retailer half alone, the code half alone, or both.</td></tr>
-    <tr><td>"Allergens, as printed on the package" label</td><td>Atkinson Bold</td><td>9 pt</td><td>Fixed copy. Three versions, from where the package declares its allergens: a "Contains" statement; the whole ingredient list (no "Contains" line); a single-ingredient product's name (no ingredient list). There is no "no allergens" option: nobody judges an ingredient list by eye.</td></tr>
+    <tr><td>"Allergens, as printed on the package" label</td><td>Atkinson Bold</td><td>9 pt</td><td>Fixed copy, by where the package declares allergens: a "Contains" statement, the whole ingredient list, or a single-ingredient product's name. No "no allergens" option.</td></tr>
     <tr><td>"Brought to you by" and wordmark</td><td>Atkinson Regular; wordmark file</td><td>8.5 pt; wordmark cap height 0.13 in</td><td>Wordmark sized by cap height, so a longer name stays readable.</td></tr>
     <tr><td>Short link under the QR</td><td>Atkinson Regular</td><td>7.5 pt</td><td></td></tr>
-    <tr><td>Card ID (office and campaign)</td><td>Atkinson Regular, stone</td><td>7 pt</td><td>For kitting only.</td></tr>
+    <tr><td>Card ID (office and campaign)</td><td>Atkinson Regular, stone</td><td>7 pt</td><td>For kitting. Bottom margin, 0.12 in from the trim (the one safe-area exception).</td></tr>
+    <tr><td>"this side faces the room" (split card only)</td><td>Atkinson Bold, ink</td><td>9 pt</td><td>Beside the card ID on a split card's front: which face goes outward.</td></tr>
   </table>
 
 </section>
 
 <section class="page">
   <h2>When the card is full: the give-way order</h2>
-  <p>The template fits the card itself. If text does not fit, it gives way in this order and tells you on screen and in the render output: (1) a brand logo shrinks from 0.9 to 0.55 in; (2) the two sentences shrink from 15 to 12 pt; (3) spacing tightens; (4) the find-it line goes from 11 to 10 pt; (5) the QR shrinks from 1.45 to 1.15 in; (6) a two-line brand name goes back to one condensed line if it can; (7) the product line is left off; (8) the brand name shrinks toward 36 pt, widening again where it can; (9) the two sentences are left off. The name, the thing the wide photo depends on, gives way after the product line (review round 1).</p>
-  <p><b>Long ingredient lists.</b> For a package whose only allergen declaration is its ingredient list, a list too long to share a face with the story and QR moves to a face of its own, and that face is the <b>front</b>: the brand name (43 to 36 pt), the whole list and "may contain" line at 14 pt, and where to buy. It is marked "this side faces the room" beside the card ID. The other face carries the story, "Take one" and the QR, and its panel points to the list. If the list is still too long, the "Take one" sentence and then the buy line leave the front (both are on the other face). If it still does not fit, the card prints a red DO NOT PLACE panel and the render command writes no PDF. The allergen panel never changes.</p>
+  <p>The template fits the card itself. If text does not fit, it gives way in this order and tells you on screen and in the render output: (1) the two sentences shrink from 15 to 12 pt; (2) spacing tightens; (3) the find-it line goes from 11 to 10 pt; (4) a brand logo shrinks from 0.9 in, to 0.75 in for a wide logo (it is the name in the wide photo) or 0.55 in for a compact one (review round 2); (5) the QR shrinks from 1.45 to 1.15 in; (6) a two-line brand name goes back to one condensed line if it can; (7) the product line is left off; (8) the brand name shrinks toward 36 pt, widening again where it can; (9) the two sentences are left off. The name, the thing the wide photo depends on, gives way after the product line (review round 1).</p>
+  <p><b>Long ingredient lists.</b> For a package whose only allergen declaration is its ingredient list, a list too long to share a face with the story and QR moves to a face of its own, and that face is the <b>front</b>: the brand name (43 to 36 pt), the whole list and "may contain" line at 14 pt, and where to buy. It is marked "this side faces the room" (9 pt bold) beside the card ID. The other face carries the story, "Take one" and the QR, and its panel points to the list. If the list is still too long, the "Take one" sentence and then the buy line leave the front (both are on the other face). If it still does not fit, the card prints a red DO NOT PLACE panel and the render command writes no PDF. The allergen panel never changes.</p>
 
   <h2>Placement and photos (from the plan's per-stop procedure)</h2>
   <ul>

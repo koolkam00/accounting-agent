@@ -1,0 +1,121 @@
+{
+ "status": {
+  "ready": true,
+  "errors": [],
+  "warnings": [
+   "\"Brand name\" is 33 characters; aim for 28 or fewer.",
+   "The product line was left off so the allergen text keeps its locked size."
+  ],
+  "sample": true,
+  "placeholders": []
+ },
+ "faces": [
+  {
+   "cls": "face back",
+   "w_in": 7,
+   "h_in": 5,
+   "allergen": [
+    {
+     "text": "SAMPLE CONTAINS: WHEAT, MILK, EGG, SOY, SESAME, PEANUTS AND ",
+     "pt": 14.000024999999999,
+     "weight": "600",
+     "color": "rgb(0, 0, 0)",
+     "family": "\"Atkinson Hyperlegible Next\""
+    },
+    {
+     "text": "SAMPLE MAY CONTAIN MUSTARD, CELERY AND OATS. MADE IN A FACIL",
+     "pt": 14.000024999999999,
+     "weight": "600",
+     "color": "rgb(0, 0, 0)",
+     "family": "\"Atkinson Hyperlegible Next\""
+    }
+   ],
+   "other": {
+    "name": {
+     "pt": 39.75,
+     "px_css": 53,
+     "stretch": "75%",
+     "text": "SAMPLE Marigold & Moss Provisions",
+     "h_in": 0.541015625
+    },
+    "min_text_pt": 7,
+    "min_text_el": "card-id: Card SAMPLE-O-007 · SAMPLE-CMP-002",
+    "near_trim": [
+     {
+      "el": "dd-sample-banner",
+      "text": "Sample. Not for placement. Illustrative ",
+      "d_in": 0,
+      "pt": 8.000025
+     },
+     {
+      "el": "card-id",
+      "text": "Card SAMPLE-O-007 · SAMPLE-CMP-002",
+      "d_in": 0.12,
+      "pt": 6.9999975
+     }
+    ]
+   }
+  },
+  {
+   "cls": "face front tight",
+   "w_in": 7,
+   "h_in": 5,
+   "allergen": [
+    {
+     "text": "SAMPLE CONTAINS: WHEAT, MILK, EGG, SOY, SESAME, PEANUTS AND ",
+     "pt": 14.000024999999999,
+     "weight": "600",
+     "color": "rgb(0, 0, 0)",
+     "family": "\"Atkinson Hyperlegible Next\""
+    },
+    {
+     "text": "SAMPLE MAY CONTAIN MUSTARD, CELERY AND OATS. MADE IN A FACIL",
+     "pt": 14.000024999999999,
+     "weight": "600",
+     "color": "rgb(0, 0, 0)",
+     "family": "\"Atkinson Hyperlegible Next\""
+    }
+   ],
+   "other": {
+    "name": {
+     "pt": 39.75,
+     "px_css": 53,
+     "stretch": "75%",
+     "text": "SAMPLE Marigold & Moss Provisions",
+     "h_in": 0.541015625
+    },
+    "min_text_pt": 7,
+    "min_text_el": "card-id: Card SAMPLE-O-007 · SAMPLE-CMP-002",
+    "near_trim": [
+     {
+      "el": "dd-sample-banner",
+      "text": "Sample. Not for placement. Illustrative ",
+      "d_in": 0,
+      "pt": 8.000025
+     },
+     {
+      "el": "card-id",
+      "text": "Card SAMPLE-O-007 · SAMPLE-CMP-002",
+      "d_in": 0.12,
+      "pt": 6.9999975
+     }
+    ]
+   }
+  }
+ ],
+ "fit": {
+  "name_px": 53,
+  "name_width": 75,
+  "name_lines": 1,
+  "logo": "type",
+  "logo_in": null,
+  "story_pt": 12,
+  "qr_px": 110.39999999999999,
+  "find_pt": 10,
+  "tight": true,
+  "story_dropped": false,
+  "product_dropped": true,
+  "flavors": 1,
+  "ingredients_on_front_face": false
+ }
+}

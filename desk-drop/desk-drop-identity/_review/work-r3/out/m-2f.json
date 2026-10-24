@@ -1,0 +1,148 @@
+{
+ "status": {
+  "ready": true,
+  "errors": [],
+  "warnings": [
+   "The product line was left off so the allergen text keeps its locked size."
+  ],
+  "sample": true,
+  "placeholders": []
+ },
+ "faces": [
+  {
+   "cls": "face back",
+   "w_in": 7,
+   "h_in": 5,
+   "allergen": [
+    {
+     "text": "SAMPLE Contains: wheat, soy and sesame.",
+     "pt": 14.000024999999999,
+     "weight": "600",
+     "color": "rgb(0, 0, 0)",
+     "family": "\"Atkinson Hyperlegible Next\""
+    },
+    {
+     "text": "SAMPLE May contain peanuts and tree nuts.",
+     "pt": 14.000024999999999,
+     "weight": "600",
+     "color": "rgb(0, 0, 0)",
+     "family": "\"Atkinson Hyperlegible Next\""
+    },
+    {
+     "text": "SAMPLE Contains: wheat, milk, soy and sesame.",
+     "pt": 14.000024999999999,
+     "weight": "600",
+     "color": "rgb(0, 0, 0)",
+     "family": "\"Atkinson Hyperlegible Next\""
+    },
+    {
+     "text": "SAMPLE May contain peanuts and tree nuts.",
+     "pt": 14.000024999999999,
+     "weight": "600",
+     "color": "rgb(0, 0, 0)",
+     "family": "\"Atkinson Hyperlegible Next\""
+    }
+   ],
+   "other": {
+    "name": {
+     "pt": 56.25,
+     "px_css": 75,
+     "stretch": "100%",
+     "text": "SAMPLE Brightside",
+     "h_in": 0.765625
+    },
+    "min_text_pt": 7,
+    "min_text_el": "card-id: Card SAMPLE-O-001 · SAMPLE-CMP-001",
+    "near_trim": [
+     {
+      "el": "dd-sample-banner",
+      "text": "Sample. Not for placement. Illustrative ",
+      "d_in": 0,
+      "pt": 8.000025
+     },
+     {
+      "el": "card-id",
+      "text": "Card SAMPLE-O-001 · SAMPLE-CMP-001",
+      "d_in": 0.12,
+      "pt": 6.9999975
+     }
+    ]
+   }
+  },
+  {
+   "cls": "face front tight",
+   "w_in": 7,
+   "h_in": 5,
+   "allergen": [
+    {
+     "text": "SAMPLE Contains: wheat, soy and sesame.",
+     "pt": 14.000024999999999,
+     "weight": "600",
+     "color": "rgb(0, 0, 0)",
+     "family": "\"Atkinson Hyperlegible Next\""
+    },
+    {
+     "text": "SAMPLE May contain peanuts and tree nuts.",
+     "pt": 14.000024999999999,
+     "weight": "600",
+     "color": "rgb(0, 0, 0)",
+     "family": "\"Atkinson Hyperlegible Next\""
+    },
+    {
+     "text": "SAMPLE Contains: wheat, milk, soy and sesame.",
+     "pt": 14.000024999999999,
+     "weight": "600",
+     "color": "rgb(0, 0, 0)",
+     "family": "\"Atkinson Hyperlegible Next\""
+    },
+    {
+     "text": "SAMPLE May contain peanuts and tree nuts.",
+     "pt": 14.000024999999999,
+     "weight": "600",
+     "color": "rgb(0, 0, 0)",
+     "family": "\"Atkinson Hyperlegible Next\""
+    }
+   ],
+   "other": {
+    "name": {
+     "pt": 56.25,
+     "px_css": 75,
+     "stretch": "100%",
+     "text": "SAMPLE Brightside",
+     "h_in": 0.765625
+    },
+    "min_text_pt": 7,
+    "min_text_el": "card-id: Card SAMPLE-O-001 · SAMPLE-CMP-001",
+    "near_trim": [
+     {
+      "el": "dd-sample-banner",
+      "text": "Sample. Not for placement. Illustrative ",
+      "d_in": 0,
+      "pt": 8.000025
+     },
+     {
+      "el": "card-id",
+      "text": "Card SAMPLE-O-001 · SAMPLE-CMP-001",
+      "d_in": 0.12,
+      "pt": 6.9999975
+     }
+    ]
+   }
+  }
+ ],
+ "fit": {
+  "name_px": 75,
+  "name_width": 100,
+  "name_lines": 1,
+  "logo": "type",
+  "logo_in": null,
+  "story_pt": 12,
+  "qr_px": 110.39999999999999,
+  "find_pt": 10,
+  "tight": true,
+  "story_dropped": false,
+  "product_dropped": true,
+  "flavors": 2,
+  "ingredients_on_front_face": false
+ }
+}

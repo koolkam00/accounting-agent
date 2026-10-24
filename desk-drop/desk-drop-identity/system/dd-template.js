@@ -1,5 +1,5 @@
 /*
-  dd-template.js: shared runtime for every print template in this folder (v1.2, 2026-10-24).
+  dd-template.js: shared runtime for every print template in this folder (v1.4, 2026-10-24).
 
   A template page calls DD.init({ fields, render, fit, ... }) once. This file then:
     1. reads the data: window.__DD_DATA__ (set by render/render.js) or the inline
@@ -23,6 +23,10 @@
   Messages carry a "Card 3: " prefix only when there is more than one record.
   v1.1 adds image and table fields and the deep scan; v1.0 templates work unchanged.
   v1.2 (2026-10-24, review round 1): record picker, plain single-record messages, logo pictures.
+  v1.3 (2026-10-24, review round 2): one claims list for every template (DD.claimsIn, DD.checkClaims).
+  v1.4 (2026-10-24, review round 3): a wider claims net (structure or function verbs, sales and
+       return wording, superlatives) with fewer false hits; "Ready to print" with notes; per-field
+       empty-picture text (emptyText).
   Nothing here talks to the network. It works from file:// in Chrome.
 */
 (function () {
@@ -70,6 +74,91 @@
     if (!s || DD.isPlaceholder(s)) return null;
     return s;
   };
+
+  // ---------- claims: ONE list for every template (tent card, documents, report) ----------
+  // v1.3 (review round 2, R2-05). CONTRACTS section 4: explicit health claims are excluded, and
+  // structure or function wording ("supports gut health", "boosts immunity") is a health claim.
+  // CONTRACTS section 2: no sales lift, ROI, conversions or acquisition. A hit is an ERROR (no PDF,
+  // and "Fix before printing" in the panel), unless the record says the founder reviewed it:
+  // claims_reviewed "Y" plus claims_review_reason (a sentence). Negations we write ourselves
+  // ("No sales guarantee", "we do not claim lift", "we never promise: sales, lift or new customers")
+  // are allowed. Nutrient-content wording ("10g protein", "low sugar") is not a health claim but
+  // needs the founder's review (CONTRACTS section 4): a warning.
+  // v1.4 (review round 3, R3-02): a wider net. The round-3 reviewer showed FDA's own structure or
+  // function examples ("calcium builds strong bones", "fiber maintains bowel regularity",
+  // "antioxidants maintain cell integrity"; FDA, "Structure/Function Claims", opened 2026-10-24)
+  // and plain sales sentences ("Sales rose 20%", "converted 12% of tasters") passing. The list now
+  // has (a) a verb from the structure or function family followed, within three words, by a body
+  // or effect word; (b) standalone health words; (c) disease words; (d) sales, lift, return and
+  // conversion wording; (e) superlatives. Ordinary copy ("Lift the lid", "a resealable bag
+  // prevents crumbs", "a converted warehouse") passes. It is still a net, not a review: the
+  // founder reads every sentence (USAGE-GUIDE rule 3; the tent card's claims tick).
+  const BODY = '(?:bones?|bowel|regularity|digest\\w*|gut|stomach|tummy|heart|brain|focus|memory|concentration|energy|immun\\w*|sleep|cholesterol|blood|bloating|metabolism|cells?|skin|hair|joints?|muscles?|mood|stress|anxiety|recovery|hydration|inflammation|weight|appetite|cravings|hunger|satiety|alertness|health\\w*|wellness|wellbeing|well-being|microbiome|liver|teeth|nerves|headaches?|nausea|cramps|calm(?:ness)?)';
+  const SF_VERB = '(?:promot(?:es?|ing)|aids?|aiding|helps?|helping|improv(?:es?|ing)|builds?|building|maintain(?:s|ing)?|strengthen(?:s|ing)?|protect(?:s|ing)?|reduc(?:es?|ing)|lower(?:s|ing)?|regulat(?:es?|ing)|balanc(?:es?|ing)|fuel(?:s|ing)?|support(?:s|ing)?|calm(?:s|ing)?|sooth(?:es?|ing)|eas(?:es|ing)|reliev(?:es?|ing)|restor(?:es?|ing)|enhanc(?:es?|ing)|sharpen(?:s|ing)?|repair(?:s|ing)?|fight(?:s|ing)?|optimi[sz](?:es?|ing)|stabili[sz](?:es?|ing)|lift(?:s|ing)?|elevat(?:es?|ing)|brighten(?:s|ing)?)';
+  const CLAIM_RE = new RegExp('\\b(' + [
+    // (a) structure or function: a verb, then within three words a body or effect word
+    SF_VERB + '\\s+(?:[\\w\'-]+\\s+){0,3}?' + BODY + '\\b',
+    '(?:keeps?|keeping|leaves?|stays?) (?:you |your team |everyone )?(?:full|fuller|satisfied|satiated|focused|alert|sharp|energi[sz]ed|awake|calm|regular)',
+    '(?:gives?|provides?|delivers?) (?:you |your team )?(?:\\w+ ){0,2}?(?:energy|focus|hydration|stamina|endurance|nutrients?)',
+    '(?:steady|sustained|lasting|natural|clean|all-day) energy', 'fuel for (?:your |the )?(?:brain|body|mind|focus)',
+    '(?:good|great|better) for your (?:gut|heart|body|brain|health|skin|bones|digestion|immune system|mind)', '(?:better|good|healthy)[- ]for[- ]you', 'guilt[- ]free',
+    'for (?:\\w+ ){0,2}?(?:hydration|recovery|digestion|immunity|gut health|heart health|brain health)',
+    'heart[- ]healthy', 'gut[- ](?:health\\w*|friendly)', 'digestive (?:health|balance|wellness|support)',
+    // (b) standalone health words
+    'healthy', 'healthier', 'healthiest', 'wellness', 'nutritious', 'nourish\\w*', 'wholesome goodness',
+    'boost(?:s|ed|ing)?', 'immun\\w*', 'probiotics?', 'prebiotics?', 'antioxidants?', 'adaptogen\\w*', 'nootropic\\w*',
+    'superfood\\w*', 'detox\\w*', 'cleanse', 'anti-?inflammatory', 'fat[- ]burning', 'metaboli[sc]\\w*', 'hydrating', 'recovery',
+    'clinically', 'scientifically', 'proven', '(?:doctor|dietitian|nutritionist)[- ](?:recommended|approved)',
+    // (c) disease claims
+    'cures?', 'prevents? (?:\\w+ ){0,2}?(?:disease|cancer|illness|colds?|flu|diabetes|infections?|heart attacks?)',
+    'treats? (?:\\w+ ){0,2}?(?:disease|symptoms?|conditions?|inflammation|pain|anxiety|stress|insomnia)',
+    '(?:reduces?|lowers?|cuts?) (?:the |your )?risk', 'diabet\\w*', 'cancer', 'blood (?:pressure|sugar)', 'hypertension', 'arthritis',
+    // (d) sales, lift, return, conversion, acquisition
+    'guarantee[sd]?', 'guaranteeing', 'sales lift', "lift(?!\\s+(?:the|a|an|it|one|your|our|this|that|up|off|out|open)\\b)", 'uplift', 'ROI', 'ROAS',
+    'return on (?:ad )?(?:spend|investment)', '\\d+(?:\\.\\d+)?\\s?x (?:return|roi|roas|more sales)',
+    'conversions?', 'conversion rate', '(?<!\\ban?\\s)convert(?:s|ed|ing)?', 'trial[- ]to[- ](?:purchase|buy)',
+    'acquisition', 'acquire[sd]?', 'new (?:customers|buyers|shoppers)',
+    '(?:drove|drives?|driven|driving|generated?|generates|generating|grew|grows?|grow|increased?|increases|increasing|boost(?:s|ed)?|lifts?|lifted) (?:\\S+ ){0,3}?(?:sales|buyers|customers|purchases|revenue|demand|trial|velocity|traffic)',
+    '(?:sales|revenue|purchases|orders|velocity|demand|units sold) (?:\\w+ ){0,2}?(?:rose|grew|increased|jumped|climbed|spiked|soared|doubled|tripled|went up|improved|up)',
+    'incremental (?:sales|units|purchases|revenue|buyers|customers|demand|trial)',
+    // (e) superlatives
+    'best[- ]?sell\\w*', "best(?![- ](?:by|before|if)\\b)", 'number one', 'no\\. ?1', 'viral', 'skyrocket\\w*', 'explod\\w*'
+  ].join('|') + ')(?![\\w-])', 'gi');
+  // "#1" has no word boundary before it
+  const CLAIM_HASH = /(?:^|\s)#1\b/g;
+  // a negation, then one claim word, then any list that follows it ("sales, lift or new customers")
+  const OK_T = '(?:sales guarantee|guarantee[sd]?|sales lift|lift|uplift|acquisition|ROI|conversions?|new customers|health claims?|incremental(?: \\w+)?)';
+  const CLAIM_OK = new RegExp("\\b(?:no|not|never|nor|without|isn't|is not|do not|don't|does not|cannot|can't|we never)\\b[^.;]{0,40}?\\b" + OK_T + "\\b(?:(?:,\\s*|,?\\s+(?:or|and|nor)\\s+)(?:\\w+\\s)?" + OK_T + "\\b)*", 'gi');
+  // ... or the claim word first and its negation after: "Incremental sales: not measured"
+  const CLAIM_OK_AFTER = new RegExp('\\b' + OK_T + "\\b[^.;]{0,30}?\\b(?:is|are|was|were)?\\s*(?:not|never|isn't|aren't) (?:measured|claimed|promised|known|counted|shown|guaranteed)\\b", 'gi');
+  const NUTRIENT_RE = /\b(\d+\s?g (?:of )?(?:protein|fiber|fibre|sugars?)|(?:low|zero|no|reduced|less)[- ](?:sugar|fat|calorie|sodium|salt|carb|cholesterol)s?|sugar[- ]free|fat[- ]free|high[- ](?:protein|fiber|fibre)|keto|\d+\s?calories|electrolytes?|vitamins?(?: [A-K]\d*)?)\b/gi;
+  DD.claimsIn = function (text) {
+    // our own negations go first, in full, so "never promise: sales, lift or new customers" passes
+    let t = String(text || '');
+    // nutrient wording first ("zero cholesterol" is a nutrient line for review, not a disease claim)
+    t = t.replace(/\b(?:low|zero|no|reduced|less)[- ]cholesterol\b/gi, ' ');
+    for (let k = 0; k < 4; k++) t = t.replace(CLAIM_OK, ' ').replace(CLAIM_OK_AFTER, ' ');
+    const m = (t.match(CLAIM_RE) || []).concat((t.match(CLAIM_HASH) || []).map((x) => x.trim()));
+    return m.length ? [...new Set(m.map((x) => x.toLowerCase().replace(/\s+/g, ' ')))] : [];
+  };
+  DD.nutrientIn = (text) => { const m = String(text || '').match(NUTRIENT_RE); return m ? [...new Set(m.map((x) => x.toLowerCase()))] : []; };
+  DD.claimsReviewed = (rec) => !!rec && String(rec.claims_reviewed || '').trim().toUpperCase() === 'Y' && String(rec.claims_review_reason || '').trim().length >= 10;
+  // label: what the founder sees ('"What we learned"'); rec: the record (for claims_reviewed)
+  DD.checkClaims = function (i, label, text, rec) {
+    const found = DD.claimsIn(text);
+    if (found.length) {
+      const msg = `Claims check, ${label.replace(/^"|"$/g, '')}: "${found.join('", "')}". No health claims (including structure or function wording such as "supports gut health" or "boosts immunity"), and no sales, lift, ROI, acquisition or "guaranteed" claims; measurement words come from the ladder.`;
+      if (DD.claimsReviewed(rec)) DD.warn(i, `${msg} Reviewed by the founder: ${String(rec.claims_review_reason).trim()}`);
+      else DD.error(i, `${msg} Rewrite it in plain facts. Only if it is not a claim, set "Claims reviewed" to Y and write why.`);
+    }
+    const nut = DD.nutrientIn(text);
+    if (nut.length) DD.warn(i, `${label.replace(/^"|"$/g, '')}: nutrient wording ("${nut.join('", "')}"). Not a health claim, but the founder reviews it before it prints (CONTRACTS section 4), and it must match the package.`);
+  };
+  // panel fields for the override, shared by the templates that use them
+  DD.CLAIMS_FIELDS = (group) => [
+    { group, key: 'claims_reviewed', label: 'Claims reviewed (only if the check is wrong)', options: [['', 'No'], ['Y', 'Yes: I read it, and it is not a claim']], help: 'Leave "No". Use it only when the claims check flags a sentence that is not a health, sales or lift claim, and write why below.' },
+    { group, key: 'claims_review_reason', label: 'Why it is not a claim', multiline: true, rows: 2, help: 'One sentence, kept with the file.' }
+  ];
 
   // ---------- QR ----------
   // Returns an SVG string, `sizePx` square, with the 4-module quiet zone the QR spec requires.
@@ -155,7 +244,7 @@
     const hint = isPh ? ` placeholder="${DD.escape(raw)}" data-ph="${DD.escape(raw)}"` : (f.hint ? ` placeholder="${DD.escape(f.hint)}"` : '');
     if (f.type === 'image') {
       const src = DD.imgSrc(raw);
-      const what = DD.isPlaceholder(raw) ? 'Not attached yet.' : !src ? 'None (prints as "No photo received").' : (src.startsWith('data:') ? `Picture chosen (${Math.round(src.length * 0.75 / 1024)} KB, kept inside the saved JSON).` : `Picture file: ${DD.escape(src.split('/').pop())}`);
+      const what = DD.isPlaceholder(raw) ? 'Not attached yet.' : !src ? DD.escape(f.emptyText || 'None (prints as "No photo received").') : (src.startsWith('data:') ? `Picture chosen (${Math.round(src.length * 0.75 / 1024)} KB, kept inside the saved JSON).` : `Picture file: ${DD.escape(src.split('/').pop())}`);
       return `<span class="dd-img-pick"><span class="dd-img-what">${what}</span>
         <label class="dd-file dd-file-sm">Choose picture<input type="file" accept="image/jpeg,image/png,image/webp${f.picture === 'logo' ? ',image/svg+xml' : ''}" data-img="${name}" data-kind="${f.picture || 'photo'}"></label>
         ${src ? `<button type="button" data-act="img-clear" data-name="${name}">Remove</button>` : ''}</span>`;
@@ -229,7 +318,7 @@
         <button type="button" data-act="save">Save as JSON</button>
         <label class="dd-file">Load JSON<input type="file" accept=".json,application/json" data-act="load"></label>
       </div>
-      ${cfg.confirmBeforePrint ? `<label class="dd-confirm"><input type="checkbox" data-act="confirm"> ${DD.escape(cfg.confirmBeforePrint)}</label>` : ''}
+      ${DD.confirmList(cfg).map((c, k) => `<label class="dd-confirm"><input type="checkbox" data-act="confirm" data-ck="${k}"> ${DD.escape(c.text)}</label>`).join('')}
       <p class="dd-panel-print">${cfg.printHelp || ''}</p>
       <div class="dd-panel-status" aria-live="polite"></div>`;
     if (multi || cfg.recordLabel) {
@@ -255,7 +344,7 @@
       // an emptied box goes back to its placeholder, so the page shows what is still missing
       setPath(recs[cur()], t.name, (t.value === '' && t.dataset.ph) ? t.dataset.ph : t.value);
       const top = t.name.split('.')[0], col = t.name.split('.')[2];
-      if ((cfg.confirmResetKeys || []).some((k) => k === top || k === col)) { const cb = panel.querySelector('input[data-act="confirm"]'); if (cb) cb.checked = false; }
+      DD.confirmList(cfg).forEach((c, k) => { if ((c.resetKeys || []).some((x) => x === top || x === col)) { const cb = panel.querySelector(`input[data-act="confirm"][data-ck="${k}"]`); if (cb) cb.checked = false; } });
       commit(cfg, recs);
       const sumEl = t.closest('details') && t.closest('details').querySelector('summary em');
       const tf = cfg.fields.find((x) => x.key === top);
@@ -265,8 +354,12 @@
     panel.addEventListener('click', (e) => {
       const act = e.target.getAttribute && e.target.getAttribute('data-act');
       if (act === 'print') {
-        const box = panel.querySelector('input[data-act="confirm"]');
-        if (box && !box.checked && !window.confirm(cfg.confirmBeforePrint + '?\n\nPress Cancel to go back and check.')) return;
+        // every tick box must be ticked, or confirmed in a dialog
+        const list = DD.confirmList(cfg);
+        for (let k = 0; k < list.length; k++) {
+          const box = panel.querySelector(`input[data-act="confirm"][data-ck="${k}"]`);
+          if (box && !box.checked && !window.confirm(list[k].text + '?\n\nPress Cancel to go back and check.')) return;
+        }
         window.print();
       }
       if (act === 'save') {
@@ -331,6 +424,11 @@
     DD._panel = panel;
   }
 
+  // tick boxes before printing: cfg.confirms [{ text, resetKeys }] (v1.4), or the v1.3 pair
+  // cfg.confirmBeforePrint + cfg.confirmResetKeys. Editing a reset key unticks its box; loading
+  // a file rebuilds the panel, which unticks every box.
+  DD.confirmList = (cfg) => (cfg && cfg.confirms) || (cfg && cfg.confirmBeforePrint ? [{ text: cfg.confirmBeforePrint, resetKeys: cfg.confirmResetKeys || [] }] : []);
+
   function showStatus() {
     const box = DD._panel && DD._panel.querySelector('.dd-panel-status');
     if (!box) return;
@@ -338,17 +436,27 @@
     const items = [];
     // a placeholder entry is a field key (or a table cell's label): show the box's label instead
     const labelOf = (m) => { const mm = /^([A-Z][a-z]+ \d+: )?([\s\S]*)$/.exec(m); const f = (DD.cfg.fields || []).find(x => x.key === mm[2]); return (mm[1] || '') + (f ? f.label : mm[2]); };
-    s.errors.forEach((m) => items.push(`<li class="err">Fix before printing: ${DD.escape(m)}</li>`));
-    s.warnings.forEach((m) => items.push(`<li class="warn">Check: ${DD.escape(m)}</li>`));
-    if (s.placeholders.length) {
-      const list = s.placeholders.map(labelOf);
-      const shown = list.slice(0, 12).join('; ') + (list.length > 12 ? `; and ${list.length - 12} more` : '');
-      items.push(`<li class="warn">Still to fill in (yellow on the page): ${DD.escape(shown)}</li>`);
+    // v1.4 (review round 3, R3-05): "Ready to print" means no red item, nothing yellow, no SAMPLE
+    // value and every tick box ticked. Notes ("Check: ...") no longer hold it back: some are
+    // permanent by design (a product line left off for long allergen text, an office under five
+    // survey responses). They are listed under "Read these notes first".
+    const unticked = DD.confirmList(DD.cfg).filter((c, k) => { const cb = DD._panel.querySelector(`input[data-act="confirm"][data-ck="${k}"]`); return cb && !cb.checked; });
+    const blocking = s.errors.length || s.placeholders.length || s.sample;
+    if (!blocking && !unticked.length) {
+      items.push(`<li class="ok">${DD.escape(DD.cfg.readyText || 'Ready to print.')}</li>`);
+      if (s.warnings.length) items.push(`<li class="note-head">Read these notes first:</li>`);
+      s.warnings.forEach((m) => items.push(`<li class="warn">Check: ${DD.escape(m)}</li>`));
+    } else {
+      s.errors.forEach((m) => items.push(`<li class="err">Fix before printing: ${DD.escape(m)}</li>`));
+      s.warnings.forEach((m) => items.push(`<li class="warn">Check: ${DD.escape(m)}</li>`));
+      if (s.placeholders.length) {
+        const list = s.placeholders.map(labelOf);
+        const shown = list.slice(0, 12).join('; ') + (list.length > 12 ? `; and ${list.length - 12} more` : '');
+        items.push(`<li class="warn">Still to fill in (yellow on the page): ${DD.escape(shown)}</li>`);
+      }
+      if (s.sample) items.push(`<li class="warn">This is SAMPLE data. It prints with a SAMPLE banner.</li>`);
+      if (!s.errors.length && !s.placeholders.length) unticked.forEach((c) => items.push(`<li class="warn">Last step: ${DD.escape(c.text)} (tick the box above).</li>`));
     }
-    if (s.sample) items.push(`<li class="warn">This is SAMPLE data. It prints with a SAMPLE banner.</li>`);
-    const cb = DD._panel.querySelector('input[data-act="confirm"]');
-    if (!items.length && cb && !cb.checked) items.push(`<li class="warn">Last step: ${DD.escape(DD.cfg.confirmBeforePrint)} (tick the box above).</li>`);
-    if (!items.length) items.push(`<li class="ok">${DD.escape(DD.cfg.readyText || 'Ready to print.')}</li>`);
     box.innerHTML = `<ul>${items.join('')}</ul>`;
   }
 

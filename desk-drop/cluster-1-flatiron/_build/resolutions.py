@@ -451,3 +451,194 @@ NEAR_COUNT_OVERRIDES = {
     "Microsoft (AdTech hub)": (223000, "Wikipedia infobox, Microsoft: 223,000 employees (2026), opened 2026-10-24"),
     "MSQ Partners": (1850, "MSQ's own About page as quoted in the slice notes: '1850+' people"),
 }
+
+
+# ================================================================ review round 2 (2026-10-24)
+# Fixes for _review/round-2.md. Every value cites a page opened on 2026-10-24 (raw extracts in
+# _work/headcount_second_2026-10-24.csv) or a fact already in the row's notes.
+
+# R2-02, R2-03: a second, independent headcount for banded rows.
+# Revelio Labs public pages (https://www.reveliolabs.com/companies/<slug>/employees), opened 2026-10-24 with curl
+# (generic browser User-Agent, no personal data). Each page states "approximately N total employees worldwide as of
+# March 2026" and carries datePublished 2026-08-31. A page counts only when its legal name and description match the
+# row's company (rejected look-alikes are listed in _work/headcount_second_2026-10-24.csv). These are third-party
+# estimates of the whole company.
+REV = "https://www.reveliolabs.com/companies/"
+REV_DATE = "2026-08-31"  # the pages' datePublished; figures "as of March 2026"
+
+
+def _rev(slug, n, legal, hq):
+    return {"count": n, "url": REV + slug + "/employees", "date": REV_DATE, "kind": "third-party",
+            "label": f"Revelio Labs ({legal}, HQ {hq}): about {n:,} employees worldwide as of March 2026"}
+
+
+HEADCOUNT_SECOND = {
+    # company_name: second source
+    "HUMAN Security": None,  # 'human' is Human Technologies (SC staffing); 'human-security' mixes in a Mexican security firm
+    "First Look Media": _rev("first-look-media", 32, "First Look Media, Inc.", "Los Angeles"),
+    "Nourish": _rev("nourish", 4082, "Nourish, Inc. (New York)", "Austin"),
+    "Personetics": _rev("personetics", 336, "Personetics Technologies, Inc.", "New York City"),
+    "GameChanger": _rev("gamechanger-media", 667, "GameChanger Media, Inc.", "New York City"),
+    "Rockwell Group": _rev("rockwell-group", 542, "Rockwell Group", "New York City"),
+    "Biohub (Chan Zuckerberg Biohub)": _rev("biohub", 436, "Chan Zuckerberg Biohub", "San Francisco"),
+    "Thinking Machines Lab": _rev("thinking-machines-lab", 153, "Thinking Machines Lab, Inc.", "San Francisco"),
+    "Mercury": _rev("mercury", 1279, "Mercury Technologies, Inc.", "San Francisco"),
+    "Valon": _rev("valon-mortgage", 529, "Valon Mortgage, Inc.", "Chandler, Arizona"),
+    "Prepared 911": _rev("prepared", 135, "Prepared LLC", "Wilmington, Delaware"),
+    "Roboflow": _rev("roboflow", 132, "Roboflow, Inc.", "Des Moines"),
+    "Dashlane": _rev("dashlane", 319, "Dashlane, Inc.", "New York City"),
+    "Baseten": _rev("baseten-labs", 285, "Baseten Labs, Inc.", "San Francisco"),
+    "Cognitiv": _rev("cognitiv", 166, "Cognitiv Corp.", "New York City"),
+    "Nayya": _rev("nayya-health", 200, "Nayya Health, Inc.", "New York City"),
+    "Stellar Health": _rev("stellar-health-group", 188, "The Stellar Health Group, Inc.", "New York City"),
+    "VidMob": _rev("vidmob", 90, "VidMob, Inc.", "New York City"),
+    "Radar": _rev("radar-labs", 99, "Radar Labs, Inc.", "New York City"),
+    "The Vita Coco Company": _rev("vita-coco", 368, "The Vita Coco Co", "New York City"),
+    "Aterian": _rev("aterian-group", 94, "Aterian Group, Inc.", "New York City"),
+    "Global Trading Systems (GTS)": _rev("global-trading-systems", 410, "Global Trading Systems LLC", "New York City"),
+    "Morning Brew": _rev("morning-brew", 286, "Morning Brew, Inc.", "New York City"),
+    "Bombas": _rev("bombas", 303, "Bombas LLC", "New York City"),
+    "Stash": _rev("stash-financial", 174, "Stash Financial, Inc.", "New York City"),
+    "Hex Technologies": _rev("hex", 232, "Hex Technologies, Inc.", "San Francisco"),
+    "Actively AI": _rev("actively", 83, "Taurus Labs, Inc., whose page describes Actively", "New York City"),
+    "Retool": _rev("retool", 372, "Retool, Inc.", "San Francisco"),
+    "PlayPlay": _rev("playplay", 181, "PlayPlay SASU", "Paris"),
+    "Candid Health": {"count": 130, "url": "https://www.candidhealth.com/about", "date": "2025", "kind": "own-site",
+                      "label": "Candid Health's own About page timeline, 2025 entry: 'Grew team to 130+ employees' (opened 2026-10-24)"},
+    "CompStak": _rev("compstak", 157, "CompStak, Inc.", "New York City"),
+    "Synthesia": _rev("synthesia", 774, "Synthesia Ltd.", "London"),
+    "Hungryroot": _rev("hungryroot", 326, "Hungryroot, Inc.", "New York City"),
+    "1stDibs": _rev("1stdibs", 281, "1stdibs.com, Inc.", "New York City"),
+    "Foursquare": _rev("foursquare-labs", 430, "Foursquare Labs, Inc.", "San Francisco"),
+    "TripleLift": _rev("triple-lift", 415, "Triple Lift, Inc.", "New York City"),
+    "Chalk": _rev("chalk-ai", 126, "Chalk AI, Inc.", "San Francisco"),
+    "Normal Computing": _rev("normal-computing", 71, "Normal Computing Corp.", "Chicago"),
+    "Harvey": _rev("harvey-ai", 1130, "Harvey AI Corp.", "San Francisco"),
+    "Clay": _rev("clay-labs", 710, "Clay Labs, Inc.", "New York City"),
+    "Orbital": {"count": 150, "url": "https://www.orbital.tech/about", "date": "2026-10-24", "kind": "own-site",
+                "label": "Orbital's own About page (opened 2026-10-24): '150+ employees'"},
+    "Ellevest": _rev("ellevest", 38, "Ellevest, Inc.", "New York City"),
+    "Green Mountain Energy": _rev("green-mountain-energy", 257, "Green Mountain Energy Co.", "Houston"),
+    "Trexquant": _rev("trexquant-management", 340, "Trexquant Investment LP", "Stamford"),
+    "At-Bay": _rev("at-bay", 335, "At-Bay, Inc.", "San Francisco"),
+    "Butterfly Network": _rev("butterfly-network", 236, "Butterfly Network, Inc.", "Burlington, Massachusetts"),
+    "Sierra": _rev("sierra", 756, "Sierra Technologies, Inc., described as 'the conversational AI platform for businesses'", "San Francisco"),
+    "accessiBe": _rev("accessibe", 268, "accessiBe Ltd.", "Tel Aviv"),
+    "Carbyne": _rev("carbyne", 146, "Carbyne Ltd.", "Tel Aviv"),
+    "Seedtag": _rev("seedtag-advertising", 819, "Seedtag Advertising SL", "Madrid"),
+    "Primary Wave": _rev("primary-wave-entmt", 134, "Primary Wave Entertainment LLC", "New York City"),
+    "Primary Venture Partners": _rev("primary-venture-partners", 304, "Primary Venture Management LLC", "New York City"),
+    "Sigma Computing": _rev("sigma-computing", 964, "Sigma Computing, Inc.", "San Francisco"),
+    "K Health": _rev("k-health", 419, "K Health, Inc.", "New York City"),
+    "Agentio": _rev("agentio", 71, "Agentio Inc.", "Brooklyn"),
+}
+HEADCOUNT_SECOND = {k: v for k, v in HEADCOUNT_SECOND.items() if v}
+# The count the band rests on, where the notes give it in a form the build cannot parse
+HEADCOUNT_FIRST_COUNT = {"Normal Computing": 30, "Rockwell Group": 350, "Selldorf Architects": 65,
+                         "Primary Venture Partners": 40, "Christie's International Real Estate Group": 75}
+# First sources that are the company's own statement: a third-party estimate does not overrule them (it makes the band unknown)
+FIRST_SOURCE_OWN = {"Rockwell Group", "The Vita Coco Company"}
+# Rows whose first count is scoped to the NYC office while the second is whole-company: not comparable
+SCOPE_DIFFERS_KEEP = {"Normal Computing"}
+# R2-02: rows that move to Near-miss because the second count is over 500. Lease sizes from each row's notes.
+NYC_MAY_FIT_R2 = {
+    "Mercury": "Its NYC lease is 10,000 sf on one floor (CO 2025-03-27) against an HQ in San Francisco",
+    "Synthesia": "Its NYC office is 13,600 sf at 245 Fifth Ave (CO 2025-08-14) against an HQ in London",
+    "Sigma Computing": "Its NYC lease is 26,252 sf (row notes) against an HQ in San Francisco",
+    "Seedtag": "Its NYC office is its first US office, 5,909 sf on one floor (CO 2023) against an HQ in Madrid",
+    "Valon": "Its office here is one 13,815 sf floor (REBusiness 2023-12-22); Built In also lists a Phoenix office",
+    "Nourish": "Its NYC office is one 7,563 sf floor (NYREJ 2025-04-08); Revelio's page describes a dietitian telehealth service",
+}
+
+# R2-04: reworded floor (Method row 40). Applied in assemble.audit_confidence.
+FLOOR_NOTE = ("An undated third-party profile (Built In, Deskpass, LiquidSpace) is never the under-24-month source: it can only "
+              "confirm a dated source or the company's own live page.")
+
+# R2-05: notes rewritten to state sources only
+NOTE_EDITS.update({
+    "Nourish": [("many clinicians likely remote, NYC office count unknown.", "NYC office headcount not sourced; founder to confirm at intake.")],
+    "Kharon": [("so the NYC office is likely a fraction.", "so the band describes the whole company; NYC headcount not sourced.")],
+    "Matador Content": [("so its own occupancy may be small.", "so part of its floor is sublet; its own headcount is not sourced.")],
+    "Arca Financial Group": [("Headcount not found; may be small.", "Headcount not sourced; founder to confirm at intake.")],
+    "EnVogue International": [("Showroom building, so staff onsite may be small; headcount not found.", "Showroom building (New York MarketCenter); headcount not sourced.")],
+    "The Corcoran Group": [("Likely a sales office with agents rather than fixed staff.", "A residential brokerage sales office; whether agents work fixed hours here is not sourced.")],
+    "U.S. News & World Report": [("NYC office size unknown and could be small.", "NYC office headcount not sourced.")],
+    "Reaktor": [("NYC office likely far smaller but not sourced.", "NYC office headcount not sourced.")],
+    "Jump Trading": [("Likely a large global firm but no headcount source opened, so band unknown.", "The slice opened no headcount source (the Wikipedia figure added at assembly is below).")],
+    "Thinking Machines Lab": [("(company-wide; NYC team will be smaller at first).", "(company-wide; NYC headcount not sourced).")],
+    "Augury": [("so probably no staffed office here. Founder to confirm; likely not a pantry host.", "and whether a staffed office exists here is not sourced. Founder to confirm.")],
+})
+NOTE_EDITS["Madison Square Park Conservancy"].append(("Useful neighborhood partner even if too small to host.", "Also a possible neighbourhood partner."))
+OVERRIDES["Augury"]["note_add"] = ("Excluded at assembly: Built In marks the company 'Remote Workplace' and the address carries suite '#169'; "
+                                   "no source shows a staffed office here.")
+BUILDING_NOTE_EDITS = [
+    ("Pushkin Industries also here per 2022 press but skipped as likely under 40.", "Pushkin Industries also here per 2022 press; not recorded (source older than 24 months, no headcount)."),
+    ("Hack VC took the 8th floor (sublease term to Dec 2028), likely under 40, not recorded.", "Hack VC took the 8th floor (sublease term to Dec 2028); not recorded (no headcount source)."),
+    ("Vine Ventures (VC) also listed, likely small, not recorded.", "Vine Ventures (VC) also listed; not recorded (no headcount source)."),
+]
+BANNED_NOTE_PATTERNS += [r"likely (?:remote|a fraction|far smaller|a large|a sales|under|small)", r"may be small", r"could be small",
+                         r"too small", r"staff onsite may", r"occupancy may be small", r"will be smaller", r"probably no staffed"]
+
+# R2-07: HQ where Built In is silent, from the row's own sources, the company's own page or the Revelio page above
+HQ_R2 = {
+    "Personetics": ("New York", "Y", REV + "personetics/employees"),
+    "Rockwell Group": ("New York", "Y", "https://www.rockwellgroup.com/about"),
+    "Thinking Machines Lab": ("San Francisco", "N", REV + "thinking-machines-lab/employees"),
+    "Selldorf Architects": ("New York", "Y", "https://en.wikipedia.org/wiki/Selldorf_Architects"),
+    "The Vita Coco Company": ("New York", "Y", REV + "vita-coco/employees"),
+    "Instant": ("Sydney", "N", "row notes (CO lease report: 'Sydney-based')"),
+    "PlayPlay": ("Paris", "N", REV + "playplay/employees"),
+    "Synthesia": ("London", "N", REV + "synthesia/employees"),
+    "Normal Computing": ("New York", "Y", "https://commercialobserver.com/2026/09/normal-computing-inspiren-leases-61-west-23rd-street/"),
+    "Orbital": ("New York", "Y", "https://commercialobserver.com/2026/09/orbital-ai-lease-kaufman-organization-40-west-25th-street/"),
+    "Sierra": ("San Francisco", "N", REV + "sierra/employees"),
+    "Seedtag": ("Madrid", "N", REV + "seedtag-advertising/employees"),
+    "Primary Wave": ("New York", "Y", REV + "primary-wave-entmt/employees"),
+    "Primary Venture Partners": ("New York", "Y", REV + "primary-venture-partners/employees"),
+    "Signal AI": ("London", "N", "https://www.signal-ai.com/"),
+    "Warren Equity Partners": ("Jacksonville Beach, FL", "N", "https://warrenequity.com/contact-us/"),
+    "Vivaldi": ("New York", "Y", "https://www.vivaldigroup.com/contact"),
+    "Perplexity": ("San Francisco", "N", "row notes"),
+    "ICONIQ Capital": ("San Francisco", "N", "row notes"),
+    "SL Home Fashions": ("Vernon, CA", "N", "row notes"),
+    "FCA (architecture and design)": ("Philadelphia", "N", "row notes"),
+    "The Information": ("San Francisco", "N", "row notes (the About page lists an East Coast bureau here)"),
+    "Profound": ("New York", "Y", "row notes"),
+    "GovWell Technologies": ("New York", "Y", "row notes (Built In profile)"),
+    "SEIU 32BJ and 32BJ Benefit Funds": ("New York", "Y", "https://www.seiu32bj.org"),
+}
+# R2-07: parent company, sourced or unknown
+PARENT_R2 = {
+    "Farmacy Beauty": ("Procter & Gamble", "https://www.happi.com/breaking-news/procter-gamble-acquires-farmacy-beauty/ (2021-11-15 acquisition report); farmacybeauty.com/pages/contact-us (opened 2026-10-24) carries P&G sign-up terms"),
+    "GameChanger": ("Dick's Sporting Goods", "row notes (CO 2022-12, 2024-08: Dick's leased the space for GameChanger)"),
+    "Gresham Investment Management": ("Nuveen", "row notes"),
+    "Fresh (LVMH)": ("LVMH", "row notes"),
+    "Morning Brew": ("Insider Inc. (majority owner)", "row notes"),
+    "Green Mountain Energy": ("NRG Energy", "row notes"),
+    "Wellcom Worldwide": ("Innocean Worldwide", "row notes"),
+    "Hulu": ("Disney", "row notes"),
+    "IMG Worldwide (WME Group)": ("WME Group", "row name"),
+    "Lockton Re": ("Lockton Companies", "row notes"),
+}
+
+# R2-11: passed move dates re-checked; move_in_date is YYYY-MM or unknown, qualifiers in notes
+REVIEW2_OVERRIDES = {
+    "BrightTower": {"lease_status": "occupancy-unconfirmed", "move_in_date": "",
+                    "note_add": "Review round 2: the planned Q2 2026 move date has passed. brighttower.com (home page opened 2026-10-24) prints no address, so the move is not confirmed. Check the 41 Madison Ave lobby directory on the walk."},
+    "The Corcoran Group": {"lease_status": "occupancy-unconfirmed", "move_in_date": "",
+                           "note_add": "Review round 2: the planned summer 2026 move has passed. corcoran.com (opened 2026-10-24) lists only its 590 Madison Ave head office, so the move from 387 to 381 Park Ave S is not confirmed; both addresses are inside the line. Check the 381 PAS lobby directory on the walk."},
+}
+MOVE_IN_FREE_TEXT = {  # company_name: note text replacing a free-text move_in_date
+    "Goodwin Procter": "Move planned for late 2026 (row sources).",
+    "United Talent Agency (UTA)": "Move to the Empire State Building planned for summer 2027 (row sources).",
+}
+
+# R2-12: retailer corrections
+RETAILER_REVIEW2 = {
+    "Trader Joe's Union Square (store 540)": {"notes_replace": [("about 3 blocks outside the east edge.", "inside the boundary's Union Square frame (University Pl to Third Ave, 13th to 15th St).")]},
+    "Kalustyan's": {"confidence": "medium",
+                    "notes_add": "Review round 2: lowered from high to medium. The licence is the one dated source; the operator site did not render store text, so nothing independent confirms the address."},
+    "Wegmans Astor Place": {"buy_path_tier": "B",
+                            "notes_replace": [("Buy-path tier A (documented natural, local or emerging set).", "Buy-path tier B (large supermarket with natural, organic and specialty aisles; no emerging set documented).")],
+                            "notes_add": "Review round 2: moved from tier A to tier B. The store page lists aisles such as 'Living Gluten Free' but no local or emerging-brand set, and no store-level brand list was checked."},
+}

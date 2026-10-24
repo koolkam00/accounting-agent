@@ -36,7 +36,7 @@
   --dd-text-muted: var(--dd-stone);
   --dd-accent: var(--dd-cobalt);
   --dd-on-accent: var(--dd-paper);
-  --dd-rule: var(--dd-ink);
+  --dd-rule-color: var(--dd-ink);   /* the color of a rule; its width is --dd-rule (v1.3: was also named --dd-rule) */
   --dd-hairline: var(--dd-mist);
 
   /* Type families */
@@ -108,7 +108,7 @@
     --dd-text-muted: #C9C3B8;
     --dd-accent: var(--dd-cobalt-light);
     --dd-on-accent: var(--dd-ink);
-    --dd-rule: var(--dd-paper-warm);
+    --dd-rule-color: var(--dd-paper-warm);
     --dd-hairline: #4A463F;
   }
 }
@@ -119,7 +119,7 @@
   --dd-text-muted: #C9C3B8;
   --dd-accent: var(--dd-cobalt-light);
   --dd-on-accent: var(--dd-ink);
-  --dd-rule: var(--dd-paper-warm);
+  --dd-rule-color: var(--dd-paper-warm);
   --dd-hairline: #4A463F;
 }
 

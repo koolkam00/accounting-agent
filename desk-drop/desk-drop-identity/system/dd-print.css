@@ -71,6 +71,7 @@ mark.dd-ph {
 .dd-panel-status .err { background: #FBE3E1; color: #7A1A14; font-weight: 700; }
 .dd-panel-status .warn { background: #FFF6CC; color: #4A3D00; }
 .dd-panel-status .ok { background: #E3F1E5; color: #1D4D24; font-weight: 700; }
+.dd-panel-status .note-head { padding: 2px 8px 0; font-weight: 700; color: var(--dd-ink, #1A1D21); }
 
 
 /* v1.1: table fields (one fold-out group per row) and picture fields */

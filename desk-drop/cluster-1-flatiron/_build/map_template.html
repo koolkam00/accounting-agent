@@ -137,6 +137,7 @@ function buildingPopup(p, list, n) {
                esc(p.street_address) + (p.also_known_as ? " (also " + esc(p.also_known_as) + ")" : "");
   let h = `<div class="pop"><h3>${esc(p.building_name)}</h3>${addr ? `<div class="pmeta">${addr}</div>` : ""}
     <div class="pmeta">${esc(p.building_id)} &middot; lobby: <b>${esc(p.lobby_type)}</b> ${link(p.lobby_source_url)} &middot; COI: ${esc(p.coi_required)}${p.pluto_numfloors ? " &middot; " + esc(p.pluto_numfloors) + " floors" : ""}</div>
+    ${p.entrance_note ? `<div class="pmeta pent">${esc(p.entrance_note)}</div>` : ""}
     <div class="pmeta">${n} candidate office${n === 1 ? "" : "s"}${p.coworking_ids ? " &middot; coworking: " + esc(p.coworking_ids) : ""}${p.retailer_ids ? " &middot; store: " + esc(p.retailer_ids) : ""}</div>`;
   if (cands.length || others.length) {
     h += `<div class="plist">${cands.length ? `<ul>${cands.map(companyLine).join("")}</ul>` : ""}`;
@@ -232,7 +233,9 @@ const gRoute = L.layerGroup().addTo(map);
   const icon = L.divIcon({className: "", html: `<div class="num">${esc(p.stop)}</div>`, iconSize: [32, 32], iconAnchor: [16, 16]});
   const rm = L.marker([lat, lon], {icon, zIndexOffset: 1000, title: "Stop " + p.stop}).bindPopup(
     `<h3>Stop ${esc(p.stop)}: ${esc(p.company_name)}</h3>${esc(p.street_address)}<br>Lobby: ${esc(p.lobby_type)}<br>
-     Arrive ${esc(p.arrive_est)}, leave ${esc(p.depart_est)}<br>Leg from previous stop: ${esc(p.leg_minutes_est)} min<br><i>All times are estimates.</i>`, POPUP()).addTo(gRoute);
+     Arrive ${esc(p.arrive_est)}, leave ${esc(p.depart_est)}<br>Leg from previous stop: ${esc(p.leg_minutes_est)} min<br>
+     ${Number(p.reload_minutes_before) > 0 ? `Reload before this stop: ${esc(p.reload_minutes_before)} min<br>` : ""}
+     ${p.entrance_note ? `${esc(p.entrance_note)}<br>` : ""}<i>All times are estimates.</i>`, POPUP()).addTo(gRoute);
   routeMarkers.push(rm);
 });
 

@@ -31,3 +31,30 @@ R1-10 staging robots Allow + static noindex meta; R1-13 method=post + submit dis
 R1-14 unit counts; R1-15 q6 amount follows founding toggle ($1,500 after, not $750) + form_version brand_standard_only;
 R1-16 name gate inverted (needs "Public launch (C): CLEARED YYYY-MM-DD"); R1-17 deviation documented + qualifier dropped;
 R1-18 report mock phone layout; R1-19 map label/arrow + office map note; R1-20 docs, assumptions list, fresh run log.
+
+## Review round 1 done (2026-10-24): all 20 findings fixed; run_all exit 0; builder response appended to _review/round-1.md.
+
+## Review round 2 fixes (started 2026-10-24)
+Previous report text (fix:C:r1) saved at scratchpad C-r2fix/report-r1.md. Plan per finding:
+R2-01 exact case-sensitive CLEARED line + negative-word block + 3 tests; R2-02 SETUP s4 numbered steps, placeholder
+production folder tools/production/placeholder/ (+_headers), neutral project name; README line; R2-03 README "Questions
+for the founder"; R2-04 make_production stamps founding-closed + removes data-founding; e2e JS-off check;
+R2-05 check 4 / q4 275 vs 550 spans; Code.gs label; HANDOFF note; R2-06 eye level where pantry allows, help reach 5;
+R2-07 notice wording x3; R2-08 SETUP s3 step 10 + markRowsToDelete() + F handoff; R2-09 SETUP s10 + preflight G10/G03 draft;
+R2-10 pantry_owner_title optional, P9 both paths; R2-11 mock: What we learned block, column names, photo labels;
+R2-12 day numbering; R2-13 HANDOFF extra cols, apostrophe check; R2-14 FAQ lead time + we-cancel refund;
+R2-15 P11 bar note, SETUP quick card, ledger 17, deviation 6.
+## Review round 2 done (2026-10-24): all 15 findings fixed (3 majors, 12 minors); also "5 or 10" fact follows the tier,
+D's --dd-rule-color adopted. run_all exit 0 (64 static, 25 preflight, 17 Code.gs, 19 e2e, quality 48 axe runs 0, Lighthouse all
+pass, preflight 20 blocking). P9: 79.1 s / 86.6 s. Builder response appended to _review/round-2.md. Report text in
+scratchpad C-r2fix/report-r2.md (returned in the structured output).
+
+## Review round 3 fixes (started 2026-10-24)
+Report text working copy: scratchpad C-r3fix/report-r3.md. Plan: R3-01 CLEARED line binds name + date<=today (+brand.json
+match) + 3 tests, HANDOFF/SETUP line; R3-02 notification cut to subject/company/email/row link + privacy wording + SETUP
+deletion-request step; R3-03 veto/anything-else hints + notice sentence; R3-04 thank-you wording + headcount note;
+R3-05 stamp() strips staging bar/staging-only/data-staging-form + check_build block + e2e assert; R3-06 delete muted note +
+preflight block; R3-07 brand terms (photo day, card text, tax, outside-events cancel) + ledger; R3-08 P21 brand 2-minute
+measure (+ at-a-glance if fails); R3-09 SETUP s3 step 6 localhost; R3-10 re-run build_map + drift check in check_site.
+- r3 status: all 10 code/doc fixes made; tests: check_site 86, preflight 40, Code.gs 17, e2e 21 (P21 118.3 s; P9 80.6/88.1 s). Full run_all in progress; then QA results, shots, report.
+- r3 done: all fixes in; final run_all exit 0 (86/40/17/21, axe 48/0, LH pass); builder response appended; report returned in structured output.

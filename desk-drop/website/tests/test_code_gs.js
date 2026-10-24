@@ -27,14 +27,16 @@ function makeEnv() {
   const mails = [];
   const cache = {};
   const props = {};
+  const triggers = [];
   class Range {
     constructor(sheet, r, c, nr, nc) { Object.assign(this, { sheet, r, c, nr, nc }); }
-    setValues(v) { for (let i = 0; i < this.nr; i++) { this.sheet.rows[this.r - 1 + i] = v[i].slice(); } return this; }
+    setValues(v) { for (let i = 0; i < this.nr; i++) { const row = this.sheet.rows[this.r - 1 + i] || (this.sheet.rows[this.r - 1 + i] = []); v[i].forEach((x, j) => { row[this.c - 1 + j] = x; }); } return this; }
     getValues() { const out = []; for (let i = 0; i < this.nr; i++) { const row = this.sheet.rows[this.r - 1 + i] || []; out.push(Array.from({ length: this.nc }, (_, j) => row[this.c - 1 + j] === undefined ? '' : row[this.c - 1 + j])); } return out; }
     setNumberFormats(f) { this.sheet.formats[this.r] = f[0]; return this; }
+    setBackground(c) { for (let i = 0; i < this.nr; i++) this.sheet.backgrounds[this.r + i] = c; return this; }
   }
   class Sheet {
-    constructor(name) { this.name = name; this.rows = []; this.formats = {}; }
+    constructor(name) { this.name = name; this.rows = []; this.formats = {}; this.backgrounds = {}; }
     getLastRow() { return this.rows.length; }
     getRange(r, c, nr, nc) { return new Range(this, r, c, nr || 1, nc || 1); }
     setFrozenRows() {}
@@ -52,12 +54,14 @@ function makeEnv() {
     CacheService: { getScriptCache: () => ({ get: k => (k in cache ? cache[k] : null), put: (k, v) => { cache[k] = v; } }) },
     PropertiesService: { getScriptProperties: () => ({ getProperty: k => props[k] || null, setProperty: (k, v) => { props[k] = v; } }) },
     Session: { getEffectiveUser: () => ({ getEmail: () => 'owner@example.test' }) },
+    ScriptApp: { getProjectTriggers: () => triggers.slice(), deleteTrigger: tr => triggers.splice(triggers.indexOf(tr), 1),
+      newTrigger: fn => { const spec = { fn }; const b = { timeBased: () => b, onMonthDay: d => { spec.day = d; return b; }, atHour: h => { spec.hour = h; return b; }, create: () => { const tr = { ...spec, getHandlerFunction: () => fn }; triggers.push(tr); return tr; } }; return b; } },
     ContentService: { MimeType: { JSON: 'json' }, createTextOutput: s => ({ s, setMimeType() { return this; }, getContent() { return s; } }) },
     Utilities: { formatDate: (d, tz) => { const p = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZoneName: 'longOffset' }).formatToParts(d); const g = t => p.find(x => x.type === t).value; const off = g('timeZoneName').replace('GMT', '') || '+00:00'; return `${g('year')}-${g('month')}-${g('day')}T${g('hour')}:${g('minute')}:${g('second')}${off}`; } },
   };
   vm.createContext(env);
   vm.runInContext(code, env);
-  return { env, sheets, mails, cache, props };
+  return { env, sheets, mails, cache, props, triggers };
 }
 
 const post = (env, params, multi) => JSON.parse(env.doPost({ parameter: params, parameters: multi || Object.fromEntries(Object.entries(params).map(([k, v]) => [k, [v]])) }).getContent());
@@ -95,7 +99,7 @@ t('setup() creates both tabs with exact headers', () => {
   assert.deepStrictEqual(sheets.brand_intake.rows[0], schema.forms.brand.columns);
 });
 
-t('office: one row, exact column order, one email, derived pantry owner, escaping, text formats', () => {
+t('office: one row, exact column order, one short email (no answers in it), derived pantry owner, escaping, text formats', () => {
   const { env, sheets, mails } = makeEnv();
   env.setup();
   const r = post(env, { ...office, tuesday_headcount: '120' });
@@ -121,6 +125,15 @@ t('office: one row, exact column order, one email, derived pantry owner, escapin
   assert.strictEqual(mails[0].to, 'owner@example.test');
   assert.strictEqual(mails[0].replyTo, 'sample@example.test');
   assert.match(mails[0].subject, /^Office sign-up: SAMPLE Co \(120 on Tuesdays\)$/);
+  // Review round 3 (R3-02): the email names the company and the contact email and links the row;
+  // the answers stay in the Sheet only, so the deletion promise covers one full copy.
+  const body = mails[0].body;
+  assert.match(body, /Company: SAMPLE Co\n/);
+  assert.match(body, /Contact email: sample@example\.test\n/);
+  assert.match(body, /tab office_intake, row 2: https:\/\//);
+  assert.match(body, /Gmail search: in:anywhere subject:"Office sign-up: SAMPLE Co"/);
+  for (const answer of ['SAMPLE Person', 'Office Manager', '212 555 0100', '123 Fifth Avenue', '3-4', 'front desk', '9 to 11 am', 'HYPERLINK', 'SAMPLE note', 'chips-crisps', 'slack'])
+    assert(!body.includes(answer), 'notification email carries an answer: ' + answer);
 });
 
 t('brand: one row, exact column order, one email, derived approver, url normalized', () => {
@@ -136,6 +149,9 @@ t('brand: one row, exact column order, one email, derived approver, url normaliz
   assert.strictEqual(row.excluded_category_confirmed, 'Y');
   assert.strictEqual(mails.length, 1);
   assert.strictEqual(mails[0].subject, 'Brand application: SAMPLE Brightside (chips-crisps)');
+  assert.match(mails[0].body, /Brand: SAMPLE Brightside\nContact email: founder@example\.test\n/);
+  for (const answer of ['SAMPLE Founder', 'SAMPLE Crisps', 'Queens', 'SAMPLE Market', 'In 1 to 3 months', 'new store opening'])
+    assert(!mails[0].body.includes(answer), 'notification email carries an answer: ' + answer);
 });
 
 t('honeypot filled: ok to the bot, no row, no email', () => {
@@ -152,7 +168,8 @@ t('server validation: bad enum, missing field, bad email, bad headcount, someone
   const r = post(env, { ...office, receiving_type: 'drone', company: '', contact_email: 'nope', tuesday_headcount: '0', pantry_owner_is_contact: 'N' });
   assert.strictEqual(r.ok, false);
   assert.strictEqual(r.error, 'validation');
-  assert.deepStrictEqual(r.fields, { company: 'required', contact_email: 'invalid', tuesday_headcount: 'invalid', pantry_owner_name: 'required', pantry_owner_title: 'required', receiving_type: 'invalid' });
+  // pantry_owner_title is optional since review round 2 (R2-10); the name is still required.
+  assert.deepStrictEqual(r.fields, { company: 'required', contact_email: 'invalid', tuesday_headcount: 'invalid', pantry_owner_name: 'required', receiving_type: 'invalid' });
   const b = post(env, { ...brand, category: 'cbd-gummies', excluded_category_confirmed: '', q1_sealed_shelf_stable_60d: 'maybe' });
   assert.deepStrictEqual(b.fields, { category: 'invalid', q1_sealed_shelf_stable_60d: 'invalid', excluded_category_confirmed: 'required' });
   assert.strictEqual(sheets.office_intake.rows.length + sheets.brand_intake.rows.length, 2);
@@ -201,6 +218,68 @@ t('mail failure keeps the row', () => {
   env.MailApp.sendEmail = () => { throw new Error('quota'); };
   assert.deepStrictEqual(post(env, office), { ok: true });
   assert.strictEqual(sheets.office_intake.rows.length, 2);
+});
+
+t('someone-else pantry owner: name required, title optional (blank is accepted)', () => {
+  const { env, sheets, mails } = makeEnv();
+  env.setup();
+  assert.deepStrictEqual(post(env, { ...office, submission_id: 'SAMPLE-0010-abcdef', pantry_owner_is_contact: 'N', pantry_owner_name: 'SAMPLE Ana Ruiz', pantry_owner_title: '' }), { ok: true });
+  const cols = schema.forms.office.columns;
+  assert.strictEqual(sheets.office_intake.rows[1][cols.indexOf('pantry_owner_name')], 'SAMPLE Ana Ruiz');
+  assert.strictEqual(sheets.office_intake.rows[1][cols.indexOf('pantry_owner_title')], '');
+  assert.strictEqual(mails.length, 1);
+});
+
+t('extra columns after the contract ones, with a formula filled down, do not push new rows lower', () => {
+  const { env, sheets } = makeEnv();
+  env.setup();
+  const sh = sheets.office_intake;
+  sh.rows[0].push('f_owner_status');
+  for (let r = 1; r <= 10; r++) { sh.rows[r] = Array(21).fill(''); sh.rows[r].push('=IF(A' + (r + 1) + '="","",1)'); }
+  assert.deepStrictEqual(post(env, office), { ok: true });
+  assert.strictEqual(sh.rows[1][0] !== '', true, 'the new row is row 2, right under the header');
+  assert.strictEqual(sh.rows[1][21], '=IF(A2="","",1)', 'the added column is left alone');
+  assert.deepStrictEqual(post(env, { ...office, submission_id: 'SAMPLE-0011-abcdef' }), { ok: true });
+  assert.strictEqual(sh.rows[2][0] !== '', true, 'the next row is row 3');
+  assert.strictEqual(sh.rows.length, 11, 'nothing appended below the formula rows');
+});
+
+t('APOSTROPHE_GUARD false: text is written as typed (cells stay plain text)', () => {
+  const { env, sheets } = makeEnv();
+  env.setup();
+  vm.runInContext('SETTINGS.APOSTROPHE_GUARD = false;', env);
+  post(env, office);
+  const cols = schema.forms.office.columns;
+  assert.strictEqual(sheets.office_intake.rows[1][cols.indexOf('contact_phone')], '+1 212 555 0100');
+  assert.strictEqual(sheets.office_intake.formats[2][cols.indexOf('contact_phone')], '@');
+});
+
+t('markRowsToDelete: highlights rows older than 365 days in both tabs, deletes nothing, one summary email with each row\'s Gmail search', () => {
+  const { env, sheets, mails, triggers } = makeEnv();
+  env.setup();
+  post(env, office);
+  post(env, brand);
+  const oc = schema.forms.office.columns, bc = schema.forms.brand.columns;
+  sheets.office_intake.rows[1][oc.indexOf('submitted_at')] = '2025-09-01T10:00:00-04:00';
+  const now = new Date('2026-10-24T12:00:00-04:00');
+  mails.length = 0;
+  const summary = env.markRowsToDelete(now);
+  assert.strictEqual(summary, '1 row(s) older than 365 days');
+  assert.strictEqual(sheets.office_intake.backgrounds[2], '#F4CCCC');
+  assert.strictEqual(sheets.brand_intake.backgrounds[2], undefined, 'a recent row is not highlighted');
+  assert.strictEqual(sheets.office_intake.rows.length, 2, 'nothing deleted');
+  assert.strictEqual(mails.length, 1);
+  assert.match(mails[0].body, /office_intake row 2: SAMPLE Co \(2025-09-01\)\n    notification email, Gmail search: in:anywhere subject:"Office sign-up: SAMPLE Co"/);
+  assert.match(mails[0].body, /delete the notification email/);
+  mails.length = 0;
+  sheets.office_intake.rows[1][oc.indexOf('submitted_at')] = '2026-10-01T10:00:00-04:00';
+  assert.strictEqual(env.markRowsToDelete(now), '0 row(s) older than 365 days');
+  assert.strictEqual(mails.length, 0, 'no email when nothing is due');
+  env.installRetentionReminder();
+  env.installRetentionReminder();
+  assert.strictEqual(triggers.length, 1, 'installing twice leaves one monthly trigger');
+  assert.strictEqual(triggers[0].day, 1);
+  assert.strictEqual(bc.length, 27);
 });
 
 t('doGet health check', () => {

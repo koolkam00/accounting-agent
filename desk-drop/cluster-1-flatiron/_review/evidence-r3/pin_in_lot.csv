@@ -1,0 +1,144 @@
+file,id,address,bbl,in_own_lot,m_to_lot_edge
+buildings,B-B-001,853 Broadway,1005650015,inside,7.6
+buildings,B-B-002,124 East 14th Street,1005590016,inside,12.8
+buildings,B-B-003,5 Union Square West,1008420023,inside,7.6
+buildings,B-B-004,71 Fifth Avenue,1008420042,inside,3.1
+buildings,B-B-006,100 Fifth Avenue,1008177502,inside,3.9
+buildings,B-B-005,19 Union Square West,1008430020,OUTSIDE,3.1
+buildings,B-B-007,79 Fifth Avenue,1008430045,inside,2.9
+buildings,B-B-009,114 Fifth Avenue,1008180051,inside,3.8
+buildings,B-B-008,26 West 17th Street,1008180066,inside,13.7
+buildings,B-B-010,120 Fifth Avenue,1008190037,inside,6.7
+buildings,B-B-012,101 Fifth Avenue,1008460002,inside,3.2
+buildings,B-B-011,860 Broadway,1008460026,OUTSIDE,9.2
+buildings,B-B-016,215 Park Avenue South,1008730067,inside,5.5
+buildings,B-B-015,10 West 18th Street,1008190052,inside,4.2
+buildings,B-B-013,44 West 18th Street,1008190010,inside,11.7
+buildings,B-B-014,18 West 18th Street,1008190056,inside,11.3
+buildings,B-B-019,37 East 18th Street,1008470029,inside,10.2
+buildings,B-B-017,130 Fifth Avenue,1008200038,inside,4.4
+buildings,B-B-018,111 Fifth Avenue,1008470001,inside,3.4
+buildings,B-B-020,625 Avenue of the Americas,1007940030,inside,4.6
+buildings,B-B-021,620 Avenue of the Americas,1008207505,inside,5.2
+buildings,B-B-023,115 Fifth Avenue,1008470062,inside,3.8
+buildings,B-B-022,22 West 19th Street,1008200026,inside,10.7
+buildings,B-B-025,39 West 19th Street,1008210014,inside,14.2
+buildings,B-B-024,119 Fifth Avenue,1008480001,OUTSIDE,3.7
+buildings,B-B-026,641 Avenue of the Americas,1007950044,inside,4.7
+buildings,B-B-027,895 Broadway,1008480015,inside,5.4
+buildings,B-B-028,250 Park Avenue South,1008480043,inside,9.6
+buildings,B-B-030,37 West 20th Street,1008220009,inside,14.0
+buildings,B-B-029,156 Fifth Avenue,1008220031,inside,3.2
+buildings,B-B-031,902 Broadway,1008490016,inside,4.7
+buildings,B-B-034,915 Broadway,1008490070,inside,4.2
+buildings,B-B-032,257 Park Avenue South,1008767504,inside,14.2
+buildings,B-B-033,30 West 21st Street,1008220058,inside,7.0
+buildings,B-B-036,53 West 21st Street,1008230009,inside,6.7
+buildings,B-B-035,149 Fifth Avenue,1008500001,inside,0.6
+buildings,B-B-037,155 Fifth Avenue,1008500004,inside,9.0
+buildings,B-B-038,675 Avenue of the Americas,1007970037,inside,4.2
+buildings,B-B-039,56 West 22nd Street,1008230073,inside,6.7
+buildings,B-B-040,20 West 22nd Street,1008230055,inside,13.8
+buildings,B-B-041,16 West 22nd Street,1008230029,inside,5.0
+buildings,B-B-043,7 West 22nd Street,1008240032,inside,12.1
+buildings,B-B-045,25 East 22nd Street,1008510022,inside,4.8
+buildings,B-B-044,300 Park Avenue South,1008510035,inside,5.5
+buildings,B-B-042,287 Park Avenue South,1008780001,OUTSIDE,0.8
+buildings,B-B-046,50 West 23rd Street,1008240015,inside,9.9
+buildings,B-B-050,53 West 23rd Street,1008250012,inside,10.7
+buildings,B-B-049,43 West 23rd Street,1008250017,inside,8.6
+buildings,B-B-047,61 West 23rd Street,1008250009,inside,11.3
+buildings,B-B-048,71 West 23rd Street,1008250001,inside,12.0
+buildings,B-B-052,11 Madison Avenue,1008547501,inside,10.9
+buildings,B-B-056,1115 Broadway,1008260046,OUTSIDE,2.3
+buildings,B-B-053,40 West 25th Street,1008260065,inside,13.9
+buildings,B-B-054,48 West 25th Street,1008260069,inside,13.3
+buildings,B-B-055,104 East 25th Street,1008800084,inside,15.1
+buildings,B-B-057,41 Madison Avenue,1008550037,inside,4.7
+buildings,B-B-058,345 Park Avenue South,1008810001,inside,13.9
+buildings,B-B-059,360 Park Avenue South,1008550024,inside,4.6
+buildings,B-B-061,25 West 26th Street,1008280017,inside,6.7
+buildings,B-B-062,37 West 26th Street,1008280009,inside,14.7
+buildings,B-B-065,11 East 26th Street,1008560009,inside,8.6
+buildings,B-B-060,220 Fifth Avenue,1008280035,OUTSIDE,2.0
+buildings,B-B-063,1140 Broadway,1008280033,inside,8.6
+buildings,B-B-064,373 Park Avenue South,1008820003,inside,5.1
+buildings,B-B-066,60 Madison Avenue,1008560058,inside,8.7
+buildings,B-B-067,230 Fifth Avenue,1008280041,inside,3.0
+buildings,B-B-068,381 Park Avenue South,1008820085,OUTSIDE,0.7
+buildings,B-B-069,45 West 27th Street,1008290011,inside,7.2
+buildings,B-B-070,15 West 27th Street,1008290032,inside,7.1
+buildings,B-B-071,1165 Broadway,1008290022,inside,7.6
+buildings,B-B-073,387 Park Avenue South,1008830001,inside,5.1
+buildings,B-B-072,386 Park Avenue South,1008570038,OUTSIDE,3.6
+buildings,B-B-074,245 Fifth Avenue,1008570076,inside,3.0
+buildings,B-B-075,44 West 28th Street,1008290068,inside,12.7
+buildings,B-B-076,27 East 28th Street,1008580022,inside,15.1
+buildings,B-B-077,261 Fifth Avenue,1008580078,inside,2.8
+buildings,B-B-079,432 Park Avenue South,1008590039,inside,11.8
+buildings,B-B-078,99 Madison Avenue,1008590024,inside,4.4
+buildings,B-B-080,440 Park Avenue South,1008590048,inside,4.4
+buildings,B-B-081,450 Park Avenue South,1008600045,inside,8.3
+buildings,B-B-082,295 Fifth Avenue,1008600001,inside,3.7
+retailers,B-R-001,"200 Fifth Avenue, New York, NY 10010",1008250031,inside,2.0
+retailers,B-R-002,"7 East 14th Street, New York, NY 10003",1008420007,inside,11.3
+retailers,B-R-003,"766 Sixth Avenue, New York, NY 10010",1008270001,inside,0.8
+retailers,B-R-004,"278 Park Avenue South, New York, NY 10010",1008507503,inside,4.0
+retailers,B-R-005,"4 West 18th Street, New York, NY 10011",1008190049,inside,3.7
+retailers,B-R-006,"765 Sixth Avenue, New York, NY 10010",1008010041,inside,5.8
+retailers,B-R-007,"10 Union Square East, New York, NY 10003",1008707501,inside,2.7
+retailers,B-R-008,"675 Sixth Avenue, New York, NY 10010",1007970037,inside,4.2
+retailers,B-R-009,"142 East 14th Street, New York, NY 10003",1005590022,inside,9.2
+retailers,B-R-010,"63 Madison Avenue, New York, NY 10016",1008570024,inside,11.9
+retailers,B-R-011,"4 Union Square South, New York, NY 10003",1005650011,OUTSIDE,17.3
+retailers,B-R-012,"59 Fifth Avenue, New York, NY 10003",1005700006,OUTSIDE,1.9
+retailers,B-R-015,"121 Lexington Avenue, New York, NY 10016",1008840025,OUTSIDE,5.1
+retailers,B-R-013,"84 Third Avenue, New York, NY 10003",1005567502,inside,11.2
+retailers,B-R-014,"123 Lexington Avenue, New York, NY 10016",1008840024,inside,2.7
+retailers,B-R-016,"180 Third Avenue, New York, NY 10003",1008720035,inside,15.0
+retailers,B-R-017,"170 West 23rd Street, New York, NY 10011",1007987502,inside,9.7
+retailers,B-R-018,"77 Seventh Avenue, New York, NY 10011",1007900001,inside,14.7
+retailers,B-R-019,"56 Seventh Avenue, New York, NY 10011",1006180033,inside,15.4
+retailers,B-R-021,"250 Seventh Avenue, New York, NY 10001",1007747501,inside,19.0
+retailers,B-R-020,"275 Third Avenue, New York, NY 10010",1009020001,inside,4.1
+retailers,B-R-022,"112 West 34th Street, New York, NY 10120",1008090053,inside,10.1
+retailers,B-R-023,"424 Sixth Avenue, New York, NY 10011",1005737502,inside,3.1
+retailers,B-R-024,"770 Broadway, New York, NY 10003",1005547501,inside,3.5
+retailers,B-R-025,"410 Sixth Avenue, New York, NY 10011",1005720005,inside,2.4
+retailers,B-R-026,"343 Second Avenue, New York, NY 10003",1009000027,inside,15.3
+retailers,B-R-027,"258 Eighth Avenue, New York, NY 10011",1007737504,inside,15.0
+retailers,B-R-028,"512 Second Avenue, New York, NY 10016",1009340001,inside,4.5
+retailers,B-R-029,"550 Second Avenue, New York, NY 10016",1009360001,inside,17.0
+retailers,B-R-030,"311 East 23rd Street, New York, NY 10010",1009290001,inside,13.8
+coworking,B-W-001,"124 East 14th Street, New York, NY 10003",1005590016,inside,12.8
+coworking,B-W-002,"114 Fifth Avenue, New York, NY 10011",1008180051,inside,3.8
+coworking,B-W-003,"860 Broadway, 6th Floor, New York, NY 10003",1008460026,OUTSIDE,9.2
+coworking,B-W-005,"215 Park Avenue South, 11th Floor, New York, NY 10003",1008730067,inside,5.5
+coworking,B-W-004,"18 West 18th Street, New York, NY 10011",1008190056,inside,11.3
+coworking,B-W-006,"895 Broadway, 5th Floor, New York, NY 10003",1008480015,inside,5.4
+coworking,B-W-007,"156 Fifth Avenue, 4th Floor, New York, NY 10010",1008220031,inside,3.2
+coworking,B-W-008,"902 Broadway, 7th Floor, New York, NY 10010",1008490016,inside,4.7
+coworking,B-W-009,"287 Park Avenue South, 2nd Floor, New York, NY 10010",1008780001,OUTSIDE,0.8
+coworking,B-W-011,"1115 Broadway (16 Madison Square West), Floors 9-12, New York, NY 10010",1008260046,OUTSIDE,2.3
+coworking,B-W-010,"110 East 25th Street, New York, NY 10010",1008800084,inside,15.1
+coworking,B-W-012,"41 Madison Avenue, 31st Floor, New York, NY 10010",1008550037,inside,4.7
+coworking,B-W-013,"345 Park Avenue South, New York, NY 10010",1008810001,inside,13.9
+coworking,B-W-014,"776A Sixth Avenue, New York, NY 10001",1008280001,inside,14.4
+coworking,B-W-015,"234 Fifth Avenue, 2nd Floor, New York, NY 10001",1008290035,OUTSIDE,9.7
+coworking,B-W-017,"387 Park Avenue South, 5th Floor, New York, NY 10016",1008830001,inside,5.1
+coworking,B-W-016,"386 Park Avenue South, 18th Floor, New York, NY 10016",1008570038,OUTSIDE,3.6
+coworking,B-W-018,"245 Fifth Avenue, New York, NY 10016",1008570076,inside,3.0
+coworking,B-W-019,"401 Park Avenue South, Floors 8-10, New York, NY 10016",1008830088,inside,5.0
+coworking,B-W-020,"27 East 28th Street, New York, NY 10016",1008580022,inside,15.1
+coworking,B-W-021,"1204 Broadway, 4th Floor, New York, NY 10001",1008310019,inside,5.5
+coworking,B-W-023,"1216 Broadway, Floor 2, New York, NY 10001",1008310059,OUTSIDE,0.8
+coworking,B-W-022,"276 Fifth Avenue, Suite 704, New York, NY 10001",1008310042,inside,3.1
+coworking,B-W-024,"450 Park Avenue South, New York, NY 10016",1008600045,inside,8.3
+coworking,B-W-025,"113 University Place, Floors 4-5, New York, NY 10003",1005640007,OUTSIDE,1.6
+coworking,B-W-026,"33 Irving Place, New York, NY 10003",1008710068,inside,13.9
+coworking,B-W-027,"120 East 23rd Street, 4th Floor, New York, NY 10010",1008780065,inside,11.0
+coworking,B-W-028,"115 East 23rd Street, Floors 4-5, New York, NY 10010",1008790009,inside,8.4
+coworking,B-W-031,"1250 Broadway, 36th Floor, New York, NY 10001",1008330011,inside,4.7
+coworking,B-W-029,"135 Madison Avenue, New York, NY 10016",1008610022,inside,5.2
+coworking,B-W-030,"136 Madison Avenue, 6th Floor, New York, NY 10016",1008610015,inside,17.9
+coworking,B-W-032,"2 Park Avenue, 20th Floor, New York, NY 10016",1008620029,inside,2.7

@@ -113,7 +113,7 @@
 
   function render(sheet, r, i) {
     sheet.classList.add('doc');
-    ['headline', 'lead', 'includes', 'ladder_note', 'fit', 'send', 'next', 'roster_status'].forEach((k) => X.checkClaims(i, `"${FIELDS.find((f) => f.key === k).label}"`, r[k]));
+    ['headline', 'lead', 'includes', 'ladder_note', 'fit', 'send', 'next', 'roster_status'].forEach((k) => X.checkClaims(i, `"${FIELDS.find((f) => f.key === k).label}"`, r[k], r));
     const fitN = X.items(r.fit).length;
     if (fitN !== 7) DD.warn(i, `"You fit if all seven are true" has ${fitN} lines; the qualification checklist has seven.`);
     const ladder = `<div class="ladder">${RUNGS.map(([n, h], k) => `<div class="rung${k === 6 ? ' off' : ''}"><span class="rn">${n}</span><span class="rv">${DD.escape(h)}</span></div>`).join('')}</div>`;
@@ -128,7 +128,7 @@
           <section class="sec s3"><h2>What a campaign includes</h2>${list(r.includes, 'plain')}</section>
           <section class="sec s3">
             <div class="price"><p class="kicker">Price</p><table>
-              <tr><td class="amt">${X.usd(O.founding.price)}</td><td><b>Founding: ${O.founding.offices} offices</b> (${X.usd(O.founding.per_office)} each), our first ${['', 'one', 'two', 'three', 'four', 'five'][O.founding.brands_offered] || O.founding.brands_offered} brands only. Paid in full within five business days of our invoice. Your next ${['', 'one', 'two', 'three'][O.founding.locked_campaigns] || O.founding.locked_campaigns} campaigns: ${X.usd(O.founding.per_office)} per office, up to ${O.founding.lock_max_offices} offices.</td></tr>
+              <tr><td class="amt">${X.usd(O.founding.price)}</td><td><b>Founding: ${O.founding.offices} offices</b> (${X.usd(O.founding.per_office)} each), our first ${['', 'one', 'two', 'three', 'four', 'five'][O.founding.brands_offered] || O.founding.brands_offered} brands only. Paid in full within five business days of our invoice, before you ship. Your next ${['', 'one', 'two', 'three'][O.founding.locked_campaigns] || O.founding.locked_campaigns} campaigns: ${X.usd(O.founding.per_office)} per office, up to ${O.founding.lock_max_offices} offices.</td></tr>
               <tr><td class="amt">${X.usd(O.standard.price)}</td><td><b>Standard: ${O.standard.offices} offices</b> (${X.usd(O.standard.per_office)} each). ${O.standard.deposit_pct}% on signing, ${100 - O.standard.deposit_pct}% on our placement confirmation.</td></tr>
               <tr><td class="amt">${X.usd(O.extra_office)}</td><td><b>Each extra office</b>, same terms. No free pilots: the founding price is the trial.</td></tr></table></div>
             <div class="never" style="margin-top:.12in"><p>${X.t(r.never)}</p></div>

@@ -1,0 +1,103 @@
+{
+  "ready": true,
+  "errors": [
+    "The proposal runs past the bottom of the page even at the smallest sizes. Shorten it."
+  ],
+  "warnings": [],
+  "sample": true,
+  "placeholders": [
+    "brand.json: FOUNDER_NAME (fill it in brand.json, then run node render/build-brand.js)",
+    "brand.json: PHONE (fill it in brand.json, then run node render/build-brand.js)",
+    "brand.json: EMAIL (fill it in brand.json, then run node render/build-brand.js)",
+    "brand.json: POSTAL_ADDRESS (fill it in brand.json, then run node render/build-brand.js)"
+  ],
+  "fit": [
+    {
+      "arrangement": "three-up-roster-terms-right",
+      "map_in": 0.95,
+      "tight": true,
+      "compact": true,
+      "tried": [
+        {
+          "name": "standard",
+          "over_in": 1.8,
+          "map_in": 0.95
+        },
+        {
+          "name": "terms-right",
+          "over_in": 1.11,
+          "map_in": 0.95
+        },
+        {
+          "name": "send-right",
+          "over_in": 0.59,
+          "map_in": 0.95
+        },
+        {
+          "name": "wide-roster",
+          "over_in": 0.79,
+          "map_in": 0.95
+        },
+        {
+          "name": "wide-roster-terms-right",
+          "over_in": 0.57,
+          "map_in": 0.95
+        },
+        {
+          "name": "three-up-roster",
+          "over_in": 0.47,
+          "map_in": 0.95
+        },
+        {
+          "name": "three-up-roster-terms-right",
+          "over_in": 0.25,
+          "map_in": 0.95
+        },
+        {
+          "name": "three-up-roster-wide-buy",
+          "over_in": 0.79,
+          "map_in": 0.95
+        },
+        {
+          "name": "three-up-roster-wide-buy-incl-left",
+          "over_in": 0.9,
+          "map_in": 0.95
+        },
+        {
+          "name": "three-up-roster-wide-buy-price-left",
+          "over_in": 0.63,
+          "map_in": 0.95
+        },
+        {
+          "name": "wide-roster-wide-buy",
+          "over_in": 1.11,
+          "map_in": 0.95
+        },
+        {
+          "name": "wide-roster-wide-buy-price-left",
+          "over_in": 0.95,
+          "map_in": 0.95
+        },
+        {
+          "name": "wide-buy",
+          "over_in": 0.82,
+          "map_in": 0.95
+        },
+        {
+          "name": "wide-timeline",
+          "over_in": 2.1,
+          "map_in": 0.95
+        },
+        {
+          "name": "wide-roster-wide-timeline",
+          "over_in": 1.1,
+          "map_in": 0.95
+        }
+      ]
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/proposal/proposal.html",
+  "records": 1
+}
+No PDF written. Fix the errors above (or pass --force to see the broken layout).

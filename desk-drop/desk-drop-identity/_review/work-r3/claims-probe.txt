@@ -1,0 +1,34 @@
+MISSED [] Calcium builds strong bones.
+MISSED [] Fiber maintains bowel regularity.
+MISSED [] Antioxidants maintain cell integrity.
+CAUGHT ["healthy"] Each bite promotes healthy digestion.
+MISSED [] Each bite promotes digestion.
+MISSED [] It aids digestion after lunch.
+MISSED [] Good for your gut.
+MISSED [] A gut-friendly snack.
+MISSED [] Builds strong bones.
+MISSED [] Improves focus through the afternoon.
+MISSED [] Helps you sleep better.
+MISSED [] Lowers cholesterol.
+MISSED [] Reduces bloating.
+MISSED [] Rich in antioxidants that protect your cells.
+MISSED [] Good for your heart.
+CAUGHT ["immune"] Strengthens your immune system.
+MISSED [] Fuel for your brain.
+MISSED [] Packed with probiotics for digestive balance.
+MISSED [] Keeps you full until dinner.
+MISSED [] Gives you steady energy all afternoon.
+MISSED [] Electrolytes for hydration and recovery.
+MISSED [] Made to calm stress.
+CAUGHT ["clinically"] Clinically studied adaptogens.
+CAUGHT ["prevents"] A resealable bag prevents crumbs at your desk.
+CAUGHT ["lift"] Lift the lid and take one.
+MISSED [] Our best flavor yet.
+MISSED [] The number one jerky in Brooklyn.
+MISSED [] Sales rose 20% after the drop.
+MISSED [] The campaign generated 40 new buyers.
+MISSED [] Redemptions show a 3x return on spend.
+MISSED [] We saw uplift at the store.
+MISSED [] Converted 12% of tasters into buyers.
+MISSED [] Drove trial-to-purchase of 30%.
+MISSED [] Incremental sales of 31 units.

@@ -78,7 +78,7 @@
       const n = sentences(r[k]); total += n;
       if (String(r[k] || '').trim() && n !== 1) DD.error(i, `Sentence ${j + 1} reads as ${n} sentences. One sentence per box: the page explains the idea in exactly five.`);
       if (SELLING.test(r[k] || '')) DD.warn(i, `Sentence ${j + 1} sounds like selling ("${(r[k].match(SELLING) || [''])[0]}"). The discovery page describes the idea and asks to listen; it does not offer anything.`);
-      X.checkClaims(i, `Sentence ${j + 1}`, r[k]);
+      X.checkClaims(i, `Sentence ${j + 1}`, r[k], r);
     });
     if (/[.!?]\s*$/.test(String(r.title || ''))) DD.warn(i, 'The title ends like a sentence. Keep it a phrase, so the page has exactly five sentences.');
     sheet.dataset.sentences = String(total);

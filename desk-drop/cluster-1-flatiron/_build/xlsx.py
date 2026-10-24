@@ -48,7 +48,8 @@ def num(v):
 NUMERIC = {"lat", "lon", "blocks_outside", "candidate_company_count", "other_company_count", "candidates_within_5_blocks",
            "nearest_candidate_blocks", "pluto_numfloors", "pluto_yearbuilt", "pluto_office_sqft", "stop", "leg_metres_est",
            "avenue_crossings", "street_crossings", "leg_minutes_est", "car_minutes_est", "stop_minutes", "session", "order",
-           "walk_minutes_from_previous_est", "dwell_minutes_est", "cumulative_minutes_est", "session_minutes_est"}
+           "walk_minutes_from_previous_est", "dwell_minutes_est", "cumulative_minutes_est", "session_minutes_est",
+           "load", "reload_minutes_before"}
 
 
 def table(ws, df, start_row=1, freeze="C2"):
@@ -126,6 +127,8 @@ def route_sheet(ws, route, S):
         ("car_overhead_min", P["car_overhead_min"], "Assumption: 5 min to hail and load the hand truck, 3 min to unload."),
         ("car_speed_mph", P["car_speed_mph"], "NBER Digest 2025-06-01: CBD average speed rose from 8.2 to 9.7 mph after congestion pricing. " + build.NBER_URL),
         ("car_detour_factor", P["car_detour_factor"], "Assumption: one-way streets and turns."),
+        ("cases_per_load", P["cases_per_load"], "Review round 2: cases the hand truck takes per loop. plan.md: five offices are five to eight cases and two car rides. Set 10 for light snacks if the truck takes all ten."),
+        ("reload_minutes", P["reload_minutes"], "Review round 2, assumption: meet the car or van, reload and re-strap between loops. Time it on the walk."),
     ]
     ws["A2"] = "Parameters (yellow cells are editable; every time below recalculates)"
     ws["A2"].font = SECF
@@ -139,7 +142,7 @@ def route_sheet(ws, route, S):
             cell.number_format = "hh:mm"
         ws.cell(row=i, column=3, value=src).font = NOTEF
         pos[k] = f"$B${i}"
-    hdr = 15
+    hdr = 17
     cols = list(route.columns)
     for j, cname in enumerate(cols, 1):
         cell = ws.cell(row=hdr, column=j, value=cname)
@@ -164,7 +167,11 @@ def route_sheet(ws, route, S):
             ws[f'{col["car_minutes_est"]}{R}'] = (f'=IF({sb}="Y","",ROUND({pos["car_overhead_min"]}+{m}*{pos["car_detour_factor"]}'
                                                  f'/({pos["car_speed_mph"]}*1609.344/60),1))')
             ws[f'{col["car_faster"]}{R}'] = f'=IF({col["car_minutes_est"]}{R}="","",IF({col["car_minutes_est"]}{R}<{col["leg_minutes_est"]}{R},"Y","N"))'
-            ws[f'{col["arrive_est"]}{R}'] = f'={col["depart_est"]}{R - 1}+{col["leg_minutes_est"]}{R}/1440'
+            ws[f'{col["arrive_est"]}{R}'] = f'={col["depart_est"]}{R - 1}+({col["leg_minutes_est"]}{R}+{col["reload_minutes_before"]}{R})/1440'
+        # review round 2 (R2-06): a reload before the first stop of each new load
+        ws[f'{col["load"]}{R}'] = f'=INT(({col["stop"]}{R}-1)/{pos["cases_per_load"]})+1'
+        ws[f'{col["reload_minutes_before"]}{R}'] = (f'=IF(AND({col["stop"]}{R}>1,MOD({col["stop"]}{R}-1,{pos["cases_per_load"]})=0),'
+                                                   f'{pos["reload_minutes"]},0)')
         ws[f'{col["stop_minutes"]}{R}'] = f"={pos['minutes_per_stop']}"
         ws[f'{col["depart_est"]}{R}'] = f'={col["arrive_est"]}{R}+{col["stop_minutes"]}{R}/1440'
         for k in ("arrive_est", "depart_est"):
@@ -177,27 +184,37 @@ def route_sheet(ws, route, S):
         ("walking minutes", f'=SUM({col["leg_minutes_est"]}{hdr + 1}:{col["leg_minutes_est"]}{last})'),
         ("walking metres", f'=SUM({col["leg_metres_est"]}{hdr + 1}:{col["leg_metres_est"]}{last})'),
         ("stop minutes", f'=SUM({col["stop_minutes"]}{hdr + 1}:{col["stop_minutes"]}{last})'),
-        ("total minutes, 08:00 to last departure", f'=ROUND(({col["depart_est"]}{last}-{pos["route_start"]})*1440,0)'),
+        ("total minutes with reloads, 08:00 to last departure", f'=ROUND(({col["depart_est"]}{last}-{pos["route_start"]})*1440,0)'),
         ("finish time", f'={col["depart_est"]}{last}'),
         ("fits 8 to 11 am?", f'=IF(B{t + 4}<={pos["window_minutes"]},"fits, "&({pos["window_minutes"]}-B{t + 4})&" min spare","over by "&(B{t + 4}-{pos["window_minutes"]})&" min")'),
         ("legs where a car is faster", f'=COUNTIF({col["car_faster"]}{hdr + 1}:{col["car_faster"]}{last},"Y")'),
         ("total if stops took 12 min", f'=ROUND(B{t + 1}+12*{len(route)},0)'),
         ("total with the first nine stops only", f'=ROUND(SUM({col["leg_minutes_est"]}{hdr + 1}:{col["leg_minutes_est"]}{last - 1})+9*{pos["minutes_per_stop"]},0)'),
+        ("reloads", f'=COUNTIF({col["reload_minutes_before"]}{hdr + 1}:{col["reload_minutes_before"]}{last},">0")'),
+        ("reload minutes", f'=SUM({col["reload_minutes_before"]}{hdr + 1}:{col["reload_minutes_before"]}{last})'),
+        ("total on one loop, no reload (light snacks)", f'=B{t + 4}-B{t + 11}'),
     ]
     for i, (k, f) in enumerate(rows, t + 1):
         ws.cell(row=i, column=1, value=k)
         ws.cell(row=i, column=2, value=f)
     ws[f"B{t + 5}"].number_format = "hh:mm"
+    RT = S["route"]
+    fits_one = RT["over_one_load"] <= 0
     notes = [
-        "How to read this: stop 1 starts at 08:00. Each leg runs sidewalk to sidewalk along the street grid, to the corner and across (never mid-block), at hand-truck pace, plus an expected signal wait per crossing. The walk from the kerb to the door is inside each stop's 15 minutes.",
-        (f"Result: {S['route']['stops']} stops = {S['route']['stop_minutes']} min at stops + {S['route']['walking_minutes']} min walking = {S['route']['total_minutes']} min, finishing about {S['route']['end']}. "
-         + ("That fits the 3-hour window." if S['route']['over_minutes'] <= 0 else f"That is about {S['route']['over_minutes']} min over the 3-hour window, inside the model's error.")
-         + " The stops: high-confidence, occupied offices with one 40-75 and one 76-150 office, two security desks last, and no food or drink brand."),
-        "What makes ten fit: a compact roster. Allowing medium-confidence offices, the best set found (about three blocks, 21st to 23rd St between Fifth and Sixth Ave) takes about "
-        + f"{S['route']['variants']['high_or_medium']['total_minutes']:.0f} min and ends about {S['route']['variants']['high_or_medium']['end']}. 12-minute stops at repeat offices give about {S['route']['at_12_min_stops']:.0f} min. Splitting a ten-office drop across Tuesday and Wednesday also works (the plan allows both days).",
-        "Load check: ten 50-unit cases of a canned drink weigh about 200 kg (50 cans x about 0.37 kg each, by arithmetic). Check the hand truck's printed load rating; heavy products need a mid-route reload or two loops.",
-        "8 am check: a walk-up office needs a person there at 08:00. Confirm every receiving window at intake and re-order the stops to match. Security desks often send deliveries to a freight elevator or loading dock with set hours.",
-        "Lobby types: no walk-up lobby is sourced yet, so unknown-lobby buildings come first and the two sourced security-desk buildings come last. Re-run the order after the verification walk.",
+        ("Answer (review round 2): ten stops do not fit 8 to 11 am on one loop with drinks. "
+         f"With {RT['cases_per_load']} cases a load the model needs {RT['reloads']} reload of {build.P['reload_minutes']:.0f} min and takes about {RT['total_minutes']:.0f} min, "
+         f"finishing about {build.hhmm(8 * 60 + RT['total_minutes'])}, {RT['over_minutes']} min over. "
+         + (f"Light snacks on one loop take about {RT['total_one_load']:.0f} min ({RT['end_one_load']}), which fits only if the roster is this compact. "
+            if fits_one else f"Even light snacks on one loop take about {RT['total_one_load']:.0f} min ({RT['end_one_load']}), {RT['over_one_load']} min over. ")
+         + "Default: split ten offices across Tuesday and Wednesday (five a morning, one load each), or hand the second loop to a courier."),
+        "How to read this: stop 1 starts at 08:00. Each leg runs sidewalk to sidewalk along the street grid, to the corner and across (never mid-block), at hand-truck pace, plus an expected signal wait per crossing; crossing the avenue you walked up counts when the next stop is on its far side. The walk from the kerb to the door is inside each stop's 15 minutes.",
+        (f"Stops: {RT['stops']} stops = {RT['stop_minutes']} min at stops + {RT['walking_minutes']} min walking + {RT['reload_minutes']:.0f} min reloading = {RT['total_minutes']:.0f} min. "
+         f"The stops: high-confidence, occupied offices whose band is sourced (single-source or confirmed by a second count), with {RT['rule']}, two or more security desks last, and no food or drink brand."),
+        "Load check: ten 50-unit cases of a canned drink weigh about 200 kg (50 cans x about 0.37 kg each, by arithmetic). " + build.RELOAD_POINT,
+        "What else helps: a compact roster. Allowing medium-confidence offices, the best set found takes about "
+        + f"{RT['variants']['high_or_medium']['total_minutes']:.0f} min with reloads ({RT['variants']['high_or_medium'].get('total_one_load', 0):.0f} on one loop). 12-minute stops at repeat offices save {3 * RT['stops']} min.",
+        "8 am check: a walk-up office needs a person there at 08:00. None of the ten lobbies is a sourced walk-up yet, so stop 1's 08:00 handover is untested. Confirm every receiving window at intake and re-order the stops to match. Security desks often send deliveries to a freight elevator or loading dock with set hours.",
+        "Lobby types: no walk-up lobby is sourced yet, so unknown-lobby buildings come first and the sourced security-desk buildings come last. Re-run the order after the verification walk.",
         "This is a model. The real route uses the signed roster; company names are examples only and none has been contacted.",
     ]
     for i, tx in enumerate(notes, t + len(rows) + 2):
@@ -304,9 +321,12 @@ def method_sheet(ws, S, L, dfs):
     for tab in ("Companies", "Buildings", "Coworking", "Retailers", "Route", "Walk", "Near-miss"):
         ws.cell(row=row, column=1, value=tab).font = Font(bold=True)
         row += 1
-        for colname in dfs[tab].columns:
+        names = list(dfs[tab].columns) + ([f"{k} (session summary)" for k in coldefs.WALK_SUMMARY] if tab == "Walk" else [])
+        for colname in names:
             ws.cell(row=row, column=1, value=colname)
-            d = coldefs.define(tab, colname) or ("Same as the Companies tab." if tab == "Near-miss" else "")
+            key = colname.replace(" (session summary)", "")
+            d = coldefs.define(tab, key)
+            assert d, (tab, colname)  # review round 2 (R2-08): every column has a definition
             ws.cell(row=row, column=2, value=d).alignment = Alignment(wrap_text=True, vertical="top")
             row += 1
         row += 1

@@ -1,0 +1,3973 @@
+{
+  "id" : "k4vb-judh",
+  "name" : "Daily Corporation and Other Entity Filing Data",
+  "assetType" : "dataset",
+  "attribution" : "New York State Department of State",
+  "attributionLink" : "http://www.dos.ny.gov",
+  "averageRating" : 0,
+  "category" : "Economic Development",
+  "createdAt" : 1534283419,
+  "description" : "This data contains Corporations and other Entities filing information that were processed in the previous thirty days.  Each line contains the Department of State ID number, Film ID, Date Filed, Effective Date, Entity Name, the law under which the filing was made and other pertinent filing information.",
+  "diciBackend" : false,
+  "displayType" : "table",
+  "downloadCount" : 56588,
+  "hideFromCatalog" : false,
+  "hideFromDataJson" : false,
+  "locale" : "en_US",
+  "locked" : false,
+  "newBackend" : true,
+  "numberOfComments" : 0,
+  "oid" : 37357420,
+  "provenance" : "official",
+  "publicationAppendEnabled" : false,
+  "publicationDate" : 1624467708,
+  "publicationGroup" : 15452352,
+  "publicationStage" : "published",
+  "rowClass" : "",
+  "rowsUpdatedAt" : 1792754335,
+  "rowsUpdatedBy" : "xzik-pf59",
+  "tableId" : 18365822,
+  "totalTimesRated" : 0,
+  "viewCount" : 25774,
+  "viewLastModified" : 1792754279,
+  "viewType" : "tabular",
+  "approvals" : [ {
+    "reviewedAt" : 1648762718,
+    "reviewedAutomatically" : true,
+    "state" : "approved",
+    "submissionId" : 4565068,
+    "submissionObject" : "public_audience_request",
+    "submissionOutcome" : "change_audience",
+    "submittedAt" : 1648762718,
+    "targetAudience" : "public",
+    "workflowId" : 2254,
+    "submissionDetails" : {
+      "permissionType" : "READ"
+    },
+    "submissionOutcomeApplication" : {
+      "endedAt" : 1648762718,
+      "failureCount" : 0,
+      "startedAt" : 1648762718,
+      "status" : "success"
+    },
+    "submitter" : {
+      "id" : "28jg-4c4u",
+      "displayName" : "Open Data Administrator 1"
+    }
+  } ],
+  "clientContext" : {
+    "clientContextVariables" : [ ],
+    "inheritedVariables" : { }
+  },
+  "columns" : [ {
+    "id" : 543261161,
+    "name" : "Filing Type",
+    "dataTypeName" : "text",
+    "description" : "Type of Filing (e.g. certificate of incorporation)",
+    "fieldName" : "filing_type",
+    "position" : 1,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68882396,
+    "width" : 100,
+    "cachedContents" : {
+      "non_null" : "90284",
+      "largest" : "SURRENDER OF AUTHORITY",
+      "null" : "0",
+      "top" : [ {
+        "item" : "BIENNIAL STATEMENT",
+        "count" : "40146"
+      }, {
+        "item" : "ARTICLES OF ORGANIZATION",
+        "count" : "17195"
+      }, {
+        "item" : "CERTIFICATE OF PUBLICATION",
+        "count" : "8149"
+      }, {
+        "item" : "CERTIFICATE OF INCORPORATION",
+        "count" : "6153"
+      }, {
+        "item" : "CERTIFICATE OF ASSUMED NAME",
+        "count" : "5453"
+      }, {
+        "item" : "CERTIFICATE OF CHANGE BY ENTITY",
+        "count" : "4134"
+      }, {
+        "item" : "CERTIFICATE OF DISSOLUTION-CANCELLATION",
+        "count" : "3668"
+      }, {
+        "item" : "APPLICATION OF AUTHORITY",
+        "count" : "2265"
+      }, {
+        "item" : "CERTIFICATE OF AMENDMENT",
+        "count" : "1338"
+      }, {
+        "item" : "CERTIFICATE OF RESIGNATION OF RECEIPT OF PROCESS",
+        "count" : "518"
+      }, {
+        "item" : "SURRENDER OF AUTHORITY",
+        "count" : "295"
+      }, {
+        "item" : "CERTIFICATE OF TERMINATION",
+        "count" : "161"
+      }, {
+        "item" : "CERTIFICATE OF RESIGNATION OF REGISTERED AGENT",
+        "count" : "115"
+      }, {
+        "item" : "AMENDMENT TO BIENNIAL STATEMENT",
+        "count" : "101"
+      }, {
+        "item" : "CERTIFICATE OF ASSUMED NAME AMENDMENT",
+        "count" : "100"
+      }, {
+        "item" : "CERTIFICATE OF MERGER",
+        "count" : "98"
+      }, {
+        "item" : "CERTIFICATE OF ASSUMED NAME DISCONTINUANCE",
+        "count" : "86"
+      }, {
+        "item" : "CERTIFICATE OF CORRECTION",
+        "count" : "69"
+      }, {
+        "item" : "CERTIFICATE OF DESIGNATION",
+        "count" : "60"
+      }, {
+        "item" : "FIVE YEAR STATEMENT",
+        "count" : "58"
+      } ],
+      "smallest" : "AMENDMENT TO BIENNIAL STATEMENT",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261162,
+    "name" : "Mod Cert Code",
+    "dataTypeName" : "text",
+    "description" : "The Mod Cert Code, taken together with the information in the LAW field, is a description of the type of filing represented by this record.",
+    "fieldName" : "mod_certcode",
+    "position" : 2,
+    "renderTypeName" : "text",
+    "tableColumnId" : 69015129,
+    "width" : 100,
+    "cachedContents" : {
+      "non_null" : "90275",
+      "largest" : "97",
+      "null" : "9",
+      "top" : [ {
+        "item" : "32DA A",
+        "count" : "23286"
+      }, {
+        "item" : "01DA A",
+        "count" : "16601"
+      }, {
+        "item" : "32DB A",
+        "count" : "10795"
+      }, {
+        "item" : "49DA A",
+        "count" : "6995"
+      }, {
+        "item" : "01DB A",
+        "count" : "5537"
+      }, {
+        "item" : "90",
+        "count" : "3577"
+      }, {
+        "item" : "32FA",
+        "count" : "3201"
+      }, {
+        "item" : "27DA A",
+        "count" : "2487"
+      }, {
+        "item" : "32FB",
+        "count" : "2099"
+      }, {
+        "item" : "10DA A",
+        "count" : "2088"
+      }, {
+        "item" : "93",
+        "count" : "1871"
+      }, {
+        "item" : "10DB A",
+        "count" : "1500"
+      }, {
+        "item" : "01FA",
+        "count" : "1487"
+      }, {
+        "item" : "02DA A",
+        "count" : "766"
+      }, {
+        "item" : "32DS A",
+        "count" : "702"
+      }, {
+        "item" : "49FA",
+        "count" : "687"
+      }, {
+        "item" : "01FB",
+        "count" : "660"
+      }, {
+        "item" : "27DB A",
+        "count" : "642"
+      }, {
+        "item" : "01DN A",
+        "count" : "616"
+      }, {
+        "item" : "01DS A",
+        "count" : "594"
+      } ],
+      "smallest" : "01DA A",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "center"
+    }
+  }, {
+    "id" : 543261163,
+    "name" : "DOS ID",
+    "dataTypeName" : "text",
+    "description" : "DOS identification number for the entity",
+    "fieldName" : "dos_id",
+    "position" : 3,
+    "renderTypeName" : "text",
+    "tableColumnId" : 138585059,
+    "width" : 100,
+    "cachedContents" : {
+      "non_null" : "90284",
+      "largest" : "999872",
+      "null" : "0",
+      "top" : [ {
+        "item" : "8028572",
+        "count" : "5"
+      }, {
+        "item" : "8051121",
+        "count" : "4"
+      }, {
+        "item" : "8050578",
+        "count" : "4"
+      }, {
+        "item" : "8050931",
+        "count" : "4"
+      }, {
+        "item" : "8050761",
+        "count" : "4"
+      }, {
+        "item" : "8050632",
+        "count" : "4"
+      }, {
+        "item" : "8051349",
+        "count" : "4"
+      }, {
+        "item" : "8052383",
+        "count" : "4"
+      }, {
+        "item" : "7960560",
+        "count" : "4"
+      }, {
+        "item" : "2822304",
+        "count" : "4"
+      }, {
+        "item" : "8050770",
+        "count" : "4"
+      }, {
+        "item" : "8050508",
+        "count" : "4"
+      }, {
+        "item" : "8050775",
+        "count" : "4"
+      }, {
+        "item" : "8051110",
+        "count" : "4"
+      }, {
+        "item" : "8050556",
+        "count" : "4"
+      }, {
+        "item" : "6444816",
+        "count" : "4"
+      }, {
+        "item" : "8051924",
+        "count" : "4"
+      }, {
+        "item" : "8051140",
+        "count" : "4"
+      }, {
+        "item" : "6614699",
+        "count" : "4"
+      }, {
+        "item" : "8050745",
+        "count" : "4"
+      } ],
+      "smallest" : "1001369",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "noCommas" : "true",
+      "align" : "center"
+    }
+  }, {
+    "id" : 543261164,
+    "name" : "Approved Date",
+    "dataTypeName" : "calendar_date",
+    "description" : "The date the document was approved for filing ",
+    "fieldName" : "approved_date",
+    "position" : 4,
+    "renderTypeName" : "calendar_date",
+    "tableColumnId" : 138585061,
+    "cachedContents" : {
+      "non_null" : "90284",
+      "largest" : "2026-10-21T00:00:00.000",
+      "null" : "0",
+      "top" : [ {
+        "item" : "2026-10-01T00:00:00.000",
+        "count" : "8564"
+      }, {
+        "item" : "2026-10-20T00:00:00.000",
+        "count" : "6256"
+      }, {
+        "item" : "2026-10-21T00:00:00.000",
+        "count" : "6178"
+      }, {
+        "item" : "2026-10-19T00:00:00.000",
+        "count" : "5212"
+      }, {
+        "item" : "2026-10-02T00:00:00.000",
+        "count" : "4381"
+      }, {
+        "item" : "2026-10-05T00:00:00.000",
+        "count" : "4096"
+      }, {
+        "item" : "2026-10-08T00:00:00.000",
+        "count" : "3989"
+      }, {
+        "item" : "2026-10-13T00:00:00.000",
+        "count" : "3941"
+      }, {
+        "item" : "2026-10-06T00:00:00.000",
+        "count" : "3807"
+      }, {
+        "item" : "2026-10-14T00:00:00.000",
+        "count" : "3704"
+      }, {
+        "item" : "2026-10-07T00:00:00.000",
+        "count" : "3663"
+      }, {
+        "item" : "2026-09-30T00:00:00.000",
+        "count" : "3395"
+      }, {
+        "item" : "2026-10-15T00:00:00.000",
+        "count" : "3319"
+      }, {
+        "item" : "2026-09-22T00:00:00.000",
+        "count" : "3298"
+      }, {
+        "item" : "2026-09-29T00:00:00.000",
+        "count" : "3226"
+      }, {
+        "item" : "2026-10-16T00:00:00.000",
+        "count" : "3081"
+      }, {
+        "item" : "2026-09-28T00:00:00.000",
+        "count" : "3075"
+      }, {
+        "item" : "2026-09-23T00:00:00.000",
+        "count" : "2812"
+      }, {
+        "item" : "2026-10-09T00:00:00.000",
+        "count" : "2662"
+      }, {
+        "item" : "2026-09-24T00:00:00.000",
+        "count" : "2641"
+      } ],
+      "smallest" : "2026-09-22T00:00:00.000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "view" : "date",
+      "align" : "center"
+    }
+  }, {
+    "id" : 543261228,
+    "name" : "Filing Date",
+    "dataTypeName" : "calendar_date",
+    "description" : "The date the document was filed by the Department of State",
+    "fieldName" : "filing_date",
+    "position" : 5,
+    "renderTypeName" : "calendar_date",
+    "tableColumnId" : 138586456,
+    "width" : 100,
+    "cachedContents" : {
+      "non_null" : "90284",
+      "largest" : "2026-10-22T00:00:00.000",
+      "null" : "0",
+      "top" : [ {
+        "item" : "2026-10-01T00:00:00.000",
+        "count" : "8469"
+      }, {
+        "item" : "2026-10-20T00:00:00.000",
+        "count" : "5356"
+      }, {
+        "item" : "2026-10-19T00:00:00.000",
+        "count" : "4833"
+      }, {
+        "item" : "2026-10-21T00:00:00.000",
+        "count" : "4546"
+      }, {
+        "item" : "2026-10-05T00:00:00.000",
+        "count" : "4269"
+      }, {
+        "item" : "2026-10-02T00:00:00.000",
+        "count" : "4176"
+      }, {
+        "item" : "2026-10-08T00:00:00.000",
+        "count" : "3630"
+      }, {
+        "item" : "2026-10-06T00:00:00.000",
+        "count" : "3563"
+      }, {
+        "item" : "2026-10-07T00:00:00.000",
+        "count" : "3509"
+      }, {
+        "item" : "2026-10-13T00:00:00.000",
+        "count" : "3506"
+      }, {
+        "item" : "2026-10-16T00:00:00.000",
+        "count" : "3396"
+      }, {
+        "item" : "2026-09-29T00:00:00.000",
+        "count" : "3284"
+      }, {
+        "item" : "2026-10-14T00:00:00.000",
+        "count" : "3261"
+      }, {
+        "item" : "2026-10-15T00:00:00.000",
+        "count" : "3162"
+      }, {
+        "item" : "2026-09-28T00:00:00.000",
+        "count" : "3119"
+      }, {
+        "item" : "2026-09-30T00:00:00.000",
+        "count" : "3034"
+      }, {
+        "item" : "2026-09-22T00:00:00.000",
+        "count" : "2987"
+      }, {
+        "item" : "2026-09-24T00:00:00.000",
+        "count" : "2899"
+      }, {
+        "item" : "2026-09-23T00:00:00.000",
+        "count" : "2779"
+      }, {
+        "item" : "2026-10-09T00:00:00.000",
+        "count" : "2586"
+      } ],
+      "smallest" : "2022-04-26T00:00:00.000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "view" : "date",
+      "align" : "center"
+    }
+  }, {
+    "id" : 543261166,
+    "name" : "Entity Type",
+    "dataTypeName" : "text",
+    "description" : "Type of entity (e.g., business corporation)",
+    "fieldName" : "entity_type",
+    "position" : 6,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68882986,
+    "width" : 100,
+    "cachedContents" : {
+      "non_null" : "90284",
+      "largest" : "UNAUTHORIZED NOT-FOR-PROFIT CORPORATION",
+      "null" : "0",
+      "top" : [ {
+        "item" : "DOMESTIC LIMITED LIABILITY COMPANY",
+        "count" : "55624"
+      }, {
+        "item" : "DOMESTIC BUSINESS CORPORATION",
+        "count" : "19670"
+      }, {
+        "item" : "FOREIGN LIMITED LIABILITY COMPANY",
+        "count" : "6506"
+      }, {
+        "item" : "FOREIGN BUSINESS CORPORATION",
+        "count" : "3405"
+      }, {
+        "item" : "DOMESTIC PROFESSIONAL SERVICE LIMITED LIABILITY COMPANY",
+        "count" : "2086"
+      }, {
+        "item" : "DOMESTIC PROFESSIONAL SERVICE CORPORATION",
+        "count" : "1113"
+      }, {
+        "item" : "DOMESTIC NOT-FOR-PROFIT CORPORATION",
+        "count" : "1032"
+      }, {
+        "item" : "FOREIGN PROFESSIONAL SERVICE CORPORATION",
+        "count" : "166"
+      }, {
+        "item" : "FOREIGN LIMITED PARTNERSHIP",
+        "count" : "134"
+      }, {
+        "item" : "FOREIGN NOT-FOR-PROFIT CORPORATION",
+        "count" : "128"
+      }, {
+        "item" : "DOMESTIC REGISTERED LIMITED LIABILITY PARTNERSHIP",
+        "count" : "85"
+      }, {
+        "item" : "FOREIGN PROFESSIONAL SERVICE LIMITED LIABILITY COMPANY",
+        "count" : "84"
+      }, {
+        "item" : "FOREIGN DESIGNATION OF THE SECRETARY OF STATE",
+        "count" : "58"
+      }, {
+        "item" : "DOMESTIC LIMITED PARTNERSHIP",
+        "count" : "50"
+      }, {
+        "item" : "DOMESTIC NOT-FOR-PROFIT CORPORATION (HOUSING DEVELOPMENT FUND COMPANY) (ARTICLE XI)",
+        "count" : "40"
+      }, {
+        "item" : "DOMESTIC COOPERATIVE CORPORATION",
+        "count" : "28"
+      }, {
+        "item" : "DOMESTIC DESIGN PROFESSIONAL SERVICE CORPORATION",
+        "count" : "16"
+      }, {
+        "item" : "NEW YORK REGISTERED FOREIGN LIMITED LIABILITY PARTNERSHIP",
+        "count" : "15"
+      }, {
+        "item" : "DOMESTIC HOUSING DEVELOPMENT FUND COMPANY (ARTICLE XI)",
+        "count" : "11"
+      }, {
+        "item" : "DOMESTIC BENEFIT CORPORATION",
+        "count" : "10"
+      } ],
+      "smallest" : "DOMESTIC BENEFIT CORPORATION",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261167,
+    "name" : "Filing Num",
+    "dataTypeName" : "text",
+    "description" : " ID Number assigned to the image of the document",
+    "fieldName" : "film_num",
+    "position" : 7,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376938,
+    "width" : 196,
+    "cachedContents" : {
+      "non_null" : "90284",
+      "largest" : "261022004525",
+      "null" : "0",
+      "top" : [ {
+        "item" : "261014003943",
+        "count" : "7"
+      }, {
+        "item" : "261021003857",
+        "count" : "4"
+      }, {
+        "item" : "261021001347",
+        "count" : "4"
+      }, {
+        "item" : "261021000561",
+        "count" : "4"
+      }, {
+        "item" : "261021000812",
+        "count" : "4"
+      }, {
+        "item" : "261021003770",
+        "count" : "4"
+      }, {
+        "item" : "261021000873",
+        "count" : "4"
+      }, {
+        "item" : "261020001089",
+        "count" : "4"
+      }, {
+        "item" : "261020001589",
+        "count" : "4"
+      }, {
+        "item" : "261020004382",
+        "count" : "4"
+      }, {
+        "item" : "261020004676",
+        "count" : "4"
+      }, {
+        "item" : "261020004072",
+        "count" : "4"
+      }, {
+        "item" : "261021002382",
+        "count" : "4"
+      }, {
+        "item" : "261021001307",
+        "count" : "4"
+      }, {
+        "item" : "261020001247",
+        "count" : "4"
+      }, {
+        "item" : "261020004770",
+        "count" : "4"
+      }, {
+        "item" : "261020004175",
+        "count" : "4"
+      }, {
+        "item" : "261021003326",
+        "count" : "4"
+      }, {
+        "item" : "261020001150",
+        "count" : "4"
+      }, {
+        "item" : "261021002668",
+        "count" : "4"
+      } ],
+      "smallest" : "260922000005",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "center"
+    }
+  }, {
+    "id" : 543261168,
+    "name" : "Corp Name",
+    "dataTypeName" : "text",
+    "description" : "The entity’s name.  For assumed name filings, the assumed name appears instead",
+    "fieldName" : "corp_name",
+    "position" : 8,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376939,
+    "width" : 208,
+    "cachedContents" : {
+      "non_null" : "90283",
+      "largest" : "ZZZ TCG LLC",
+      "null" : "1",
+      "top" : [ {
+        "item" : "GONG CHA",
+        "count" : "19"
+      }, {
+        "item" : "TERIYAKI ONE JAPANESE GRILL",
+        "count" : "11"
+      }, {
+        "item" : "ROMANTIC DEPOT MANHATTAN SEX STORE, SEX SHOP, ADULT STORE, SEX TOYS, ADULT TOYS, SEXY LINGERIE & VIBRATORS WITH ONE HOUR DELIVERY",
+        "count" : "9"
+      }, {
+        "item" : "MRS BULGOGI",
+        "count" : "8"
+      }, {
+        "item" : "ROMANTIC DEPOT BROOKLYN FLATBUSH SEX STORE, SEX SHOP, SEX TOYS, ADULT STORE, VIBRTORS, BDSM, WITH ADULT TOYS & 1 HOUR DELIVERY",
+        "count" : "6"
+      }, {
+        "item" : "QUEENS CHRONICLE",
+        "count" : "6"
+      }, {
+        "item" : "BYOU LASER CLINIC",
+        "count" : "6"
+      }, {
+        "item" : "COSPA RAMEN",
+        "count" : "6"
+      }, {
+        "item" : "HIGHLAND PARK REHABILITATION & NURSING CENTER",
+        "count" : "5"
+      }, {
+        "item" : "BAGHAI I LLC",
+        "count" : "5"
+      }, {
+        "item" : "HUMAN TECHNOLOGIES PENNSYLVANIA CORP.",
+        "count" : "5"
+      }, {
+        "item" : "GRACE OF GOTH",
+        "count" : "5"
+      }, {
+        "item" : "NAILED IT BY ARIANA LLC",
+        "count" : "4"
+      }, {
+        "item" : "NOWON",
+        "count" : "4"
+      }, {
+        "item" : "PHIL'S PIZZA",
+        "count" : "4"
+      }, {
+        "item" : "ALL TOGETHER NOW PRODUCTIONS CORPORATION",
+        "count" : "4"
+      }, {
+        "item" : "FUNCLE SHARK MANUAL AI",
+        "count" : "4"
+      }, {
+        "item" : "PANDA NAILS",
+        "count" : "4"
+      }, {
+        "item" : "JANE STREET STUDIO",
+        "count" : "4"
+      }, {
+        "item" : "MOTION BEVERAGE",
+        "count" : "4"
+      } ],
+      "smallest" : "004RJRH, CORP.",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261169,
+    "name" : "Fictitious Name",
+    "dataTypeName" : "text",
+    "description" : "Fictitious name of a foreign entity, if any",
+    "fieldName" : "fictitious_name",
+    "position" : 9,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376940,
+    "width" : 280,
+    "cachedContents" : {
+      "non_null" : "855",
+      "largest" : "ZOHO CORPORATE",
+      "null" : "89429",
+      "top" : [ {
+        "item" : "ARLELU LLC",
+        "count" : "3"
+      }, {
+        "item" : "MELIORIST HOLDINGS, LLC",
+        "count" : "3"
+      }, {
+        "item" : "COMMUNITY FOOD WORKS LLC",
+        "count" : "2"
+      }, {
+        "item" : "BLACKROCK INSURANCE BROKERS",
+        "count" : "2"
+      }, {
+        "item" : "BRIDG APP",
+        "count" : "2"
+      }, {
+        "item" : "CIMG CAPTIVE SERVICES, LLC",
+        "count" : "2"
+      }, {
+        "item" : "AHRX NY LLC",
+        "count" : "2"
+      }, {
+        "item" : "208 MILL ST LLC",
+        "count" : "2"
+      }, {
+        "item" : "ANSTRA SAUNAWEAR",
+        "count" : "2"
+      }, {
+        "item" : "BAYVIEW CONSTRUCTION NY LLC",
+        "count" : "2"
+      }, {
+        "item" : "20/20 TITLE AGENCY LLC",
+        "count" : "2"
+      }, {
+        "item" : "BREAKTHROUGH INSURANCE GROUP AGENCY LLC",
+        "count" : "2"
+      }, {
+        "item" : "BUTTERFLY LINE NEW YORK LLC",
+        "count" : "2"
+      }, {
+        "item" : "CEM SERVICES NEW ENGLAND",
+        "count" : "2"
+      }, {
+        "item" : "ACCESS411",
+        "count" : "2"
+      }, {
+        "item" : "ACUME BEAUTY AND WELLNESS",
+        "count" : "2"
+      }, {
+        "item" : "AFNY KINGS HIGHWAY, LLC",
+        "count" : "2"
+      }, {
+        "item" : "AFNY MILL BASIN, LLC",
+        "count" : "2"
+      }, {
+        "item" : "AMERICAN BUSINESS PROMOTIONS",
+        "count" : "2"
+      }, {
+        "item" : "BOOTHBAY PORTABLE ALPHA L.P.",
+        "count" : "2"
+      } ],
+      "smallest" : "1645 FIRST AVENUE I LLC",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261170,
+    "name" : "Prev Corp Name",
+    "dataTypeName" : "text",
+    "description" : "Previous name of an entity",
+    "fieldName" : "pre_corp_name",
+    "position" : 10,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376941,
+    "width" : 256,
+    "cachedContents" : {
+      "non_null" : "1097",
+      "largest" : "ZRPD HOLDINGS, INC.",
+      "null" : "89187",
+      "top" : [ {
+        "item" : "AR ECOMM VENTURES LLC",
+        "count" : "2"
+      }, {
+        "item" : "BJ RUBIN ENTERPRISES NY, INC.",
+        "count" : "2"
+      }, {
+        "item" : "7215 GLEN LLC",
+        "count" : "2"
+      }, {
+        "item" : "ANNOYING LLC",
+        "count" : "2"
+      }, {
+        "item" : "BELIZEAN ENTERTAINMENT LLC",
+        "count" : "2"
+      }, {
+        "item" : "BESA DEVELOPMENT, CORP.",
+        "count" : "2"
+      }, {
+        "item" : "3720 S SALINA, LLC",
+        "count" : "2"
+      }, {
+        "item" : "543 MONROE INC.",
+        "count" : "2"
+      }, {
+        "item" : "A.K. PAPSON ARTWORKS LLC",
+        "count" : "2"
+      }, {
+        "item" : "AMERICAN AUTO SALES AUTO REPAIR & GLASS INC.",
+        "count" : "2"
+      }, {
+        "item" : "ATELIER ORYZA LLC",
+        "count" : "2"
+      }, {
+        "item" : "AUNT BERTHA, A PUBLIC BENEFIT CORPORATION",
+        "count" : "2"
+      }, {
+        "item" : "179 LINDSEY AVE LLC",
+        "count" : "2"
+      }, {
+        "item" : "BERNIER, CARR & ASSOCIATES, ENGINEERS, ARCHITECTS AND LAND SURVEYORS, P.C.",
+        "count" : "2"
+      }, {
+        "item" : "2236 BROOKHEAVEN ESTATE LLC",
+        "count" : "2"
+      }, {
+        "item" : "143-38 181ST ST LLC",
+        "count" : "2"
+      }, {
+        "item" : "248 AVE X PARTNERS LLC",
+        "count" : "2"
+      }, {
+        "item" : "534 MONROE INC.",
+        "count" : "2"
+      }, {
+        "item" : "789 COUNTY ROUTE 1 LLC",
+        "count" : "2"
+      }, {
+        "item" : "BRAINSOME DIGITAL, INC.",
+        "count" : "2"
+      } ],
+      "smallest" : "1090 FULTON JV LLC",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261171,
+    "name" : "Orig LP Name",
+    "dataTypeName" : "text",
+    "description" : "Original name of a Limited Partnership that has filed a Certificate of Adoption",
+    "fieldName" : "orig_lp_name",
+    "position" : 11,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376942,
+    "width" : 244,
+    "cachedContents" : {
+      "non_null" : "0",
+      "null" : "90284",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261227,
+    "name" : "Eff Date",
+    "dataTypeName" : "calendar_date",
+    "description" : "Effective Date of a Filing ",
+    "fieldName" : "eff_date",
+    "position" : 12,
+    "renderTypeName" : "calendar_date",
+    "tableColumnId" : 138586455,
+    "width" : 196,
+    "cachedContents" : {
+      "non_null" : "90273",
+      "largest" : "2027-01-01T00:00:00.000",
+      "null" : "11",
+      "top" : [ {
+        "item" : "2026-10-01T00:00:00.000",
+        "count" : "8536"
+      }, {
+        "item" : "2026-10-20T00:00:00.000",
+        "count" : "5319"
+      }, {
+        "item" : "2026-10-19T00:00:00.000",
+        "count" : "4900"
+      }, {
+        "item" : "2026-10-21T00:00:00.000",
+        "count" : "4455"
+      }, {
+        "item" : "2026-10-05T00:00:00.000",
+        "count" : "4319"
+      }, {
+        "item" : "2026-10-02T00:00:00.000",
+        "count" : "4146"
+      }, {
+        "item" : "2026-10-08T00:00:00.000",
+        "count" : "3629"
+      }, {
+        "item" : "2026-10-13T00:00:00.000",
+        "count" : "3502"
+      }, {
+        "item" : "2026-10-06T00:00:00.000",
+        "count" : "3495"
+      }, {
+        "item" : "2026-10-07T00:00:00.000",
+        "count" : "3459"
+      }, {
+        "item" : "2026-10-16T00:00:00.000",
+        "count" : "3378"
+      }, {
+        "item" : "2026-09-29T00:00:00.000",
+        "count" : "3289"
+      }, {
+        "item" : "2026-09-28T00:00:00.000",
+        "count" : "3210"
+      }, {
+        "item" : "2026-10-14T00:00:00.000",
+        "count" : "3210"
+      }, {
+        "item" : "2026-10-15T00:00:00.000",
+        "count" : "3154"
+      }, {
+        "item" : "2026-09-30T00:00:00.000",
+        "count" : "3071"
+      }, {
+        "item" : "2026-09-22T00:00:00.000",
+        "count" : "3028"
+      }, {
+        "item" : "2026-09-24T00:00:00.000",
+        "count" : "2947"
+      }, {
+        "item" : "2026-09-23T00:00:00.000",
+        "count" : "2845"
+      }, {
+        "item" : "2026-10-09T00:00:00.000",
+        "count" : "2547"
+      } ],
+      "smallest" : "2022-04-26T00:00:00.000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "view" : "date",
+      "align" : "center"
+    }
+  }, {
+    "id" : 543261173,
+    "name" : "Dura Date",
+    "dataTypeName" : "text",
+    "description" : "The date on which a corporation is dissolved by expiration of its period of duration or the date after which the Limited Liability Company or Limited Partnership is to dissolve ",
+    "fieldName" : "dura_date",
+    "position" : 13,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376944,
+    "width" : 208,
+    "cachedContents" : {
+      "non_null" : "84554",
+      "largest" : "PERPETUAL",
+      "null" : "5730",
+      "top" : [ {
+        "item" : "PERPETUAL",
+        "count" : "83615"
+      }, {
+        "item" : "12-31-2099",
+        "count" : "67"
+      }, {
+        "item" : "12-31-2050",
+        "count" : "64"
+      }, {
+        "item" : "12-31-2095",
+        "count" : "25"
+      }, {
+        "item" : "08-01-2095",
+        "count" : "24"
+      }, {
+        "item" : "12-31-2045",
+        "count" : "22"
+      }, {
+        "item" : "12-31-2060",
+        "count" : "20"
+      }, {
+        "item" : "12-31-2046",
+        "count" : "17"
+      }, {
+        "item" : "12-31-2047",
+        "count" : "17"
+      }, {
+        "item" : "12-31-2097",
+        "count" : "12"
+      }, {
+        "item" : "12-31-2044",
+        "count" : "12"
+      }, {
+        "item" : "12-31-2053",
+        "count" : "12"
+      }, {
+        "item" : "12-31-2103",
+        "count" : "11"
+      }, {
+        "item" : "12-31-2052",
+        "count" : "11"
+      }, {
+        "item" : "12-31-2075",
+        "count" : "11"
+      }, {
+        "item" : "12-31-2056",
+        "count" : "10"
+      }, {
+        "item" : "12-31-2070",
+        "count" : "10"
+      }, {
+        "item" : "12-31-2055",
+        "count" : "10"
+      }, {
+        "item" : "12-31-2090",
+        "count" : "9"
+      }, {
+        "item" : "12-31-2096",
+        "count" : "9"
+      } ],
+      "smallest" : "01-01-2026",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "center"
+    }
+  }, {
+    "id" : 543261174,
+    "name" : "Foreign Inc Date",
+    "dataTypeName" : "text",
+    "description" : "Date on which foreign entity was first formed in the jurisdiction of formation",
+    "fieldName" : "for_inc_date",
+    "position" : 14,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376945,
+    "width" : 244,
+    "cachedContents" : {
+      "non_null" : "9601",
+      "largest" : "12/31/2024",
+      "null" : "80683",
+      "top" : [ {
+        "item" : "10/14/2026",
+        "count" : "71"
+      }, {
+        "item" : "10/09/2026",
+        "count" : "53"
+      }, {
+        "item" : "09/24/2026",
+        "count" : "45"
+      }, {
+        "item" : "09/04/2026",
+        "count" : "44"
+      }, {
+        "item" : "10/22/2018",
+        "count" : "32"
+      }, {
+        "item" : "10/15/2026",
+        "count" : "30"
+      }, {
+        "item" : "09/22/2026",
+        "count" : "29"
+      }, {
+        "item" : "09/29/2026",
+        "count" : "27"
+      }, {
+        "item" : "09/28/2026",
+        "count" : "27"
+      }, {
+        "item" : "10/07/2026",
+        "count" : "27"
+      }, {
+        "item" : "10/05/2026",
+        "count" : "27"
+      }, {
+        "item" : "10/06/2026",
+        "count" : "26"
+      }, {
+        "item" : "09/10/2026",
+        "count" : "24"
+      }, {
+        "item" : "10/08/2026",
+        "count" : "23"
+      }, {
+        "item" : "09/30/2026",
+        "count" : "23"
+      }, {
+        "item" : "09/24/2020",
+        "count" : "23"
+      }, {
+        "item" : "09/16/2026",
+        "count" : "22"
+      }, {
+        "item" : "10/13/2026",
+        "count" : "21"
+      }, {
+        "item" : "10/01/2026",
+        "count" : "19"
+      }, {
+        "item" : "10/19/2026",
+        "count" : "19"
+      } ],
+      "smallest" : "01/01/1753",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261175,
+    "name" : "Law",
+    "dataTypeName" : "text",
+    "description" : "The law under which the filing was made",
+    "fieldName" : "law",
+    "position" : 15,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376946,
+    "width" : 136,
+    "cachedContents" : {
+      "non_null" : "82726",
+      "largest" : "REGISTERED LIMITED LIABILITY PARTNERSHIP - 121-1500(a) PARTNERSHIP LAW",
+      "null" : "7558",
+      "top" : [ {
+        "item" : "LIMITED LIABILITY COMPANY LAW - 203 LIMITED LIABILITY COMPANY LAW",
+        "count" : "36466"
+      }, {
+        "item" : "203 LLC",
+        "count" : "15865"
+      }, {
+        "item" : "BUSINESS CORPORATION - 402 BUSINESS CORPORATION LAW",
+        "count" : "8677"
+      }, {
+        "item" : "402 BCL",
+        "count" : "7839"
+      }, {
+        "item" : "LIMITED LIABILITY COMPANY - 802 LIMITED LIABILITY COMPANY LAW",
+        "count" : "3604"
+      }, {
+        "item" : "802 LLC",
+        "count" : "2530"
+      }, {
+        "item" : "1304 BCL",
+        "count" : "1733"
+      }, {
+        "item" : "PROFESSIONAL SERVICE LIMITED LIABILITY COMPANY - 1203 LIMITED LIABILITY COMPANY LAW",
+        "count" : "1394"
+      }, {
+        "item" : "BUSINESS CORPORATION - 1304 BUSINESS CORPORATION LAW",
+        "count" : "1339"
+      }, {
+        "item" : "NOT-FOR-PROFIT CORPORATION - 402 NOT-FOR-PROFIT CORPORATION LAW",
+        "count" : "704"
+      }, {
+        "item" : "1503 BCL",
+        "count" : "682"
+      }, {
+        "item" : "1203 LLC",
+        "count" : "494"
+      }, {
+        "item" : "PROFESSIONAL - 1503 BUSINESS CORPORATION LAW",
+        "count" : "336"
+      }, {
+        "item" : "1006 LLC",
+        "count" : "153"
+      }, {
+        "item" : "402 NCL",
+        "count" : "122"
+      }, {
+        "item" : "NOT-FOR-PROFIT CORPORATION - 1304 - NOT-FOR-PROFIT CORPORATION LAW",
+        "count" : "79"
+      }, {
+        "item" : "LIMITED PARTNERSHIP - 121-902 PARTNERSHIP LAW",
+        "count" : "73"
+      }, {
+        "item" : "1500A RLLP",
+        "count" : "68"
+      }, {
+        "item" : "1530 BCL",
+        "count" : "66"
+      }, {
+        "item" : "PROFESSIONAL CORPORATION - 1530 BUSINESS CORPORATION LAW",
+        "count" : "62"
+      } ],
+      "smallest" : "1006(e)(A)",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261176,
+    "name" : "NFP Category",
+    "dataTypeName" : "text",
+    "description" : "The category of the Not-for-Profit Corporation; either “Charitable” or “Non-Charitable”",
+    "fieldName" : "nfp_type",
+    "position" : 16,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376947,
+    "width" : 196,
+    "cachedContents" : {
+      "non_null" : "9322",
+      "largest" : "SEE PURPOSES",
+      "null" : "80962",
+      "top" : [ {
+        "item" : "NO-ANSWER",
+        "count" : "8302"
+      }, {
+        "item" : "CHARITABLE",
+        "count" : "915"
+      }, {
+        "item" : "NON-CHARITABLE",
+        "count" : "74"
+      }, {
+        "item" : "NON-CHARITIBLE",
+        "count" : "17"
+      }, {
+        "item" : "SEE PURPOSES",
+        "count" : "14"
+      } ],
+      "smallest" : "CHARITABLE",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261177,
+    "name" : "County",
+    "dataTypeName" : "text",
+    "description" : "The county within New York State in which the office of the entity is to be located.",
+    "fieldName" : "cnty_prin_ofc",
+    "position" : 17,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68847786,
+    "width" : 100,
+    "cachedContents" : {
+      "non_null" : "84542",
+      "largest" : "Yates",
+      "null" : "5742",
+      "top" : [ {
+        "item" : "New York",
+        "count" : "14848"
+      }, {
+        "item" : "Albany",
+        "count" : "10575"
+      }, {
+        "item" : "Kings",
+        "count" : "9799"
+      }, {
+        "item" : "Queens",
+        "count" : "7348"
+      }, {
+        "item" : "Nassau",
+        "count" : "7197"
+      }, {
+        "item" : "Suffolk",
+        "count" : "6382"
+      }, {
+        "item" : "Westchester",
+        "count" : "4495"
+      }, {
+        "item" : "Erie",
+        "count" : "2603"
+      }, {
+        "item" : "Rockland",
+        "count" : "2448"
+      }, {
+        "item" : "Bronx",
+        "count" : "2379"
+      }, {
+        "item" : "Monroe",
+        "count" : "1970"
+      }, {
+        "item" : "Orange",
+        "count" : "1504"
+      }, {
+        "item" : "Richmond",
+        "count" : "1371"
+      }, {
+        "item" : "Onondaga",
+        "count" : "1349"
+      }, {
+        "item" : "Dutchess",
+        "count" : "947"
+      }, {
+        "item" : "Saratoga",
+        "count" : "849"
+      }, {
+        "item" : "Ulster",
+        "count" : "640"
+      }, {
+        "item" : "Oneida",
+        "count" : "453"
+      }, {
+        "item" : "Rensselaer",
+        "count" : "404"
+      }, {
+        "item" : "Broome",
+        "count" : "398"
+      } ],
+      "smallest" : "Albany",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261178,
+    "name" : "Jurisdiction",
+    "dataTypeName" : "text",
+    "description" : "The jurisdiction (state or country) in which the entity was formed",
+    "fieldName" : "for_juris",
+    "position" : 18,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376949,
+    "width" : 208,
+    "cachedContents" : {
+      "non_null" : "84120",
+      "largest" : "WY",
+      "null" : "6164",
+      "top" : [ {
+        "item" : "NY",
+        "count" : "74601"
+      }, {
+        "item" : "DE",
+        "count" : "5935"
+      }, {
+        "item" : "NJ",
+        "count" : "413"
+      }, {
+        "item" : "FL",
+        "count" : "374"
+      }, {
+        "item" : "CA",
+        "count" : "359"
+      }, {
+        "item" : "PA",
+        "count" : "236"
+      }, {
+        "item" : "TX",
+        "count" : "215"
+      }, {
+        "item" : "CT",
+        "count" : "143"
+      }, {
+        "item" : "MA",
+        "count" : "128"
+      }, {
+        "item" : "WY",
+        "count" : "125"
+      }, {
+        "item" : "NV",
+        "count" : "118"
+      }, {
+        "item" : "IL",
+        "count" : "108"
+      }, {
+        "item" : "MI",
+        "count" : "105"
+      }, {
+        "item" : "MD",
+        "count" : "100"
+      }, {
+        "item" : "VA",
+        "count" : "100"
+      }, {
+        "item" : "GA",
+        "count" : "96"
+      }, {
+        "item" : "OH",
+        "count" : "93"
+      }, {
+        "item" : "NC",
+        "count" : "75"
+      }, {
+        "item" : "CO",
+        "count" : "72"
+      }, {
+        "item" : "MN",
+        "count" : "63"
+      } ],
+      "smallest" : "AK",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261179,
+    "name" : "Filer Name",
+    "dataTypeName" : "text",
+    "description" : "The name of the filer of the document",
+    "fieldName" : "filer_name",
+    "position" : 19,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376950,
+    "width" : 220,
+    "cachedContents" : {
+      "non_null" : "90284",
+      "largest" : "ZYTAVIA LASHARIA MCDOWELL",
+      "null" : "0",
+      "top" : [ {
+        "item" : "NORTHWEST REGISTERED AGENT LLC",
+        "count" : "2408"
+      }, {
+        "item" : "LEGALZOOM.COM, INC.",
+        "count" : "2348"
+      }, {
+        "item" : "CORPORATION SERVICE COMPANY",
+        "count" : "1468"
+      }, {
+        "item" : "GERALD WEINBERG, P.C.",
+        "count" : "1052"
+      }, {
+        "item" : "REGISTERED AGENT SOLUTIONS, INC. ALBANY",
+        "count" : "1052"
+      }, {
+        "item" : "PREMIER CORPORATE SERVICES INC.",
+        "count" : "856"
+      }, {
+        "item" : "C T CORPORATION SYSTEM",
+        "count" : "846"
+      }, {
+        "item" : "ZENBUSINESS INC.",
+        "count" : "786"
+      }, {
+        "item" : "WINDSOR CORPORATE SERVICES",
+        "count" : "753"
+      }, {
+        "item" : "REGISTERED AGENTS INC.",
+        "count" : "731"
+      }, {
+        "item" : "UNITED CORPORATE SERVICES, INC.",
+        "count" : "692"
+      }, {
+        "item" : "SERVICO, INC.",
+        "count" : "673"
+      }, {
+        "item" : "METRO BUSINESS SERVICES",
+        "count" : "631"
+      }, {
+        "item" : "REPUBLIC REGISTERED AGENT SERVICES INC.",
+        "count" : "615"
+      }, {
+        "item" : "DELANEY CORPORATE SERVICES, LTD.",
+        "count" : "583"
+      }, {
+        "item" : "RASI 5",
+        "count" : "562"
+      }, {
+        "item" : "NAT SMITH",
+        "count" : "540"
+      }, {
+        "item" : "HUBCO",
+        "count" : "451"
+      }, {
+        "item" : "ROBIN JONES",
+        "count" : "442"
+      }, {
+        "item" : "USACORP INC.",
+        "count" : "395"
+      } ],
+      "smallest" : "09/24/2026",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261180,
+    "name" : "Filer Addr1",
+    "dataTypeName" : "text",
+    "description" : "Filer’s Address Line 1",
+    "fieldName" : "filer_addr1",
+    "position" : 20,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376951,
+    "width" : 232,
+    "cachedContents" : {
+      "non_null" : "90282",
+      "largest" : "Z&Y ACCOUNTING SERVICES INC",
+      "null" : "2",
+      "top" : [ {
+        "item" : "418 BROADWAY",
+        "count" : "4707"
+      }, {
+        "item" : "101 N BRAND BLVD",
+        "count" : "2345"
+      }, {
+        "item" : "99 WASHINGTON AVENUE",
+        "count" : "1726"
+      }, {
+        "item" : "80 STATE ST.",
+        "count" : "1467"
+      }, {
+        "item" : "41 STATE STREET",
+        "count" : "1059"
+      }, {
+        "item" : "11501 DOMAIN DR",
+        "count" : "1019"
+      }, {
+        "item" : "560 HUDSON STREET",
+        "count" : "866"
+      }, {
+        "item" : "99 WASHINGTON AVE",
+        "count" : "847"
+      }, {
+        "item" : "10 BANK STREET",
+        "count" : "695"
+      }, {
+        "item" : "54 STATE STREET",
+        "count" : "675"
+      }, {
+        "item" : "283 WASHINGTON AVE.",
+        "count" : "673"
+      }, {
+        "item" : "1 BLUE HILL PLAZA STE. 1509-43",
+        "count" : "631"
+      }, {
+        "item" : "P.O. BOX 128",
+        "count" : "569"
+      }, {
+        "item" : "99 WASHINGTON AVENUE, SUITE 700",
+        "count" : "562"
+      }, {
+        "item" : "120 SOUTH CENTRAL AVENUE",
+        "count" : "505"
+      }, {
+        "item" : "266 BROADWAY",
+        "count" : "472"
+      }, {
+        "item" : "418 BROADWAY STE N",
+        "count" : "468"
+      }, {
+        "item" : "5511 Parkcrest Dr.",
+        "count" : "462"
+      }, {
+        "item" : "238 W. JERICHO TURNPIKE",
+        "count" : "454"
+      }, {
+        "item" : "418 BROADWAY STE R",
+        "count" : "419"
+      } ],
+      "smallest" : "-",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261181,
+    "name" : "Filer Addr2",
+    "dataTypeName" : "text",
+    "description" : "Filer’s Address Line 2",
+    "fieldName" : "filer_addr2",
+    "position" : 21,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376952,
+    "width" : 232,
+    "cachedContents" : {
+      "non_null" : "43390",
+      "largest" : "YONKERS",
+      "null" : "46894",
+      "top" : [ {
+        "item" : "STE N",
+        "count" : "2615"
+      }, {
+        "item" : "11TH FLOOR",
+        "count" : "2364"
+      }, {
+        "item" : "STE R",
+        "count" : "2087"
+      }, {
+        "item" : "SUITE 700",
+        "count" : "1946"
+      }, {
+        "item" : "STE 700, BOX 152",
+        "count" : "1053"
+      }, {
+        "item" : "STE 200",
+        "count" : "1044"
+      }, {
+        "item" : "STE 3-4",
+        "count" : "857"
+      }, {
+        "item" : "SUITE 400",
+        "count" : "846"
+      }, {
+        "item" : "SUITE 560",
+        "count" : "694"
+      }, {
+        "item" : "SUITE 805A",
+        "count" : "643"
+      }, {
+        "item" : "STE 804",
+        "count" : "624"
+      }, {
+        "item" : "SUITE 401",
+        "count" : "481"
+      }, {
+        "item" : "Suite 103",
+        "count" : "471"
+      }, {
+        "item" : "SUITE 202",
+        "count" : "399"
+      }, {
+        "item" : "SUITE 310",
+        "count" : "397"
+      }, {
+        "item" : "SUITE 108",
+        "count" : "396"
+      }, {
+        "item" : "SUITE 201",
+        "count" : "345"
+      }, {
+        "item" : "SUITE 204",
+        "count" : "317"
+      }, {
+        "item" : "SUITE U-5",
+        "count" : "295"
+      }, {
+        "item" : "#220",
+        "count" : "282"
+      } ],
+      "smallest" : "-",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261182,
+    "name" : "Filer City, Town or Village",
+    "dataTypeName" : "text",
+    "description" : "Filer’s Address City, Town or Village",
+    "fieldName" : "filer_city",
+    "position" : 22,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376953,
+    "width" : 220,
+    "cachedContents" : {
+      "non_null" : "90284",
+      "largest" : "ZURICH",
+      "null" : "0",
+      "top" : [ {
+        "item" : "ALBANY",
+        "count" : "15038"
+      }, {
+        "item" : "BROOKLYN",
+        "count" : "8332"
+      }, {
+        "item" : "NEW YORK",
+        "count" : "8045"
+      }, {
+        "item" : "GLENDALE",
+        "count" : "2398"
+      }, {
+        "item" : "FLUSHING",
+        "count" : "1760"
+      }, {
+        "item" : "AUSTIN",
+        "count" : "1591"
+      }, {
+        "item" : "BRONX",
+        "count" : "1569"
+      }, {
+        "item" : "WHITE PLAINS",
+        "count" : "1018"
+      }, {
+        "item" : "ROCHESTER",
+        "count" : "942"
+      }, {
+        "item" : "STATEN ISLAND",
+        "count" : "940"
+      }, {
+        "item" : "HACKENSACK",
+        "count" : "906"
+      }, {
+        "item" : "CLAYTON",
+        "count" : "871"
+      }, {
+        "item" : "BUFFALO",
+        "count" : "782"
+      }, {
+        "item" : "PEARL RIVER",
+        "count" : "759"
+      }, {
+        "item" : "VALLEY STREAM",
+        "count" : "622"
+      }, {
+        "item" : "GLENMONT",
+        "count" : "615"
+      }, {
+        "item" : "MONSEY",
+        "count" : "607"
+      }, {
+        "item" : "HUNTINGTON STATION",
+        "count" : "562"
+      }, {
+        "item" : "GREAT NECK",
+        "count" : "561"
+      }, {
+        "item" : "ASTORIA",
+        "count" : "545"
+      } ],
+      "smallest" : "-",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261183,
+    "name" : "Filer State",
+    "dataTypeName" : "text",
+    "description" : "Filer’s Address State",
+    "fieldName" : "filer_state",
+    "position" : 23,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376954,
+    "width" : 232,
+    "cachedContents" : {
+      "non_null" : "90267",
+      "largest" : "WY",
+      "null" : "17",
+      "top" : [ {
+        "item" : "NY",
+        "count" : "72930"
+      }, {
+        "item" : "CA",
+        "count" : "3670"
+      }, {
+        "item" : "NJ",
+        "count" : "2963"
+      }, {
+        "item" : "TX",
+        "count" : "2845"
+      }, {
+        "item" : "FL",
+        "count" : "1442"
+      }, {
+        "item" : "MO",
+        "count" : "935"
+      }, {
+        "item" : "DE",
+        "count" : "913"
+      }, {
+        "item" : "CT",
+        "count" : "577"
+      }, {
+        "item" : "IL",
+        "count" : "440"
+      }, {
+        "item" : "PA",
+        "count" : "418"
+      }, {
+        "item" : "MA",
+        "count" : "352"
+      }, {
+        "item" : "NV",
+        "count" : "262"
+      }, {
+        "item" : "WI",
+        "count" : "211"
+      }, {
+        "item" : "GA",
+        "count" : "203"
+      }, {
+        "item" : "UT",
+        "count" : "191"
+      }, {
+        "item" : "NC",
+        "count" : "180"
+      }, {
+        "item" : "VA",
+        "count" : "145"
+      }, {
+        "item" : "MD",
+        "count" : "136"
+      }, {
+        "item" : "MI",
+        "count" : "123"
+      }, {
+        "item" : "AZ",
+        "count" : "117"
+      } ],
+      "smallest" : "AK",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261184,
+    "name" : "Filer Zip5",
+    "dataTypeName" : "text",
+    "description" : "Filer’s Address Zip 5",
+    "fieldName" : "filer_zip5",
+    "position" : 24,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376955,
+    "width" : 220,
+    "cachedContents" : {
+      "non_null" : "90264",
+      "largest" : "W8 5U",
+      "null" : "20",
+      "top" : [ {
+        "item" : "12207",
+        "count" : "9184"
+      }, {
+        "item" : "12210",
+        "count" : "2471"
+      }, {
+        "item" : "91203",
+        "count" : "2347"
+      }, {
+        "item" : "12260",
+        "count" : "1697"
+      }, {
+        "item" : "78758",
+        "count" : "1055"
+      }, {
+        "item" : "11354",
+        "count" : "956"
+      }, {
+        "item" : "11746",
+        "count" : "919"
+      }, {
+        "item" : "07601",
+        "count" : "909"
+      }, {
+        "item" : "12206",
+        "count" : "907"
+      }, {
+        "item" : "63105",
+        "count" : "865"
+      }, {
+        "item" : "11211",
+        "count" : "820"
+      }, {
+        "item" : "78731",
+        "count" : "794"
+      }, {
+        "item" : "10965",
+        "count" : "762"
+      }, {
+        "item" : "10606",
+        "count" : "747"
+      }, {
+        "item" : "12077",
+        "count" : "687"
+      }, {
+        "item" : "10952",
+        "count" : "684"
+      }, {
+        "item" : "10016",
+        "count" : "675"
+      }, {
+        "item" : "10001",
+        "count" : "620"
+      }, {
+        "item" : "11580",
+        "count" : "534"
+      }, {
+        "item" : "11590",
+        "count" : "525"
+      } ],
+      "smallest" : "00000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261185,
+    "name" : "Filer Zip4",
+    "dataTypeName" : "text",
+    "description" : "Filer’s Address Zip 4",
+    "fieldName" : "filer_zip4",
+    "position" : 25,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376956,
+    "width" : 220,
+    "cachedContents" : {
+      "non_null" : "1689",
+      "largest" : "9998",
+      "null" : "88595",
+      "top" : [ {
+        "item" : "1233",
+        "count" : "24"
+      }, {
+        "item" : "1422",
+        "count" : "21"
+      }, {
+        "item" : "1502",
+        "count" : "21"
+      }, {
+        "item" : "0000",
+        "count" : "8"
+      }, {
+        "item" : "9723",
+        "count" : "8"
+      }, {
+        "item" : "1254",
+        "count" : "8"
+      }, {
+        "item" : "1724",
+        "count" : "7"
+      }, {
+        "item" : "4554",
+        "count" : "7"
+      }, {
+        "item" : "1910",
+        "count" : "7"
+      }, {
+        "item" : "9998",
+        "count" : "6"
+      }, {
+        "item" : "1256",
+        "count" : "6"
+      }, {
+        "item" : "2613",
+        "count" : "6"
+      }, {
+        "item" : "2302",
+        "count" : "6"
+      }, {
+        "item" : "6570",
+        "count" : "6"
+      }, {
+        "item" : "1100",
+        "count" : "6"
+      }, {
+        "item" : "2814",
+        "count" : "6"
+      }, {
+        "item" : "8272",
+        "count" : "6"
+      }, {
+        "item" : "3448",
+        "count" : "5"
+      }, {
+        "item" : "1202",
+        "count" : "5"
+      }, {
+        "item" : "2815",
+        "count" : "5"
+      } ],
+      "smallest" : "0000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261186,
+    "name" : "Filer Country",
+    "dataTypeName" : "text",
+    "description" : "Filer’s Address Country",
+    "fieldName" : "filer_country",
+    "position" : 26,
+    "renderTypeName" : "text",
+    "tableColumnId" : 138585060,
+    "cachedContents" : {
+      "non_null" : "90284",
+      "largest" : "ZAF",
+      "null" : "0",
+      "top" : [ {
+        "item" : "USA",
+        "count" : "90255"
+      }, {
+        "item" : "CAN",
+        "count" : "7"
+      }, {
+        "item" : "GBR",
+        "count" : "7"
+      }, {
+        "item" : "ISR",
+        "count" : "5"
+      }, {
+        "item" : "NLD",
+        "count" : "2"
+      }, {
+        "item" : "FRA",
+        "count" : "2"
+      }, {
+        "item" : "ESP",
+        "count" : "1"
+      }, {
+        "item" : "CHE",
+        "count" : "1"
+      }, {
+        "item" : "NOR",
+        "count" : "1"
+      }, {
+        "item" : "ARE",
+        "count" : "1"
+      }, {
+        "item" : "ITA",
+        "count" : "1"
+      }, {
+        "item" : "ZAF",
+        "count" : "1"
+      } ],
+      "smallest" : "ARE",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : { }
+  }, {
+    "id" : 543261187,
+    "name" : "SOP Name",
+    "dataTypeName" : "text",
+    "description" : "The name in the address to which the Secretary of State will mail a copy of any process against the entity served upon the Secretary of State",
+    "fieldName" : "sop_name",
+    "position" : 27,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376957,
+    "width" : 196,
+    "cachedContents" : {
+      "non_null" : "84561",
+      "largest" : "ZZZ TCG LLC",
+      "null" : "5723",
+      "top" : [ {
+        "item" : "THE LLC",
+        "count" : "8886"
+      }, {
+        "item" : "THE CORPORATION",
+        "count" : "4054"
+      }, {
+        "item" : "NORTHWEST REGISTERED AGENT LLC",
+        "count" : "3486"
+      }, {
+        "item" : "the llc",
+        "count" : "3118"
+      }, {
+        "item" : "REGISTERED AGENTS INC.",
+        "count" : "2102"
+      }, {
+        "item" : "C/O CORPORATION SERVICE COMPANY",
+        "count" : "1719"
+      }, {
+        "item" : "the corporation",
+        "count" : "1321"
+      }, {
+        "item" : "CORPORATION SERVICE COMPANY",
+        "count" : "1215"
+      }, {
+        "item" : "LEGALZOOM USCA, INC.",
+        "count" : "894"
+      }, {
+        "item" : "ZENBUSINESS INC.",
+        "count" : "832"
+      }, {
+        "item" : "THE LIMITED LIABILITY COMPANY",
+        "count" : "709"
+      }, {
+        "item" : "C/O C T CORPORATION SYSTEM",
+        "count" : "695"
+      }, {
+        "item" : "REPUBLIC REGISTERED AGENT SERVICES INC.",
+        "count" : "674"
+      }, {
+        "item" : "C T CORPORATION SYSTEM",
+        "count" : "586"
+      }, {
+        "item" : "Process Addressee Resigned",
+        "count" : "494"
+      }, {
+        "item" : "COGENCY GLOBAL INC.",
+        "count" : "373"
+      }, {
+        "item" : "The LLC",
+        "count" : "280"
+      }, {
+        "item" : "REGISTERED AGENT SOLUTIONS, INC.",
+        "count" : "217"
+      }, {
+        "item" : "CAPITOL SERVICES, INC.",
+        "count" : "169"
+      }, {
+        "item" : "Registered Agents Inc.",
+        "count" : "165"
+      } ],
+      "smallest" : "004RJRH, CORP.",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261188,
+    "name" : "SOP Addr1",
+    "dataTypeName" : "text",
+    "description" : "Address Line 1 of the address to which the Secretary of State will mail a copy of any process against the entity served upon the Secretary of State",
+    "fieldName" : "sop_addr1",
+    "position" : 28,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376958,
+    "width" : 208,
+    "cachedContents" : {
+      "non_null" : "84558",
+      "largest" : "ZOZISLAW CZACHOR",
+      "null" : "5726",
+      "top" : [ {
+        "item" : "418 BROADWAY",
+        "count" : "3469"
+      }, {
+        "item" : "80 STATE STREET",
+        "count" : "2749"
+      }, {
+        "item" : "28 LIBERTY STREET",
+        "count" : "1069"
+      }, {
+        "item" : "45 Main Street",
+        "count" : "868"
+      }, {
+        "item" : "41 STATE STREET",
+        "count" : "836"
+      }, {
+        "item" : "418 BROADWAY STE R",
+        "count" : "708"
+      }, {
+        "item" : "54 STATE STREET",
+        "count" : "568"
+      }, {
+        "item" : "28 LIBERTY ST.",
+        "count" : "518"
+      }, {
+        "item" : "418 Broadway STE N",
+        "count" : "516"
+      }, {
+        "item" : "418 Broadway STE R",
+        "count" : "468"
+      }, {
+        "item" : "418 BROADWAY, STE N",
+        "count" : "401"
+      }, {
+        "item" : "122 EAST 42ND STREET",
+        "count" : "287"
+      }, {
+        "item" : "418 Broadway",
+        "count" : "276"
+      }, {
+        "item" : "447 Broadway 2nd Fl. - #3000",
+        "count" : "204"
+      }, {
+        "item" : "7014 13TH AVENUE, SUITE 202",
+        "count" : "197"
+      }, {
+        "item" : "99 WASHINGTON AVENUE",
+        "count" : "190"
+      }, {
+        "item" : "1 BLUE HILL PLAZA, LL #1509-43",
+        "count" : "176"
+      }, {
+        "item" : "600 MAMARONECK AVENUE #400",
+        "count" : "172"
+      }, {
+        "item" : "538 BROADHOLLOW RD.",
+        "count" : "137"
+      }, {
+        "item" : "80 STATE ST.",
+        "count" : "134"
+      } ],
+      "smallest" : "0119 METROPOLITAN AVE",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261189,
+    "name" : "SOP Addr2",
+    "dataTypeName" : "text",
+    "description" : "Address Line 2 of the address to which the Secretary of State will mail a copy of any process against the entity served upon the Secretary of State",
+    "fieldName" : "sop_addr2",
+    "position" : 29,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376959,
+    "width" : 208,
+    "cachedContents" : {
+      "non_null" : "23352",
+      "largest" : "Yates Ave",
+      "null" : "66932",
+      "top" : [ {
+        "item" : "STE N",
+        "count" : "2529"
+      }, {
+        "item" : "STE R",
+        "count" : "1136"
+      }, {
+        "item" : "Suite 238",
+        "count" : "867"
+      }, {
+        "item" : "SUITE 112",
+        "count" : "834"
+      }, {
+        "item" : "STE 804",
+        "count" : "566"
+      }, {
+        "item" : "18TH FLOOR",
+        "count" : "340"
+      }, {
+        "item" : "3RD FL EAST",
+        "count" : "210"
+      }, {
+        "item" : "SUITE 700",
+        "count" : "177"
+      }, {
+        "item" : "STE 100",
+        "count" : "142"
+      }, {
+        "item" : "SUITE 202",
+        "count" : "130"
+      }, {
+        "item" : "Apt 1",
+        "count" : "73"
+      }, {
+        "item" : "SUITE 200",
+        "count" : "71"
+      }, {
+        "item" : "2ND FLOOR",
+        "count" : "69"
+      }, {
+        "item" : "Apt 2",
+        "count" : "67"
+      }, {
+        "item" : "2nd Floor",
+        "count" : "67"
+      }, {
+        "item" : "SUITE 805-A",
+        "count" : "65"
+      }, {
+        "item" : "suite 200",
+        "count" : "63"
+      }, {
+        "item" : "14th Floor",
+        "count" : "61"
+      }, {
+        "item" : "#400",
+        "count" : "60"
+      }, {
+        "item" : "Suite 100",
+        "count" : "53"
+      } ],
+      "smallest" : "-",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261190,
+    "name" : "SOP City, Town or Village",
+    "dataTypeName" : "text",
+    "description" : "City, town or village in the address to which the Secretary of State will mail a copy of any process against the entity served upon the Secretary of State",
+    "fieldName" : "sop_city",
+    "position" : 30,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376960,
+    "width" : 196,
+    "cachedContents" : {
+      "non_null" : "84558",
+      "largest" : "ZEELAND",
+      "null" : "5726",
+      "top" : [ {
+        "item" : "ALBANY",
+        "count" : "10880"
+      }, {
+        "item" : "NEW YORK",
+        "count" : "8247"
+      }, {
+        "item" : "BROOKLYN",
+        "count" : "6152"
+      }, {
+        "item" : "Brooklyn",
+        "count" : "4231"
+      }, {
+        "item" : "New York",
+        "count" : "3570"
+      }, {
+        "item" : "Albany",
+        "count" : "1821"
+      }, {
+        "item" : "BRONX",
+        "count" : "1274"
+      }, {
+        "item" : "FLUSHING",
+        "count" : "838"
+      }, {
+        "item" : "Bronx",
+        "count" : "785"
+      }, {
+        "item" : "STATEN ISLAND",
+        "count" : "768"
+      }, {
+        "item" : "BUFFALO",
+        "count" : "635"
+      }, {
+        "item" : "ROCHESTER",
+        "count" : "574"
+      }, {
+        "item" : "Rochester",
+        "count" : "517"
+      }, {
+        "item" : "Staten Island",
+        "count" : "496"
+      }, {
+        "item" : "GREAT NECK",
+        "count" : "465"
+      }, {
+        "item" : "Buffalo",
+        "count" : "399"
+      }, {
+        "item" : "MELVILLE",
+        "count" : "390"
+      }, {
+        "item" : "JAMAICA",
+        "count" : "351"
+      }, {
+        "item" : "ASTORIA",
+        "count" : "325"
+      }, {
+        "item" : "YONKERS",
+        "count" : "310"
+      } ],
+      "smallest" : "10003",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261191,
+    "name" : "SOP State",
+    "dataTypeName" : "text",
+    "description" : "State in the address to which the Secretary of State will mail a copy of any process against the entity served upon the Secretary of State",
+    "fieldName" : "sop_state",
+    "position" : 31,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376961,
+    "width" : 208,
+    "cachedContents" : {
+      "non_null" : "84557",
+      "largest" : "WY",
+      "null" : "5727",
+      "top" : [ {
+        "item" : "NY",
+        "count" : "79559"
+      }, {
+        "item" : "NJ",
+        "count" : "1166"
+      }, {
+        "item" : "FL",
+        "count" : "741"
+      }, {
+        "item" : "CA",
+        "count" : "610"
+      }, {
+        "item" : "CT",
+        "count" : "399"
+      }, {
+        "item" : "PA",
+        "count" : "238"
+      }, {
+        "item" : "DE",
+        "count" : "213"
+      }, {
+        "item" : "TX",
+        "count" : "197"
+      }, {
+        "item" : "MA",
+        "count" : "194"
+      }, {
+        "item" : "GA",
+        "count" : "101"
+      }, {
+        "item" : "IL",
+        "count" : "98"
+      }, {
+        "item" : "NC",
+        "count" : "88"
+      }, {
+        "item" : "VA",
+        "count" : "78"
+      }, {
+        "item" : "MD",
+        "count" : "73"
+      }, {
+        "item" : "WA",
+        "count" : "62"
+      }, {
+        "item" : "SC",
+        "count" : "53"
+      }, {
+        "item" : "TN",
+        "count" : "50"
+      }, {
+        "item" : "MI",
+        "count" : "49"
+      }, {
+        "item" : "AZ",
+        "count" : "47"
+      }, {
+        "item" : "OH",
+        "count" : "47"
+      } ],
+      "smallest" : "AL",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261192,
+    "name" : "SOP ZIP5",
+    "dataTypeName" : "text",
+    "description" : "ZIP 5 in the address to which the Secretary of State will mail a copy of any process against the entity served upon the Secretary of State",
+    "fieldName" : "sop_zip5",
+    "position" : 32,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376962,
+    "width" : 196,
+    "cachedContents" : {
+      "non_null" : "84557",
+      "largest" : "99344",
+      "null" : "5727",
+      "top" : [ {
+        "item" : "12207",
+        "count" : "10988"
+      }, {
+        "item" : "10005",
+        "count" : "2109"
+      }, {
+        "item" : "11201",
+        "count" : "1379"
+      }, {
+        "item" : "11228",
+        "count" : "750"
+      }, {
+        "item" : "10016",
+        "count" : "687"
+      }, {
+        "item" : "10013",
+        "count" : "608"
+      }, {
+        "item" : "10003",
+        "count" : "604"
+      }, {
+        "item" : "10001",
+        "count" : "603"
+      }, {
+        "item" : "11219",
+        "count" : "575"
+      }, {
+        "item" : "10022",
+        "count" : "507"
+      }, {
+        "item" : "11235",
+        "count" : "500"
+      }, {
+        "item" : "11354",
+        "count" : "481"
+      }, {
+        "item" : "11747",
+        "count" : "480"
+      }, {
+        "item" : "10018",
+        "count" : "480"
+      }, {
+        "item" : "11211",
+        "count" : "479"
+      }, {
+        "item" : "10017",
+        "count" : "469"
+      }, {
+        "item" : "14221",
+        "count" : "453"
+      }, {
+        "item" : "10036",
+        "count" : "449"
+      }, {
+        "item" : "10168",
+        "count" : "405"
+      }, {
+        "item" : "11021",
+        "count" : "402"
+      } ],
+      "smallest" : "00000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261193,
+    "name" : "SOP Zip4",
+    "dataTypeName" : "text",
+    "description" : "ZIP 4 in the address to which the Secretary of State will mail a copy of any process against the entity served upon the Secretary of State",
+    "fieldName" : "sop_zip4",
+    "position" : 33,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376963,
+    "width" : 196,
+    "cachedContents" : {
+      "non_null" : "1709",
+      "largest" : "9998",
+      "null" : "88575",
+      "top" : [ {
+        "item" : "2543",
+        "count" : "874"
+      }, {
+        "item" : "2822",
+        "count" : "80"
+      }, {
+        "item" : "1502",
+        "count" : "18"
+      }, {
+        "item" : "9998",
+        "count" : "14"
+      }, {
+        "item" : "1000",
+        "count" : "12"
+      }, {
+        "item" : "1617",
+        "count" : "10"
+      }, {
+        "item" : "7409",
+        "count" : "7"
+      }, {
+        "item" : "4554",
+        "count" : "6"
+      }, {
+        "item" : "1832",
+        "count" : "5"
+      }, {
+        "item" : "4346",
+        "count" : "4"
+      }, {
+        "item" : "3892",
+        "count" : "4"
+      }, {
+        "item" : "1326",
+        "count" : "4"
+      }, {
+        "item" : "2601",
+        "count" : "4"
+      }, {
+        "item" : "4207",
+        "count" : "4"
+      }, {
+        "item" : "2302",
+        "count" : "3"
+      }, {
+        "item" : "1207",
+        "count" : "3"
+      }, {
+        "item" : "1132",
+        "count" : "3"
+      }, {
+        "item" : "2151",
+        "count" : "3"
+      }, {
+        "item" : "2202",
+        "count" : "3"
+      }, {
+        "item" : "2562",
+        "count" : "3"
+      } ],
+      "smallest" : "0000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261194,
+    "name" : "Mrgr Const Name1",
+    "dataTypeName" : "text",
+    "description" : "Name of constituent entity participating in a merger or consolidation ",
+    "fieldName" : "mrgr_const_name1",
+    "position" : 34,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376964,
+    "width" : 292,
+    "cachedContents" : {
+      "non_null" : "101",
+      "largest" : "XCOM TECHNOLOGIES OF NEW YORK, INC.",
+      "null" : "90183",
+      "top" : [ {
+        "item" : "LOSTMONEYBACK LLC",
+        "count" : "7"
+      }, {
+        "item" : "I. J. WHITE CORPORATION",
+        "count" : "4"
+      }, {
+        "item" : "BONBONBK INC",
+        "count" : "4"
+      }, {
+        "item" : "BJ RUBIN ENTERPRISES, INC.",
+        "count" : "4"
+      }, {
+        "item" : "LEPRECHAUN LINES, INC.",
+        "count" : "4"
+      }, {
+        "item" : "NEWBURGH BEACON BUS CORP.",
+        "count" : "4"
+      }, {
+        "item" : "ELONA DEVELOPMENT, L.L.C.",
+        "count" : "2"
+      }, {
+        "item" : "FLOOD FORM, LLC",
+        "count" : "2"
+      }, {
+        "item" : "DEDICATED SOLUTIONS WORK II LLC",
+        "count" : "2"
+      }, {
+        "item" : "FENILI WEST COAST LLC",
+        "count" : "2"
+      }, {
+        "item" : "FEMALE CHARITABLE CHARITABLE SOCIETY OF THE VILLAGE OF BALDWINSVILLE, N.Y.",
+        "count" : "2"
+      }, {
+        "item" : "GEOGLOBAL NEW YORK, INC.",
+        "count" : "2"
+      }, {
+        "item" : "GIUNTA KK ACQUISITION CORP.",
+        "count" : "2"
+      }, {
+        "item" : "GOWANDA REM-TRONICS, LLC",
+        "count" : "2"
+      }, {
+        "item" : "CHECKERED FLAG AUTO BUS INC.",
+        "count" : "2"
+      }, {
+        "item" : "J.A. MARTIN CONSULTING LLC",
+        "count" : "2"
+      }, {
+        "item" : "INVERSIONES PROSPERIDAD LLC",
+        "count" : "2"
+      }, {
+        "item" : "FACILITY TRANSPORT SOLUTIONS INC.",
+        "count" : "2"
+      }, {
+        "item" : "KB COMM, LLC",
+        "count" : "2"
+      }, {
+        "item" : "HETCH MX, INC.",
+        "count" : "2"
+      } ],
+      "smallest" : "1174 OSPREY, LLC",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261195,
+    "name" : "Mrgr Const Name2",
+    "dataTypeName" : "text",
+    "description" : "Name constituent entity participating in a merger or consolidation",
+    "fieldName" : "mrgr_const_name2",
+    "position" : 35,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376965,
+    "width" : 292,
+    "cachedContents" : {
+      "non_null" : "98",
+      "largest" : "XCOM TECHNOLOGIES OF NEW YORK, INC.",
+      "null" : "90186",
+      "top" : [ {
+        "item" : "AN ARM AND A LEG LLC",
+        "count" : "7"
+      }, {
+        "item" : "NEWBURGH BEACON BUS CORP.",
+        "count" : "4"
+      }, {
+        "item" : "BJ RUBIN ENTERPRISES, INC.",
+        "count" : "4"
+      }, {
+        "item" : "I. J. WHITE CORPORATION",
+        "count" : "4"
+      }, {
+        "item" : "LEPRECHAUN LINES, INC.",
+        "count" : "4"
+      }, {
+        "item" : "BONBON UES INC.",
+        "count" : "4"
+      }, {
+        "item" : "DEDICATED SOLUTIONS WORK II LLC",
+        "count" : "2"
+      }, {
+        "item" : "CHECKERED FLAG AUTO BUS INC.",
+        "count" : "2"
+      }, {
+        "item" : "1174 OSPREY, LLC",
+        "count" : "2"
+      }, {
+        "item" : "FEMALE CHARITABLE CHARITABLE SOCIETY OF THE VILLAGE OF BALDWINSVILLE, N.Y.",
+        "count" : "2"
+      }, {
+        "item" : "FENILI WEST COAST LLC",
+        "count" : "2"
+      }, {
+        "item" : "FLOOD FORM, LLC",
+        "count" : "2"
+      }, {
+        "item" : "GEOGLOBAL NEW YORK, INC.",
+        "count" : "2"
+      }, {
+        "item" : "GIUNTA KK ACQUISITION CORP.",
+        "count" : "2"
+      }, {
+        "item" : "J.A. MARTIN CONSULTING LLC",
+        "count" : "2"
+      }, {
+        "item" : "FACILITY TRANSPORT SOLUTIONS INC.",
+        "count" : "2"
+      }, {
+        "item" : "INVERSIONES PROSPERIDAD LLC",
+        "count" : "2"
+      }, {
+        "item" : "HETCH MX, INC.",
+        "count" : "2"
+      }, {
+        "item" : "GOWANDA REM-TRONICS, LLC",
+        "count" : "2"
+      }, {
+        "item" : "EMPIRE SECURITY CONSULTANTS, CORP.",
+        "count" : "2"
+      } ],
+      "smallest" : "1174 OSPREY, LLC",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261196,
+    "name" : "Mrgr Const Name3",
+    "dataTypeName" : "text",
+    "description" : "Name of constituent entity participating in a merger or consolidation",
+    "fieldName" : "mrgr_const_name3",
+    "position" : 36,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376966,
+    "width" : 292,
+    "cachedContents" : {
+      "non_null" : "11",
+      "largest" : "OFELIA NORDIC IMPORTS INC",
+      "null" : "90273",
+      "top" : [ {
+        "item" : "LOSTMONEYBACK LLC",
+        "count" : "7"
+      }, {
+        "item" : "OFELIA NORDIC IMPORTS INC",
+        "count" : "4"
+      } ],
+      "smallest" : "LOSTMONEYBACK LLC",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261197,
+    "name" : "Old Stock Num Shrs 1",
+    "dataTypeName" : "text",
+    "description" : "Number of shares of stock",
+    "fieldName" : "old_stock_num_shrs_1",
+    "position" : 37,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376967,
+    "width" : 340,
+    "cachedContents" : {
+      "non_null" : "19265",
+      "largest" : "999999",
+      "null" : "71019",
+      "top" : [ {
+        "item" : "200",
+        "count" : "15832"
+      }, {
+        "item" : "100",
+        "count" : "668"
+      }, {
+        "item" : "10000",
+        "count" : "496"
+      }, {
+        "item" : "1000",
+        "count" : "490"
+      }, {
+        "item" : "20000",
+        "count" : "314"
+      }, {
+        "item" : "1500",
+        "count" : "169"
+      }, {
+        "item" : "2000",
+        "count" : "146"
+      }, {
+        "item" : "1",
+        "count" : "97"
+      }, {
+        "item" : "100000",
+        "count" : "77"
+      }, {
+        "item" : "5000",
+        "count" : "67"
+      }, {
+        "item" : "1000000",
+        "count" : "61"
+      }, {
+        "item" : "0",
+        "count" : "57"
+      }, {
+        "item" : "500",
+        "count" : "40"
+      }, {
+        "item" : "50000",
+        "count" : "37"
+      }, {
+        "item" : "400",
+        "count" : "26"
+      }, {
+        "item" : "30000",
+        "count" : "25"
+      }, {
+        "item" : "10000000",
+        "count" : "25"
+      }, {
+        "item" : "10",
+        "count" : "21"
+      }, {
+        "item" : "2",
+        "count" : "21"
+      }, {
+        "item" : "3000",
+        "count" : "21"
+      } ],
+      "smallest" : "0",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261198,
+    "name" : "Old Stock Type 1",
+    "dataTypeName" : "text",
+    "description" : "Type of Stock (“par” or “no par value”)",
+    "fieldName" : "old_stock_type_1",
+    "position" : 38,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376968,
+    "width" : 292,
+    "cachedContents" : {
+      "non_null" : "19265",
+      "largest" : "PAR VALUE",
+      "null" : "71019",
+      "top" : [ {
+        "item" : "NO PAR VALUE",
+        "count" : "16647"
+      }, {
+        "item" : "PAR VALUE",
+        "count" : "2561"
+      }, {
+        "item" : "CAP",
+        "count" : "54"
+      }, {
+        "item" : "No Stock Information Available",
+        "count" : "3"
+      } ],
+      "smallest" : "CAP",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261199,
+    "name" : "Old Stock Val Shr 1",
+    "dataTypeName" : "text",
+    "description" : "Par Value of each share having a par value",
+    "fieldName" : "old_stock_val_shr_1",
+    "position" : 39,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376969,
+    "width" : 328,
+    "cachedContents" : {
+      "non_null" : "19265",
+      "largest" : "9400.00000",
+      "null" : "71019",
+      "top" : [ {
+        "item" : "0.00000",
+        "count" : "16656"
+      }, {
+        "item" : "1.00000",
+        "count" : "1024"
+      }, {
+        "item" : "0.01000",
+        "count" : "630"
+      }, {
+        "item" : "0.00100",
+        "count" : "483"
+      }, {
+        "item" : "0.10000",
+        "count" : "65"
+      }, {
+        "item" : "100.00000",
+        "count" : "64"
+      }, {
+        "item" : "10.00000",
+        "count" : "59"
+      }, {
+        "item" : "0.00010",
+        "count" : "55"
+      }, {
+        "item" : "5.00000",
+        "count" : "18"
+      }, {
+        "item" : "200.00000",
+        "count" : "18"
+      }, {
+        "item" : "0.00001",
+        "count" : "17"
+      }, {
+        "item" : "1000.00000",
+        "count" : "14"
+      }, {
+        "item" : "5000.00000",
+        "count" : "14"
+      }, {
+        "item" : "0.20000",
+        "count" : "11"
+      }, {
+        "item" : "100000.00000",
+        "count" : "9"
+      }, {
+        "item" : "2.00000",
+        "count" : "9"
+      }, {
+        "item" : "20000.00000",
+        "count" : "9"
+      }, {
+        "item" : "50.00000",
+        "count" : "9"
+      }, {
+        "item" : "0.40000",
+        "count" : "8"
+      }, {
+        "item" : "10000.00000",
+        "count" : "6"
+      } ],
+      "smallest" : "0.00000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261200,
+    "name" : "Old Stock Num Shrs 2",
+    "dataTypeName" : "text",
+    "description" : "Number of shares of stock",
+    "fieldName" : "old_stock_num_shrs_2",
+    "position" : 40,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376970,
+    "width" : 340,
+    "cachedContents" : {
+      "non_null" : "102",
+      "largest" : "9999",
+      "null" : "90182",
+      "top" : [ {
+        "item" : "200",
+        "count" : "38"
+      }, {
+        "item" : "100",
+        "count" : "4"
+      }, {
+        "item" : "10000",
+        "count" : "3"
+      }, {
+        "item" : "15000000",
+        "count" : "3"
+      }, {
+        "item" : "3000",
+        "count" : "3"
+      }, {
+        "item" : "198",
+        "count" : "2"
+      }, {
+        "item" : "8000",
+        "count" : "2"
+      }, {
+        "item" : "2000",
+        "count" : "2"
+      }, {
+        "item" : "6638",
+        "count" : "2"
+      }, {
+        "item" : "50000",
+        "count" : "2"
+      }, {
+        "item" : "45",
+        "count" : "2"
+      }, {
+        "item" : "20000000",
+        "count" : "2"
+      }, {
+        "item" : "5000",
+        "count" : "2"
+      }, {
+        "item" : "69090",
+        "count" : "2"
+      }, {
+        "item" : "15000",
+        "count" : "1"
+      }, {
+        "item" : "10100",
+        "count" : "1"
+      }, {
+        "item" : "1500",
+        "count" : "1"
+      }, {
+        "item" : "139856481",
+        "count" : "1"
+      }, {
+        "item" : "100000000",
+        "count" : "1"
+      }, {
+        "item" : "1000",
+        "count" : "1"
+      } ],
+      "smallest" : "10",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261201,
+    "name" : "Old Stock Type 2",
+    "dataTypeName" : "text",
+    "description" : "Type of Stock (“par” or “no par value”)",
+    "fieldName" : "old_stock_type_2",
+    "position" : 41,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376971,
+    "width" : 292,
+    "cachedContents" : {
+      "non_null" : "102",
+      "largest" : "PAR VALUE",
+      "null" : "90182",
+      "top" : [ {
+        "item" : "NO PAR VALUE",
+        "count" : "53"
+      }, {
+        "item" : "PAR VALUE",
+        "count" : "49"
+      } ],
+      "smallest" : "NO PAR VALUE",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261202,
+    "name" : "Old Stock Val Shr 2",
+    "dataTypeName" : "text",
+    "description" : "Par Value of each share having a par value",
+    "fieldName" : "old_stock_val_shr_2",
+    "position" : 42,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376972,
+    "width" : 328,
+    "cachedContents" : {
+      "non_null" : "102",
+      "largest" : "5.00000",
+      "null" : "90182",
+      "top" : [ {
+        "item" : "0.00000",
+        "count" : "53"
+      }, {
+        "item" : "0.00100",
+        "count" : "8"
+      }, {
+        "item" : "100.00000",
+        "count" : "7"
+      }, {
+        "item" : "0.01000",
+        "count" : "7"
+      }, {
+        "item" : "1000.00000",
+        "count" : "5"
+      }, {
+        "item" : "1.00000",
+        "count" : "5"
+      }, {
+        "item" : "5.00000",
+        "count" : "4"
+      }, {
+        "item" : "0.10000",
+        "count" : "4"
+      }, {
+        "item" : "10.00000",
+        "count" : "4"
+      }, {
+        "item" : "1.66670",
+        "count" : "2"
+      }, {
+        "item" : "25.00000",
+        "count" : "2"
+      }, {
+        "item" : "0.00010",
+        "count" : "1"
+      } ],
+      "smallest" : "0.00000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261203,
+    "name" : "Old Stock Num Shrs 3",
+    "dataTypeName" : "text",
+    "description" : "Number of shares of stock",
+    "fieldName" : "old_stock_num_shrs_3",
+    "position" : 43,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376973,
+    "width" : 340,
+    "cachedContents" : {
+      "non_null" : "33",
+      "largest" : "90000000",
+      "null" : "90251",
+      "top" : [ {
+        "item" : "200",
+        "count" : "27"
+      }, {
+        "item" : "2000",
+        "count" : "2"
+      }, {
+        "item" : "1000",
+        "count" : "1"
+      }, {
+        "item" : "1000000",
+        "count" : "1"
+      }, {
+        "item" : "7500",
+        "count" : "1"
+      }, {
+        "item" : "90000000",
+        "count" : "1"
+      } ],
+      "smallest" : "1000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261204,
+    "name" : "Old Stock Type 3",
+    "dataTypeName" : "text",
+    "description" : "Type of Stock (“par” or “no par value”)",
+    "fieldName" : "old_stock_type_3",
+    "position" : 44,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376974,
+    "width" : 292,
+    "cachedContents" : {
+      "non_null" : "33",
+      "largest" : "PAR VALUE",
+      "null" : "90251",
+      "top" : [ {
+        "item" : "NO PAR VALUE",
+        "count" : "28"
+      }, {
+        "item" : "PAR VALUE",
+        "count" : "5"
+      } ],
+      "smallest" : "NO PAR VALUE",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261205,
+    "name" : "Old Stock Val Shr 3",
+    "dataTypeName" : "text",
+    "description" : "Par Value of each share having a par value",
+    "fieldName" : "old_stock_val_shr_3",
+    "position" : 45,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376975,
+    "width" : 328,
+    "cachedContents" : {
+      "non_null" : "33",
+      "largest" : "6.66660",
+      "null" : "90251",
+      "top" : [ {
+        "item" : "0.00000",
+        "count" : "28"
+      }, {
+        "item" : "0.01000",
+        "count" : "3"
+      }, {
+        "item" : "150.00000",
+        "count" : "1"
+      }, {
+        "item" : "6.66660",
+        "count" : "1"
+      } ],
+      "smallest" : "0.00000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261206,
+    "name" : "Old Stock Num Shrs 4",
+    "dataTypeName" : "text",
+    "description" : "Number of shares of stock",
+    "fieldName" : "old_stock_num_shrs_4",
+    "position" : 46,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376976,
+    "width" : 340,
+    "cachedContents" : {
+      "non_null" : "29",
+      "largest" : "2000",
+      "null" : "90255",
+      "top" : [ {
+        "item" : "200",
+        "count" : "26"
+      }, {
+        "item" : "2000",
+        "count" : "2"
+      }, {
+        "item" : "1000000",
+        "count" : "1"
+      } ],
+      "smallest" : "1000000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261207,
+    "name" : "Old Stock Type 4",
+    "dataTypeName" : "text",
+    "description" : "Type of Stock (“par” or “no par value”)",
+    "fieldName" : "old_stock_type_4",
+    "position" : 47,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376977,
+    "width" : 292,
+    "cachedContents" : {
+      "non_null" : "29",
+      "largest" : "PAR VALUE",
+      "null" : "90255",
+      "top" : [ {
+        "item" : "NO PAR VALUE",
+        "count" : "26"
+      }, {
+        "item" : "PAR VALUE",
+        "count" : "3"
+      } ],
+      "smallest" : "NO PAR VALUE",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261208,
+    "name" : "Old Stock Val Shr 4",
+    "dataTypeName" : "text",
+    "description" : "Par Value of each share having a par value",
+    "fieldName" : "old_stock_val_shr_4",
+    "position" : 48,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376978,
+    "width" : 328,
+    "cachedContents" : {
+      "non_null" : "29",
+      "largest" : "100.00000",
+      "null" : "90255",
+      "top" : [ {
+        "item" : "0.00000",
+        "count" : "26"
+      }, {
+        "item" : "0.01000",
+        "count" : "2"
+      }, {
+        "item" : "100.00000",
+        "count" : "1"
+      } ],
+      "smallest" : "0.00000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261209,
+    "name" : "Old Stock Num Shrs 5",
+    "dataTypeName" : "text",
+    "description" : "Number of shares of stock",
+    "fieldName" : "old_stock_num_shrs_5",
+    "position" : 49,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376979,
+    "width" : 340,
+    "cachedContents" : {
+      "non_null" : "1",
+      "largest" : "10800000",
+      "null" : "90283",
+      "top" : [ {
+        "item" : "10800000",
+        "count" : "1"
+      } ],
+      "smallest" : "10800000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261210,
+    "name" : "Old Stock Type 5",
+    "dataTypeName" : "text",
+    "description" : "Type of Stock (“par” or “no par value”)",
+    "fieldName" : "old_stock_type_5",
+    "position" : 50,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376980,
+    "width" : 292,
+    "cachedContents" : {
+      "non_null" : "1",
+      "largest" : "PAR VALUE",
+      "null" : "90283",
+      "top" : [ {
+        "item" : "PAR VALUE",
+        "count" : "1"
+      } ],
+      "smallest" : "PAR VALUE",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261211,
+    "name" : "Old Stock Val Shr 5",
+    "dataTypeName" : "text",
+    "description" : "Par Value of each share having a par value",
+    "fieldName" : "old_stock_val_shr_5",
+    "position" : 51,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376981,
+    "width" : 328,
+    "cachedContents" : {
+      "non_null" : "1",
+      "largest" : "25.00000",
+      "null" : "90283",
+      "top" : [ {
+        "item" : "25.00000",
+        "count" : "1"
+      } ],
+      "smallest" : "25.00000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261212,
+    "name" : "New Stock Num Shrs 1",
+    "dataTypeName" : "text",
+    "description" : "Number of shares of stock",
+    "fieldName" : "new_stock_num_shrs_1",
+    "position" : 52,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376982,
+    "width" : 340,
+    "cachedContents" : {
+      "non_null" : "5571",
+      "largest" : "999999",
+      "null" : "84713",
+      "top" : [ {
+        "item" : "200",
+        "count" : "4844"
+      }, {
+        "item" : "100",
+        "count" : "156"
+      }, {
+        "item" : "10000",
+        "count" : "121"
+      }, {
+        "item" : "1000",
+        "count" : "112"
+      }, {
+        "item" : "1500",
+        "count" : "61"
+      }, {
+        "item" : "2000",
+        "count" : "55"
+      }, {
+        "item" : "20000",
+        "count" : "47"
+      }, {
+        "item" : "100000",
+        "count" : "25"
+      }, {
+        "item" : "1",
+        "count" : "25"
+      }, {
+        "item" : "1000000",
+        "count" : "21"
+      }, {
+        "item" : "5000",
+        "count" : "9"
+      }, {
+        "item" : "500000",
+        "count" : "9"
+      }, {
+        "item" : "2",
+        "count" : "7"
+      }, {
+        "item" : "900000",
+        "count" : "6"
+      }, {
+        "item" : "999999",
+        "count" : "5"
+      }, {
+        "item" : "50000",
+        "count" : "5"
+      }, {
+        "item" : "500",
+        "count" : "5"
+      }, {
+        "item" : "10000000",
+        "count" : "5"
+      }, {
+        "item" : "200000",
+        "count" : "4"
+      }, {
+        "item" : "3000",
+        "count" : "3"
+      } ],
+      "smallest" : "1",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261213,
+    "name" : "New Stock Type 1",
+    "dataTypeName" : "text",
+    "description" : "Type of Stock (“par” or “no par value”)",
+    "fieldName" : "new_stock_type_1",
+    "position" : 53,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376983,
+    "width" : 292,
+    "cachedContents" : {
+      "non_null" : "5571",
+      "largest" : "PAR VALUE",
+      "null" : "84713",
+      "top" : [ {
+        "item" : "NO PAR VALUE",
+        "count" : "5078"
+      }, {
+        "item" : "PAR VALUE",
+        "count" : "493"
+      } ],
+      "smallest" : "NO PAR VALUE",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261214,
+    "name" : "New Stock Val Shr 1",
+    "dataTypeName" : "text",
+    "description" : "Par Value of each share having a par value",
+    "fieldName" : "new_stock_val_shr_1",
+    "position" : 54,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376984,
+    "width" : 328,
+    "cachedContents" : {
+      "non_null" : "5571",
+      "largest" : "7500.00000",
+      "null" : "84713",
+      "top" : [ {
+        "item" : "0.00000",
+        "count" : "5082"
+      }, {
+        "item" : "1.00000",
+        "count" : "206"
+      }, {
+        "item" : "0.01000",
+        "count" : "125"
+      }, {
+        "item" : "0.00100",
+        "count" : "32"
+      }, {
+        "item" : "0.00010",
+        "count" : "24"
+      }, {
+        "item" : "10.00000",
+        "count" : "20"
+      }, {
+        "item" : "100.00000",
+        "count" : "15"
+      }, {
+        "item" : "200.00000",
+        "count" : "15"
+      }, {
+        "item" : "0.00001",
+        "count" : "9"
+      }, {
+        "item" : "1000.00000",
+        "count" : "7"
+      }, {
+        "item" : "0.10000",
+        "count" : "7"
+      }, {
+        "item" : "0.20000",
+        "count" : "5"
+      }, {
+        "item" : "5000.00000",
+        "count" : "4"
+      }, {
+        "item" : "50.00000",
+        "count" : "4"
+      }, {
+        "item" : "2.00000",
+        "count" : "2"
+      }, {
+        "item" : "7500.00000",
+        "count" : "1"
+      }, {
+        "item" : "0.02000",
+        "count" : "1"
+      }, {
+        "item" : "0.02500",
+        "count" : "1"
+      }, {
+        "item" : "0.05000",
+        "count" : "1"
+      }, {
+        "item" : "1.01000",
+        "count" : "1"
+      } ],
+      "smallest" : "0.00000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261215,
+    "name" : "New Stock Num Shrs 2",
+    "dataTypeName" : "text",
+    "description" : "Number of shares of stock",
+    "fieldName" : "new_stock_num_shrs_2",
+    "position" : 55,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376985,
+    "width" : 340,
+    "cachedContents" : {
+      "non_null" : "3",
+      "largest" : "198",
+      "null" : "90281",
+      "top" : [ {
+        "item" : "1200000",
+        "count" : "1"
+      }, {
+        "item" : "15000000",
+        "count" : "1"
+      }, {
+        "item" : "198",
+        "count" : "1"
+      } ],
+      "smallest" : "1200000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261216,
+    "name" : "New Stock Type 2",
+    "dataTypeName" : "text",
+    "description" : "Type of Stock (“par” or “no par value”)",
+    "fieldName" : "new_stock_type_2",
+    "position" : 56,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376986,
+    "width" : 292,
+    "cachedContents" : {
+      "non_null" : "3",
+      "largest" : "PAR VALUE",
+      "null" : "90281",
+      "top" : [ {
+        "item" : "NO PAR VALUE",
+        "count" : "2"
+      }, {
+        "item" : "PAR VALUE",
+        "count" : "1"
+      } ],
+      "smallest" : "NO PAR VALUE",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261217,
+    "name" : "New Stock Val Shr 2",
+    "dataTypeName" : "text",
+    "description" : "Par Value of each share having a par value",
+    "fieldName" : "new_stock_val_shr_2",
+    "position" : 57,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376987,
+    "width" : 328,
+    "cachedContents" : {
+      "non_null" : "3",
+      "largest" : "0.00100",
+      "null" : "90281",
+      "top" : [ {
+        "item" : "0.00000",
+        "count" : "2"
+      }, {
+        "item" : "0.00100",
+        "count" : "1"
+      } ],
+      "smallest" : "0.00000",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261218,
+    "name" : "New Stock Num Shrs 3",
+    "dataTypeName" : "text",
+    "description" : "Number of shares of stock",
+    "fieldName" : "new_stock_num_shrs_3",
+    "position" : 58,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376988,
+    "width" : 340,
+    "cachedContents" : {
+      "non_null" : "0",
+      "null" : "90284",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261219,
+    "name" : "New Stock Type 3",
+    "dataTypeName" : "text",
+    "description" : "Type of Stock (“par” or “no par value”)",
+    "fieldName" : "new_stock_type_3",
+    "position" : 59,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376989,
+    "width" : 292,
+    "cachedContents" : {
+      "non_null" : "0",
+      "null" : "90284",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261220,
+    "name" : "New Stock Val Shr 3",
+    "dataTypeName" : "text",
+    "description" : "Par Value of each share having a par value",
+    "fieldName" : "new_stock_val_shr_3",
+    "position" : 60,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376990,
+    "width" : 328,
+    "cachedContents" : {
+      "non_null" : "0",
+      "null" : "90284",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261221,
+    "name" : "New Stock Num Shrs 4",
+    "dataTypeName" : "text",
+    "description" : "Number of shares of stock",
+    "fieldName" : "new_stock_num_shrs_4",
+    "position" : 61,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376991,
+    "width" : 340,
+    "cachedContents" : {
+      "non_null" : "0",
+      "null" : "90284",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261222,
+    "name" : "New Stock Type 4",
+    "dataTypeName" : "text",
+    "description" : "Type of Stock (“par” or “no par value”)",
+    "fieldName" : "new_stock_type_4",
+    "position" : 62,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376992,
+    "width" : 292,
+    "cachedContents" : {
+      "non_null" : "0",
+      "null" : "90284",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261223,
+    "name" : "New Stock Val Shr 4",
+    "dataTypeName" : "text",
+    "description" : "Par Value of each share having a par value",
+    "fieldName" : "new_stock_val_shr_4",
+    "position" : 63,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376993,
+    "width" : 328,
+    "cachedContents" : {
+      "non_null" : "0",
+      "null" : "90284",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261224,
+    "name" : "New Stock Num Shrs 5",
+    "dataTypeName" : "text",
+    "description" : "Number of shares of stock",
+    "fieldName" : "new_stock_num_shrs_5",
+    "position" : 64,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376994,
+    "width" : 340,
+    "cachedContents" : {
+      "non_null" : "0",
+      "null" : "90284",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261225,
+    "name" : "New Stock Type 5",
+    "dataTypeName" : "text",
+    "description" : "Type of Stock (“par” or “no par value”)",
+    "fieldName" : "new_stock_type_5",
+    "position" : 65,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376995,
+    "width" : 292,
+    "cachedContents" : {
+      "non_null" : "0",
+      "null" : "90284",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  }, {
+    "id" : 543261226,
+    "name" : "New Stock Val Shr 5",
+    "dataTypeName" : "text",
+    "description" : "Par Value of each share having a par value",
+    "fieldName" : "new_stock_val_shr_5",
+    "position" : 66,
+    "renderTypeName" : "text",
+    "tableColumnId" : 68376996,
+    "width" : 328,
+    "cachedContents" : {
+      "non_null" : "0",
+      "null" : "90284",
+      "count" : "90284",
+      "cardinality" : "90284"
+    },
+    "format" : {
+      "align" : "left"
+    }
+  } ],
+  "grants" : [ {
+    "inherited" : false,
+    "type" : "viewer",
+    "flags" : [ "public" ]
+  } ],
+  "metadata" : {
+    "rdfSubject" : "0",
+    "rdfClass" : "",
+    "attachments" : [ {
+      "filename" : "DOS_CorpsEntitiesDaily_Overview.pdf",
+      "assetId" : "c4c2dac8-98d9-4d86-8d17-f9c79428b684",
+      "name" : "DOS_CorpsEntitiesDaily_Overview.pdf"
+    }, {
+      "filename" : "DOS_CorpsEntitiesDaily_DataDictionary.pdf",
+      "assetId" : "c5368576-8680-4417-9f37-da736f5d5c46",
+      "name" : "DOS_CorpsEntitiesDaily_DataDictionary.pdf"
+    } ],
+    "custom_fields" : {
+      "Dataset Summary" : {
+        "Posting Frequency" : "Daily",
+        "Organization" : "NYS DOS Division of Corporations",
+        "Contact Information" : "Corporations@dos.ny.gov",
+        "Time Period" : "Current",
+        "Coverage" : "Statewide",
+        "Granularity" : "Records are specific to the information provided on Corporation or Business Entity formation or authorization records   ",
+        "Dataset Owner" : "New York State Department of State"
+      },
+      "Disclaimers" : {
+        "Disclaimer" : "As the Department relies upon information provided to it, the information's completeness or accuracy cannot be guaranteed. New York State Department of State, its employees, officers and agents make no representation, warranty or guarantee as to the accuracy, completeness, currency or suitability of the data for any purpose, real or implied.   The Department relies upon information provided to it. Therefore, the accuracy of data cannot be guaranteed. "
+      },
+      "Dataset Information" : {
+        "Agency" : "State, Department of"
+      }
+    },
+    "rowLabel" : "",
+    "availableDisplayTypes" : [ "table", "fatrow", "page" ]
+  },
+  "owner" : {
+    "id" : "xzik-pf59",
+    "displayName" : "NY Open Data",
+    "profileImageUrlLarge" : "/api/users/xzik-pf59/profile_images/LARGE",
+    "profileImageUrlMedium" : "/api/users/xzik-pf59/profile_images/THUMB",
+    "profileImageUrlSmall" : "/api/users/xzik-pf59/profile_images/TINY",
+    "screenName" : "NY Open Data",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula", "mayBeStoriesCoOwner" ]
+  },
+  "query" : { },
+  "rights" : [ "read" ],
+  "tableAuthor" : {
+    "id" : "xzik-pf59",
+    "displayName" : "NY Open Data",
+    "profileImageUrlLarge" : "/api/users/xzik-pf59/profile_images/LARGE",
+    "profileImageUrlMedium" : "/api/users/xzik-pf59/profile_images/THUMB",
+    "profileImageUrlSmall" : "/api/users/xzik-pf59/profile_images/TINY",
+    "screenName" : "NY Open Data",
+    "type" : "interactive",
+    "flags" : [ "acceptedEula", "mayBeStoriesCoOwner" ]
+  },
+  "tags" : [ "corporations", "business entity", "limited liability company (llc)", "not-for-profit corporation", "limited partnership", "limited liability partnership" ],
+  "flags" : [ "default", "ownerMayBeContacted", "restorable", "restorePossibleForType" ]
+}

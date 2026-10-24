@@ -40,10 +40,11 @@ const CARD = [
   ['Office ID', 'SAMPLE-O-004', 'type'],
   ['Campaign ID', 'SAMPLE-CMP-003', 'type'],
 ];
-const CONFIRM = 'I read the allergen text against the package itself, word for word';
+const CONFIRMS = ['I read the allergen text against the package itself, word for word', 'I read the brand name, product and two sentences for health and sales claims'];
+const tickAll = async (page) => { for (const cb of await page.$$('input[data-act="confirm"]')) await cb.check(); };
 
 // Person-time model (seconds). Stated, not measured: there is no person in this test.
-const M = { open: 60, readWpm: 200, typeCps: 3.3, paste: 8, select: 6, readbackPerWord: 1, qrScan: 20, status: 15, save: 10, printDialog: 60, load: 15 };
+const M = { open: 60, readWpm: 200, typeCps: 3.3, paste: 8, select: 6, readbackPerWord: 1, qrScan: 20, status: 15, save: 10, printDialog: 60, load: 15, tick: 3 };
 
 (async () => {
   const { chromium } = require('playwright');
@@ -63,7 +64,7 @@ const M = { open: 60, readWpm: 200, typeCps: 3.3, paste: 8, select: 6, readbackP
     log.push(`${file}: guide sections ${secs.join(', ')} name ${names.length} boxes or buttons; missing in the panel: ${missing.length ? missing.join(' | ') : 'none'}`);
     if (missing.length) fails.push(`${file}: the guide names boxes that do not exist: ${missing.join(' | ')}`);
   };
-  await checkLabels('templates/tent-card/tent-card.html', [2]);
+  await checkLabels('templates/tent-card/tent-card.html', [2, 19]);   // 19: two flavors (v1.3)
   await checkLabels('templates/discovery-one-pager/discovery-one-pager.html', [8]);
   await checkLabels('templates/office-one-pager/office-one-pager.html', [9]);
   await checkLabels('templates/brand-one-pager/brand-one-pager.html', [10]);
@@ -93,7 +94,12 @@ const M = { open: 60, readWpm: 200, typeCps: 3.3, paste: 8, select: 6, readbackP
   await page.waitForTimeout(300);
   log.push('After filling: ' + await status());
   await page.screenshot({ path: path.join(OUT, 'swap-2-filled.png') });
-  await page.check('input[data-act="confirm"]');
+  // both tick boxes (v1.4): the allergen read-back, and reading the sentences for claims
+  const claimWords = (CARD[0][1] + ' ' + CARD[1][1] + ' ' + CARD[2][1]).split(/\s+/).length;
+  for (const c of CONFIRMS) if (!(await page.$eval('.dd-panel', (el) => el.innerText)).includes(c)) fails.push(`tick box missing: ${c}`);
+  await tickAll(page);
+  t += CONFIRMS.length * M.tick + (claimWords / M.readWpm) * 60;
+  parts.push(`tick ${CONFIRMS.length} boxes ${CONFIRMS.length * M.tick}s`, `read the ${claimWords} words of name, product and sentences for claims ${Math.round((claimWords / M.readWpm) * 60)}s`);
   await page.waitForTimeout(200);
   const ready = await status();
   log.push('After the allergen check box: ' + ready);
@@ -117,7 +123,7 @@ const M = { open: 60, readWpm: 200, typeCps: 3.3, paste: 8, select: 6, readbackP
   await page.waitForTimeout(400);
   await page.locator('label.dd-field', { hasText: 'QR link for THIS office' }).locator('input').fill('https://example.com/s/SAMPLE-O-005');
   await page.locator('label.dd-field', { hasText: 'Office ID' }).locator('input').fill('SAMPLE-O-005');
-  await page.check('input[data-act="confirm"]');
+  await tickAll(page);
   await page.waitForTimeout(300);
   const second = await status();
   log.push('Second office, after Load JSON and two changes: ' + second);
@@ -125,7 +131,31 @@ const M = { open: 60, readWpm: 200, typeCps: 3.3, paste: 8, select: 6, readbackP
   const cardId = await page.$eval('.face.front .card-id', (el) => el.innerText);
   if (!/SAMPLE-O-005/.test(cardId)) fails.push('Second card does not carry the new office ID: ' + cardId);
   await page.screenshot({ path: path.join(OUT, 'swap-5-next-office.png') });
-  const secondT = M.load + 8 + 12 / M.typeCps + M.qrScan + M.status + M.printDialog;
+  const secondT = M.load + 8 + 12 / M.typeCps + 2 * M.tick + M.qrScan + M.status + M.printDialog;
+
+  // ---- v1.4 (review round 3, R3-05): the same card with REAL values (no SAMPLE prefix) must
+  // say "Ready to print" once both boxes are ticked, even with a permanent note on it ----
+  await page.goto('file://' + path.join(ROOT, 'templates/tent-card/tent-card.html'));
+  await page.waitForFunction(() => window.__DD_STATUS__ && window.__DD_STATUS__.ready);
+  for (const [label, value, how] of CARD) {
+    const v = String(value).replace(/^SAMPLE[ -]?/, '');
+    const box = page.locator('label.dd-field', { hasText: label }).locator('input, textarea, select').first();
+    if (how === 'select') await box.selectOption(v); else await box.fill(v);
+  }
+  // the reviewer's case: a long ALL-CAPS ingredient list, so the product line is left off (a permanent note)
+  await page.locator('label.dd-field', { hasText: 'Allergen statement, exactly as on the package' }).locator('textarea, input').first()
+    .fill('INGREDIENTS: BREWED OOLONG TEA (FILTERED WATER, OOLONG TEA LEAVES), PEACH JUICE CONCENTRATE, CANE SUGAR, NATURAL FLAVOR, CITRIC ACID, ASCORBIC ACID (VITAMIN C), SODIUM CITRATE, SOY LECITHIN, MILK PROTEIN, ALMOND EXTRACT.');
+  await page.waitForTimeout(300);
+  const before = await status();
+  await tickAll(page);
+  await page.waitForTimeout(300);
+  const real = await status();
+  log.push('Real (non-SAMPLE) values, before the ticks: ' + before);
+  log.push('Real (non-SAMPLE) values, both boxes ticked: ' + real);
+  if (!/^Ready to print/.test(real)) fails.push('A correct card with real values does not say "Ready to print" first: ' + real);
+  if (/Check:/.test(real) && !/Read these notes first/.test(real)) fails.push('Notes on a ready card are not introduced with "Read these notes first": ' + real);
+  if (!/Last step/.test(before)) fails.push('Before the ticks, the status should name the last step (tick the boxes): ' + before);
+  await page.screenshot({ path: path.join(OUT, 'swap-6-real-values-ready.png') });
   await browser.close();
 
   console.log(log.join('\n'));

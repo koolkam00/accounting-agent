@@ -1,9 +1,9 @@
 n,retailer_id,retailer_name,street_address,buy_path_tier
 1,B-R-025,LifeThyme Natural Market,"410 Sixth Avenue, New York, NY 10011",A
-2,B-R-024,Wegmans Astor Place,"770 Broadway, New York, NY 10003",A
-3,B-R-011,Whole Foods Market Union Square,"4 Union Square South, New York, NY 10003",A
-4,B-R-021,Whole Foods Market Chelsea,"250 Seventh Avenue, New York, NY 10001",A
-5,B-R-010,Whole Foods Market NoMad,"63 Madison Avenue, New York, NY 10016",A
+2,B-R-011,Whole Foods Market Union Square,"4 Union Square South, New York, NY 10003",A
+3,B-R-021,Whole Foods Market Chelsea,"250 Seventh Avenue, New York, NY 10001",A
+4,B-R-010,Whole Foods Market NoMad,"63 Madison Avenue, New York, NY 10016",A
+5,B-R-024,Wegmans Astor Place,"770 Broadway, New York, NY 10003",B
 6,B-R-023,Citarella Greenwich Village,"424 Sixth Avenue, New York, NY 10011",B
 7,B-R-013,Westside Market NYC (84 Third Ave),"84 Third Avenue, New York, NY 10003",B
 8,B-R-018,Westside Market NYC (77 Seventh Ave),"77 Seventh Avenue, New York, NY 10011",B

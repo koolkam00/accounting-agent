@@ -10,7 +10,7 @@
     {
       "office_label": "A",
       "industry": "[INDUSTRY]",
-      "headcount_band": "[BAND]",
+      "headcount_band": "[HEADCOUNT BAND]",
       "units_delivered": "[N]",
       "units_placed": "[N]",
       "placed_within_1bd": "[Y/N]",
@@ -25,7 +25,7 @@
     {
       "office_label": "B",
       "industry": "[INDUSTRY]",
-      "headcount_band": "[BAND]",
+      "headcount_band": "[HEADCOUNT BAND]",
       "units_delivered": "[N]",
       "units_placed": "[N]",
       "placed_within_1bd": "[Y/N]",
@@ -40,7 +40,7 @@
     {
       "office_label": "C",
       "industry": "[INDUSTRY]",
-      "headcount_band": "[BAND]",
+      "headcount_band": "[HEADCOUNT BAND]",
       "units_delivered": "[N]",
       "units_placed": "[N]",
       "placed_within_1bd": "[Y/N]",
@@ -55,7 +55,7 @@
     {
       "office_label": "D",
       "industry": "[INDUSTRY]",
-      "headcount_band": "[BAND]",
+      "headcount_band": "[HEADCOUNT BAND]",
       "units_delivered": "[N]",
       "units_placed": "[N]",
       "placed_within_1bd": "[Y/N]",
@@ -70,7 +70,7 @@
     {
       "office_label": "E",
       "industry": "[INDUSTRY]",
-      "headcount_band": "[BAND]",
+      "headcount_band": "[HEADCOUNT BAND]",
       "units_delivered": "[N]",
       "units_placed": "[N]",
       "placed_within_1bd": "[Y/N]",

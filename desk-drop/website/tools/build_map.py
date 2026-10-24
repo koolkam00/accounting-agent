@@ -15,6 +15,11 @@ Writes:
 Run from website/:  python3 tools/build_map.py
 Re-run it whenever B updates map-public.geojson. The site itself needs no build step;
 this only refreshes one image and one list.
+
+    python3 tools/build_map.py --check
+builds everything in memory, writes nothing, and exits 1 if the shipped SVG or either map block
+differs from what B's current files give (review round 3, R3-10: tests/check_site.py runs it,
+so the test suite fails whenever B moves a store or renumbers the list).
 """
 import html
 import json
@@ -71,7 +76,7 @@ def ordinal(n):
     return str(n) + ("th" if 10 <= n % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th"))
 
 
-def main():
+def main(check=False):
     pub = load(os.path.join(B, "map-public.geojson"), required=True)
     model = load(os.path.join(B, "_work", "geo", "grid_model.json")) or FALLBACK_MODEL
     streets = load(os.path.join(B, "_work", "geo", "streets_raw.geojson"))
@@ -230,9 +235,16 @@ def main():
     a('<text x="%.0f" y="%d" font-size="12" font-weight="700" fill="%s" text-anchor="end">400 m, about a 5-minute walk</text>' % (bx - 8, by + 4, INK))
     a('</svg>')
     svg = "".join(out)
-    os.makedirs(os.path.dirname(OUT_SVG), exist_ok=True)
-    with open(OUT_SVG, "w", encoding="utf-8") as f:
-        f.write(svg)
+    drift = []
+    if check:
+        have = open(OUT_SVG, encoding="utf-8").read() if os.path.exists(OUT_SVG) else ""
+        if have != svg:
+            k = next((i for i, (x, y) in enumerate(zip(have, svg)) if x != y), min(len(have), len(svg)))
+            drift.append("%s differs from B's current map-public.geojson (first difference at byte %d)" % (os.path.relpath(OUT_SVG, WEB), k))
+    else:
+        os.makedirs(os.path.dirname(OUT_SVG), exist_ok=True)
+        with open(OUT_SVG, "w", encoding="utf-8") as f:
+            f.write(svg)
 
     n_inside = sum(1 for s in stores if s["inside"])
     alt = ("Map of the office cluster: Flatiron, NoMad and Union Square, about 14th to 30th Street between Sixth Avenue "
@@ -281,12 +293,26 @@ def main():
         new, n = re.subn(r"<!-- MAP:START.*?<!-- MAP:END -->", lambda m: block, src, flags=re.S)
         if n != 1:
             sys.exit("%s: expected exactly one MAP:START/MAP:END block, found %d" % (page, n))
+        if check:
+            if new != src:
+                drift.append("site/%s: the map block differs from B's current map-public.geojson" % page)
+            continue
         with open(path, "w", encoding="utf-8") as f:
             f.write(new)
         print("updated", page)
-    print("wrote %s (%d x %d px, %.1f KB), %d stores (%d inside), data as of %s"
-          % (os.path.relpath(OUT_SVG, WEB), W, H, len(svg) / 1024, len(stores), n_inside, date))
+    b_file = os.path.join(B, "map-public.geojson")
+    import datetime
+    b_time = datetime.datetime.fromtimestamp(os.path.getmtime(b_file), datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    if check:
+        for d in drift:
+            print("DRIFT ", d)
+        print("%s: %d stores (%d inside), data as of %s, file dated %s"
+              % ("map is stale; run python3 tools/build_map.py" if drift else "map matches B", len(stores), n_inside, date, b_time))
+        return 1 if drift else 0
+    print("wrote %s (%d x %d px, %.1f KB), %d stores (%d inside), data as of %s, from B's file dated %s"
+          % (os.path.relpath(OUT_SVG, WEB), W, H, len(svg) / 1024, len(stores), n_inside, date, b_time))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main(check="--check" in sys.argv[1:]))

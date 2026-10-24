@@ -1,0 +1,2233 @@
+{
+  "results" :
+    [
+      {
+        "resource" :
+          {
+            "name" : "Daily Corporation and Other Entity Filing Data",
+            "id" : "k4vb-judh",
+            "resource_name" : null,
+            "parent_fxf" : [],
+            "description" : "This data contains Corporations and other Entities filing information that were processed in the previous thirty days.  Each line contains the Department of State ID number, Film ID, Date Filed, Effective Date, Entity Name, the law under which the filing was made and other pertinent filing information.",
+            "attribution" : "New York State Department of State",
+            "attribution_link" : "http://www.dos.ny.gov",
+            "contact_email" : null,
+            "type" : "dataset",
+            "updatedAt" : "2026-10-23T11:18:55.000Z",
+            "createdAt" : "2018-08-14T21:50:19.000Z",
+            "metadata_updated_at" : "2026-10-23T11:17:59.000Z",
+            "data_updated_at" : "2026-10-23T11:18:55.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 360,
+                "page_views_last_month" : 4670,
+                "page_views_total" : 25774,
+                "page_views_last_week_log" : 8.49585502688717,
+                "page_views_last_month_log" : 12.189515729800194,
+                "page_views_total_log" : 14.653684807142833
+              },
+            "columns_name" :
+              [
+                "Mod Cert Code",
+                "Eff Date",
+                "Dura Date",
+                "Mrgr Const Name2",
+                "SOP Name",
+                "New Stock Num Shrs 3",
+                "Filing Type",
+                "Old Stock Num Shrs 4",
+                "New Stock Num Shrs 5",
+                "DOS ID",
+                "Filer Addr1",
+                "Orig LP Name",
+                "New Stock Type 3",
+                "Mrgr Const Name3",
+                "New Stock Type 4",
+                "New Stock Val Shr 4",
+                "Old Stock Val Shr 4",
+                "Old Stock Val Shr 3",
+                "New Stock Val Shr 2",
+                "NFP Category",
+                "Old Stock Num Shrs 5",
+                "Old Stock Type 1",
+                "Old Stock Type 2",
+                "Old Stock Type 3",
+                "Old Stock Type 4",
+                "Old Stock Type 5",
+                "New Stock Type 1",
+                "New Stock Num Shrs 4",
+                "New Stock Type 5",
+                "New Stock Val Shr 5",
+                "New Stock Val Shr 3",
+                "SOP ZIP5",
+                "New Stock Type 2",
+                "Filer Country",
+                "Old Stock Val Shr 1",
+                "Old Stock Val Shr 2",
+                "SOP State",
+                "Filing Date",
+                "New Stock Num Shrs 1",
+                "SOP Addr2",
+                "Old Stock Num Shrs 2",
+                "Filer Zip5",
+                "Old Stock Num Shrs 3",
+                "Old Stock Val Shr 5",
+                "New Stock Num Shrs 2",
+                "SOP City, Town or Village",
+                "Approved Date",
+                "Entity Type",
+                "Jurisdiction",
+                "SOP Zip4",
+                "Mrgr Const Name1",
+                "Filing Num",
+                "Prev Corp Name",
+                "Foreign Inc Date",
+                "New Stock Val Shr 1",
+                "Filer Addr2",
+                "Law",
+                "County",
+                "Filer City, Town or Village",
+                "Corp Name",
+                "Filer Name",
+                "Filer State",
+                "Filer Zip4",
+                "SOP Addr1",
+                "Old Stock Num Shrs 1",
+                "Fictitious Name"
+              ],
+            "columns_field_name" :
+              [
+                "mod_certcode",
+                "eff_date",
+                "dura_date",
+                "mrgr_const_name2",
+                "sop_name",
+                "new_stock_num_shrs_3",
+                "filing_type",
+                "old_stock_num_shrs_4",
+                "new_stock_num_shrs_5",
+                "dos_id",
+                "filer_addr1",
+                "orig_lp_name",
+                "new_stock_type_3",
+                "mrgr_const_name3",
+                "new_stock_type_4",
+                "new_stock_val_shr_4",
+                "old_stock_val_shr_4",
+                "old_stock_val_shr_3",
+                "new_stock_val_shr_2",
+                "nfp_type",
+                "old_stock_num_shrs_5",
+                "old_stock_type_1",
+                "old_stock_type_2",
+                "old_stock_type_3",
+                "old_stock_type_4",
+                "old_stock_type_5",
+                "new_stock_type_1",
+                "new_stock_num_shrs_4",
+                "new_stock_type_5",
+                "new_stock_val_shr_5",
+                "new_stock_val_shr_3",
+                "sop_zip5",
+                "new_stock_type_2",
+                "filer_country",
+                "old_stock_val_shr_1",
+                "old_stock_val_shr_2",
+                "sop_state",
+                "filing_date",
+                "new_stock_num_shrs_1",
+                "sop_addr2",
+                "old_stock_num_shrs_2",
+                "filer_zip5",
+                "old_stock_num_shrs_3",
+                "old_stock_val_shr_5",
+                "new_stock_num_shrs_2",
+                "sop_city",
+                "approved_date",
+                "entity_type",
+                "for_juris",
+                "sop_zip4",
+                "mrgr_const_name1",
+                "film_num",
+                "pre_corp_name",
+                "for_inc_date",
+                "new_stock_val_shr_1",
+                "filer_addr2",
+                "law",
+                "cnty_prin_ofc",
+                "filer_city",
+                "corp_name",
+                "filer_name",
+                "filer_state",
+                "filer_zip4",
+                "sop_addr1",
+                "old_stock_num_shrs_1",
+                "fictitious_name"
+              ],
+            "columns_datatype" :
+              [
+                "Text",
+                "Calendar date",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Calendar date",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Calendar date",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text"
+              ],
+            "columns_description" :
+              [
+                "The Mod Cert Code, taken together with the information in the LAW field, is a description of the type of filing represented by this record.",
+                "Effective Date of a Filing ",
+                "The date on which a corporation is dissolved by expiration of its period of duration or the date after which the Limited Liability Company or Limited Partnership is to dissolve ",
+                "Name constituent entity participating in a merger or consolidation",
+                "The name in the address to which the Secretary of State will mail a copy of any process against the entity served upon the Secretary of State",
+                "Number of shares of stock",
+                "Type of Filing (e.g. certificate of incorporation)",
+                "Number of shares of stock",
+                "Number of shares of stock",
+                "DOS identification number for the entity",
+                "Filer’s Address Line 1",
+                "Original name of a Limited Partnership that has filed a Certificate of Adoption",
+                "Type of Stock (“par” or “no par value”)",
+                "Name of constituent entity participating in a merger or consolidation",
+                "Type of Stock (“par” or “no par value”)",
+                "Par Value of each share having a par value",
+                "Par Value of each share having a par value",
+                "Par Value of each share having a par value",
+                "Par Value of each share having a par value",
+                "The category of the Not-for-Profit Corporation; either “Charitable” or “Non-Charitable”",
+                "Number of shares of stock",
+                "Type of Stock (“par” or “no par value”)",
+                "Type of Stock (“par” or “no par value”)",
+                "Type of Stock (“par” or “no par value”)",
+                "Type of Stock (“par” or “no par value”)",
+                "Type of Stock (“par” or “no par value”)",
+                "Type of Stock (“par” or “no par value”)",
+                "Number of shares of stock",
+                "Type of Stock (“par” or “no par value”)",
+                "Par Value of each share having a par value",
+                "Par Value of each share having a par value",
+                "ZIP 5 in the address to which the Secretary of State will mail a copy of any process against the entity served upon the Secretary of State",
+                "Type of Stock (“par” or “no par value”)",
+                "Filer’s Address Country",
+                "Par Value of each share having a par value",
+                "Par Value of each share having a par value",
+                "State in the address to which the Secretary of State will mail a copy of any process against the entity served upon the Secretary of State",
+                "The date the document was filed by the Department of State",
+                "Number of shares of stock",
+                "Address Line 2 of the address to which the Secretary of State will mail a copy of any process against the entity served upon the Secretary of State",
+                "Number of shares of stock",
+                "Filer’s Address Zip 5",
+                "Number of shares of stock",
+                "Par Value of each share having a par value",
+                "Number of shares of stock",
+                "City, town or village in the address to which the Secretary of State will mail a copy of any process against the entity served upon the Secretary of State",
+                "The date the document was approved for filing ",
+                "Type of entity (e.g., business corporation)",
+                "The jurisdiction (state or country) in which the entity was formed",
+                "ZIP 4 in the address to which the Secretary of State will mail a copy of any process against the entity served upon the Secretary of State",
+                "Name of constituent entity participating in a merger or consolidation ",
+                " ID Number assigned to the image of the document",
+                "Previous name of an entity",
+                "Date on which foreign entity was first formed in the jurisdiction of formation",
+                "Par Value of each share having a par value",
+                "Filer’s Address Line 2",
+                "The law under which the filing was made",
+                "The county within New York State in which the office of the entity is to be located.",
+                "Filer’s Address City, Town or Village",
+                "The entity’s name.  For assumed name filings, the assumed name appears instead",
+                "The name of the filer of the document",
+                "Filer’s Address State",
+                "Filer’s Address Zip 4",
+                "Address Line 1 of the address to which the Secretary of State will mail a copy of any process against the entity served upon the Secretary of State",
+                "Number of shares of stock",
+                "Fictitious name of a foreign entity, if any"
+              ],
+            "columns_format" :
+              [
+                { "align" : "center" },
+                { "view" : "date", "align" : "center" },
+                { "align" : "center" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "noCommas" : "true", "align" : "center" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                {},
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "view" : "date", "align" : "center" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "view" : "date", "align" : "center" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "center" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" }
+              ],
+            "download_count" : 56588,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2021-06-23T17:01:48.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" :
+              [
+                "not-for-profit corporation",
+                "corporations",
+                "limited liability company (llc)",
+                "limited liability partnership",
+                "business entity",
+                "limited partnership"
+              ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Disclaimers_Disclaimer",
+                  "value" : "As the Department relies upon information provided to it, the information's completeness or accuracy cannot be guaranteed. New York State Department of State, its employees, officers and agents make no representation, warranty or guarantee as to the accuracy, completeness, currency or suitability of the data for any purpose, real or implied.   The Department relies upon information provided to it. Therefore, the accuracy of data cannot be guaranteed. "
+                },
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Department of State"
+                },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "Corporations@dos.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Records are specific to the information provided on Corporation or Business Entity formation or authorization records   "
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Daily"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "NYS DOS Division of Corporations"
+                },
+                { "key" : "Dataset-Summary_Time-Period", "value" : "Current" },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "State, Department of"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/k4vb-judh",
+        "link" : "https://data.ny.gov/Economic-Development/Daily-Corporation-and-Other-Entity-Filing-Data/k4vb-judh",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "DMV Driving Schools",
+            "id" : "3p6i-cv8y",
+            "resource_name" : null,
+            "parent_fxf" : [],
+            "description" : "Records maintained by DMV, used by Driver Training Programs to record/maintain records for businesses we regulate/license. Information includes: Name, address, phone number and courses offered.",
+            "attribution" : "New York State Department of Motor Vehicles",
+            "attribution_link" : "https://dmv.ny.gov/nys-driving-schools",
+            "contact_email" : null,
+            "type" : "dataset",
+            "updatedAt" : "2026-10-23T20:46:00.000Z",
+            "createdAt" : "2021-09-22T20:59:14.000Z",
+            "metadata_updated_at" : "2026-10-23T20:45:59.000Z",
+            "data_updated_at" : "2026-10-23T20:46:00.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 104,
+                "page_views_last_month" : 532,
+                "page_views_total" : 6788,
+                "page_views_last_week_log" : 6.714245517666122,
+                "page_views_last_month_log" : 9.057991722759176,
+                "page_views_total_log" : 12.728983369988049
+              },
+            "columns_name" :
+              [
+                "NYS Municipal Boundaries",
+                "New York Zip Codes",
+                "Counties",
+                "Motorcycle",
+                "State",
+                "Tractor Trailer",
+                "Auto",
+                "Pre-Licensing",
+                "Bus",
+                "Zip",
+                "Phone Number",
+                "Truck",
+                "City",
+                "Georeference",
+                "Street",
+                "School Name",
+                "School Name 2",
+                "School Number"
+              ],
+            "columns_field_name" :
+              [
+                ":@computed_region_yamh_8v7k",
+                ":@computed_region_wbg7_3whc",
+                ":@computed_region_kjdx_g34t",
+                "motorcycle",
+                "state",
+                "tractor_trailer",
+                "auto",
+                "pre_licensing",
+                "bus",
+                "zip",
+                "phone_number",
+                "truck",
+                "city",
+                "georeference",
+                "street",
+                "school_name",
+                "school_name_2",
+                "school_number"
+              ],
+            "columns_datatype" :
+              [
+                "Number",
+                "Number",
+                "Number",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Number",
+                "Text",
+                "Text",
+                "Text",
+                "Point",
+                "Text",
+                "Text",
+                "Text",
+                "Text"
+              ],
+            "columns_description" :
+              [
+                "This column was automatically created in order to record in what polygon from the dataset 'NYS Municipal Boundaries' (yamh-8v7k) the point in column 'georeference' is located.  This enables the creation of region maps (choropleths) in the visualization canvas and data lens.",
+                "This column was automatically created in order to record in what polygon from the dataset 'New York Zip Codes' (wbg7-3whc) the point in column 'georeference' is located.  This enables the creation of region maps (choropleths) in the visualization canvas and data lens.",
+                "This column was automatically created in order to record in what polygon from the dataset 'Counties' (kjdx-g34t) the point in column 'georeference' is located.  This enables the creation of region maps (choropleths) in the visualization canvas and data lens.",
+                "School offers instruction in class M/MJ vehicles. This is never null.",
+                "State, abbreviated, in which the school is located. This is never null.",
+                "School offers instruction in CDL class A vehicles. This is never null.",
+                "School offers instruction in class D/DJ vehicles. This is never null.",
+                "School offers the Pre-Licensing Course per NYS V&T Law Section 394, Commissioner’s Regulations Part 76 (Drivers Schools), Part 7 (Pre-Licensing Course). This is never null.",
+                "School offers instruction in CDL class B or C vehicles designed for passenger transport. This is never null.",
+                "Mailing zip code for the school. This is never null.",
+                "Telephone number for the school. This is never null.",
+                "School offers instruction in CDL class B or C vehicles – does not include Bus (passenger transport). This is never null.",
+                "City in which the school is located. This is never null.",
+                "Open Data platform-generated geocoding information from supplied address components. Point-type location is the centroid of the address components provided and does not reflect a specific address if the street address component is not provided. Point-type location is supplied in \"POINT (<geocoded longitude> <geocoded latitude>)\" format.",
+                "Physical street address of school. This is never null.",
+                "Name of business to which a driving school license was issued. This is never null.",
+                "Assumed Name of the school. This can be null.",
+                "School license number issued by NYS DMV. This number changes with renewal. This is never null."
+              ],
+            "columns_format" :
+              [
+                {},
+                {},
+                {},
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "noCommas" : "true", "align" : "center" },
+                { "align" : "center" },
+                { "align" : "center" },
+                {},
+                {},
+                {},
+                {},
+                {},
+                { "noCommas" : "true", "align" : "center" }
+              ],
+            "download_count" : 7669,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2026-06-01T21:32:21.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Transportation",
+            "domain_tags" :
+              [ "driving lessons", "driving school", "pre-licensing course" ],
+            "domain_metadata" :
+              [
+                { "key" : "Local-Data_County-Filter", "value" : "No" },
+                { "key" : "Local-Data_Municipality-Filter", "value" : "Yes" },
+                { "key" : "Local-Data_Municipality_Column", "value" : "city" },
+                {
+                  "key" : "Disclaimers_Limitations",
+                  "value" : "Based on information provided by licensed driving schools at most recent application."
+                },
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Department of Motor Vehicles"
+                },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "Driving.school@dmv.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Individual businesses (Driving Schools)"
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Daily"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "Driver Training Programs"
+                },
+                { "key" : "Dataset-Summary_Time-Period", "value" : "Current" },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "Motor Vehicles, Department of"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/3p6i-cv8y",
+        "link" : "https://data.ny.gov/Transportation/DMV-Driving-Schools/3p6i-cv8y",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "DASNY (Dormitory Authority of the State of New York) Bonds and Notes: Beginning 1957",
+            "id" : "iyue-ijfp",
+            "resource_name" : null,
+            "parent_fxf" : [],
+            "description" : "DASNY maintains a cumulative record of all bonds and notes issued by DASNY. This dataset is updated quarterly. The dataset includes details such as: Bond Series name, Dated Date, Maturity Status/Anticipated Maturity Date, Maturity Status/Matured or Defeased Date,Bond Series Par Amount and Bond Series Par Amount Outstanding.",
+            "attribution" : "Dormitory Authority State of New York",
+            "attribution_link" : "http://www.dasny.org/finance/outstand/index.php",
+            "contact_email" : null,
+            "type" : "dataset",
+            "updatedAt" : "2026-03-26T21:14:31.000Z",
+            "createdAt" : "2014-01-24T22:11:08.000Z",
+            "metadata_updated_at" : "2026-03-26T21:14:31.000Z",
+            "data_updated_at" : "2023-07-14T18:58:19.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 101,
+                "page_views_last_month" : 415,
+                "page_views_total" : 9848,
+                "page_views_last_week_log" : 6.672425341971495,
+                "page_views_last_month_log" : 8.700439718141093,
+                "page_views_total_log" : 13.265761535294137
+              },
+            "columns_name" :
+              [
+                "Dated Date",
+                "Bond Series Name",
+                "Bond Series Par Amount ",
+                "Bond Series Par Amount Outstanding",
+                "Maturity Status/Matured or Defeased Date",
+                "Maturity Status/Anticipated Maturity Date"
+              ],
+            "columns_field_name" :
+              [
+                "dated_date",
+                "bond_series_name",
+                "bond_series_par_amount",
+                "bond_series_par_amount_outstanding",
+                "maturity_status_matured_or_defeased_date",
+                "maturity_status_anticipated_maturity_date"
+              ],
+            "columns_datatype" :
+              [ "Calendar date", "Text", "Number", "Number", "Text", "Text" ],
+            "columns_description" :
+              [
+                "The date when interest starts accruing",
+                "The name of the bond series",
+                "Amount of the bonds issued for that particular series of\nbonds.",
+                "Amount outstanding for that particular bond series.",
+                "If bond series is still outstanding, report notes ‘Outstanding’, if bond series has matured or defeased, the date is specified. The term, “defeased” is a provision that voids a bond or loan when the borrower sets aside cash or bonds sufficient enough to service the borrower's debt.",
+                "If bond series has matured, report notes ‘Matured’, if bond series has not yet matured, anticipated maturity date is specified."
+              ],
+            "columns_format" :
+              [
+                { "view" : "date", "align" : "center" },
+                { "align" : "left" },
+                {
+                  "precision" : "0",
+                  "align" : "right",
+                  "currencyStyle" : "USD",
+                  "humane" : "false",
+                  "precisionStyle" : "currency"
+                },
+                {
+                  "precision" : "0",
+                  "align" : "right",
+                  "currencyStyle" : "USD",
+                  "humane" : "false",
+                  "precisionStyle" : "currency"
+                },
+                { "align" : "center" },
+                { "align" : "center" }
+              ],
+            "download_count" : 5162,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2021-01-06T23:06:44.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" :
+              [ "maturity", "bond series name", "dated date", "bonds" ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "Dormitory Authority State of New York"
+                },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "JQuinlan@dasny.org"
+                },
+                { "key" : "Dataset-Summary_Granularity", "value" : "Bond" },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Quarterly"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "Finance"
+                },
+                {
+                  "key" : "Dataset-Summary_Time-Period",
+                  "value" : "Beginning July 1, 1957 to current"
+                },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "Dormitory Authority, State of New York (DASNY)"
+                },
+                {
+                  "key" : "Disclaimers_Limitations",
+                  "value" : "DASNY assumed the outstanding debt of the Medical"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/iyue-ijfp",
+        "link" : "https://data.ny.gov/Economic-Development/DASNY-Dormitory-Authority-of-the-State-of-New-York/iyue-ijfp",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "MCFFA (Medical Care Facilities Financing Agency) Bonds and Notes: 1995 - 2017",
+            "id" : "dxta-2hdq",
+            "resource_name" : null,
+            "parent_fxf" : [],
+            "description" : "DASNY assumed all bonds and notes outstanding from the Medical Care Facilities Financing Agency (MCFFA) on September 1, 1995. As of March 31, 2017, no remaining MCFFA bonds are outstanding, nor will additional MCFFA bonds be issued. DASNY maintained a cumulative record of this debt. The dataset includes details such as Bond Series Name, Maturity Status/Matured or Defeased Date, Bond Series Par Amount and Bond Series Par Amount Outstanding.",
+            "attribution" : "Dormitory Authority State of New York",
+            "attribution_link" : null,
+            "contact_email" : null,
+            "type" : "dataset",
+            "updatedAt" : "2026-03-26T21:16:25.000Z",
+            "createdAt" : "2014-01-27T16:25:08.000Z",
+            "metadata_updated_at" : "2026-03-26T21:16:25.000Z",
+            "data_updated_at" : "2017-08-21T22:05:10.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 42,
+                "page_views_last_month" : 172,
+                "page_views_total" : 6721,
+                "page_views_last_week_log" : 5.426264754702098,
+                "page_views_last_month_log" : 7.4346282276367255,
+                "page_views_total_log" : 12.714674827308002
+              },
+            "columns_name" :
+              [
+                "Bond Series Par Amount Outstanding",
+                "Maturity Status/Matured or Defeased Date",
+                "Bond Series Par Amount ",
+                "Bond Series Name"
+              ],
+            "columns_field_name" :
+              [
+                "bond_series_par_amount_outstanding",
+                "maturity_status_matured_or_defeased_date",
+                "bond_series_par_amount",
+                "bond_series_name"
+              ],
+            "columns_datatype" : [ "Number", "Text", "Number", "Text" ],
+            "columns_description" :
+              [
+                "Amount outstanding for that particular bond series.",
+                "If bond series is still outstanding, report notes ‘Outstanding’, if bond series has matured or defeased, the date is specified. The term, “defeased” is a provision that voids a bond or loan when the borrower sets aside cash or bonds sufficient enough to service the borrower's debt.",
+                "Amount of the bonds issued for that particular series of\nbonds.",
+                "The name of the bond series."
+              ],
+            "columns_format" :
+              [
+                {
+                  "precision" : "0",
+                  "align" : "right",
+                  "currencyStyle" : "USD",
+                  "humane" : "false",
+                  "precisionStyle" : "currency"
+                },
+                { "align" : "center" },
+                {
+                  "precision" : "0",
+                  "align" : "right",
+                  "currencyStyle" : "USD",
+                  "humane" : "false",
+                  "precisionStyle" : "currency"
+                },
+                { "align" : "left" }
+              ],
+            "download_count" : 3109,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2017-08-21T22:05:14.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" :
+              [
+                "finance",
+                "medical care facilities financing agency (mcffa)",
+                "bond series par amount outstanding",
+                "bond series par amount",
+                "bonds",
+                "bond series",
+                "defeased date",
+                "maturity status"
+              ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "Dormitory Authority State of New York"
+                },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "JQuinlan@dasny.org"
+                },
+                { "key" : "Dataset-Summary_Granularity", "value" : "Bond" },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Static - Not Updated"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "Finance, Dormitory Authority State of New York"
+                },
+                {
+                  "key" : "Dataset-Summary_Time-Period",
+                  "value" : "1995 - 2017"
+                },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "Dormitory Authority, State of New York (DASNY)"
+                },
+                {
+                  "key" : "Disclaimers_Limitations",
+                  "value" : "Debt issued by DASNY is not included in this dataset."
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/dxta-2hdq",
+        "link" : "https://data.ny.gov/Economic-Development/MCFFA-Medical-Care-Facilities-Financing-Agency-Bon/dxta-2hdq",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "Winter Farmers' Markets in New York State",
+            "id" : "3tmh-kuni",
+            "resource_name" : null,
+            "parent_fxf" : [ "qq4h-8p86" ],
+            "description" : "In the past decade the number of farmers' markets in New York State has grown at a rapid rate.  The dataset contains information detailing the time and location of community farmers’ markets open in the winter as well as the name and phone number of the market manager.",
+            "attribution" : "New York State Department of Agriculture and Markets",
+            "attribution_link" : "https://agriculture.ny.gov/farmersmarkets",
+            "contact_email" : null,
+            "type" : "filter",
+            "updatedAt" : "2026-10-06T19:24:10.000Z",
+            "createdAt" : "2013-12-12T22:11:33.000Z",
+            "metadata_updated_at" : "2026-07-01T00:22:51.000Z",
+            "data_updated_at" : "2026-10-06T19:24:10.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 26,
+                "page_views_last_month" : 464,
+                "page_views_total" : 70217,
+                "page_views_last_week_log" : 4.754887502163469,
+                "page_views_last_month_log" : 8.861086905995393,
+                "page_views_total_log" : 16.099553284466875
+              },
+            "columns_name" :
+              [
+                "Operation Season",
+                "Phone",
+                "Address Line 1",
+                "Market Location",
+                "Latitude",
+                "Zip",
+                "Operation Hours",
+                "Longitude",
+                "State",
+                "Contact",
+                "City",
+                "FMNP",
+                "SNAP",
+                "FCC Issued",
+                "FCC Accepted",
+                "Georeference_1",
+                "Market Link",
+                "Operating Months",
+                "Market Name",
+                "County"
+              ],
+            "columns_field_name" :
+              [
+                "operation_season",
+                "phone",
+                "address_line_1",
+                "market_location",
+                "latitude",
+                "zip",
+                "operation_hours",
+                "longitude",
+                "state",
+                "contact",
+                "city",
+                "fmnp",
+                "snap_status",
+                "fc",
+                "fca",
+                "georeference_1",
+                "market_link",
+                "operation_months_code",
+                "market_name",
+                "county"
+              ],
+            "columns_datatype" :
+              [
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Number",
+                "Text",
+                "Text",
+                "Number",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Point",
+                "URL",
+                "Text",
+                "Text",
+                "Text"
+              ],
+            "columns_description" :
+              [
+                "Month and day when the market opens and closes for the year.",
+                "Phone number for this farmer's market location.",
+                "1st address line of the physical address for this location.",
+                "General place where the market is set up.",
+                "Latitude associated with this market location.",
+                "ZIP code for the physical address for this location.",
+                "Day and Hours the market is open.",
+                "Longitude associated with this market location.",
+                "2 character state code for the physical address for this location.",
+                "Contact person for the Market.",
+                "City name of the physical location.",
+                "Y indicates that this market is part of the Farmers Market Nutrition Program.",
+                "Y indicates the market accepts SNAP;\nwww.snaptomarket.com",
+                "Y indicates the market is issuing one $2.00 FreshConnect Check for every $5.00 in SNAP EBT transaction.",
+                "Y indicates the market is accepting $2.00 FreshConnect Checks from customers as payment for eligible food items; customers should not assume checks are also being issued at these locations, as this may or may not be the case.",
+                "Open Data platform-generated geocoding information from supplied address components. Point-type location is the centroid of the address components provided and does not reflect a specific address if the street address component is not provided. Point-type location is supplied in \"POINT (<geocoded longitude> <geocoded latitude>)\" format.",
+                "Website or other link to this market’s online presence.",
+                "SPRING (P) = operating at some point in April or May;\nSUMMER (M) = operating at some point in June, July, August, September, October, or November;\nEXTENDED SEASON (X) = operating at some point in December;\nWINTER (W) = operating at some point in January, February, March;\nYEAR-ROUND (YR) = continually operating at the same location.\nCategories are NOT mutually exclusive.",
+                "Name of the Farmers’ Market.",
+                "County the Farmers’ Market is located in."
+              ],
+            "columns_format" :
+              [
+                { "align" : "left" },
+                { "align" : "right" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "precisionStyle" : "standard", "align" : "left" },
+                { "align" : "center" },
+                { "align" : "left" },
+                { "precisionStyle" : "standard", "align" : "left" },
+                { "align" : "center" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "center" },
+                { "align" : "left" },
+                { "align" : "left" }
+              ],
+            "download_count" : 596,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2022-07-01T03:11:59.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" : [ "community farmers markets" ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Notes_Notes",
+                  "value" : "Database contains information on approximately 500 community farmers markets located throughout the State.  The data is updated weekly and as we become aware of new markets and updates to existing markets.  Along with the time and location of the market, the name and phone number of the market manager are provided to allow customers and farmers to contact the market directly to get up to the day information on the operations of the market."
+                },
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Department of Agriculture and Markets"
+                },
+                { "key" : "Dataset-Summary_Units", "value" : "Markets" },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "farmersmarkets@agriculture.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Specific market location and time"
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Quarterly"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "Division of Agricultural Development"
+                },
+                { "key" : "Dataset-Summary_Time-Period", "value" : "Current" },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "Agriculture and Markets, Department of"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/3tmh-kuni",
+        "link" : "https://data.ny.gov/Economic-Development/Winter-Farmers-Markets-in-New-York-State/3tmh-kuni",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "Farmers' Markets in New York State",
+            "id" : "qq4h-8p86",
+            "resource_name" : null,
+            "parent_fxf" : [],
+            "description" : "In the past decade the number of farmers' markets in New York State has grown at a rapid rate.  The dataset contains information detailing the time and location of community farmers' markets as well as the name and phone number of the market manager.",
+            "attribution" : "New York State Department of Agriculture and Markets",
+            "attribution_link" : "https://agriculture.ny.gov/farmersmarkets",
+            "contact_email" : null,
+            "type" : "dataset",
+            "updatedAt" : "2026-10-06T19:24:10.000Z",
+            "createdAt" : "2013-04-10T13:48:44.000Z",
+            "metadata_updated_at" : "2026-10-06T19:24:07.000Z",
+            "data_updated_at" : "2026-10-06T19:24:10.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 172,
+                "page_views_last_month" : 1217,
+                "page_views_total" : 142662,
+                "page_views_last_week_log" : 7.4346282276367255,
+                "page_views_last_month_log" : 10.250298417906333,
+                "page_views_total_log" : 17.12225169125473
+              },
+            "columns_name" :
+              [
+                "Georeference_1",
+                "State",
+                "Market Link",
+                "FCC Issued",
+                "WIC VF",
+                "Phone",
+                "FMNP",
+                "SNAP",
+                "FCC Accepted",
+                "Latitude",
+                "County",
+                "Market Name",
+                "Zip",
+                "Market Location",
+                "Address Line 1",
+                "City",
+                "Contact",
+                "Operation Hours",
+                "Operation Season",
+                "Operating Months",
+                "Longitude"
+              ],
+            "columns_field_name" :
+              [
+                "georeference_1",
+                "state",
+                "market_link",
+                "fc",
+                "wicvf",
+                "phone",
+                "fmnp",
+                "snap_status",
+                "fca",
+                "latitude",
+                "county",
+                "market_name",
+                "zip",
+                "market_location",
+                "address_line_1",
+                "city",
+                "contact",
+                "operation_hours",
+                "operation_season",
+                "operation_months_code",
+                "longitude"
+              ],
+            "columns_datatype" :
+              [
+                "Point",
+                "Text",
+                "URL",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Number",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Number"
+              ],
+            "columns_description" :
+              [
+                "Open Data platform-generated geocoding information from supplied address components. Point-type location is the centroid of the address components provided and does not reflect a specific address if the street address component is not provided. Point-type location is supplied in \"POINT (<geocoded longitude> <geocoded latitude>)\" format.",
+                "2 character state code for the physical address for this location.",
+                "Website or other link to this market’s online presence.",
+                "Y indicates the market is issuing one $2.00 FreshConnect Check for every $5.00 in SNAP EBT transaction.",
+                "Y Indicates the market has at least one farmer participating in the WIC Vegetable and Fruits Program and accepts eWIC.",
+                "Phone number for this farmer's market location.",
+                "Y indicates that this market is part of the Farmers Market Nutrition Program.",
+                "Y indicates the market accepts SNAP;\nwww.snaptomarket.com",
+                "Y indicates the market is accepting $2.00 FreshConnect Checks from customers as payment for eligible food items; customers should not assume checks are also being issued at these locations, as this may or may not be the case.",
+                "Latitude associated with this market location.",
+                "County the Farmers’ Market is located in.",
+                "Name of the Farmers’ Market.",
+                "ZIP code for the physical address for this location.",
+                "General place where the market is set up.",
+                "1st address line of the physical address for this location.",
+                "City name of the physical location.",
+                "Contact person for the Market.",
+                "Day and Hours the market is open.",
+                "Month and day when the market opens and closes for the year.",
+                "SPRING (P) = operating at some point in April or May;\nSUMMER (M) = operating at some point in June, July, August, September, October, or November;\nEXTENDED SEASON (X) = operating at some point in December;\nWINTER (W) = operating at some point in January, February, March;\nYEAR-ROUND (YR) = continually operating at the same location.\nCategories are NOT mutually exclusive.",
+                "Longitude associated with this market location."
+              ],
+            "columns_format" :
+              [
+                {},
+                { "align" : "center" },
+                { "align" : "left" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "right" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "precisionStyle" : "standard", "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "center" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "center" },
+                { "precisionStyle" : "standard", "align" : "left" }
+              ],
+            "download_count" : 32280,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2026-07-01T00:17:55.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" : [ "community farmers markets" ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Notes_Notes",
+                  "value" : "Database contains information on approximately 500 community farmers markets located throughout the State.  The data is updated weekly and as we become aware of new markets and updates to existing markets.  Along with the time and location of the market, the name and phone number of the market manager are provided to allow customers and farmers to contact the market directly to get up to the day information on the operations of the market."
+                },
+                { "key" : "Local-Data_County-Filter", "value" : "Yes" },
+                { "key" : "Local-Data_County_Column", "value" : "county" },
+                { "key" : "Local-Data_Municipality-Filter", "value" : "Yes" },
+                { "key" : "Local-Data_Municipality_Column", "value" : "city" },
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Department of Agriculture and Markets"
+                },
+                { "key" : "Dataset-Summary_Units", "value" : "Markets" },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "farmersmarkets@agriculture.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Specific market location and time"
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Quarterly"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "Division of Agricultural Development"
+                },
+                { "key" : "Dataset-Summary_Time-Period", "value" : "Current" },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "Agriculture and Markets, Department of"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/qq4h-8p86",
+        "link" : "https://data.ny.gov/Economic-Development/Farmers-Markets-in-New-York-State/qq4h-8p86",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "Summer-Fall Farmers' Markets in New York State",
+            "id" : "d9fx-i2fe",
+            "resource_name" : null,
+            "parent_fxf" : [ "qq4h-8p86" ],
+            "description" : "In the past decade the number of farmers' markets in New York State has grown at a rapid rate.  The dataset contains information detailing the time and location of community farmers’ markets open in the summer and fall as well as the name and phone number of the market manager.",
+            "attribution" : "New York State Department of Agriculture and Markets",
+            "attribution_link" : "https://agriculture.ny.gov/farmersmarkets",
+            "contact_email" : null,
+            "type" : "filter",
+            "updatedAt" : "2026-10-06T19:24:10.000Z",
+            "createdAt" : "2019-03-04T18:01:09.000Z",
+            "metadata_updated_at" : "2026-07-01T00:25:02.000Z",
+            "data_updated_at" : "2026-10-06T19:24:10.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 38,
+                "page_views_last_month" : 1586,
+                "page_views_total" : 35599,
+                "page_views_last_week_log" : 5.285402218862249,
+                "page_views_last_month_log" : 10.632086412835182,
+                "page_views_total_log" : 15.119589620741124
+              },
+            "columns_name" :
+              [
+                "Market Link",
+                "Address Line 1",
+                "Market Location",
+                "Market Name",
+                "County",
+                "Longitude",
+                "Operating Months",
+                "Contact",
+                "Zip",
+                "Georeference_1",
+                "FCC Accepted",
+                "FCC Issued",
+                "FMNP",
+                "State",
+                "SNAP",
+                "Latitude",
+                "Operation Season",
+                "Operation Hours",
+                "Phone",
+                "City"
+              ],
+            "columns_field_name" :
+              [
+                "market_link",
+                "address_line_1",
+                "market_location",
+                "market_name",
+                "county",
+                "longitude",
+                "operation_months_code",
+                "contact",
+                "zip",
+                "georeference_1",
+                "fca",
+                "fc",
+                "fmnp",
+                "state",
+                "snap_status",
+                "latitude",
+                "operation_season",
+                "operation_hours",
+                "phone",
+                "city"
+              ],
+            "columns_datatype" :
+              [
+                "URL",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Number",
+                "Text",
+                "Text",
+                "Text",
+                "Point",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Number",
+                "Text",
+                "Text",
+                "Text",
+                "Text"
+              ],
+            "columns_description" :
+              [
+                "Website or other link to this market’s online presence.",
+                "1st address line of the physical address for this location.",
+                "General place where the market is set up.",
+                "Name of the Farmers’ Market.",
+                "County the Farmers’ Market is located in.",
+                "Longitude associated with this market location.",
+                "SPRING (P) = operating at some point in April or May;\nSUMMER (M) = operating at some point in June, July, August, September, October, or November;\nEXTENDED SEASON (X) = operating at some point in December;\nWINTER (W) = operating at some point in January, February, March;\nYEAR-ROUND (YR) = continually operating at the same location.\nCategories are NOT mutually exclusive.",
+                "Contact person for the Market.",
+                "ZIP code for the physical address for this location.",
+                "Open Data platform-generated geocoding information from supplied address components. Point-type location is the centroid of the address components provided and does not reflect a specific address if the street address component is not provided. Point-type location is supplied in \"POINT (<geocoded longitude> <geocoded latitude>)\" format.",
+                "Y indicates the market is accepting $2.00 FreshConnect Checks from customers as payment for eligible food items; customers should not assume checks are also being issued at these locations, as this may or may not be the case.",
+                "Y indicates the market is issuing one $2.00 FreshConnect Check for every $5.00 in SNAP EBT transaction.",
+                "Y indicates that this market is part of the Farmers Market Nutrition Program.",
+                "2 character state code for the physical address for this location.",
+                "Y indicates the market accepts SNAP;\nwww.snaptomarket.com",
+                "Latitude associated with this market location.",
+                "Month and day when the market opens and closes for the year.",
+                "Day and Hours the market is open.",
+                "Phone number for this farmer's market location.",
+                "City name of the physical location."
+              ],
+            "columns_format" :
+              [
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "precisionStyle" : "standard", "align" : "left" },
+                { "align" : "center" },
+                { "align" : "left" },
+                { "align" : "center" },
+                { "align" : "left" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "precisionStyle" : "standard", "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "right" },
+                { "align" : "left" }
+              ],
+            "download_count" : 1577,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2022-06-30T17:39:00.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" : [ "community farmers markets" ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Notes_Notes",
+                  "value" : "Database contains information on approximately 500 community farmers markets located throughout the State.  The data is updated weekly and as we become aware of new markets and updates to existing markets.  Along with the time and location of the market, the name and phone number of the market manager are provided to allow customers and farmers to contact the market directly to get up to the day information on the operations of the market."
+                },
+                { "key" : "Local-Data_County-Filter", "value" : "Yes" },
+                { "key" : "Local-Data_County_Column", "value" : "county" },
+                { "key" : "Local-Data_Municipality-Filter", "value" : "Yes" },
+                { "key" : "Local-Data_Municipality_Column", "value" : "city" },
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Department of Agriculture and Markets"
+                },
+                { "key" : "Dataset-Summary_Units", "value" : "Markets" },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "farmersmarkets@agriculture.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Specific market location and time"
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Quarterly"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "Division of Agricultural Development"
+                },
+                { "key" : "Dataset-Summary_Time-Period", "value" : "Current" },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "Agriculture and Markets, Department of"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/d9fx-i2fe",
+        "link" : "https://data.ny.gov/Economic-Development/Summer-Fall-Farmers-Markets-in-New-York-State/d9fx-i2fe",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "State Park Facility Points with Playgrounds",
+            "id" : "44wf-4yxs",
+            "resource_name" : null,
+            "parent_fxf" : [ "9uuk-x7vh" ],
+            "description" : "The New York State Office of Parks, Recreation and Historic Preservation (OPRHP) oversees more than 250 state parks, historic sites, recreational trails, golf courses, boat launches and more,  encompassing nearly 350,000 acres, that are visited by 74 million people annually.  These facilities contribute to the economic vitality and quality of life of local communities and directly support New York’s tourism industry.  Parks also provide a place for families and children to be active and exercise, promoting healthy lifestyles.  The agency is responsible for the operation and stewardship of the state park system as well as advancing a statewide parks, historic preservation, and open space mission.",
+            "attribution" : "New York State Office of Parks, Recreation and Historic Preservation",
+            "attribution_link" : "http://nysparks.com/",
+            "contact_email" : null,
+            "type" : "filter",
+            "updatedAt" : "2026-04-15T20:51:30.000Z",
+            "createdAt" : "2013-12-18T18:10:58.000Z",
+            "metadata_updated_at" : "2026-04-15T20:51:30.000Z",
+            "data_updated_at" : "2024-12-12T04:52:23.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 21,
+                "page_views_last_month" : 186,
+                "page_views_total" : 7186,
+                "page_views_last_week_log" : 4.459431618637297,
+                "page_views_last_month_log" : 7.546894459887637,
+                "page_views_total_log" : 12.81117397072132
+              },
+            "columns_name" :
+              [
+                "Golf",
+                "Location",
+                "Longitude",
+                "Nature Center URL",
+                "Golf URL",
+                "Facility URL",
+                "Beach",
+                "Nature Center",
+                "Camp",
+                "Region",
+                "Category",
+                "Name",
+                "County",
+                "Latitude",
+                "Playground"
+              ],
+            "columns_field_name" :
+              [
+                "golf",
+                "location",
+                "x",
+                "naturecenter_url",
+                "golf_url",
+                "facility_url",
+                "beach",
+                "nature_center",
+                "camp",
+                "region",
+                "category",
+                "name",
+                "county",
+                "y",
+                "play"
+              ],
+            "columns_datatype" :
+              [
+                "Text",
+                "Point",
+                "Number",
+                "URL",
+                "URL",
+                "URL",
+                "Text",
+                "Text",
+                "Text",
+                "Number",
+                "Text",
+                "Text",
+                "Text",
+                "Number",
+                "Text"
+              ],
+            "columns_description" :
+              [
+                "Y/N value, indicates if the facility has golf available",
+                "",
+                "X coordinate of facility",
+                "URL of Nature Center",
+                "URL of golf course",
+                "URL of facility",
+                "Y/N value, indicates if the facility has a beach(s) available, Y-M value indicates the facility has multiple beaches",
+                "Y/N value, indicates if the facility has a nature center available, Y-A value indicates that the\nnature center is open year-round",
+                "Y/N value, indicates if the facility has camping available",
+                "State Park Region",
+                "Classification of state park facility",
+                "Name of State Park Facility",
+                "Name of County",
+                "Y coordinate of facility",
+                "Y/N value, indicates if the facility has a playground(s) available"
+              ],
+            "columns_format" :
+              [
+                { "align" : "center" },
+                {},
+                {
+                  "precisionStyle" : "standard",
+                  "noCommas" : "false",
+                  "align" : "right"
+                },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "center" },
+                {
+                  "precisionStyle" : "standard",
+                  "noCommas" : "false",
+                  "align" : "center"
+                },
+                {},
+                {},
+                {},
+                {
+                  "precisionStyle" : "standard",
+                  "noCommas" : "false",
+                  "align" : "right"
+                },
+                { "align" : "center" }
+              ],
+            "download_count" : 411,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2015-01-14T16:40:07.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Recreation",
+            "domain_tags" :
+              [
+                "nature centers",
+                "historic",
+                "parks",
+                "recreation",
+                "camping",
+                "golf"
+              ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Disclaimers_Limitations",
+                  "value" : "Some attribute information such as availability of a playground or swimmable beach is incomplete. Unless noted, it should be assumed that there is not a playground or beach at the facility. The agency is currently working to update and complete that information. "
+                },
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Office of Parks, Recreation and Historic Preservation"
+                },
+                {
+                  "key" : "Dataset-Summary_Units",
+                  "value" : "State Parks and Historic Sites"
+                },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "Notes@parks.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Facility"
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "As needed"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "GIS Bureau"
+                },
+                { "key" : "Dataset-Summary_Time-Period", "value" : "Current" },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "Parks, Recreation and Historic Preservation, Office of"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/44wf-4yxs",
+        "link" : "https://data.ny.gov/Recreation/State-Park-Facility-Points-with-Playgrounds/44wf-4yxs",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "State Park Facility Points",
+            "id" : "9uuk-x7vh",
+            "resource_name" : null,
+            "parent_fxf" : [],
+            "description" : "The New York State Office of Parks, Recreation and Historic Preservation (OPRHP) oversees more than 250 state parks, historic sites, recreational trails, golf courses, boat launches and more,  encompassing nearly 350,000 acres, that are visited by 74 million people annually.  These facilities contribute to the economic vitality and quality of life of local communities and directly support New York’s tourism industry.  Parks also provide a place for families and children to be active and exercise, promoting healthy lifestyles.  The agency is responsible for the operation and stewardship of the state park system as well as advancing a statewide parks, historic preservation, and open space mission.",
+            "attribution" : "New York State Office of Parks, Recreation and Historic Preservation",
+            "attribution_link" : "http://nysparks.com/",
+            "contact_email" : null,
+            "type" : "dataset",
+            "updatedAt" : "2026-04-15T20:45:20.000Z",
+            "createdAt" : "2013-02-15T17:54:44.000Z",
+            "metadata_updated_at" : "2026-04-15T20:45:20.000Z",
+            "data_updated_at" : "2024-12-12T04:52:23.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 50,
+                "page_views_last_month" : 294,
+                "page_views_total" : 9599,
+                "page_views_last_week_log" : 5.672425341971496,
+                "page_views_last_month_log" : 8.204571144249204,
+                "page_views_total_log" : 13.228818690495881
+              },
+            "columns_name" :
+              [
+                "Location (city)",
+                "Name",
+                "Location (state)",
+                "Camp",
+                "Golf",
+                "Counties",
+                "Location (address)",
+                "New York Zip Codes",
+                "NYS Municipal Boundaries",
+                "Category",
+                "Region",
+                "County",
+                "Location (zip)",
+                "Beach",
+                "Longitude",
+                "Latitude",
+                "Nature Center",
+                "Nature Center URL",
+                "Georeference",
+                "Playground",
+                "Golf URL",
+                "Facility URL",
+                "Location"
+              ],
+            "columns_field_name" :
+              [
+                "location_city",
+                "name",
+                "location_state",
+                "camp",
+                "golf",
+                ":@computed_region_kjdx_g34t",
+                "location_address",
+                ":@computed_region_wbg7_3whc",
+                ":@computed_region_yamh_8v7k",
+                "category",
+                "region",
+                "county",
+                "location_zip",
+                "beach",
+                "x",
+                "y",
+                "nature_center",
+                "naturecenter_url",
+                "georeference",
+                "play",
+                "golf_url",
+                "facility_url",
+                "location"
+              ],
+            "columns_datatype" :
+              [
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Number",
+                "Text",
+                "Number",
+                "Number",
+                "Text",
+                "Number",
+                "Text",
+                "Text",
+                "Text",
+                "Number",
+                "Number",
+                "Text",
+                "URL",
+                "Point",
+                "Text",
+                "URL",
+                "URL",
+                "Point"
+              ],
+            "columns_description" :
+              [
+                "",
+                "Name of State Park Facility",
+                "",
+                "Y/N value, indicates if the facility has camping available",
+                "Y/N value, indicates if the facility has golf available",
+                "",
+                "",
+                "",
+                "",
+                "Classification of state park facility",
+                "State Park Region",
+                "Name of County",
+                "",
+                "Y/N value, indicates if the facility has a beach(s) available, Y-M value indicates the facility has multiple beaches",
+                "X coordinate of facility",
+                "Y coordinate of facility",
+                "Y/N value, indicates if the facility has a nature center available, Y-A value indicates that the\nnature center is open year-round",
+                "URL of Nature Center",
+                "",
+                "Y/N value, indicates if the facility has a playground(s) available",
+                "URL of golf course",
+                "URL of facility",
+                ""
+              ],
+            "columns_format" :
+              [
+                {},
+                { "align" : "left" },
+                {},
+                { "align" : "center" },
+                { "align" : "center" },
+                {},
+                {},
+                {},
+                {},
+                { "align" : "left" },
+                {
+                  "precisionStyle" : "standard",
+                  "noCommas" : "false",
+                  "align" : "center"
+                },
+                { "align" : "left" },
+                {},
+                { "align" : "center" },
+                {
+                  "precisionStyle" : "standard",
+                  "noCommas" : "false",
+                  "align" : "right"
+                },
+                {
+                  "precisionStyle" : "standard",
+                  "noCommas" : "false",
+                  "align" : "right"
+                },
+                { "align" : "center" },
+                { "align" : "left" },
+                {},
+                { "align" : "center" },
+                { "align" : "left" },
+                { "align" : "left" },
+                {}
+              ],
+            "download_count" : 4757,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2024-12-12T04:43:33.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Recreation",
+            "domain_tags" :
+              [
+                "golf",
+                "nature centers",
+                "historic",
+                "recreation",
+                "camping",
+                "parks"
+              ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Office of Parks, Recreation and Historic Preservation"
+                },
+                {
+                  "key" : "Dataset-Summary_Units",
+                  "value" : "State Parks and Historic Sites"
+                },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "news@parks.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Facility"
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "As needed"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "GIS Bureau"
+                },
+                { "key" : "Dataset-Summary_Time-Period", "value" : "Current" },
+                { "key" : "Local-Data_County-Filter", "value" : "Yes" },
+                { "key" : "Local-Data_County_Column", "value" : "county" },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "Parks, Recreation and Historic Preservation, Office of"
+                },
+                {
+                  "key" : "Disclaimers_Limitations",
+                  "value" : "Some attribute information such as availability of a playground or swimmable beach is incomplete. Unless noted, it should be assumed that there is not a playground or beach at the facility. The agency is currently working to update and complete that information. "
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/9uuk-x7vh",
+        "link" : "https://data.ny.gov/Recreation/State-Park-Facility-Points/9uuk-x7vh",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      },
+      {
+        "resource" :
+          {
+            "name" : "Farmers' Markets in the FMNP Program",
+            "id" : "taa8-9beb",
+            "resource_name" : null,
+            "parent_fxf" : [ "qq4h-8p86" ],
+            "description" : "In the past decade the number of farmers' markets in New York State has grown at a rapid rate.  The dataset contains information detailing the time and location of community farmers' markets as well as the name and phone number of the market manager.",
+            "attribution" : "New York State Department of Agriculture and Markets",
+            "attribution_link" : "https://agriculture.ny.gov/farmersmarkets",
+            "contact_email" : null,
+            "type" : "filter",
+            "updatedAt" : "2026-10-06T19:24:10.000Z",
+            "createdAt" : "2022-07-02T05:56:20.000Z",
+            "metadata_updated_at" : "2026-07-01T00:25:31.000Z",
+            "data_updated_at" : "2026-10-06T19:24:10.000Z",
+            "page_views" :
+              {
+                "page_views_last_week" : 63,
+                "page_views_last_month" : 255,
+                "page_views_total" : 14260,
+                "page_views_last_week_log" : 6.0,
+                "page_views_last_month_log" : 8.0,
+                "page_views_total_log" : 13.799787528544284
+              },
+            "columns_name" :
+              [
+                "Market Link",
+                "Longitude",
+                "Latitude",
+                "Operating Months",
+                "Operation Season",
+                "SNAP",
+                "FMNP",
+                "Operation Hours",
+                "Contact",
+                "Address Line 1",
+                "Market Location",
+                "Market Name",
+                "Phone",
+                "Zip",
+                "Georeference_1",
+                "FCC Accepted",
+                "FCC Issued",
+                "State",
+                "County",
+                "City"
+              ],
+            "columns_field_name" :
+              [
+                "market_link",
+                "longitude",
+                "latitude",
+                "operation_months_code",
+                "operation_season",
+                "snap_status",
+                "fmnp",
+                "operation_hours",
+                "contact",
+                "address_line_1",
+                "market_location",
+                "market_name",
+                "phone",
+                "zip",
+                "georeference_1",
+                "fca",
+                "fc",
+                "state",
+                "county",
+                "city"
+              ],
+            "columns_datatype" :
+              [
+                "URL",
+                "Number",
+                "Number",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Point",
+                "Text",
+                "Text",
+                "Text",
+                "Text",
+                "Text"
+              ],
+            "columns_description" :
+              [
+                "Website or other link to this market’s online presence.",
+                "Longitude associated with this market location.",
+                "Latitude associated with this market location.",
+                "SPRING (P) = operating at some point in April or May;\nSUMMER (M) = operating at some point in June, July, August, September, October, or November;\nEXTENDED SEASON (X) = operating at some point in December;\nWINTER (W) = operating at some point in January, February, March;\nYEAR-ROUND (YR) = continually operating at the same location.\nCategories are NOT mutually exclusive.",
+                "Month and day when the market opens and closes for the year.",
+                "Y indicates the market accepts SNAP;\nwww.snaptomarket.com",
+                "Y indicates that this market is part of the Farmers Market Nutrition Program.",
+                "Day and Hours the market is open.",
+                "Contact person for the Market.",
+                "1st address line of the physical address for this location.",
+                "General place where the market is set up.",
+                "Name of the Farmers’ Market.",
+                "Phone number for this farmer's market location.",
+                "ZIP code for the physical address for this location.",
+                "Open Data platform-generated geocoding information from supplied address components. Point-type location is the centroid of the address components provided and does not reflect a specific address if the street address component is not provided. Point-type location is supplied in \"POINT (<geocoded longitude> <geocoded latitude>)\" format.",
+                "Y indicates the market is accepting $2.00 FreshConnect Checks from customers as payment for eligible food items; customers should not assume checks are also being issued at these locations, as this may or may not be the case.",
+                "Y indicates the market is issuing one $2.00 FreshConnect Check for every $5.00 in SNAP EBT transaction.",
+                "2 character state code for the physical address for this location.",
+                "County the Farmers’ Market is located in.",
+                "City name of the physical location."
+              ],
+            "columns_format" :
+              [
+                { "align" : "left" },
+                { "precisionStyle" : "standard", "align" : "left" },
+                { "precisionStyle" : "standard", "align" : "left" },
+                { "align" : "center" },
+                { "align" : "left" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "left" },
+                { "align" : "right" },
+                { "align" : "center" },
+                {},
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "center" },
+                { "align" : "left" },
+                { "align" : "left" }
+              ],
+            "download_count" : 122,
+            "provenance" : "official",
+            "lens_view_type" : "tabular",
+            "lens_display_type" : "table",
+            "locked" : false,
+            "backend" : "nbe",
+            "blob_mime_type" : null,
+            "hide_from_data_json" : false,
+            "publication_date" : "2022-07-02T05:56:29.000Z"
+          },
+        "classification" :
+          {
+            "categories" : [],
+            "tags" : [],
+            "domain_category" : "Economic Development",
+            "domain_tags" : [ "community farmers markets" ],
+            "domain_metadata" :
+              [
+                {
+                  "key" : "Notes_Notes",
+                  "value" : "Database contains information on approximately 500 community farmers markets located throughout the State.  The data is updated weekly and as we become aware of new markets and updates to existing markets.  Along with the time and location of the market, the name and phone number of the market manager are provided to allow customers and farmers to contact the market directly to get up to the day information on the operations of the market."
+                },
+                { "key" : "Local-Data_County-Filter", "value" : "Yes" },
+                { "key" : "Local-Data_County_Column", "value" : "county" },
+                { "key" : "Local-Data_Municipality-Filter", "value" : "Yes" },
+                { "key" : "Local-Data_Municipality_Column", "value" : "city" },
+                {
+                  "key" : "Dataset-Summary_Dataset-Owner",
+                  "value" : "New York State Department of Agriculture and Markets"
+                },
+                { "key" : "Dataset-Summary_Units", "value" : "Markets" },
+                {
+                  "key" : "Dataset-Summary_Contact-Information",
+                  "value" : "farmersmarkets@agriculture.ny.gov"
+                },
+                {
+                  "key" : "Dataset-Summary_Granularity",
+                  "value" : "Specific market location and time"
+                },
+                { "key" : "Dataset-Summary_Coverage", "value" : "Statewide" },
+                {
+                  "key" : "Dataset-Summary_Posting-Frequency",
+                  "value" : "Quarterly"
+                },
+                {
+                  "key" : "Dataset-Summary_Organization",
+                  "value" : "Division of Agricultural Development"
+                },
+                { "key" : "Dataset-Summary_Time-Period", "value" : "Current" },
+                {
+                  "key" : "Dataset-Information_Agency",
+                  "value" : "Agriculture and Markets, Department of"
+                }
+              ]
+          },
+        "metadata" : { "domain" : "data.ny.gov" },
+        "permalink" : "https://data.ny.gov/d/taa8-9beb",
+        "link" : "https://data.ny.gov/Economic-Development/Farmers-Markets-in-the-FMNP-Program/taa8-9beb",
+        "owner" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          },
+        "creator" :
+          {
+            "id" : "xzik-pf59",
+            "user_type" : "interactive",
+            "display_name" : "NY Open Data"
+          }
+      }
+    ],
+  "resultSetSize" : 26,
+  "timings" : { "serviceMillis" : 21, "searchMillis" : [ 2, 6 ] },
+  "warnings" : []
+}

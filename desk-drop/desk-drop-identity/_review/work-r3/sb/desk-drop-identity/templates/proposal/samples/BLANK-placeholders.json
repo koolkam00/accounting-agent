@@ -1,0 +1,53 @@
+{
+  "brand_name": "[BRAND]",
+  "product_sku": "[PRODUCT AND PACK SIZE]",
+  "prepared_for": "",
+  "proposal_date": "[PROPOSAL DATE]",
+  "category": "[CATEGORY]",
+  "tier": "founding",
+  "extra_offices": "0",
+  "drop_date": "[DROP DATE: Tue 2027-01-12]",
+  "ship_by_requested": "",
+  "offices": [
+    {
+      "neighborhood": "[NEIGHBORHOOD]",
+      "industry": "[INDUSTRY]",
+      "headcount_band": "[HEADCOUNT BAND]",
+      "planned_units": "[N]"
+    },
+    {
+      "neighborhood": "[NEIGHBORHOOD]",
+      "industry": "[INDUSTRY]",
+      "headcount_band": "[HEADCOUNT BAND]",
+      "planned_units": "[N]"
+    },
+    {
+      "neighborhood": "[NEIGHBORHOOD]",
+      "industry": "[INDUSTRY]",
+      "headcount_band": "[HEADCOUNT BAND]",
+      "planned_units": "[N]"
+    },
+    {
+      "neighborhood": "[NEIGHBORHOOD]",
+      "industry": "[INDUSTRY]",
+      "headcount_band": "[HEADCOUNT BAND]",
+      "planned_units": "[N]"
+    },
+    {
+      "neighborhood": "[NEIGHBORHOOD]",
+      "industry": "[INDUSTRY]",
+      "headcount_band": "[HEADCOUNT BAND]",
+      "planned_units": "[N]"
+    }
+  ],
+  "retailers": [
+    {
+      "retailer_name": "[RETAILER]",
+      "street": "[STREET]",
+      "distance": "[DISTANCE FROM THE OFFICES]"
+    }
+  ],
+  "online_site": "",
+  "map_image": "[RETAILER MAP]",
+  "map_caption": ""
+}

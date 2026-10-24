@@ -1,0 +1,71 @@
+B-C-001|human|251-500|How many employees work at Human |has approximately 371 total employees worldwide as of March 2026
+B-C-003|first-look-media|76-150|How many employees work at First Look Media |has approximately 32 total employees worldwide as of March 2026
+B-C-005|nourish|251-500|How many employees work at Nourish |has approximately 4,082 total employees worldwide as of March 2026
+B-C-007|personetics|251-500|How many employees work at Personetics |has approximately 336 total employees worldwide as of March 2026
+B-C-009|alpine-investors|151-250|How many employees work at Alpine Investors |has approximately 1,882 total employees worldwide as of March 2026
+B-C-010|gamechanger|251-500||
+B-C-014|captions|40-75||
+B-C-017|biohub|251-500|How many employees work at Biohub |has approximately 436 total employees worldwide as of March 2026
+B-C-019|thinking-machines-lab|76-150|How many employees work at Thinking Machines Lab |has approximately 153 total employees worldwide as of March 2026
+B-C-020|mercury|76-150|How many employees work at Mercury |has approximately 1,279 total employees worldwide as of March 2026
+B-C-021|scale-microgrids|76-150||
+B-C-025|kharon|40-75||
+B-C-028|valon|251-500||
+B-C-030|prepared|76-150|How many employees work at Prepared |has approximately 135 total employees worldwide as of March 2026
+B-C-032|roboflow|40-75|How many employees work at Roboflow |has approximately 132 total employees worldwide as of March 2026
+B-C-031|dashlane|251-500|How many employees work at Dashlane |has approximately 319 total employees worldwide as of March 2026
+B-C-033|baseten|251-500||
+B-C-034|cognitiv|151-250|How many employees work at Cognitiv |has approximately 166 total employees worldwide as of March 2026
+B-C-035|global-strategy-group|151-250||
+B-C-037|nayya|76-150||
+B-C-038|stellar-health|151-250||
+B-C-042|vidmob|40-75|How many employees work at VidMob |has approximately 90 total employees worldwide as of March 2026
+B-C-044|galvanize-climate-solutions|40-75||
+B-C-046|radar|40-75||
+B-C-048|aterian|76-150||
+B-C-050|gts|251-500|How many employees work at GTS |has approximately 460 total employees worldwide as of March 2026
+B-C-051|morning-brew|251-500|How many employees work at Morning Brew |has approximately 286 total employees worldwide as of March 2026
+B-C-052|bombas|151-250|How many employees work at Bombas |has approximately 303 total employees worldwide as of March 2026
+B-C-055|stash|251-500||
+B-C-056|hex|151-250|How many employees work at Hex |has approximately 232 total employees worldwide as of March 2026
+B-C-060|warp|40-75||
+B-C-061|daily-harvest|251-500||
+B-C-072|actively-ai|40-75||
+B-C-075|retool|251-500|How many employees work at Retool |has approximately 372 total employees worldwide as of March 2026
+B-C-078|instant|40-75||
+B-C-079|playplay|151-250|How many employees work at PlayPlay |has approximately 181 total employees worldwide as of March 2026
+B-C-082|candid|251-500|How many employees work at Candid |has approximately 383 total employees worldwide as of March 2026
+B-C-083|compstak|76-150|How many employees work at CompStak |has approximately 157 total employees worldwide as of March 2026
+B-C-084|synthesia|251-500|How many employees work at Synthesia |has approximately 774 total employees worldwide as of March 2026
+B-C-085|empathy|151-250||
+B-C-090|hungryroot|151-250|How many employees work at Hungryroot |has approximately 326 total employees worldwide as of March 2026
+B-C-091|1stdibs|251-500|How many employees work at 1stdibs |has approximately 281 total employees worldwide as of March 2026
+B-C-094|bmf|40-75||
+B-C-095|foursquare|251-500||
+B-C-101|triplelift|251-500||
+B-C-099|chalk|40-75||
+B-C-096|inspiren|76-150||
+B-C-098|brainpop|151-250||
+B-C-102|harvey|251-500||
+B-C-103|clay|76-150|How many employees work at Clay |has approximately 62 total employees worldwide as of March 2026
+B-C-105|orbital|76-150||
+B-C-106|ellevest|76-150|How many employees work at Ellevest |has approximately 38 total employees worldwide as of March 2026
+B-C-109|green-mountain-energy|251-500|How many employees work at Green Mountain Energy |has approximately 257 total employees worldwide as of March 2026
+B-C-111|wellcom-worldwide|251-500||
+B-C-123|trexquant-investment|40-75||
+B-C-124|at-bay|151-250|How many employees work at At-Bay |has approximately 335 total employees worldwide as of March 2026
+B-C-129|activate-consulting|76-150||
+B-C-130|butterfly-network-inc|251-500||
+B-C-133|orderco|151-250||
+B-C-135|sierra|151-250|How many employees work at Sierra |has approximately 756 total employees worldwide as of March 2026
+B-C-127|accessibe|151-250|How many employees work at accessiBe |has approximately 268 total employees worldwide as of March 2026
+B-C-128|simplebet|76-150||
+B-C-151|carbyne|151-250|How many employees work at Carbyne |has approximately 146 total employees worldwide as of March 2026
+B-C-153|seedtag|251-500||
+B-C-155|primary-wave|76-150||
+B-C-158|sigma-computing|251-500|How many employees work at Sigma Computing |has approximately 964 total employees worldwide as of March 2026
+B-C-159|hanover-park|40-75||
+B-C-160|k-health|251-500|How many employees work at K Health |has approximately 419 total employees worldwide as of March 2026
+B-C-169|pumpkin|151-250||
+B-C-171|signal-ai|151-250||
+B-C-172|agentio|40-75|How many employees work at Agentio |has approximately 71 total employees worldwide as of March 2026

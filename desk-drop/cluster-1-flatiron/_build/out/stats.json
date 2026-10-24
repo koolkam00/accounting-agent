@@ -9,40 +9,40 @@
  "company_rows_total": 276,
  "company_rows_inside": 270,
  "company_rows_outside": 6,
- "candidates": 172,
+ "candidates": 162,
  "candidates_by_conf": {
-  "medium": 92,
-  "high": 56,
-  "low": 24
+  "medium": 80,
+  "high": 51,
+  "low": 31
  },
  "candidates_by_band": {
-  "unknown": 95,
-  "251-500": 27,
-  "151-250": 17,
-  "40-75": 17,
-  "76-150": 15,
+  "unknown": 117,
+  "251-500": 16,
+  "151-250": 11,
+  "40-75": 10,
+  "76-150": 7,
   "under-40": 1
  },
  "candidates_conf_band": {
   "151-250": {
-   "high": 8,
-   "low": 2,
-   "medium": 7
-  },
-  "251-500": {
-   "high": 14,
-   "low": 1,
-   "medium": 12
-  },
-  "40-75": {
-   "high": 2,
-   "low": 3,
-   "medium": 12
-  },
-  "76-150": {
    "high": 7,
    "low": 1,
-   "medium": 7
+   "medium": 3
+  },
+  "251-500": {
+   "high": 7,
+   "low": 5,
+   "medium": 4
+  },
+  "40-75": {
+   "high": 0,
+   "low": 2,
+   "medium": 8
+  },
+  "76-150": {
+   "high": 5,
+   "low": 0,
+   "medium": 2
   },
   "under-40": {
    "high": 0,
@@ -50,44 +50,68 @@
    "medium": 1
   },
   "unknown": {
-   "high": 25,
-   "low": 17,
-   "medium": 53
+   "high": 32,
+   "low": 23,
+   "medium": 62
   }
  },
  "candidates_by_lease": {
-  "occupied": 91,
+  "occupied": 87,
   "occupancy-unconfirmed": 45,
-  "signed-not-occupied": 36
+  "signed-not-occupied": 30
  },
  "candidates_scope": {
-  "unknown": 95,
-  "whole-company": 74,
-  "nyc-office": 3
+  "unknown": 117,
+  "whole-company": 43,
+  "nyc-office": 2
  },
+ "candidates_banded": 44,
+ "candidates_by_check": {
+  "no-count": 95,
+  "single-source": 23,
+  "disagree": 22,
+  "agree": 21,
+  "scope-differs": 1
+ },
+ "banded_hq_not_nyc": 12,
+ "banded_hq_unknown": 2,
+ "candidates_with_parent": 6,
+ "moved_to_near_miss_r2": [
+  "Clay",
+  "GameChanger",
+  "Harvey",
+  "Mercury",
+  "Nourish",
+  "Seedtag",
+  "Sierra",
+  "Sigma Computing",
+  "Synthesia",
+  "Valon"
+ ],
+ "occupied_banded": 30,
  "status_counts": {
-  "candidate": 172,
-  "near-miss-over-500": 92,
+  "candidate": 162,
+  "near-miss-over-500": 102,
   "near-miss-outside": 6,
   "excluded-coworking": 5,
   "excluded-not-office": 1
  },
  "candidates_by_area": {
-  "13th-18th St": 39,
-  "18th-23rd St": 56,
-  "23rd-26th St": 28,
-  "26th-30th St": 49
+  "13th-18th St": 35,
+  "18th-23rd St": 55,
+  "23rd-26th St": 26,
+  "26th-30th St": 46
  },
- "buildings": 82,
+ "buildings": 81,
  "buildings_lobby": {
-  "unknown": 65,
+  "unknown": 64,
   "security desk": 15,
   "loading dock": 2
  },
  "buildings_coi": {
-  "unknown": 82
+  "unknown": 81
  },
- "buildings_with_candidates": 74,
+ "buildings_with_candidates": 73,
  "coworking": 32,
  "coworking_inside": 24,
  "coworking_by_conf": {
@@ -108,13 +132,13 @@
  "retailers": 30,
  "retailers_inside": 11,
  "retailers_by_tier": {
-  "B": 17,
+  "B": 18,
   "C": 8,
-  "A": 5
+  "A": 4
  },
  "retailers_by_conf": {
-  "high": 23,
-  "medium": 5,
+  "high": 22,
+  "medium": 6,
   "low": 2
  },
  "retailers_public": 14,
@@ -122,98 +146,114 @@
  "cand_bldg_to_tierA_blocks": {
   "max": 10.2,
   "median": 5.4,
-  "share_within_5": 0.39
+  "share_within_5": 0.38
  },
  "cand_bldg_to_public_store_blocks": {
   "max": 7.7,
-  "median": 3.4,
-  "share_within_3": 0.45
+  "median": 3.3,
+  "share_within_3": 0.44
  },
  "route": {
   "stops": 10,
   "stop_minutes": 150,
-  "walking_minutes": 31.3,
-  "total_minutes": 181.3,
-  "end": "11:01",
-  "metres": 1755,
+  "walking_minutes": 37.3,
+  "total_minutes": 207.3,
+  "end": "11:27",
+  "metres": 1859,
   "car_faster_legs": 0,
-  "longest_leg_min": 7.4,
+  "longest_leg_min": 9.3,
   "lobby": {
-   "unknown": 8,
-   "security desk": 2
+   "unknown": 5,
+   "security desk": 5
   },
   "bands": {
    "251-500": 5,
-   "76-150": 2,
-   "151-250": 2,
-   "40-75": 1
+   "151-250": 4,
+   "76-150": 1
   },
-  "at_12_min_stops": 151.3,
-  "nine_stops": 162.2,
-  "over_minutes": 1,
+  "at_12_min_stops": 157.3,
+  "nine_stops": 169.3,
+  "reload_minutes": 20.0,
+  "reloads": 1,
+  "cases_per_load": 5,
+  "total_one_load": 187.3,
+  "end_one_load": "11:07",
+  "over_minutes": 27,
+  "over_one_load": 7,
   "variants": {
    "no_security_minimum": {
-    "total_minutes": 180.0,
-    "end": "11:00",
-    "stops": "Actively AI (30 West 21st Street); CompStak (675 Avenue of the Americas); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); Carbyne (45 West 27th Street); Primary Wave (1165 Broadway); Seedtag (15 West 27th Street); Activate Consulting (11 East 26th Street); Butterfly Network (11 East 26th Street)"
+    "total_minutes": 207.3,
+    "total_one_load": 187.3,
+    "end": "11:27",
+    "stops": "Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); TripleLift (53 West 23rd Street); Foursquare (50 West 23rd Street); 1stDibs (300 Park Avenue South); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
    },
    "no_band_rule": {
-    "total_minutes": 178.1,
-    "end": "10:58",
-    "stops": "Aterian (37 East 18th Street); Valon (860 Broadway); Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); CompStak (675 Avenue of the Americas); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); TripleLift (53 West 23rd Street); Foursquare (50 West 23rd Street)"
+    "total_minutes": 207.3,
+    "total_one_load": 187.3,
+    "end": "11:27",
+    "stops": "Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); TripleLift (53 West 23rd Street); Foursquare (50 West 23rd Street); 1stDibs (300 Park Avenue South); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
    },
    "high_or_medium": {
-    "total_minutes": 171.8,
-    "end": "10:52",
-    "stops": "Actively AI (30 West 21st Street); Instant (53 West 21st Street); CompStak (675 Avenue of the Americas); PlayPlay (53 West 21st Street); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); TripleLift (53 West 23rd Street); BMF (We Are BMF) (50 West 23rd Street); Foursquare (50 West 23rd Street)"
+    "total_minutes": 194.9,
+    "total_one_load": 174.9,
+    "end": "11:14",
+    "stops": "Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Instant (53 West 21st Street); PlayPlay (53 West 21st Street); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); TripleLift (53 West 23rd Street); BMF (We Are BMF) (50 West 23rd Street); Foursquare (50 West 23rd Street)"
    },
    "high_or_medium_no_security_minimum": {
-    "total_minutes": 171.8,
-    "end": "10:52",
-    "stops": "Morning Brew (22 West 19th Street); Warp (156 Fifth Avenue); Actively AI (30 West 21st Street); Instant (53 West 21st Street); CompStak (675 Avenue of the Americas); PlayPlay (53 West 21st Street); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); TripleLift (53 West 23rd Street)"
+    "total_minutes": 194.9,
+    "total_one_load": 174.9,
+    "end": "11:14",
+    "stops": "Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Instant (53 West 21st Street); PlayPlay (53 West 21st Street); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); TripleLift (53 West 23rd Street); BMF (We Are BMF) (50 West 23rd Street); Foursquare (50 West 23rd Street)"
    }
   },
+  "rule": "one 76-150 office and at least three bands (no high-confidence, occupied 40-75 office with a sourced band remains after review round 2's second headcounts; the high-or-medium variant below keeps a 40-75 office)",
   "stop_list": [
-   "1. Valon, 860 Broadway (unknown; 251-500)",
-   "2. Dashlane, 44 West 18th Street (unknown; 251-500)",
-   "3. Global Trading Systems (GTS), 625 Avenue of the Americas (unknown; 251-500)",
-   "4. Actively AI, 30 West 21st Street (unknown; 40-75)",
-   "5. CompStak, 675 Avenue of the Americas (unknown; 76-150)",
-   "6. Empathy, 56 West 22nd Street (unknown; 151-250)",
-   "7. BrainPOP, 71 West 23rd Street (unknown; 151-250)",
-   "8. Inspiren, 61 West 23rd Street (unknown; 76-150)",
-   "9. TripleLift, 53 West 23rd Street (security desk; 251-500)",
-   "10. Foursquare, 50 West 23rd Street (security desk; 251-500)"
+   "1. Dashlane, 44 West 18th Street (unknown; 251-500)",
+   "2. Global Trading Systems (GTS), 625 Avenue of the Americas (unknown; 251-500)",
+   "3. Empathy, 56 West 22nd Street (unknown; 151-250)",
+   "4. BrainPOP, 71 West 23rd Street (unknown; 151-250)",
+   "5. Inspiren, 61 West 23rd Street (unknown; 76-150)",
+   "6. TripleLift, 53 West 23rd Street (security desk; 251-500)",
+   "7. Foursquare, 50 West 23rd Street (security desk; 251-500)",
+   "8. 1stDibs, 300 Park Avenue South (security desk; 251-500)",
+   "9. Cognitiv, 215 Park Avenue South (security desk; 151-250)",
+   "10. Global Strategy Group, 215 Park Avenue South (security desk; 151-250)"
   ]
  },
- "candidates_occupied_banded": 44,
- "candidates_banded": 76,
+ "candidates_occupied_banded": 30,
  "candidates_banded_hq": {
-  "Y": 43,
-  "N": 17,
-  "unknown": 16
+  "Y": 30,
+  "N": 12,
+  "unknown": 2
  },
  "candidates_hq": {
-  "unknown": 112,
-  "Y": 43,
-  "N": 17
+  "unknown": 87,
+  "Y": 51,
+  "N": 24
  },
  "candidates_under40_founder_call": [
   "Normal Computing"
  ],
  "near_classes": {
-  "over-1,000 (1,001 to 4,999)": 42,
+  "over-1,000 (1,001 to 4,999)": 45,
+  "just-over-500 (501 to 1,000)": 29,
   "not-near (5,000 or more)": 28,
-  "just-over-500 (501 to 1,000)": 22,
   "outside-line": 6
  },
- "near_nyc_may_fit": 7,
+ "near_nyc_may_fit": 12,
  "pins_moved_frontage": {
-  "companies": 25,
-  "near_miss": 28,
-  "buildings": 13,
-  "coworking": 0,
+  "companies": 22,
+  "near_miss": 31,
+  "buildings": 12,
+  "coworking": 2,
   "retailers": 3
+ },
+ "corner_pins": {
+  "companies": 76,
+  "near_miss": 56,
+  "buildings": 37,
+  "coworking": 20,
+  "retailers": 11
  },
  "pins_published_coordinate": 3,
  "public_walk_minutes": {
@@ -236,78 +276,78 @@
  "coworking_high": 19,
  "walk": {
   "sessions": 10,
-  "total_minutes": 806,
-  "stops": 117,
+  "total_minutes": 782,
+  "stops": 116,
   "table": [
    {
     "session": "1",
     "phase": "core (inside the boundary)",
-    "stops": 12,
-    "minutes": "80.3",
+    "stops": 11,
+    "minutes": "74.0",
     "start": "14 St-Union Sq (L), about 1 min walk",
-    "end": "14 St (F M), about 5 min walk"
+    "end": "14 St (F M), about 4 min walk"
    },
    {
     "session": "10",
     "phase": "outer retailers (within ten blocks)",
     "stops": 7,
-    "minutes": "79.7",
-    "start": "28 St (6), about 9 min walk",
-    "end": "Astor Pl (6), about 1 min walk"
+    "minutes": "76.3",
+    "start": "28 St (6), about 8 min walk",
+    "end": "8 St-NYU (R W), about 1 min walk"
    },
    {
     "session": "2",
     "phase": "core (inside the boundary)",
-    "stops": 14,
-    "minutes": "82.7",
-    "start": "14 St (F M), about 4 min walk",
+    "stops": 15,
+    "minutes": "77.1",
+    "start": "14 St-Union Sq (N Q R W), about 6 min walk",
     "end": "23 St (R W), about 4 min walk"
    },
    {
     "session": "3",
     "phase": "core (inside the boundary)",
-    "stops": 11,
-    "minutes": "78.6",
-    "start": "28 St (6), about 4 min walk",
-    "end": "23 St-Baruch College (6), about 3 min walk"
+    "stops": 15,
+    "minutes": "80.8",
+    "start": "23 St (F M), about 2 min walk",
+    "end": "14 St-Union Sq (N Q R W), about 4 min walk"
    },
    {
     "session": "4",
     "phase": "core (inside the boundary)",
-    "stops": 16,
-    "minutes": "80.5",
-    "start": "28 St (6), about 3 min walk",
-    "end": "28 St (R W), about 3 min walk"
+    "stops": 13,
+    "minutes": "81.5",
+    "start": "14 St-Union Sq (N Q R W), about 1 min walk",
+    "end": "28 St (6), about 4 min walk"
    },
    {
     "session": "5",
     "phase": "core (inside the boundary)",
-    "stops": 13,
-    "minutes": "79.4",
-    "start": "28 St (R W), about 4 min walk",
-    "end": "23 St (R W), about 4 min walk"
+    "stops": 15,
+    "minutes": "80.7",
+    "start": "23 St (R W), about 4 min walk",
+    "end": "23 St (F M), about 2 min walk"
    },
    {
     "session": "6",
     "phase": "core (inside the boundary)",
-    "stops": 17,
-    "minutes": "82.0",
-    "start": "23 St (R W), about 2 min walk",
-    "end": "23 St (F M), about 4 min walk"
+    "stops": 14,
+    "minutes": "72.4",
+    "start": "23 St (F M), about 3 min walk",
+    "end": "28 St (R W), about 5 min walk"
    },
    {
     "session": "7",
     "phase": "core (inside the boundary)",
-    "stops": 15,
-    "minutes": "82.0",
-    "start": "23 St (F M), about 2 min walk",
-    "end": "28 St (R W), about 2 min walk"
+    "stops": 14,
+    "minutes": "77.8",
+    "start": "33 St (6), about 2 min walk",
+    "end": "23 St-Baruch College (6), about 3 min walk"
    },
    {
     "session": "8",
     "phase": "outer retailers (within ten blocks)",
     "stops": 7,
-    "minutes": "82.4",
+    "minutes": "82.8",
     "start": "W 4 St-Wash Sq (A C E), about 3 min walk",
     "end": "23 St (C E), about 1 min walk"
    },
@@ -315,14 +355,14 @@
     "session": "9",
     "phase": "outer retailers (within ten blocks)",
     "stops": 5,
-    "minutes": "78.6",
+    "minutes": "78.4",
     "start": "23 St (1), about 2 min walk",
     "end": "33 St (6), about 9 min walk"
    }
   ],
   "core_sessions": 7,
   "outer_sessions": 3,
-  "core_minutes": 566,
-  "outer_minutes": 241
+  "core_minutes": 544,
+  "outer_minutes": 238
  }
 }

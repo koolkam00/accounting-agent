@@ -1,12 +1,12 @@
 /*
-  dd-docs.js: shared pieces for the Letter documents (v1.2, 2026-10-24). Load after dd-template.js.
+  dd-docs.js: shared pieces for the Letter documents (v1.3, 2026-10-24). Load after dd-template.js.
     DDDocs.header({ kicker, meta })        wordmark left, kicker and meta right, cobalt rule under
     DDDocs.footer(left, right)              hairline footer
     DDDocs.contact(sep)                     "[FOUNDER NAME] · [PHONE] · [EMAIL]" from brand.json
     DDDocs.imgSlot(src, label)              a real picture, or the grey slot that says
                                             "real pantry photo, no identifiable people"
     DDDocs.cardDiagram(opts)                a drawn tent card with numbered pins (not a photo)
-    DDDocs.fitPages(sheet, i, steps)        shrink in a stated order until every page fits; else error
+    DDDocs.fitPages(sheet, i, steps)        shrink in a stated order until every page fits; else an error saying by how much
     DDDocs.claimsIn(text)                   claims or soft-ladder words found in a text, if any
     DDDocs.items(text)                      one list item per line
     DDDocs.usd(n)                           "$1,500"
@@ -82,7 +82,7 @@
 
   // Fit every .page of a sheet. steps: functions that make one thing smaller and return true,
   // or return false when they have nothing left to give. The fixed parts are never in `steps`.
-  X.fitPages = function (sheet, i, steps, what, only) {
+  X.fitPages = function (sheet, i, steps, what, only, hint) {
     const pages = only || [...sheet.querySelectorAll('.page')];
     const over = () => pages.filter((p) => { const b = p.querySelector('.bd'); return b && b.scrollHeight > b.clientHeight + 1; });
     let guard = 0;
@@ -97,22 +97,24 @@
       f.textContent = 'DOES NOT FIT ON THE PAGE. Shorten the text named in the panel. No PDF until it fits.';
       p.appendChild(f);
     });
-    if (left.length) D.error(i, `${what || 'The text'} runs past the bottom of the page even at the smallest sizes. Shorten it.`);
+    // v1.4 (review round 3, R3-03): say by how much, and which parts are longest, so the founder
+    // knows what to shorten. hint: an optional sentence (or a function returning one) from the template.
+    if (left.length) {
+      const o = Math.max(...left.map((p) => { const b = p.querySelector('.bd'); return b.scrollHeight - b.clientHeight; })) / 96;
+      const by = o < 0.01 ? 'less than 0.01 in' : `${o.toFixed(2)} in`;
+      const parts = [];
+      left.forEach((p) => p.querySelectorAll('.sec').forEach((s) => { const h = s.querySelector('h2'); if (s.offsetParent && h) parts.push([h.textContent.trim(), s.getBoundingClientRect().height / 96]); }));
+      parts.sort((a, b) => b[1] - a[1]);
+      const h = typeof hint === 'function' ? hint() : hint;
+      D.error(i, `${what || 'The text'} runs past the bottom of the page by ${by}, even at the smallest sizes. ${h || 'Shorten it.'}${parts.length ? ` The longest parts: ${parts.slice(0, 3).map(([t, v]) => `"${t}" (${v.toFixed(1)} in)`).join(', ')}.` : ''}`);
+    }
     return left.length === 0;
   };
 
-  // Claims and soft words. Negations we write ourselves ("no sales guarantee") are allowed.
-  const BAD = /\b(healthy|healthier|guarantee[sd]?|guaranteeing|best[- ]?selling|the best|boosts?|immun\w*|cures?|detox\w*|clinically|proven|superfood\w*|lift|ROI|conversions?|converts?|acquisition|acquire[sd]?|viral|skyrocket\w*|explod\w*)\b/gi;
-  const OK = /\b(no|not|never|nor|without|isn't|is not|do not|don't|cannot|can't|we never)\b[^.;:]{0,40}?\b(guarantee[sd]?|lift|acquisition|ROI|conversions?)\b/gi;
-  X.claimsIn = function (text) {
-    const t = String(text || '').replace(OK, ' ');
-    const m = t.match(BAD);
-    return m ? [...new Set(m.map((x) => x.toLowerCase()))] : [];
-  };
-  X.checkClaims = function (i, label, text) {
-    const found = X.claimsIn(text);
-    if (found.length) D.warn(i, `${label} uses "${found.join('", "')}". No health, sales, lift, acquisition or "guaranteed" claims; measurement words come from the ladder.`);
-  };
+  // Claims: one shared list in dd-template.js (v1.3, review round 2). A hit is an error unless the
+  // record carries claims_reviewed "Y" with a reason; see DD.checkClaims.
+  X.claimsIn = (text) => D.claimsIn(text);
+  X.checkClaims = (i, label, text, rec) => D.checkClaims(i, label, text, rec);
 
   // Editable copy: {BRAND_NAME} becomes the name from brand.json (so a rename never touches copy),
   // **words** become bold, [PLACEHOLDERS] are highlighted.

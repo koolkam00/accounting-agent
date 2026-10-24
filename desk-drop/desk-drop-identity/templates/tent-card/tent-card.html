@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tent card template</title>
 <!--
-  TENT CARD, 5 x 7 in faces (7 in wide, 5 in tall), tent fold. Template v1.2, 2026-10-24
+  TENT CARD, 5 x 7 in faces (7 in wide, 5 in tall), tent fold. Template v1.3, 2026-10-24
+  (v1.3 review round 2: two-flavor allergen panel, shared claims check that blocks, wide logo floor
+  0.75 in and later in the give-way, card ID inside the margin, 9 pt room tag)
   (v1.0 2026-10-23; v1.2 review round 1: brand logo slot, no "Nowhere" allergen option, the
   ingredient face stands toward the room when a long list needs a whole face, name give-way
   reordered and re-widened).
@@ -58,7 +60,8 @@
   .face .name-row .name { flex: 1 1 auto; min-width: 0; }
   .face .logo { display: block; flex: none; height: .9in; width: auto; max-width: 6.5in; object-fit: contain; object-position: left center; }
   .face.logo-wide .name { display: none; }
-  .face .room-tag { font-weight: 700; }
+  /* "this side faces the room": the one cue for which face goes outward, so 9 pt bold ink (R2-09) */
+  .face .room-tag { font: 700 9pt/1 var(--dd-font-text); color: var(--dd-ink); }
   .face .product { margin: .03in 0 0; font: 600 13pt/1.2 var(--dd-font-text); color: var(--dd-ink-soft); }
   .face .product.dropped { display: none; }
   .face .mid { flex: 1 1 auto; display: flex; gap: .2in; align-items: center; min-height: 0; margin-top: .08in; }
@@ -84,12 +87,22 @@
     font-size: var(--dd-print-allergen-size); line-height: 1.22; color: #000; white-space: pre-line;
   }
   .face .allergen-text + .allergen-text { margin-top: .03in; }
+  /* two flavors (v1.3, review round 2, R2-06): each statement under its own flavor's name */
+  .face .allergen-flavor { margin: .05in 0 0; font: 700 10pt/1.15 var(--dd-font-text); color: var(--dd-ink); }
+  .face .allergen-label + .allergen-flavor { margin-top: .01in; }
 
   .face .foot { flex: none; display: flex; align-items: flex-end; justify-content: space-between; gap: .2in; margin-top: .09in; }
   .face .find { margin: 0; font: 600 11pt/1.25 var(--dd-font-text); color: var(--dd-ink); }
   .face .by { flex: none; display: flex; align-items: center; gap: .06in; font: 400 8.5pt/1 var(--dd-font-text); color: var(--dd-ink-soft); white-space: nowrap; }
   .face .by img { display: block; }
-  .face .card-id { position: absolute; right: .25in; bottom: .07in; font: 400 7pt/1 var(--dd-font-text); color: var(--dd-stone); }
+  /* The card ID is for kitting, not for the reader: it sits in the bottom margin, outside the
+     safe area by design, 0.12 in from the trim (twice a 1/16 in cutting tolerance; R2-09). */
+  .face .card-id { position: absolute; right: .25in; bottom: .12in; font: 400 7pt/1 var(--dd-font-text); color: var(--dd-stone); }
+  /* split card, room face (v1.4, R3-06): "Take one." and the QR beside the name when the list leaves room */
+  .face .ing-head { display: flex; align-items: center; gap: .15in; flex: none; }
+  .face .ing-head .name-block { flex: 1 1 auto; min-width: 0; }
+  .face .ing-cta { flex: none; display: flex; align-items: center; gap: .1in; margin-top: .06in; }
+  .face .ing-cta .cta-text { width: 1.3in; }
   .face .dd-sample-banner { position: absolute; left: 0; right: 0; top: 0; height: .2in; z-index: 3; }
   .face .blocker {
     position: absolute; inset: .6in .4in; z-index: 4; display: flex; align-items: center; justify-content: center; text-align: center;
@@ -138,26 +151,33 @@
   const NAME_MAX = 1.0 * IN;          // 72 pt
   const NAME_ONE_LINE_MIN = 0.62 * IN; // below this a one-line name goes narrower or to two lines
   const NAME_MIN = 0.5 * IN;          // 36 pt: floor for the wide-photo test
-  const LOGO_MAX = 0.9 * IN, LOGO_MIN = 0.55 * IN; // brand logo height
+  const LOGO_MAX = 0.9 * IN, LOGO_MIN = 0.55 * IN; // brand logo height (a compact logo, beside the typed name)
+  const LOGO_WIDE_MIN = 0.75 * IN;    // a wide logo IS the name in the wide photo: it stops at 0.75 in (review round 2, R2-08)
   const LOGO_WIDE = 2.2;              // a logo this many times wider than tall replaces the typed name
   const STORY_MAX = 15, STORY_MIN = 12; // pt
   const QR_MAX = 1.45 * IN, QR_MIN = 1.15 * IN;
 
   const FIELDS = [
     { group: 'Brand', key: 'brand_name', label: 'Brand name', required: true, maxChars: 28, help: 'As the brand writes it. From paid_brands.csv: brand_name.' },
-    { group: 'Brand', key: 'brand_logo', label: 'Brand logo (optional)', type: 'image', picture: 'logo', help: 'The brand\'s own logo file: SVG best, or a PNG at least 300 px tall, transparent or white background. A wide logo replaces the typed name; a square or stacked logo prints beside it. Leave it out to print the name in type.' },
+    { group: 'Brand', key: 'brand_logo', label: 'Brand logo (optional)', type: 'image', picture: 'logo', emptyText: 'None: the brand name prints in type.', help: 'The brand\'s own logo file: SVG best, or a PNG at least 300 px tall, transparent or white background. A wide logo replaces the typed name; a square or stacked logo prints beside it. Leave it out to print the name in type.' },
     { group: 'Brand', key: 'product_name', label: 'Product (optional)', maxChars: 40, help: 'Flavor or product, e.g. "Sea Salt Lentil Crisps". From product_sku.' },
     { group: 'Brand', key: 'card_sentences', label: 'Two sentences: who makes it and why', required: true, multiline: true, maxChars: 200, help: 'From the brand, edited for plain style. No health, sales or "best" claims. From card_sentences.' },
     { group: 'Allergens (copy word for word)', key: 'allergen_source', label: 'Where the package declares allergens', options: [['contains_statement', 'A "Contains" statement (most packages)'], ['ingredient_list', 'No "Contains" line: copy the whole ingredient list'], ['single_ingredient', 'No ingredient list: a single-ingredient product (water, almonds): copy its name']], help: 'Read the package. No "Contains" line? Copy the whole ingredient list: you never decide yourself whether it holds an allergen. Only a product with no ingredient list at all (one ingredient, such as water or almonds) uses the last option.' },
     { group: 'Allergens (copy word for word)', key: 'allergen_line_verbatim', label: 'Allergen statement, exactly as on the package', required: true, multiline: true, rows: 4, help: 'Contains statement: copy it, starting with the word "Contains". Ingredient list: copy the whole list, starting with "Ingredients". Single-ingredient product: copy its name exactly as printed, e.g. "Dry Roasted Almonds". Never shorten or reword.' },
     { group: 'Allergens (copy word for word)', key: 'may_contain_verbatim', label: '"May contain" or facility line, exactly as on the package', multiline: true, rows: 2, help: 'Leave empty only if the package has none.' },
+    { group: 'Second flavor (only if the brand sends two)', key: 'flavor_name', label: 'Flavor 1 name, as printed on its package', help: 'Only for a two-flavor campaign. The boxes above are flavor 1\'s package; the boxes below are flavor 2\'s. Never merge two packages into one statement.' },
+    { group: 'Second flavor (only if the brand sends two)', key: 'flavor_name_2', label: 'Flavor 2 name, as printed on its package', help: 'Leave all the flavor 2 boxes empty for one flavor.' },
+    { group: 'Second flavor (only if the brand sends two)', key: 'allergen_source_2', label: 'Where flavor 2\'s package declares allergens', options: [['contains_statement', 'A "Contains" statement (most packages)'], ['ingredient_list', 'No "Contains" line: copy the whole ingredient list'], ['single_ingredient', 'No ingredient list: a single-ingredient product: copy its name']] },
+    { group: 'Second flavor (only if the brand sends two)', key: 'allergen_line_verbatim_2', label: 'Flavor 2 allergen statement, exactly as on its package', multiline: true, rows: 3, help: 'Copied from flavor 2\'s own package, word for word, even when it matches flavor 1.' },
+    { group: 'Second flavor (only if the brand sends two)', key: 'may_contain_verbatim_2', label: 'Flavor 2 "may contain" line, exactly as on its package', multiline: true, rows: 2 },
     { group: 'Where to buy (one or both)', key: 'retailer_line', label: 'Retailer and street', help: 'In the form "Retailer Name, 123 Street Name". From retailer_line.' },
     { group: 'Where to buy (one or both)', key: 'discount_code', label: 'Discount code', help: 'From discount_code.' },
     { group: 'Where to buy (one or both)', key: 'code_site', label: 'Site for the code', help: 'Short form, no https://, e.g. "brightside.com". From online_store_url.' },
     { group: 'QR and IDs', key: 'qr_url', label: 'QR link for THIS office', required: true, help: 'One link per office per campaign (from the operations tracker). The QR encodes exactly this.' },
     { group: 'QR and IDs', key: 'qr_display', label: 'Short link printed under the QR (optional)', help: 'Leave empty to print the QR link without https://.' },
     { group: 'QR and IDs', key: 'office_id', label: 'Office ID', required: true, help: 'e.g. O-003. Printed tiny so cards for different offices never get mixed.' },
-    { group: 'QR and IDs', key: 'campaign_id', label: 'Campaign ID', required: true, help: 'e.g. CMP-001.' }
+    { group: 'QR and IDs', key: 'campaign_id', label: 'Campaign ID', required: true, help: 'e.g. CMP-001.' },
+    ...DD.CLAIMS_FIELDS('Claims check (only if it is wrong)')
   ];
 
   // Where the package declares allergens decides the panel's label line. The text itself is
@@ -171,6 +191,26 @@
   };
   const src = (r) => ALLERGEN_LABEL[r.allergen_source] ? r.allergen_source : 'contains_statement';
   const logoOf = (r) => DD.imgSrc(r.brand_logo);
+  // Two flavors: each flavor's statement prints under its own name, both at the locked 14 pt.
+  const two = (r) => ['flavor_name_2', 'allergen_line_verbatim_2', 'may_contain_verbatim_2'].some((k) => String(r[k] || '').trim());
+  const src2 = (r) => ALLERGEN_LABEL[r.allergen_source_2] ? r.allergen_source_2 : 'contains_statement';
+  const KIND = { contains_statement: '', ingredient_list: ' · ingredients', single_ingredient: ' · single ingredient' };
+  // the panel's contents; the .allergen-text paragraphs hold the package's words and nothing else
+  function allergenPanel(r) {
+    const may = (r.may_contain_verbatim || '').trim();
+    if (!two(r)) return `<p class="allergen-label">${ALLERGEN_LABEL[src(r)]}</p>
+          <p class="allergen-text">${DD.text(r.allergen_line_verbatim || '[ALLERGEN STATEMENT, WORD FOR WORD FROM THE PACKAGE]')}</p>
+          ${may ? `<p class="allergen-text">${DD.text(may)}</p>` : ''}`;
+    const may2 = (r.may_contain_verbatim_2 || '').trim();
+    return `<p class="allergen-label">Two flavors. Allergens for each, as printed on its own package. Always check the package.</p>
+          <p class="allergen-flavor">${DD.text(r.flavor_name || '[FLAVOR 1]')}${KIND[src(r)]}</p>
+          <p class="allergen-text">${DD.text(r.allergen_line_verbatim || '[ALLERGEN STATEMENT, WORD FOR WORD FROM THE PACKAGE]')}</p>
+          ${may ? `<p class="allergen-text">${DD.text(may)}</p>` : ''}
+          <p class="allergen-flavor">${DD.text(r.flavor_name_2 || '[FLAVOR 2]')}${KIND[src2(r)]}</p>
+          <p class="allergen-text">${DD.text(r.allergen_line_verbatim_2 || '[FLAVOR 2 ALLERGEN STATEMENT, WORD FOR WORD]')}</p>
+          ${may2 ? `<p class="allergen-text">${DD.text(may2)}</p>` : ''}`;
+  }
+  const verbatimOf = (r) => two(r) ? [r.allergen_line_verbatim || '', r.may_contain_verbatim || '', r.allergen_line_verbatim_2 || '', r.may_contain_verbatim_2 || ''] : [r.allergen_line_verbatim || '', r.may_contain_verbatim || ''];
 
   function findLine(r) {
     const ret = (r.retailer_line || '').trim();
@@ -214,9 +254,7 @@
           </div>
         </div>
         <div class="allergen">
-          <p class="allergen-label">${ALLERGEN_LABEL[src(r)]}</p>
-          <p class="allergen-text">${DD.text(r.allergen_line_verbatim || '[ALLERGEN STATEMENT, WORD FOR WORD FROM THE PACKAGE]')}</p>
-          ${may ? `<p class="allergen-text">${DD.text(may)}</p>` : ''}
+          ${allergenPanel(r)}
         </div>
         <div class="foot">
           <p class="find">${findLine(r) || '<mark class="dd-ph">[FIND IT AT RETAILER, STREET OR USE CODE AT SITE]</mark>'}</p>
@@ -241,13 +279,14 @@
     const fr = fl.cloneNode(true); fr.style.left = (L + W + .18) + 'in'; sheet.appendChild(fr);
   }
 
+  const norm = (t) => String(t || '').replace(/\s+/g, ' ').trim();
   function render(sheet, r, i) {
     sheet.classList.add('tent', 'mode-' + MODE);
     sheet.style.width = MODE === 'home' ? '8.5in' : '7.25in';
     sheet.style.height = MODE === 'home' ? '11in' : '10.25in';
     sheet.innerHTML = `<div class="flat"><div class="face back">${faceHTML(r)}</div><div class="face front">${faceHTML(r)}</div></div>
       <div class="sheet-note" style="left:.75in;top:.12in;width:7in">Print at 100% (Actual size) on 80 to 110 lb cover cardstock. Cut on the corner marks. Score and fold on the FOLD marks; both sides read upright when standing.</div>
-      <div class="sheet-note" style="left:.75in;top:10.6in;width:7in">${DD.text(r.brand_name || '')} · Card ${DD.text(r.office_id || '')} · ${DD.text(r.campaign_id || '')} · template v1.2</div>`;
+      <div class="sheet-note" style="left:.75in;top:10.6in;width:7in">${DD.text(r.brand_name || '')} · Card ${DD.text(r.office_id || '')} · ${DD.text(r.campaign_id || '')} · template v1.3</div>`;
     marks(sheet);
     sheet.querySelectorAll('.qr-slot').forEach(s => { s.innerHTML = DD.qrSvg(r.qr_url, QR_MAX); });
     // allergen rules
@@ -259,15 +298,29 @@
     if (src(r) === 'single_ingredient' && al && al.split(/\s+/).length > 8) DD.warn(i, 'A single-ingredient product name is usually a few words. If the package lists ingredients, choose the ingredient-list option.');
     if (src(r) === 'contains_statement' && al && !DD.isPlaceholder(al) && !/contain/i.test(al)) DD.warn(i, 'The allergen statement does not include the word "Contains". If the package has no "Contains" line, choose "Only inside the ingredient list" and copy the whole list.');
     if (src(r) === 'ingredient_list' && al && !DD.isPlaceholder(al) && !/ingredient/i.test(al)) DD.warn(i, 'For the ingredient-list option, copy the whole list, starting with "Ingredients" as printed.');
-    if (!(r.may_contain_verbatim || '').trim()) DD.warn(i, 'No "may contain" or shared-facility line entered. Leave it empty only if the package has none.');
+    if (!(r.may_contain_verbatim || '').trim()) DD.warn(i, `No "may contain" or shared-facility line entered${two(r) ? ' for flavor 1' : ''}. Leave it empty only if the package has none.`);
+    if (!two(r) && String(r.flavor_name || '').trim()) DD.warn(i, 'Flavor 1 has a name but flavor 2 is empty, so this prints as a one-flavor card, without flavor names.');
+    if (two(r)) {
+      const a2 = (r.allergen_line_verbatim_2 || '').trim();
+      if (!String(r.flavor_name || '').trim()) DD.error(i, 'Two flavors: type flavor 1\'s name as printed on its package, so each statement prints under its own flavor.');
+      if (!String(r.flavor_name_2 || '').trim()) DD.error(i, 'Two flavors: type flavor 2\'s name as printed on its package.');
+      if (!a2) DD.error(i, 'Two flavors: copy flavor 2\'s allergen statement from its own package, word for word, even if it matches flavor 1.');
+      if (r.allergen_source_2 && !ALLERGEN_LABEL[r.allergen_source_2]) DD.error(i, `allergen_source_2 "${r.allergen_source_2}" is not one of contains_statement, ingredient_list, single_ingredient.`);
+      if (src2(r) === 'contains_statement' && a2 && !DD.isPlaceholder(a2) && !/contain/i.test(a2)) DD.warn(i, 'Flavor 2\'s allergen statement does not include the word "Contains". If its package has no "Contains" line, choose the ingredient-list option for flavor 2 and copy the whole list.');
+      if (src2(r) === 'ingredient_list' && a2 && !DD.isPlaceholder(a2) && !/ingredient/i.test(a2)) DD.warn(i, 'Flavor 2: for the ingredient-list option, copy the whole list, starting with "Ingredients" as printed.');
+      if (!(r.may_contain_verbatim_2 || '').trim()) DD.warn(i, 'No "may contain" or shared-facility line entered for flavor 2. Leave it empty only if its package has none.');
+      if (a2 && norm(a2) === norm(r.allergen_line_verbatim) && norm(r.may_contain_verbatim) === norm(r.may_contain_verbatim_2)) DD.warn(i, 'Both flavors have the same allergen text. Check each package again; if they really match, the card is right as it is.');
+    }
     // field rules that are errors, not just warnings
     const ret = (r.retailer_line || '').trim(), code = (r.discount_code || '').trim(), site = (r.code_site || '').trim();
     if (!ret && !(code && site) && !site) DD.error(i, 'Add a retailer, or a code and its site. The card needs a place to buy.');
     if (code && !site) DD.error(i, 'A discount code needs the site it works on.');
     if (ret && site && !code) DD.warn(i, 'Online site given without a code. The line reads "or online at".');
     if (/^https?:\/\//.test(site)) DD.warn(i, 'Site for the code: drop the https:// part.');
-    const claims = /\b(healthy|healthier|guarantee[sd]?|best[- ]selling|boost|immun|cure|detox|clinically|proven|superfood|lift)\b/i;
-    if (claims.test(r.card_sentences || '') || claims.test(r.product_name || '')) DD.warn(i, 'The two sentences may contain claims language (health, "best", "guaranteed"). Rewrite in plain facts.');
+    // claims: the one shared list (system/dd-template.js). A hit is an error, not a note (review round 2, R2-05).
+    DD.checkClaims(i, 'The two sentences', r.card_sentences, r);
+    DD.checkClaims(i, 'The product line', r.product_name, r);
+    DD.checkClaims(i, 'The brand name', r.brand_name, r);
   }
 
   // ---------- fitting: the allergen panel is never touched ----------
@@ -278,11 +331,12 @@
     const logo = face.querySelector('.logo');
     const avail = safe.clientWidth;
     const aspect = logo ? ((logo.naturalWidth && logo.naturalHeight) ? logo.naturalWidth / logo.naturalHeight : 3) : 0;
-    const mode = !logo ? 'type' : aspect >= LOGO_WIDE ? 'logo-wide' : 'logo-compact';
+    let mode = !logo ? 'type' : aspect >= LOGO_WIDE ? 'logo-wide' : 'logo-compact';
+    let replaced = false;   // v1.4 (R3-04): a wide logo at its floor gave way to the typed name
     face.classList.toggle('logo-wide', mode === 'logo-wide');
     let logoPx = LOGO_MAX;
     const setLogo = () => {
-      if (!logo) return;
+      if (!logo || replaced) return;
       // never wider than the safe area: a very wide logo is set by its width
       const h = mode === 'logo-wide' ? Math.min(logoPx, avail / aspect) : logoPx;
       logo.style.height = h + 'px'; logo.style.width = (h * aspect) + 'px';
@@ -290,12 +344,14 @@
     setLogo();
     const availName = () => mode === 'logo-compact' ? avail - logo.getBoundingClientRect().width - 0.14 * IN : avail;
     const setName = (px, width) => { name.style.fontSize = px + 'px'; name.style.fontStretch = width + '%'; };
+    // the name as text; an unfilled [BRAND NAME] keeps its yellow mark like every placeholder (R2-14)
+    const nameText = (t) => { name.innerHTML = DD.text(t); };
     const fits = (px, w) => { setName(px, w); return name.scrollWidth <= availName() + 1; };
     const widest = (px) => { for (const w of [100, 87.5, 75]) if (fits(px, w)) return w; return 75; };
     // first choice: the biggest one-line size, then narrower widths, then two balanced lines
     function choose() {
       if (mode === 'logo-wide') return { px: 0, w: 100, lines: 0 };
-      name.textContent = r.brand_name || '[BRAND NAME]';
+      nameText(r.brand_name || '[BRAND NAME]');
       for (const w of [100, 87.5, 75]) {
         setName(100, w);
         const px = Math.min(NAME_MAX, Math.floor(100 * availName() / name.scrollWidth));
@@ -313,7 +369,7 @@
         name.innerHTML = DD.text(best.a) + '<br>' + DD.text(best.b);
         return { px: Math.max(NAME_MIN, Math.min(NAME_MAX * .8, Math.floor(100 * availName() / best.wide))), w: 87.5, lines: 2 };
       }
-      name.textContent = r.brand_name || '';
+      nameText(r.brand_name || '');
       return { px: NAME_MIN, w: 75, lines: 1 };
     }
     let chosen = choose();
@@ -321,13 +377,21 @@
     apply();
     const tooWide = () => mode !== 'logo-wide' && name.scrollWidth > availName() + 1;
     return {
-      mode, get info() { return { name_px: chosen.px, name_width: chosen.w, name_lines: chosen.lines, logo: mode, logo_in: logo ? Math.round(parseFloat(logo.style.height) / IN * 100) / 100 : null }; },
+      get mode() { return mode; },
+      get info() { return { name_px: chosen.px, name_width: chosen.w, name_lines: chosen.lines, logo: replaced ? 'logo-wide-replaced-by-typed-name' : mode, logo_in: logo && !replaced ? Math.round(parseFloat(logo.style.height) / IN * 100) / 100 : null }; },
+      // v1.4 (review round 3, R3-04): the last step for a wide logo already at its 0.75 in floor:
+      // the typed name takes its place (it can go down to 36 pt), so the allergen text keeps 14 pt
+      logoToType: () => {
+        if (mode !== 'logo-wide' || logoPx > LOGO_WIDE_MIN + 0.5) return;
+        replaced = true; mode = 'type'; logo.style.display = 'none'; face.classList.remove('logo-wide');
+        chosen = choose(); apply(); return true;
+      },
       apply, tooWide,
       // give-way helpers, each returns true if it changed something
-      logoDown: () => { if (logo && logoPx > LOGO_MIN + 0.5) { logoPx = Math.max(LOGO_MIN, logoPx - 0.05 * IN); setLogo(); if (mode === 'logo-compact') { chosen = choose(); } apply(); return true; } },
+      logoDown: () => { const floor = mode === 'logo-wide' ? LOGO_WIDE_MIN : LOGO_MIN; if (logo && logoPx > floor + 0.5) { logoPx = Math.max(floor, logoPx - 0.05 * IN); setLogo(); if (mode === 'logo-compact') { chosen = choose(); } apply(); return true; } },
       twoToOne: () => {
         if (chosen.lines !== 2) return;
-        name.textContent = r.brand_name || ''; setName(100, 75);
+        nameText(r.brand_name || ''); setName(100, 75);
         const px = Math.min(NAME_MAX, Math.floor(100 * availName() / name.scrollWidth));
         if (px >= NAME_MIN) { chosen = { px, w: widest(px), lines: 1 }; apply(); return true; }
         chosen = choose(); apply();
@@ -354,10 +418,12 @@
     const nm = nameFitter(front, r);
     if (nm.tooWide()) errs.push('Brand name is too long for the card. Use a shorter form of the name.');
 
-    // Vertical fit. The allergen panel is never touched. Everything else gives way, in this order:
-    //    logo height (0.9 to 0.55 in) -> story size -> tighter gaps -> find-it line 11 to 10 pt -> QR size
-    //    -> two-line name back to one condensed line -> drop product line -> name size (re-widened at
-    //    each size, floor 36 pt) -> drop the two sentences -> blocking error.
+    // Vertical fit. The allergen panel is never touched. Everything else gives way, in this order
+    // (v1.3, review round 2: the logo now gives way after the story and the find-it line):
+    //    story size 15 to 12 pt -> tighter gaps -> find-it line 11 to 10 pt -> logo height (0.9 in down
+    //    to 0.75 in for a wide logo, 0.55 in for a compact one) -> QR size -> two-line name back to one
+    //    condensed line -> drop product line -> name size (re-widened at each size, floor 36 pt)
+    //    -> drop the two sentences -> blocking error.
     let storyPt = STORY_MAX, qr = QR_MAX, findPt = 11;
     const find = front.querySelector('.find');
     const apply = () => {
@@ -366,15 +432,23 @@
       const s = qrSvg(); if (s) { s.setAttribute('width', qr); s.setAttribute('height', qr); }
     };
     const steps = [
-      () => nm.logoDown(),
       () => { if (story && storyPt > STORY_MIN) { storyPt -= 0.5; return true; } },
       () => { if (!front.classList.contains('tight')) { front.classList.add('tight'); return true; } },
       () => { if (findPt > 10) { findPt = 10; return true; } },
+      () => nm.logoDown(),
       () => { if (qrSvg() && qr > QR_MIN) { qr = Math.max(QR_MIN, qr - 4); return true; } },
       () => nm.twoToOne(),
       () => { if (product && !product.classList.contains('dropped')) { product.classList.add('dropped'); warns.push('The product line was left off so the allergen text keeps its locked size.'); return true; } },
       () => nm.nameDown(),
-      () => { if (story && !story.classList.contains('dropped')) { story.classList.add('dropped'); warns.push('The two sentences were left off so the allergen text keeps its locked size. Shorten them to bring them back.'); return true; } },
+      () => { if (nm.logoToType()) { warns.push('The brand\'s logo was replaced by the typed name so the allergen text keeps its locked 14 pt. A shorter buy line, or one buy path instead of two, may bring the logo back.'); return true; } },
+      // v1.4 (R3-04): drop the two sentences only when that really frees height (the "Take one"
+      // and QR block can set the row's height on its own)
+      () => {
+        if (!story || story.classList.contains('dropped')) return;
+        const h0 = stack.offsetHeight; story.classList.add('dropped');
+        if (stack.offsetHeight >= h0 - 0.5) { story.classList.remove('dropped'); return; }
+        warns.push('The two sentences were left off so the allergen text keeps its locked size. Shorten them to bring them back.'); return true;
+      },
     ];
     apply();
     let guard = 0;
@@ -394,19 +468,25 @@
   // declaration) cannot fit beside everything else at 14 pt. It is the FRONT: the face that
   // stands toward the room carries the name, the whole list, the "may contain" line and where to
   // buy. The story, "Take one" and the QR move to the other face.
-  function ingredientFaceHTML(r) {
+  // v1.4 (review round 3, R3-06): withQR puts "Take one." and the QR (at its 1.15 in floor) beside
+  // the name on this face too, so the face toward the room still invites a scan. Tried first; if
+  // the list leaves no room, the face is built without it and the card says so.
+  function ingredientFaceHTML(r, withQR) {
     const may = (r.may_contain_verbatim || '').trim();
+    const head = withQR ? `<div class="ing-head">${nameHTML(r, false)}
+          <div class="ing-cta"><div class="cta-text"><span class="cta-take">Take one.</span><span class="cta-tell">Tell us what<br>you think</span></div>
+            <div class="qr-box"><div class="qr-slot"></div></div></div></div>` : nameHTML(r, false);
     return `
       <div class="dd-sample-banner">Sample. Not for placement. Illustrative placeholders, not results.</div>
       <div class="safe"><div class="stack">
         <div class="top-rule"></div>
-        ${nameHTML(r, false)}
+        ${head}
         <div class="allergen">
           <p class="allergen-label">${ALLERGEN_LABEL.ingredient_list}</p>
           <p class="allergen-text">${DD.text(r.allergen_line_verbatim || '')}</p>
           ${may ? `<p class="allergen-text">${DD.text(may)}</p>` : ''}
         </div>
-        <div class="foot"><p class="find"><span class="ing-buy">${findLine(r)}</span><span class="ing-take"><br><b>Take one.</b> The QR to tell us what you think is on the other side.</span></p>
+        <div class="foot"><p class="find"><span class="ing-buy">${findLine(r)}</span>${withQR ? '' : '<span class="ing-take"><br><b>Take one.</b> The QR to tell us what you think is on the other side.</span>'}</p>
           <div class="by"><span>Brought to you by</span>${DD.wordmarkImg(0.13)}</div></div>
       </div></div>
       <div class="card-id">Card ${DD.text(r.office_id || '[OFFICE ID]')} · ${DD.text(r.campaign_id || '[CAMPAIGN ID]')} · <span class="room-tag">this side faces the room</span></div>`;
@@ -429,14 +509,15 @@
     if (panel && panel.getBoundingClientRect().bottom > safe.getBoundingClientRect().bottom + 0.5) DD.error(i, 'The allergen panel is cut off at the bottom of the card.');
   }
 
-  // Fit the ingredient face. Give-way: logo 0.9 to 0.55 in, name 43 to 36 pt (narrower before
+  // Fit the ingredient face. Give-way: logo 0.9 to 0.75 in (wide) or 0.55 in (compact), name 43 to 36 pt (narrower before
   // smaller), foot line 11 to 10 pt, then the "Take one" sentence and the buy line leave this face
   // (both are on the other face too), then a block. The list is never touched.
   function fitIngredientFace(face, r) {
     face.classList.add('measuring', 'tight');
     const safe = face.querySelector('.safe'), stack = face.querySelector('.stack');
     const name = face.querySelector('.name'), logo = face.querySelector('.logo');
-    const avail = safe.clientWidth;
+    const cta = face.querySelector('.ing-cta');
+    const avail = safe.clientWidth - (cta ? cta.getBoundingClientRect().width + 0.15 * IN : 0);
     const aspect = logo ? ((logo.naturalWidth && logo.naturalHeight) ? logo.naturalWidth / logo.naturalHeight : 3) : 0;
     const wide = logo && aspect >= LOGO_WIDE;
     face.classList.toggle('logo-wide', !!wide);
@@ -453,7 +534,8 @@
     const gave = [];
     let guardN = 0;
     while (over() && guardN++ < 80) {
-      if (logo && logoPx > LOGO_MIN + 0.5) { logoPx = Math.max(LOGO_MIN, logoPx - 0.05 * IN); setLogo(); if (!wide) fitWidth(); continue; }
+      const lfloor = wide ? LOGO_WIDE_MIN : LOGO_MIN;
+      if (logo && logoPx > lfloor + 0.5) { logoPx = Math.max(lfloor, logoPx - 0.05 * IN); setLogo(); if (!wide) fitWidth(); continue; }
       if (!wide && px > NAME_MIN) { px = Math.max(NAME_MIN, px - 2); fitWidth(); continue; }
       if (find && !gave.includes('foot_10pt')) { find.style.fontSize = '10pt'; gave.push('foot_10pt'); continue; }
       if (take && !gave.includes('take_one_to_other_face')) { take.remove(); gave.push('take_one_to_other_face'); continue; }
@@ -465,14 +547,26 @@
     return { blocked, name_px: wide ? 0 : px, name_width: w, gave };
   }
 
+  // v1.4 (review round 3, R3-04): the refusal names what can still give way
+  function tooMuch(r, info) {
+    const ret = (r.retailer_line || '').trim(), code = (r.discount_code || '').trim();
+    const opts = [];
+    if (ret && code) opts.push('print one way to buy (the retailer, or the code and site), not both');
+    else if (ret) opts.push('shorten the retailer line (the store\'s short name and street)');
+    if (logoOf(r) && info.logo !== 'logo-wide-replaced-by-typed-name') opts.push('remove the logo, so the name prints in type');
+    if ((r.brand_name || '').length > 16) opts.push('use a shorter form of the brand name');
+    if (!info.story_dropped && String(r.card_sentences || '').length > 120) opts.push('shorten the two sentences');
+    return `Too much text for the card even at the smallest sizes. The allergen text is locked at 14 pt. To make room: ${opts.length ? opts.join('; ') : 'shorten the brand name or the buy line'}.`;
+  }
+
   function fit(sheet, r, i) {
     const front = sheet.querySelector('.face.front');
     const back = sheet.querySelector('.face.back');
     const fresh = front.innerHTML;
-    const verbatim = [r.allergen_line_verbatim || '', r.may_contain_verbatim || ''];
+    const verbatim = verbatimOf(r);
     let res = fitFace(front, r, i);
     let split = false, frontBlocked = false, ingr = null;
-    if (res.blocked && src(r) === 'ingredient_list' && (r.allergen_line_verbatim || '').trim()) {
+    if (res.blocked && !two(r) && src(r) === 'ingredient_list' && (r.allergen_line_verbatim || '').trim()) {
       // too long beside the story and QR: the FRONT becomes the ingredient face (it stands toward
       // the room), and the other face carries the story, "Take one" and the QR, pointing back.
       back.className = 'face back';
@@ -485,7 +579,14 @@
       res = fitFace(back, r, i);
       front.className = 'face front';
       front.innerHTML = ingredientFaceHTML(r);
+      // the room face with "Take one." and the QR first; without them only if the list needs the room
+      front.innerHTML = ingredientFaceHTML(r, true);
+      front.querySelector('.qr-slot').innerHTML = DD.qrSvg(r.qr_url, QR_MIN);
       ingr = fitIngredientFace(front, r);
+      let qrRoom = !ingr.blocked && !ingr.gave.includes('buy_line_to_other_face');
+      if (!qrRoom) { front.className = 'face front'; front.innerHTML = ingredientFaceHTML(r, false); ingr = fitIngredientFace(front, r); }
+      ingr.qr_on_room_face = qrRoom;
+      if (!qrRoom) DD.warn(i, 'The ingredient list leaves no room for the QR on the side facing the room, so the QR and "Take one" are only on the side facing the product. Survey answers from this office then lean on the Slack or email post: check that the office posted it, and say so in the report\'s "What we learned".');
       frontBlocked = ingr.blocked;
       if (ingr.gave.includes('buy_line_to_other_face')) DD.warn(i, 'The ingredient list fills the front, so where to buy prints only on the other side.');
       split = true;
@@ -505,10 +606,11 @@
     const blocked = res.blocked || frontBlocked;
     if (blocked) {
       DD.error(i, split ? 'The ingredient list is too long even for a whole face at 14 pt. This product cannot carry a card at the locked size; talk to the brand.'
-                        : 'Too much text for the card even at the smallest sizes. The allergen text is locked; shorten the product name or retailer line.');
+                        : two(r) ? 'The two flavors\' allergen text does not fit one card at the locked 14 pt. Print one card per flavor instead: press "Add a card", keep the same office ID and QR link, and give each card one flavor (empty the flavor 2 boxes on the first, put flavor 2\'s package text in the main boxes of the second). Stand both cards with their products.'
+                        : tooMuch(r, res.info));
       sheet.querySelectorAll('.face').forEach(f => { const b = document.createElement('div'); b.className = 'blocker'; b.textContent = 'DO NOT PLACE. This card failed the fit check. Open it in Chrome to see why.'; f.appendChild(b); });
     }
-    sheet.dataset.fit = JSON.stringify(Object.assign({}, res.info, { ingredients_on_front_face: split }, split ? { ingredient_face_name_px: ingr.name_px, ingredient_face_name_width: ingr.name_width, ingredient_face_gave_way: ingr.gave } : {}));
+    sheet.dataset.fit = JSON.stringify(Object.assign({}, res.info, { flavors: two(r) ? 2 : 1, ingredients_on_front_face: split }, split ? { ingredient_face_name_px: ingr.name_px, ingredient_face_name_width: ingr.name_width, ingredient_face_gave_way: ingr.gave, qr_on_room_face: ingr.qr_on_room_face, qr_off_room_face: !ingr.qr_on_room_face } : {}));
   }
 
   DD.init({
@@ -516,8 +618,11 @@
     fields: FIELDS,
     recordLabel: 'Card',
     recordName: (r, k) => `Card ${k + 1}${r.office_id && !DD.isPlaceholder(String(r.office_id)) ? ' (' + r.office_id + ')' : ''}`,
-    confirmBeforePrint: 'I read the allergen text against the package itself, word for word',
-    confirmResetKeys: ['allergen_source', 'allergen_line_verbatim', 'may_contain_verbatim'],
+    // v1.4 (review round 3, R3-02): a second tick, because the claims check is a net, not a review
+    confirms: [
+      { text: 'I read the allergen text against the package itself, word for word', resetKeys: ['allergen_source', 'allergen_line_verbatim', 'may_contain_verbatim', 'flavor_name', 'flavor_name_2', 'allergen_source_2', 'allergen_line_verbatim_2', 'may_contain_verbatim_2'] },
+      { text: 'I read the brand name, product and two sentences for health and sales claims', resetKeys: ['brand_name', 'product_name', 'card_sentences', 'claims_reviewed', 'claims_review_reason'] }
+    ],
     render, fit,
     sheetClass: '',
     fileStem: (r) => 'tent-card_' + (r.campaign_id || 'campaign') + '_' + (r.office_id || 'office'),

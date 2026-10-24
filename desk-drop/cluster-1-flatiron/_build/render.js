@@ -4,7 +4,7 @@
 const { chromium } = require('playwright');
 const fs = require('fs'); const path = require('path');
 (async () => {
-  const dir = process.argv[2];
+  const dir = require('path').resolve(process.argv[2] || require('path').join(__dirname, '..'));  // review round 2: a relative path works too
   const qa = path.join(dir, '_build', 'out', 'qa'); fs.mkdirSync(qa, { recursive: true });
   const browser = await chromium.launch();
   // public map

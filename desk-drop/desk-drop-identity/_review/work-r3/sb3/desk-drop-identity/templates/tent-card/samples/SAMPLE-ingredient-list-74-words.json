@@ -1,0 +1,15 @@
+{
+  "brand_name": "SAMPLE Brightside",
+  "product_name": "SAMPLE Sea Salt Lentil Crisps",
+  "card_sentences": "SAMPLE Two friends in Queens started baking lentil crisps in a shared kitchen in 2023. They wanted a salty snack with ingredients you can read out loud.",
+  "allergen_source": "ingredient_list",
+  "allergen_line_verbatim": "SAMPLE INGREDIENTS: LENTIL FLOUR, RICE FLOUR, SUNFLOWER OIL, SEA SALT, WHEY (MILK), NUTRITIONAL YEAST, ONION POWDER, GARLIC POWDER, SESAME SEEDS, SOY LECITHIN, ROSEMARY EXTRACT, TAPIOCA STARCH, CANE SUGAR, YEAST EXTRACT, PAPRIKA, BLACK PEPPER, CITRIC ACID, NATURAL FLAVOR, WHEAT FLOUR, BARLEY MALT, TURMERIC, CHIA SEEDS, OAT FIBER, PEA PROTEIN, CHICKPEA FLOUR, POTATO STARCH, SUNFLOWER LECITHIN, VINEGAR POWDER, LIME JUICE POWDER, CORN STARCH, MUSTARD SEED, CUMIN, CORIANDER, DILL, PARSLEY, CHIVES, FENNEL, THYME, OREGANO, BASIL, MARJORAM, SAGE.",
+  "may_contain_verbatim": "SAMPLE MADE IN A FACILITY THAT ALSO PROCESSES PEANUTS AND TREE NUTS.",
+  "retailer_line": "SAMPLE Retailer, 123 Example Street",
+  "discount_code": "SAMPLEDESK15",
+  "code_site": "example.com",
+  "qr_url": "https://example.com/s/SAMPLE-O-001",
+  "qr_display": "",
+  "office_id": "SAMPLE-O-001",
+  "campaign_id": "SAMPLE-CMP-001"
+}

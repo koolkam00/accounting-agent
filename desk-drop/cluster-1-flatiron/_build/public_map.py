@@ -331,11 +331,20 @@ def brand_map(slug, store_ids, sample=False):
             w_ = 9.2 * len(name) + 10
             out.append(f'<rect x="{BW - right - 4 - w_:.1f}" y="{py - 20:.1f}" width="{w_:.1f}" height="22" rx="4" fill="{PAPER_WARM}" fill-opacity="0.85"/>')
             text(BW - right - 9, py - 3, name, 16, 600, STONE, "end")
+    # review round 2 (R2-13): the scale bar box sits bottom left; a street label that would fall under it moves above it
+    L_sc = 400 * sc
+    sbox = (left + 14 - 8, left + 14 - 8 + L_sc + 140)
     for k in (14, 23, 30):
         px, py = Q(k, v1 - 10)
         if left + 30 < px < BW - right - 30:
             suf = "th" if 10 <= k % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(k % 10, "th")
-            text(px, BH - bottom - 10, f"{k}{suf} St", 16, 600, STONE, "middle")
+            lab = f"{k}{suf} St"
+            half = 4.8 * len(lab) + 6
+            under = not (px + half < sbox[0] or px - half > sbox[1])
+            ly = BH - bottom - 10 - (44 if under else 0)
+            # a paper backing keeps the label readable where it meets the boundary line
+            out.append(f'<rect x="{px - half:.1f}" y="{ly - 16:.1f}" width="{2 * half:.1f}" height="21" rx="4" fill="{PAPER_WARM}" fill-opacity="0.9"/>')
+            text(px, ly, lab, 16, 600, STONE, "middle")
     out.append("</g>")
     # stores: numbered markers (order of --stores) with names; the label goes right unless it would leave the frame
     boxes = []

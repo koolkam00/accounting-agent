@@ -1,0 +1,127 @@
+{
+ "status": {
+  "ready": true,
+  "errors": [],
+  "warnings": [
+   "The ingredient list fills the front, so where to buy prints only on the other side.",
+   "The ingredient list is too long to share a face with the story and QR at 14 pt. The front now carries the name, the whole list and where to buy; the other face has the story and the QR. Stand the card with the side marked \"this side faces the room\" toward the room, and take the close photo of that side."
+  ],
+  "sample": true,
+  "placeholders": []
+ },
+ "faces": [
+  {
+   "cls": "face back",
+   "w_in": 7,
+   "h_in": 5,
+   "allergen": [
+    {
+     "text": "This package declares its allergens in its ingredient list. ",
+     "pt": 14.000024999999999,
+     "weight": "600",
+     "color": "rgb(0, 0, 0)",
+     "family": "\"Atkinson Hyperlegible Next\""
+    }
+   ],
+   "other": {
+    "name": {
+     "pt": 56.25,
+     "px_css": 75,
+     "stretch": "100%",
+     "text": "SAMPLE Brightside",
+     "h_in": 0.765625
+    },
+    "min_text_pt": 7,
+    "min_text_el": "card-id: Card SAMPLE-O-001 · SAMPLE-CMP-001",
+    "near_trim": [
+     {
+      "el": "dd-sample-banner",
+      "text": "Sample. Not for placement. Illustrative ",
+      "d_in": 0,
+      "pt": 8.000025
+     },
+     {
+      "el": "card-id",
+      "text": "Card SAMPLE-O-001 · SAMPLE-CMP-001",
+      "d_in": 0.12,
+      "pt": 6.9999975
+     }
+    ]
+   }
+  },
+  {
+   "cls": "face front tight",
+   "w_in": 7,
+   "h_in": 5,
+   "allergen": [
+    {
+     "text": "SAMPLE INGREDIENTS: LENTIL FLOUR, RICE FLOUR, SUNFLOWER OIL,",
+     "pt": 14.000024999999999,
+     "weight": "600",
+     "color": "rgb(0, 0, 0)",
+     "family": "\"Atkinson Hyperlegible Next\""
+    },
+    {
+     "text": "SAMPLE MADE IN A FACILITY THAT ALSO PROCESSES PEANUTS AND TR",
+     "pt": 14.000024999999999,
+     "weight": "600",
+     "color": "rgb(0, 0, 0)",
+     "family": "\"Atkinson Hyperlegible Next\""
+    }
+   ],
+   "other": {
+    "name": {
+     "pt": 36,
+     "px_css": 48,
+     "stretch": "100%",
+     "text": "SAMPLE Brightside",
+     "h_in": 0.4899088541666667
+    },
+    "min_text_pt": 7,
+    "min_text_el": "card-id: Card SAMPLE-O-001 · SAMPLE-CMP-001 · thi",
+    "near_trim": [
+     {
+      "el": "dd-sample-banner",
+      "text": "Sample. Not for placement. Illustrative ",
+      "d_in": 0,
+      "pt": 8.000025
+     },
+     {
+      "el": "card-id",
+      "text": "Card SAMPLE-O-001 · SAMPLE-CMP-001 · thi",
+      "d_in": 0.12,
+      "pt": 6.9999975
+     },
+     {
+      "el": "room-tag",
+      "text": "this side faces the room",
+      "d_in": 0.103,
+      "pt": 9
+     }
+    ]
+   }
+  }
+ ],
+ "fit": {
+  "name_px": 75,
+  "name_width": 100,
+  "name_lines": 1,
+  "logo": "type",
+  "logo_in": null,
+  "story_pt": 15,
+  "qr_px": 139.2,
+  "find_pt": 11,
+  "tight": false,
+  "story_dropped": false,
+  "product_dropped": false,
+  "flavors": 1,
+  "ingredients_on_front_face": true,
+  "ingredient_face_name_px": 48,
+  "ingredient_face_name_width": 100,
+  "ingredient_face_gave_way": [
+   "foot_10pt",
+   "take_one_to_other_face",
+   "buy_line_to_other_face"
+  ]
+ }
+}

@@ -19,3 +19,7 @@ Backup of pre-fix outputs: scratchpad b_before/.
       Route: 181.3 min, 11:01 (1 over); high+medium 171.8 (10:52).
 - [x] near-miss classes; content checks; boundary CCW; map template popups/declutter/diamond stores; maps.py public wording.
 - [ ] method_text, xlsx notes, public_map.py (brand mode, footnote, minutes), pin_qa, render.js QA, docs, REPORT, builder response.
+- [x] method_text, xlsx notes, public_map (footnote, minutes, brand mode restyled after D's sample), pin_qa face test, render.js popup checks + brand PNGs.
+- [x] Full rebuild OK; validations all pass; LibreOffice recalc 0 errors; pins 0 issues; popups pass at 390 px; pin sheets 18/18 OK.
+- [x] README, HANDOFF rewritten; builder response appended to _review/round-1.md.
+- [!] REPORT.md write was refused by the harness ("subagents should return findings as text"); full text returned to the orchestrator to save.

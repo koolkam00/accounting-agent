@@ -11,6 +11,11 @@
   6. survey-privacy.html carries the legal pack's Part C text word for word.
   7. Form field names, required flags and option values match the SCHEMA in apps-script/Code.gs.
   8. Staging files agree with site.config.js (robots.txt, _headers).
+  9. Review round 3: brand terms match G 10 v0.8 (photo day, card text, sales tax, the
+     outside-events exit), notices name the short notification email, the office form keeps
+     health details out, the thank-you messages promise nothing to a sender who is ruled out,
+     no internal note in any page's text, and the map matches B's current file
+     (tools/build_map.py --check).
 Usage (from website/): python3 tests/check_site.py
 """
 import html
@@ -149,6 +154,20 @@ for phrase in ["From the drop day on, the full price is due.", "Before the cance
 for phrase in ["Under 30 or over 250, we can't take you yet.", "Offices with fewer than 30 or more than 250 people in on a Tuesday.",
                "Companies inside a coworking space, on their own", "Run by "]:
     check(phrase in offices, f"offices page states: {phrase}", f"offices page is missing: {phrase}")
+# Review round 2: wording matched to G 10 v0.8 section 1 and 8 and G 03 section 3, exact notices, lead time.
+for phrase in ["at eye level where the pantry allows", "to help us reach five or more responses (no one has to answer)",
+               "If we cancel, we refund everything you paid.", "Your proposal names a drop date, usually three to four weeks out.",
+               "beyond the name and title of the person who approves the budget if it isn't you"]:
+    check(phrase in brands, f"brands page states: {phrase}", f"brands page is missing: {phrase}")
+for phrase in ["commits to posting the link once and to five or more responses", "Five business days later the survey closes"]:
+    check(phrase not in brands + offices, f"old wording gone: {phrase}", f"old wording still on a page: {phrase}")
+check("beyond the pantry owner's name and title if it isn't you" in offices and "On day 5 of the window the survey closes" in offices,
+      "offices page: exact form notice and day-5 survey close", "offices page: notice or day-5 wording missing")
+check("They ask nothing about other employees or customers." in docs["privacy"].full_text, "privacy page: exact about the pantry owner and budget approver",
+      "privacy page: still says the forms ask about no one else")
+check(re.search(r"Able to ship <span data-founding>275</span><span data-standard-only>550</span> units", read(os.path.join(SITE, "brands.html"))) is not None
+      and read(os.path.join(SITE, "brands.html")).count("<span data-founding>275</span><span data-standard-only>550</span>") == 2,
+      "check 4 and question 4 follow the founding tier (275 or 550 units)", "check 4 or question 4 does not follow the founding tier")
 check("After that, we keep 50%" not in brands or "From the drop day on" in brands, "cancellation answer carries the drop-day cut-off", "cancellation answer lacks the drop-day cut-off")
 check("Vetted emerging snacks and drinks, free, roughly monthly." in offices and "You pick the categories and can veto anything. All we ask: on the shelf the day it arrives, one photo, and three questions for your team." in offices,
       "offices page states the office pitch word for word", "office pitch missing or changed")
@@ -256,6 +275,48 @@ no_meta = [p for p in PAGES if not re.search(r'<meta name="robots" content="noin
 check(not no_meta and "X-Robots-Tag: noindex" in headers and not re.search(r"(?m)^Disallow:\s*/\s*$", robots),
       "staging: every page carries a static noindex robots tag, _headers sends X-Robots-Tag noindex, and robots.txt lets crawlers fetch pages so they can see both",
       "staging noindex incomplete: pages without the robots tag %s, or _headers lacks X-Robots-Tag, or robots.txt blocks crawling (which hides the noindex)" % no_meta)
+
+# Review round 2 (R2-02): the placeholder uploaded first to the public production address.
+ph_dir = os.path.join(WEB, "tools", "production", "placeholder")
+ph = read(os.path.join(ph_dir, "index.html")) if os.path.exists(os.path.join(ph_dir, "index.html")) else ""
+ph_h = read(os.path.join(ph_dir, "_headers")) if os.path.exists(os.path.join(ph_dir, "_headers")) else ""
+check(ph and '<meta name="robots" content="noindex, nofollow">' in ph and "X-Robots-Tag: noindex" in ph_h
+      and not re.search(r"desk\s*-?\s*drop", ph + ph_h, re.I) and not re.search(r"(?m)^Disallow:\s*/\s*$", read(os.path.join(ph_dir, "robots.txt"))),
+      "production placeholder (tools/production/placeholder/): noindex in the page and header, crawlable robots.txt, no name",
+      "production placeholder missing, indexable, or carrying the working name")
+
+# 9. Review round 3.
+import subprocess  # noqa: E402
+sys.path.insert(0, os.path.join(WEB, "tools"))
+import preflight  # noqa: E402
+for phrase in ["Two photos per office: one on the day your product is placed, and a second on day 3 or day 5.",
+               "You sign, pay, and see the card text before it is printed.",
+               "We send you the card text before anything is printed. We may edit or decline a sentence that makes a health claim.",
+               "Prices do not include sales tax; if any applies, it is shown on the invoice.",
+               "If events outside our control move a drop more than once, or by more than three weeks in all, you may cancel for a full refund.",
+               "If the seven checks fit, we will suggest a 20-minute call",
+               "a short email (your brand and email address only)", "we delete your answers and that email within 12 months"]:
+    check(phrase in brands, f"brands page states (G 10 v0.8, R3): {phrase}", f"brands page is missing (R3): {phrase}")
+for phrase in ["the placement on drop day", "approve the card text", "card text to approve", "Next step: a 20-minute call"]:
+    check(phrase not in brands, f"old brand wording gone (R3): {phrase}", f"old brand wording still on the brand page (R3): {phrase}")
+for phrase in ["Name the ingredient, not the person: please don't tell us who has an allergy.",
+               "Please don't include anyone's health or personal details.",
+               "Please don't tell us about anyone's health: a veto by ingredient is enough.",
+               "If your office fits (40 to 250 people on a Tuesday, inside the area on the map), that email carries the one-page participation agreement.",
+               "a short email (your company and email address only)", "we delete your answers and that email within 12 months"]:
+    check(phrase in offices, f"offices page states (R3): {phrase}", f"offices page is missing (R3): {phrase}")
+check("Next, we will email you from" not in offices, "office thank-you no longer promises the agreement to every sender (R3)",
+      "office thank-you still promises the agreement to every sender (R3)")
+check("and the notification email about them, within 12 months" in docs["privacy"].full_text
+      and "we delete the Sheet row and the notification email, and reply to confirm" in docs["privacy"].full_text,
+      "privacy page: deletion covers the notification email; deletion requests answered (R3)", "privacy page: notification email missing from retention or deletion (R3)")
+notes = {p: preflight.internal_notes(preflight.strip_staging(raw[p])) for p in PAGES}
+notes = {p: n for p, n in notes.items() if n}
+check(not notes, "no internal note (legal pack, draft notice, SETUP.md, staging...) in any page's text outside staging-only elements",
+      "internal notes in page text: %s" % notes)
+r = subprocess.run([sys.executable, os.path.join(WEB, "tools", "build_map.py"), "--check"], capture_output=True, text=True)
+check(r.returncode == 0, "store map and list match B's current map-public.geojson (%s)" % r.stdout.strip().splitlines()[-1],
+      "store map is stale against B's map-public.geojson: run python3 tools/build_map.py, then tools/export_copy.py. " + " | ".join(r.stdout.strip().splitlines()))
 
 for p in passes:
     print("ok -", p)
