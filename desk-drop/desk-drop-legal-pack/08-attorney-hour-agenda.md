@@ -116,7 +116,7 @@ Attorney: [NAME, FIRM] · Date of meeting: [DATE] · Fee paid: [AMOUNT] (send to
 
 - plan.md (read 2026-10-23): legal table rows "Entity", "Campaign agreement with brands" (one attorney hour, roughly \$300 to \$500), "Participation agreement with offices", "Trademark"; order of operations; setup checklist "At Gate 0 pass"; "What I need from you", item 8.
 - Facts in each item are quoted from the file it names, where each source is cited with its URL and the date it was opened (all 2026-10-23): USPTO search, TSDR and the Office action for serial 99174501 (file 01); NY LLC Law §§203, 206 and the Department of State's Beneficial Owner Disclosure page, Holland & Knight 2026-01-13 (file 04); USPTO fee schedule (file 01); FTC CAN-SPAM guide (file 02).
-- FTC, "FTC's Endorsement Guides: What People Are Asking", https://www.ftc.gov/business-guidance/resources/ftcs-endorsement-guides (opened 2026-10-23 for the brand agreement's section 3): endorsements must reflect the endorser's honest opinion, and material connections must be disclosed clearly and conspicuously (16 CFR Part 255, revised 2023).
+- FTC, Endorsement Guides business guidance page, https://www.ftc.gov/business-guidance/resources/ftcs-endorsement-guides (opened 2026-10-23 for the brand agreement's section 3): endorsements must reflect the endorser's honest opinion, and material connections must be disclosed clearly and conspicuously (16 CFR Part 255, revised 2023).
 - The FTC rule on consumer reviews and testimonials was not researched: unverified, attorney to say.
 
 ## Changelog

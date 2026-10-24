@@ -41,5 +41,7 @@ fs.mkdirSync(OUT, { recursive: true });
   for (const w of [2048, 1280]) {
     execFileSync('convert', [11, 12, 13, 14].map(pt => path.join(OUT, `close-${pt}pt-${w}-crop-allergen.png`)).concat(['-append', path.join(OUT, `compare-allergen-${w}.png`)]));
   }
+  // keep only what the comparison needs: faces, allergen crops and the two strips
+  for (const f of fs.readdirSync(OUT)) if (/^wide-|^close-\d+pt-\d+\.jpg$/.test(f)) fs.unlinkSync(path.join(OUT, f));
   console.log('sweep done:', OUT);
 })().catch(e => { console.error(e); process.exit(1); });
