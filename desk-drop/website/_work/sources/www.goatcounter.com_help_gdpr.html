@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="icon" type="image/png" sizes="32x32" href="//static.zgo.at/favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="//static.zgo.at/favicon/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="//static.zgo.at/favicon/apple-touch-icon.png">
+<link rel="mask-icon" href="//static.zgo.at/favicon/safari-pinned-tab.svg" color="#9a15a4">
+<meta name="msapplication-TileColor" content="#9f00a7">
+<meta name="theme-color" content="#ffffff">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Documentation – GoatCounter">
+	<title>GoatCounter documentation</title>
+	<link rel="stylesheet" href="//static.zgo.at/vars.css?v=2c9b43be">
+	
+	<style>
+		@font-face {
+			font-family: 'Lato'; font-style: normal; font-weight: 400; font-display: fallback;
+			src: local('Lato'), local('Lato Regular'),
+				url('//static.zgo.at/fonts/latolatin.woff2') format('woff2');
+		}
+		@font-face {
+			font-family: 'Lato'; font-style: normal; font-weight: 700; font-display: fallback;
+			src: local('Lato Bold'), local('Lato Bold'),
+				url('//static.zgo.at/fonts/latolatin-bold.woff2') format('woff2');
+		}
+		@font-face {
+			font-family: 'Lato'; font-style: italic; font-weight: 400; font-display: fallback;
+			src: local('Lato Italic'), local('Lato Italic'),
+				url('//static.zgo.at/fonts/latolatin-italic.woff2') format('woff2');
+		}
+	</style>
+	<link rel="stylesheet" href="//static.zgo.at/shared.css?v=2c9b43be">
+	<link rel="stylesheet" href="//static.zgo.at/style.css?v=2c9b43be">
+	<link rel="canonical" href="https://goatcounter.com/help/gdpr">
+
+<style>
+footer.center       { margin-top: 2em; }
+nav.center          { max-width: 80em; padding-left: 19em; }
+
+.code-wrap          { display: flex; max-width: 80em; }
+.code-wrap >div     { overflow: hidden; padding: 6px; margin: -6px; margin-right: 6px; }
+.code-nav           { flex-shrink: 0; width: 18em; height: 100%; padding: .5em; margin-right: .6em;
+				      background-color: var(--nav-bg); color: var(--text); box-shadow: 0 0 4px var(--box-shadow); }
+.code-nav select    { display: none; }
+.code-nav ul        { list-style: none; margin: 0; padding: 0; }
+.code-nav a         { display: block; margin: .3em 0; padding-left: .3em; border-left: 3px solid transparent; }
+.code-nav li >ul a  { margin-left: .5em; }
+.code-nav .active a { border-left-color: #999; }
+.code-nav strong    { font-size: .9rem; }
+.page-code          { padding: 1em; background-color: var(--bg); box-shadow: 0 0 6px rgba(0,0,0,.2); }
+h3                  { margin-bottom: .2em; }
+h3 + p              { margin-top: 0; }
+h4                  { margin-bottom: .2em; }
+h4 + p              { margin-top: 0; }
+hr                  { margin: 0; }
+
+.pre-copy-wrap { position: relative; }
+.pre-copy      { position: absolute; right: 0; top: calc(-2em - 1px); padding: .3em 1em;
+				 color: #000; background-color: #f5f5f5; border-top: 1px solid #d5d5d5; border-left: 1px solid #d5d5d5; }
+
+#vc-example    { display: flex; justify-content: space-around; flex-wrap: wrap; text-align: center; }
+#vc-example >* { width: 200px; }
+
+@media (min-height: 46rem) {
+	.code-nav { position: sticky; top: 0; }
+}
+
+@media (max-width: 50rem) {
+	nav.center       { padding-left: 1em; }
+	.code-wrap       { flex-direction: column; padding: 0; }
+	.code-wrap >div  { margin: 0; padding: 0; }
+	.code-nav        { position: sticky; top: 0; z-index: 10; width: auto; margin-bottom: 1em; }
+	.code-nav ul     { display: none; }
+	.code-nav select { display: block;  width: 100%; }
+}
+</style>
+</head>
+
+<body>
+	<nav class="center">
+		<strong id="back"><a href="/">←&#xfe0e; Home</a></strong>
+	</nav>
+
+	<div class="center code-wrap">
+		<nav class="code-nav">
+			<select><optgroup label="Basics"><option value="start">Getting started</option><option value="visitor-counter">Visitor counter</option><option value="events">Events</option><option value="csp">Content-Security-Policy</option><option value="js">JavaScript API</option></optgroup><optgroup label="Other ways to get data in GoatCounter"><option value="pixel">Tracking pixel</option><option value="logfile">Server logfiles</option><option value="backend">From app backend or other sources</option></optgroup><optgroup label="How can I…"><option value="skip-dev">Prevent tracking my own pageviews?</option><option value="skip-path">Prevent tracking specific paths?</option><option value="path">Control the path that&#39;s sent to GoatCounter?</option><option value="modify">Change data before it&#39;s sent to GoatCounter?</option><option value="domains">Track multiple domains/sites?</option><option value="spa">Add GoatCounter to a SPA?</option><option value="campaigns">Track campaigns?</option><option value="countjs-versions">Use SRI with count.js?</option><option value="countjs-host">Host count.js somewhere else?</option><option value="frame">Embed GoatCounter in a frame?</option></optgroup><optgroup label="Other"><option value="export-json">JSON exports</option><option value="export">CSV exports</option><option value="sessions">Sessions and visitors</option><option value="api">JSON API</option><option value="faq">FAQ</option><option value="translating">Translating GoatCounter</option></optgroup><optgroup label="Legal"><option selected value="gdpr">GDPR consent notices</option><option value="terms">Terms of use</option><option value="privacy">Privacy policy</option></optgroup></select><ul><li><strong>Basics</strong><ul><li><a href="start">Getting started</a></li><li><a href="visitor-counter">Visitor counter</a></li><li><a href="events">Events</a></li><li><a href="csp">Content-Security-Policy</a></li><li><a href="js">JavaScript API</a></li></ul></li><li><strong>Other ways to get data in GoatCounter</strong><ul><li><a href="pixel">Tracking pixel</a></li><li><a href="logfile">Server logfiles</a></li><li><a href="backend">From app backend or other sources</a></li></ul></li><li><strong>How can I…</strong><ul><li><a href="skip-dev">Prevent tracking my own pageviews?</a></li><li><a href="skip-path">Prevent tracking specific paths?</a></li><li><a href="path">Control the path that&#39;s sent to GoatCounter?</a></li><li><a href="modify">Change data before it&#39;s sent to GoatCounter?</a></li><li><a href="domains">Track multiple domains/sites?</a></li><li><a href="spa">Add GoatCounter to a SPA?</a></li><li><a href="campaigns">Track campaigns?</a></li><li><a href="countjs-versions">Use SRI with count.js?</a></li><li><a href="countjs-host">Host count.js somewhere else?</a></li><li><a href="frame">Embed GoatCounter in a frame?</a></li></ul></li><li><strong>Other</strong><ul><li><a href="export-json">JSON exports</a></li><li><a href="export">CSV exports</a></li><li><a href="sessions">Sessions and visitors</a></li><li><a href="api">JSON API</a></li><li><a href="faq">FAQ</a></li><li><a href="translating">Translating GoatCounter</a></li></ul></li><li><strong>Legal</strong><ul><li class="active"><a href="gdpr">GDPR consent notices</a></li><li><a href="terms">Terms of use</a></li><li><a href="privacy">Privacy policy</a></li></ul></li></ul>
+		</nav>
+
+		<div>
+			<div class="page-code"><h1>GDPR consent notices</h1>
+				<p>The short version is that GoatCounter <em>probably</em> doesn’t require a GDPR consent
+notice, on the basis that 1) no personally identifiable information is
+collected, and 2) it is in the legitimate interest of a site’s owner to see how
+many people are visiting their site. A more detailed rationale is described
+below.</p>
+
+<h2 id="identifiable-information-5163">Identifiable information <a href="#identifiable-information-5163"></a></h2>
+
+<p>The <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32016R0679">GDPR</a> applies to data which <em>“could be attributed to a natural person
+by the use of additional information”</em>, and does <em>“not apply to anonymous
+information, namely information which does not relate to an identified or
+identifiable natural person or to personal data rendered anonymous in such a
+manner that the data subject is not or no longer identifiable”</em>.</p>
+
+<p>The full details on how GoatCounter stores data is in <a href="/help/privacy">Privacy Policy</a>. In
+brief: it stores &ldquo;aggregate data&rdquo; rather than every individual pageview. It also
+only stores the &ldquo;computed&rdquo; data instead of the source it was created from (such
+as the IP address or User-Agent header).</p>
+
+<p>This means you can see &ldquo;40 people used Firefox today&rdquo; and &ldquo;20 people entered the
+site via example.com&rdquo;, but <em>not</em> &ldquo;10 people using Firefox entered the site via
+example.com&rdquo;.</p>
+
+<p>It’s essentially impossible to identify any person, even with full access to the
+database. If a someone would contact me for their rights to have insight in
+their data and/or have it removed then I would have no way to do this.</p>
+
+<h2 id="legitimate-interest-5163">Legitimate interest <a href="#legitimate-interest-5163"></a></h2>
+
+<p>A second point is that consent is not the only legitimate basis for processing
+data; there may also be a legitimate interest: <em>“The legitimate interests of a
+controller (..) may provide a legal basis for processing, (..) taking into
+consideration the reasonable expectations of data subjects based on their
+relationship with the controller.”</em></p>
+
+<p>Insight in how many customers are using your product seems to be a “legitimate
+interest” to me, as well as a reasonable expectation. A real-world analogy might
+be a store keeping track of how many people enter through which doors and at
+which times, perhaps also recording if they arrived by car, bike, or on foot.</p>
+
+<p>The problems start when the store also records your license plate number, or
+creates an extensive profile based on your physical attributes and then tries to
+combine that with similar data from other stores. This is essentially what
+Google Analytics does, but is rather different from GoatCounter.</p>
+
+<p>A similar argument is made for things like logfiles, which often store more or
+less the same information.</p>
+
+<p>I am not the first to arrive at this conclusion:
+<a href="https://usefathom.com/data">Fathom</a> did the same.</p>
+
+<h2 id="conclusion-5163">Conclusion <a href="#conclusion-5163"></a></h2>
+
+<p>In conclusion; it should <em>probably</em> be safe to add GoatCounter without a GDPR
+consent notice; but there are a few things to keep in mind:</p>
+
+<ol>
+<li>The GDPR is fairly new, and lacks case law to clarify what <em>exactly</em> counts
+as identifiable personal data.</li>
+<li>EU Regulations such as the GDPR are interpreted and enforced different across
+member states.</li>
+<li>Other national laws may apply as well.</li>
+<li>I am not a lawyer; but the similar Fathom interpretation <em>has</em> been reviewed
+by one.</li>
+</ol>
+
+<p>Note that nothing is preventing you from adding a consent notice, if you want to
+be sure. There is an example for it on the &ldquo;Site Code&rdquo; page in your dashboard.</p>
+
+<p>Other than that, it’s advised you consult a lawyer if you want detailed legal
+advice specific to your situation.</p>
+
+			</div>
+
+			<h2 style="border:0; margin-bottom: .2rem; margin-left: .5rem;">Questions or problems?</h2>
+			<div class="page-code">
+				<p style="margin-top: 0">Feel free to get in touch if you’ve got any questions or having any problems; a
+				lot of times they can be resolved without too much problems.</p>
+
+				<p>Ways to contact me: <a href="#" class="show-contact">show</a> </p>
+				<div style="display: none;" class="contact">
+					<ul>
+	<li>Open a <a href="https://github.com/arp242/goatcounter/issues/new">GitHub
+		issue</a>. It’s fine to use this for support requests or general
+		questions, as GitHub issues are public and the answers may be useful for
+		others in the future.</li>
+
+	<li>Email:
+		<a href="mailto:support@goatcounter.com">support@goatcounter.com</a>.</li>
+</ul>
+
+<form method="post" action="/contact" class="contact-form">
+	<input type="hidden" name="return" value="/help/gdpr">
+
+	<strong>Send message</strong>
+	<div class="f">
+		<div>
+			<label for="email">Email</label><br>
+			<input type="text" id="email" name="email" ><br>
+			
+			<span>Make sure this is correct</span>
+		</div>
+
+		<div>
+			<label for="turing">Enter 9 here</label><br>
+			<input type="text" id="turing" name="turing" ><br>
+			
+			<span>Just to verify that you’re human</span>
+		</div>
+	</div>
+
+	<div>
+		<label for="message">Your message</label><br>
+		<textarea id="message" name="message"></textarea><br>
+		
+		<button type="submit">Send</button>
+	</div>
+
+	
+
+	<div id="scroll-target"></div>
+</form>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<footer class="center cbox">
+	<div>
+		<a  href="https://www.goatcounter.com">Home</a><span> |</span>
+		<a href="/contact"   >Contact</a><span> |</span>
+		<a href="/help"      >Documentation</a><span> |</span>
+		<a href="/contribute">Contribute</a>
+	</div>
+	<div>
+		<a href="https://github.com/arp242/goatcounter"                target="_blank" rel="noopener">Source code</a><span> |</span>
+		<a href="https://nlnet.nl/project/GoatCounter/"                target="_blank" rel="noopener">NLnet NGI0</a><span> |</span>
+		<a href="https://github.com/sponsors/arp242"                   target="_blank" rel="noopener">GitHub sponsors</a><span> |</span>
+		<a href="https://www.producthunt.com/posts/goatcounter"        target="_blank" rel="noopener">Product Hunt</a><span> |</span>
+		<a href="https://alternativeto.net/software/goatcounter/about" target="_blank" rel="noopener">AlternativeTo</a>
+	</div>
+</footer>
+
+
+	
+		<script data-goatcounter="https://goatcounter.goatcounter.com/count"
+				async src="//gc.zgo.at/count.js"></script>
+	
+
+	<script crossorigin="anonymous" src="//static.zgo.at/jquery.js?v=2c9b43be"></script>
+	<script crossorigin="anonymous" src="//static.zgo.at/help.js?v=2c9b43be"></script>
+</body>
+</html>

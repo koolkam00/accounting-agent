@@ -1,0 +1,58 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Cluster 1: Flatiron, NoMad and Union Square",
+    "kind": "boundary",
+    "rule": "14th St to 30th St, Sixth Ave to Park Ave S, both frontages of each edge street and avenue; plus the Union Square frame from University Pl to Third Ave between the 13th and 15th St centrelines.",
+    "drawn": "2026-10-24",
+    "grid_source": "NYC Street Centerline (CSCL), data.cityofnewyork.us/resource/inkn-q76z, fetched 2026-10-24"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73.989846,
+       40.747854
+      ],
+      [
+       -73.982226,
+       40.744591
+      ],
+      [
+       -73.989392,
+       40.734952
+      ],
+      [
+       -73.986862,
+       40.733868
+      ],
+      [
+       -73.987787,
+       40.732625
+      ],
+      [
+       -73.99232,
+       40.734566
+      ],
+      [
+       -73.992112,
+       40.734846
+      ],
+      [
+       -73.997729,
+       40.737251
+      ],
+      [
+       -73.989846,
+       40.747854
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}

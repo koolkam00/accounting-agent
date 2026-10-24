@@ -1,0 +1,43 @@
+Model checks
+Integrity checks must always pass. Plan-reproduction checks pass while inputs equal the plan defaults. Data checks flag bad rows in the logs.
+,,Tolerance used by the checks below (rounding),0.01
+#,Area,Check,Value,Pass (1/0),Note
+1,Integrity,No formula errors anywhere in the model's output ranges,0,1,"Counts #N/A, #VALUE!, #DIV/0! and other errors."
+2,Integrity,Weekly and monthly cash flows agree (difference),0,1,Two independent SUMIFS passes over the same sources.
+3,Integrity,Overhead paid in the cash flow equals the overhead ledger,0,1,Allocations never reach the cash flow.
+4,Integrity,Planned receipts in the cash flow equal the drops' payments inside the window,0,1
+5,Integrity,Every scheduled drop is paid in full: payments equal revenue,0,1
+6,Integrity,Processing on payments equals processing on revenue,0,1
+7,Integrity,Capital tab outflows equal Cash_Flow outflows,0,1,Holds while no drop has actuals.
+8,Integrity,Sensitivity shortcut equals the full engine,0,1
+9,Integrity,Sensitivity: higher price never lowers contribution per hour,0,1
+10,Integrity,Sensitivity: one more brand always raises contribution per hour,0,1
+11,Integrity,Sensitivity: higher renewal never lowers a positive contribution per hour,0,1
+12,Integrity,"Edge: zero brands gives zero revenue, cost and hours, and 'n/a'",0,1
+13,Integrity,Edge: one office gives a finite result,0,1
+14,Integrity,Edge: 100% renewal charges renewal hours only,0,1
+15,Integrity,Break-even per-brand contribution follows Inputs: engine row equals the shortcut at today's price and brands per drop,0,1,Review R1-03: the break-even lines no longer read the fixed plan row.
+16,Integrity,Per-drop cash inside the six months adds up to the cash flow's receipts and direct costs,0,1,Feeds the Dashboard's week-26 cash with and without the decision-window drops.
+17,Schedule,"Rows failing the schedule rules (Tue/Wed, blackouts, counts)",0,1,"See Schedule, Row check."
+18,Schedule,Drop dates out of order,0,1
+19,Schedule,New founding brands beyond the founding cap,0,1,Founding tier: first three brands only.
+20,Schedule,Founding-rate renewals beyond the two-campaign lock,0,1
+21,Schedule,Gate 2 drop exists on Schedule,0,1
+22,Data,Hours_Log: invalid activity keys,0,1
+23,Data,Hours_Log: drop_ids not on Schedule,0,1
+24,Data,Toggl_Import: rows with zero hours or a bad activity,0,1
+25,Data,Pipeline: rows with a bad event or side,0,1
+26,Data,Actuals_Campaigns: rows whose drop_id is not on Schedule,0,1
+27,Data,Actuals_DropCosts: rows whose drop_id is not on Schedule,0,1
+28,Data,"Actuals_Campaigns: header row differs from HANDOFF, or something is pasted in the blank buffer columns",0,1,Paste exactly the HANDOFF columns in order; extra fields go in a separate file.
+29,Data,"Actuals_DropCosts: header row differs from HANDOFF, or something is pasted in the blank buffer columns",0,1
+30,Data,"Hours_Log: header row differs from HANDOFF, or something is pasted in the blank buffer columns",0,1
+31,Data,"Pipeline: header row differs from HANDOFF, or something is pasted in the blank buffer columns",0,1
+32,Plan,Plan scenario rows 1 to 6 reproduce,0,1,Expected only at plan defaults.
+33,Plan,Plan hour table reproduces cell by cell,0,1,Expected only at plan defaults.
+34,Plan,Reconciliation rows within tolerance (the two documented differences excluded),0,1,Row 10 (processing contrast) and row 25 (transport lump) differ by design.
+
+,,Integrity and schedule checks failing,0
+,,Data checks failing,0
+,,Plan-reproduction checks failing,0
+,,Checks in total,34

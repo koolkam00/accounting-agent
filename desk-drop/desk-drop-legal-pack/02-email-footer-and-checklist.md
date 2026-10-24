@@ -2,11 +2,11 @@
 
 # 02 · Commercial-email footer and three-line checklist
 
-Version 0.5 · 2026-10-24
+Version 0.6 · 2026-10-24
 
 **What it is for.** Every cold email and follow-up to an office or a brand is commercial email under the federal CAN-SPAM Act, which has no exception for business-to-business email (FTC guide, opened 2026-10-23, source at the end). This file holds the footer to paste under every such email and the three rules to follow every time you send.
 
-**When it is used.** From the first outreach email in week 1 (Monday 2026-10-26, derived, founder to confirm) until the business stops sending commercial email. Set it up once in the email tool before the first send. It goes into use before the attorney hour (file 08, week 4). It follows the FTC's own guide point by point; the one judgment call, whether "This is a business pitch" identifies the email clearly enough, is item 12 for the attorney.
+**When it is used.** From the first outreach email in week 1 (Monday 2026-10-26, derived, founder to confirm) until the business stops sending commercial email. Set it up once in the email tool before the first send. It goes into use before the attorney hour (file 08, week 4), and the pasted footer cannot carry the review heading. So, best: email the three lines to the attorney in week 1 and ask them to clear it before the first send; otherwise send it as drafted and accept the small risk until the hour (`REPORT.md`, conflict 13). It follows the FTC's own guide point by point; the one judgment call, whether "This is a business pitch" identifies the email clearly enough, is item 12 for the attorney.
 
 ---
 
@@ -70,11 +70,12 @@ Keep the opt-out line at normal size and dark text. The FTC says the opt-out exp
 - **Which address to use for [POSTAL ADDRESS].** Every cold email will carry it, so a home address becomes public. A USPS post office box or a registered private mailbox both qualify under the FTC guide. The cost of either was not researched: needs quote, founder to decide. Use the same address in the identity workstream's signature.
 - **Emails that do not need the footer.** Messages whose main purpose is to run an agreed campaign (drop-day times, photo requests, invoices, the report) are "transactional or relationship" messages under the FTC guide and are exempt from most of the rules. The FTC reads that category narrowly: once an email also pitches something new (a renewal, another campaign), treat it as commercial and add the footer. Adding the footer to everything is simplest and costs nothing.
 - **LinkedIn messages** are not email, but honor a "no" there the same way: mark `do_not_contact = Y`.
-- **Penalties.** The FTC guide states up to \$53,088 per separate email in violation (as adjusted in January 2024). This is why the rules are checked on every send, not occasionally.
+- **Penalties.** The FTC guide states up to \$53,088 per separate email in violation (16 CFR 1.98, for penalties assessed after 2025-01-17; ecfr.gov, opened 2026-10-24). This is why the rules are checked on every send, not occasionally.
 - **Anyone sending for you.** If you ever use a sending service or a helper, you remain responsible (FTC guide: you "can't contract away your legal responsibility").
 
-## Source
+## Sources
 
+- 16 CFR 1.98, FTC civil penalty adjustments, current text (eCFR, version for 2026-10-01, opened 2026-10-24; saved as `_work/ecfr_16cfr1.98_2026-10-01.xml`): the amounts "apply only to penalties assessed after January 17, 2025"; Section 5(m)(1)(A) of the FTC Act, "—\$53,088". https://www.ecfr.gov/api/versioner/v1/full/2026-10-01/title-16.xml?part=1&section=1.98 (the eCFR API; the page as served to a browser was not opened)
 - FTC, "CAN-SPAM Act: A Compliance Guide for Business", page dated August 2023, edited January 2024. https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business (opened 2026-10-23). Supports every rule above: header, subject, ad identification, postal address types, opt-out method, 10 business days, 30 days, no fee, no selling addresses, no B2B exception, transactional messages, penalty amount.
 
 ---
@@ -84,3 +85,4 @@ Keep the opt-out line at normal size and dark text. The FTC says the opt-out exp
 - Rounds 1 to 9 (2026-10-23 to 24, part A drafting): footer A, footer B, HTML version and the three-line checklist from the FTC guide; reply-based opt-out; `BRAND_NAME` line matching the outreach workstream's variable.
 - Merge (2026-10-24): renumbered 10 to 02; version 0.5; dollar signs escaped.
 - Merge review (2026-10-24): attorney, the footer is used before the attorney hour, so its one judgment call is named as agenda item 12; footer B no longer claims the identity workstream's signature already exists.
+- Review round 2 (2026-10-24), version 0.6: the penalty's date now cites 16 CFR 1.98 (penalties assessed after 2025-01-17, eCFR, opened 2026-10-24); the figure, \$53,088, was already right. The notes say the footer is sent without the review heading and suggest clearing it with the attorney by email in week 1.

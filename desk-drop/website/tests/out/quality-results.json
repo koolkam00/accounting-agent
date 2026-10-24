@@ -1,0 +1,756 @@
+{
+  "date": "2026-10-24T02:25:34.131Z",
+  "axe": [
+    {
+      "where": "index phone light",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands phone light",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands phone light conditional fields open",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands phone light error summary shown",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands phone light sent panel",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices phone light",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices phone light conditional fields open",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices phone light error summary shown",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices phone light sent panel",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "privacy phone light",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "survey-privacy phone light",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "404 phone light",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "index phone dark",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands phone dark",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands phone dark conditional fields open",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands phone dark error summary shown",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands phone dark sent panel",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices phone dark",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices phone dark conditional fields open",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices phone dark error summary shown",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices phone dark sent panel",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "privacy phone dark",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "survey-privacy phone dark",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "404 phone dark",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "index desktop light",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands desktop light",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands desktop light conditional fields open",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands desktop light error summary shown",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands desktop light sent panel",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices desktop light",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices desktop light conditional fields open",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices desktop light error summary shown",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices desktop light sent panel",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "privacy desktop light",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "survey-privacy desktop light",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "404 desktop light",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "index desktop dark",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands desktop dark",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands desktop dark conditional fields open",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands desktop dark error summary shown",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "brands desktop dark sent panel",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices desktop dark",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices desktop dark conditional fields open",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices desktop dark error summary shown",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "offices desktop dark sent panel",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "privacy desktop dark",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "survey-privacy desktop dark",
+      "violations": 0,
+      "details": []
+    },
+    {
+      "where": "404 desktop dark",
+      "violations": 0,
+      "details": []
+    }
+  ],
+  "weight": [
+    {
+      "page": "index",
+      "total_bytes": 112855,
+      "total_kb": 110.2,
+      "requests": 8,
+      "files": [
+        {
+          "url": "index.html",
+          "bytes": 6358
+        },
+        {
+          "url": "assets/css/tokens.css",
+          "bytes": 5296
+        },
+        {
+          "url": "assets/css/site.css",
+          "bytes": 25165
+        },
+        {
+          "url": "assets/js/boot.js",
+          "bytes": 3417
+        },
+        {
+          "url": "site.config.js",
+          "bytes": 2609
+        },
+        {
+          "url": "assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2",
+          "bytes": 34186
+        },
+        {
+          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
+          "bytes": 21938
+        },
+        {
+          "url": "assets/js/site.js",
+          "bytes": 13886
+        }
+      ]
+    },
+    {
+      "page": "brands",
+      "total_bytes": 169694,
+      "total_kb": 165.7,
+      "requests": 9,
+      "files": [
+        {
+          "url": "brands.html",
+          "bytes": 42023
+        },
+        {
+          "url": "assets/css/tokens.css",
+          "bytes": 5296
+        },
+        {
+          "url": "assets/css/site.css",
+          "bytes": 25165
+        },
+        {
+          "url": "site.config.js",
+          "bytes": 2609
+        },
+        {
+          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
+          "bytes": 21938
+        },
+        {
+          "url": "assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2",
+          "bytes": 34186
+        },
+        {
+          "url": "assets/js/boot.js",
+          "bytes": 3417
+        },
+        {
+          "url": "assets/js/site.js",
+          "bytes": 13886
+        },
+        {
+          "url": "assets/img/cluster-map.svg",
+          "bytes": 21174
+        }
+      ]
+    },
+    {
+      "page": "offices",
+      "total_bytes": 130663,
+      "total_kb": 127.6,
+      "requests": 8,
+      "files": [
+        {
+          "url": "offices.html",
+          "bytes": 24166
+        },
+        {
+          "url": "assets/css/site.css",
+          "bytes": 25165
+        },
+        {
+          "url": "assets/css/tokens.css",
+          "bytes": 5296
+        },
+        {
+          "url": "site.config.js",
+          "bytes": 2609
+        },
+        {
+          "url": "assets/js/boot.js",
+          "bytes": 3417
+        },
+        {
+          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
+          "bytes": 21938
+        },
+        {
+          "url": "assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2",
+          "bytes": 34186
+        },
+        {
+          "url": "assets/js/site.js",
+          "bytes": 13886
+        }
+      ]
+    },
+    {
+      "page": "privacy",
+      "total_bytes": 113379,
+      "total_kb": 110.7,
+      "requests": 8,
+      "files": [
+        {
+          "url": "privacy.html",
+          "bytes": 6882
+        },
+        {
+          "url": "assets/js/boot.js",
+          "bytes": 3417
+        },
+        {
+          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
+          "bytes": 21938
+        },
+        {
+          "url": "assets/css/site.css",
+          "bytes": 25165
+        },
+        {
+          "url": "assets/css/tokens.css",
+          "bytes": 5296
+        },
+        {
+          "url": "assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2",
+          "bytes": 34186
+        },
+        {
+          "url": "site.config.js",
+          "bytes": 2609
+        },
+        {
+          "url": "assets/js/site.js",
+          "bytes": 13886
+        }
+      ]
+    },
+    {
+      "page": "survey-privacy",
+      "total_bytes": 113769,
+      "total_kb": 111.1,
+      "requests": 8,
+      "files": [
+        {
+          "url": "survey-privacy.html",
+          "bytes": 7272
+        },
+        {
+          "url": "assets/css/tokens.css",
+          "bytes": 5296
+        },
+        {
+          "url": "assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2",
+          "bytes": 34186
+        },
+        {
+          "url": "assets/css/site.css",
+          "bytes": 25165
+        },
+        {
+          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
+          "bytes": 21938
+        },
+        {
+          "url": "site.config.js",
+          "bytes": 2609
+        },
+        {
+          "url": "assets/js/boot.js",
+          "bytes": 3417
+        },
+        {
+          "url": "assets/js/site.js",
+          "bytes": 13886
+        }
+      ]
+    },
+    {
+      "page": "404",
+      "total_bytes": 109958,
+      "total_kb": 107.4,
+      "requests": 8,
+      "files": [
+        {
+          "url": "404.html",
+          "bytes": 3461
+        },
+        {
+          "url": "assets/css/tokens.css",
+          "bytes": 5296
+        },
+        {
+          "url": "assets/css/site.css",
+          "bytes": 25165
+        },
+        {
+          "url": "assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2",
+          "bytes": 21938
+        },
+        {
+          "url": "assets/js/boot.js",
+          "bytes": 3417
+        },
+        {
+          "url": "site.config.js",
+          "bytes": 2609
+        },
+        {
+          "url": "assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2",
+          "bytes": 34186
+        },
+        {
+          "url": "assets/js/site.js",
+          "bytes": 13886
+        }
+      ]
+    }
+  ],
+  "keyboard": [
+    {
+      "page": "index",
+      "tab_stops": 11,
+      "order_matches_dom": true,
+      "skip_link_first": true,
+      "skip_link_moves_focus": true,
+      "missing_focus_ring": []
+    },
+    {
+      "page": "brands",
+      "tab_stops": 36,
+      "order_matches_dom": true,
+      "skip_link_first": true,
+      "skip_link_moves_focus": true,
+      "missing_focus_ring": []
+    },
+    {
+      "page": "offices",
+      "tab_stops": 29,
+      "order_matches_dom": true,
+      "skip_link_first": true,
+      "skip_link_moves_focus": true,
+      "missing_focus_ring": []
+    },
+    {
+      "page": "privacy",
+      "tab_stops": 9,
+      "order_matches_dom": true,
+      "skip_link_first": true,
+      "skip_link_moves_focus": true,
+      "missing_focus_ring": []
+    },
+    {
+      "page": "survey-privacy",
+      "tab_stops": 8,
+      "order_matches_dom": true,
+      "skip_link_first": true,
+      "skip_link_moves_focus": true,
+      "missing_focus_ring": []
+    },
+    {
+      "page": "404",
+      "tab_stops": 11,
+      "order_matches_dom": true,
+      "skip_link_first": true,
+      "skip_link_moves_focus": true,
+      "missing_focus_ring": []
+    },
+    {
+      "radio_arrow_moves_choice": true,
+      "enter_submits_form": true
+    }
+  ],
+  "labels": [
+    {
+      "page": "offices",
+      "controls": 45,
+      "unlabeled": [],
+      "ungrouped": [],
+      "optional_unmarked": [],
+      "required_marked_optional": [],
+      "described_missing": []
+    },
+    {
+      "page": "brands",
+      "controls": 41,
+      "unlabeled": [],
+      "ungrouped": [],
+      "optional_unmarked": [],
+      "required_marked_optional": [],
+      "described_missing": []
+    }
+  ],
+  "layout": [
+    {
+      "width": 320,
+      "page": "index",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 320,
+      "page": "brands",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 320,
+      "page": "offices",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 320,
+      "page": "privacy",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 320,
+      "page": "survey-privacy",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 320,
+      "page": "404",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 390,
+      "page": "index",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 390,
+      "page": "brands",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 390,
+      "page": "offices",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 390,
+      "page": "privacy",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 390,
+      "page": "survey-privacy",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 390,
+      "page": "404",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 768,
+      "page": "index",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 768,
+      "page": "brands",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 768,
+      "page": "offices",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 768,
+      "page": "privacy",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 768,
+      "page": "survey-privacy",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 768,
+      "page": "404",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 1280,
+      "page": "index",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 1280,
+      "page": "brands",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 1280,
+      "page": "offices",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 1280,
+      "page": "privacy",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 1280,
+      "page": "survey-privacy",
+      "horizontal_scroll": false,
+      "small_targets": []
+    },
+    {
+      "width": 1280,
+      "page": "404",
+      "horizontal_scroll": false,
+      "small_targets": []
+    }
+  ],
+  "privacy": [
+    {
+      "page": "index",
+      "third_party_requests": [],
+      "cookies": "",
+      "local": 0,
+      "session": 0
+    },
+    {
+      "page": "brands",
+      "third_party_requests": [],
+      "cookies": "",
+      "local": 0,
+      "session": 0
+    },
+    {
+      "page": "offices",
+      "third_party_requests": [],
+      "cookies": "",
+      "local": 0,
+      "session": 0
+    },
+    {
+      "page": "privacy",
+      "third_party_requests": [],
+      "cookies": "",
+      "local": 0,
+      "session": 0
+    },
+    {
+      "page": "survey-privacy",
+      "third_party_requests": [],
+      "cookies": "",
+      "local": 0,
+      "session": 0
+    },
+    {
+      "page": "404",
+      "third_party_requests": [],
+      "cookies": "",
+      "local": 0,
+      "session": 0
+    }
+  ],
+  "failures": 0
+}

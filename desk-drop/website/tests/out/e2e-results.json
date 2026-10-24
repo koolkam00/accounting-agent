@@ -1,0 +1,194 @@
+{
+  "date": "2026-10-24T02:25:02.687Z",
+  "checks": [
+    {
+      "name": "office form submitted at phone width: one row, exact columns, one notification",
+      "pass": true,
+      "row": {
+        "submitted_at": "2026-10-23T22:25:07-04:00",
+        "form_version": "office-1.0",
+        "company": "SAMPLE Studio",
+        "contact_name": "SAMPLE Jo Park",
+        "contact_title": "Office Manager",
+        "contact_email": "sample.jo@example.com",
+        "contact_phone": "",
+        "office_address": "123 Fifth Avenue",
+        "floor_suite": "",
+        "tuesday_headcount": "60",
+        "pantry_owner_name": "SAMPLE Jo Park",
+        "pantry_owner_title": "Office Manager",
+        "pantry_owner_is_contact": "Y",
+        "receiving_type": "front desk",
+        "receiving_window": "9 to 11 am",
+        "coi_required": "unsure",
+        "survey_channel": "slack",
+        "categories_wanted": "chips-crisps;popcorn-puffs;crackers-pretzels;bars;cookies-baked;chocolate-candy;nuts-seeds-trail;meat-snacks;fruit-snacks;sparkling-soda;tea-juice;coffee-rtd;other-snack;other-drink",
+        "vetoes": "",
+        "notes": "",
+        "source": "website"
+      }
+    },
+    {
+      "name": "brand form submitted at phone width: one row, exact columns, one notification",
+      "pass": true,
+      "row": {
+        "submitted_at": "2026-10-23T22:25:13-04:00",
+        "form_version": "brand-1.0",
+        "brand_name": "SAMPLE Brightside",
+        "website": "https://example.com",
+        "contact_name": "SAMPLE Sam Lee",
+        "contact_title": "Founder",
+        "contact_email": "sample.sam@example.com",
+        "contact_phone": "",
+        "product_sku": "SAMPLE Sea Salt Lentil Crisps, 1 oz",
+        "category": "chips-crisps",
+        "hq_city": "Queens, NY",
+        "nyc_retailers": "",
+        "online_store_url": "",
+        "can_issue_discount_code": "Y",
+        "preferred_timing": "In 1 to 3 months",
+        "budget_approver_is_contact": "N",
+        "budget_approver_name_title": "SAMPLE Alex Kim, CEO",
+        "q1_sealed_shelf_stable_60d": "Y",
+        "q2_labeled_ingredients_allergens": "Y",
+        "q3_buy_path_near_cluster": "unsure",
+        "q4_can_ship_275_in_10bd": "Y",
+        "q5_product_liability_insurance": "N",
+        "q6_contact_can_approve_600": "Y",
+        "q7_why_now": "SAMPLE New store opening on 14th Street",
+        "excluded_category_confirmed": "Y",
+        "notes": "",
+        "source": "website"
+      }
+    },
+    {
+      "name": "analytics stub received page views and the four form events at phone width",
+      "pass": true,
+      "hits": 6
+    },
+    {
+      "name": "no CORS preflight and no cookies at phone width",
+      "pass": true
+    },
+    {
+      "name": "office form submitted at desktop width: one row, exact columns, one notification",
+      "pass": true,
+      "row": {
+        "submitted_at": "2026-10-23T22:25:16-04:00",
+        "form_version": "office-1.0",
+        "company": "SAMPLE Studio",
+        "contact_name": "SAMPLE Jo Park",
+        "contact_title": "Office Manager",
+        "contact_email": "sample.jo@example.com",
+        "contact_phone": "",
+        "office_address": "123 Fifth Avenue",
+        "floor_suite": "",
+        "tuesday_headcount": "60",
+        "pantry_owner_name": "SAMPLE Jo Park",
+        "pantry_owner_title": "Office Manager",
+        "pantry_owner_is_contact": "Y",
+        "receiving_type": "front desk",
+        "receiving_window": "9 to 11 am",
+        "coi_required": "unsure",
+        "survey_channel": "slack",
+        "categories_wanted": "chips-crisps;popcorn-puffs;crackers-pretzels;bars;cookies-baked;chocolate-candy;nuts-seeds-trail;meat-snacks;fruit-snacks;sparkling-soda;tea-juice;coffee-rtd;other-snack;other-drink",
+        "vetoes": "",
+        "notes": "",
+        "source": "website"
+      }
+    },
+    {
+      "name": "brand form submitted at desktop width: one row, exact columns, one notification",
+      "pass": true,
+      "row": {
+        "submitted_at": "2026-10-23T22:25:21-04:00",
+        "form_version": "brand-1.0",
+        "brand_name": "SAMPLE Brightside",
+        "website": "https://example.com",
+        "contact_name": "SAMPLE Sam Lee",
+        "contact_title": "Founder",
+        "contact_email": "sample.sam@example.com",
+        "contact_phone": "",
+        "product_sku": "SAMPLE Sea Salt Lentil Crisps, 1 oz",
+        "category": "chips-crisps",
+        "hq_city": "Queens, NY",
+        "nyc_retailers": "",
+        "online_store_url": "",
+        "can_issue_discount_code": "Y",
+        "preferred_timing": "In 1 to 3 months",
+        "budget_approver_is_contact": "N",
+        "budget_approver_name_title": "SAMPLE Alex Kim, CEO",
+        "q1_sealed_shelf_stable_60d": "Y",
+        "q2_labeled_ingredients_allergens": "Y",
+        "q3_buy_path_near_cluster": "unsure",
+        "q4_can_ship_275_in_10bd": "Y",
+        "q5_product_liability_insurance": "N",
+        "q6_contact_can_approve_600": "Y",
+        "q7_why_now": "SAMPLE New store opening on 14th Street",
+        "excluded_category_confirmed": "Y",
+        "notes": "",
+        "source": "website"
+      }
+    },
+    {
+      "name": "analytics stub received page views and the four form events at desktop width",
+      "pass": true,
+      "hits": 12
+    },
+    {
+      "name": "no CORS preflight and no cookies at desktop width",
+      "pass": true
+    },
+    {
+      "name": "staging config: notice shown, message on submit, no request, no row, robots noindex",
+      "pass": true
+    },
+    {
+      "name": "empty office form: error summary with 13 linked items, focus management, aria-invalid",
+      "pass": true,
+      "items": [
+        "Company: Please fill this in.",
+        "Your name: Please fill this in.",
+        "Your title: Please fill this in.",
+        "Work email: Please fill this in.",
+        "Office street address: Please fill this in.",
+        "People in the office on a typical Tuesday: Please fill this in.",
+        "Pantry owner's name: Please fill this in.",
+        "Pantry owner's title: Please fill this in.",
+        "How do deliveries reach your office? Please choose one.",
+        "Best time to receive, on a Tuesday or Wednesday morning: Please choose one.",
+        "Does your building ask for a certificate of insurance before a delivery? Please choose one.",
+        "Where would you post the three-question survey link? Please choose one.",
+        "Which categories do you want? Pick at least one category, or choose \"Any of them\"."
+      ]
+    },
+    {
+      "name": "format errors: headcount and email messages",
+      "pass": true
+    },
+    {
+      "name": "mock endpoint: honeypot writes nothing, bad value refused, repeat submission_id writes one row",
+      "pass": true
+    },
+    {
+      "name": "rename: BRAND_NAME changed in site.config.js only; old name gone from text, titles and meta on all 6 pages",
+      "pass": true
+    },
+    {
+      "name": "founding tier retired with one setting: founding price gone, standard and extra office stay; STAGING false removes noindex and bar",
+      "pass": true
+    }
+  ],
+  "timing": {
+    "phone": {
+      "required_text_fields": 6,
+      "typed_chars": 80,
+      "taps_before_submit": 13
+    },
+    "desktop": {
+      "required_text_fields": 6,
+      "typed_chars": 80,
+      "taps_before_submit": 13
+    }
+  }
+}

@@ -106,7 +106,7 @@
   const OFFICE_MAX = 48 / 72 * IN, OFFICE_MIN = 26 / 72 * IN; // 48 pt down to 26 pt
 
   const FIELDS = [
-    { group: 'Type', key: 'label_type', label: 'Label type: office or reserve', help: '"reserve" prints a label for your own reserve bag.' },
+    { group: 'Type', key: 'label_type', label: 'Label type: office or reserve', options: [['office', 'office: a case for one office'], ['reserve', 'reserve: your own reserve bag']], help: '"reserve" prints a label for your own reserve bag; the office boxes are then ignored.' },
     { group: 'Office', key: 'office_name', label: 'Office (company) name', help: 'From signed_offices.csv: company.' },
     { group: 'Office', key: 'office_address', label: 'Street address', help: 'From office_address.' },
     { group: 'Office', key: 'floor_suite', label: 'Floor or suite', help: 'From floor_suite.' },
@@ -167,7 +167,7 @@
       if (r && !r._skip) {
         const i = start + k;
         const ph = (r.phone || '').trim() || (B.contact && B.contact.PHONE) || '[PHONE]';
-        if (DD.isPlaceholder(ph)) DD.status.placeholders.push(`record ${i + 1}: phone (fill PHONE in brand.json)`);
+        if (DD.isPlaceholder(ph)) DD.placeholder(i, 'phone (fill PHONE in brand.json)');
         if (!reserve && !r.office_name) DD.error(i, 'Office name is empty (use label_type "reserve" for your reserve bag).');
         if (r.units_in_case && !/^\d+$/.test(String(r.units_in_case).trim()) && !DD.isPlaceholder(String(r.units_in_case))) DD.error(i, 'Units in this case must be a whole number.');
         if (r.drop_date && /^\d{4}-\d{2}-\d{2}$/.test(r.drop_date)) {
@@ -199,6 +199,9 @@
   DD.init({
     title: 'case label',
     fields: FIELDS,
+    recordLabel: 'Label',
+    recordName: (r, k) => `Label ${k + 1} (${(r.label_type || 'office') === 'reserve' ? 'reserve' : (r.office_name && !DD.isPlaceholder(String(r.office_name)) ? r.office_name : 'office')})`,
+    panelIntro: 'Two labels print per sheet. Choose a label in the box below to edit it, press <b>Add a label</b> for the next case, or <b>Remove</b> one you do not need. The page updates as you type. When it looks right, press <b>Print</b>.',
     render, fit, perSheet: 2,
     fileStem: (r) => 'case-labels_' + (r.drop_id || 'drop'),
     printHelp: '<b>Chrome print settings:</b> Paper Letter. Scale 100 (or "Actual size"). Margins Default. Turn on "Background graphics". Two labels per sheet: Avery 5126-size half-sheet labels, or plain paper cut on the dashed line.'

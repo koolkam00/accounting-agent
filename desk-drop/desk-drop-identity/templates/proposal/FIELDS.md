@@ -16,7 +16,7 @@ Template: `templates/proposal/proposal.html` (v1.1, 2026-10-24). Two pages: the 
 | `offices[]` | yes | `signed_offices` | `neighborhood`, `industry`, `headcount_band` (CONTRACTS bands), `planned_units` (30 to 80). No company names before signature. Labelled A, B, C... in order. |
 | `retailers[]` | one of retailers or `online_site` | `brand_intake.nyc_retailers`; B's `retailers.csv` | `retailer_name`, `street`, `distance`. Only stores with evidence (retailer evidence grade `store_selector`, `brand_claim` or the founder's `seen_on_shelf`). With no store, the headline says "with a code for your online store" instead of "within walking distance". |
 | `online_site` | see above | `brand_intake.online_store_url` | Short form, no https://. |
-| `map_image` | no | B: `cluster-1-flatiron/` public map, exported as a picture | `[RETAILER MAP]` = slot not filled yet (blocks `--final`). Empty = no map on the page. |
+| `map_image` | no | B: a landscape export of the cluster map for this brand | About 2.5 to 1, showing the cluster boundary and this brand's stores, **no office pins before signature**. Shown whole (`object-fit: contain`), height from its own shape up to 2.2 in; a portrait picture warns. `[RETAILER MAP]` = slot not filled yet (blocks `--final`). Empty = no map. Tested 2026-10-24 with B's `public-map.png` (1200 x 2140 portrait): legible only as a thumbnail, so B's general map does not fit this slot (`tests/proposal-map/`). |
 | `map_caption` | no | | Map attribution, e.g. the map data source. |
 
 Fixed text (not fields): the campaign specification, the price box (from `dd-offer.js`), what the brand sends, the cancellation and slip line (from the campaign agreement, section 8), the report summary and "No sales guarantee".

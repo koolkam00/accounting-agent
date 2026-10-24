@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tent card print spec</title>
+<link rel="stylesheet" href="../fonts/fonts.css">
+<link rel="stylesheet" href="../tokens/tokens.css">
+<link rel="stylesheet" href="spec.css">
+</head>
+<body>
+<section class="page">
+  <header class="hd">
+    <img class="wm" src="../wordmark/wordmark-light.svg" alt="">
+    <div><h1>Tent card: print spec</h1><p class="sub">Template v1.0 · 2026-10-23 · file: templates/tent-card/tent-card.html</p></div>
+  </header>
+  <p class="warn"><b>No commercial print run until the name is cleared</b> (desk-drop-legal-pack/name-check-log.md). Home test prints are fine.</p>
+
+  <div class="two">
+    <figure class="diagram">
+      <svg viewBox="-0.9 -0.35 10.3 11.9" width="3.9in" height="4.5in" font-family="Atkinson Hyperlegible Next">
+        <rect x="0" y="0" width="8.5" height="11" fill="#fff" stroke="#6B675F" stroke-width="0.03"/>
+        <text x="4.25" y="11.4" font-size="0.28" text-anchor="middle" fill="#3A3732">US Letter sheet, 8.5 x 11 in</text>
+        <g transform="translate(0.75 0.5)">
+          <image href="../pdf/tent-card-SAMPLE-face.png" x="0" y="0" width="7" height="5" transform="rotate(180 3.5 2.5)"/>
+          <image href="../pdf/tent-card-SAMPLE-face.png" x="0" y="5" width="7" height="5"/>
+          <rect x="0" y="0" width="7" height="10" fill="none" stroke="#1F1D1A" stroke-width="0.035"/>
+          <rect x="0.25" y="0.25" width="6.5" height="4.5" fill="none" stroke="#2E47C9" stroke-width="0.03" stroke-dasharray="0.12 0.08"/>
+          <rect x="0.25" y="5.25" width="6.5" height="4.5" fill="none" stroke="#2E47C9" stroke-width="0.03" stroke-dasharray="0.12 0.08"/>
+          <line x1="-0.6" y1="5" x2="7.6" y2="5" stroke="#B3261E" stroke-width="0.04" stroke-dasharray="0.2 0.1"/>
+          <text x="7.7" y="5.08" font-size="0.26" fill="#B3261E" font-weight="700">FOLD</text>
+          <!-- dimensions -->
+          <line x1="0" y1="10.35" x2="7" y2="10.35" stroke="#1F1D1A" stroke-width="0.02"/>
+          <text x="3.5" y="10.3" font-size="0.26" text-anchor="middle" fill="#1F1D1A">7 in trim width</text>
+          <line x1="-0.45" y1="5" x2="-0.45" y2="10" stroke="#1F1D1A" stroke-width="0.02"/>
+          <text x="-0.55" y="7.5" font-size="0.26" text-anchor="middle" fill="#1F1D1A" transform="rotate(-90 -0.55 7.5)">5 in face (front)</text>
+          <line x1="-0.45" y1="0" x2="-0.45" y2="5" stroke="#1F1D1A" stroke-width="0.02"/>
+          <text x="-0.55" y="2.5" font-size="0.26" text-anchor="middle" fill="#1F1D1A" transform="rotate(-90 -0.55 2.5)">5 in face (back, upside down)</text>
+        </g>
+      </svg>
+      <figcaption>Black: trim (cut) line, 7 x 10 in. Blue dashes: safe area, 0.25 in inside the trim. Red: fold. The top face prints upside down so both faces read upright when the card stands.</figcaption>
+    </figure>
+
+    <table class="spec">
+      <tr><th>Finished size</th><td>Each face 7 in wide x 5 in tall (landscape). Two identical faces.</td></tr>
+      <tr><th>Flat size</th><td>7 x 10 in, one card per US Letter sheet, centred (0.75 in side margins, 0.5 in top and bottom).</td></tr>
+      <tr><th>Fold</th><td>Tent fold across the middle (5 in from each short edge), print on the outside. Score first along a ruler with a bone folder or the back of a butter knife, then fold.</td></tr>
+      <tr><th>Bleed</th><td>None for home printing: nothing touches the trim, so a slightly off cut does not show. Print-shop file (<code>--mode pro</code>): page 7.25 x 10.25 in with 0.125 in bleed on all sides, no marks.</td></tr>
+      <tr><th>Safe area</th><td>0.25 in inside the trim on every edge, including the fold. All text and the QR stay inside it.</td></tr>
+      <tr><th>Marks</th><td>Corner crop marks offset 0.08 in, 0.22 in long. FOLD marks in both side margins.</td></tr>
+      <tr><th>Faces</th><td>Both faces carry the same content, so either side can face the room. Each sheet's top margin repeats the print settings; the bottom margin names the brand, card ID and campaign.</td></tr>
+      <tr><th>Numbers</th><td>The text face draws zero with a slash (0) so office IDs like O-001 cannot be misread.</td></tr>
+    </table>
+  </div>
+</section>
+
+<section class="page">
+  <h2>Materials and printing</h2>
+  <table class="spec">
+      <tr><th>Stock</th><td>White matte cardstock, 80 to 110 lb cover (about 216 to 300 gsm; 4OVER4 conversion, opened 2026-10-23). Matte, not gloss: gloss throws glare into the close photo. Check your printer's maximum paper weight and use the rear or manual feed if it has one.</td></tr>
+      <tr><th>Color</th><td>Ink #1F1D1A text, cobalt #2E47C9 band and "Take one.", allergen text pure black #000000 on white. Chrome: turn on "Background graphics" or the cobalt band drops out.</td></tr>
+      <tr><th>Print settings</th><td>Paper Letter, Scale 100 (Actual size), Margins Default, Background graphics on. Never "Fit to page": it shrinks the locked allergen size.</td></tr>
+      <tr><th>QR code</th><td>1.15 to 1.45 in square including the four-module quiet zone the QR standard requires (Denso Wave, opened 2026-10-23). Error correction M. Encodes the office's link exactly. One unique link per office per campaign.</td></tr>
+      <tr><th>Run size</th><td>About 20 cards at a time (one per office plus one spare each). Each office's cards carry its own QR and card ID; never swap cards between offices.</td></tr>
+  </table>
+  <h2>Type sizes on the card (minimums are floors)</h2>
+  <table class="spec type">
+    <tr><th>Element</th><th>Face</th><th>Size</th><th>Rule</th></tr>
+    <tr class="lock"><td>Allergen statement and "may contain" line</td><td>Atkinson Hyperlegible Next SemiBold, black</td><td><b>14 pt, LOCKED</b></td><td>Copied word for word from the package. Never shortened, never smaller. Everything else gives way to it. The template refuses to print if it would render under 14 pt or if the text differs from what was entered.</td></tr>
+    <tr><td>Brand name</td><td>Bricolage Grotesque ExtraBold</td><td>36 to 72 pt</td><td>One line where possible; narrows to 75% width before it shrinks; two balanced lines only as a last resort.</td></tr>
+    <tr><td>"Take one."</td><td>Bricolage Grotesque ExtraBold, cobalt</td><td>22 pt</td><td>Fixed copy.</td></tr>
+    <tr><td>Two sentences</td><td>Atkinson Hyperlegible Next Regular</td><td>12 to 15 pt</td><td>200 characters or fewer.</td></tr>
+    <tr><td>"Tell us what you think", product line</td><td>Atkinson Bold / SemiBold</td><td>13 pt</td><td></td></tr>
+    <tr><td>Find it at ... or use code ...</td><td>Atkinson SemiBold</td><td>10 to 11 pt</td><td>Works with the retailer half alone, the code half alone, or both.</td></tr>
+    <tr><td>"Allergens, as printed on the package" label</td><td>Atkinson Bold</td><td>9 pt</td><td>Fixed copy.</td></tr>
+    <tr><td>"Brought to you by" and wordmark</td><td>Atkinson Regular; wordmark file</td><td>8.5 pt; wordmark cap height 0.13 in</td><td>Wordmark sized by cap height, so a longer name stays readable.</td></tr>
+    <tr><td>Short link under the QR</td><td>Atkinson Regular</td><td>7.5 pt</td><td></td></tr>
+    <tr><td>Card ID (office and campaign)</td><td>Atkinson Regular, stone</td><td>7 pt</td><td>For kitting only.</td></tr>
+  </table>
+
+</section>
+
+<section class="page">
+  <h2>When the card is full: the give-way order</h2>
+  <p>The template fits the card itself. If text does not fit, it gives way in this order and tells you on screen and in the render output: (1) the two sentences shrink from 15 to 12 pt; (2) spacing tightens; (3) the find-it line goes from 11 to 10 pt; (4) the QR shrinks from 1.45 to 1.15 in; (5) a two-line brand name goes back to one condensed line if it can; (6) the brand name shrinks toward 36 pt; (7) the product line is left off; (8) the two sentences are left off. For a package whose only allergen declaration is its ingredient list, a list too long for the front then prints in full, at 14 pt, on the other face, and the front's panel points to it. If it still does not fit, the card prints a red DO NOT PLACE panel and the render command writes no PDF. The allergen panel never changes.</p>
+
+  <h2>Placement and photos (from the plan's per-stop procedure)</h2>
+  <ul>
+    <li>At eye level beside the existing snacks, never inside a cabinet. Card in front of the product, allergen panel visible. One display per pantry.</li>
+    <li>Wide photo: the whole pantry, product and card in view. Close photo: card and product from about arm's length (the card spans at least a fifth of the photo's width; closer is better). Check that you can read the allergen panel when you zoom in. No identifiable people in either photo.</li>
+  </ul>
+
+  <h2>Fold and stand</h2>
+  <div class="two" style="grid-template-columns: 2.6in 1fr">
+    <svg viewBox="0 0 260 150" width="2.6in" height="1.5in" font-family="Atkinson Hyperlegible Next" font-size="10">
+      <line x1="10" y1="135" x2="250" y2="135" stroke="#6B675F" stroke-width="2"/>
+      <text x="200" y="148" fill="#6B675F">shelf</text>
+      <polygon points="130,20 85,135 175,135" fill="#fff" stroke="#1F1D1A" stroke-width="2.5"/>
+      <line x1="130" y1="20" x2="85" y2="135" stroke="#2E47C9" stroke-width="5"/>
+      <line x1="130" y1="20" x2="175" y2="135" stroke="#2E47C9" stroke-width="5"/>
+      <circle cx="130" cy="20" r="4" fill="#B3261E"/>
+      <text x="138" y="16" fill="#B3261E" font-weight="700">fold (top)</text>
+      <text x="8" y="80" fill="#1F1D1A">front face</text><text x="8" y="92" fill="#1F1D1A">faces the room</text>
+      <text x="184" y="80" fill="#1F1D1A">back face</text><text x="184" y="92" fill="#1F1D1A">(same content)</text>
+      <text x="96" y="128" fill="#6B675F">about 4 in</text>
+    </svg>
+    <ol class="steps">
+      <li>Cut on the corner marks (a paper trimmer gives the straightest edge).</li>
+      <li>Lay a ruler across the two FOLD marks and score the line, printed side up.</li>
+      <li>Fold with the print on the outside. Press the crease flat.</li>
+      <li>Open the tent to about 4 in between the feet so it stands without tipping.</li>
+      <li>Check: both faces read upright, and the card ID on each face matches the office you are delivering to.</li>
+    </ol>
+  </div>
+
+  <h2>Before you print: five checks</h2>
+  <ol class="steps">
+    <li>The allergen text matches the package word for word. Read it against the package, not against the brand's email.</li>
+    <li>The on-screen panel says "Ready to print" (no red or yellow items). No yellow highlighter is left on the card.</li>
+    <li>The QR scans from your phone and opens this office's link.</li>
+    <li>Chrome print settings: Letter, Scale 100, Background graphics on.</li>
+    <li>One test print on plain paper before the cardstock run.</li>
+  </ol>
+  <h2>Tests this spec passed (details in tests/README.md)</h2>
+  <ul>
+    <li>25-word allergen statement plus a 16-word "may contain" line fits at the locked 14 pt with the brand name still on one line.</li>
+    <li>Wide pantry photo, simulated: card about 112 px tall in a 2,880 px photo; brand name identifiable, including a 33-character name. Card face downscaled to 120 px tall: name identifiable.</li>
+    <li>Close photo at arm's length, simulated (26 mm-equivalent lens at 60 cm): allergen text legible at 4,032 px and at 2,048 px, and still readable when zoomed at 1,280 px. 11 pt failed and 12 pt was marginal at 1,280 px, which is why 14 pt is locked.</li>
+    <li>QR decodes from the render and from the simulated close photo at 4,032 and 2,048 px.</li>
+  </ul>
+  <p class="sources">Sources: 4OVER4 paper weight FAQ (https://www.4over4.com/faqs/general/how-do-i-convert-gsm-to-basis-weight-in-pounds), Denso Wave QR guide (https://www.qrcode.com/en/howto/code.html), FDA food allergies page (https://www.fda.gov/food/nutrition-food-labeling-and-critical-foods/food-allergies), all opened 2026-10-23.</p>
+</section>
+</body>
+</html>

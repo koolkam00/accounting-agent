@@ -1,7 +1,8 @@
-formulas scanned: 15472
+formulas scanned: 19848
 formulas with a numeric literal other than 0 or 1: 0
-functions used (37): ABS x158, AND x5202, COUNT x3, COUNTA x3, COUNTIF x39, COUNTIFS x3093, DATE x1, DATEVALUE x500, EDATE x54, EOMONTH x7, FIND x500, IF x21640, IFERROR x1815, INDEX x6551, ISERROR x17, ISNUMBER x3023, LEFT x1000, LEN x500, MATCH x556, MAX x240, MEDIAN x2, MIN x85, MONTH x1, N x4110, OR x1797, ROUND x4, ROUNDUP x4, SUM x358, SUMIFS x1506, SUMPRODUCT x42, TEXT x55, TIMEVALUE x500, TODAY x1, TRIM x500, WEEKDAY x24, WORKDAY x260, YEAR x1
+functions used (38): ABS x160, AND x9304, COUNT x7, COUNTA x7, COUNTIF x40, COUNTIFS x7107, DATE x1, DATEVALUE x500, EDATE x54, EOMONTH x9, FIND x500, IF x29018, IFERROR x1817, INDEX x6573, ISERROR x18, ISNUMBER x4023, LEFT x1011, LEN x511, MATCH x577, MAX x267, MEDIAN x3, MIN x101, MONTH x1, N x4194, NOT x12, OR x1833, ROUND x4, ROUNDUP x5, SUM x365, SUMIFS x3738, SUMPRODUCT x48, TEXT x73, TIMEVALUE x500, TODAY x1, TRIM x1500, WEEKDAY x24, WORKDAY x294, YEAR x1
 functions not on the Google Sheets list: 0
 features Google Sheets may not carry: 0
-cells spelling the company name outside Inputs (should be 0): 0
+cells spelling the company name outside its one input cell (should be 0): 0
 company-name input cells: ['Inputs!C8']
+INDEX over a one-row range without a row argument (should be 0): 0; with INDEX(range, 1, column): 6027

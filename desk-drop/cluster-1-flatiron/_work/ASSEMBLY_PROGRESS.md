@@ -29,3 +29,12 @@ Working file so nothing is lost on context compaction. Not a deliverable.
   NOTE: one SEC EDGAR company page was opened via WebFetch by accident (no personal identifier sent). Do not use EDGAR again.
 - Counts round 1: 276 company rows; 179 candidates (61 high, 92 med, 26 low; 102 unknown band); 85 near-miss over-500; 6 outside; 5 coworking-excluded; 1 not-office.
 - Next: build.py (IDs, tabs, route, walk), maps.py, xlsx.py, spot checks, docs.
+- [x] router.py, build.py (IDs, tabs, route, walk), maps.py + map_template.html, public_map.py written and rendered.
+  Route (round 1): 10 high-conf occupied stops, Morning Brew -> ... -> Foursquare, 150 min stops + 33 min legs = 183 min (11:03): does NOT fit 3 h by 3 min.
+  Car never faster (legs <= 6 min; car = 8 min overhead + 9.7 mph per NBER digest 2025-06-01).
+  Walk: 11 sessions (8 core, 3 outer retailers), ~866 min est.
+  Public map: 20 stores (tier A/B, high/medium conf); fonts subset via scratch venv fonttools 4.53.1.
+- Next: pin QA, xlsx, spot checks (10 rows + 10 pins), README/HANDOFF/REPORT, critique rounds.
+- [x] Round 2/3 done: 7 firms -> over-500 (Wikipedia), public map 16 stores, route robust (183 min, 11:03), walk 11 sessions 865 min,
+  spot checks 10/10 rows + 10/10 pins, all-pin QA 0 issues, stable ID registry, coworking_id only for members. run_all.sh rebuilds all.
+- Remaining: README.md, HANDOFF.md, REPORT.md; final verification.

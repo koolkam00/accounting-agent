@@ -2,7 +2,7 @@
 
 # 09 · Accountant question list: the one-hour meeting
 
-Version 0.5 · 2026-10-24
+Version 0.6 · 2026-10-24
 
 **The company in this file.** "The Company" means **[COMPANY NAME: Desk Drop LLC]**, a New York single-member LLC (not yet formed; see `04-formation-checklist.md`). This is the only place the name is set.
 
@@ -16,11 +16,11 @@ Version 0.5 · 2026-10-24
 
 ## 1 · Send this ahead (one page)
 
-> **About the business.** [COMPANY NAME] will be a New York single-member LLC, formed around [FILING DATE: about 2026-11-13], owned by [FOUNDER NAME], who lives in [BOROUGH OR TOWN]. No employees. Default tax treatment (a disregarded entity) unless you advise otherwise.
+> **About the business.** [COMPANY NAME] will be a New York single-member LLC, formed around [FILING DATE: from about 2026-11-19, after the attorney hour], owned by [FOUNDER NAME], who lives in [BOROUGH OR TOWN]. No employees. Default tax treatment (a disregarded entity) unless you advise otherwise.
 >
 > **What we sell.** Emerging snack and beverage brands pay a fixed fee for an "Office Placement Campaign": their sealed, shelf-stable products are placed in 5 or 10 Manhattan offices for one week, with a display card, two photos per office, an anonymous three-question employee survey and a one-page report for that brand, plus a 20-minute debrief. Founding price \$600 for 5 offices, paid in full before product ships (first three brands only). Standard \$1,500 for 10 offices, 50% at signature and 50% at placement confirmation. Extra office \$150. Cancellation by the brand: full refund less \$100 before T−10 (ten business days before the drop); on or after T−10, we keep 50% of the price.
 >
-> **What we do not do.** We never buy or resell product. The brand ships it to us free, we hold it from arrival until the campaign ends (usually two to three weeks, up to about four around the December holidays) and deliver it to offices, who give it to employees free. Offices pay nothing. Leftovers go back to the brand at its cost or stay with the office.
+> **What we do not do.** We never buy or resell product. The brand ships it to us free, we hold it from arrival until the campaign ends (usually two to three weeks, up to about four around the December holidays; leftover units the brand asks back can wait up to ten more business days for its return label, so up to about six weeks in all) and deliver it to offices, who give it to employees free. Offices pay nothing. Leftovers go back to the brand at its cost or stay with the office.
 >
 > **Money in the first months.** Campaign zero, January 2027: two brands at \$600. Then standard drops at \$1,500 per brand, aiming for three brands per drop. Expected revenue for the first 12 months: [FROM `financial-model/`]. Costs: state fees \$250, newspaper publication about \$345 to \$1,745 depending on county, general liability insurance (quotes pending), software under \$60 a month, printing, car services or couriers, possibly a small storage unit. Invoicing by bank transfer through Wave; card payments only if a brand insists.
 >
@@ -40,7 +40,7 @@ Facts checked:
 Ask: does the report make any part of the fee a taxable information service? Does it matter that each report is for one brand only? Is our fee better described as an advertising or promotional service? Should the invoice show one line or several?
 
 **2. Does holding the brand's product count as taxable storage?**
-Facts checked: Tax Law §1105(c)(4) taxes "Storing all tangible personal property not held for sale in the regular course of business". TB-ST-740 (footer updated 2026-09-30, opened 2026-10-23) lists "storing tangible personal property" as taxable. We hold each brand's sealed cases from arrival until the campaign ends (usually two to three weeks, up to about four around the December holidays) as part of the campaign, with no separate storage charge.
+Facts checked: Tax Law §1105(c)(4) taxes "Storing all tangible personal property not held for sale in the regular course of business". TB-ST-740 (footer updated 2026-09-30, opened 2026-10-23) lists "storing tangible personal property" as taxable. We hold each brand's sealed cases from arrival until the campaign ends (usually two to three weeks, up to about four around the December holidays; leftover units the brand asks back can wait up to ten more business days for its return label, so up to about six weeks in all) as part of the campaign, with no separate storage charge.
 Ask: is there any exposure? Should the agreement or invoice say anything about it?
 
 **3. Do I need a Certificate of Authority before the first invoice?**
@@ -146,3 +146,4 @@ Accountant: [NAME, FIRM] · Date of meeting: [DATE] · Fee paid: [AMOUNT] (send 
 - Round 4 (2026-10-24), final full read: no changes beyond wording.
 - Merge (2026-10-24): renumbered 22 to 09; version 0.5; cross-references updated to the new numbers; "part A/part B" wording removed.
 - Merge review (2026-10-24): the cancellation summary now matches the brand agreement (measured against T−10); holding time matches files 06, 07 and 11; the hour moves to week 4 because sales tax registration, if needed, comes 20 days before the first taxable sale.
+- Review round 2 (2026-10-24), version 0.6: the filing date in the send-ahead note is now "from about 2026-11-19, after the attorney hour" (file 04); the holding time includes the up to ten business days leftovers can wait for a return label, the same sentence as files 06, 07 and 11.

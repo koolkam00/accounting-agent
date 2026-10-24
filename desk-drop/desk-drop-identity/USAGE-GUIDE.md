@@ -57,6 +57,7 @@ For the next office of the same brand: **Load JSON**, change **QR link for THIS 
 
 If the status box shows anything red, or the card looks wrong, see section 18.
 
+---
 
 ## 3. Make every card for a drop at once (optional, terminal)
 
@@ -165,7 +166,7 @@ Two pages: the proposal, and a mock report page so the brand sees exactly what i
 3. **Campaign:** **Tier** (founding for the first three brands only, otherwise standard), **Extra offices** (usually 0), **Proposed drop date** (a Tuesday or Wednesday three to four weeks out, as `2027-01-12`). Every date in the timeline is worked out from it with the business-day rules. **Ask them to ship by (optional)**: only if earlier than the latest date, for example to avoid holiday freight.
 4. **The offices:** one fold-out row per office: **Neighborhood**, **Industry**, **Tuesday headcount**, **Planned units** (30 to 80, about 50). No company names before the brand signs. The template refuses the wrong number of rows (5 founding, 10 standard, plus extras).
 5. **Where to buy nearby:** one row per store that carries the brand near these offices: **Store**, **Street address**, **Distance from the offices**. Only stores you have evidence for. If they sell online only, add no rows and fill **Online store for the code (optional)**.
-6. **Retailer map picture:** a picture of the cluster map with these offices and the brand's stores marked, from the cluster-map workstream (`cluster-1-flatiron/`). Until it exists, press **Remove** to leave the map off, or leave the yellow slot (it blocks the final PDF).
+6. **Retailer map picture:** a landscape picture (about 2.5 to 1) of the cluster with the brand's stores marked, from the cluster-map workstream (`cluster-1-flatiron/`). **No office pins before the brand signs**: a pin on a building can identify the company. The map is shown whole, never cropped; a tall map prints small and the panel warns you. Until a landscape map exists, press **Remove** to leave the map off, or leave the yellow slot (it blocks the final PDF).
 7. When the status box says **Ready to print**, save as PDF (section 8 settings), check both pages, and attach it to your email.
 
 ---
@@ -180,7 +181,7 @@ From a terminal, if the operations tracker writes the JSON: `node render/render.
 2. **Campaign:** **Brand**, **Product (SKU)**, **Tier**, **Campaign ID**, **Drop date (day 1)**. The window, the due date and the day-30 check are worked out for you.
 3. **Offices:** one fold-out row per office (press **Add a row** for more). Type counts, whole numbers, from your drop log: **Delivered (drop day)**, **Placed**, **Placed within one business day?**, **Topped up on day 3 (0 if none)**, **Depleted by day 5**, **Survey responses**, **QR scans**. Under **Placement photo (wide shot, day 1)** and **Later photo (close shot)** press **Choose picture**. If an office never sent a photo, press **Remove**: the report says "No photo received". Never hide it.
 4. **Survey:** counts, not percentages, from the survey summary: **Said yes to "Did you try it?"**, **Average rating, 1 to 5**, **Number of ratings**, **Would buy: yes (count)**, **Would buy: maybe (count)**, **Would buy: no (count)**. The report works out every share and prints the count beside it.
-5. **Comments:** paste three into **Comment 1, word for word**, **Comment 2, word for word** and **Comment 3, word for word**, exactly as written, typos included. Pick ones useful to the brand, including a critical one if there is one. If you must cut a long one, mark the cut with `[...]` and keep every other word. A comment with an email address or phone number is refused: pick another.
+5. **Comments:** paste three into **Comment 1, word for word**, **Comment 2, word for word** and **Comment 3, word for word**, exactly as written, typos included. The one change you must make: replace any person's name or identifying detail with `[name removed]` (the survey privacy notice promises it, legal pack file 13). Pick comments useful to the brand, including a critical one if there is one. If you must cut a long one, mark the cut with `[...]` and keep every other word. A comment with an email address or phone number is refused: pick another.
 6. **Purchases:** **Code redemptions to date**, the number the brand reports. **Retailer velocity (optional)** only if the brand sends store-level sales.
 7. **What we learned: three lines**, one per line, and **Recommendation**: renew into which offices, adjust what, or stop.
 8. Tick **I checked every photo shows no identifiable people, and every comment is copied word for word**. When it says **Ready to print**, save as PDF (section 8 settings).

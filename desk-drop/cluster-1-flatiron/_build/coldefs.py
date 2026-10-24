@@ -1,0 +1,150 @@
+"""Column definitions for every tab (Method tab). One entry per column name."""
+
+COMMON = {
+    "lat": "Latitude, WGS84 decimal degrees. From the project geocoder (_shared/geocode.py: NYC Planning GeoSearch, the city's own address database). A pin that landed on the far side of its tax lot was moved to the addressed block face; that row's notes say so.",
+    "lon": "Longitude, WGS84 decimal degrees. Same source as lat.",
+    "bbl": "NYC borough-block-lot tax lot number from the geocoder; the key used to merge buildings.",
+    "notes": "Free text from research, then any assembly change after ' | Assembly 2026-10-24:'. Each fact names its source.",
+    "found_date": "Date the row was first found (YYYY-MM-DD).",
+    "street_address": "Business street address as the source gives it.",
+    "in_boundary": "Y if the pin is inside boundary.geojson, else N (computed, not judged).",
+    "blocks_outside": "Walking distance from the boundary on the street grid, in street blocks (79.4 m each); 0 inside. Crosstown metres count at their length, so the Sixth-to-Fifth block counts as about 3.9.",
+    "confidence": "high = a source under 24 months old (dated on or after 2024-10-24) plus one independent confirmation from a different publisher; medium = one source under 24 months, or recent sources that disagree on move timing; low = only older sources, conflicting sources, or a map or broker listing alone. See the scale below.",
+    "source_url": "Main source that places the row at the address.",
+    "source_date": "Publication date of the source, or the date it was opened for an undated live page (YYYY-MM-DD or YYYY-MM).",
+}
+
+COMPANIES = {
+    "company_id": "Stable ID, B-C-### (CONTRACTS 6.1). Shared numbering with Near-miss.",
+    "company_name": "Company name as the source gives it; a merged row names both entities.",
+    "website": "Company website, only if it was opened and matched the company; blank if unverified.",
+    "industry": "Short industry label from the research slice.",
+    "building_id": "B-B-### of the building row in the Buildings tab; blank if the building is not in that tab (near-miss rows outside the line).",
+    "floor": "Floor or suite as sourced; 'unknown' or blank when no source names it.",
+    "zip": "ZIP code from a source for the building, else from NYC PLUTO (2026 v2) for the tax lot.",
+    "headcount_band": "40-75, 76-150, 151-250, 251-500, under-40, over-500 or unknown. From a sourced count only (mostly Built In 'Total Employees'); never estimated from floor area. Not an onsite or Tuesday count.",
+    "headcount_scope": "whole-company (the count covers the whole firm), nyc-office (the source counts the New York office), or unknown.",
+    "headcount_source_url": "Where the count came from.",
+    "address_source_url": "Source that places the company at the address.",
+    "address_source_date": "Date of that source (publication date, or the date a live page was opened).",
+    "second_source_url": "Independent confirmation, if any.",
+    "in_coworking": "Y if the company is inside a coworking or serviced-office space (listed as a resident, or on a floor the operator holds), else N. Y rows are excluded as offices.",
+    "coworking_id": "B-W-### of the coworking site the company is inside (only when in_coworking = Y). For a company that merely shares a building with a coworking site, see coworking_check and the building's coworking_ids.",
+    "linkedin_company_url": "Blank on every row: LinkedIn was not opened (blocked and off-limits). Founder or workstream A to fill.",
+    "building_lobby_type": "The building's lobby_type (Buildings tab), copied here so the Clay import needs no join.",
+    "candidate_status": "candidate (in the boundary, 40-500 or unknown band, not in coworking); excluded-coworking; excluded-not-office (for example a mailbox suite); near-miss-over-500; near-miss-outside.",
+    "lease_status": "occupied (a source shows the company in the space); occupancy-unconfirmed (lease press only); signed-not-occupied (a source says the move is ahead, or the company's own site still shows its old address); moving-out (a newer source says it signed elsewhere).",
+    "move_in_date": "For signed-not-occupied rows: the move-in date or season if a source states it, else 'unknown'.",
+    "headcount_source_date": "Date of the headcount source.",
+    "headcount_unknown_reason": "Why the band is unknown, for every unknown row.",
+    "address_source_type": "company-site, leasing-press, builtin, building-site, press-release, wikipedia or other.",
+    "second_source_date": "Date of the second source.",
+    "coworking_check": "Result of the address-and-floor cross-check against every coworking site: no-coworking-in-building, different-floor, direct-lease-documented, floor-unknown, same-floor or listed-as-resident.",
+    "leased_sf_mentioned": "Office sizes (square feet) that appear in the sourced notes. A fact from the source, not a headcount.",
+    "research_slice": "Which research slice found the row (S1 14th-18th St, S2 18th-22nd, S3 22nd-26th, S4 26th-30th; two values if merged).",
+    "near_miss_reason": "Near-miss tab only: why the row is outside the candidate list.",
+}
+
+BUILDINGS = {
+    "building_id": "Stable ID, B-B-###. Only buildings inside the boundary that hold at least one candidate company or a coworking site.",
+    "building_name": "Building name from research (landlord or common name).",
+    "lobby_type": "walk-up, security desk, loading dock or unknown. Set only from an opened source (broker page, building site, press); undated broker pages are a starting point for the walk, not a verification.",
+    "lobby_source_url": "Source for lobby_type.",
+    "coi_required": "yes, no or unknown: whether the building requires a certificate of insurance for deliveries. No opened source states a delivery rule, so every row is unknown.",
+    "coi_source_url": "Source for coi_required.",
+    "candidate_company_count": "Number of candidate companies (candidate_status = candidate) in the building.",
+    "verified_on_foot": "Blank. Only the founder fills this, after the walk.",
+    "also_known_as": "Other addresses on the same tax lot (for example 841 Broadway for 853 Broadway).",
+    "candidate_company_ids": "B-C-### of the candidates in the building.",
+    "other_company_count": "Company rows in the building that are not candidates (coworking members, over 500, not an office).",
+    "coworking_ids": "B-W-### of coworking sites in the building.",
+    "retailer_ids": "B-R-### of stores in the building.",
+    "pluto_numfloors": "Number of floors, NYC PLUTO 26v2 (data.cityofnewyork.us 64uk-42ks).",
+    "pluto_yearbuilt": "Year built, PLUTO.",
+    "pluto_bldgclass": "PLUTO building class (O = office; RB/RC = condo office/commercial; K = store building).",
+    "pluto_office_sqft": "Office floor area on the lot, PLUTO.",
+    "pluto_address": "The tax lot's primary address in PLUTO (can differ for a block-through lot).",
+    "pin_check": "Distance from the pin to the PLUTO lot centroid, plus any pin move.",
+    "research_slices": "Slices that recorded the building.",
+    "zip": "ZIP code from PLUTO.",
+}
+
+COWORKING = {
+    "coworking_id": "Stable ID, B-W-###. A coworking operator can join as one office only if it controls the pantry; its members are excluded.",
+    "operator": "Operating company.",
+    "location_name": "Location name.",
+    "pantry_control": "operator (the operator's own page or listing says it supplies coffee, drinks or snacks), tenant, or unknown.",
+    "pantry_source_url": "Source for pantry_control.",
+    "status": "open, open-unverified, unverified (only a legacy page), or possibly-closed (sources conflict).",
+    "floors": "Floors the operator holds, as sourced.",
+    "tenant_company_ids": "B-C-### of companies flagged as inside this site.",
+    "second_source_url": "Independent confirmation where one exists (new rows only; older rows cite theirs in notes).",
+    "exclusive_food_contract_signal": "Any named food or drink supplier or in-house cafe that may limit outside placements. No exclusive contract was found anywhere.",
+    "research_id": "The places researcher's temporary ID (W-##), kept for traceability.",
+}
+
+RETAILERS = {
+    "retailer_id": "Stable ID, B-R-###.",
+    "retailer_name": "Store name.",
+    "inside_boundary": "Y if the store's pin is inside the boundary.",
+    "blocks_outside": "Whole street blocks outside the boundary on the walking grid (0 to 10). 'Ten blocks' = ten street-block lengths, 794 m, of grid walking from the nearest boundary edge.",
+    "shelf_set": "The store format and the shelf set relevant to emerging brands, as described by the store or research. Not a brand list.",
+    "buy_path_tier": "A = documented natural, local or emerging set; B = specialty, gourmet or natural format, emerging set not yet verified; C = mass, conventional or private label (a landmark or weak buy path).",
+    "public_map": "Y if the store is on the public map: tier A or B, high or medium confidence, and not a niche or deli format.",
+    "public_map_reason": "Why a store is not on the public map.",
+    "candidates_within_5_blocks": "Candidate companies in Buildings-tab buildings within five blocks of grid walking.",
+    "nearest_candidate_building_id": "Closest Buildings-tab building with a candidate.",
+    "nearest_candidate_blocks": "Grid walking distance to it, in blocks.",
+    "emerging_brand_evidence": "What the store or chain says about local or emerging products; no store-level brand list was checked.",
+    "operating_evidence_url": "Page showing the store is open.",
+    "research_id": "The places researcher's temporary ID (R-##).",
+}
+
+ROUTE = {
+    "stop": "Stop number, in delivery order.",
+    "company_id": "Candidate company at the stop (high confidence, occupied, band known).",
+    "lobby_type": "From the Buildings tab. Order rule: walk-up, then unknown, then loading dock, then security desk last.",
+    "headcount_band": "Whole-company band; the onsite Tuesday count comes from intake.",
+    "leg_metres_est": "Estimated walking metres from the previous stop along the street grid (to the corner and across, never mid-block).",
+    "avenue_crossings": "Avenue or Broadway crossings on the leg.",
+    "street_crossings": "Side-street crossings on the leg.",
+    "same_building": "Y if the stop is in the same building as the previous one (elevator transfer).",
+    "leg_minutes_est": "Estimate: metres / hand-truck pace + crossings x expected signal wait; or the same-building transfer time.",
+    "car_minutes_est": "Estimate for the same leg by car: overhead + metres x detour factor / CBD car speed.",
+    "car_faster": "Y if the car estimate beats the walk estimate.",
+    "stop_minutes": "Minutes at the stop (plan.md: 15).",
+    "arrive_est": "Estimated arrival (start 08:00 at stop 1).",
+    "depart_est": "Estimated departure.",
+    "receiving_window_from_intake": "Blank until intake: the office's receiving window. Re-order stops so every arrival falls inside its window.",
+    "label": "Every time on this tab is an estimate.",
+}
+
+WALK = {
+    "session": "90-minute session number. Sessions 1 to 8 cover everything inside the boundary; 9 to 11 cover stores outside it.",
+    "phase": "core (inside the boundary) or outer retailers (within ten blocks).",
+    "order": "Visit order across the whole walk.",
+    "stops_here": "Every item at this address: buildings, coworking sites, stores.",
+    "stop_types": "building, coworking, retailer.",
+    "walk_minutes_from_previous_est": "Estimate at 73 m/min plus signal waits; 0 at the first stop of a session.",
+    "dwell_minutes_est": "Estimate: 3 min per building (+0.5 per extra candidate, max 6), 3 per coworking site, 10 per tier A store, 6 per tier B, 3 per tier C; +1 per extra item at the same address.",
+    "cumulative_minutes_est": "Running total within the session.",
+    "session_minutes_est": "Total for the session.",
+    "start_point": "Nearest subway station to the first stop (MTA Subway Stations, data.ny.gov 39hk-dx4f).",
+    "end_point": "Nearest subway station to the last stop.",
+    "verify_checklist": "What to check and photograph here.",
+    "observed_lobby_type": "Founder fills on foot.",
+    "security_desk": "Founder fills on foot (Y/N; staffed at 8 am?).",
+    "loading_dock_hours": "Founder fills on foot (posted hours).",
+    "coi_signage": "Founder fills on foot (any insurance or vendor signage).",
+    "receiving_hours": "Founder fills on foot.",
+    "emerging_set_photo_taken": "Founder fills on foot (stores).",
+    "founder_notes": "Founder fills on foot.",
+}
+
+
+def define(tab, col):
+    for d in ({"Companies": COMPANIES, "Near-miss": COMPANIES, "Buildings": BUILDINGS, "Coworking": COWORKING,
+               "Retailers": RETAILERS, "Route": ROUTE, "Walk": WALK}[tab], COMMON):
+        if col in d:
+            return d[col]
+    return ""

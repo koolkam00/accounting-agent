@@ -1,0 +1,4 @@
+# STAGING version: keeps crawlers out until the founder publishes.
+# Publish step (SETUP.md section 10): replace this file with tools/production/robots.txt.
+User-agent: *
+Disallow: /

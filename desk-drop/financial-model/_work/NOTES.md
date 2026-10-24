@@ -54,3 +54,33 @@
 - Scenarios: A steady 9,406/mo 99.6/h; B 7,660 + 500 office-paid (cost unknown) 73.7/h; C week-26 cash 7,729; D week-26 cash 3,444, steady -310/mo.
 - Goal 20 offices -> run 2 = 82 h, 46.7/h; Gate 3 combined 51.4/h.
 - Tests 54/54; audit clean; 28/28 checks.
+
+## Review round 1 response (2026-10-24)
+- Reviewer: _review/round-1.md (2 blockers, 5 majors, 11 minors). All fixed except the decision-date move itself, which is a founder question (CONTRACTS fixes 2027-04-09 for every workstream).
+- Publication default = plan high end $2,000 (low $250). Low point -4,126 (wk 12), commit 5,126, gap 1,384, one-brand campaigns to recover 5 (reviewer's numbers reproduce).
+- Steady_State row 8 = standard drop on Inputs; break-even reads it. Price 180 -> Dashboard 'A standard drop at that price' 73.65 -> 90.44.
+- Paste buffers: AC helpers AL, DC helper U, Hours_Log totals Q, Pipeline helpers T, Toggl paste A:AD. Header checks via Lists rows 34-37.
+- Six months all-in, expensed basis (insurance 5 cover months in window = $500; $700 prepaid): roadmap only 33.76/h, with DW drops 52.54/h.
+  Cash basis would be 30.68 and 50.27 (reviewer's figures). Week-26 cash: roadmap 3,189, all 11,759.
+- Gate 3 rate with a fatigue-free roster: 7,660 / (125 + 8 x 3) = 51.41.
+- Decision rule: Stop only after both tests fail; 'not yet: the switch test needs N more extra drop(s)' while renewal < 30% and < 2 extra drops have actuals.
+- DRP-005 T+10 = Tue 2027-04-20 > decision 2027-04-09 -> Dashboard warning; REPORT question 1 (default: move review to 2027-04-20).
+- Founding renewals stay 0 by default (assumption 18): DRP-002 T-10 = 2027-01-26 is 2 bd after the C0 report; DRP-003 founding payment at T-20 = 2027-01-25, before the C0 debrief 2027-01-27.
+- Arithmetic check: 10 business days after Fri 2026-11-20 skipping Thanksgiving = Mon 2026-12-07 (my first test expectation of 12-04 was wrong; the model was right).
+- Audit: 16,789 formulas, 0 literals, 38 functions (NOT added; on Google's list). 34 checks. 102 behaviour tests.
+
+## Review round 2 response (2026-10-24), in progress
+- Reviewer: _review/round-2.md (0 blockers, 3 majors, 6 minors). Plan: fix all nine.
+- R2-01 INDEX on one-row ranges -> explicit INDEX(range,1,col) everywhere (Scenarios H/R, Cash_Flow low week/date and bank variance, Toggl_Import AF:AI); audit rule added.
+- R2-02 Gate 3 coverage row (standard runs by Gate 3 with actuals: n of m); per-hour status 'not yet: k standard run(s) without actuals' until n = m; same coverage on the all-drops rate and pointer.
+- R2-03 all-in denominators: MAX(planned discovery hours, logged hours not tied to a drop inside the 26 weeks).
+- R2-04 Gate 1 'paid in full': cumulative paid per brand >= founding package price.
+- R2-05 probes: notes = after_1500 marks the after-anchor answer; medians use one before-anchor answer per org.
+- R2-06 storage starts with the first standard drop that runs.
+- R2-07 legal pack re-read (figures.csv modified 01:52): mailbox and registered-agent lines; filing WORKDAY(Gate 0, 4) = Thu 2026-11-19; attorney by Wed 11-18; accountant by Fri 11-20; GL status 'plan estimate'.
+- R2-08 Dashboard block: cash spent before each review date (stop there) and cumulative cash at the end of each review week.
+- R2-09 README price text live; AA:AK buffer; break-even label + standard drops row; Cash_Ledger banner.
+- Result (2026-10-24): all nine fixed. Audit 19,848 formulas, 0 literals, 0 one-row INDEX without a row (6,027 in the 3-argument form). 34/34 checks. 125/125 tests.
+- Defaults unchanged: low -4,126 wk 12, commit 5,126, gap 1,384, Gate 3 plan 61.3, steady 7,660, all-in 33.8 / 52.5.
+- Stop points: Gate 0 -160, Gate 1 -3,120 (receipts 1,200 that day; week end -3,856), Gate 2 -5,326, Gate 3 -6,844, decision -7,441 vs 19,200 received.
+- Google INDEX page opened 2026-10-24: syntax INDEX(reference, [row], [column]); row 'OPTIONAL - 0 by default'; nothing on one-dimensional references.

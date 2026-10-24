@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="icon" type="image/png" sizes="32x32" href="//static.zgo.at/favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="//static.zgo.at/favicon/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="//static.zgo.at/favicon/apple-touch-icon.png">
+<link rel="mask-icon" href="//static.zgo.at/favicon/safari-pinned-tab.svg" color="#9a15a4">
+<meta name="msapplication-TileColor" content="#9f00a7">
+<meta name="theme-color" content="#ffffff">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Documentation – GoatCounter">
+	<title>GoatCounter documentation</title>
+	<link rel="stylesheet" href="//static.zgo.at/vars.css?v=2c9b43be">
+	
+	<style>
+		@font-face {
+			font-family: 'Lato'; font-style: normal; font-weight: 400; font-display: fallback;
+			src: local('Lato'), local('Lato Regular'),
+				url('//static.zgo.at/fonts/latolatin.woff2') format('woff2');
+		}
+		@font-face {
+			font-family: 'Lato'; font-style: normal; font-weight: 700; font-display: fallback;
+			src: local('Lato Bold'), local('Lato Bold'),
+				url('//static.zgo.at/fonts/latolatin-bold.woff2') format('woff2');
+		}
+		@font-face {
+			font-family: 'Lato'; font-style: italic; font-weight: 400; font-display: fallback;
+			src: local('Lato Italic'), local('Lato Italic'),
+				url('//static.zgo.at/fonts/latolatin-italic.woff2') format('woff2');
+		}
+	</style>
+	<link rel="stylesheet" href="//static.zgo.at/shared.css?v=2c9b43be">
+	<link rel="stylesheet" href="//static.zgo.at/style.css?v=2c9b43be">
+	<link rel="canonical" href="https://goatcounter.com/help/pixel">
+
+<style>
+footer.center       { margin-top: 2em; }
+nav.center          { max-width: 80em; padding-left: 19em; }
+
+.code-wrap          { display: flex; max-width: 80em; }
+.code-wrap >div     { overflow: hidden; padding: 6px; margin: -6px; margin-right: 6px; }
+.code-nav           { flex-shrink: 0; width: 18em; height: 100%; padding: .5em; margin-right: .6em;
+				      background-color: var(--nav-bg); color: var(--text); box-shadow: 0 0 4px var(--box-shadow); }
+.code-nav select    { display: none; }
+.code-nav ul        { list-style: none; margin: 0; padding: 0; }
+.code-nav a         { display: block; margin: .3em 0; padding-left: .3em; border-left: 3px solid transparent; }
+.code-nav li >ul a  { margin-left: .5em; }
+.code-nav .active a { border-left-color: #999; }
+.code-nav strong    { font-size: .9rem; }
+.page-code          { padding: 1em; background-color: var(--bg); box-shadow: 0 0 6px rgba(0,0,0,.2); }
+h3                  { margin-bottom: .2em; }
+h3 + p              { margin-top: 0; }
+h4                  { margin-bottom: .2em; }
+h4 + p              { margin-top: 0; }
+hr                  { margin: 0; }
+
+.pre-copy-wrap { position: relative; }
+.pre-copy      { position: absolute; right: 0; top: calc(-2em - 1px); padding: .3em 1em;
+				 color: #000; background-color: #f5f5f5; border-top: 1px solid #d5d5d5; border-left: 1px solid #d5d5d5; }
+
+#vc-example    { display: flex; justify-content: space-around; flex-wrap: wrap; text-align: center; }
+#vc-example >* { width: 200px; }
+
+@media (min-height: 46rem) {
+	.code-nav { position: sticky; top: 0; }
+}
+
+@media (max-width: 50rem) {
+	nav.center       { padding-left: 1em; }
+	.code-wrap       { flex-direction: column; padding: 0; }
+	.code-wrap >div  { margin: 0; padding: 0; }
+	.code-nav        { position: sticky; top: 0; z-index: 10; width: auto; margin-bottom: 1em; }
+	.code-nav ul     { display: none; }
+	.code-nav select { display: block;  width: 100%; }
+}
+</style>
+</head>
+
+<body>
+	<nav class="center">
+		<strong id="back"><a href="/">←&#xfe0e; Home</a></strong>
+	</nav>
+
+	<div class="center code-wrap">
+		<nav class="code-nav">
+			<select><optgroup label="Basics"><option value="start">Getting started</option><option value="visitor-counter">Visitor counter</option><option value="events">Events</option><option value="csp">Content-Security-Policy</option><option value="js">JavaScript API</option></optgroup><optgroup label="Other ways to get data in GoatCounter"><option selected value="pixel">Tracking pixel</option><option value="logfile">Server logfiles</option><option value="backend">From app backend or other sources</option></optgroup><optgroup label="How can I…"><option value="skip-dev">Prevent tracking my own pageviews?</option><option value="skip-path">Prevent tracking specific paths?</option><option value="path">Control the path that&#39;s sent to GoatCounter?</option><option value="modify">Change data before it&#39;s sent to GoatCounter?</option><option value="domains">Track multiple domains/sites?</option><option value="spa">Add GoatCounter to a SPA?</option><option value="campaigns">Track campaigns?</option><option value="countjs-versions">Use SRI with count.js?</option><option value="countjs-host">Host count.js somewhere else?</option><option value="frame">Embed GoatCounter in a frame?</option></optgroup><optgroup label="Other"><option value="export-json">JSON exports</option><option value="export">CSV exports</option><option value="sessions">Sessions and visitors</option><option value="api">JSON API</option><option value="faq">FAQ</option><option value="translating">Translating GoatCounter</option></optgroup><optgroup label="Legal"><option value="gdpr">GDPR consent notices</option><option value="terms">Terms of use</option><option value="privacy">Privacy policy</option></optgroup></select><ul><li><strong>Basics</strong><ul><li><a href="start">Getting started</a></li><li><a href="visitor-counter">Visitor counter</a></li><li><a href="events">Events</a></li><li><a href="csp">Content-Security-Policy</a></li><li><a href="js">JavaScript API</a></li></ul></li><li><strong>Other ways to get data in GoatCounter</strong><ul><li class="active"><a href="pixel">Tracking pixel</a></li><li><a href="logfile">Server logfiles</a></li><li><a href="backend">From app backend or other sources</a></li></ul></li><li><strong>How can I…</strong><ul><li><a href="skip-dev">Prevent tracking my own pageviews?</a></li><li><a href="skip-path">Prevent tracking specific paths?</a></li><li><a href="path">Control the path that&#39;s sent to GoatCounter?</a></li><li><a href="modify">Change data before it&#39;s sent to GoatCounter?</a></li><li><a href="domains">Track multiple domains/sites?</a></li><li><a href="spa">Add GoatCounter to a SPA?</a></li><li><a href="campaigns">Track campaigns?</a></li><li><a href="countjs-versions">Use SRI with count.js?</a></li><li><a href="countjs-host">Host count.js somewhere else?</a></li><li><a href="frame">Embed GoatCounter in a frame?</a></li></ul></li><li><strong>Other</strong><ul><li><a href="export-json">JSON exports</a></li><li><a href="export">CSV exports</a></li><li><a href="sessions">Sessions and visitors</a></li><li><a href="api">JSON API</a></li><li><a href="faq">FAQ</a></li><li><a href="translating">Translating GoatCounter</a></li></ul></li><li><strong>Legal</strong><ul><li><a href="gdpr">GDPR consent notices</a></li><li><a href="terms">Terms of use</a></li><li><a href="privacy">Privacy policy</a></li></ul></li></ul>
+		</nav>
+
+		<div>
+			<div class="page-code"><h1>Tracking pixel</h1>
+				<p>The <code>/count</code> endpoint returns a small 1×1 GIF image on GET requests. You don&rsquo;t
+need to use the JavaScript integration and can load this directly:</p>
+
+<pre><code>&lt;img src=&quot;https://MYCODE.goatcounter.com/count?p=/test&quot;&gt;
+</code></pre>
+
+<p>Or with CSS:</p>
+
+<pre><code>&lt;style&gt;
+body:hover {
+    border-image: url(&quot;https://MYCODE.goatcounter.com/count?p=/test&quot;);
+}
+&lt;/style&gt;
+</code></pre>
+
+<p>Or you can build your own JavaScript integration if you want. Use the
+<a href="/code/backend">API</a> if you want to send data from the backend;
+<code>/count</code> is only intended to be loaded by the visitor&rsquo;s browser.</p>
+
+<p>The tracking pixel won’t allow recording the referrer or screen size, and may
+also increase the number of bot requests (it&rsquo;s harder to filter them out with
+just the backend code).</p>
+
+<p>Wrap in a <code>&lt;noscript&gt;</code> tag to use this only for people without JavaScript:</p>
+
+<pre><code>&lt;script data-goatcounter="https://MYCODE.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"&gt;&lt;/script&gt;
+&lt;noscript&gt;
+    &lt;img src=&quot;https://MYCODE.goatcounter.com/count?p=/INSERT-PAGE-HERE&quot;&gt;
+&lt;/noscript&gt;
+</code></pre>
+
+<p>You&rsquo;ll have to set the correct page in the HTML source.</p>
+
+<p>If you have a <code>Content-Security-Policy</code> then you&rsquo;ll have to add:</p>
+
+<pre><code>img-src https://MYCODE.goatcounter.com/count
+</code></pre>
+
+<hr>
+
+<p>This accepts the following query parameters:</p>
+
+<table>
+<thead>
+<tr>
+<th align="left">Query</th>
+<th align="left">count.js</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td align="left"><code>p</code></td>
+<td align="left"><code>path</code></td>
+<td align="left">Page path or event name.</td>
+</tr>
+
+<tr>
+<td align="left"><code>t</code></td>
+<td align="left"><code>title</code></td>
+<td align="left">Page title.</td>
+</tr>
+
+<tr>
+<td align="left"><code>r</code></td>
+<td align="left"><code>referrer</code></td>
+<td align="left">Referrer value; usually the Referer header.</td>
+</tr>
+
+<tr>
+<td align="left"><code>e</code></td>
+<td align="left"><code>event</code></td>
+<td align="left">event; as boolean (<code>true</code>, <code>false</code>, <code>1</code>, <code>0</code>, <code>on</code>, <code>off</code>).</td>
+</tr>
+
+<tr>
+<td align="left"><code>q</code></td>
+<td align="left">-</td>
+<td align="left">Query parameters, for getting campaigns.</td>
+</tr>
+
+<tr>
+<td align="left"><code>s</code></td>
+<td align="left">-</td>
+<td align="left">screen size, as <code>width,height,scale</code>.</td>
+</tr>
+
+<tr>
+<td align="left"><code>b</code></td>
+<td align="left">-</td>
+<td align="left">Flag this as a &ldquo;bot request&rdquo;; number.</td>
+</tr>
+
+<tr>
+<td align="left"><code>rnd</code></td>
+<td align="left">-</td>
+<td align="left">Ignored; intended as a &ldquo;cache buster&rdquo;.</td>
+</tr>
+</tbody>
+</table>
+<p>These parameters are guaranteed to be stable; any future incompatible changes
+will use a new endpoint. Building your own JavaScript integration should be
+safe, although you may need to modify it if new features get added.</p>
+
+<p><code>rnd</code> is useful as sometimes browsers and proxies have their own opinion about
+what can or can&rsquo;t be cached in spite of what the cache headers say.</p>
+
+<p>The <code>b</code> accepts an integer constant from the <a href="https://github.com/arp242/isbot/blob/master/isbot.go#L46">zgo.at/isbot</a> library and
+should be &gt;=150. See the <a href="https://github.com/arp242/goatcounter/blob/master/public/count.js#L54">count.js source</a> how to detect this. Current
+values:</p>
+
+<ul>
+<li><code>150</code> – Phantom headless browser.</li>
+<li><code>151</code> – Nightmare headless browser.</li>
+<li><code>152</code> – Selenium headless browser.</li>
+<li><code>153</code> – Generic WebDriver-based headless browser.</li>
+</ul>
+
+			</div>
+
+			<h2 style="border:0; margin-bottom: .2rem; margin-left: .5rem;">Questions or problems?</h2>
+			<div class="page-code">
+				<p style="margin-top: 0">Feel free to get in touch if you’ve got any questions or having any problems; a
+				lot of times they can be resolved without too much problems.</p>
+
+				<p>Ways to contact me: <a href="#" class="show-contact">show</a> </p>
+				<div style="display: none;" class="contact">
+					<ul>
+	<li>Open a <a href="https://github.com/arp242/goatcounter/issues/new">GitHub
+		issue</a>. It’s fine to use this for support requests or general
+		questions, as GitHub issues are public and the answers may be useful for
+		others in the future.</li>
+
+	<li>Email:
+		<a href="mailto:support@goatcounter.com">support@goatcounter.com</a>.</li>
+</ul>
+
+<form method="post" action="/contact" class="contact-form">
+	<input type="hidden" name="return" value="/help/pixel">
+
+	<strong>Send message</strong>
+	<div class="f">
+		<div>
+			<label for="email">Email</label><br>
+			<input type="text" id="email" name="email" ><br>
+			
+			<span>Make sure this is correct</span>
+		</div>
+
+		<div>
+			<label for="turing">Enter 9 here</label><br>
+			<input type="text" id="turing" name="turing" ><br>
+			
+			<span>Just to verify that you’re human</span>
+		</div>
+	</div>
+
+	<div>
+		<label for="message">Your message</label><br>
+		<textarea id="message" name="message"></textarea><br>
+		
+		<button type="submit">Send</button>
+	</div>
+
+	
+
+	<div id="scroll-target"></div>
+</form>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<footer class="center cbox">
+	<div>
+		<a  href="https://www.goatcounter.com">Home</a><span> |</span>
+		<a href="/contact"   >Contact</a><span> |</span>
+		<a href="/help"      >Documentation</a><span> |</span>
+		<a href="/contribute">Contribute</a>
+	</div>
+	<div>
+		<a href="https://github.com/arp242/goatcounter"                target="_blank" rel="noopener">Source code</a><span> |</span>
+		<a href="https://nlnet.nl/project/GoatCounter/"                target="_blank" rel="noopener">NLnet NGI0</a><span> |</span>
+		<a href="https://github.com/sponsors/arp242"                   target="_blank" rel="noopener">GitHub sponsors</a><span> |</span>
+		<a href="https://www.producthunt.com/posts/goatcounter"        target="_blank" rel="noopener">Product Hunt</a><span> |</span>
+		<a href="https://alternativeto.net/software/goatcounter/about" target="_blank" rel="noopener">AlternativeTo</a>
+	</div>
+</footer>
+
+
+	
+		<script data-goatcounter="https://goatcounter.goatcounter.com/count"
+				async src="//gc.zgo.at/count.js"></script>
+	
+
+	<script crossorigin="anonymous" src="//static.zgo.at/jquery.js?v=2c9b43be"></script>
+	<script crossorigin="anonymous" src="//static.zgo.at/help.js?v=2c9b43be"></script>
+</body>
+</html>

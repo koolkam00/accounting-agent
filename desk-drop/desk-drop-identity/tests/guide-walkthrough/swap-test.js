@@ -23,7 +23,7 @@ const guide = fs.readFileSync(path.join(ROOT, 'USAGE-GUIDE.md'), 'utf8');
 const section = (n) => { const m = new RegExp(`\\n## ${n}\\. [\\s\\S]*?(?=\\n## \\d+\\. |$)`).exec(guide); return m ? m[0] : ''; };
 const bolds = (txt) => [...txt.matchAll(/\*\*([^*]+)\*\*/g)].map((m) => m[1].trim()).filter((b) => !/[.:]$/.test(b));
 // Words in bold that are Chrome, Gmail or status text, not panel boxes
-const NOT_BOXES = /^(Ready to print|Background graphics|Save as PDF|HOLD|go|Print|Print or save as PDF|Save as JSON|Load JSON|Remove|Choose picture|Add a row|See all settings|General|Signature|Create new|Save changes|the package itself|`avatar-cobalt-1024\.png`|`avatar-cobalt-400\.png`|No claims anywhere\.?|Measurement words stay exact\.?|Yellow means unfinished\.?)$/i;
+const NOT_BOXES = /^(Ready to print|Background graphics|Save as PDF|HOLD|go|Print|Print or save as PDF|Save as JSON|Load JSON|Remove|Choose picture|Add a row|See all settings|General|Signature|Create new|Save changes|the package itself|`avatar-cobalt-1024\.png`|`avatar-cobalt-400\.png`|No claims anywhere\.?|Measurement words stay exact\.?|Yellow means unfinished\.?|If something goes wrong|like this)$/i;
 
 // SAMPLE brand for the swap. Typed fields are what a person types from the package; pasted
 // fields come from the brand's email or the paid-brands row.

@@ -44,7 +44,7 @@ CONTRACT_COMPANY = ["company_id", "company_name", "website", "industry", "buildi
                     "lat", "lon", "in_boundary", "headcount_band", "headcount_scope", "headcount_source_url",
                     "address_source_url", "address_source_date", "second_source_url", "confidence", "in_coworking",
                     "coworking_id", "linkedin_company_url", "notes", "found_date"]
-EXTRA_COMPANY = ["candidate_status", "lease_status", "move_in_date", "headcount_source_date", "headcount_unknown_reason",
+EXTRA_COMPANY = ["building_lobby_type", "candidate_status", "lease_status", "move_in_date", "headcount_source_date", "headcount_unknown_reason",
                  "address_source_type", "second_source_date", "coworking_check", "bbl", "blocks_outside",
                  "leased_sf_mentioned", "research_slice"]
 CONTRACT_BUILDING = ["building_id", "street_address", "building_name", "lat", "lon", "lobby_type", "lobby_source_url",
@@ -58,9 +58,26 @@ EXTRA_COWORK = ["in_boundary", "blocks_outside", "status", "floors", "building_i
                 "second_source_url", "exclusive_food_contract_signal", "research_id", "found_date"]
 CONTRACT_RETAIL = ["retailer_id", "retailer_name", "street_address", "lat", "lon", "inside_boundary", "blocks_outside",
                    "shelf_set", "source_url", "source_date", "confidence", "notes"]
-EXTRA_RETAIL = ["buy_path_tier", "public_map", "candidates_within_5_blocks", "nearest_candidate_building_id",
+EXTRA_RETAIL = ["buy_path_tier", "public_map", "public_map_reason", "candidates_within_5_blocks", "nearest_candidate_building_id",
                 "nearest_candidate_blocks", "emerging_brand_evidence", "operating_evidence_url", "bbl", "research_id",
                 "found_date"]
+
+
+REG = os.path.join(HERE, "id_registry.json")
+
+
+def assign_ids(keys, prefix, kind):
+    """Stable IDs: a key seen before keeps its ID; new keys get the next free number."""
+    reg = json.load(open(REG)) if os.path.exists(REG) else {}
+    m = reg.setdefault(kind, {})
+    nxt = max([int(v.split("-")[-1]) for v in m.values()] + [0]) + 1
+    out = []
+    for k in keys:
+        if k not in m:
+            m[k] = f"{prefix}-{nxt:03d}"; nxt += 1
+        out.append(m[k])
+    json.dump(reg, open(REG, "w"), indent=1, sort_keys=True)
+    return out
 
 
 def walk_m(a, b):
@@ -88,13 +105,14 @@ def main():
         df["blocks_outside"] = df.blocks_outside.astype(float)
 
     # ---------------- companies: notes, ids
-    c["notes"] = c.apply(lambda x: (x.notes + (" | Assembly 2026-10-24: " + x.notes_assembly if x.notes_assembly else "")).strip(), axis=1)
+    c["notes"] = c.apply(lambda x: (x.notes + (" | Assembly 2026-10-24: " + x.notes_assembly if x.notes_assembly else "")
+                                    + (" " + x.pin_note if x.get("pin_note") else "")).strip(), axis=1)
     c["leased_sf_mentioned"] = c.notes.map(sf_mentions)
     c["linkedin_company_url"] = ""
     tab_order = {"candidate": 0, "excluded-coworking": 1, "excluded-not-office": 2, "near-miss-over-500": 3, "near-miss-outside": 4}
     c["_t"] = c.candidate_status.map(tab_order)
     c = c.sort_values(["_t", "grid_s", "grid_x", "company_name"]).reset_index(drop=True)
-    c["company_id"] = [f"B-C-{i + 1:03d}" for i in range(len(c))]
+    c["company_id"] = assign_ids([f"{x.company_name}|{x.street_address}" for x in c.itertuples()], "B-C", "company")
 
     # ---------------- buildings: which go in the tab
     cand = c[c.candidate_status == "candidate"]
@@ -104,7 +122,7 @@ def main():
     keep = (b.in_boundary == "Y") & ((b.candidate_company_count > 0) | b.has_cowork)
     b_other = b[~keep].copy()
     b = b[keep].copy().sort_values(["grid_s", "grid_x"]).reset_index(drop=True)
-    b["building_id"] = [f"B-B-{i + 1:03d}" for i in range(len(b))]
+    b["building_id"] = assign_ids([x.bbl or x.street_address for x in b.itertuples()], "B-B", "building")
     bid = dict(zip(b.bbl, b.building_id))
     c["building_id"] = c.bbl.map(lambda k: bid.get(k, ""))
 
@@ -112,11 +130,11 @@ def main():
     w["_o"] = (w.in_boundary != "Y").astype(int)
     w = w.sort_values(["_o", "grid_s", "grid_x"]).reset_index(drop=True)
     w["research_id"] = w.coworking_id
-    w["coworking_id"] = [f"B-W-{i + 1:03d}" for i in range(len(w))]
+    w["coworking_id"] = assign_ids(list(w.research_id), "B-W", "coworking")
     wmap = dict(zip(w.research_id, w.coworking_id))
-    c["coworking_id"] = c._cw_temp.map(lambda t: wmap.get(t, "") if t else "")
-    c.loc[c.in_coworking != "Y", "coworking_id"] = c.loc[c.in_coworking != "Y", "_cw_temp"].map(lambda t: wmap.get(t, "") if t else "")
-    # coworking_id is set when the company shares a building with a coworking site; in_coworking says whether it is inside it
+    # coworking_id names the site a company is inside (in_coworking = Y). Same-building, not-inside cases are
+    # described by coworking_check plus the building's coworking_ids.
+    c["coworking_id"] = [wmap.get(t, "") if (t and ic == "Y") else "" for t, ic in zip(c._cw_temp, c.in_coworking)]
     w["building_id"] = w.bbl.map(lambda k: bid.get(k, ""))
     w["tenant_company_ids"] = w.coworking_id.map(lambda k: "; ".join(c[(c.coworking_id == k) & (c.in_coworking == "Y")].company_id))
     b["coworking_ids"] = b.bbl.map(lambda k: "; ".join(w[w.bbl == k].coworking_id))
@@ -125,11 +143,16 @@ def main():
     r["_o"] = r.in_boundary.map(lambda v: 0 if v == "Y" else 1)
     r = r.sort_values(["_o", "blocks_outside", "retailer_name"]).reset_index(drop=True)
     r["research_id"] = r.retailer_id
-    r["retailer_id"] = [f"B-R-{i + 1:03d}" for i in range(len(r))]
+    r["retailer_id"] = assign_ids(list(r.research_id), "B-R", "retailer")
     r["inside_boundary"] = r.in_boundary
     r["blocks_outside_f"] = r.blocks_outside
     r["blocks_outside"] = r.blocks_outside.map(lambda v: int(math.floor(v + 0.5)) if v > 0 else 0)
-    r["public_map"] = r.apply(lambda x: "Y" if x.buy_path_tier in ("A", "B") and x.confidence in ("high", "medium") else "N", axis=1)
+    r["notes"] = r.apply(lambda x: (x.notes + (" " + x.pin_note if x.get("pin_note") else "")).strip(), axis=1)
+    r["public_map"] = r.apply(lambda x: "Y" if x.buy_path_tier in ("A", "B") and x.confidence in ("high", "medium")
+                              and x.retailer_name not in R.PUBLIC_EXCLUDE else "N", axis=1)
+    r["public_map_reason"] = r.apply(lambda x: "" if x.public_map == "Y" else R.PUBLIC_EXCLUDE.get(
+        x.retailer_name, "Tier C (mass, conventional or private label): a landmark, not a buy path." if x.buy_path_tier == "C"
+        else "Low confidence: the store may have closed; walk it first."), axis=1)
     b["retailer_ids"] = b.bbl.map(lambda k: "; ".join(r[r.bbl == k].retailer_id))
     cand_b = b[b.candidate_company_count > 0]
     near_n, near_b, near_d = [], [], []
@@ -153,7 +176,11 @@ def main():
             pc.append(f"PLUTO lot {x.pluto_address}, centroid {d:.0f} m from pin")
         else:
             pc.append("no PLUTO match")
-    b["pin_check"] = pc
+    b["pin_check"] = [p + ("; " + n if n else "") for p, n in zip(pc, b.get("pin_note", [""] * len(b)))]
+    lob_by_bbl = dict(zip(b.bbl, b.lobby_type))
+    allb = pd.read_csv(os.path.join(OUT, "master_buildings.csv"), dtype=str).fillna("")
+    lob_all = dict(zip(allb.bbl, allb.lobby_type))
+    c["building_lobby_type"] = c.bbl.map(lambda k: lob_by_bbl.get(k, lob_all.get(k, "unknown")) or "unknown")
     c["zip"] = c.apply(lambda x: x.zip or (b[b.bbl == x.bbl].zip.iloc[0] if (b.bbl == x.bbl).any() else ""), axis=1)
 
     # ---------------- route
@@ -285,9 +312,17 @@ def model_route(c, b):
                 seq += best[1]
         return sum(T[a][b2] for a, b2 in zip(seq, seq[1:])), seq
 
+    cache = {}
+
+    def cost_of(S):
+        k = frozenset(S)
+        if k not in cache:
+            cache[k] = order(sorted(S))[0] if feasible(S) else 1e9
+        return cache[k]
+
     best = None
     for s0 in range(n):
-        near = sorted(range(n), key=lambda j: T[s0][j] if j != s0 else -1)
+        near = sorted(range(n), key=lambda j: (T[s0][j] if j != s0 else -1, j))
         S = []
         for j in near:
             if len(S) == 10:
@@ -296,24 +331,21 @@ def model_route(c, b):
                 S.append(j)
         if len(S) < 10:
             continue
-        cur = order(S)[0] if feasible(S) else 1e9
-        improved = True
-        while improved:
-            improved = False
-            for out_ in list(S):
+        cur = cost_of(S)
+        while True:  # best-improvement swap search
+            cand = None
+            for out_ in S:
                 for in_ in range(n):
                     if in_ in S:
                         continue
                     S2 = [q for q in S if q != out_] + [in_]
-                    if not feasible(S2):
-                        continue
-                    cst = order(S2)[0]
-                    if cst < cur - 1e-9:
-                        S, cur, improved = S2, cst, True
-                        break
-                if improved:
-                    break
-        if cur < 1e9 and (best is None or cur < best[0]):
+                    cst = cost_of(S2)
+                    if cst < cur - 1e-9 and (cand is None or cst < cand[0]):
+                        cand = (cst, S2)
+            if cand is None:
+                break
+            cur, S = cand
+        if cur < 1e9 and (best is None or cur < best[0] - 1e-9):
             best = (cur, sorted(S))
     cost, seq = order(best[1], exact=True)
     rows, legs = [], []
@@ -343,6 +375,7 @@ def model_route(c, b):
             "car_faster": ("Y" if cm is not None and cm < lm else "N") if prev is not None else "",
             "stop_minutes": P["minutes_per_stop"],
             "arrive_est": hhmm(arrive), "depart_est": hhmm(t),
+            "receiving_window_from_intake": "",
             "label": "estimate",
         })
         legs.append({"stop": k + 1, "path": router.path_lonlat(lg["path"])})

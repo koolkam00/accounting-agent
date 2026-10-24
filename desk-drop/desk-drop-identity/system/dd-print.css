@@ -89,6 +89,12 @@ mark.dd-ph {
 .dd-img-what { flex: 1 0 100%; font-size: 12px; color: var(--dd-ink-soft); }
 .dd-panel .dd-file-sm, .dd-img-pick button { font-size: 13px; padding: 6px 10px; }
 
+/* v1.2: record picker (several cards or labels in one file) */
+.dd-rec { margin: 14px 0 4px; padding: 10px 10px 8px; background: #fff; border: 2px solid var(--dd-cobalt); border-radius: var(--dd-radius-1); }
+.dd-rec .dd-field { margin-bottom: 8px; }
+.dd-rec-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.dd-panel .dd-rec-actions button { font-size: 13px; padding: 6px 10px; }
+
 /* On-screen-only error overlay on a sheet */
 .dd-sheet-error {
   position: absolute; inset: auto 0 0 0; background: var(--dd-error); color: #fff;

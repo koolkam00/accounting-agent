@@ -20,7 +20,7 @@ PNG.mkdir(parents=True, exist_ok=True)
 JOBS = [
     ("03-office-participation-agreement.md", "AGREEMENT", "03-office-participation-agreement", "tight"),
     ("05-llc-operating-agreement.md", "AGREEMENT", "05-llc-operating-agreement", "normal"),
-    ("10-brand-campaign-agreement.md", "AGREEMENT", "10-brand-campaign-agreement", "normal"),
+    ("10-brand-campaign-agreement.md", "AGREEMENT", "10-brand-campaign-agreement", "compact"),
     ("13-survey-privacy-notice.md", "NOTICE", "13-survey-privacy-notice", "normal"),
 ]
 
@@ -41,7 +41,9 @@ th, td { border: 0.6pt solid #9a9a9a; padding: 3pt 5pt; vertical-align: top; tex
 thead th { background: #f0f0f0; }
 .draft { font-size: 9pt; font-weight: 700; letter-spacing: .02em; border: 1pt solid #1a1a1a; display: inline-block; padding: 2pt 6pt; margin-bottom: 4pt; }
 .sig { break-inside: avoid; table-layout: fixed; } .sig td, .sig th { width: 50%; } .sig td { height: 18pt; }
+.keep { break-inside: avoid; page-break-inside: avoid; }
 """,
+"compact": None,  # filled below from "normal"
 "tight": """
 @page { size: Letter; margin: 0.45in 0.55in 0.45in 0.55in; }
 body { font-family: Inter, 'DejaVu Sans', sans-serif; font-size: 9.2pt; line-height: 1.31; color: #1a1a1a; }
@@ -52,8 +54,16 @@ th, td { border: 0.6pt solid #9a9a9a; padding: 2pt 4pt; vertical-align: top; tex
 thead th { background: #f0f0f0; }
 .draft { font-size: 8.5pt; font-weight: 700; letter-spacing: .02em; border: 1pt solid #1a1a1a; display: inline-block; padding: 1pt 5pt; margin-bottom: 2pt; }
 .sig { break-inside: avoid; table-layout: fixed; } .sig td, .sig th { width: 50%; } .sig td { height: 16pt; }
+.keep { break-inside: avoid; page-break-inside: avoid; }
 """,
 }
+
+# the brand agreement: the normal style with slightly smaller margins and type (review round 2),
+# so its 14 sections and signature block fit on three Letter pages
+CSS["compact"] = (CSS["normal"]
+    .replace("margin: 0.6in 0.7in 0.6in 0.7in;", "margin: 0.5in 0.6in 0.5in 0.6in;")
+    .replace("font-size: 9.6pt; line-height: 1.38;", "font-size: 9.4pt; line-height: 1.33;"))
+assert CSS["compact"] != CSS["normal"]
 
 def extract(md_text, marker):
     m = re.search(rf"<!-- {marker} START -->(.*?)<!-- {marker} END -->", md_text, re.S)
@@ -79,8 +89,20 @@ def main():
             # style the review heading and the signature table
             frag = frag.replace("<p><strong>Draft for attorney review. Not legal advice.</strong></p>",
                                 '<p class="draft">Draft for attorney review. Not legal advice.</p>', 1)
-            frag = re.sub(r"<table>(\s*(?:<colgroup>.*?</colgroup>\s*)?<thead>\s*<tr>\s*<th[^>]*>(?:For the|Signed by))", r'<table class="sig">\1', frag, flags=re.S)
+            frag = re.sub(r"<table>(\s*(?:<colgroup>.*?</colgroup>\s*)?<thead>\s*<tr[^>]*>\s*<th[^>]*>(?:For the|Signed by))", r'<table class="sig">\1', frag, flags=re.S)
             frag = re.sub(r"<thead>\s*<tr>(\s*<th[^>]*>\s*</th>)+\s*</tr>\s*</thead>", "", frag)
+            # keep each signature table on the same page as the paragraph before it,
+            # so a signature block can never sit alone on the last page (review round 2)
+            # (only when a top-level paragraph sits directly before the table)
+            pos = frag.find('<table class="sig">')
+            while pos != -1:
+                end_p = frag.rfind("</p>", 0, pos)
+                start = frag.rfind("<p>", 0, end_p) if end_p != -1 else -1
+                end = frag.find("</table>", pos) + len("</table>")
+                if start != -1 and not frag[end_p + 4:pos].strip() and "<li" not in frag[max(0, start - 6):start]:
+                    frag = frag[:start] + '<div class="keep">' + frag[start:end] + "</div>" + frag[end:]
+                    end += len('<div class="keep"></div>')
+                pos = frag.find('<table class="sig">', end)
             title = re.search(r"<h[123][^>]*>(.*?)</h[123]>", frag, re.S).group(1)
             html = f"<!doctype html><html><head><meta charset='utf-8'><title>{title}</title><style>{CSS[density]}</style></head><body>{frag}</body></html>"
             htmlf = td / f"{base}.html"
@@ -102,6 +124,11 @@ const {{ chromium }} = require('playwright');
             # DOCX for attorney redlines
             run(["pandoc", str(mdf), "-f", "gfm-tex_math_dollars", "-o", str(OUT / f"{base}.docx")])
         pages = int(re.search(r"Pages:\s+(\d+)", run(["pdfinfo", str(pdf)])).group(1))
+        # guard: the last page must carry more than a signature block
+        if pages > 1:
+            last = run(["pdftotext", "-f", str(pages), "-l", str(pages), str(pdf), "-"])
+            if len(last.split()) < 40:
+                sys.exit(f"{base}: last page holds only {len(last.split())} words (orphaned signature block?)")
         # guard: every dollar amount in the source must survive into the PDF text
         pdftext = re.sub(r"\s+", " ", run(["pdftotext", str(pdf), "-"]))
         for amt in sorted(set(re.findall(r"\$\[?[0-9A-Z][0-9A-Z,]*\]?", block))):

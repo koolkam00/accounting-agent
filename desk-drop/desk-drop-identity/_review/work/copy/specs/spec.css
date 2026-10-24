@@ -1,0 +1,27 @@
+/* spec.css: layout for the print-spec sheets in specs/ (US Letter, portrait). */
+@page { size: 8.5in 11in; margin: 0; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #D9D5CC; font-family: var(--dd-font-text); color: var(--dd-ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.page { width: 8.5in; height: 11in; padding: .55in .6in; background: #fff; margin: 0 auto 16px; overflow: hidden; break-after: page; position: relative; }
+.page:last-child { break-after: auto; }
+@media print { body { background: #fff; } .page { margin: 0; } }
+.hd { display: flex; gap: .2in; align-items: center; border-bottom: 3px solid var(--dd-cobalt); padding-bottom: .12in; margin-bottom: .14in; }
+.hd .wm { height: .32in; }
+h1 { font: 800 22pt/1.05 var(--dd-font-display); font-variation-settings: "opsz" 96; letter-spacing: -.01em; margin: 0; }
+h2 { font: 800 13pt/1.2 var(--dd-font-display); margin: .2in 0 .06in; }
+.sub { margin: .03in 0 0; font-size: 9pt; color: var(--dd-stone); }
+p, li { font-size: 9.5pt; line-height: 1.38; }
+ul { margin: .04in 0; padding-left: .2in; }
+.warn { background: var(--dd-placeholder); padding: .06in .1in; font-size: 9.5pt; margin: 0 0 .12in; }
+.two { display: grid; grid-template-columns: 3.95in 1fr; gap: .25in; align-items: start; }
+.diagram { margin: 0; }
+.diagram figcaption { font-size: 8pt; line-height: 1.35; color: var(--dd-ink-soft); margin-top: .04in; }
+table.spec { border-collapse: collapse; width: 100%; font-size: 8.6pt; line-height: 1.33; }
+table.spec th, table.spec td { text-align: left; vertical-align: top; padding: .045in .06in; border-bottom: 1px solid var(--dd-mist); }
+table.spec th { width: 1.05in; font-weight: 700; }
+table.type th { width: auto; background: var(--dd-paper-warm); }
+table.type tr.lock td { background: #FFF6CC; }
+code { font-size: 8pt; background: var(--dd-paper-warm); padding: 0 .03in; }
+.foot { position: absolute; left: .6in; right: .6in; bottom: .4in; font-size: 7.5pt; color: var(--dd-stone); }
+.sources { font-size: 7.5pt; color: var(--dd-stone); margin-top: .2in; overflow-wrap: anywhere; }
+.steps { margin: .04in 0; padding-left: .22in; } .steps li { font-size: 9.3pt; margin-bottom: .03in; }

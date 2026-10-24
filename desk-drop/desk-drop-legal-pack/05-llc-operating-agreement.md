@@ -2,13 +2,13 @@
 
 # 05 · Single-member New York LLC operating agreement: notes for the founder
 
-Version 0.6 · 2026-10-24
+Version 0.7 · 2026-10-24
 
 **The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot in section 1.1.
 
 **What it is for.** New York requires every LLC's members to adopt a written operating agreement (NY LLC Law section 417(a)). This is a single-member, member-managed agreement for the company, plus Schedule A (the member) and Schedule B (the first written consent, which also adopts the agreements you signed before the company existed).
 
-**When it is used.** The day you file the Articles of Organization: at the first verbal brand yes (plan, order of operations), around Gate 0 (Friday 2026-11-13, derived, founder to confirm). Section 417(c) lets you sign it before, at the time of, or within 90 days after filing, but it cannot take effect before the company is formed. Sign it the same day you file and it takes effect on formation. You do not file it with the state. If the attorney hour (file 08) falls after the filing day, sign this draft anyway and sign a short amendment if the attorney changes anything (section 14.2). Keep the signed PDF with the Articles; banks often ask for it when you open the business account (common practice, not sourced).
+**When it is used.** The day you file the Articles of Organization: at the first verbal brand yes (plan, order of operations), and never before the attorney hour (file 04), so from Thursday 2026-11-19 at the earliest (derived, founder to confirm). Section 417(c) lets you sign it before, at the time of, or within 90 days after filing, but it cannot take effect before the company is formed. Sign it the same day you file and it takes effect on formation. You do not file it with the state. The attorney hour (file 08) comes before filing, so make any change the attorney asks for before you sign; if item 13 is answered by email after the filing day, sign this draft and then a short amendment for any change (section 14.2). Keep the signed PDF with the Articles; banks often ask for it when you open the business account (common practice, not sourced).
 
 **How to fill it in.**
 - Section 1.1: replace the `[COMPANY NAME: …]` slot with the name exactly as it will appear on the Articles, including "LLC". If the name check (file 01) forces a rename, that is the one line to change.
@@ -199,3 +199,4 @@ Effective when the Company is formed, the Member decides that the Company:
 - Merge (2026-10-24): renumbered 30 to 05; company name moved into the `[COMPANY NAME: …]` slot; version 0.5.
 - Merge review (2026-10-24): attorney, section 6.4 now allows the "for the Company" signer line the office agreement uses before formation; note on signing before the attorney hour.
 - Review round 1 (2026-10-24), version 0.6: Schedule B's party column reads "Other party (office legal name)" with the [OFFICE LEGAL NAME] slot, matching the office page.
+- Review round 2 (2026-10-24), version 0.7: signed on the filing day, which now comes after the attorney hour (from Thu 2026-11-19 at the earliest), so the note on signing before the hour is replaced by one on item 13 answered by email.

@@ -1,0 +1,246 @@
+{
+ "boundary": {
+  "area_km2": 1.044,
+  "north_south_m": 1389,
+  "east_west_m": 738,
+  "corner_to_corner_walk_m": 2372,
+  "corner_walk_min_hand_truck": 37
+ },
+ "company_rows_total": 276,
+ "company_rows_inside": 270,
+ "company_rows_outside": 6,
+ "candidates": 172,
+ "candidates_by_conf": {
+  "medium": 89,
+  "high": 60,
+  "low": 23
+ },
+ "candidates_by_band": {
+  "unknown": 95,
+  "251-500": 27,
+  "40-75": 18,
+  "151-250": 17,
+  "76-150": 15
+ },
+ "candidates_conf_band": {
+  "151-250": {
+   "high": 11,
+   "low": 1,
+   "medium": 5
+  },
+  "251-500": {
+   "high": 15,
+   "low": 1,
+   "medium": 11
+  },
+  "40-75": {
+   "high": 2,
+   "low": 3,
+   "medium": 13
+  },
+  "76-150": {
+   "high": 7,
+   "low": 1,
+   "medium": 7
+  },
+  "unknown": {
+   "high": 25,
+   "low": 17,
+   "medium": 53
+  }
+ },
+ "candidates_by_lease": {
+  "occupied": 92,
+  "occupancy-unconfirmed": 44,
+  "signed-not-occupied": 36
+ },
+ "candidates_scope": {
+  "unknown": 94,
+  "whole-company": 76,
+  "nyc-office": 2
+ },
+ "status_counts": {
+  "candidate": 172,
+  "near-miss-over-500": 92,
+  "near-miss-outside": 6,
+  "excluded-coworking": 5,
+  "excluded-not-office": 1
+ },
+ "candidates_by_area": {
+  "13th-18th St": 39,
+  "18th-23rd St": 56,
+  "23rd-26th St": 28,
+  "26th-30th St": 49
+ },
+ "buildings": 82,
+ "buildings_lobby": {
+  "unknown": 65,
+  "security desk": 15,
+  "loading dock": 2
+ },
+ "buildings_coi": {
+  "unknown": 82
+ },
+ "buildings_with_candidates": 74,
+ "coworking": 32,
+ "coworking_inside": 24,
+ "coworking_by_conf": {
+  "high": 20,
+  "medium": 7,
+  "low": 5
+ },
+ "coworking_pantry": {
+  "operator": 25,
+  "unknown": 7
+ },
+ "coworking_status": {
+  "open": 25,
+  "unverified": 5,
+  "open-unverified": 1,
+  "possibly-closed": 1
+ },
+ "retailers": 30,
+ "retailers_inside": 11,
+ "retailers_by_tier": {
+  "B": 17,
+  "C": 8,
+  "A": 5
+ },
+ "retailers_by_conf": {
+  "high": 23,
+  "medium": 5,
+  "low": 2
+ },
+ "retailers_public": 16,
+ "retailers_max_blocks": 7,
+ "cand_bldg_to_tierA_blocks": {
+  "max": 11.0,
+  "median": 6.3,
+  "share_within_5": 0.35
+ },
+ "cand_bldg_to_public_store_blocks": {
+  "max": 8.3,
+  "median": 4.1,
+  "share_within_3": 0.18
+ },
+ "route": {
+  "stops": 10,
+  "stop_minutes": 150,
+  "walking_minutes": 33.2,
+  "total_minutes": 183.2,
+  "end": "11:03",
+  "metres": 1896,
+  "car_faster_legs": 0,
+  "longest_leg_min": 5.9,
+  "lobby": {
+   "unknown": 8,
+   "security desk": 2
+  },
+  "bands": {
+   "251-500": 6,
+   "76-150": 2,
+   "151-250": 2
+  },
+  "at_12_min_stops": 153.2,
+  "nine_stops": 163.1
+ },
+ "walk": {
+  "sessions": 11,
+  "total_minutes": 865,
+  "stops": 117,
+  "table": [
+   {
+    "session": "1",
+    "phase": "core (inside the boundary)",
+    "stops": 10,
+    "minutes": "74.5",
+    "start": "14 St-Union Sq (L), about 1 min walk",
+    "end": "14 St-Union Sq (N Q R W), about 3 min walk"
+   },
+   {
+    "session": "10",
+    "phase": "outer retailers (within ten blocks)",
+    "stops": 5,
+    "minutes": "80.0",
+    "start": "23 St (1), about 2 min walk",
+    "end": "33 St (6), about 9 min walk"
+   },
+   {
+    "session": "11",
+    "phase": "outer retailers (within ten blocks)",
+    "stops": 7,
+    "minutes": "82.5",
+    "start": "28 St (6), about 9 min walk",
+    "end": "Astor Pl (6), about 1 min walk"
+   },
+   {
+    "session": "2",
+    "phase": "core (inside the boundary)",
+    "stops": 13,
+    "minutes": "82.0",
+    "start": "14 St-Union Sq (4 5 6), about 4 min walk",
+    "end": "14 St (F M), about 4 min walk"
+   },
+   {
+    "session": "3",
+    "phase": "core (inside the boundary)",
+    "stops": 13,
+    "minutes": "78.7",
+    "start": "18 St (1), about 4 min walk",
+    "end": "23 St-Baruch College (6), about 2 min walk"
+   },
+   {
+    "session": "4",
+    "phase": "core (inside the boundary)",
+    "stops": 12,
+    "minutes": "78.8",
+    "start": "23 St-Baruch College (6), about 1 min walk",
+    "end": "28 St (6), about 2 min walk"
+   },
+   {
+    "session": "5",
+    "phase": "core (inside the boundary)",
+    "stops": 12,
+    "minutes": "80.9",
+    "start": "28 St (6), about 2 min walk",
+    "end": "23 St-Baruch College (6), about 2 min walk"
+   },
+   {
+    "session": "6",
+    "phase": "core (inside the boundary)",
+    "stops": 13,
+    "minutes": "77.6",
+    "start": "23 St (R W), about 4 min walk",
+    "end": "23 St (F M), about 4 min walk"
+   },
+   {
+    "session": "7",
+    "phase": "core (inside the boundary)",
+    "stops": 14,
+    "minutes": "77.4",
+    "start": "23 St (F M), about 1 min walk",
+    "end": "28 St (R W), about 1 min walk"
+   },
+   {
+    "session": "8",
+    "phase": "core (inside the boundary)",
+    "stops": 11,
+    "minutes": "67.1",
+    "start": "28 St (R W), about 2 min walk",
+    "end": "23 St (F M), about 2 min walk"
+   },
+   {
+    "session": "9",
+    "phase": "outer retailers (within ten blocks)",
+    "stops": 7,
+    "minutes": "85.4",
+    "start": "W 4 St-Wash Sq (A C E), about 3 min walk",
+    "end": "23 St (C E), about 1 min walk"
+   }
+  ],
+  "core_sessions": 8,
+  "outer_sessions": 3,
+  "core_minutes": 617,
+  "outer_minutes": 248
+ }
+}

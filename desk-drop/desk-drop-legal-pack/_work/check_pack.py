@@ -18,6 +18,14 @@ BRAND_LINE = "`BRAND_NAME = Desk Drop`"
 TRADING_NAME_FILES = {"01-name-check-log.md", "02-email-footer-and-checklist.md", "name-check-log.md"}
 STORAGE = "off the floor, away from heat and as the label directs"
 STORAGE_FILES = {"06", "07", "10", "11"}
+# how long cases are held, stated to the broker, the state, the accountant and the brand's broker (review round 2)
+HOLD = "up to about four around the December holidays; leftover units the brand asks back can wait up to ten more business days for its return label"
+HOLD_FILES = {"06", "07", "09", "11"}
+# the federal storage question: every file that offers storage outside the home must point to it (review round 3)
+FDA = "21 CFR 1.227"
+FDA_FILES = {"06", "07", "08"}
+# the filing rule: never file before the attorney hour, so no file may still tie filing to Gate 0 (review round 2)
+STALE_FILING = [r"(?:around|near) Gate 0", r"Filed at Gate 0", r"FILING DATE: about 2026-11-13"]
 PLACEHOLDER_CASE = r"\[(founder name|phone|email|postal address|website|domain)\]"
 BANNED = [r"\bconversions?\b", r"\bROI\b", r"sales lift", r"\blift\b", r"\bacquisition\b", r"\bguarantee[sd]?\b"]
 WEEKDAYS = {"Mon": 0, "Tue": 1, "Wed": 2, "Thu": 3, "Fri": 4, "Sat": 5, "Sun": 6}
@@ -113,6 +121,13 @@ for p in docs + [PACK / "name-check-log.md"]:
             flag(p, f"{m.group(0)} is really a {d.strftime('%A')}")
     if p.name[:2] in STORAGE_FILES and STORAGE not in t:
         flag(p, "shared storage sentence missing")
+    if p.name[:2] in HOLD_FILES and (HOLD not in t or t.count("up to about four around") != t.count(HOLD)):
+        flag(p, "shared holding-time sentence missing, or a holding time stated without the return-label wait")
+    if p.name[:2] in FDA_FILES and FDA not in t:
+        flag(p, "FDA food facility registration question (21 CFR 1.227) missing (file 07, follow-up 7)")
+    for pat in STALE_FILING:
+        for m in re.finditer(pat, t):
+            flag(p, f"filing tied to Gate 0 ('{m.group(0)}'); file after the attorney hour (file 04)")
 
 # README, REPORT, HANDOFF: heading, version, escaped dollars, references, weekdays
 for req in REQUIRED:
@@ -137,6 +152,15 @@ for req in REQUIRED:
             flag(p, f"{m.group(0)} is really a {d.strftime('%A')}")
 
 # other workstreams' references to this pack (warnings only: their files, not ours)
+# (old wording, what it is now, a phrase whose presence on the same line means the line is already current)
+STALE_TERMS = [
+    ("every office's placement photo",
+     "placement confirmation is our email by T+1 listing the offices where the product was placed, each with its photo; an office not placed by T+1 is refunded or credited", None),
+    ("on or after it, we keep",
+     "add the cut-off: no cancellation from the drop day on", "drop day"),
+    ("After that, we keep 50%",
+     "add the cut-off: no cancellation from the drop day on; the full price is then due", "drop day"),
+]
 ROOT = PACK.parent
 for f in ROOT.rglob("*"):
     if not f.is_file() or PACK in f.parents or "node_modules" in f.parts or f.suffix not in {".md", ".js", ".json", ".html", ".csv", ".txt"}:
@@ -149,6 +173,10 @@ for f in ROOT.rglob("*"):
         for m in re.finditer(r"desk-drop-legal-pack/([0-9]{2}-[a-z0-9-]+\.md)", line):
             if m.group(1) not in names:
                 warnings.append(f"WARNING {f.relative_to(ROOT)}:{i} cites missing desk-drop-legal-pack/{m.group(1)}")
+        # brand terms restated elsewhere in their pre-round-2 form (file 10, sections 3 and 8)
+        for old, new, current in STALE_TERMS:
+            if old in line and "_review" not in f.parts and not (current and current in line):
+                warnings.append(f"WARNING {f.relative_to(ROOT)}:{i} restates an old brand term ('{old}'); now: {new}")
 
 # figures.csv shape (CONTRACTS 6.7)
 import csv
@@ -163,6 +191,9 @@ for r in rows:
     for c in ("low_usd", "high_usd", "working_usd"):
         if not re.fullmatch(r"\d+|unknown", r[c]):
             findings.append(f"figures.csv: {r['item']} {c} = '{r[c]}'")
+    for pat in STALE_FILING:
+        if re.search(pat, r["timing"] + r["notes"]):
+            findings.append(f"figures.csv: {r['item']} ties filing to Gate 0")
     for m in re.finditer(r"\b(\d{2}-[a-z0-9-]+\.md)\b", r["notes"] + r["timing"]):
         if m.group(1) not in names:
             findings.append(f"figures.csv: {r['item']} refers to missing {m.group(1)}")

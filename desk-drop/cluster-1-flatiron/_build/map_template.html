@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Cluster 1 private map</title>
+<link rel="stylesheet" href="__LEAFLET_CSS__" integrity="__LEAFLET_CSS_SRI__" crossorigin="anonymous" referrerpolicy="no-referrer">
+<style>
+  :root {
+    --ink: #1F1D1A; --stone: #6B675F; --mist: #E6E1D6; --paper: #FFFFFF; --paper-warm: #F7F3EA;
+    --cobalt: #2E47C9; --cobalt-tint: #E3E8FB; --alert: #B3261E;
+    --font: "Atkinson Hyperlegible Next", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  html, body { height: 100%; margin: 0; background: var(--paper-warm); color: var(--ink); font-family: var(--font); }
+  #bar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: var(--ink); color: #fff;
+         display: flex; align-items: center; gap: 8px; padding: 8px 12px; padding-top: max(8px, env(safe-area-inset-top)); }
+  #bar .tag { background: var(--alert); color: #fff; font-weight: 700; font-size: 12px; letter-spacing: .06em;
+              padding: 3px 7px; border-radius: 4px; white-space: nowrap; }
+  #bar .title { font-weight: 700; font-size: 15px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #bar button { background: #fff; color: var(--ink); border: 0; border-radius: 8px; font: 600 14px var(--font);
+                min-height: 40px; padding: 0 12px; }
+  #map { position: fixed; top: 56px; bottom: 0; left: 0; right: 0; }
+  #panel { position: fixed; z-index: 1001; left: 8px; right: 8px; top: 64px; max-height: 70vh; overflow: auto;
+           background: var(--paper); border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,.25); padding: 12px; display: none; }
+  #panel.open { display: block; }
+  #panel h2 { font-size: 16px; margin: 4px 0 8px; }
+  #panel input, #panel select { width: 100%; box-sizing: border-box; font: 16px var(--font); padding: 10px; border: 1px solid var(--stone);
+                                border-radius: 8px; margin-bottom: 8px; background: var(--paper); color: var(--ink); }
+  #results div { padding: 10px 6px; border-bottom: 1px solid var(--mist); cursor: pointer; font-size: 15px; }
+  #results div small { color: var(--stone); display: block; }
+  .legend-row { display: flex; align-items: center; gap: 8px; font-size: 14px; margin: 4px 0; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--ink); flex: none; }
+  .sq { width: 13px; height: 13px; background: #8E44AD; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--ink); flex: none; }
+  .note { font-size: 13px; color: var(--stone); line-height: 1.4; }
+  .leaflet-popup-content { font: 14px/1.4 var(--font); max-width: 300px; }
+  .leaflet-popup-content h3 { font-size: 15px; margin: 0 0 4px; }
+  .leaflet-popup-content ul { padding-left: 18px; margin: 4px 0; }
+  .pill { display: inline-block; font-size: 12px; padding: 1px 6px; border-radius: 10px; background: var(--cobalt-tint); color: var(--ink); }
+  .warn { color: var(--alert); font-weight: 700; }
+  .num { background: var(--ink); color: #fff; border-radius: 50%; width: 28px; height: 28px; line-height: 28px; text-align: center;
+         font: 700 14px var(--font); border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+  .wnum { background: var(--cobalt); color: #fff; border-radius: 6px; min-width: 22px; height: 22px; line-height: 22px; text-align: center;
+          font: 700 12px var(--font); border: 2px solid #fff; padding: 0 2px; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+  .leaflet-control-layers-expanded { font: 14px var(--font); }
+  .leaflet-touch .leaflet-bar a { width: 40px; height: 40px; line-height: 40px; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --paper: #2A2824; --ink: #F3EFE6; --stone: #B9B3A8; --mist: #3A3732; --paper-warm: #1F1D1A; --cobalt-tint: #2B3566; }
+    :root:not([data-theme="light"]) #bar { background: #000; }
+    :root:not([data-theme="light"]) #bar button { background: #F3EFE6; color: #1F1D1A; }
+  }
+  :root[data-theme="dark"] { --paper: #2A2824; --ink: #F3EFE6; --stone: #B9B3A8; --mist: #3A3732; --paper-warm: #1F1D1A; --cobalt-tint: #2B3566; }
+</style>
+</head>
+<body>
+<div id="bar">
+  <span class="tag">PRIVATE</span>
+  <span class="title" id="title">Cluster 1 map</span>
+  <button id="btnFind" aria-label="Search and layers">Find</button>
+  <button id="btnKey" aria-label="Legend">Key</button>
+</div>
+<div id="map" role="application" aria-label="Map of cluster 1"></div>
+<div id="panel">
+  <div id="findBox">
+    <h2>Find a company, building, store or coworking site</h2>
+    <input id="q" type="search" placeholder="Type a name or address" autocomplete="off">
+    <div id="results"></div>
+    <h2>Verification walk</h2>
+    <select id="sess" aria-label="Walk session"><option value="">Walk sessions: hidden</option></select>
+    <p class="note">Lines show the order of stops, not the exact path. Times are estimates.</p>
+  </div>
+  <div id="keyBox" style="display:none">
+    <h2>Key</h2>
+    <div class="legend-row"><span class="dot" style="background:#B3261E"></span>Building, security desk (sourced)</div>
+    <div class="legend-row"><span class="dot" style="background:#E37400"></span>Building, loading dock (sourced)</div>
+    <div class="legend-row"><span class="dot" style="background:#1E8E3E"></span>Building, walk-up (sourced)</div>
+    <div class="legend-row"><span class="dot" style="background:#6B675F"></span>Building, lobby unknown (check on the walk)</div>
+    <div class="legend-row"><span class="sq"></span>Coworking site (one potential office; members excluded)</div>
+    <div class="legend-row"><span class="dot" style="background:#2E47C9"></span>Store, tier A (documented local or emerging set)</div>
+    <div class="legend-row"><span class="dot" style="background:#7A8FE8"></span>Store, tier B (specialty; emerging set unverified)</div>
+    <div class="legend-row"><span class="dot" style="background:#9C978C"></span>Store, tier C (mass or private label; landmark)</div>
+    <div class="legend-row"><span class="num" style="width:22px;height:22px;line-height:22px;font-size:12px">1</span>Model route stop (Tuesday, 8 to 11 am, estimate)</div>
+    <p class="note">Bigger building dots hold more candidate offices. Nothing here is verified on foot yet. This page holds company names:
+      never publish it, not even as an unlisted link. Map data &copy; OpenStreetMap contributors.</p>
+  </div>
+</div>
+<script src="__LEAFLET_JS__" integrity="__LEAFLET_JS_SRI__" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+const BRAND_NAME = "__BRAND_NAME__";   // the one place the working name lives on this page
+const DATA = __DATA__;
+document.getElementById("title").textContent = BRAND_NAME + ": cluster 1, private";
+document.title = BRAND_NAME + " cluster 1 private map";
+
+const LOBBY = {"walk-up": "#1E8E3E", "security desk": "#B3261E", "loading dock": "#E37400", "unknown": "#6B675F"};
+const TIER = {"A": "#2E47C9", "B": "#7A8FE8", "C": "#9C978C"};
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const link = (u, t) => u ? `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(t || "source")}</a>` : "";
+
+const map = L.map("map", {zoomControl: true, tap: true}).setView([40.7405, -73.9895], 15);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+const by = {}; DATA.features.forEach(f => { (by[f.properties.layer || f.properties.kind] ||= []).push(f); });
+const companiesByBuilding = {};
+(by["company"] || []).concat(by["near-miss"] || []).forEach(f => {
+  (companiesByBuilding[f.properties.building_id] ||= []).push(f.properties);
+});
+const searchIndex = [];
+
+// boundary
+const gBoundary = L.geoJSON(by["boundary"], {style: {color: "#2E47C9", weight: 3, fillColor: "#2E47C9", fillOpacity: 0.06}})
+  .bindPopup(f => `<h3>Cluster 1 boundary</h3>${esc(f.feature.properties.rule)}`).addTo(map);
+
+function companyLine(p) {
+  const flag = p.lease_status === "signed-not-occupied" ? ` <span class="warn">signed, not moved in (${esc(p.move_in_date || "date unknown")})</span>` :
+               p.lease_status === "moving-out" ? ` <span class="warn">may be moving out</span>` : "";
+  const st = p.candidate_status === "candidate" ? "" : ` <span class="pill">${esc(p.candidate_status)}</span>`;
+  return `<li><b>${esc(p.company_name)}</b> ${esc(p.company_id)}, floor ${esc(p.floor || "unknown")}, ${esc(p.headcount_band)} (${esc(p.headcount_scope)}), ${esc(p.confidence)}${st}${flag} ${link(p.address_source_url, "source " + (p.address_source_date || ""))}</li>`;
+}
+
+// buildings
+const gBuild = L.layerGroup().addTo(map);
+(by["building"] || []).forEach(f => {
+  const p = f.properties, [lon, lat] = f.geometry.coordinates;
+  const n = +p.candidate_company_count || 0;
+  const m = L.circleMarker([lat, lon], {radius: 6 + Math.min(10, n * 1.5), color: "#fff", weight: 2, fillColor: LOBBY[p.lobby_type] || "#6B675F", fillOpacity: 0.95});
+  const list = (companiesByBuilding[p.building_id] || []).sort((a, b) => (a.candidate_status === "candidate" ? 0 : 1) - (b.candidate_status === "candidate" ? 0 : 1));
+  m.bindPopup(`<h3>${esc(p.building_name)}</h3>${p.building_name === p.street_address ? "" : esc(p.street_address)}${p.also_known_as ? " (also " + esc(p.also_known_as) + ")" : ""}${p.building_name === p.street_address && !p.also_known_as ? "" : "<br>"}
+    ${esc(p.building_id)} &middot; lobby: <b>${esc(p.lobby_type)}</b> ${link(p.lobby_source_url)} &middot; COI: ${esc(p.coi_required)}${p.pluto_numfloors ? " &middot; " + esc(p.pluto_numfloors) + " floors" : ""}<br>
+    ${n} candidate office${n === 1 ? "" : "s"}${p.coworking_ids ? " &middot; coworking: " + esc(p.coworking_ids) : ""}${p.retailer_ids ? " &middot; store: " + esc(p.retailer_ids) : ""}
+    <ul>${list.map(companyLine).join("")}</ul>`, {maxWidth: 320});
+  m.addTo(gBuild);
+  searchIndex.push({label: p.building_name, sub: p.street_address + " · building", marker: m, latlng: [lat, lon]});
+  list.forEach(c => searchIndex.push({label: c.company_name, sub: c.street_address + " · " + c.candidate_status, marker: m, latlng: [lat, lon]}));
+});
+
+// near-miss companies outside buildings tab
+const gNear = L.layerGroup();
+(by["near-miss"] || []).forEach(f => {
+  const p = f.properties, [lon, lat] = f.geometry.coordinates;
+  if (p.building_id) return;
+  const m = L.circleMarker([lat, lon], {radius: 5, color: "#fff", weight: 1, fillColor: "#9C978C", fillOpacity: 0.9})
+    .bindPopup(`<h3>${esc(p.company_name)}</h3>${esc(p.street_address)}<br>Near-miss: ${esc(p.candidate_status)}<ul>${companyLine(p)}</ul>`);
+  m.addTo(gNear);
+  searchIndex.push({label: p.company_name, sub: p.street_address + " · near-miss", marker: m, latlng: [lat, lon]});
+});
+
+// coworking
+const gCow = L.layerGroup().addTo(map);
+(by["coworking"] || []).forEach(f => {
+  const p = f.properties, [lon, lat] = f.geometry.coordinates;
+  const icon = L.divIcon({className: "", html: '<div class="sq"></div>', iconSize: [17, 17], iconAnchor: [8, 8]});
+  const m = L.marker([lat, lon], {icon, keyboard: true, title: p.location_name}).bindPopup(
+    `<h3>${esc(p.location_name)}</h3>${esc(p.operator)}<br>${esc(p.street_address)}<br>${esc(p.coworking_id)} &middot; pantry: <b>${esc(p.pantry_control)}</b> &middot; ${esc(p.status)} &middot; ${esc(p.confidence)}<br>
+     ${p.in_boundary === "Y" ? "" : "<span class='warn'>outside the boundary</span><br>"}Members flagged: ${esc(p.tenant_company_ids || "none")} ${link(p.source_url)}`);
+  m.addTo(gCow);
+  searchIndex.push({label: p.location_name, sub: p.street_address + " · coworking", marker: m, latlng: [lat, lon]});
+});
+
+// retailers
+const gRet = L.layerGroup().addTo(map);
+(by["retailer"] || []).forEach(f => {
+  const p = f.properties, [lon, lat] = f.geometry.coordinates;
+  const m = L.circleMarker([lat, lon], {radius: 9, color: "#1F1D1A", weight: 2, fillColor: TIER[p.buy_path_tier] || "#9C978C", fillOpacity: 1})
+    .bindPopup(`<h3>${esc(p.retailer_name)}</h3>${esc(p.street_address)}<br>${esc(p.retailer_id)} &middot; tier ${esc(p.buy_path_tier)} &middot; ${esc(p.confidence)}<br>
+      ${esc(p.shelf_set)}<br>${p.inside_boundary === "Y" ? "Inside the boundary" : esc(p.blocks_outside) + " blocks outside"} &middot; ${esc(p.candidates_within_5_blocks)} candidate offices within 5 blocks
+      <br>${link(p.source_url)} ${p.public_map === "Y" ? "" : "<br><span class='pill'>not on the public map</span>"}`);
+  m.addTo(gRet);
+  searchIndex.push({label: p.retailer_name, sub: p.street_address + " · store", marker: m, latlng: [lat, lon]});
+});
+
+// model route
+const gRoute = L.layerGroup().addTo(map);
+(by["route-line"] || []).forEach(f => L.geoJSON(f, {style: {color: "#E37400", weight: 5, opacity: 0.9}}).addTo(gRoute));
+(by["route-stop"] || []).forEach(f => {
+  const p = f.properties, [lon, lat] = f.geometry.coordinates;
+  const icon = L.divIcon({className: "", html: `<div class="num">${esc(p.stop)}</div>`, iconSize: [32, 32], iconAnchor: [16, 16]});
+  L.marker([lat, lon], {icon, zIndexOffset: 1000, title: "Stop " + p.stop}).bindPopup(
+    `<h3>Stop ${esc(p.stop)}: ${esc(p.company_name)}</h3>${esc(p.street_address)}<br>Lobby: ${esc(p.lobby_type)}<br>
+     Arrive ${esc(p.arrive_est)}, leave ${esc(p.depart_est)}<br>Leg from previous stop: ${esc(p.leg_minutes_est)} min<br><i>All times are estimates.</i>`).addTo(gRoute);
+});
+
+// walk sessions
+const gWalk = L.layerGroup().addTo(map);
+const sessions = {};
+(by["walk-stop"] || []).forEach(f => (sessions[f.properties.session] ||= []).push(f));
+const sel = document.getElementById("sess");
+Object.keys(sessions).sort((a, b) => a - b).forEach(s => {
+  const o = document.createElement("option"); o.value = s;
+  o.textContent = `Session ${s}: ${sessions[s].length} stops`; sel.appendChild(o);
+});
+const oa = document.createElement("option"); oa.value = "all"; oa.textContent = "All sessions"; sel.appendChild(oa);
+function showSession(v) {
+  gWalk.clearLayers();
+  map.closePopup();
+  if (!v) { gRoute.addTo(map); return; }
+  map.removeLayer(gRoute);  // walk numbers and route numbers would clash; re-add the route from the layers button
+  const keys = v === "all" ? Object.keys(sessions) : [v];
+  const pts = [];
+  keys.forEach(k => {
+    const fs = sessions[k].slice().sort((a, b) => a.properties.order - b.properties.order);
+    const line = fs.map(f => [f.geometry.coordinates[1], f.geometry.coordinates[0]]);
+    L.polyline(line, {color: "#2E47C9", weight: 3, dashArray: "6 6"}).addTo(gWalk);
+    fs.forEach((f, i) => {
+      const p = f.properties;
+      const icon = L.divIcon({className: "", html: `<div class="wnum">${v === "all" ? esc(p.session) + "." : ""}${i + 1}</div>`, iconSize: [26, 26], iconAnchor: [13, 13]});
+      L.marker(line[i], {icon, zIndexOffset: 500}).bindPopup(`<h3>Session ${esc(p.session)}, stop ${i + 1}</h3>${esc(p.stops_here)}<br>${esc(p.street_address)}<br>
+        Walk from previous: ${esc(p.walk_minutes_from_previous_est)} min &middot; at stop: ${esc(p.dwell_minutes_est)} min (estimates)`).addTo(gWalk);
+      pts.push(line[i]);
+    });
+  });
+  if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.15));
+}
+sel.addEventListener("change", e => { showSession(e.target.value); panel.classList.remove("open"); });
+
+L.control.layers(null, {
+  "Boundary": gBoundary, "Buildings (tap for offices)": gBuild, "Coworking": gCow, "Stores": gRet,
+  "Model route": gRoute, "Walk session": gWalk, "Near-miss outside the line": gNear
+}, {collapsed: true, position: "topright"}).addTo(map);
+
+// locate
+const Loc = L.Control.extend({options: {position: "topleft"}, onAdd() {
+  const a = L.DomUtil.create("a", "leaflet-bar"); a.href = "#"; a.title = "Show my location"; a.setAttribute("role", "button");
+  a.innerHTML = "&#9678;"; a.style.cssText = "display:block;width:40px;height:40px;line-height:40px;text-align:center;font-size:22px;background:#fff;color:#1F1D1A;";
+  L.DomEvent.on(a, "click", e => { L.DomEvent.preventDefault(e); map.locate({setView: true, maxZoom: 18}); });
+  return a; }});
+map.addControl(new Loc());
+let me = null;
+map.on("locationfound", e => { if (me) me.remove(); me = L.circle(e.latlng, {radius: e.accuracy, color: "#2E47C9"}).addTo(map); });
+
+// panel
+const panel = document.getElementById("panel");
+function openPanel(which) {
+  const isFind = which === "find";
+  document.getElementById("findBox").style.display = isFind ? "" : "none";
+  document.getElementById("keyBox").style.display = isFind ? "none" : "";
+  panel.classList.toggle("open", !(panel.classList.contains("open") && panel.dataset.which === which));
+  panel.dataset.which = which;
+  if (isFind && panel.classList.contains("open")) setTimeout(() => document.getElementById("q").focus(), 50);
+}
+document.getElementById("btnFind").onclick = () => openPanel("find");
+document.getElementById("btnKey").onclick = () => openPanel("key");
+map.on("click", () => panel.classList.remove("open"));
+const q = document.getElementById("q"), res = document.getElementById("results");
+q.addEventListener("input", () => {
+  const t = q.value.trim().toLowerCase(); res.innerHTML = "";
+  if (t.length < 2) return;
+  searchIndex.filter(s => (s.label + " " + s.sub).toLowerCase().includes(t)).slice(0, 25).forEach(s => {
+    const d = document.createElement("div"); d.innerHTML = `${esc(s.label)}<small>${esc(s.sub)}</small>`;
+    d.onclick = () => { panel.classList.remove("open"); map.setView(s.latlng, 18); s.marker.openPopup(); };
+    res.appendChild(d);
+  });
+});
+map.fitBounds(gBoundary.getBounds().pad(0.02));
+</script>
+</body>
+</html>

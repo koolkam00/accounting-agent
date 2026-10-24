@@ -1,49 +1,90 @@
 PASS baseline: no integrity failures and no error cells  [[] []]
-   baseline low -3871, end 12014, steady per hour 81.14, next drop per hour 16.21
+   baseline low -4126, end 11759, steady per hour 81.14, next drop per hour 16.21
+PASS [R1-02] publication default = plan high end $2,000, low $250, high $2,000  [(2000, 250, 2000)]
+PASS [R1-02] low point -$4,126, capital to commit $5,126, gap to $6,510 $1,384  [(-4126, 5126, 1384)]
+PASS [R1-02] one-brand campaigns to recover startup cash = 5  [5]
+PASS [R1-18c] Drop_Actuals: drop without actuals shows a blank contribution and $0 allocations  [(None, 0)]
+PASS [R1-11] insurance prepaid beyond the six months = $700 (annual premium, five cover months inside)  [700]
+PASS [R1-11] all-in rate uses expensed overhead: $2,010 paid less $700 prepaid  [1310]
+PASS [R1-07] week-26 cash, roadmap only, is below the view with decision-window drops  [(3189, 11759)]
+PASS [R1-07] all-in rate, roadmap only, is below the view with decision-window drops  [(33.76, 52.54)]
+PASS [R1-07] Schedule needs 12 new brand wins (60 qualified conversations) by DRP-005's sign-by date  [(12, 60)]
+PASS [R1-04] DRP-005 debrief (T+10) is 2027-04-20 and flagged after the decision; Dashboard counts 1  [(datetime.datetime(2027, 4, 20, 0, 0), 'after the decision', 1)]
+PASS [R1-16] Gate 3 rate with a roster of one drop per office a month = $51.4 (8 offices added, 82 h on run 2)  [(51.4093959731544, 61.28)]
+PASS [R1-14] Gate 2 follows campaign zero (2027-01-22) and insurance binds at Gate 1 (2026-12-11)  [(datetime.datetime(2027, 1, 22, 0, 0), datetime.datetime(2026, 12, 11, 0, 0))]
+PASS [R1-14][R2-07] publication timing 2026-12-04 and certificate 2027-01-15 (formulas of the filing date, Thu 2026-11-19)  [(datetime.datetime(2026, 12, 4, 0, 0), datetime.datetime(2027, 1, 15, 0, 0))]
+PASS [R1-12] the company name sits in one cell only  [['Inputs!C8']]
+PASS [R1-13][R2-09d] 'Planning estimates' label in rows 1 to 4 of every tab built on defaults, Cash_Ledger included
+PASS [R1-18a] Plan_Check has a colour rule for 'differs, as expected'
+PASS [R1-15] README explains why founding renewals default to 0 and what each one changes
+PASS [R1-05] README names the Dashboard rows that move with the price
 PASS price $180: standard runs per hour rises  [61.28 -> 75.25]
-PASS price $180: cash at week 26 rises  [12014 -> 15506]
-PASS price $180: inputs-changed count = 1 and plan checks still reproduce (scenario rows use plan prices)  [changed 1]
+PASS price $180: cash at week 26 rises  [11759 -> 15251]
+PASS price $180: inputs-changed count = 1  [changed 1]
 PASS price $180: no integrity failures  [[] []]
+PASS [R1-05] price $180: Dashboard shows the price in force  [180]
+PASS [R1-05] price $180: 'A standard drop at that price' moves from $73.7 to $90.4 an hour  [(73.6538461538462, 90.4423076923077)]
+PASS [R1-03] price $180: break-even per brand on a standard drop moves (it no longer reads the fixed plan row)  [(1276.67, 1567.67)]
 PASS bank transfer: campaign zero contribution = $960  [960]
-PASS bank transfer: low point improves  [-3871 -> -3835]
+PASS bank transfer: low point improves  [-4126 -> -4090]
 PASS bank transfer: no integrity failures  [[] []]
 PASS home storage: standard run hard costs = $595  [595]
 PASS home storage: no storage paid in the cash flow
 PASS home storage: steady-state overhead = $160  [160]
+PASS [R1-03] bank transfer plus home storage: break-even per brand on a standard drop moves  [(1276.67, 1346.67)]
+PASS [R1-03] bank transfer plus home storage: no integrity failures  [[] []]
 PASS insurance monthly: five payments of $100 inside the window  [-500]
-PASS insurance monthly: low point improves  [-3871 -> -2871]
+PASS insurance monthly: low point improves  [-4126 -> -3126]
 PASS insurance monthly: no integrity failures  [[] []]
+PASS [R1-11] insurance monthly: nothing prepaid, all-in rate unchanged  [(0, 52.537216828479, 52.537216828479)]
 PASS close rate 10%: hours per win = 9.75  [9.75]
 PASS close rate 10%: standard runs per hour falls
+PASS [R1-07] close rate 10%: DRP-005 cumulative conversations implied = 120  [120]
 PASS two brands per standard drop: runs 1 and 2 carry 2 brands and per hour falls  [(2, 43.9814814814815)]
 PASS two brands per standard drop: no integrity failures  [[] []]
+PASS [R1-03] two brands per standard drop: break-even campaigns move with brands per drop  [(1276.66666666667, 1187.5)]
 PASS goal of 20 offices: run 2 recruits 10 new offices and its hours rise  [(10, 82)]
 PASS goal of 20 offices: the run-2 fatigue warning clears  [ok]
+PASS [R1-16] goal of 20 offices: no offices to add, so the two Gate 3 rates agree  [(51.4093959731544, 51.4093959731544)]
 PASS scenario A: no integrity failures  [[] []]
-   scenario A: D4 brands 3 renewals 1; D5 brands 3 renewals 1; end cash 12014; steady contrib 9406; steady net 9406; steady per hour 99.6398305084746
+   scenario A: D4 brands 3 renewals 1; D5 brands 3 renewals 1; end cash 11759; steady contrib 9406; steady net 9406; steady per hour 99.6398305084746
 PASS A: steady state at $180 per office earns more than base
 PASS scenario B: no integrity failures  [[] []]
-   scenario B: D4 brands 3 renewals 0; D5 brands 3 renewals 0; end cash 12014; steady contrib 7660; steady net 8160; steady per hour 73.6538461538462
-PASS B: no renewals scheduled and office-paid revenue $500  [500]
+   scenario B: D4 brands 3 renewals 0; D5 brands 3 renewals 0; end cash 11759; steady contrib 7660; steady net 7660; steady per hour 73.6538461538462
+PASS B: no renewals scheduled and office-paid revenue $500 shown  [500]
+PASS [R1-10] B: unpriced office-paid revenue is left out of the net (net = contribution less unabsorbed overhead)  [(7660, 'no: cost to serve needs quote')]
+PASS [R1-10] B: the Dashboard says office-paid revenue is left out
 PASS scenario C: no integrity failures  [[] []]
-   scenario C: D4 brands 3 renewals 1; D5 brands 0 renewals 0; end cash 7729; steady contrib 7660; steady net 7660; steady per hour 81.1440677966102
+   scenario C: D4 brands 3 renewals 1; D5 brands 0 renewals 0; end cash 7474; steady contrib 7660; steady net 7660; steady per hour 81.1440677966102
 PASS C: only one decision-window drop runs
 PASS scenario D: no integrity failures  [[] []]
-   scenario D: D4 brands 0 renewals 0; D5 brands 0 renewals 0; end cash 3444; steady contrib 0; steady net -310; steady per hour n/a
+   scenario D: D4 brands 0 renewals 0; D5 brands 0 renewals 0; end cash 3189; steady contrib 0; steady net -310; steady per hour n/a
 PASS D: no decision-window drops and zero steady state
 PASS D: cash at week 26 below base
+PASS [R1-07] D: with no decision-window drops the two six-month views agree (all-in and week-26 cash)  [(33.7621145374449, 33.7621145374449, 3189, 3189)]
+PASS [R1-10] B with a $50 cost to serve: the office tier counts in the net (+$500 - $250)  [('yes', 7910)]
 PASS zero brands on run 1: the drop does not run, cost 0
 PASS zero brands on run 1: no integrity failures  [[] []]
+PASS [R1-09] zero brands on run 1: it recruits no offices and run 2 fills the roster instead  [(0, 7)]
+PASS [R1-09] zero brands everywhere: no drop recruits an office and 'active offices planned' is 0  [([0, 0, 0, 0, 0], 0)]
+PASS [R1-09] zero brands everywhere: no error cells
 PASS one office on run 1: finite per hour  [-2.60989010989011]
 PASS three renewals on D4: brand sales 6 h  [6]
 PASS a Friday drop is flagged and fails the schedule check
 PASS a drop in the December blackout is flagged
-PASS an added drop flows into the cash flow (deposit inside the window)  [12014 -> 16299]
+PASS an added drop flows into the cash flow (deposit inside the window)  [11759 -> 16044]
 PASS an added drop shows as a changed schedule row  [1]
-PASS added drop: no integrity failures  [[] []]
+PASS added drop: no integrity failures (per-drop cash still adds up to the cash flow)  [[] []]
+PASS [R1-14] Gate 1 slips to 2026-12-18: insurance bind and licence follow, and only one input shows as changed  [(datetime.datetime(2026, 12, 18, 0, 0), datetime.datetime(2026, 12, 18, 0, 0), 1)]
+PASS [R1-14][R2-07] Gate 0 slips to 2026-11-20: filing moves to Fri 2026-11-27 (4 business days, skipping Thanksgiving) and publication to Fri 2026-12-11  [(datetime.datetime(2026, 11, 27, 0, 0), datetime.datetime(2026, 12, 11, 0, 0))]
+PASS [R1-14] campaign zero moves to Wed 2027-01-13: Gate 2 follows to 2027-01-25  [2027-01-25 00:00:00]
+PASS [R1-14] campaign zero moves: no integrity failures  [[] []]
+PASS [R1-06] an extra column pasted after 'survey_responses_min_office' is flagged, and no helper is overwritten  [['Actuals_Campaigns: header row differs from HANDOFF, or something is pasted in the blank buffer columns']]
+PASS [R1-06] a renamed Pipeline header, a value beside Hours_Log and an extra drop-cost column are each flagged  [['Actuals_DropCosts: header row differs from HANDOFF, or something is pasted in the blank buffer columns', 'Hours_Log: header row differs from HANDOFF, or something is pasted in the blank buffer columns', 'Pipeline: header row differs from HANDOFF, or something is pasted in the blank buffer columns']]
+PASS [R1-08] the same brand's 'yes' logged twice counts once, and a 'maybe' with $1,500 does not count  [1]
 PASS SAMPLE: no integrity or data failures  [[] []]
-   gate rows: {"Test": "Status", "Office conversations held (context)": "info", "Offices yes in principle, with owner and receiving window": "pass", "Brand conversations held (context)": "info", "Brands that would pay $500 or more and control the budget": "pass", "Offices signed": "pass", "Combined Tuesday headcount of signed offices": "pass", "Brands paid in full": "pass", "Units placed within one business day (share of delivered)": "pass", "Brand campaigns under 5 survey responses per office (must be 0)": "miss", "Reports late (after T+7) or missing (must be 0)": "pass", "Brands that would buy again": "pass", "Renewals at $1,500 or more, signed by the review date": "not yet", "Contribution per founder hour, standard runs": "not yet"}
-   gate overall: {'Gate': 'Overall', 'Gate 0': 'pass', 'Gate 1': 'pass', 'Gate 2': 'miss', 'Gate 3': 'not yet'}
+   gate rows: {"Office conversations held (context)": "info", "Offices yes in principle, with owner and receiving window": "pass", "Brand conversations held (context)": "info", "Brands that would pay $500 or more and control the budget": "pass", "Offices signed": "pass", "Combined Tuesday headcount of signed offices": "pass", "Brands paid in full": "pass", "Units placed within one business day (share of delivered)": "pass", "Brand campaigns under 5 survey responses per office (must be 0)": "miss", "Reports late (after T+7) or missing (must be 0)": "pass", "Brands that would buy again": "pass", "Renewals at $1,500 or more, signed by the review date": "not yet", "Contribution per founder hour, standard runs": "not yet: 2 standard run(s) without actuals", "Standard runs dated by the review date with actuals in (the rate above uses only these; threshold = all of them)": "2 without actuals"}
+   gate overall: {'Gate 0': 'pass', 'Gate 1': 'pass', 'Gate 2': 'miss', 'Gate 3': 'not yet'}
 PASS SAMPLE: Gate 0 passes (5 offices yes, 3 brands at $500+ controlling budget; duplicate row and non-controller ignored)  [pass]
 PASS SAMPLE: Gate 1 passes (5 signed, 510 headcount, 2 paid)  [pass]
 PASS SAMPLE: Gate 2 misses (one campaign under 5 responses per office)  [miss]
@@ -54,10 +95,41 @@ PASS SAMPLE: placement within a day = 450/500  [0.9]
 PASS SAMPLE: live basis switches to actual  [actual]
 PASS SAMPLE: actual receipts replace plan receipts for DRP-001 (both $1,200, in week 7)  [(0, 1200)]
 PASS SAMPLE: actual drop costs hit the cash flow on the drop date (week 12)  [-160]
+PASS SAMPLE: actual cash for DRP-001 inside the window = $1,200 - $160 = $1,040  [1040]
 PASS SAMPLE: Toggl hours read = 2.25  [2.25]
 PASS SAMPLE: weekly hours log sums all hand and Toggl hours  [58.25]
-PASS SAMPLE: scenario pointer has data  [between scenarios: see the rule]
+PASS [R1-18d] SAMPLE: with placement data but no renewal answers the pointer says 'not enough data: no renewal answers yet'  [not enough data: no renewal answers yet]
 PASS SAMPLE: median office probe = 150  [150]
+PASS [R1-18] SAMPLE: a typed bank balance in week 13 gives the latest week and its variance  [(13, 1090)]
+PASS [R1-04] after the decision date, renewal 0%, five offices at $100+, no extra drop with actuals: the rule waits instead of saying Stop  [not yet: the switch test needs 2 more extra drop(s) with actuals (plan: run two more drops first)]
+PASS [R1-04] renewal 0%, five offices at $100+, two extra drops with actuals: Switch to office-paid  [Switch to office-paid]
+PASS [R1-04] renewal 0%, four offices, two extra drops with actuals, after the date: Stop (both tests fail)  [Stop: both tests fail]
+PASS [R1-04] renewal between 30% and 40%: the rule stays silent  [Rule silent: renewal between 30% and 40%]
+PASS [R2-01] audit: no INDEX over a one-row range without a row argument, and at least 6,000 written as INDEX(range, 1, column)  [(0, 6027)]
+PASS [R2-01] the README's post-import cells read as expected: Scenarios!H10 = 2 and Cash_Flow!C35 = 12 (week of the low point)  [(2, 12)]
+PASS [R2-01] scenario A: the selector picks column D (post-decision price $180) and the low-point week is still found  [(180, 12)]
+PASS [R2-07] attorney Wed 2026-11-18, LLC filing Thu 2026-11-19, accountant Fri 2026-11-20  [[datetime.datetime(2026, 11, 18, 0, 0), datetime.datetime(2026, 11, 19, 0, 0), datetime.datetime(2026, 11, 20, 0, 0)]]
+PASS [R2-07] mailbox (Include Y) and registered agent (Include N) lines are blank and flagged 'needs quote'  [('needs quote (legal pack)', 'N')]
+PASS [R2-07] insurance status reads 'plan estimate (legal pack)'  [plan estimate (legal pack); three quotes before binding]
+PASS [R2-07] a $120 mailbox quote flows into week 1 and deepens the low point by $120; capital tie-out still holds  [(-4246, -220, [])]
+PASS [R2-08] stop points: Gate 0 paid out -$160, Gate 1 paid out -$3,120 with $1,200 received that day, Gate 1 week end -$3,856 (Cash_Flow week 7)  [(-160, -3120, 1200, -3856)]
+PASS [R2-08] stop points: at the decision date paid out plus received equals week-26 cumulative cash ($11,759)  [(-7441, 19200, 11759)]
+PASS [R2-09a] README price text is live: '(now $150)' at defaults, '(now $180)' after the edit  [("Inputs, section 3, 'Standard price per office' (now $150). T", "Inputs, section 3, 'Standard price per office' (now $180). T")]
+PASS [R2-09b] a value in Actuals_Campaigns AK (last buffer column) is flagged  [['Actuals_Campaigns: header row differs from HANDOFF, or something is pasted in the blank buffer columns']]
+PASS [R2-09c] break-even: 3 brand campaigns, which is 1 standard drop at three brands  [(3, 1)]
+PASS [R2-06] zero standard brands: storage start is blank, no storage is paid and nothing errors  [(None, 0, [], [])]
+PASS [R2-03] 100 hours logged with a blank drop_id lower both all-in rates and the detail names them  [(100, 27.18, 44.6, 'campaign zero and the standard runs, with all six months of overhead (expensed basis) and ')]
+PASS [R2-03] 20 logged hours (fewer than the planned 45) leave the all-in rates on the plan's 45 hours  [(33.7621145374449, 33.7621145374449)]
+PASS [R2-04] $100 + $50 is not paid in full; $300 + $300 is: Gate 1 counts 1 brand paid in full, 2 with any payment  [(1, 2)]
+PASS [R2-05] medians use one before-anchor answer per organisation: brands $600 (400, 800), after-anchor $1,250 (1,500, 1,000), offices $100 (150, 50)  [(600, 1250, 100)]
+PASS [R2-05] Gate 0 still counts a brand whose after-anchor answer clears $500 and who controls the budget (2: B-1 and B-2; B-3 does not control it)  [2]
+PASS [R2-02] DRP-002 in, DRP-003 not (as of 2027-03-15): the Gate 3 rate reads 'not yet: 1 standard run(s) without actuals' and Gate 3 is not a pass  [('not yet: 1 standard run(s) without actuals', 'not yet')]
+PASS [R2-02] the pointer and coverage line name the drops with results due that have no actuals (1 of 3 in)  [('1 of 3', 'not enough data: no renewal answers yet; 2 drop(s) with results due have no actuals yet, so this can change')]
+PASS [R2-02] SAMPLE Gate 3 run: no integrity or data failures  [([], [])]
+PASS [R2-02] the six-month goal 'contribution per founder hour, standard runs' follows the same rule (not yet while DRP-003 has no actuals)  [not yet: 1 standard run(s) without actuals]
+PASS [R2-02] with both standard runs in, the rate is judged on all of them and Gate 3 passes (renewal at $1,500 yes, rate above $50)  [('pass', 'pass', 61.28)]
 PASS bad activity key and bad event are flagged as data failures  [['Hours_Log: invalid activity keys', 'Pipeline: rows with a bad event or side']]
+PASS [R1-17] every file in csv/ has one snake_case header row and rows of equal length (snapshots sit in csv/snapshots/)  [(21, [])]
 
-54 of 54 tests pass
+125 of 125 tests pass
+exit 0

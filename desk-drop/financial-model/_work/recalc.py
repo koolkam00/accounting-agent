@@ -3,6 +3,7 @@
 
 Usage:
   python3 recalc.py [path.xlsx] [--csv OUTDIR] [--quiet]
+  --csv writes clean one-header CSV tables to OUTDIR and human-readable tab snapshots to OUTDIR/snapshots.
 
 Converts the workbook to xlsx in a temp folder (LibreOffice computes every
 formula on load), reads it with openpyxl data_only=True, prints the checks
@@ -109,6 +110,11 @@ if __name__ == "__main__":
     wb, res = recalc(path)
     rows, fails, errs = report(wb, quiet)
     if csvdir:
-        export_csv(wb, csvdir, ["Dashboard", "Inputs", "Scenarios", "Schedule", "Drop_PnL", "Cash_Flow", "Steady_State", "Sensitivity", "Plan_Check", "Capital", "Checks"])
-        print("csv written to", csvdir)
+        # human-readable tab dumps (titles, banners, several header rows) go to snapshots/; clean one-header tables to csvdir
+        export_csv(wb, os.path.join(csvdir, "snapshots"), ["Dashboard", "Inputs", "Scenarios", "Schedule", "Drop_PnL", "Cash_Flow", "Steady_State",
+                                                           "Sensitivity", "Plan_Check", "Capital", "Checks"])
+        import export_clean
+        for name, n in export_clean.export(wb, csvdir):
+            print(f"  {name:34s} {n} rows")
+        print("csv written to", csvdir, "(clean tables) and", os.path.join(csvdir, "snapshots"), "(tab snapshots)")
     sys.exit(1 if (fails or errs) else 0)

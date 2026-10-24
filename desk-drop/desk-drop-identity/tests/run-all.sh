@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# run-all.sh: every automated test for the identity system. Run from anywhere:
+# run-all.sh: every automated test for the identity system (v1.1: part 2 documents added). Run from anywhere:
 #   bash tests/run-all.sh
 # Needs Node 18+ with Playwright and ImageMagick (convert, montage). Optional QR decode test
 # needs jsQR and pngjs: set DD_QR_DECODER to a folder where `npm install jsqr pngjs` was run.
@@ -61,6 +61,11 @@ else
 fi
 expect 0 "name-length test (Dropp, Desk Drop Collective)" node tests/name-length/run-name-test.js
 expect 0 "guide walkthrough (stranger fills the card from USAGE-GUIDE.md section 2)" node tests/guide-walkthrough/walkthrough.js
+
+# part 2: documents, signature, avatar (v1.1)
+expect 0 "swap test: a new brand onto the card from the guide alone, under 10 minutes; every box the guide names exists" node tests/guide-walkthrough/swap-test.js
+expect 0 "signature builds with filled SAMPLE details (tests/signature/out-filled/)" node render/build-signature.js --brand tests/signature/SAMPLE-brand-filled.json --out tests/signature/out-filled
+expect 0 "documents, report, proposal, signature and avatar (53 checks in tests/documents/doc-tests.js)" node tests/documents/doc-tests.js
 
 rm -rf "$TMP"
 echo "----"

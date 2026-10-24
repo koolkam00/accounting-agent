@@ -1,0 +1,408 @@
+{
+ "type": "FeatureCollection",
+ "name": "cluster-1-public",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73.989846,
+       40.747854
+      ],
+      [
+       -73.982226,
+       40.744591
+      ],
+      [
+       -73.989392,
+       40.734952
+      ],
+      [
+       -73.986862,
+       40.733868
+      ],
+      [
+       -73.987787,
+       40.732625
+      ],
+      [
+       -73.99232,
+       40.734566
+      ],
+      [
+       -73.992112,
+       40.734846
+      ],
+      [
+       -73.997729,
+       40.737251
+      ],
+      [
+       -73.989846,
+       40.747854
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "kind": "boundary",
+    "name": "Flatiron, NoMad and Union Square"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.999072,
+     40.733799
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-025",
+    "name": "LifeThyme Natural Market",
+    "address": "410 Sixth Avenue",
+    "buy_path_tier": "A",
+    "shelf_set": "independent natural and organic grocer",
+    "inside_boundary": "N",
+    "blocks_outside": "5",
+    "as_of": "2026-10-24",
+    "map_number": 1
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.99152,
+     40.730604
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-024",
+    "name": "Wegmans Astor Place",
+    "address": "770 Broadway",
+    "buy_path_tier": "A",
+    "shelf_set": "large supermarket with natural, organic and specialty sets (store nav lists 'Living Gluten Free' and 'Active & Sports Nutrition')",
+    "inside_boundary": "N",
+    "blocks_outside": "4",
+    "as_of": "2026-10-24",
+    "map_number": 2
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.991535,
+     40.734649
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-011",
+    "name": "Whole Foods Market Union Square",
+    "address": "4 Union Square South",
+    "buy_path_tier": "A",
+    "shelf_set": "natural and organic supermarket; local and emerging set",
+    "inside_boundary": "Y",
+    "blocks_outside": "0",
+    "as_of": "2026-10-24",
+    "map_number": 3
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.99549,
+     40.745314
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-021",
+    "name": "Whole Foods Market Chelsea",
+    "address": "250 Seventh Avenue",
+    "buy_path_tier": "A",
+    "shelf_set": "natural and organic supermarket; local and emerging set",
+    "inside_boundary": "N",
+    "blocks_outside": "4",
+    "as_of": "2026-10-24",
+    "map_number": 4
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.985346,
+     40.743465
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-010",
+    "name": "Whole Foods Market NoMad",
+    "address": "63 Madison Avenue",
+    "buy_path_tier": "A",
+    "shelf_set": "natural and organic supermarket; local and emerging set",
+    "inside_boundary": "Y",
+    "blocks_outside": "0",
+    "as_of": "2026-10-24",
+    "map_number": 5
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.998678,
+     40.734279
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-023",
+    "name": "Citarella Greenwich Village",
+    "address": "424 Sixth Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "gourmet market; shelf set unverified (operator site blocked)",
+    "inside_boundary": "N",
+    "blocks_outside": "4",
+    "as_of": "2026-10-24",
+    "map_number": 6
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.988569,
+     40.731868
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-013",
+    "name": "Westside Market NYC (84 Third Ave)",
+    "address": "84 Third Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "gourmet neighbourhood market; emerging set unverified",
+    "inside_boundary": "N",
+    "blocks_outside": "1",
+    "as_of": "2026-10-24",
+    "map_number": 7
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.993965,
+     40.735034
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-012",
+    "name": "Merci Market Union Square",
+    "address": "59 Fifth Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "upscale deli and grocery ('more than a deli'; pantry staples); emerging set unverified",
+    "inside_boundary": "N",
+    "blocks_outside": "1",
+    "as_of": "2026-10-24",
+    "map_number": 8
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.999107,
+     40.738773
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-018",
+    "name": "Westside Market NYC (77 Seventh Ave)",
+    "address": "77 Seventh Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "gourmet neighbourhood market ('highest quality foods and hard-to-find products'); emerging set unverified",
+    "inside_boundary": "N",
+    "blocks_outside": "2",
+    "as_of": "2026-10-24",
+    "map_number": 9
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.986314,
+     40.735054
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-016",
+    "name": "Westside Market NYC (180 Third Ave)",
+    "address": "180 Third Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "gourmet neighbourhood market; emerging set unverified",
+    "inside_boundary": "N",
+    "blocks_outside": "2",
+    "as_of": "2026-10-24",
+    "map_number": 10
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.982789,
+     40.735855
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-026",
+    "name": "Wholesome Organic Market",
+    "address": "343 Second Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "small organic market (going by the name); unverified",
+    "inside_boundary": "N",
+    "blocks_outside": "6",
+    "as_of": "2026-10-24",
+    "map_number": 11
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.983582,
+     40.737638
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-020",
+    "name": "Eden Gourmet Marketplace Gramercy Park",
+    "address": "275 Third Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "gourmet and specialty grocer; emerging set unverified",
+    "inside_boundary": "N",
+    "blocks_outside": "4",
+    "as_of": "2026-10-24",
+    "map_number": 12
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.995264,
+     40.74382
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-017",
+    "name": "Westside Market NYC (170 West 23rd St)",
+    "address": "170 West 23rd Street",
+    "buy_path_tier": "B",
+    "shelf_set": "gourmet neighbourhood market; emerging set unverified",
+    "inside_boundary": "N",
+    "blocks_outside": "2",
+    "as_of": "2026-10-24",
+    "map_number": 13
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.989863,
+     40.742166
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-001",
+    "name": "Eataly NYC Flatiron",
+    "address": "200 Fifth Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "Italian specialty market (imported Italian grocery; counters and restaurants)",
+    "inside_boundary": "Y",
+    "blocks_outside": "0",
+    "as_of": "2026-10-24",
+    "map_number": 14
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.991183,
+     40.744352
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-003",
+    "name": "Fairway Market Chelsea",
+    "address": "766 Sixth Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "specialty supermarket (organic produce, specialty cheese and meats); emerging set unverified",
+    "inside_boundary": "Y",
+    "blocks_outside": "0",
+    "as_of": "2026-10-24",
+    "map_number": 15
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.97677,
+     40.74271
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-029",
+    "name": "Fairway Market Kips Bay",
+    "address": "550 Second Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "specialty supermarket; emerging set unverified",
+    "inside_boundary": "N",
+    "blocks_outside": "7",
+    "as_of": "2026-10-24",
+    "map_number": 16
+   }
+  }
+ ]
+}

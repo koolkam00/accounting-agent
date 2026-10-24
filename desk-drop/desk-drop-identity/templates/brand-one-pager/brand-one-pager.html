@@ -39,10 +39,21 @@
   .bp .ladder-note { margin-top: .05in; }
   .bp .vis figcaption { font-size: 8.5pt; line-height: 1.35; margin-top: .06in; }
   .bp .never { border: 2px solid var(--dd-ink); padding: .08in .12in; }
-  .bp .next { border-top: 2px solid var(--dd-ink); padding-top: .08in; display: flex; justify-content: space-between; gap: .3in; align-items: baseline; }
-  .bp .next p { font-size: 10pt; }
-  .bp .next .who { white-space: nowrap; font-size: 10pt; }
+  .bp .next { border-top: 2px solid var(--dd-ink); padding-top: .08in; display: flex; flex-wrap: wrap; justify-content: space-between; column-gap: .3in; row-gap: .02in; align-items: baseline; }
+  .bp .next p { font-size: 10pt; margin: 0; }
+  .bp .next p + p { margin-top: 0; }
+  .bp .next .who { white-space: nowrap; font-weight: 700; }
+  .bp .excl { margin-top: .08in; }
+  /* give-way steps (fit): tight text, then smaller rung notes, then tighter gaps and lead */
   .bp.tight p, .bp.tight li { font-size: 8.6pt; line-height: 1.32; }
+  .bp.tight .next p { font-size: 9.5pt; }
+  .bp.s-rung .ladder .rung .rv { font-size: 8.5pt; line-height: 1.2; }
+  .bp.s-gap .g6 { row-gap: .12in; margin-top: .12in; }
+  .bp.s-gap .roster { margin-top: .08in; }
+  .bp.s-lead .lead { font-size: 9.5pt; }
+  .bp.s-lead h1.title { font-size: 16pt; }
+  .bp.s-list p, .bp.s-list li { font-size: 8.5pt; line-height: 1.28; }
+  .bp.s-list ul.ticks li, .bp.s-list ul.plain li { margin-bottom: .02in; }
 </style>
 </head>
 <body>
@@ -117,29 +128,30 @@
           <section class="sec s3"><h2>What a campaign includes</h2>${list(r.includes, 'plain')}</section>
           <section class="sec s3">
             <div class="price"><p class="kicker">Price</p><table>
-              <tr><td class="amt">${X.usd(O.founding.price)}</td><td><b>Founding: ${O.founding.offices} offices</b> (${X.usd(O.founding.per_office)} each). Our first ${['', 'one', 'two', 'three', 'four', 'five'][O.founding.brands_offered] || O.founding.brands_offered} brands only. Paid in full on signing. Your next ${['', 'one', 'two', 'three'][O.founding.locked_campaigns] || O.founding.locked_campaigns} campaigns stay at ${X.usd(O.founding.per_office)} per office.</td></tr>
-              <tr><td class="amt">${X.usd(O.standard.price)}</td><td><b>Standard: ${O.standard.offices} offices</b> (${X.usd(O.standard.per_office)} each). ${O.standard.deposit_pct}% on signing, ${100 - O.standard.deposit_pct}% when every placement photo is in.</td></tr>
+              <tr><td class="amt">${X.usd(O.founding.price)}</td><td><b>Founding: ${O.founding.offices} offices</b> (${X.usd(O.founding.per_office)} each). Our first ${['', 'one', 'two', 'three', 'four', 'five'][O.founding.brands_offered] || O.founding.brands_offered} brands only. Paid in full on signing. Your next ${['', 'one', 'two', 'three'][O.founding.locked_campaigns] || O.founding.locked_campaigns} campaigns stay at ${X.usd(O.founding.per_office)} per office, for up to ${O.founding.lock_max_offices} offices.</td></tr>
+              <tr><td class="amt">${X.usd(O.standard.price)}</td><td><b>Standard: ${O.standard.offices} offices</b> (${X.usd(O.standard.per_office)} each). ${O.standard.deposit_pct}% on signing, ${100 - O.standard.deposit_pct}% on our placement confirmation.</td></tr>
               <tr><td class="amt">${X.usd(O.extra_office)}</td><td><b>Each extra office</b>, same terms. No free pilots: the founding price is the trial.</td></tr></table></div>
             <div class="never" style="margin-top:.12in"><p>${X.t(r.never)}</p></div>
           </section>
           <section class="sec s6"><h2>What we count, and what we don't</h2>${ladder}<p class="note ladder-note">${X.t(r.ladder_note)}</p></section>
           <section class="sec s3"><h2>You fit if all seven are true</h2>${list(r.fit)}</section>
-          <section class="sec s3"><h2>You send</h2>${list(r.send, 'plain')}<h2 style="margin-top:.12in">Not for</h2><p>${X.t(r.excluded)}</p></section>
-          <section class="sec s6 next"><p>${X.t(r.next)}</p><div class="who">${X.contact(' · ', ['FOUNDER_NAME', 'PHONE', 'EMAIL'])}</div></section>
+          <section class="sec s3"><h2>You send</h2>${list(r.send, 'plain')}<p class="excl"><b>Not for:</b> ${X.t(r.excluded)}</p></section>
+          <section class="sec s6 next"><p>${X.t(r.next)}</p><p class="who">${X.contact(' · ', ['FOUNDER_NAME', 'PHONE', 'EMAIL'])}</p></section>
         </div>
       </div>
       ${X.footer(`${X.brandName()} · ${DD.text(DD.contact('POSTAL_ADDRESS'))}`, DD.escape(DD.brand().TAGLINE || ''))}
     </div>`;
   }
 
+  // Give-way order: tighter text, smaller ladder notes, tighter gaps, smaller lead and title,
+  // list text to the 8.5 pt floor. Never: the prices, the rung names, the contact line.
   function fit(sheet, r, i) {
     const pg = sheet.querySelector('.page');
-    let tight = false, cardIn = 1.75;
-    const steps = [
-      () => { if (!tight) { tight = true; pg.classList.add('tight'); return true; } },
-    ];
+    const done = [];
+    const step = (cls) => () => { if (!pg.classList.contains(cls)) { pg.classList.add(cls); done.push(cls); return true; } };
+    const steps = ['tight', 's-rung', 's-gap', 's-lead', 's-list'].map(step);
     X.fitPages(sheet, i, steps, 'The one-pager');
-    sheet.dataset.fit = JSON.stringify({ tight, card_in: cardIn });
+    sheet.dataset.fit = JSON.stringify({ steps: done });
   }
 
   DD.init({

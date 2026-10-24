@@ -2,7 +2,7 @@
 
 # 06 · General liability quote request script
 
-Version 0.5 · 2026-10-24
+Version 0.7 · 2026-10-24
 
 **The company in this file.** "The Company" means **[COMPANY NAME: Desk Drop LLC]**, a New York single-member LLC (not yet formed; see `04-formation-checklist.md`). This is the only place the name is set.
 
@@ -25,11 +25,11 @@ Version 0.5 · 2026-10-24
 >
 > **The products.** Only sealed, individually packaged, shelf-stable snacks and drinks with the brand's own commercial label, including ingredients and allergens. Nothing refrigerated or perishable, nothing that needs preparation, no alcohol, cannabis, CBD or dietary supplements. Every brand must carry product liability insurance of at least \$1 million and add us as an additional insured, as a vendor, before it ships.
 >
-> **How we handle them.** The brand ships its sealed cases to one address: [STORAGE LOCATION TYPE: my apartment / a small self-storage unit] in [BOROUGH]. We count them and check dates, then keep the sealed cases at room temperature, clean, dry, off the floor, away from heat and as the label directs, from arrival until the campaign ends (usually two to three weeks, up to about four around the December holidays). Before delivery we move sealed units, unopened, from the brand's shipping cartons into one delivery box per office, and add a printed card that repeats the brand's own text and allergen line. We never open, alter, repack or relabel an individual unit, never cook, serve, portion or hand out food in cups, and run no tastings, demonstrations or events.
+> **How we handle them.** The brand ships its sealed cases to one address: [STORAGE LOCATION TYPE: my apartment / a small self-storage unit] in [BOROUGH]. We count them and check dates, then keep the sealed cases at room temperature, clean, dry, off the floor, away from heat and as the label directs, from arrival until the campaign ends (usually two to three weeks, up to about four around the December holidays; leftover units the brand asks back can wait up to ten more business days for its return label, so up to about six weeks in all). Before delivery we move sealed units, unopened, from the brand's shipping cartons into one delivery box per office, and add a printed card that repeats the brand's own text and allergen line. We never open, alter, repack or relabel an individual unit, never cook, serve, portion or hand out food in cups, and run no tastings, demonstrations or events.
 >
 > **Deliveries.** About once a month at first, on a Tuesday or Wednesday morning, to five to ten offices within walking distance of each other. The owner delivers by hand truck, using a car service or a rented van between stops [OWN CAR: I do not own a car / I own a car and may use it]. A courier company may do some deliveries later. At each office, the pantry owner puts the products in the pantry next to the card, or lets us place them. Employees take them if they want.
 >
-> **Volume.** First campaign, January 2027: about 550 units for two brands, five offices. After that, up to about 1,650 units for three brands and ten offices per delivery day, and from about the third campaign brands ship straight to the offices, so we hold less. Expected revenue for the first 12 months: [12-MONTH REVENUE ESTIMATE, from `financial-model/`]. Payroll: \$0.
+> **Volume.** First campaign, January 2027: about 550 units for two brands, five offices. After that, up to about 1,650 units for three brands and ten offices per delivery day, and from about the third campaign brands ship straight to the offices or to one consolidation point, so we hold less or nothing. Expected revenue for the first 12 months: [12-MONTH REVENUE ESTIMATE, from `financial-model/`]. Payroll: \$0.
 >
 > **Buildings.** Some office buildings require a certificate of insurance naming the building owner and managing agent as additional insureds before we deliver.
 
@@ -65,7 +65,7 @@ Write each answer in the comparison table (section 3) as you go.
 **E. Gaps to know about**
 15. If a brand's product is damaged or stolen while we are holding it, does this policy cover it? If not, what would (some insurers sell "bailee" coverage for other people's property in your care; IRMI, opened 2026-10-23)? A quote for that is optional; stop at any cost.
 16. Does the policy cover a backup person who runs a delivery route for one day if the owner is ill? What changes if we pay them? (The plan requires workers' compensation the day anyone is hired, including part-time delivery help.)
-17. Does storing the cases at [STORAGE LOCATION TYPE] change anything? (Ask your renters or homeowners insurer, and check your lease, about business property at home.)
+17. Does storing the cases at [STORAGE LOCATION TYPE] change anything? (Ask your renters or homeowners insurer, and check your lease, about business property at home.) If it is not your home, see file 07, follow-up 7 (FDA food facility registration; a private residence is not a facility, 21 CFR 1.227) before you bind, and tell the carrier the answer.
 18. Would you recommend professional liability for the reports we write for brands, and at what price? Optional; stop at any cost.
 
 **F. Money and terms**
@@ -145,3 +145,5 @@ Write each answer in the comparison table (section 3) as you go.
 - Round 4 (2026-10-24), final full read: no changes beyond wording.
 - Merge (2026-10-24): renumbered 20 to 06; version 0.5; cross-references updated to the new numbers; "part A/part B" wording removed.
 - Merge review (2026-10-24): broker, question 10 now cites the office agreement's written promise to name a building; inspector, the storage sentence follows the label, word for word as in files 07, 10 and 11.
+- Review round 2 (2026-10-24), version 0.6: the holding time now includes the up to ten business days leftover units can wait for a brand's return label (up to about six weeks in all), the same sentence as files 07, 09 and 11; later campaigns may ship to one consolidation point, so "we hold less or nothing".
+- Review round 3 (2026-10-24), version 0.7: question 17 now sends a storage place other than home to file 07's federal registration question before binding.

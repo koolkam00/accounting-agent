@@ -2,7 +2,7 @@
 
 # 01 · Name-check log: trademark, state entity and domains
 
-Version 0.6 · 2026-10-24
+Version 0.7 · 2026-10-24
 
 **The name being checked.** `BRAND_NAME = Desk Drop` (working name, not cleared). This is the only place in this file where the name is set. Every search below used this name and its spellings: "desk drop", "deskdrop", "desk-drop", "desk drops", "deskdrops". To check a new name, change this line, rerun every row of the log, and keep this version as history.
 
@@ -33,7 +33,7 @@ Version 0.6 · 2026-10-24
 
 Keep the working name, or pick a fallback before anything is printed or filed? The plan's own rule is that if the working name is taken, "pick a fallback now rather than after printing cards". Nobody has registered it, but another business uses it for food gifts delivered to offices, and the USPTO has called it descriptive.
 
-**Recommended default:** treat it as taken. In week 1, shortlist two fallback names, preferably coined or unusual words rather than descriptions, and run this whole log on each (about an hour per name; the steps below and `_work/namecheck/scripts/` make it repeatable). Choose by the end of week 3 (Fri 2026-11-13, derived), before the LLC is filed. Keep the working name only if the attorney, shown this log, says the risk is acceptable. The attorney hour (`08-attorney-hour-agenda.md`, item 1) is set for week 4, before the filing day, so that answer arrives before the LLC name is fixed. The LLC name is the costly one to change later: an amendment is \$60 (LLC Law §1101(g), opened 2026-10-23), plus new bank, insurance and agreement paperwork. Until you decide, private discovery calls under the working name can go ahead.
+**Recommended default:** treat it as taken. In week 1, shortlist two fallback names, preferably coined or unusual words rather than descriptions, and run this whole log on each (about an hour per name; the steps below and `_work/namecheck/scripts/` make it repeatable). Have both fallbacks checked by the end of week 3 (Fri 2026-11-13, derived), so the attorney sees all three names. Choose by Wed 2026-11-18, at the attorney hour (`08-attorney-hour-agenda.md`, item 1), before the LLC is filed. Keep the working name only if the attorney, shown this log, says the risk is acceptable. The LLC is never filed before that hour (file 04), so the answer always arrives before the LLC name is fixed. The LLC name is the costly one to change later: an amendment is \$60 (LLC Law §1101(g), opened 2026-10-23), plus new bank, insurance and agreement paperwork. Until you decide, private discovery calls under the working name can go ahead.
 
 ## For the attorney hour
 
@@ -126,3 +126,4 @@ RDAP "404 Not found" means the registry holds no record today. It is not a promi
 - Round 4 (2026-10-24), final full read: wording only (".nyc may require", "kept for the record", domain count 13, rerun step names the .com and .nyc rows).
 - Merge (2026-10-24): version 0.5; the name line now uses the pack-wide `BRAND_NAME` form and the name appears once; the attorney question points to file 08, held in week 4 before filing.
 - Review round 1 (2026-10-24), version 0.6: finding 2 now records Elior's granted extension (TSDR, 2025-12-29) before the abandonment, as row 9 already did.
+- Review round 2 (2026-10-24), version 0.7: one decision date: fallbacks checked by Fri 2026-11-13, the name chosen by Wed 2026-11-18 at the attorney hour, which always comes before filing (file 04).

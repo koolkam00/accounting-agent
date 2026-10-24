@@ -1,21 +1,13 @@
-Drop schedule
-"One row per drop. Edit dates, delivery model, offices, brands and renewals. Rows marked derived are the simplest schedule that meets the plan; founder to confirm."
-"Drop days are Tuesday or Wednesday only; no window may overlap a blackout (Lists). Set 'Actuals in' to Y once a drop's actuals are pasted, and the model switches that drop from plan to actual."
-Yellow = your input. Blue = follows Inputs or the scenario in force; type over it to replace. Red 'changed' = the row no longer matches the derived default.
-,,,,,,,,,,,,,,,,,,,,,,,,,,Derived defaults (for the 'Changed' flag; do not edit)
-drop_id,Label,Basis,Post-Gate-3 sequence,Drop date,Day,Delivery model,Tier,Offices,New offices,Brands,of which renewals,of which founding-rate renewals,Actuals in (Y/N),Notes,Tue or Wed?,Window closes (T+4),Blackout clash?,Units brands ship (incl. reserve),Row check,Office slots on drops in the last four weeks,Roster to date (new offices so far),Office fatigue,Changed from the derived default?,,,default date,default model,default tier,default offices,default new offices,default brands,default renewals,default founding renewals
-DRP-001,Campaign zero (founding),derived: CONTRACTS s3,,2027-01-12,Tue,founder,founding,5,5,2,0,0,N,Stretch option Tue 2026-12-08 only if both brands pay by 2026-11-20. Brands asked to ship by 2026-12-22.,ok,2027-01-19,ok,550,ok,5,5,ok,,,,2027-01-12,founder,founding,5,5,2,0,0
-DRP-002,Standard run 1,derived: CONTRACTS s3,,2027-02-09,Tue,courier,standard,10,5,3,0,0,N,Campaigns one and two: founder plus courier (plan). New offices fill the drop: five take the roster from 5 to 10.,ok,2027-02-16,ok,1650,ok,10,10,ok,,,,2027-02-09,courier,standard,10,5,3,0,0
-DRP-003,Standard run 2,derived: CONTRACTS s3,,2027-02-23,Tue,courier,standard,10,2,3,0,0,N,"New offices reach the six-month goal of 12 active offices (two). Two weeks after run 1, so most offices get two drops in February.",ok,2027-03-01,ok,1650,ok,20,12,some offices get a second drop within four weeks,,,,2027-02-23,courier,standard,10,2,3,0,0
-DRP-004,Decision window drop 1,derived: scenario,1,2027-03-23,Tue,direct-ship,standard,10,0,3,1,0,N,"Campaign three onward: brands ship direct (plan). Brands, renewals and new offices follow the scenario in force.",ok,2027-03-29,ok,1650,ok,10,12,ok,,,,2027-03-23,direct-ship,standard,10,0,3,1,0
-DRP-005,Decision window drop 2,derived: scenario,2,2027-04-06,Tue,direct-ship,standard,10,0,3,1,0,N,Second extra drop before the decision (scenario B's 'two more drops'; two drops a month in the base).,ok,2027-04-12,ok,1650,ok,20,12,some offices get a second drop within four weeks,,,,2027-04-06,direct-ship,standard,10,0,3,1,0
-DRP-006,,founder entry,,,,,,,,,,,N
-DRP-007,,founder entry,,,,,,,,,,,N
-DRP-008,,founder entry,,,,,,,,,,,N
-DRP-009,,founder entry,,,,,,,,,,,N
-DRP-010,,founder entry,,,,,,,,,,,N
-DRP-011,,founder entry,,,,,,,,,,,N
-DRP-012,,founder entry,,,,,,,,,,,N
-,Totals,,,,,,,45,12,14,2,0,,,,,,7150
-
-,Offices column counts every office on the drop; New offices counts the ones visiting for the first time (4 hours each instead of 1). Brands counts brand campaigns on the drop; renewals are part of that count (2 hours each instead of 6 or 10). Tier sets the price of the new brands; founding-rate renewals pay the founding rate per office.
+drop_id,label,basis,post_gate_3_sequence,drop_date,day,delivery_model,tier,offices,new_offices,brands,of_which_renewals,of_which_founding_rate_renewals,actuals_in_y_n,notes,tue_or_wed,window_closes_t_plus_4,blackout_clash,units_brands_ship_incl_reserve,row_check,office_slots_on_drops_in_the_last_four_weeks,roster_to_date_new_offices_so_far,office_fatigue,changed_from_the_derived_default,sign_by_latest_deposit_or_full_payment,new_brand_wins_needed_brands_less_renewals,qualified_brand_conversations_implied_wins_close_rate,wins_needed_cumulative_to_this_sign_by_date,conversations_implied_cumulative,actual_brands_paid_by_this_sign_by_date_pipeline,actual_brand_conversations_by_this_sign_by_date_pipeline,debrief_t_plus_10,results_after_the_decision_date,debrief_date_if_after_the_decision,offices_to_add_so_none_gets_two_drops_within_four_weeks,standard_drop_that_runs_its_date_sets_the_storage_start
+DRP-001,Campaign zero (founding),derived: CONTRACTS s3,,2027-01-12,Tue,founder,founding,5,5,2,0,0,N,Stretch option Tue 2026-12-08 only if both brands pay by 2026-11-20. Brands asked to ship by 2026-12-22.,ok,2027-01-19,ok,550,ok,5,5,ok,,2026-12-11,2,10,2,10,0,0,2027-01-27,ok,,0,
+DRP-002,Standard run 1,derived: CONTRACTS s3,,2027-02-09,Tue,courier,standard,10,5,3,0,0,N,"Campaigns one and two: founder plus courier (plan). New offices fill the drop: five take the roster from 5 to 10. No founding renewal: its latest signature (T-10, 2027-01-26) is two business days after the campaign-zero report.",ok,2027-02-16,ok,1650,ok,10,10,ok,,2027-01-26,3,15,5,25,0,0,2027-02-24,ok,,0,2027-02-09
+DRP-003,Standard run 2,derived: CONTRACTS s3,,2027-02-23,Tue,courier,standard,10,2,3,0,0,N,"New offices reach the six-month goal of 12 active offices (two). Two weeks after run 1, so most offices get two drops in February. No founding renewal by default (README assumption 18).",ok,2027-03-01,ok,1650,ok,20,12,some offices get a second drop within four weeks,,2027-02-08,3,15,8,40,0,0,2027-03-09,ok,,8,2027-02-23
+DRP-004,Decision window drop 1,derived: scenario,1,2027-03-23,Tue,direct-ship,standard,10,0,3,1,0,N,"Campaign three onward: brands ship direct (plan). Brands, renewals and new offices follow the scenario in force. Not in the plan's roadmap table; derived from the decision rule's 'two extra drops'.",ok,2027-03-29,ok,1650,ok,10,12,ok,,2027-03-09,2,10,10,50,0,0,2027-04-06,ok,,0,2027-03-23
+DRP-005,Decision window drop 2,derived: scenario,2,2027-04-06,Tue,direct-ship,standard,10,0,3,1,0,N,"Second extra drop (scenario B's 'two more drops'; two drops a month in the base). Its debrief (T+10) lands after the 2027-04-09 decision: see REPORT.md, question 1.",ok,2027-04-12,ok,1650,ok,20,12,some offices get a second drop within four weeks,,2027-03-23,2,10,12,60,0,0,2027-04-20,after the decision,2027-04-20,8,2027-04-06
+DRP-006,,founder entry,,,,,,,,,,,N,,,,,,,,,,,,,,,,,,,,,,
+DRP-007,,founder entry,,,,,,,,,,,N,,,,,,,,,,,,,,,,,,,,,,
+DRP-008,,founder entry,,,,,,,,,,,N,,,,,,,,,,,,,,,,,,,,,,
+DRP-009,,founder entry,,,,,,,,,,,N,,,,,,,,,,,,,,,,,,,,,,
+DRP-010,,founder entry,,,,,,,,,,,N,,,,,,,,,,,,,,,,,,,,,,
+DRP-011,,founder entry,,,,,,,,,,,N,,,,,,,,,,,,,,,,,,,,,,
+DRP-012,,founder entry,,,,,,,,,,,N,,,,,,,,,,,,,,,,,,,,,,

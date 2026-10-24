@@ -1,0 +1,174 @@
+Inputs
+Every assumption in one labeled cell. Yellow cells are inputs. Blue cells are inputs that follow another cell by default; type over them to replace. Grey cells are calculated; do not type over them.
+"All defaults are planning estimates from plan.md, never forecasts. 'Plan default' keeps the original figure; 'Changed' flags any cell you edit."
+
+
+1. Company and calendar
+key,Assumption,Value,Unit,Low,High,Status,Source,Notes,Plan default,Changed?
+company_name,"Company name (working name, not yet cleared)",Desk Drop,text,,,working name,Prompt; CONTRACTS s2 rename-ability,The only cell that holds the company name. Rename here and every tab follows. Not counted as a change.,not tracked
+tagline,"Tagline (working, may change)",Emerging brands. Delivered to your workday.,text,,,working,Prompt; CONTRACTS s2,The only cell that holds the tagline.,not tracked
+week1_start,Week 1 starts (Monday),2026-10-26,date,,,"derived, founder to confirm",CONTRACTS.md section 3 (canonical calendar),Week n starts on this date plus 7 x (n - 1) days.,2026-10-26
+gate0_date,Gate 0 review (end of week 3),2026-11-13,date,,,"derived, founder to confirm",CONTRACTS.md section 3 (canonical calendar),,2026-11-13
+gate1_date,Gate 1 review (end of week 7),2026-12-11,date,,,"derived, founder to confirm",CONTRACTS.md section 3 (canonical calendar),,2026-12-11
+gate2_date,"Gate 2 review (campaign zero report, T+7)",2027-01-22,date,,,"derived, founder to confirm",CONTRACTS.md section 3 (canonical calendar),"Follows the Gate 2 drop on Schedule: its date plus the report deadline (T+7, 2027-01-22 by default). Moved from the plan's week 9 because campaign zero moved to 2027-01-12 (December blackout collision).",2027-01-22
+gate3_date,Gate 3 review,2027-03-12,date,,,"derived, founder to confirm",CONTRACTS.md section 3 (canonical calendar),Week 20; replaces the plan's week 16.,2027-03-12
+decision_date,Six-month decision (end of week 24),2027-04-09,date,,,"derived, founder to confirm",CONTRACTS.md section 3 (canonical calendar),,2027-04-09
+as_of_override,As-of date override (blank = today),,date,,,setting,Model setting,Leave blank to use today's date. Type a date to see gates and the next drop as of that day.
+as_of,As-of date in use,2026-10-24,date,,,calculated,Model
+days_per_week,Days per week,7,days,,,conversion,Calendar,,7
+weeks_per_year,Weeks per year,52,weeks,,,conversion,Calendar,,52
+months_per_year,Months per year,12,months,,,conversion,Calendar,,12
+weeks_per_month,Weeks per month,4.3333,weeks,,,calculated,Weeks per year / months per year
+hours_per_day,Hours per day (converts Toggl durations),24,hours,,,conversion,Calendar,,24
+window_bd,Campaign window,5,business days,,,planning estimate,"plan.md, What brands buy: 'Five business days'",T is day 1; the window closes at T+4.,5
+debrief_bd,Debrief this many business days after the drop (T+10),10,business days,,,planning estimate,CONTRACTS.md section 3 (canonical calendar) (debrief at T+10),"Used to flag a decision-window drop whose results land after the decision date (Schedule, Dashboard).",10
+llc_filing_bd,LLC Articles filed this many business days after Gate 0,4,business days,,,"derived, founder to confirm","desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update), Articles timing: 'never before the attorney hour; earliest Thu 2026-11-19'","Sets the filing date in section 11: Fri 2026-11-13 plus 4 business days is Thu 2026-11-19, the day after the attorney hour.",4
+attorney_bd,Attorney hour held this many business days after Gate 0,3,business days,,,"derived, founder to confirm","desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update), attorney_hour timing: 'booked at Gate 0 ... held early in week 4, by Wed 2026-11-18'",Sets the attorney payment date in section 11 (Wed 2026-11-18).,3
+accountant_bd,Accountant hour held this many business days after Gate 0,5,business days,,,"derived, founder to confirm","desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update), accountant_hour timing: 'held in week 4, by Fri 2026-11-20'",Sets the accountant payment date in section 11 (Fri 2026-11-20).,5
+pub_order_bd,Newspaper publication ordered this many business days after the LLC filing,10,business days,,,"derived, founder to confirm","desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update), publication timing: 'Order within 10 business days of filing'","Sets the publication payment date in section 11 (Fri 2026-12-04, skipping Thanksgiving).",10
+pub_weeks,Weekly newspaper runs before the Certificate of Publication is filed,6,weeks,,,planning estimate,"plan.md, Legal table: 'publish in two newspapers for six weeks'",Sets the certificate's payment date in section 11.,6
+drop_prefix,Drop ID prefix,DRP-,text,,,convention,CONTRACTS s6.5 (DRP-###),Toggl projects named DRP-001 etc. map to drops.,DRP-
+office_window_days,An office should get at most one drop in this many days,28,days,,,"derived, founder to confirm","plan.md, What has to be true #4: 'Offices accept one drop a month'","Four weeks counts as monthly, so drops 28 days apart do not flag. Used for the office-fatigue warning on Schedule.",28
+
+2. Scenario in force
+key,Assumption,Value,Unit,Low,High,Status,Source,Notes,Plan default,Changed?
+active_scenario,Scenario applied to drops after Gate 3 and to the steady state,Plan base,list,,,setting,"plan.md, After the first standard runs: decision scenarios",Plan base = the plan's 'What has to be true'. A to D = the plan's four decision situations. See the Scenarios tab.,Plan base
+
+3. Prices and payment terms
+key,Assumption,Value,Unit,Low,High,Status,Source,Notes,Plan default,Changed?
+price_std_office,Standard price per office,150,USD per office,,,planning estimate,"plan.md, Revised model: Price table","$1,500 for 10 offices. Change this cell to test a price.",150
+std_pkg_offices,Standard package size,10,offices,,,planning estimate,"plan.md, Revised model: Price table",,10
+std_pkg_price,Standard package price,1500,USD per brand,,,calculated,Price per office x package offices
+price_fnd_office,Founding price per office,120,USD per office,120,180,planning estimate,"plan.md, Revised model: Price table",$600 for 5 offices. The plan's summary table once said $600 to $900; the decided price is $600 (low end shown as default).,120
+fnd_pkg_offices,Founding package size,5,offices,,,planning estimate,"plan.md, Revised model: Price table",,5
+fnd_pkg_price,Founding package price,600,USD per brand,,,calculated,Price per office x package offices
+extra_office_price,Extra office beyond the package,150,USD per office,,,planning estimate,"plan.md, Revised model: Price table",Applies to offices beyond 5 (founding) or 10 (standard). Founding renewals stay at the founding rate per office for any office count.,150
+founding_cap,Founding tier closes after,3,brands,,,planning estimate,"plan.md, Revised model: Price table",'First three brands only'.,3
+founding_lock,Founding price locked for,2,further campaigns,,,planning estimate,"plan.md, Revised model: Price table",,2
+fnd_upfront_share,Founding: share paid before product ships,1,share,,,planning estimate,"plan.md, Revised model: Price table",'Paid in full before product ships'.,1
+fnd_pay_lead_bd,Founding: payment lands this many business days before the drop,20,business days,,,"derived, founder to confirm",CONTRACTS.md section 3 (canonical calendar),Campaign zero's payment at Gate 1 (Fri 2026-12-11) is 20 business days before the Tue 2027-01-12 drop.,20
+std_deposit_share,Standard: share invoiced at signature,0.5,share,,,planning estimate,"plan.md, Revised model: Price table","50% at signature, 50% at placement confirmation.",0.5
+std_sign_lead_bd,Standard: signature (deposit) this many business days before the drop,10,business days,,,"derived, founder to confirm","plan.md, campaign calendar (brand ships at T-10)",The latest signature that still lets the brand ship at T-10. Later cash is the conservative reading; the plan proposes drop dates three to four weeks out.,10
+balance_lag_bd,Standard: balance invoiced this many business days after the drop,1,business days,,,"derived, founder to confirm","plan.md, What brands buy: placement within one business day",Placement confirmation at T+1.,1
+payment_lag_days,Days from invoice to cash,,calendar days,,,needs founder decision,Not in the plan,"The plan states no invoice-to-cash lag. Blank = cash lands the day it is invoiced. Enter your invoice terms, for example 15."
+processing_rate,Card processing rate,0.03,share of revenue,,,planning estimate,"plan.md, Economics: hard-cost table",Card fees. Zero by bank transfer.,0.03
+processing_on,"Brands pay by card? 1 = yes, 0 = bank transfer",1,toggle,0,1,setting,"plan.md, Economics: hard-cost table","1 is the high end of the plan's 0% to 3% range and matches its scenario rows. 0 is the plan's preferred invoicing (Wave, bank transfer).",1
+
+4. Drop size defaults (feed the derived Schedule rows) and units
+key,Assumption,Value,Unit,Low,High,Status,Source,Notes,Plan default,Changed?
+c0_offices,Offices on campaign zero,5,offices,,,planning estimate,"plan.md, scenario table: 'Campaign zero: 2 founding brands, 5 offices'",,5
+c0_brands,Brands on campaign zero,2,brands,,,planning estimate,"plan.md, scenario table and Gate 1 ('2 brands paid')",,2
+std_offices_drop,Offices per standard drop,10,offices,,,planning estimate,"plan.md, 'Standard runs of 10 offices and 3 brands per drop'",,10
+std_brands_drop,Brands per standard drop,3,brands,,,planning estimate,"plan.md, What has to be true #1: 'Three brands per drop'",Feeds the standard Schedule rows and the plan-base scenario.,3
+units_per_office,Units per office per brand,50,units,,,planning estimate,"plan.md, What brands buy","Sized to Tuesday headcount (floor 30, ceiling 80).",50
+reserve_share,Reserve the brand ships on top,0.1,share,,,planning estimate,"plan.md, What brands buy",,0.1
+
+5. Hard costs and monthly overhead
+key,Assumption,Value,Unit,Low,High,Status,Source,Notes,Plan default,Changed?
+kit_per_office,"Display kit per office per drop (card, allergen line, case label)",8,USD per office per drop,,,planning estimate,"plan.md, Economics: hard-cost table","Plan reading (a): per office per drop, not per brand. Only this reproduces the scenario hard costs.",8
+card_extra,Extra tent card per additional brand per office,,USD per card,1,2,needs founder decision,"plan.md, Hardware: tent cards roughly $1 to $2 each","Reading (a) keeps one $8 kit per office even on a three-brand drop. If each brand needs its own card, enter $1 to $2."
+founder_transport,Founder delivery (car rides) per drop,120,USD per drop,,,planning estimate,"plan.md, Economics: hard-cost table",'You delivering costs about $120 in car rides.',120
+courier_per_stop,Courier per stop,30,USD per stop,25,40,"planning estimate, needs quote","plan.md, Economics: hard-cost table",$300 for a ten-stop route is $30 a stop; plan range $25 to $40. No reliable published rate; get three quotes.,30
+direct_transport,Transport when brands ship direct,0,USD per drop,,,planning estimate,"plan.md, scenario table, direct-ship row",Plan reading (c): the $370 direct-ship row carries $0 transport.,0
+kit_mail_per_office,Mailing the display kit ahead (direct-ship),,USD per office,,,needs quote,"plan.md, Delivery by phase: '... mails the display kit ahead'",The plan gives no figure. Blank counts as $0.
+kit_print_bd,Kits printed this many business days before the drop,3,business days,,,planning estimate,"plan.md, campaign calendar: T minus 3",,3
+storage_choice,Storage,unit,list,,,setting,"plan.md, Economics: hard-cost table","unit = small storage unit; home = sealed cases at home, $0.",unit
+storage_monthly,Storage unit per month,150,USD per month,,,planning estimate,"plan.md, Economics: hard-cost table",Allocation is half: $75 a drop at two drops a month.,150
+storage_start,Storage unit rented from,2027-02-01,date,,,"derived, founder to confirm",Plan reading (b),"Follows Schedule: the first day of the month of the first standard drop that runs (2027-02-01 by default). Blank when no standard drop runs. Campaign zero stays at home, which is how its $280 reproduces.",2027-02-01
+storage_end,Storage unit released (blank = keep),,date,,,setting,Plan reading (c),"Blank keeps the unit through the window, as the plan's direct-ship row keeps the $75."
+software_monthly,Software per month,60,USD per month,7,81,planning estimate,"plan.md, Economics: Capital to the first six months; Tools table",$360 for six months. Tools table sums to $7 to $81; the plan caps software under $60.,60
+software_start,Software paid from,2026-10-26,date,,,"derived, founder to confirm","plan.md, Week 1 setup",Follows week 1.,2026-10-26
+insurance_monthly,General liability insurance per month,100,USD per month,41.6667,125,plan estimate (legal pack); three quotes before binding,"plan.md, Economics: hard-cost table; desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update)","'Roughly $100 a month'. Capital table range $500 to $1,500 a year, shown here per month. The legal pack carries $1,200 a year as a plan estimate and asks for a quote before binding.",100
+insurance_billing,Insurance billing,annual,list,,,setting,"plan.md, Economics: Capital to the first six months",annual = one year's premium paid at bind (capital table 'one year').,annual
+insurance_bind,Insurance bound on,2026-12-11,date,,,"derived, founder to confirm","plan.md, setup checklist: 'At Gate 1 pass: Insurance bound'",Follows Gate 1. The legal pack's latest bind date is 2026-12-21.,2026-12-11
+phone_monthly,Phone per month,0,USD per month,,,planning estimate,"plan.md, Tools: 'Your phone', Google Voice $0",,0
+alloc_drops_month,Drops per month used to allocate overhead to a drop,2,drops per month,,,planning estimate,"plan.md, Economics: hard-cost table",Insurance $100 a month over two drops = $50; software $60 = $30; storage $150 = $75.,2
+
+6. Founder hours (rates; the plan's table is reproduced on Plan_Check)
+key,Assumption,Value,Unit,Low,High,Status,Source,Notes,Plan default,Changed?
+h_first_brand,Brand sales per first (founding) brand,10,hours per brand,,,planning estimate,"plan.md, Economics: founder-hour table","'20 (10 per brand, first ones)'.",10
+close_rate,Close rate on qualified brand conversations,0.2,share,,,planning estimate,"plan.md, What has to be true #2",One close from five.,0.2
+h_per_conv,Hours per qualified conversation,0.75,hours,,,planning estimate,"plan.md, Economics: 'conversations of 45 minutes'",,0.75
+h_paperwork,Proposal and paperwork per win,2.25,hours,,,"derived, founder to confirm","plan.md, Economics: founder-hour table","6 - 5 x 0.75, so the plan's six hours per win reproduces at a 20% close rate.",2.25
+h_win,Brand sales per standard win,6,hours per brand,,,calculated,Conversations per win x hours each + paperwork,6.0 at plan inputs. Falls as the close rate rises.
+h_renewal,Brand sales per renewal,2,hours per renewal,,,planning estimate,"plan.md, Economics: 'A renewal takes about two hours'",,2
+h_new_office,Office recruiting per new office,4,hours per office,,,planning estimate,"plan.md, Economics: founder-hour table",'20 (4 per new office)'.,4
+h_existing_office,Office coordination per existing office,1,hours per office,,,planning estimate,"plan.md, Economics: founder-hour table",'10 (1 per existing office)'.,1
+rk_per_brand,Receiving and kitting per brand,0.5,hours per brand,,,"derived, founder to confirm","plan.md, Economics: founder-hour table","(4 - 3) / (3 - 1): 1-brand drop 3 h, 3-brand drop 4 h.",0.5
+rep_per_brand,Reporting and debriefs per brand,2,hours per brand,,,planning estimate,"plan.md, Economics: founder-hour table",'6 (2 per brand)'.,2
+admin_per_drop,Admin and invoicing per drop,2,hours per drop,,,planning estimate,"plan.md, Economics: founder-hour table",,2
+discovery_hours_week,"Discovery hours per week, weeks 1 to 3 (not tied to a drop)",15,hours per week,10,15,planning estimate,"plan.md, Time budget: 'Phases 0 and 1 need 10 to 15 hours a week'",High end. Weeks 4 to 7 selling and recruiting already sit in campaign zero's 57 hours. Used only in the six-month all-in view.,15
+discovery_weeks,Discovery weeks,3,weeks,,,planning estimate,"plan.md, Phase 0 (weeks 1 to 3)",,3
+
+7. Costs and hours that depend on the delivery model
+key,Delivery model,Transport per drop (USD),Transport per stop (USD),Kit mailing per office (USD),Receiving and kitting base (h),Drop day per office (h),Checks and pickup per office (h),Derivation from the plan's hour table
+model_table,founder,120,0,0,2,1,0.6,"Campaign zero column (2 brands, 5 offices): receiving 3 = 2.0 + 0.5 x 2; drop day 5 h / 5 offices; checks 3 h / 5 offices."
+model_table,courier,0,30,0,2.5,0.8,0.4,1-brand and 3-brand columns (10 offices): receiving 3 = 2.5 + 0.5 x 1 and 4 = 2.5 + 0.5 x 3; drop day 8 h / 10; checks 4 h / 10.
+model_table,direct-ship,0,0,0,0.5,0.3,0.4,"Direct-ship column (3 brands, 10 offices): receiving 2 = 0.5 + 0.5 x 3; drop day 3 h / 10; checks 4 h / 10."
+
+"8. Renewal, steady state and founder capital"
+key,Assumption,Value,Unit,Low,High,Status,Source,Notes,Plan default,Changed?
+renewal_rate_base,Brands that renew within 90 days,0.4,share,,,planning estimate,"plan.md, What has to be true #3","Used by the 'Plan base' scenario. Renewals cost 2 hours instead of 6, which is why they matter more than price.",0.4
+plan_ss_drops,Drops per month in the plan's monthly picture,2,drops per month,,,planning estimate,"plan.md, Monthly picture at steady state",,2
+ss_model,Steady-state delivery model,courier,list,,,setting,Plan reading (e),The plan's monthly picture is two three-brand courier drops. Direct-ship lifts contribution per hour.,courier
+ss_offices,Steady-state offices per drop,10,offices,,,calculated,Offices per standard drop (section 4)
+founder_cash,Cash the founder commits to the first six months,,USD,,,needs founder decision,"plan.md, What I need from you #7","Blank until you decide. The plan's range is $3,360 to $6,510."
+founder_cash_date,Founder cash goes in on,2026-10-26,date,,,setting,Model setting,Follows week 1.,2026-10-26
+reserve_usd,Reserve held back (not spent),1000,USD,,,planning estimate,"plan.md, Economics: Capital to the first six months",,1000
+
+"9. Gate thresholds, decision rule and six-month goals"
+key,Assumption,Value,Unit,Low,High,Status,Source,Notes,Plan default,Changed?
+g0_office_yes,Gate 0: offices yes in principle,5,offices,,,planning estimate,"plan.md, Gate 0","Of 15 conversations, with a pantry owner and receiving window named.",5
+g0_office_conv,Gate 0: office conversations planned,15,conversations,,,planning estimate,"plan.md, Phase 0",,15
+g0_brand_yes,Gate 0: brands that would pay the threshold and control the budget,3,brands,,,planning estimate,"plan.md, Gate 0",,3
+g0_brand_usd,Gate 0: brand willingness-to-pay threshold,500,USD per campaign,,,planning estimate,"plan.md, Gate 0",,500
+g0_brand_conv,Gate 0: brand conversations planned,15,conversations,,,planning estimate,"plan.md, Phase 0",,15
+g1_offices,Gate 1: signed offices,5,offices,,,planning estimate,"plan.md, Gate 1",,5
+g1_headcount,Gate 1: combined Tuesday headcount of signed offices,350,people,,,planning estimate,"plan.md, Gate 1",,350
+g1_brands_paid,Gate 1: brands paid in full,2,brands,,,planning estimate,"plan.md, Gate 1",,2
+g2_drop_id,Gate 2: drop tested (campaign zero),DRP-001,drop_id,,,setting,"plan.md, Gate 2",,DRP-001
+g2_placed,Gate 2: units placed within one business day,0.8,share of delivered,,,planning estimate,"plan.md, Gate 2",,0.8
+g2_responses,Gate 2: survey responses per office,5,responses,,,planning estimate,"plan.md, Gate 2",,5
+g2_report_bd,Gate 2: report delivered within,7,business days,,,planning estimate,"plan.md, Gate 2; CONTRACTS s3 (T+7)",,7
+g2_rebuy,Gate 2: brands that would buy again,1,brands,,,planning estimate,"plan.md, Gate 2",,1
+g3_renewals,Gate 3: renewals at the threshold price,1,renewals,,,planning estimate,"plan.md, Gate 3",,1
+g3_renewal_usd,Gate 3: renewal price threshold,1500,USD,,,planning estimate,"plan.md, Gate 3",,1500
+g3_per_hour,Gate 3: contribution per founder hour,50,USD per hour,,,planning estimate,"plan.md, Gate 3",,50
+dr_scale_renewal,Decision rule: scale if renewal at least,0.4,share,,,planning estimate,"plan.md, decision rule",,0.4
+dr_switch_offices,Decision rule: offices that named the office-paid threshold,5,offices,,,planning estimate,"plan.md, decision rule",,5
+dr_switch_usd,Decision rule: office-paid threshold,100,USD per month,,,planning estimate,"plan.md, decision rule",,100
+dr_switch_renewal,Decision rule: switch if renewal under,0.3,share,,,planning estimate,"plan.md, decision rule",,0.3
+dr_extra_drops,Decision rule: extra drops before switching,2,drops,,,planning estimate,"plan.md, decision rule",,2
+sc_c_misses,Scenario C signal: drops with placement under the threshold,2,drops,,,planning estimate,"plan.md, scenario C: 'Placement under 80% twice'",,2
+goal_campaigns,Six-month goal: paid campaigns,6,campaigns,,,planning estimate,"plan.md, business on one page",,6
+goal_renewals,Six-month goal: renewals,2,renewals,,,planning estimate,"plan.md, business on one page",,2
+goal_offices,Six-month goal: active offices,12,offices,,,planning estimate,"plan.md, business on one page",,12
+
+10. Sensitivity axes
+key,Assumption,Value,Unit,Low,High,Status,Source,Notes,Plan default,Changed?
+sens_price_start,Price per office: first row,100,USD per office,,,setting,Model setting,,100
+sens_price_step,Price per office: step,25,USD per office,,,setting,Model setting,,25
+sens_brands_start,Brands per drop: first column,1,brands,,,setting,Model setting,,1
+sens_brands_step,Brands per drop: step,1,brands,,,setting,Model setting,,1
+sens_renew_start,Renewal rate: first row,0,share,,,setting,Model setting,,0
+sens_renew_step,Renewal rate: step,0.1,share,,,setting,Model setting,,0.1
+
+"11. Startup outlays (one-time, paid at their timing in the cash flow). Formation, publication, licence, professional and filing figures come from the legal pack."
+key,Item,Working (USD),Unit,Low,High,Status,Source,Notes,Plan default,Changed?,Timing (date),Timing basis,Include (Y/N),Actual paid (USD),Actual paid date,Cash amount used,Cash date used,Default include,Default timing
+su_llc,LLC Articles of Organization (state filing fee),200,USD one-time,200,200,verified 2026-10-23 (legal pack),"desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update); https://dos.ny.gov/limited-liability-company-articles-organization",Plan capital table: $200 plus $50.,200,,2026-11-19,"Follows Gate 0: earliest Thu 2026-11-19, never before the attorney hour (legal pack). Day 0 = first verbal brand yes",Y,,,200,2026-11-19,Y,2026-11-19
+su_cert,Certificate of Publication filing,50,USD one-time,50,50,verified 2026-10-23 (legal pack),"desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update); https://dos.ny.gov/certificate-publication-domestic-limited-liability-company-0",,50,,2027-01-15,Follows publication: after the sixth weekly run (2027-01-15 by default; legal limit day 120),Y,,,50,2027-01-15,Y,2027-01-15
+su_pub,"Newspaper publication (two papers, six weeks), county not chosen",2000,USD one-time,250,2000,needs quote (plan high end until quoted),"plan.md, Economics: Capital table ($250 to $2,000, no working figure); desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update); https://www.llcpublishers.com/pricing","Default = the plan's high end, because the plan gives a range and no working figure; it stays until a quote or a verified figure arrives. Alternative: the legal pack's working figure $1,745 for New York County (LLC Publishers $1,795 all-in less the $50 state fee; needs quote), or $345 if the attorney confirms Albany County.",2000,,2026-12-04,"Follows the LLC filing: ordered within 10 business days (legal pack), 2026-12-04 by default",Y,,,2000,2026-12-04,Y,2026-12-04
+su_reg_agent,"Registered agent, only if the Articles name Albany County",,USD one-time,,,needs quote (legal pack),"desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update) (registered_agent_albany_if_used)","Optional in New York, where the Secretary of State is the agent for service of process. The legal pack adds it only on the Albany County route and invents no figure. Include = N; if the attorney confirms Albany, type the quote and set Y. Yearly; the model books the first year.",,,2026-11-19,Follows the LLC filing (the Articles name the agent),N,,,0,2026-11-19,N,2026-11-19
+su_license,"Food warehouse license (Article 28-D, two years), if required",400,USD one-time,0,400,fee verified 2026-10-23; need unknown (legal pack),"desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update); https://www.nysenate.gov/legislation/laws/AGM/500-B","Zero if the state says sealed cases at home need no license, or if brands ship direct.",400,,2026-12-11,Follows Gate 1. Before any brand ships (legal pack: latest 2026-12-21),Y,,,400,2026-12-11,Y,2026-12-11
+su_print,"Printing and materials (hand truck, supplies, first card runs)",300,USD one-time,300,300,planning estimate,"plan.md, Economics: Capital to the first six months","Read as startup supplies; per-drop kits are the $8 per office line. Campaign zero also pays $40 of kits on its drop: if the first card run is those kits, $40 is counted twice (conservative). Both are plan figures.",300,,2026-12-11,"Follows Gate 1: hand truck, supplies and first card run (plan setup checklist)",Y,,,300,2026-12-11,Y,2026-12-11
+su_domain,Domain and email setup,100,USD one-time,100,100,planning estimate,"plan.md, Economics: Capital to the first six months",,100,,2026-10-26,Follows week 1: days 1 and 2 (plan),Y,,,100,2026-10-26,Y,2026-10-26
+su_mailbox,"Mailing address for email footers and the LLC notice (PO box or private mailbox), first year",,USD one-time,,,needs quote (legal pack),"desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update) (mailing_address_mailbox_annual); https://www.ftc.gov/business-guidance/resources/can-spam-act-compliance-guide-business","CAN-SPAM needs a postal address in every commercial email, and the LLC's newspaper notice prints one. Needed only if you will not use a home address. The legal pack did not research the cost and invents no figure. Blank counts as $0.",,,2026-10-26,Follows week 1: before the first outreach email (legal pack),Y,,,0,2026-10-26,Y,2026-10-26
+su_attorney,"Attorney hour (both agreements, name and formation questions)",400,USD one-time,300,500,plan estimate (legal pack),"desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update); plan.md Legal table",Not in the plan's capital table. Plan question 8 puts both hours at about $700; $400 plus the accountant's $300 keeps that figure.,400,,2026-11-18,"Follows Gate 0: booked then, held by Wed 2026-11-18, before the filing (legal pack)",Y,,,400,2026-11-18,Y,2026-11-18
+su_accountant,"Accountant hour (sales tax, UBT, estimates)",300,USD one-time,200,400,plan estimate (legal pack),"desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update); plan.md Legal table",Not in the plan's capital table. See the attorney line for the $700 pair.,300,,2026-11-20,"Follows Gate 0: booked then, held by Fri 2026-11-20, before the first invoice (legal pack)",Y,,,300,2026-11-20,Y,2026-11-20
+su_it204,"NYS LLC annual filing fee (IT-204-LL), single-member",25,USD one-time,25,25,verified 2026-10-23 (legal pack),"desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update); https://www.tax.ny.gov/pdf/current_forms/it/it204lli.pdf",Accountant confirms whether 2026 is owed. Not in the plan.,25,,2027-03-15,Statutory date: first possibly Mon 2027-03-15 for 2026 (legal pack),Y,,,25,2027-03-15,Y,2027-03-15
+su_hnoa,Hired and non-owned auto add-on to the liability policy,,USD one-time,,,needs quote (legal pack),"desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update); plan.md Legal table ('Small add-on. Ask the carrier.')","Needed if car rides, a car service or a rented van carry product (campaign zero does). Blank counts as $0.",,,2026-12-11,Follows the insurance bind date,Y,,,0,2026-12-11,Y,2026-12-11
+su_addl_insured,Additional-insured endorsements for buildings that require them,,USD one-time,,,needs quote (legal pack),"desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update)","The legal pack expects one per building that requires it, because there is no contract with any building; zero only if the carrier confirms its blanket endorsement covers buildings. Blank counts as $0.",,,2026-12-11,Follows the insurance bind date; before each such building's first drop,Y,,,0,2026-12-11,Y,2026-12-11
+su_tm,Federal trademark application (one class),350,USD one-time,350,850,verified 2026-10-23 (legal pack),"desk-drop-legal-pack/figures.csv (re-read 2026-10-24, after its 01:52 update); https://www.uspto.gov/learning-and-resources/fees-and-payment/uspto-fee-schedule","Excluded from the six months (Include = N): the legal pack times it after campaign zero passes and outside the first six months, and USPTO refused a prior DESK-DROP filing as descriptive. Set Y to include it at Gate 2.",350,,2027-01-22,Follows Gate 2: only after campaign zero passes; attorney advises first (legal pack),N,,,0,2027-01-22,N,2027-01-22
+,Total startup outlays (cash amounts used),,,,,,,,,,,,,,,3775
+
+,Inputs changed from plan defaults,0,cells here and on Scenarios (the delivery-model rates in section 7 are not flagged; Plan_Check shows whether they still reproduce the plan)

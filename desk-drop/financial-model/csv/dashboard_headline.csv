@@ -1,0 +1,22 @@
+measure,value,detail
+Next scheduled drop,DRP-001,"Tue 2027-01-12, founder, 2 brand(s), 5 offices, founding tier"
+Its contribution per founder hour (plan),16.2105,"revenue $1,200, 57 founder hours; campaign zero is at the founding rate, so the standard price does not move it"
+"Price in force: standard price per office (Inputs, section 3)",150,"standard package $1,500 for 10 offices; founding $120 per office. Change the price on Inputs and read the next row."
+A standard drop at that price: contribution per founder hour,73.6538,"3 new brands, 10 offices, courier: revenue $4,500, contribution $3,830, 52 founder hours"
+"Standard runs to Gate 3: contribution per founder hour, plan",61.28,actual: not yet (0 of 2 standard runs with actuals in); target $50
+"Same, if the roster grows so no office gets two drops within four weeks",51.4094,adds 8 new offices and 24 founder hours to the standard runs; the plan wants one drop per office a month (a roster of about 20)
+Lowest point of cumulative cash (before founder cash),-4126,"in week 12, starting Mon 2027-01-11"
+Capital to commit: lowest point plus the reserve,5126,"reserve $1,000 (plan)"
+Plan capital figure (high end of the plan's table),6510,"low end $3,360"
+Gap to the plan capital figure (positive = headroom),1384,the plan figure covers the model need
+Founder cash committed,not set,set it on Inputs (plan question 7)
+"Overhead paid but not absorbed by drops, six months (cash)",1310,"paid $2,010, allocated to drops $700; of that gap, $700 is insurance prepaid beyond the six months and the rest is ramp-up months with few drops"
+Six months all-in per founder hour: roadmap drops only (to Gate 3),33.7621,"campaign zero and the standard runs, with all six months of overhead (expensed basis) and 45 planned discovery hours; after one-time startup outlays: $17.1 per hour"
+"Six months all-in per founder hour: with the decision-window drops (derived, not in the plan's roadmap)",52.5372,"adds 2 drop(s) after Gate 3, with 45 planned discovery hours; insurance prepaid beyond the window ($700) is left out; after one-time startup outlays: $40.3 per hour"
+Cumulative cash at week 26: roadmap drops only,3189,"the decision-window drops add $8,570 by week 26"
+Cumulative cash at week 26: with the decision-window drops (derived),11759,before founder cash; lowest balance with founder cash (founder cash not set)
+"Steady state, scenario in force: contribution per month",7660,"per founder hour $81.1; net of all overhead $7,660 a month"
+Office-fatigue warnings on Schedule,2,drops where some offices get a second drop within four weeks (plan: one drop a month); see the Gate 3 rate with a bigger roster above
+Decision-window drops whose debrief (T+10) lands after the decision date,1,"last debrief Tue 2027-04-20, after the Fri 2027-04-09 decision: the switch test cannot finish in time (REPORT.md, question 1)"
+Schedule rows changed or added since the derived default,0,schedule is the derived default
+Inputs changed from plan defaults,0,plan figures reproduce

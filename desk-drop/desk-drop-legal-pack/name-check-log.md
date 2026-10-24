@@ -2,7 +2,7 @@
 
 # Name-check log (pointer)
 
-Version 0.5 · 2026-10-24
+Version 0.6 · 2026-10-24
 
 **Name checked:** `BRAND_NAME = Desk Drop` (working name, not cleared; the only place this file sets it).
 
@@ -16,4 +16,4 @@ Why, in one line each (details, sources and dates in `01-name-check-log.md`):
 - deskdrop.com is registered (since 2004); deskdrop.nyc and deskdropnyc.com returned "not found" in registry lookups.
 - No New York entity with the name was found in the Department of State's open register; the Department's web search is for the founder to run.
 
-The founder's name decision lifts or keeps the hold. The recommended default in file 01 is to treat the name as taken and pick a fallback before anything is printed or the LLC is filed (target Fri 2026-11-13, derived). Until then, C and D keep the name in their single `BRAND_NAME` setting so a rename is one edit.
+The founder's name decision lifts or keeps the hold. The recommended default in file 01 is to treat the name as taken and pick a fallback before anything is printed or the LLC is filed: fallbacks checked by Fri 2026-11-13, the name chosen by Wed 2026-11-18 at the attorney hour (derived), which always comes before filing. Until then, C and D keep the name in their single `BRAND_NAME` setting so a rename is one edit.

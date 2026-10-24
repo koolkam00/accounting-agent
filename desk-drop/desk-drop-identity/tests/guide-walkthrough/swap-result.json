@@ -1,6 +1,6 @@
 {
   "date": "2026-10-24",
-  "first_card_seconds": 504,
+  "first_card_seconds": 447,
   "next_card_seconds": 122,
   "model": {
     "open": 60,
@@ -17,7 +17,7 @@
   },
   "parts": [
     "open the file 60s",
-    "read section 2 (641 words) 192s",
+    "read section 2 (451 words) 135s",
     "type 215 characters from the package and IDs 65s",
     "paste 6 fields 48s",
     "choose the allergen option 6s",
@@ -28,18 +28,15 @@
     "print dialog 60s"
   ],
   "log": [
-    "templates/tent-card/tent-card.html: guide sections 2 name 14 boxes or buttons; missing in the panel: If something goes wrong",
+    "templates/tent-card/tent-card.html: guide sections 2 name 13 boxes or buttons; missing in the panel: none",
     "templates/discovery-one-pager/discovery-one-pager.html: guide sections 8 name 2 boxes or buttons; missing in the panel: none",
-    "templates/office-one-pager/office-one-pager.html: guide sections 9 name 5 boxes or buttons; missing in the panel: like this",
+    "templates/office-one-pager/office-one-pager.html: guide sections 9 name 4 boxes or buttons; missing in the panel: none",
     "templates/brand-one-pager/brand-one-pager.html: guide sections 10 name 1 boxes or buttons; missing in the panel: none",
-    "templates/proposal/proposal.html: guide sections 11 name 17 boxes or buttons; missing in the panel: none",
+    "templates/proposal/proposal.html: guide sections 11 name 18 boxes or buttons; missing in the panel: none",
     "templates/report/report.html: guide sections 12 name 28 boxes or buttons; missing in the panel: none",
     "After filling: This is SAMPLE data. It prints with a SAMPLE banner.",
     "After the allergen check box: This is SAMPLE data. It prints with a SAMPLE banner.",
     "Second office, after Load JSON and two changes: This is SAMPLE data. It prints with a SAMPLE banner."
   ],
-  "fails": [
-    "templates/tent-card/tent-card.html: the guide names boxes that do not exist: If something goes wrong",
-    "templates/office-one-pager/office-one-pager.html: the guide names boxes that do not exist: like this"
-  ]
+  "fails": []
 }

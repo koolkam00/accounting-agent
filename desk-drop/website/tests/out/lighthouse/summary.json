@@ -1,0 +1,362 @@
+[
+  {
+    "mode": "staging",
+    "preset": "mobile",
+    "page": "index",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 63,
+    "seo_failed_audits": [
+      "is-crawlable"
+    ],
+    "lcp_ms": 1662,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 113495
+  },
+  {
+    "mode": "staging",
+    "preset": "mobile",
+    "page": "brands",
+    "performance": 99,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 66,
+    "seo_failed_audits": [
+      "is-crawlable"
+    ],
+    "lcp_ms": 1814,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 149160
+  },
+  {
+    "mode": "staging",
+    "preset": "mobile",
+    "page": "offices",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 66,
+    "seo_failed_audits": [
+      "is-crawlable"
+    ],
+    "lcp_ms": 1656,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 131303
+  },
+  {
+    "mode": "staging",
+    "preset": "mobile",
+    "page": "privacy",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 63,
+    "seo_failed_audits": [
+      "is-crawlable"
+    ],
+    "lcp_ms": 1502,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 114019
+  },
+  {
+    "mode": "staging",
+    "preset": "mobile",
+    "page": "survey-privacy",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 63,
+    "seo_failed_audits": [
+      "is-crawlable"
+    ],
+    "lcp_ms": 1669,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 114409
+  },
+  {
+    "mode": "staging",
+    "preset": "mobile",
+    "page": "404",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 63,
+    "seo_failed_audits": [
+      "is-crawlable"
+    ],
+    "lcp_ms": 1660,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 110598
+  },
+  {
+    "mode": "staging",
+    "preset": "desktop",
+    "page": "index",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 63,
+    "seo_failed_audits": [
+      "is-crawlable"
+    ],
+    "lcp_ms": 369,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 113495
+  },
+  {
+    "mode": "staging",
+    "preset": "desktop",
+    "page": "brands",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 66,
+    "seo_failed_audits": [
+      "is-crawlable"
+    ],
+    "lcp_ms": 408,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 149160
+  },
+  {
+    "mode": "staging",
+    "preset": "desktop",
+    "page": "offices",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 66,
+    "seo_failed_audits": [
+      "is-crawlable"
+    ],
+    "lcp_ms": 408,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 131303
+  },
+  {
+    "mode": "staging",
+    "preset": "desktop",
+    "page": "privacy",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 63,
+    "seo_failed_audits": [
+      "is-crawlable"
+    ],
+    "lcp_ms": 367,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 114019
+  },
+  {
+    "mode": "staging",
+    "preset": "desktop",
+    "page": "survey-privacy",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 63,
+    "seo_failed_audits": [
+      "is-crawlable"
+    ],
+    "lcp_ms": 365,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 114409
+  },
+  {
+    "mode": "staging",
+    "preset": "desktop",
+    "page": "404",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 63,
+    "seo_failed_audits": [
+      "is-crawlable"
+    ],
+    "lcp_ms": 363,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 110598
+  },
+  {
+    "mode": "production",
+    "preset": "mobile",
+    "page": "index",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100,
+    "seo_failed_audits": [],
+    "lcp_ms": 1504,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 113496
+  },
+  {
+    "mode": "production",
+    "preset": "mobile",
+    "page": "brands",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100,
+    "seo_failed_audits": [],
+    "lcp_ms": 1657,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 149161
+  },
+  {
+    "mode": "production",
+    "preset": "mobile",
+    "page": "offices",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100,
+    "seo_failed_audits": [],
+    "lcp_ms": 1658,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 131304
+  },
+  {
+    "mode": "production",
+    "preset": "mobile",
+    "page": "privacy",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100,
+    "seo_failed_audits": [],
+    "lcp_ms": 1656,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 114020
+  },
+  {
+    "mode": "production",
+    "preset": "mobile",
+    "page": "survey-privacy",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100,
+    "seo_failed_audits": [],
+    "lcp_ms": 1654,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 114410
+  },
+  {
+    "mode": "production",
+    "preset": "mobile",
+    "page": "404",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100,
+    "seo_failed_audits": [],
+    "lcp_ms": 1501,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 110599
+  },
+  {
+    "mode": "production",
+    "preset": "desktop",
+    "page": "index",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100,
+    "seo_failed_audits": [],
+    "lcp_ms": 363,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 113496
+  },
+  {
+    "mode": "production",
+    "preset": "desktop",
+    "page": "brands",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100,
+    "seo_failed_audits": [],
+    "lcp_ms": 415,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 149161
+  },
+  {
+    "mode": "production",
+    "preset": "desktop",
+    "page": "offices",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100,
+    "seo_failed_audits": [],
+    "lcp_ms": 417,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 131304
+  },
+  {
+    "mode": "production",
+    "preset": "desktop",
+    "page": "privacy",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100,
+    "seo_failed_audits": [],
+    "lcp_ms": 369,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 114020
+  },
+  {
+    "mode": "production",
+    "preset": "desktop",
+    "page": "survey-privacy",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100,
+    "seo_failed_audits": [],
+    "lcp_ms": 368,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 114410
+  },
+  {
+    "mode": "production",
+    "preset": "desktop",
+    "page": "404",
+    "performance": 100,
+    "accessibility": 100,
+    "best_practices": 100,
+    "seo": 100,
+    "seo_failed_audits": [],
+    "lcp_ms": 368,
+    "cls": 0,
+    "tbt_ms": 0,
+    "bytes": 110599
+  }
+]

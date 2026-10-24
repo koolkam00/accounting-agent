@@ -1,4 +1,6 @@
 """Text of the README tab. Kinds: h = heading, p = paragraph, kv = (label, text).
+A kv text may be a list of plain strings and ("ref", input_key, number_format) parts: the build writes it as a formula,
+so a quoted input (such as the price in force) never goes stale (review R2-09a).
 The company name is never written here; the tab title reads it from Inputs."""
 
 README = [
@@ -6,36 +8,47 @@ README = [
     ("p", "The workbook you open every week for six months to see whether the business is working. It answers three questions: what each drop earns per founder hour, "
           "how low cumulative cash goes and when, and which gate or decision scenario the real numbers point to."),
     ("p", "Every number is a planning estimate from plan.md, never a forecast. Every assumption sits in one labeled cell on Inputs with its unit and source. "
-          "Every other number is a formula. Change one input and every output moves."),
+          "Every other number is a formula. Change one input and every output moves. The only typed figures outside Inputs are the plan's own numbers, kept for comparison on purpose: "
+          "the Plan_Check cases, the plan columns on Capital, and the 'Plan reading (e), fixed for comparison' row on Steady_State."),
 
     ("h", "Your weekly routine (about ten minutes)"),
     ("kv", ("1. Log hours", "Add the week's hours on Hours_Log (one row per entry: date, drop_id or blank, activity key, hours). If you use a paid Toggl plan, paste its export on Toggl_Import instead.")),
     ("kv", ("2. Log the pipeline", "Paste or type outreach events on Pipeline: conversations, yeses, signed offices with Tuesday headcount, paid brands, budget-probe answers, renewal answers.")),
-    ("kv", ("3. After each drop", "Paste the campaign actuals and drop costs from the operations exports into Actuals_Campaigns and Actuals_DropCosts, then set 'Actuals in' to Y for that drop on Schedule.")),
-    ("kv", ("4. Read the Dashboard", "Gates show pass, miss or not yet against real numbers only. The headline shows the next drop's contribution per hour, the lowest point of cash and the gap to the plan's $6,510.")),
-    ("kv", ("5. Keep the plan current", "Edit Schedule when a date, delivery model or brand count changes. Edit Inputs when a quote comes in. The 'Changed?' column records every edit against the plan default.")),
+    ("kv", ("3. After each drop", "Paste the campaign actuals and drop costs from the operations exports into Actuals_Campaigns and Actuals_DropCosts. Set 'Actuals in' to Y for that drop on Schedule "
+                                  "once revenue, payments, direct costs and hours are final (by T+10, the debrief). code_redemptions_day30 (T+30) and renewal answers can be filled in later: "
+                                  "they move no money or hours. The Gate 3 rate stays 'not yet' until every standard run dated by the review has actuals in.")),
+    ("kv", ("4. Read the Dashboard", "Gates show pass, miss or not yet against real numbers only. The headline shows the next drop's contribution per hour, the price in force, the lowest point of cash and the gap to the plan's $6,510.")),
+    ("kv", ("5. Check against the bank (optional)", "Type your actual bank balance at the end of the week on Cash_Flow, row 30. Row 31 shows the variance against the model; the summary shows the latest week.")),
+    ("kv", ("6. Keep the plan current", "Edit Schedule when a date, delivery model or brand count changes. Edit Inputs when a quote comes in. The 'Changed?' column records every edit against the plan default.")),
 
     ("h", "Change the price and read the result in under a minute"),
-    ("kv", ("Whole model", "Inputs, section 3, 'Standard price per office' (now $150). Type a new number. Read Dashboard: 'Its contribution per founder hour' and the drop table at the bottom.")),
+    ("kv", ("Whole model", ["Inputs, section 3, 'Standard price per office' (now ", ("ref", "price_std_office", "$#,##0"), "). Type a new number. On the Dashboard read 'Price in force' (it shows your number), then ",
+                            "'A standard drop at that price: contribution per founder hour' (the next row), 'Standard runs to Gate 3' and the drop table at the bottom. ",
+                            "'Its contribution per founder hour' does not move: the next drop is campaign zero, at the founding rate."])),
     ("kv", ("One drop only", "Calculator: type a price in 'Standard price per office'. The result column shows revenue, costs, hours and contribution per founder hour. Nothing else changes.")),
     ("kv", ("Many prices at once", "Sensitivity, Table 1: contribution per founder hour for eight prices and one to five brands. Green cells clear the $50 Gate 3 target.")),
 
     ("h", "Tabs, in the order you use them"),
-    ("kv", ("Dashboard", "Headline numbers, every gate threshold beside its live value with pass, miss or not yet, the decision rule, the scenario the numbers point to, six-month goals, and contribution per hour on each drop.")),
+    ("kv", ("Dashboard", "Headline numbers; cash at each stop point (what you are out if you stop at each gate); every gate threshold beside its live value with pass, miss or not yet; the decision rule, the scenario the numbers point to, six-month goals, and contribution per hour on each drop.")),
     ("kv", ("Inputs", "Every assumption: prices, payment terms and lags, the processing toggle, units, every hard-cost line, monthly overhead, hours by activity, the delivery-model table, renewal, gates, startup outlays with timing, the start date. Yellow cells are inputs.")),
     ("kv", ("Scenarios", "The plan's decision situations A to D as assumption sets, beside the plan base. Pick one on Inputs. It drives the two decision-window drops and the steady state.")),
-    ("kv", ("Schedule", "The editable drop schedule: date, delivery model, tier, offices, new offices, brands, renewals, and the switch to actuals. Checks Tuesday or Wednesday and every blackout.")),
+    ("kv", ("Schedule", "The editable drop schedule: date, delivery model, tier, offices, new offices, brands, renewals, and the switch to actuals. Checks Tuesday or Wednesday and every blackout. "
+                         "Columns Y to AE show the brand wins and qualified conversations each drop needs, cumulated to its sign-by date, beside the Pipeline's actual counts; AF to AH flag a "
+                         "decision-window drop whose debrief lands after the decision date; AI shows the offices to add so no office gets two drops within four weeks.")),
     ("kv", ("Calculator", "A single drop of any tier, brand count, office count and delivery model, run through the same engine.")),
     ("kv", ("Drop_PnL", "Per-drop P&L on the plan basis for every scheduled drop, with hours by activity, contribution per founder hour, cash timing on the plan's terms, and live values (actual where in).")),
-    ("kv", ("Cash_Flow", "Weekly cash flow for 26 weeks with a monthly cross-check: brand receipts, direct costs, overhead paid once, startup outlays at their timing, cumulative cash and its lowest point.")),
-    ("kv", ("Steady_State", "The plan's monthly picture reproduced, the scenario in force at steady state, and break-even: campaigns to recover startup cash, campaigns a month to cover overhead, the brand count and price where contribution per hour crosses $50.")),
+    ("kv", ("Cash_Flow", "Weekly cash flow for 26 weeks with a monthly cross-check: brand receipts, direct costs, overhead paid once, startup outlays at their timing, cumulative cash and its lowest point. "
+                          "Row 30 takes your actual bank balance; row 31 shows the variance. Below the monthly view: overhead not absorbed, and insurance prepaid beyond the six months.")),
+    ("kv", ("Steady_State", "The plan's monthly picture reproduced (row 7, fixed for comparison), a standard drop on today's Inputs (row 8), the scenario in force at steady state, and break-even: "
+                             "campaigns to recover startup cash, campaigns a month to cover overhead, the brand count and price where contribution per hour crosses $50. Every break-even line follows Inputs.")),
     ("kv", ("Sensitivity", "Four plain-formula tables: price x brands, renewal x brands, renewal against the monthly steady state, price against the monthly steady state. Direction checks at the bottom.")),
     ("kv", ("Plan_Check", "The plan's five scenario rows, the $1,000 reading, edge cases, the founder-hour table cell by cell, and a reconciliation of every plan figure: plan, model, difference, reason.")),
     ("kv", ("Capital", "The plan's capital table line by line, where the model pays each line, and the cash the plan's table leaves out.")),
     ("kv", ("Hours_Log", "The hand-filled hours log by the seven activity keys, with totals per drop and per week.")),
     ("kv", ("Toggl_Import", "Optional paste area for a Toggl export. Toggl says CSV export is a paid-plan feature; do not upgrade without a written yes.")),
-    ("kv", ("Pipeline", "The event log from outreach, with distinct counts for every gate. Layout matches desk-drop-outreach/exports/pipeline_log.csv.")),
-    ("kv", ("Actuals_Campaigns, Actuals_DropCosts", "Paste areas for campaign-ops/exports/campaign_actuals.csv and drop_costs.csv. Helper columns on the right; do not paste over them.")),
+    ("kv", ("Pipeline", "The event log from outreach, with distinct counts for every gate. Layout matches desk-drop-outreach/exports/pipeline_log.csv. Gate 1 counts a brand as paid in full once its payments add up to the founding package price. A brand's budget_probe answer given after hearing $1,500 carries notes = after_1500; medians use one answer per organisation.")),
+    ("kv", ("Actuals_Campaigns, Actuals_DropCosts", "Paste areas for campaign-ops/exports/campaign_actuals.csv and drop_costs.csv: exactly the HANDOFF columns, in order. Ten or more blank columns "
+                                                     "separate each paste area from its helpers; Checks flags a header that differs or anything pasted in the blank columns.")),
     ("kv", ("Drop_Actuals", "Actuals rolled up per drop: revenue, costs, hours, and the measurement ladder in separate columns. Read-only.")),
     ("kv", ("Cash_Ledger", "The monthly overhead payment schedule the cash flow reads. Read-only.")),
     ("kv", ("Checks", "Integrity, schedule, data and plan-reproduction checks. The Dashboard shows the integrity count.")),
@@ -43,6 +56,7 @@ README = [
 
     ("h", "Colours and conventions"),
     ("kv", ("Yellow cell, blue text", "An input. Type here.")),
+    ("kv", ("Blue cell", "An input whose default follows another cell (a gate date, Inputs or the scenario in force). Type over it to replace; the 'Changed' flag records it.")),
     ("kv", ("Grey cell", "Calculated on the Inputs tab. Do not type over it.")),
     ("kv", ("Green cell", "A key output.")),
     ("kv", ("Formulas", "No numeric literal other than 0 or 1 appears in any formula; conversions such as days per week sit in input cells. _work/audit_formulas.py checks this.")),
@@ -62,7 +76,9 @@ README = [
     ("h", "How the model counts money (no double counting)"),
     ("p", "Contribution follows the plan: revenue less hard costs, where hard costs include per-drop allocations of storage ($75), software ($30) and insurance ($50). "
           "Those allocations are views of monthly costs (monthly cost / two drops a month). The cash flow never reads them; it pays software, storage, insurance and phone once, "
-          "from the Cash_Ledger schedule. Cash_Flow shows how much overhead the drops did not absorb in months with fewer than two drops."),
+          "from the Cash_Ledger schedule. Cash_Flow shows how much overhead the drops did not absorb in months with fewer than two drops. "
+          "The six-month all-in rate on the Dashboard charges overhead on an expensed basis: the annual insurance premium paid at bind covers about a year, so the part that covers months "
+          "after the six months ($700 at defaults) is shown as prepaid and left out of the rate. The cash flow still pays the full premium at bind."),
     ("p", "Startup outlays (formation, publication, licence, printing, domain, professional hours, trademark) are paid once at their timing. Per-drop direct costs (kits, transport, "
           "kit mailing, card processing) are paid on the drop's dates. The plan's capital table is reproduced on Capital for comparison only; the cash flow does not read it."),
     ("p", "Brand cash follows the plan's terms: founding brands pay in full before product ships (20 business days before the drop, so campaign zero's money lands at Gate 1); "
@@ -79,48 +95,64 @@ README = [
     ("kv", ("3", "Founder hours decompose the plan's table into rates: 10 hours per first (founding) brand, 6 per standard win, 2 per renewal, 4 per new office, 1 per existing office, 2 reporting per brand, 2 admin per drop, and logistics by delivery model (Inputs section 7). The rates reproduce all four columns exactly.")),
     ("kv", ("4", "A renewal fills a brand slot on a later drop at that brand's tier price and costs 2 hours of brand sales instead of 6. In the decision-window drops, renewals = renewal rate x brands, rounded. In the steady state they are not rounded (expected values).")),
     ("kv", ("5", "Card processing applies to every receipt while the toggle is 1 (high end of the 0% to 3% range). Set it to 0 to model bank transfer, the plan's preferred invoicing.")),
-    ("kv", ("6", "General liability insurance is $100 a month (the plan's working figure and the legal pack's $1,200 a year), paid as one annual premium at bind on Gate 1, inside the legal pack's latest bind date of 2026-12-21. Needs three quotes.")),
+    ("kv", ("6", "General liability insurance is $100 a month (the plan's working figure and the legal pack's $1,200 a year), paid as one annual premium at bind on Gate 1, inside the legal pack's latest bind date of 2026-12-21. Needs three quotes. For the all-in rate, each month of cover is expensed in the month it starts: five months fall inside the window, so $700 of the premium is prepaid beyond it.")),
     ("kv", ("7", "Storage: home for campaign zero, a $150-a-month unit from 2027-02-01 through the six months. Software $60 a month from week 1. Phone $0.")),
     ("kv", ("8", "Courier transport is $30 a stop ($300 for ten stops; range $25 to $40). Founder delivery is $120 a drop. Direct-ship transport is $0; mailing the kit ahead needs a quote.")),
-    ("kv", ("9", "Formation, publication, licence, professional-hour and filing figures come from the legal pack (desk-drop-legal-pack/figures.csv, read 2026-10-24): Articles $200 and Certificate of Publication $50 (verified 2026-10-23); publication $1,745 for New York County (needs quote; $345 if Albany County is confirmed); licence $400 (fee verified, whether required unknown); attorney $400 and accountant $300 (plan estimates); IT-204-LL $25 (verified). Printing ($300) and domain ($100) are plan estimates.")),
+    ("kv", ("9", "Formation, licence, professional-hour and filing figures come from the legal pack (desk-drop-legal-pack/figures.csv, read 2026-10-24 and re-read after its 01:52 update the same day): Articles $200 and Certificate of Publication $50 (verified 2026-10-23); licence $400 (fee verified, whether required unknown); attorney $400 and accountant $300 (plan estimates that keep the plan's 'about $700' for both hours); IT-204-LL $25 (verified). Newspaper publication is the plan's high end, $2,000 (range $250 to $2,000, no working figure in the plan), because the legal pack's figure is not yet verified: its working $1,745 for New York County and $345 for Albany County both still need a quote. Printing ($300) and domain ($100) are plan estimates.")),
     ("kv", ("10", "The trademark application ($350, verified) is left out of the six months because the legal pack times it after campaign zero passes and outside the first six months, and flags a prior descriptiveness refusal. Inputs keeps the line with Include = N.")),
-    ("kv", ("11", "Hired and non-owned auto cover and building additional-insured endorsements are blank (needs quote, legal pack). Campaign zero's car rides need the auto add-on.")),
+    ("kv", ("11", "Hired and non-owned auto cover and building additional-insured endorsements are blank (needs quote, legal pack). Campaign zero's car rides need the auto add-on. A mailing address (PO box or private mailbox, only if you will not use a home address) and a registered agent (Albany County route only, Include = N) are blank too; the legal pack invents no figure for either.")),
     ("kv", ("12", "Gate tests use real numbers only: the pipeline log for Gates 0 and 1, campaign actuals for Gates 2 and 3. A gate is 'not yet' until its review date passes, then 'miss' if the threshold is not met.")),
     ("kv", ("13", "Gate 2 tests five responses per office per brand campaign using survey_responses_min_office when operations supplies it, otherwise the average per office.")),
     ("kv", ("14", "The steady state uses the courier model, as the plan's monthly picture does; direct-ship raises contribution per hour.")),
     ("kv", ("15", "Not modeled: sales tax and income tax (the accountant hour decides), brand cancellations and refunds, late or unpaid balances, and the founder's own pay. Every scheduled brand pays in full on the plan's terms. Brands supply product and prepaid inbound freight, so there is no product cost.")),
-    ("kv", ("16", "The six-month all-in view adds 45 discovery hours (15 a week for weeks 1 to 3, the high end of the plan's 10 to 15) that belong to no drop. Weeks 4 to 7 of selling and recruiting already sit in campaign zero's 57 hours.")),
-    ("kv", ("17", "Office fatigue is a warning, not a check: the plan wants one drop per office a month, but the CONTRACTS calendar puts standard runs two weeks apart with a 12-office roster.")),
+    ("kv", ("16", "The six-month all-in view adds the hours that belong to no drop: 45 planned discovery hours (15 a week for weeks 1 to 3, the high end of the plan's 10 to 15), or the hours logged inside the 26 weeks with a blank drop_id once there are more of them. Weeks 4 to 7 of selling and recruiting already sit in campaign zero's 57 hours, so log them against DRP-001.")),
+    ("kv", ("17", "Office fatigue is a warning, not a check: the plan wants one drop per office a month, but the CONTRACTS calendar puts standard runs two weeks apart with a 12-office roster. The Dashboard shows its cost: with a roster big enough for one drop per office a month, standard runs to Gate 3 earn $51.4 an hour instead of $61.3, just above the $50 bar.")),
+    ("kv", ("18", "No founding-rate renewal is scheduled by default. Campaign zero's report lands 2027-01-22 and its debrief 2027-01-27: after run 1's latest signature (2027-01-26), and for run 2 a founding renewal would have to pay in full by 2027-01-25 (20 business days ahead), before its debrief. The decision-window renewals (renewal rate x brands, rounded) are priced at the standard rate. If one is a founding brand, enter it under 'of which founding-rate renewals': each one costs $300 of revenue against a standard renewal (10 offices x $30) and saves no hours; against a new standard brand it costs $300 and saves 4 hours.")),
+    ("kv", ("19", "A renewal counts toward Gate 3 only when the pipeline's renewal_answer says yes and commits $1,500 or more, and each brand counts once, however many rows repeat it.")),
+    ("kv", ("20", "Pasted files carry exactly the HANDOFF columns, in order. Each paste area has ten or more blank columns before its helpers, and Checks flags a header that differs or anything pasted in the blank columns. Extra fields go in a separate file.")),
+    ("kv", ("21", "Scenario B's office-paid revenue ($500 a month) is shown but left out of the steady-state net until its cost to serve is quoted, so an unpriced cost never makes B look better than the plan base.")),
+    ("kv", ("22", "The capital table's $300 'printing and materials' is read as startup supplies (hand truck, supplies, first card run). Campaign zero also pays $40 of display kits on its drop. If the first card run is those kits, $40 is counted twice; the model keeps both plan figures (conservative by $40).")),
+    ("kv", ("23", "The decision rule says Stop only when both tests have failed. While renewal is under 30% and fewer than two drops after Gate 3 have actuals, it says the switch test is still running, because the plan's situation B is 'run two more drops' first.")),
+    ("kv", ("24", "Gate 1 counts a brand as 'paid in full' once its paid rows by the review date add up to the founding package price ($600 at defaults). A deposit or part payment alone does not count. Each payment is its own row, in date order.")),
+    ("kv", ("25", "A brand's budget_probe value is the number it named before hearing $1,500. An answer given after hearing $1,500 is a second budget_probe row with notes = after_1500. Gate 0 counts a brand if any of its answers is $500 or more and it controls the budget. Each median uses one answer per organisation: its first numeric answer before the anchor (brands also get a separate after-anchor median).")),
+    ("kv", ("26", "The Gate 3 rate passes only when every standard run that runs and is dated by the review date has actuals in. Until then its status reads 'not yet: N standard run(s) without actuals', whatever the date. The all-drops rate and the scenario pointer say how many drops with results due (T+10 by the as-of date) are still missing.")),
+    ("kv", ("27", "The storage unit is rented from the first day of the month of the first standard drop that runs. With no standard drop scheduled, no unit is rented.")),
 
     ("h", "Derived items (founder to confirm)"),
     ("kv", ("D1", "Calendar from CONTRACTS section 3: week 1 2026-10-26; Gate 0 2026-11-13; Gate 1 2026-12-11; campaign zero Tue 2027-01-12 (moved by the December blackout); Gate 2 2027-01-22; standard drops Tue 2027-02-09 and Tue 2027-02-23; Gate 3 Fri 2027-03-12; decision 2027-04-09.")),
-    ("kv", ("D2", "Two decision-window drops, Tue 2027-03-23 and Tue 2027-04-06, direct-ship, three brands each: the simplest schedule that meets the six-month goal of two renewals and scenario B's 'two more drops'.")),
+    ("kv", ("D2", "Two decision-window drops, Tue 2027-03-23 and Tue 2027-04-06, direct-ship, three brands each. They are not in the plan's roadmap table (campaign zero and two standard runs, 8 paid campaigns against the goal of 6). They come from the decision rule ('after two extra drops'), scenario B ('run two more drops') and scenario A (two drops a month). They carry the schedule's two renewals. The Dashboard shows the six-month all-in rate and week-26 cash with and without them: at defaults $33.8 an hour and $3,189 for the roadmap alone, $52.5 and $11,759 with them. The schedule needs 12 new brand wins by 2027-03-23 (about 60 qualified conversations at a 20% close rate); Schedule columns Y to AE show them by sign-by date beside the Pipeline's actual counts.")),
     ("kv", ("D3", "New offices: five in campaign zero; standard run 1 fills its ten (five new); run 2 adds the two that reach the goal of 12 active offices. These are formulas of Inputs, so changing the drop size or the goal moves them.")),
     ("kv", ("D4", "Founding payment 20 business days before the drop (campaign zero's money at Gate 1). Standard signature at T-10 (the latest that still lets a brand ship). Balance at T+1.")),
-    ("kv", ("D5", "Startup timing: domain week 1; LLC filing and both professional hours at Gate 0; publication ordered 2026-11-30 (within 10 business days of filing); insurance, licence and printing at Gate 1; Certificate of Publication 2027-01-11 after the sixth weekly run; IT-204-LL 2027-03-15.")),
+    ("kv", ("D5", "Startup timing, each a formula of the date it depends on (legal pack timing, re-read 2026-10-24): domain and any mailbox in week 1; attorney hour Wed 2026-11-18 and accountant hour Fri 2026-11-20 (3 and 5 business days after Gate 0); LLC filing Thu 2026-11-19 (4 business days after Gate 0, the day after the attorney hour); publication 10 business days after filing (Fri 2026-12-04, skipping Thanksgiving); insurance, its add-ons, licence and printing at Gate 1; Certificate of Publication after the sixth weekly run (2027-01-15); trademark at Gate 2; IT-204-LL on its statutory date, 2027-03-15. If Gate 0 or Gate 1 slips, these move with it.")),
     ("kv", ("D6", "Hour rates for receiving and kitting, drop day and checks by delivery model, derived from the plan's table (Inputs section 7).")),
     ("kv", ("D7", "Scenario levers the plan does not name use the plan base and say so (Scenarios, source column). Scenario B's renewal is 0%, the low end of 'under 30%'. Scenario A's post-decision price is $180, the low end of $1,800 to $2,000.")),
     ("kv", ("D8", "One drop per office every 28 days counts as 'one a month' for the office-fatigue warning.")),
     ("kv", ("D9", "Courier $30 a stop is the plan's $300 route divided by ten stops. Proposal and paperwork 2.25 hours make the plan's six hours per win at a 20% close rate.")),
+    ("kv", ("D10", "Gate 2 follows its drop on Schedule: the campaign-zero date plus seven business days (2027-01-22). The storage unit starts on the first day of the month of the first standard drop that runs (2027-02-01).")),
+    ("kv", ("D11", "DRP-005's debrief (T+10) is Tue 2027-04-20, after the canonical decision date of Fri 2027-04-09 (CONTRACTS section 3). The model keeps the canonical date and warns on the Dashboard; REPORT.md asks whether to move the review to 2027-04-20.")),
 
     ("h", "Needs a quote or a founder decision (blank or flagged)"),
     ("kv", ("Courier", "Three quotes for a ten-stop route. Default $30 a stop.")),
     ("kv", ("Insurance", "Three general liability quotes, plus hired and non-owned auto and any building endorsements. Default $100 a month; add-ons blank.")),
-    ("kv", ("Publication", "The county named in the Articles. Default New York County, $1,745; Albany County $345 if the attorney confirms it fits.")),
+    ("kv", ("Publication", "A quote once the county named in the Articles is settled. Default $2,000, the plan's high end, until then. The legal pack's working figures: New York County $1,745, Albany County $345 if the attorney confirms it fits.")),
     ("kv", ("Kit mailing", "Postage to mail a display kit ahead of a direct-ship drop. Blank.")),
     ("kv", ("Extra tent cards", "Whether each brand on a drop needs its own card ($1 to $2 each). Blank, per reading (a).")),
     ("kv", ("Payment lag", "Your invoice terms. Blank = paid the day invoiced.")),
     ("kv", ("Founder cash", "What you commit to the six months (plan question 7). Blank.")),
     ("kv", ("Office-paid cost", "Cost to serve an office-paid office (scenario B). Blank.")),
+    ("kv", ("Mailing address", "A PO box or private mailbox for email footers and the LLC notice, only if you will not use a home address (legal pack, CAN-SPAM). Blank; Include = Y, so a quote flows in when typed.")),
+    ("kv", ("Registered agent", "Only if the attorney confirms the Albany County route for the Articles (legal pack). Blank; Include = N.")),
 
     ("h", "Measurement honesty"),
     ("p", "The ladder stays in separate columns everywhere: delivered, placed, depleted, responded (tried is a survey answer), scanned, purchased (code redemptions). "
           "Incremental purchases are not measured, and the column says so. There is no field for sales lift, conversions or ROI."),
 
     ("h", "Google Sheets"),
-    ("p", "Built to open in Google Sheets with formulas intact: no macros, scripts, data tables, array formulas, named ranges or add-ons. Every function used (37) appears in Google's "
-          "Sheets function list (support.google.com/docs/table/25273, opened 2026-10-23 and 2026-10-24). Import: File, Import, Upload, Replace spreadsheet. A live import was not possible from the build "
-          "environment, so check Dashboard and Checks after the first import (unverified, founder to confirm)."),
+    ("p", "Built to open in Google Sheets with formulas intact: no macros, scripts, data tables, array formulas, named ranges or add-ons. Every function used (38) appears in Google's "
+          "Sheets function list (support.google.com/docs/table/25273, opened 2026-10-23 and 2026-10-24). Every INDEX over a single row names its row and column (INDEX(range, 1, column)), "
+          "because Google documents INDEX's second argument as the row. Import: File, Import, Upload, Replace spreadsheet. A live import was not possible from the build "
+          "environment, so check after the first import (unverified, founder to confirm): the Dashboard says 'all integrity checks pass', Checks shows 0 failing, "
+          "Scenarios!H10 shows 2 and Cash_Flow!C35 shows 12 (not #REF!)."),
 
     ("h", "Changelog"),
 ] + [("kv", (f"Round {i + 1}", line)) for i, line in enumerate([
@@ -128,4 +160,6 @@ README = [
     "Pulled the legal pack's figures.csv (publication $1,745, attorney $400 and accountant $300, IT-204-LL $25, trademark out of the six months, two needs-quote insurance add-ons). Added office-fatigue warnings, change tracking on Scenarios and Schedule, overhead-not-absorbed and six-month all-in views, Gate 3 planned renewals counted by signature date, and tolerance cells instead of exact equality. Re-laid the Dashboard after a visual check.",
     "Moved offices and brands per drop onto Inputs and made the derived Schedule rows formulas of them (new offices backed out from the 12-office goal). Unsmoothed the cash chart, top-aligned every cell, blanked unused drop rows. Behaviour tests cover a SAMPLE actuals run through every gate.",
     "Final review: verified the last three functions (DATEVALUE, TIMEVALUE, FIND) on Google's Sheets list, made every plan-row tolerance the same, wrote HANDOFF, README and REPORT, and regenerated the CSV snapshots. Audit 0 literals; 28 of 28 checks; 54 of 54 tests.",
+    "Independent review round 1 (2026-10-24): publication at the plan's high end ($2,000); break-even and a new Dashboard row follow Inputs; decision rule no longer says Stop while the switch test runs, with a warning that DRP-005 reports after the decision date; paste areas buffered and header-checked; all-in and week-26 cash shown with and without the decision-window drops, insurance expensed by month; Gate 3 renewals need a yes and count once; zero-brand drops recruit no offices; office-paid revenue left out until costed; timing defaults follow their gates; planning-estimate labels on every tab; clean CSV exports. Audit 0 literals; 34 of 34 checks; tests in _work/test_log.txt.",
+    "Independent review round 2 (2026-10-24): every INDEX over one row now names row 1 and its column, and the audit fails any that does not (Google Sheets reads INDEX's second argument as the row); the Gate 3 rate cannot pass until every standard run dated by the review has actuals in, and the all-drops rate and pointer show how many drops with results due are missing; the six-month all-in rate counts hours logged outside a drop once they exceed the planned 45; Gate 1 counts a brand only once its payments reach the founding package price; budget-probe medians use one before-anchor answer per organisation (after-anchor answers marked after_1500); the storage unit starts with the first standard drop that runs; legal-pack update (mailbox and registered-agent lines, filing Thu 2026-11-19, attorney 11-18, accountant 11-20, insurance status plan estimate); Dashboard block with cash at each stop point; the README price text is live; break-even shows standard drops as well as brand campaigns; Cash_Ledger banner. Audit and tests in _work/audit_log.txt and _work/test_log.txt.",
 ])]

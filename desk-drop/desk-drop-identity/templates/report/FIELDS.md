@@ -44,7 +44,7 @@ The operations workstream (F) fills this from its tracker. Keys use the CONTRACT
 | `survey_rating_avg`, `survey_rating_n` | survey export | Average of the 1-to-5 question, one decimal, and how many ratings. |
 | `survey_buy_yes`, `survey_buy_maybe`, `survey_buy_no` | survey export | Counts. Shares are worked out and printed beside the counts; if fewer people answered than responded, it says "of N who answered". |
 | `comments_total` | survey export | Optional. "Three of N comments". |
-| `comment_1`, `comment_2`, `comment_3` | survey export, free text | **Word for word.** Never edit, fix spelling or shorten without marking `[...]`. A comment containing an email address or phone number is refused. |
+| `comment_1`, `comment_2`, `comment_3` | survey export, free text | **Word for word.** Never reword or fix spelling. Replace any name or identifying detail with `[name removed]` (legal pack file 13, rule D10); mark any cut with `[...]`. Neither is read as a placeholder. A comment containing an email address or phone number is refused. |
 | `code_redemptions_to_date` | the brand; `campaign_actuals.code_redemptions_day30` at day 30 | Count the brand reports. |
 | `code_redemptions_as_of` | | Date of the brand's count. Empty prints the report date. |
 | `retailer_velocity` | the brand | Optional text: only store-level sales the brand shares, with its source. Labelled "suggestive only". |

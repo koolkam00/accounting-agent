@@ -2,7 +2,7 @@
 
 # 11 · Certificate of insurance request to a brand: product liability, with us as additional insured
 
-Version 0.6 · 2026-10-24
+Version 0.7 · 2026-10-24
 
 **The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot on the "Additional insured" line of the block to forward. Replace it with the name on the filed Articles of Organization, letter for letter, including "LLC".
 
@@ -47,7 +47,7 @@ Version 0.6 · 2026-10-24
 >
 > **Please send:** the certificate on your standard form (ACORD 25 is fine) and a copy of the endorsement that adds the additional insured. We are not asking for any wording on the certificate that the policy does not contain.
 >
-> **What the additional insured does with the product, so you can check the vendors endorsement fits:** it receives sealed, individually packaged, commercially labeled units; stores the sealed cases at room temperature, clean, dry, off the floor, away from heat and as the label directs, from arrival until the campaign ends (usually two to three weeks, up to about four around the December holidays); moves sealed units, unopened, from [BRAND]'s shipping cartons into one delivery box per office; and places them in office pantries, free to employees, next to a separate display card that repeats [BRAND]'s own text and allergen line. It never opens, alters, repacks or relabels a unit, puts nothing on a unit, and does no demonstrations or sampling cups. If moving sealed units between shipping cartons would fall under the endorsement's repackaging exclusion, please tell us and we will deliver in [BRAND]'s original cartons instead.
+> **What the additional insured does with the product, so you can check the vendors endorsement fits:** it receives sealed, individually packaged, commercially labeled units; stores the sealed cases at room temperature, clean, dry, off the floor, away from heat and as the label directs, from arrival until the campaign ends (usually two to three weeks, up to about four around the December holidays; leftover units the brand asks back can wait up to ten more business days for its return label, so up to about six weeks in all); moves sealed units, unopened, from [BRAND]'s shipping cartons into one delivery box per office; and places them in office pantries, free to employees, next to a separate display card that repeats [BRAND]'s own text and allergen line. It never opens, alters, repacks or relabels a unit, puts nothing on a unit, and does no demonstrations or sampling cups. If moving sealed units between shipping cartons would fall under the endorsement's repackaging exclusion, please tell us and we will deliver in [BRAND]'s original cartons instead.
 >
 > **Send to:** [FOUNDER NAME], [EMAIL]
 
@@ -80,7 +80,7 @@ Then save the certificate and endorsement as `[BRAND]-COI-[YYYY-MM-DD].pdf` in t
 
 **Why the endorsement matters more than the certificate.** The ACORD 25 certificate itself says it "is issued as a matter of information only and confers no rights upon the certificate holder" and that if the holder is an additional insured, "the policy(ies) must be endorsed." The endorsement is what actually adds us.
 
-**Why we keep units sealed and unlabeled.** The ISO vendors endorsement excludes, among other things, any "express warranty unauthorized by" the brand, any "physical or chemical change in the product made intentionally by the vendor", "repackaging" (with narrow exceptions), products "labeled or relabeled" by or for the vendor, demonstrations, and the vendor's own sole negligence. Our handling rules (file 10, section 5) and the card using only the brand's own words keep us inside the coverage. Our own general liability policy (quote script in file 06; building certificates in file 12) is what responds to our own mistakes.
+**Why we keep units sealed and unlabeled.** The ISO vendors endorsement excludes, among other things, any "express warranty unauthorized by" the brand, any "physical or chemical change in the product made intentionally by the vendor", "repackaging" (with narrow exceptions), products "labeled or relabeled" by or for the vendor, demonstrations, and the vendor's own sole negligence. Our handling rules (file 10, section 5) and the card using only the brand's own words are written to stay outside those exclusions; the brand's broker confirms the carton point (block above). Our own general liability policy (quote script in file 06; building certificates in file 12) is what responds to our own mistakes.
 
 **What we deliberately do not ask for.** Primary and non-contributory wording, waiver of subrogation and notice-of-cancellation endorsements. They can cost a small brand time or money, and the plan does not require them. Ask the attorney whether to add them once the business runs more than a few campaigns.
 
@@ -102,3 +102,4 @@ Then save the certificate and endorsement as `[BRAND]-COI-[YYYY-MM-DD].pdf` in t
 - Merge (2026-10-24): renumbered 14 to 11; company name moved into the `[COMPANY NAME: …]` slot; version 0.5.
 - Merge review (2026-10-24): broker, the limit check now covers a separate product liability policy as well as general liability. Inspector, storage follows the label's own instruction, the same sentence as files 06, 07 and 10.
 - Review round 1 (2026-10-24), version 0.6: the period asked for now runs from the ship date to 12 months after the window closes, or the latest best-by date if later, matching brand agreement section 2(c), because released units stay in pantries; claims-made policies need a retroactive date on or before the ship date and coverage or a tail through that date; the note after Email 2 now follows sections 2(c) and 8 exactly (a late certificate delays shipping; only a missed T−3 moves the drop).
+- Review round 2 (2026-10-24), version 0.7: the notes no longer state a coverage conclusion (the handling rules are "written to stay outside those exclusions", and the broker confirms the carton point); the holding time includes the up to ten business days leftovers can wait for a return label, the same sentence as files 06, 07 and 09.

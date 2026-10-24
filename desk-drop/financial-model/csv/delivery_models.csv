@@ -1,0 +1,4 @@
+delivery_model,transport_per_drop_usd,transport_per_stop_usd,kit_mailing_per_office_usd,receiving_kitting_base_h,drop_day_per_office_h,checks_pickup_per_office_h
+founder,120,0,0,2,1,0.6
+courier,0,30,0,2.5,0.8,0.4
+direct-ship,0,0,0,0.5,0.3,0.4

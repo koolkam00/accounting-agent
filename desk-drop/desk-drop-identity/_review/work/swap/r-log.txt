@@ -1,0 +1,25 @@
+1. open tent-card.html in Chrome
+2. "Brand name" <- SAMPLE Kettle & Fig
+3. "Product (optional)" <- SAMPLE Fig and Sea Salt Oat Bars
+4. "Two sentences: who makes it and why" <- SAMPLE A Harlem baker and her brother make oat bar...
+5. "Where the package declares allergens" <- contains_statement
+6. "Allergen statement, exactly as on the package" <- SAMPLE Contains: wheat, oats processed with wheat,...
+7. ""May contain" or facility line, exactly as on the package" <- SAMPLE May contain peanuts, other tree nuts and fi...
+8. "Retailer and street" <- SAMPLE Union Market, 240 East Houston Street
+9. "Discount code" <- SAMPLEFIG20
+10. "Site for the code" <- kettlefig.example.com
+11. "QR link for THIS office" <- https://example.com/s/SAMPLE-O-004-CMP-003
+12. "Office ID" <- SAMPLE-O-004
+13. "Campaign ID" <- SAMPLE-CMP-003
+14. tick "I read the allergen text against the package itself, word for word"
+STATUS BOX: This is SAMPLE data. It prints with a SAMPLE banner.
+15. press Save as JSON
+16. press Load JSON (next office)
+allergen box ticked after load: false
+17. "QR link for THIS office" <- https://example.com/s/SAMPLE-O-005-CMP-003
+18. "Office ID" <- SAMPLE-O-005
+19. tick allergen box again
+STATUS 2: errors=[] warnings=[] sample=true
+QR text on card: example.com/s/SAMPLE-O-005-CMP-003
+fit: {"name_px":61,"name_width":100,"name_lines":1,"story_pt":12,"qr_px":110.39999999999999,"find_pt":10,"tight":true,"story_dropped":false,"product_dropped":false,"ingredients_on_back":false}
+page errors: []

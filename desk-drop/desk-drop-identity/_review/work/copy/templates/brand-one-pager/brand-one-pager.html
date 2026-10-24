@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brand one-pager template</title>
+<!--
+  BRAND ONE-PAGER, US Letter portrait. Template v1.1, 2026-10-24.
+  For a brand after a discovery call or a reply, before the brand-specific proposal.
+  Contents, from plan.md: the positioning line; "What brands buy"; the price table; the
+  measurement ladder with its method per rung ("Measurement and the brand report"); the brand
+  qualification checklist (all seven); what the brand supplies; no sales guarantee.
+  Every sentence is a box in the panel. {BRAND_NAME} prints the name from brand.json.
+  The roster line must say only what is true today: it starts as a placeholder.
+  Open in Chrome, or: node render/render.js brand-one-pager data.json out.pdf --final
+-->
+<link rel="stylesheet" href="../../fonts/fonts.css">
+<link rel="stylesheet" href="../../tokens/tokens.css">
+<link rel="stylesheet" href="../../system/dd-print.css">
+<link rel="stylesheet" href="../../system/dd-docs.css">
+<style>
+  .bp .bd { padding-top: .18in; }
+  .bp h1.title { font-size: 17pt; line-height: 1.12; }
+  .bp .vis.mini { display: flex; gap: .12in; align-items: center; margin-top: .1in; }
+  .bp .vis.mini .card-dg { flex: none; }
+  .bp .vis.mini figcaption { margin: 0; }
+  .bp .lead { font-size: 10.5pt; }
+  .bp .roster { margin-top: .12in; display: flex; gap: .12in; align-items: baseline; }
+  .bp .roster b { flex: none; font: 700 8pt/1.2 var(--dd-font-text); letter-spacing: .08em; text-transform: uppercase; }
+  .bp .roster span { font-size: 9.5pt; }
+  .bp .g6 { margin-top: .16in; row-gap: .17in; }
+  .bp p, .bp li { font-size: 9pt; line-height: 1.36; }
+  .bp .price { background: var(--dd-cobalt-tint); padding: .09in .12in .1in; }
+  .bp .price table { width: 100%; border-collapse: collapse; }
+  .bp .price td { vertical-align: top; padding: .04in 0; border-bottom: 1px solid #C5CDF2; font-size: 9pt; line-height: 1.3; }
+  .bp .price tr:last-child td { border-bottom: none; }
+  .bp .price td.amt { width: .95in; font: 800 15pt/1 var(--dd-font-display); font-variation-settings: "opsz" 96; padding-top: .06in; }
+  .bp .ladder .rung .rv { font-size: 9pt; line-height: 1.25; font-family: var(--dd-font-text); font-weight: 400; margin-top: .03in; }
+  .bp .ladder-note { margin-top: .05in; }
+  .bp .vis figcaption { font-size: 8.5pt; line-height: 1.35; margin-top: .06in; }
+  .bp .never { border: 2px solid var(--dd-ink); padding: .08in .12in; }
+  .bp .next { border-top: 2px solid var(--dd-ink); padding-top: .08in; display: flex; justify-content: space-between; gap: .3in; align-items: baseline; }
+  .bp .next p { font-size: 10pt; }
+  .bp .next .who { white-space: nowrap; font-size: 10pt; }
+  .bp.tight p, .bp.tight li { font-size: 8.6pt; line-height: 1.32; }
+</style>
+</head>
+<body>
+<div id="dd-sheets"></div>
+
+<!-- ============ EDIT THE ONE-PAGER HERE (or use the boxes on screen) ============ -->
+<script type="application/json" id="dd-data">
+{
+  "prepared_for": "",
+  "roster_status": "[ROSTER STATUS: what is true today, e.g. 5 founding offices signed, about 400 people on a Tuesday]",
+  "headline": "500 units into 10 New York offices in one week, within walking distance of the stores that carry you, with photos, feedback and a report.",
+  "lead": "Trial here, buy there, measured. We place your product in offices that signed up to receive it, around Flatiron, NoMad and Union Square, and report back exactly what happened.",
+  "includes": "5 offices (founding) or 10 (standard) in one walkable cluster. No other brand in your category in the drop.\nAbout 50 units per office, sized to Tuesday headcount, plus a 10% reserve for top-ups.\nOn the shelf within one business day, at eye level, with a display card: your two sentences, your allergen statement word for word, and a QR code per office.\nFive business days, starting on a Tuesday or Wednesday.\nTwo photos per office: placement on day 1, a close shot on day 3 or 5.\nA three-question anonymous survey; each office commits to five or more responses.\nA one-page report within seven business days, and a 20-minute debrief.",
+  "ladder_note": "Each rung is reported on its own. We never call a scan a sale, and we do not claim lift.",
+  "fit": "Individually packaged, sealed, shelf-stable, with 60 or more days of shelf life at delivery.\nLabeled with ingredients and the nine major allergens.\nIn a store inside or within ten blocks of the cluster, or online with a discount code.\nCan ship 275 units to one Manhattan address within ten business days.\nCarries product liability insurance.\nThe person we talk to can approve $600 alone.\nA reason to want New York trial now: a new store, a launch, a local push.",
+  "excluded": "Alcohol, cannabis or CBD, supplements, anything refrigerated or needing preparation, or products that make health claims.",
+  "send": "The product plus 10% reserve, freight prepaid, to one Manhattan address.\nAn ingredient and allergen sheet.\nA product liability certificate, $1M or more, adding us as additional insured.\nA discount code or landing page for the QR.\nYour logo, and two sentences for the card.",
+  "never": "**What we never promise:** sales, lift or new customers. We report what happened, rung by rung, and say what we could not measure.",
+  "next": "**Next step:** a 20-minute call about your timing and the offices on the next route."
+}
+</script>
+<!-- ========================================================================= -->
+
+<script src="../../system/brand.js"></script>
+<script src="../../system/dd-template.js"></script>
+<script src="../../system/dd-docs.js"></script>
+<script src="../../system/dd-offer.js"></script>
+<script>
+(function () {
+  'use strict';
+  const X = DDDocs, O = window.DD_OFFER;
+  const C = 'Copy (change only if you need to)';
+  const FIELDS = [
+    { group: 'This brand', key: 'prepared_for', label: 'Brand name (optional)', help: 'Prints "Prepared for ..." in the header. Leave empty for a general copy.' },
+    { group: 'This brand', key: 'roster_status', label: 'Roster today', required: true, multiline: true, rows: 3, help: 'Only what is true today, from the signed offices: how many offices are signed, their combined Tuesday headcount, the next drop date. If none are signed yet, say so: "Founding offices are signing now; first drop [DROP DATE]".' },
+    { group: C, key: 'headline', label: 'Headline (the positioning line)', multiline: true, rows: 3 },
+    { group: C, key: 'lead', label: 'Lead', multiline: true, rows: 3 },
+    { group: C, key: 'includes', label: 'What a campaign includes (one per line)', multiline: true, rows: 8 },
+    { group: C, key: 'ladder_note', label: 'Line under the measurement ladder', multiline: true, rows: 2 },
+    { group: C, key: 'fit', label: 'You fit if all seven are true (one per line)', multiline: true, rows: 8 },
+    { group: C, key: 'excluded', label: 'Not for', multiline: true, rows: 2 },
+    { group: C, key: 'send', label: 'You send (one per line)', multiline: true, rows: 6 },
+    { group: C, key: 'never', label: 'What we never promise', multiline: true, rows: 3 },
+    { group: C, key: 'next', label: 'Next step', multiline: true, rows: 2 }
+  ];
+  // The ladder: rung names are fixed (CONTRACTS section 2); how each is counted is from plan.md.
+  const RUNGS = [
+    ['Delivered', 'Counted at handoff.'],
+    ['Placed', 'In the placement photo, card in view.'],
+    ['Depleted', 'Gone by day 5, from photos.'],
+    ['Responded', 'Anonymous three-question survey.'],
+    ['Scanned', 'One QR per office.'],
+    ['Purchased', 'Your code\'s redemptions, to day 30.'],
+    ['Incremental', 'Not measured. Said in writing.']
+  ];
+  const list = (t, cls) => `<ul class="${cls || 'ticks'}">${X.items(t).map((x) => `<li>${X.t(x)}</li>`).join('')}</ul>`;
+
+  function render(sheet, r, i) {
+    sheet.classList.add('doc');
+    ['headline', 'lead', 'includes', 'ladder_note', 'fit', 'send', 'next', 'roster_status'].forEach((k) => X.checkClaims(i, `"${FIELDS.find((f) => f.key === k).label}"`, r[k]));
+    const fitN = X.items(r.fit).length;
+    if (fitN !== 7) DD.warn(i, `"You fit if all seven are true" has ${fitN} lines; the qualification checklist has seven.`);
+    const ladder = `<div class="ladder">${RUNGS.map(([n, h], k) => `<div class="rung${k === 6 ? ' off' : ''}"><span class="rn">${n}</span><span class="rv">${DD.escape(h)}</span></div>`).join('')}</div>`;
+    sheet.innerHTML = `<div class="page bp">
+      <div class="dd-sample-banner">Sample. Illustrative placeholders, not results.</div>
+      ${X.header({ kicker: 'For emerging snack and drink brands', meta: r.prepared_for ? `Prepared for ${DD.text(r.prepared_for)}` : 'Office Placement Campaigns · Flatiron, NoMad and Union Square' })}
+      <div class="bd">
+        <h1 class="title">${X.t(r.headline)}</h1>
+        <p class="lead">${X.t(r.lead)}</p>
+        <div class="roster tint"><b>Roster today</b><span>${X.t(r.roster_status)}</span></div>
+        <div class="g6">
+          <section class="sec s3"><h2>What a campaign includes</h2>${list(r.includes, 'plain')}</section>
+          <section class="sec s3">
+            <div class="price"><p class="kicker">Price</p><table>
+              <tr><td class="amt">${X.usd(O.founding.price)}</td><td><b>Founding: ${O.founding.offices} offices</b> (${X.usd(O.founding.per_office)} each). Our first ${['', 'one', 'two', 'three', 'four', 'five'][O.founding.brands_offered] || O.founding.brands_offered} brands only. Paid in full on signing. Your next ${['', 'one', 'two', 'three'][O.founding.locked_campaigns] || O.founding.locked_campaigns} campaigns stay at ${X.usd(O.founding.per_office)} per office.</td></tr>
+              <tr><td class="amt">${X.usd(O.standard.price)}</td><td><b>Standard: ${O.standard.offices} offices</b> (${X.usd(O.standard.per_office)} each). ${O.standard.deposit_pct}% on signing, ${100 - O.standard.deposit_pct}% when every placement photo is in.</td></tr>
+              <tr><td class="amt">${X.usd(O.extra_office)}</td><td><b>Each extra office</b>, same terms. No free pilots: the founding price is the trial.</td></tr></table></div>
+            <div class="never" style="margin-top:.12in"><p>${X.t(r.never)}</p></div>
+          </section>
+          <section class="sec s6"><h2>What we count, and what we don't</h2>${ladder}<p class="note ladder-note">${X.t(r.ladder_note)}</p></section>
+          <section class="sec s3"><h2>You fit if all seven are true</h2>${list(r.fit)}</section>
+          <section class="sec s3"><h2>You send</h2>${list(r.send, 'plain')}<h2 style="margin-top:.12in">Not for</h2><p>${X.t(r.excluded)}</p></section>
+          <section class="sec s6 next"><p>${X.t(r.next)}</p><div class="who">${X.contact(' · ', ['FOUNDER_NAME', 'PHONE', 'EMAIL'])}</div></section>
+        </div>
+      </div>
+      ${X.footer(`${X.brandName()} · ${DD.text(DD.contact('POSTAL_ADDRESS'))}`, DD.escape(DD.brand().TAGLINE || ''))}
+    </div>`;
+  }
+
+  function fit(sheet, r, i) {
+    const pg = sheet.querySelector('.page');
+    let tight = false, cardIn = 1.75;
+    const steps = [
+      () => { if (!tight) { tight = true; pg.classList.add('tight'); return true; } },
+    ];
+    X.fitPages(sheet, i, steps, 'The one-pager');
+    sheet.dataset.fit = JSON.stringify({ tight, card_in: cardIn });
+  }
+
+  DD.init({
+    title: 'brand one-pager', fields: FIELDS, render, fit, sheetClass: 'doc',
+    fileStem: (r) => 'brand-one-pager_' + (r.prepared_for || 'general'),
+    printLabel: 'Print or save as PDF',
+    printHelp: '<b>To make the PDF:</b> press the button, choose Destination "Save as PDF", Paper Letter, Scale 100, Margins Default, "Background graphics" on.'
+  });
+})();
+</script>
+</body>
+</html>

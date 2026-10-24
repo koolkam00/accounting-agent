@@ -1,5 +1,5 @@
 /*
-  dd-offer.js: THE ONE PLACE THE PRICES AND CAMPAIGN NUMBERS LIVE (v1.1, 2026-10-24).
+  dd-offer.js: THE ONE PLACE THE PRICES AND CAMPAIGN NUMBERS LIVE (v1.2, 2026-10-24; agreement v0.7).
   Source: plan.md "The revised model" (What brands buy, Price) and the brand campaign agreement
   (desk-drop-legal-pack/10-brand-campaign-agreement.md, sections 3 and 8).
   The proposal and the brand one-pager read these. Change a number here, then rebuild the PDFs
@@ -7,7 +7,7 @@
   All prices are hypotheses to test (plan.md), not validated numbers.
 */
 window.DD_OFFER = {
-  founding: { price: 600, offices: 5, per_office: 120, brands_offered: 3, locked_campaigns: 2 },
+  founding: { price: 600, offices: 5, per_office: 120, brands_offered: 3, locked_campaigns: 2, lock_max_offices: 10 },
   standard: { price: 1500, offices: 10, per_office: 150, deposit_pct: 50 },
   extra_office: 150,
   units_per_office: 50, units_min: 30, units_max: 80, reserve_pct: 10,

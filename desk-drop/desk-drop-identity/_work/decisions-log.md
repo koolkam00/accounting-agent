@@ -65,3 +65,36 @@ Started 2026-10-23. This file is my running notebook so nothing is lost on conte
 - Prices moved to system/dd-offer.js (one edit for a price change; plan says prices are hypotheses).
 - Discovery: exactly-five-sentences check and selling-words warning; negative sample proves both fire.
 - Bug: brand.json contact placeholders printed yellow but were not counted, so --final would pass a document with no phone number. DD.contact now counts them.
+
+## Round 3 (2026-10-24): signature, avatar, spec, guide, tests, harsh review
+- Signature: separators orphaned at phone width; each item now nowrap with its separator. Footer B read from the legal pack at build time. Placeholders yellow in the HTML.
+- Avatar: ink variant vanishes on dark app backgrounds, paper loses its edge on white; cobalt chosen as default after the 40 px test sheet.
+- Documents spec first draft overflowed both pages (footer over the last table): split into three pages. Spec footers hard-coded the name: removed.
+- Swap test (new brand, ingredient-list-only drink, code-only buy path): passed at 8 min 24 s by the stated model, but showed (a) the guide's "next office" line did not say the allergen box unticks after Load JSON, (b) section 2 carried the trouble table, read only on trouble. Fixed both; 7 min 27 s.
+- Doc test suite: first run 9 failures, all in the harness (temp JSON broke relative photo paths, which the missing-picture guard correctly refused; -layout text interleaved columns). Fixed the harness, not the templates. 53 checks pass.
+- Harsh review: "gone" used instead of the ladder word "depleted" in the proposal and discovery page: replaced. Brand founder: added "You approve the card text before we print" (campaign agreement section 1). Bullets sat low: sized in em. Blank report showed "No photo received" because its sample predated [PHOTO]: regenerated, and a test now fails if any BLANK sample drifts from its template. Proposal columns rebalanced (terms note moved left) so every variant fits without shrinking type.
+
+## Round 4 (2026-10-24): integration with other workstreams
+- B's public-map.png (1200 x 2140 portrait, all stores) tested in the proposal's map slot: prints as a thumbnail. Maps are now shown whole (object-fit contain, height from the picture's own shape, warning on a portrait). Asked B (HANDOFF) for a per-brand landscape export.
+- Honest-operator catch: the map slot asked for "these offices marked"; a pin can identify a company before signature. Rule changed: cluster and the brand's stores only, no office pins before signing.
+- Legal file 13 rule D10 (names in comments become "[name removed]") contradicted the report's "never edit a comment"; aligned report note, panel help, FIELDS and guide. "[name removed]" is not read as a placeholder.
+- C (website) has no provisional system and imports D's tokens: nothing to audit; D's system stands.
+- REPORT.md write refused by the harness again; the report goes to the orchestrator in the returned message.
+
+# Review round 1 response (2026-10-24), builder
+Reviewer file: _review/round-1.md (3 blockers, 8 majors, 7 minors). Plan of work, in order:
+R1-02 brand one-pager fit with real contacts; R1-03 proposal standard+map; R1-04 report photos on page 1;
+R1-10/18 Delivered = handoff only, placed share in units; R1-12 limitations sentence; R1-07 mock page;
+R1-06 payment trigger and lock per agreement v0.7; R1-13 cancel date; R1-05 office promise;
+R1-08 split mode faces; R1-09 logo slot; R1-14 name give-way; R1-15 no "Nowhere"; R1-17 case label picker;
+R1-11 Chrome-only contacts (system/details.html); R1-16 guide photos; tests for every case; REPORT.md.
+- Done so far (review round 1): runtime v1.2 (record picker, plain single-record messages, DD.placeholder, logo pictures);
+  report: Delivered = handoff only, Placed hint unit share (Gate 2), 6+ offices get a photo strip (day 1 row, later row),
+  give-way moves later photos to page 2 before the strip, run-in Survey/Evidence/Limitations, learned+rec side by side,
+  limitations first sentence now "Each number is a separate step, counted as stated." (frozen file updated);
+  proposal: column arrangement fitter (send left/right, two-up roster full width), 12-office max, payment trigger and lock
+  per agreement v0.7, cancel date printed (T-10), mock page uses the brand's own name/drop date and grey examples;
+  brand one-pager: five give-way steps, contact on its own line, compact "Not for", dates never break;
+  office one-pager: four-week promise removed, photo ask aligned with file 03 and the report slots.
+  Measured fits: report 10 offices both photo rows (builder sample), 12 offices and 10+velocity keep the day-1 strip,
+  longtext/10-max move photos (last resort). Proposal 10/11/12 offices + map + 4 stores fit; founding + map + 4 stores fit.

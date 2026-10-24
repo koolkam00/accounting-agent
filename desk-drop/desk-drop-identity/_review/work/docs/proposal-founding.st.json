@@ -1,0 +1,22 @@
+{
+  "ready": true,
+  "errors": [],
+  "warnings": [],
+  "sample": true,
+  "placeholders": [
+    "record 1: map_image",
+    "brand.json: FOUNDER_NAME (fill it in brand.json, then run node render/build-brand.js)",
+    "brand.json: PHONE (fill it in brand.json, then run node render/build-brand.js)",
+    "brand.json: EMAIL (fill it in brand.json, then run node render/build-brand.js)",
+    "brand.json: POSTAL_ADDRESS (fill it in brand.json, then run node render/build-brand.js)"
+  ],
+  "fit": [
+    {
+      "map_in": 1.0499999999999998,
+      "tight": false
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/proposal/proposal.html",
+  "records": 1
+}

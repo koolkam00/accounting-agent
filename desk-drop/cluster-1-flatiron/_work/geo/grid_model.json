@@ -1,16 +1,16 @@
 {
- "theta_deg": 29.441217523395913,
+ "theta_deg": 29.433079098554952,
  "ux": [
-  0.8708604386447605,
-  -0.49153036162932545
+  0.8709302479669844,
+  -0.4914066576433079
  ],
  "uy": [
-  0.49153036162932545,
-  0.8708604386447605
+  0.4914066576433079,
+  0.8709302479669844
  ],
- "spacing_m": 79.35570477694782,
- "y0": -1653.7599731639134,
- "x5": -55.70962257190264,
+ "spacing_m": 79.35540450818567,
+ "y0": -1653.7568364708013,
+ "x5": -55.662720836592236,
  "avenue_x_m": {
   "Park Ave": 303.0,
   "Fifth Ave": 0.0,
@@ -19,14 +19,14 @@
   "Seventh Ave": -585.0,
   "Eighth Ave": -861.4,
   "Lexington Ave": 462.5,
-  "Irving Pl": 472.3,
+  "Irving Pl": 472.2,
   "Sixth Ave": -310.6,
-  "Madison Ave": 149.8,
-  "Park Ave S": 311.4,
-  "University Pl": 181.8
+  "Madison Ave": 149.9,
+  "Park Ave S": 311.0,
+  "University Pl": 181.7
  },
  "n_points": 285,
  "source": "NYC Street Centerline (CSCL), data.cityofnewyork.us/resource/inkn-q76z, fetched 2026-10-24",
- "max_street_residual": 1.884,
- "mean_street_residual": 0.07
+ "max_street_residual": 1.882,
+ "mean_street_residual": 0.069
 }

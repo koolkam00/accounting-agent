@@ -1,0 +1,15 @@
+{
+  "brand_name": "SAMPLE Kettle & Fig",
+  "product_name": "SAMPLE Fig and Sea Salt Oat Bars",
+  "card_sentences": "SAMPLE A Harlem baker and her brother make oat bars in a shared kitchen on 116th Street. They wanted a lunch-bag snack that keeps for two months without a fridge.",
+  "allergen_source": "contains_statement",
+  "allergen_line_verbatim": "SAMPLE Contains: wheat, oats processed with wheat, milk, eggs, soy, almonds, cashews and sesame. Made with butter from cows not treated with rBST.",
+  "may_contain_verbatim": "SAMPLE May contain peanuts, other tree nuts and fish. Produced in a facility that also handles crustacean shellfish.",
+  "retailer_line": "SAMPLE Union Market, 240 East Houston Street",
+  "discount_code": "SAMPLEFIG20",
+  "code_site": "kettlefig.example.com",
+  "qr_url": "https://example.com/s/SAMPLE-O-004-CMP-003",
+  "qr_display": "",
+  "office_id": "SAMPLE-O-004",
+  "campaign_id": "SAMPLE-CMP-003"
+}

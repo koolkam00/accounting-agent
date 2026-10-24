@@ -1,0 +1,26 @@
+{
+  "ready": true,
+  "errors": [],
+  "warnings": [
+    "record 1: The ingredient list is too long for the front at 14 pt, so it prints in full on the other face and the front points to it. Stand the card where both faces can be read, and take the close photo of both faces."
+  ],
+  "sample": true,
+  "placeholders": [],
+  "fit": [
+    {
+      "name_px": 75,
+      "name_width": 100,
+      "name_lines": 1,
+      "story_pt": 15,
+      "qr_px": 139.2,
+      "find_pt": 11,
+      "tight": false,
+      "story_dropped": false,
+      "product_dropped": false,
+      "ingredients_on_back": true
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/tent-card/tent-card.html",
+  "records": 1
+}

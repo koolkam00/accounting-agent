@@ -1,0 +1,136 @@
+#!/usr/bin/env node
+/*
+  build-signature.js: writes the email signature, in HTML and plain text, from brand.json.
+
+    node render/build-signature.js            (run from the desk-drop-identity folder)
+
+  Writes, in signature/:
+    signature.html             everyday signature (open in Chrome, select all, copy, paste into Gmail)
+    signature.txt              the same, plain text
+    signature-outreach.html    for cold outreach: the signature plus the legal pack's Footer B line
+    signature-outreach.txt
+    signature-with-logo.html   the wordmark as an image; only once the PNG is hosted (SIGNATURE_LOGO_URL)
+    preview-desktop.png, preview-phone.png, preview-outreach.png   what they look like (needs Playwright)
+
+  Commercial email needs a real postal address (CAN-SPAM; desk-drop-legal-pack/02-email-footer-and-checklist.md).
+  Every signature here carries [POSTAL ADDRESS] until brand.json has the real one.
+  The Footer B line is read from the legal pack file at build time, so a change there flows here.
+  Unfilled [PLACEHOLDERS] print with a yellow highlight so they cannot go out unnoticed.
+  If contact.WEBSITE is "" (empty), the website is left out (legal pack: no website until it is public).
+*/
+const fs = require('fs');
+const path = require('path');
+const ROOT = path.resolve(__dirname, '..');
+// test options: --brand <file> reads another brand.json, --out <dir> writes somewhere else
+const argOf = (k) => { const i = process.argv.indexOf(k); return i === -1 ? null : process.argv[i + 1]; };
+const OUT = path.resolve(argOf('--out') || path.join(ROOT, 'signature'));
+fs.mkdirSync(OUT, { recursive: true });
+
+const brand = JSON.parse(fs.readFileSync(argOf('--brand') || path.join(ROOT, 'brand.json'), 'utf8'));
+const c = brand.contact || {};
+const NAME = brand.BRAND_NAME;
+const TITLE = c.FOUNDER_TITLE || 'Founder';
+
+// Footer B, verbatim from the legal pack (fallback: the v0.5 text of 2026-10-24).
+const LEGAL = path.resolve(ROOT, '../desk-drop-legal-pack/02-email-footer-and-checklist.md');
+let footerB = 'This is a business pitch, sent one to one. Not interested? Reply "no thanks" and I won\'t email you again.';
+let footerSource = 'built-in copy of the legal pack v0.5 footer B (file not found)';
+if (fs.existsSync(LEGAL)) {
+  const md = fs.readFileSync(LEGAL, 'utf8');
+  const m = /###\s*Footer B[\s\S]*?```text\s*\n([\s\S]*?)\n```/.exec(md);
+  if (m && m[1].trim()) { footerB = m[1].trim(); footerSource = 'desk-drop-legal-pack/02-email-footer-and-checklist.md, Footer B'; }
+}
+
+const PH = /\[[A-Z][A-Z0-9 ,.'&_\-/]*(?::[^\]]*)?\]/;
+const isPh = (v) => PH.test(String(v || ''));
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const hl = (s) => esc(s).replace(new RegExp(PH.source, 'g'), (m) => `<span style="background-color:#FFE45C;color:#1F1D1A;">${m}</span>`);
+const missing = ['FOUNDER_NAME', 'PHONE', 'EMAIL', 'POSTAL_ADDRESS', 'WEBSITE'].filter((k) => isPh(c[k]));
+
+const INK = '#1F1D1A', SOFT = '#3A3732', COBALT = '#2E47C9';
+const FONT = "'Atkinson Hyperlegible Next', Arial, Helvetica, sans-serif";
+const link = (href, text) => isPh(text) ? hl(text) : `<a href="${esc(href)}" style="color:${SOFT};text-decoration:none;">${esc(text)}</a>`;
+const site = c.WEBSITE === '' ? null : (c.WEBSITE || '[WEBSITE]');
+const telHref = 'tel:' + String(c.PHONE || '').replace(/[^\d+]/g, '');
+const contactLine = [link(telHref, c.PHONE || '[PHONE]'), link('mailto:' + (c.EMAIL || ''), c.EMAIL || '[EMAIL]'), site ? link(/^https?:/.test(site) ? site : 'https://' + site, site.replace(/^https?:\/\//, '')) : null].filter(Boolean).map((x, k, all) => `<span style="white-space:nowrap;">${x}${k < all.length - 1 ? '&nbsp;&middot;' : ''}</span>`).join(' ');
+
+function sigTable(opts) {
+  opts = opts || {};
+  const nameLine = opts.logoUrl
+    ? `<img src="${esc(opts.logoUrl)}" width="112" height="18" alt="${esc(NAME)}" style="display:block;border:0;width:112px;height:auto;margin:2px 0 4px 0;">`
+    : '';
+  return `<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;font-family:${FONT};color:${INK};">
+  <tr>
+    <td style="border-left:3px solid ${COBALT};padding:1px 0 1px 10px;">
+      <div style="font-size:14px;line-height:20px;font-weight:bold;color:${INK};">${hl(c.FOUNDER_NAME || '[FOUNDER NAME]')}</div>
+      <div style="font-size:13px;line-height:19px;color:${INK};">${esc(TITLE)}, <b>${esc(NAME)}</b></div>
+      ${nameLine}
+      <div style="font-size:13px;line-height:19px;color:${SOFT};">${contactLine}</div>
+      <div style="font-size:13px;line-height:19px;color:${SOFT};">${hl(c.POSTAL_ADDRESS || '[POSTAL ADDRESS]')}</div>
+    </td>
+  </tr>
+</table>${opts.outreach ? `
+<div style="font-family:${FONT};font-size:13px;line-height:19px;color:#333333;margin:12px 0 0 0;">${esc(footerB)}</div>` : ''}`;
+}
+function page(title, body, note) {
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>${esc(title)}</title>
+<!-- ${esc(note)}
+     How to use (Gmail, needs your login): open this file in Chrome, press Ctrl+A (Cmd+A on a Mac), Ctrl+C,
+     then Gmail > Settings (gear) > See all settings > General > Signature > Create new > paste > Save changes.
+     Generated by render/build-signature.js from brand.json on ${new Date().toISOString().slice(0, 10)}. Do not edit; edit brand.json and rebuild. -->
+</head><body style="margin:16px;background:#FFFFFF;">
+${body}
+</body></html>
+`;
+}
+function plain(outreach) {
+  const lines = [
+    c.FOUNDER_NAME || '[FOUNDER NAME]',
+    `${TITLE}, ${NAME}`,
+    [c.PHONE || '[PHONE]', c.EMAIL || '[EMAIL]', site ? site.replace(/^https?:\/\//, '') : null].filter(Boolean).join(' | '),
+    c.POSTAL_ADDRESS || '[POSTAL ADDRESS]'
+  ];
+  if (outreach) lines.push('', footerB);
+  return lines.join('\n') + '\n';
+}
+
+const files = {
+  'signature.html': page(`${NAME} email signature`, sigTable(), 'Everyday signature.'),
+  'signature.txt': plain(false),
+  'signature-outreach.html': page(`${NAME} email signature, outreach`, sigTable({ outreach: true }), `Outreach signature: the everyday signature plus the commercial-email line from ${footerSource}. Draft for attorney review. Not legal advice.`),
+  'signature-outreach.txt': plain(true),
+  'signature-with-logo.html': page(`${NAME} email signature with logo`, sigTable({ logoUrl: brand.SIGNATURE_LOGO_URL || 'https://[DOMAIN]/email/wordmark-light-on-white-600w.png' }), 'Logo version. Use only after wordmark/png/wordmark-light-on-white-600w.png is hosted at a public URL (set SIGNATURE_LOGO_URL in brand.json). Until then use signature.html. Image-blocking mail apps show the alt text instead.'),
+};
+for (const [f, txt] of Object.entries(files)) fs.writeFileSync(path.join(OUT, f), txt);
+const sizes = Object.fromEntries(Object.entries(files).filter(([f]) => f.endsWith('.html')).map(([f, t]) => [f, sigTable({ outreach: f.includes('outreach') }).length]));
+console.log('Wrote ' + path.relative(ROOT, OUT) + '/' + Object.keys(files).join(', '));
+console.log('Signature HTML sizes (characters, Gmail limit 10,000): ' + JSON.stringify(sizes));
+console.log('Footer B from: ' + footerSource);
+if (missing.length) console.log('Still placeholders in brand.json (highlighted yellow in the HTML): ' + missing.join(', '));
+
+// previews
+if (!process.argv.includes('--no-png')) {
+  (async () => {
+    const { chromium } = require('playwright');
+    const b = await chromium.launch();
+    const p = await b.newPage({ deviceScaleFactor: 2 });
+    const frame = (w, inner, label) => `<html><body style="margin:0;background:#EEF0F3;font-family:Arial,sans-serif;">
+      <div style="width:${w}px;margin:0;background:#fff;padding:18px 18px 22px;box-sizing:border-box;">
+        <div style="font-size:12px;color:#666;margin-bottom:10px;">${label}</div>
+        <div style="font-size:14px;line-height:21px;color:#222;margin-bottom:14px;">SAMPLE email text. Thanks for the time today; the one-pager is attached.<br><br>Best,</div>
+        ${inner}
+      </div></body></html>`;
+    const shot = async (w, inner, label, file) => {
+      await p.setViewportSize({ width: w, height: 400 });
+      await p.setContent(frame(w, inner, label));
+      const el = await p.$('body > div');
+      await el.screenshot({ path: path.join(OUT, file) });
+    };
+    await shot(640, sigTable(), 'Preview: everyday signature, desktop mail (Arial shown where the font is not installed)', 'preview-desktop.png');
+    await shot(360, sigTable(), 'Preview: phone width, 360 px', 'preview-phone.png');
+    await shot(640, sigTable({ outreach: true }), 'Preview: outreach signature', 'preview-outreach.png');
+    await b.close();
+    console.log('Wrote ' + path.relative(ROOT, OUT) + '/preview-desktop.png, preview-phone.png, preview-outreach.png');
+  })().catch((e) => { console.error(e); process.exit(1); });
+}

@@ -116,7 +116,9 @@
 
   // Editable copy: {BRAND_NAME} becomes the name from brand.json (so a rename never touches copy),
   // **words** become bold, [PLACEHOLDERS] are highlighted.
-  X.t = (s) => D.text(String(s == null ? '' : s).replace(/\{BRAND_NAME\}/g, D.brand().BRAND_NAME)).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  // A date ("Tue 2027-01-12" or "2027-01-12") never breaks across lines.
+  X.t = (s) => D.text(String(s == null ? '' : s).replace(/\{BRAND_NAME\}/g, D.brand().BRAND_NAME)).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/\b(?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) )?\d{4}-\d{2}-\d{2}\b/g, (m) => `<span class="nowrap">${m}</span>`);
   X.items = (text) => String(text || '').split(/\n+/).map((s) => s.replace(/^\s*[-*•]\s*/, '').trim()).filter(Boolean);
   X.usd = (n) => '$' + Math.round(Number(n)).toLocaleString('en-US');
   X.num = (v) => { const s = String(v == null ? '' : v).trim(); return /^-?\d+(\.\d+)?$/.test(s) ? Number(s) : null; };

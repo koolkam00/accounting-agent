@@ -93,6 +93,17 @@ def apply_overrides(c):
     return c
 
 
+def headcount_updates(c):
+    for name, (url, date, note) in R.HEADCOUNT_UPDATES.items():
+        idx = c.index[c.company_name == name]
+        assert len(idx) == 1, name
+        i = idx[0]
+        c.at[i, "headcount_band"], c.at[i, "headcount_scope"] = "over-500", "whole-company"
+        c.at[i, "headcount_source_url"], c.at[i, "headcount_source_date"] = url, date
+        c.at[i, "notes_assembly"] = (c.at[i, "notes_assembly"] + f" Band set at assembly to over-500 from {note} The NYC office size is unknown; the NYC office alone may fit, founder to confirm.").strip()
+    return c
+
+
 def lease_fields(c):
     for i, r in c.iterrows():
         key = r["_merged_from"].split(";")[0] if r.get("_merged_from") else r.company_name
@@ -339,12 +350,43 @@ def load_retailers():
     return r
 
 
+# ------------------------------------------------------------------ pin frontage fix
+STREET_ADDR = re.compile(r"^\s*(\d+)[A-Za-z]?\s+(East|West)\s+(\d+)(st|nd|rd|th)?\s+Street", re.I)
+PIN_LOG = []
+
+
+def fix_pins(df, label):
+    """A pin for '<n> E/W <k>th Street' must sit on the <k>th St block face its house-number
+    parity names (odd north, even south). Through-lots and corner lots sometimes put the
+    geocoded point on the far frontage. Move such pins to the addressed frontage (same
+    crosstown position, 0.25 block from the street centreline); the tax lot is unchanged."""
+    df["pin_note"] = df.get("pin_note", "")
+    for i, r in df.iterrows():
+        m = STREET_ADDR.match(r.street_address.split(",")[0])
+        if not m or not r.lat:
+            continue
+        n, k = int(m.group(1)), int(m.group(3))
+        s, x = grid.sx(float(r.lat), float(r.lon))
+        north = n % 2 == 1
+        ok = ((s > k) == north) and abs(s - k) <= 0.65
+        if ok:
+            continue
+        s2 = k + (0.25 if north else -0.25)
+        la, lo = grid.latlon(s2, x)
+        PIN_LOG.append((label, r.street_address, round(s, 2), s2))
+        df.at[i, "lat"], df.at[i, "lon"] = f"{la:.6f}", f"{lo:.6f}"
+        df.at[i, "pin_note"] = (f"Pin moved at assembly from street index {s:.2f} to the {'north' if north else 'south'} "
+                                f"frontage of {k}th St named by the address (tax lot unchanged; the geocoder had placed it on the far side of the lot).")
+    return df
+
+
 # ------------------------------------------------------------------ main
 def main():
     c = load_companies()
     c["_merged_from"] = ""
     c = apply_merges(c)
     c = apply_overrides(c)
+    c = headcount_updates(c)
     c = lease_fields(c)
     c = audit_confidence(c)
 
@@ -367,6 +409,9 @@ def main():
     missing = sorted(set(c.bbl) - set(b.bbl))
     assert not missing, missing
 
+    c = fix_pins(c, "company"); b = fix_pins(b, "building"); w = fix_pins(w, "coworking"); r = fix_pins(r, "retailer")
+    for row in sorted(set(PIN_LOG)):
+        print("pin fix:", row)
     # geometry for everything
     for df in (c, b, w, r):
         ss, xs, ins, bo = [], [], [], []

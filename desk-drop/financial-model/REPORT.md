@@ -1,107 +1,103 @@
 # Report back: financial model (workstream H)
-Deliverable: financial-model/Desk Drop financial model v1.xlsx, attached in this folder. It is not shared anywhere. All figures are planning estimates at plan defaults, not forecasts.
+
+Status: built, reviewed twice by an independent reviewer (`_review/round-1.md`, `_review/round-2.md`), every finding answered. Date: 2026-10-24. Every figure below is a planning estimate from `plan.md` at plan defaults, never a forecast.
 
 ## What was built (five lines)
-1. One workbook with 21 tabs and 15,472 formulas. No result is typed in, no formula holds a numeric literal other than 0 or 1, and all 37 functions used are on Google's Sheets list.
-2. One drop engine (revenue, seven cost lines, seven hour activities, contribution per founder hour) runs every scheduled drop, the Calculator, the plan's scenario rows and the steady state. The plan's figures reproduce within rounding.
-3. A 26-week cash flow with startup outlays at their timing, brand cash on the plan's terms and overhead paid once. The lowest point is -$3,871 in week 12 (Mon 2027-01-11), so capital to commit is $4,871 against the plan's $6,510.
-4. A gate dashboard (Gates 0 to 3 against live pipeline and actuals, pass, miss or not yet), the decision rule, the scenario the numbers point to, Scenarios A to D as selectable sets, break-even, and four plain-formula sensitivity tables.
-5. Hours (by hand or from Toggl), pipeline and actuals tabs in the layouts F and E build to (HANDOFF.md), with the legal pack's figures pulled in. 28 checks and 54 behaviour tests pass, including a SAMPLE actuals run through every gate.
+
+1. One workbook, `financial-model/Desk Drop financial model v1.xlsx`, 21 tabs on one shared drop engine, built to open in Google Sheets with formulas intact: no macros, scripts or add-ons, and no numeric literal other than 0 or 1 in any of its 19,848 formulas. Every INDEX over a single row names its row (INDEX(range, 1, column)), the form Google documents. Every assumption sits in one labeled cell on Inputs with its unit, source, plan default and a 'changed' flag; the company name sits in one cell.
+2. An editable drop schedule (five derived drops and seven spare rows) feeds a per-drop P&L with contribution per founder hour, a 26-week cash flow with startup outlays at their timing and brand cash on the plan's terms, a monthly steady state, break-even, four plain-formula sensitivity tables and the plan's capital table reconciled. Overhead is paid once; per-drop allocations are views of it.
+3. Live tabs for hours (by hand or from Toggl), pipeline events and campaign actuals switch each drop from plan to actual. A gate dashboard shows every threshold beside its live value as pass, miss or not yet, plus the decision rule, the scenario the numbers point to, the gap to $6,510 and what you are out if you stop at each gate. Scenarios A to D are selectable assumption sets.
+4. The plan's five scenario rows, its founder-hour table cell by cell, the monthly picture, the $47 line and the $3,360 to $6,510 capital total reproduce within rounding (Plan_Check). 34 checks pass and 125 behaviour tests pass on edited copies, including every edge case the brief names.
+5. At plan defaults: lowest cumulative cash -$4,126 in week 12 (Mon 2027-01-11); capital to commit $5,126, $1,384 under the plan's $6,510; standard runs to Gate 3 earn $61.3 per founder hour ($51.4 with a roster big enough for one drop per office a month); steady state $7,660 a month at $81.1 an hour. The six months all-in is $33.8 an hour on the plan's roadmap drops alone and $52.5 with the two derived decision-window drops. Stopping at Gate 1 costs $3,120; at Gate 2, $5,326 paid out against $1,200 received.
 
 ## How to use it (five lines)
-1. Import into Google Sheets (README.md steps 1 to 5). Set the locale to US and the time zone to New York, then confirm the Dashboard says "all integrity checks pass".
-2. Each week, add hours on Hours_Log and outreach events on Pipeline.
-3. After each drop, paste the operations exports into Actuals_Campaigns and Actuals_DropCosts, then set "Actuals in" to Y on Schedule.
-4. Read the Dashboard: the next drop's dollars per hour, the lowest cash point and the gap to $6,510, every gate, the rule and the scenario pointer.
-5. Change any assumption on Inputs, or the drops on Schedule; "Changed?" keeps each plan default beside your edit. To test a price, use Inputs, "Standard price per office", or the Calculator.
 
-## What the numbers say at plan defaults
-- Contribution per founder hour by drop:
-  - Campaign zero: $16.2.
-  - Standard run 1: $57.2 (it carries five new offices).
-  - Standard run 2: $66.0.
-  - Each of the two direct-ship decision drops: $100.7.
-  - The standard runs to Gate 3 together: $61.3, against the $50 target.
-- Six months all-in: $50.3 an hour, once you count 45 discovery hours and $1,310 of overhead that the drops do not absorb. After one-time startup outlays it is $38.9. The margin over $50 is thin.
-- Cash: the lowest point is -$3,871 in week 12. Capital to commit is $4,871, leaving $1,639 of headroom against $6,510. Cumulative cash at week 26 is +$12,014.
-- Break-even:
-  - The $3,520 of startup outlays is recovered by 4 one-brand campaigns, or by 3 campaigns on three-brand drops.
-  - One standard campaign a month covers the $310 of monthly overhead.
-  - Contribution reaches $50 an hour at 1.81 brands per drop (2 whole brands): 1.68 at 40% renewal, 1.17 when brands ship direct.
-  - A three-brand drop reaches $50 an hour at $107.73 per office.
-- Steady state:
-  - Plan base: $7,660 a month at $81.1 an hour.
-  - Scenario A: $9,406 at $99.6.
-  - Scenario B: $7,660 plus $500 of office-paid revenue, whose cost is not quoted, at $73.7.
-  - Scenario C: cash at week 26 of $7,729.
-  - Scenario D: cash at week 26 of $3,444, then -$310 a month.
+1. Upload the .xlsx to Google Drive, open it with Google Sheets, set the locale to United States and the time zone to America/New_York, and check that the Dashboard says 'all integrity checks pass' (README.md has the steps; this needs your Google login).
+2. Every week: add hours on Hours_Log, paste or type pipeline events on Pipeline, read the Dashboard top to bottom. Optionally type your bank balance on Cash_Flow, row 30.
+3. After each drop: paste the operations exports into Actuals_Campaigns and Actuals_DropCosts (exactly the HANDOFF.md columns), then set 'Actuals in' to Y for that drop on Schedule once revenue, payments, costs and hours are final (by T+10). Day-30 redemptions and renewal answers can follow later.
+4. To change an assumption, type in its yellow or blue cell on Inputs or Schedule. To test a price, change Inputs section 3, 'Standard price per office', and read 'Price in force' and 'A standard drop at that price' on the Dashboard; the Calculator tests one drop without moving the model.
+5. To see a decision situation, pick A to D on Inputs section 2. On the decision date, read 'The rule says' and 'Scenario the real numbers point to'.
 
-## Plan readings (each verified on Plan_Check; none is a fudge)
-- (a) The display kit is $8 per office per drop, not per brand. Only this gives the three-brand courier drop $670 of hard costs ($830 if per brand).
-- (b) Campaign zero reproduces with storage $0, transport $120 and processing 3%: $40 + $120 + $0 + $30 + $50 + $36 = $276, which the plan rounds to $280. Contribution is $924 against the plan's $920, which is $16.2 an hour.
-- (c) The direct-ship row ($370) keeps the $75 storage allocation and $0 transport.
-- (d) "About $47 an hour at $1,000" assumes no card processing: $2,465 / 52 h = $47.4. With 3% processing it is $45.7.
-- (e) The monthly picture is two three-brand courier drops: $9,000 revenue, $1,340 hard costs ("about $1,350"), 104 hours and $7,660 contribution ("roughly $7,650").
-- (f) Overhead is $310 a month, inside the plan's $200 to $350, or $160 with home storage.
-- (g) The plan's capital line "Transport, campaigns zero to two: $600" does not match its own rates, which give $720. The model uses the rates.
-- (h) Six hours per win = five 45-minute conversations at a 20% close rate + 2.25 hours of paperwork.
+## Plan readings (how the plan's own figures reproduce)
 
-## Assumptions (numbered)
-1. Prices are per office at the tier rate: $150 standard, $120 founding. Offices beyond the package pay the $150 extra-office price. Founding renewals pay $120 per office. A drop smaller than the package is priced pro rata.
-2. A drop with zero brands does not run.
-3. Hours are rates taken from the plan's table: 10 per first founding brand, 6 per standard win, 2 per renewal, 4 per new office, 1 per existing office, 2 per brand for reporting, 2 per drop for admin, and logistics by delivery model. These reproduce all four columns exactly.
-4. A renewal costs 2 hours instead of 6. In the decision-window drops, renewals = rate x brands, rounded.
-5. Card processing of 3% applies while the toggle is 1 (the high end of the range). Set it to 0 for bank transfer.
-6. Insurance is $100 a month ($1,200 a year, the legal pack's working figure), paid annually at bind on Gate 1 (latest bind date 2026-12-21).
-7. Storage: home for campaign zero, then a $150-a-month unit from 2027-02-01. Software $60 a month from week 1. Phone $0.
-8. Courier $30 a stop. Founder delivery $120 a drop. Direct-ship $0. Mailing the kit needs a quote.
-9. Legal pack figures (read 2026-10-24):
-   - Articles $200 and certificate $50, both verified.
-   - Publication $1,745, needs quote (New York County).
-   - Licence $400: fee verified, whether it is required unknown.
-   - Attorney $400 and accountant $300, plan estimates.
-   - IT-204-LL filing fee $25, verified.
-   - Printing $300 and domain $100 are plan estimates.
-10. The trademark ($350) is excluded from the six months, following the legal pack's timing.
-11. The hired and non-owned auto add-on and additional-insured endorsements stay blank until quoted.
-12. Gates use real numbers only: "not yet" until the review date, then "miss".
-13. Gate 2's five responses per office uses survey_responses_min_office if supplied, otherwise the average.
-14. The steady state uses the courier model.
-15. Not modeled: taxes, cancellations or refunds, unpaid balances, and the founder's pay. Brands supply the product and the freight.
-16. The all-in view adds 45 discovery hours (15 a week, the high end of the plan's range).
-17. Office fatigue is a warning, not a check.
+- **(a) Display kit.** $8 per office per drop, not per brand. Only this reproduces the scenario hard costs: a three-brand courier drop is $80 + $300 + $75 + $30 + $50 + $135 = $670. Per brand it would be $830.
+- **(b) Campaign zero.** Reproduces with storage at $0 (sealed cases at home), transport $120 and processing at 3%: $40 + $120 + $0 + $30 + $50 + $36 = $276, which the plan rounds to $280. Contribution is $924 against the plan's $920, and $16.2 per hour.
+- **(c) Direct-ship row.** The three-brand direct-ship row ($370) keeps the $75 storage allocation and $0 transport.
+- **(d) The $1,000 price.** 'At $1,000 the three-brand drop drops to about $47 an hour' assumes no card processing: $2,465 / 52 h = $47.4. With processing at 3% it is $45.7.
+- **(e) Monthly steady state.** $9,000 revenue, about $1,350 hard costs and 104 hours is two three-brand courier drops: $1,340 in hard costs and $7,660 contribution. The plan rounds these.
+- **(f) Fixed overhead.** $60 software + $100 insurance + $150 storage + $0 phone = $310 a month, inside the plan's $200 to $350. With home storage it is $160.
+- **(g) Transport lump.** The plan's capital line 'Transport, campaigns zero to two: $600' does not reconcile to its own rates ($120 + $300 + $300 = $720). The model pays transport per drop at the rates; the capital table is reproduced as printed.
+- **(h) Hours per win.** Six hours per standard brand win = five qualified conversations of 45 minutes (20% close rate) plus 2.25 hours of proposal and paperwork. The close rate on Inputs moves it.
+
+## Numbered assumptions
+
+1. Prices are per office at the tier rate: $150 standard, $120 founding. Offices beyond the package (10 or 5) pay the $150 extra-office price. Founding-rate renewals pay $120 per office for any office count. A drop smaller than the package is priced pro rata; founder to confirm any minimum.
+2. A drop with zero brands does not run: no cost, no hours.
+3. Founder hours decompose the plan's table into rates: 10 hours per first (founding) brand, 6 per standard win, 2 per renewal, 4 per new office, 1 per existing office, 2 reporting per brand, 2 admin per drop, and logistics by delivery model (Inputs section 7). The rates reproduce all four columns exactly.
+4. A renewal fills a brand slot on a later drop at that brand's tier price and costs 2 hours of brand sales instead of 6. In the decision-window drops, renewals = renewal rate x brands, rounded. In the steady state they are not rounded (expected values).
+5. Card processing applies to every receipt while the toggle is 1 (high end of the 0% to 3% range). Set it to 0 to model bank transfer, the plan's preferred invoicing.
+6. General liability insurance is $100 a month (the plan's working figure and the legal pack's $1,200 a year), paid as one annual premium at bind on Gate 1, inside the legal pack's latest bind date of 2026-12-21. Needs three quotes. For the all-in rate, each month of cover is expensed in the month it starts: five months fall inside the window, so $700 of the premium is prepaid beyond it.
+7. Storage: home for campaign zero, a $150-a-month unit from 2027-02-01 through the six months. Software $60 a month from week 1. Phone $0.
+8. Courier transport is $30 a stop ($300 for ten stops; range $25 to $40). Founder delivery is $120 a drop. Direct-ship transport is $0; mailing the kit ahead needs a quote.
+9. Formation, licence, professional-hour and filing figures come from the legal pack (desk-drop-legal-pack/figures.csv, read 2026-10-24 and re-read after its 01:52 update the same day): Articles $200 and Certificate of Publication $50 (verified 2026-10-23); licence $400 (fee verified, whether required unknown); attorney $400 and accountant $300 (plan estimates that keep the plan's 'about $700' for both hours); IT-204-LL $25 (verified). Newspaper publication is the plan's high end, $2,000 (range $250 to $2,000, no working figure in the plan), because the legal pack's figure is not yet verified: its working $1,745 for New York County and $345 for Albany County both still need a quote. Printing ($300) and domain ($100) are plan estimates.
+10. The trademark application ($350, verified) is left out of the six months because the legal pack times it after campaign zero passes and outside the first six months, and flags a prior descriptiveness refusal. Inputs keeps the line with Include = N.
+11. Hired and non-owned auto cover and building additional-insured endorsements are blank (needs quote, legal pack). Campaign zero's car rides need the auto add-on. A mailing address (PO box or private mailbox, only if you will not use a home address) and a registered agent (Albany County route only, Include = N) are blank too; the legal pack invents no figure for either.
+12. Gate tests use real numbers only: the pipeline log for Gates 0 and 1, campaign actuals for Gates 2 and 3. A gate is 'not yet' until its review date passes, then 'miss' if the threshold is not met.
+13. Gate 2 tests five responses per office per brand campaign using survey_responses_min_office when operations supplies it, otherwise the average per office.
+14. The steady state uses the courier model, as the plan's monthly picture does; direct-ship raises contribution per hour.
+15. Not modeled: sales tax and income tax (the accountant hour decides), brand cancellations and refunds, late or unpaid balances, and the founder's own pay. Every scheduled brand pays in full on the plan's terms. Brands supply product and prepaid inbound freight, so there is no product cost.
+16. The six-month all-in view adds the hours that belong to no drop: 45 planned discovery hours (15 a week for weeks 1 to 3, the high end of the plan's 10 to 15), or the hours logged inside the 26 weeks with a blank drop_id once there are more of them. Weeks 4 to 7 of selling and recruiting already sit in campaign zero's 57 hours, so they are logged against DRP-001.
+17. Office fatigue is a warning, not a check: the plan wants one drop per office a month, but the CONTRACTS calendar puts standard runs two weeks apart with a 12-office roster. The Dashboard shows its cost: with a roster big enough for one drop per office a month, standard runs to Gate 3 earn $51.4 an hour instead of $61.3, just above the $50 bar.
+18. No founding-rate renewal is scheduled by default. Campaign zero's report lands 2027-01-22 and its debrief 2027-01-27: after run 1's latest signature (2027-01-26), and for run 2 a founding renewal would have to pay in full by 2027-01-25 (20 business days ahead), before its debrief. The decision-window renewals (renewal rate x brands, rounded) are priced at the standard rate. If one is a founding brand, enter it under 'of which founding-rate renewals': each one costs $300 of revenue against a standard renewal (10 offices x $30) and saves no hours; against a new standard brand it costs $300 and saves 4 hours.
+19. A renewal counts toward Gate 3 only when the pipeline's renewal_answer says yes and commits $1,500 or more, and each brand counts once, however many rows repeat it.
+20. Pasted files carry exactly the HANDOFF columns, in order. Each paste area has ten or more blank columns before its helpers, and Checks flags a header that differs or anything pasted in the blank columns. Extra fields go in a separate file.
+21. Scenario B's office-paid revenue ($500 a month) is shown but left out of the steady-state net until its cost to serve is quoted, so an unpriced cost never makes B look better than the plan base.
+22. The capital table's $300 'printing and materials' is read as startup supplies (hand truck, supplies, first card run). Campaign zero also pays $40 of display kits on its drop. If the first card run is those kits, $40 is counted twice; the model keeps both plan figures (conservative by $40).
+23. The decision rule says Stop only when both tests have failed. While renewal is under 30% and fewer than two drops after Gate 3 have actuals, it says the switch test is still running, because the plan's situation B is 'run two more drops' first.
+24. Gate 1 counts a brand as 'paid in full' once its paid rows by the review date add up to the founding package price ($600 at defaults). A deposit or part payment alone does not count.
+25. A brand's budget_probe value is the number it named before hearing $1,500; an answer after hearing $1,500 is a second row with notes = after_1500. Gate 0 counts a brand if any of its answers is $500 or more and it controls the budget. Each median uses one before-anchor answer per organisation; brands also get an after-anchor median.
+26. The Gate 3 rate passes only when every standard run dated by the review has actuals in; until then it reads 'not yet: N standard run(s) without actuals'. The all-drops rate and the scenario pointer say how many drops with results due (T+10) are still missing.
+27. The storage unit is rented from the first of the month of the first standard drop that runs; with none, no unit is rented.
 
 ## Derived items (founder to confirm)
-- D1. CONTRACTS calendar: week 1 2026-10-26; Gate 0 2026-11-13; Gate 1 2026-12-11; campaign zero Tue 2027-01-12; Gate 2 2027-01-22; standard runs Tue 2027-02-09 and Tue 2027-02-23; Gate 3 Fri 2027-03-12; decision 2027-04-09. All are editable.
-- D2. Two decision-window drops, Tue 2027-03-23 and Tue 2027-04-06, direct-ship with three brands each. This is the simplest schedule that meets the goal of two renewals and scenario B's "two more drops".
-- D3. New offices: 5, then 5, then 2, reaching the goal of 12 (these are formulas).
-- D4. Founding payment 20 business days before the drop; standard deposit at T-10; balance at T+1.
-- D5. Startup timing: domain week 1; filing and professional hours at Gate 0; publication 2026-11-30; insurance, licence and printing at Gate 1; certificate 2027-01-11; IT-204-LL 2027-03-15.
-- D6. Logistics hours by delivery model are taken from the plan's table.
-- D7. Scenario levers the plan does not name use the plan base. Scenario B renewal is 0% and scenario A's price is $180, the low end of each stated range.
-- D8. 28 days counts as one drop a month.
-- D9. Courier $30 = $300 / 10 stops; paperwork 2.25 hours.
 
-## Conflicts with CONTRACTS or the plan
-1. Office fatigue: the CONTRACTS calendar spaces runs two weeks apart with a 12-office roster, against the plan's one drop per office a month. Two drops are flagged; the CONTRACTS dates are kept.
-2. Transport: the plan's $600 lump against its own per-drop rates of $720.
-3. Trademark: the plan's checklist puts it after campaign zero; the legal pack puts it outside the six months. The model follows the legal pack.
-4. Toggl: CSV export is a paid-plan feature (Starter from $9 per license a month, per Toggl's help, opened 2026-10-23). The export column names are unverified, so the import tab maps columns by header name.
-5. Publication: the legal pack's working figure is $1,745, against the plan's $250 to $2,000.
+- **D1.** Calendar from CONTRACTS section 3: week 1 2026-10-26; Gate 0 2026-11-13; Gate 1 2026-12-11; campaign zero Tue 2027-01-12 (moved by the December blackout); Gate 2 2027-01-22; standard drops Tue 2027-02-09 and Tue 2027-02-23; Gate 3 Fri 2027-03-12; decision 2027-04-09.
+- **D2.** Two decision-window drops, Tue 2027-03-23 and Tue 2027-04-06, direct-ship, three brands each. They are not in the plan's roadmap table (campaign zero and two standard runs, 8 paid campaigns against the goal of 6). They come from the decision rule ('after two extra drops'), scenario B ('run two more drops') and scenario A (two drops a month). They carry the schedule's two renewals. The Dashboard shows the six-month all-in rate and week-26 cash with and without them: at defaults $33.8 an hour and $3,189 for the roadmap alone, $52.5 and $11,759 with them. The schedule needs 12 new brand wins by 2027-03-23 (about 60 qualified conversations at a 20% close rate); Schedule columns Y to AE show them by sign-by date beside the Pipeline's actual counts.
+- **D3.** New offices: five in campaign zero; standard run 1 fills its ten (five new); run 2 adds the two that reach the goal of 12 active offices. These are formulas of Inputs, so changing the drop size or the goal moves them.
+- **D4.** Founding payment 20 business days before the drop (campaign zero's money at Gate 1). Standard signature at T-10 (the latest that still lets a brand ship). Balance at T+1.
+- **D5.** Startup timing, each a formula of the date it depends on (legal pack timing, re-read 2026-10-24): domain and any mailbox in week 1; attorney hour Wed 2026-11-18 and accountant hour Fri 2026-11-20 (3 and 5 business days after Gate 0); LLC filing Thu 2026-11-19 (4 business days after Gate 0, the day after the attorney hour); publication 10 business days after filing (Fri 2026-12-04, skipping Thanksgiving); insurance, its add-ons, licence and printing at Gate 1; Certificate of Publication after the sixth weekly run (2027-01-15); trademark at Gate 2; IT-204-LL on its statutory date, 2027-03-15. If Gate 0 or Gate 1 slips, these move with it. The lowest point does not move: everything still lands before week 12.
+- **D6.** Hour rates for receiving and kitting, drop day and checks by delivery model, derived from the plan's table (Inputs section 7).
+- **D7.** Scenario levers the plan does not name use the plan base and say so (Scenarios, source column). Scenario B's renewal is 0%, the low end of 'under 30%'. Scenario A's post-decision price is $180, the low end of $1,800 to $2,000.
+- **D8.** One drop per office every 28 days counts as 'one a month' for the office-fatigue warning.
+- **D9.** Courier $30 a stop is the plan's $300 route divided by ten stops. Proposal and paperwork 2.25 hours make the plan's six hours per win at a 20% close rate.
+- **D10.** Gate 2 follows its drop on Schedule: the campaign-zero date plus seven business days (2027-01-22). The storage unit starts on the first day of the month of the first standard drop that runs (2027-02-01).
+- **D11.** DRP-005's debrief (T+10) is Tue 2027-04-20, after the canonical decision date of Fri 2027-04-09 (CONTRACTS section 3). The model keeps the canonical date and warns on the Dashboard; REPORT.md asks whether to move the review to 2027-04-20.
 
-## Changelog (one line per round)
-- Round 1: built every tab on one engine, and the plan's figures reproduce. The audit found one literal, a ROW() call, the company name in a source quote and a circular reference; all fixed.
-- Round 2: brought in the legal pack's figures. Added fatigue warnings, change tracking, the unabsorbed-overhead and all-in views, Gate 3 renewals counted by signature date, and tolerance cells. Rebuilt the Dashboard layout after a visual check.
-- Round 3: moved offices and brands per drop onto Inputs, so the derived Schedule rows are formulas. Unsmoothed the chart, top-aligned every cell, and added driver tests.
-- Round 4: verified the last three functions on Google's list, made tolerances consistent, wrote the docs and regenerated the CSVs. Audit 0; checks 28/28; tests 54/54.
+## Figures that need a quote or a founder decision
 
-## Steps that need the founder's login
-1. Google Drive and Sheets: import and check the workbook. A live import was not possible here (unverified, founder to confirm).
-2. Toggl: only with a written yes to the paid plan.
+- **Courier.** Three quotes for a ten-stop route. Default $30 a stop.
+- **Insurance.** Three general liability quotes, plus hired and non-owned auto and any building endorsements. Default $100 a month; add-ons blank.
+- **Publication.** A quote once the county named in the Articles is settled. Default $2,000, the plan's high end, until then. The legal pack's working figures: New York County $1,745, Albany County $345 if the attorney confirms it fits.
+- **Kit mailing.** Postage to mail a display kit ahead of a direct-ship drop. Blank.
+- **Extra tent cards.** Whether each brand on a drop needs its own card ($1 to $2 each). Blank, per reading (a).
+- **Payment lag.** Your invoice terms. Blank = paid the day invoiced.
+- **Founder cash.** What you commit to the six months (plan question 7). Blank.
+- **Office-paid cost.** Cost to serve an office-paid office (scenario B). Blank.
+- **Mailing address.** A PO box or private mailbox for email footers and the LLC notice, only if you will not use a home address (legal pack, CAN-SPAM). Blank, timed in week 1.
+- **Registered agent.** Only if the attorney confirms the Albany County route. Blank, Include = N.
 
-## Blocking questions (with recommended defaults)
-1. How much cash will you commit? Default: $4,900, which covers the $4,871 capital to commit.
-2. Should run 2 go to the same offices two weeks after run 1? Default: keep the dates, let run-1 offices skip run 2, and recruit 2 spares. Going to 20 offices drops run 2 to $46.7 an hour; Gate 3 overall would still be $51.4.
-3. Do you have a car for runs 1 and 2? Default: courier at $30 a stop until three quotes. Any car use needs the auto add-on quoted.
-4. Which county goes on the Articles? Default: New York County, $1,745. Albany County ($345) cuts capital to commit by $1,400.
-5. Can sealed cases stay at home from run 1? Default: rent the unit from 2027-02-01. Home storage saves $450 over the six months, but needs the state's answer on the licence.
+## Changelog by round
+
+- **Round 1 (draft).** Draft: built every tab on one shared drop engine; plan rows, hour table, capital table and steady state reproduce. The audit found one numeric literal (a '2' in the scenario pointer), a ROW() call, the company name inside a source quote, and a circular reference between the error scan and Dashboard cells that read Checks. All fixed; 28 of 28 checks pass.
+- **Round 2.** Pulled the legal pack's figures.csv (publication $1,745, attorney $400 and accountant $300, IT-204-LL $25, trademark out of the six months, two needs-quote insurance add-ons). Added office-fatigue warnings, change tracking on Scenarios and Schedule, overhead-not-absorbed and six-month all-in views, Gate 3 planned renewals counted by signature date, and tolerance cells instead of exact equality. Re-laid the Dashboard after a visual check.
+- **Round 3.** Moved offices and brands per drop onto Inputs and made the derived Schedule rows formulas of them (new offices backed out from the 12-office goal). Unsmoothed the cash chart, top-aligned every cell, blanked unused drop rows. Behaviour tests cover a SAMPLE actuals run through every gate.
+- **Round 4 (final self-review).** Final review: verified the last three functions (DATEVALUE, TIMEVALUE, FIND) on Google's Sheets list, made every plan-row tolerance the same, wrote HANDOFF, README and REPORT, and regenerated the CSV snapshots. Audit 0 literals; 28 of 28 checks; 54 of 54 tests.
+- **Review round 1 (independent reviewer, fixes).** Independent review round 1 (2026-10-24): publication at the plan's high end ($2,000); break-even and a new Dashboard row follow Inputs; decision rule no longer says Stop while the switch test runs, with a warning that DRP-005 reports after the decision date; paste areas buffered and header-checked; all-in and week-26 cash shown with and without the decision-window drops, insurance expensed by month; Gate 3 renewals need a yes and count once; zero-brand drops recruit no offices; office-paid revenue left out until costed; timing defaults follow their gates; planning-estimate labels on every tab; clean CSV exports. Audit 0 literals; 34 of 34 checks; tests in _work/test_log.txt.
+- **Review round 2 (independent reviewer, fixes).** Independent review round 2 (2026-10-24, 0 blockers, 3 majors, 6 minors, all fixed): every INDEX over one row written INDEX(range, 1, column) and an audit rule that fails any other form; Gate 3 rate cannot pass until every standard run by the review has actuals in, with coverage shown for the all-drops rate and the pointer; all-in rate counts logged hours outside a drop; Gate 1 'paid in full' needs payments that reach the founding price; one before-anchor probe answer per organisation in the medians; storage starts with the first standard drop that runs; legal-pack refresh (mailbox and registered-agent lines, filing Thu 2026-11-19, professional hours 11-18 and 11-20, insurance a plan estimate); 'Cash at each stop point' on the Dashboard; live README price text; break-even in standard drops; Cash_Ledger banner. Audit 0 literals and 0 one-row INDEX without a row; 34 of 34 checks; 125 of 125 tests.
+
+## Blocking questions (batched, each with my recommended default)
+
+1. **When is the six-month decision review?** CONTRACTS section 3 fixes it at Fri 2027-04-09, but the second decision-window drop (DRP-005, Tue 2027-04-06) closes its window on 2027-04-12, reports on 2027-04-15 and debriefs on 2027-04-20. The rule needs 'two extra drops' before the switch test can finish, so on 2027-04-09 the Dashboard can only say 'not yet'. **Recommended default: move the review to Tue 2027-04-20 (DRP-005's debrief, derived, founder to confirm).** The alternative is to decide on one extra drop. The model keeps the canonical 2027-04-09 until you confirm, because the date is shared with the other workstreams; changing it is one cell (Inputs, 'Six-month decision').
+2. **How much cash will you commit to the first six months (plan question 7)?** The model's need is $5,126: the lowest point of cumulative cash, -$4,126 in week 12, plus the plan's $1,000 reserve. That is $1,384 under the plan's $6,510. **Recommended default: commit $5,200 now and hold the rest of the $6,510 back until the publication and insurance quotes are in.** Type it on Inputs section 8, 'Cash the founder commits'.
+3. **Which county will the Articles of Organization name?** It sets the newspaper publication cost. The plan gives $250 to $2,000 with no working figure, so the model uses $2,000 until a quote arrives. The legal pack's working figures are $1,745 for New York County and $345 for Albany County, both still 'needs quote'. **Recommended default: keep $2,000 in the model and ask the attorney in the attorney hour whether Albany County fits you; get a quote either way.** Albany would lift the low point by about $1,650, less a registered agent fee if one is used (needs quote; Inputs keeps the line at Include = N).
+4. **What are your invoice terms?** The plan states no lag from invoice to cash, so the model books brand cash the day it is invoiced (founding brands pay in full before product ships; standard brands 50% at signature and 50% at placement confirmation). **Recommended default: due on receipt, which the model already uses.** Any lag you set on Inputs section 3 moves receipts later and deepens the low point.

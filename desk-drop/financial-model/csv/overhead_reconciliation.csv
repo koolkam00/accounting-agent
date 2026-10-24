@@ -1,0 +1,10 @@
+measure,value
+Check: monthly six-month net less weekly six-month net,0
+"Overhead allocated to drops in the six months (a view, not paid)",700
+Overhead paid in the six months (Cash_Ledger),2010
+Overhead not absorbed by drops (paid less allocated),1310
+Insurance cover months starting inside the six months,5
+Insurance expensed in the six months (months x premium),500
+Insurance prepaid beyond the six months (paid less expensed),700
+Overhead expensed in the six months (paid less prepaid),1310
+"Overhead not absorbed by drops, expensed basis",610

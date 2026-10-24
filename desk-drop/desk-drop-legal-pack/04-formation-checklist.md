@@ -2,13 +2,13 @@
 
 # 04 · Formation checklist: forming the New York LLC
 
-Version 0.6 · 2026-10-24
+Version 0.8 · 2026-10-24
 
 **The company in this file.** "The Company" means **[COMPANY NAME: Desk Drop LLC]**. This is the only place the name is set. The name is not cleared (see `01-name-check-log.md`). Decide it before you file: changing an LLC's name afterwards takes a \$60 Certificate of Amendment (LLC Law §1101(g), opened 2026-10-23), plus new bank, insurance and agreement paperwork.
 
 **What it is for.** The plan's "Entity" row: form a New York LLC, publish within 120 days, file the Certificate of Publication, sign the operating agreement, get an EIN and open a business bank account. It also compares publication costs by county, because the county is the one choice that can move the cost by more than \$1,000.
 
-**When it is used.** File on the day the first brand says yes verbally, before any invoice or brand agreement (plan, order of operations). The plan's setup checklist expects this at the Gate 0 pass, Friday 2026-11-13 (derived, founder to confirm). Section 1 below can be done in weeks 2 and 3, so filing takes ten minutes on the day.
+**When it is used.** File at the first verbal brand yes, before any invoice or brand agreement (plan, order of operations), **but not before the attorney hour**: if the yes comes before Wed 2026-11-18, move the hour up (file 08). The hour settles the name and the office county, and both are costly to change after filing (about \$1,400 of publication, or a \$60 amendment and new paperwork). The plan's setup checklist lists filing at the Gate 0 pass, Friday 2026-11-13; with the hour held by Wed 2026-11-18, the earliest filing day is Thursday 2026-11-19 (derived, founder to confirm). Section 1 below can be done in weeks 2 and 3, so filing takes ten minutes on the day.
 
 **What needs the founder.** Every filing and payment step needs your own login, signature or card, and your written yes to spend. Nothing here has been filed, ordered or paid.
 
@@ -18,7 +18,7 @@ Version 0.6 · 2026-10-24
 
 | Step | Cost | Status of the figure | When |
 | --- | --- | --- | --- |
-| Articles of Organization | \$200 | Verified 2026-10-23 (dos.ny.gov; LLC Law §1101(f)) | Day 0, first verbal brand yes |
+| Articles of Organization | \$200 | Verified 2026-10-23 (dos.ny.gov; LLC Law §1101(f)) | Day 0: the first verbal brand yes, after the attorney hour |
 | Newspaper publication, two papers, six weeks | \$345 (Albany County) to \$1,745 (New York County), working figures; see the county table | Needs quote. Published prices re-checked 2026-10-23 | Order by business day 10 |
 | Certificate of Publication | \$50 | Verified 2026-10-23 (dos.ny.gov; LLC Law §1101(s)) | Target day 100, legal limit day 120 |
 | Operating agreement (file 05) | \$0 to sign; attorney review inside the attorney hour | Plan | Day 0; legal limit day 90 |
@@ -32,8 +32,9 @@ Total state fees: \$250. Total with publication: about \$595 (Albany County) to 
 
 ## 1 · Before you file (weeks 2 to 3)
 
-- [ ] **Name decided.** The name check (`01-name-check-log.md`) is on HOLD. Settle the name first.
-- [ ] **County of the LLC's office decided** (section 4). The Articles must state "the county within this state in which the office of the limited liability company is to be located" (LLC Law §203(e)(2), opened 2026-10-23). That county decides which newspapers you must use and so the cost. Ask the attorney before choosing a county you do not work from (question 1 below). The attorney hour (file 08) is set for week 4, before the filing day, so this is answered in time.
+- [ ] **Attorney hour held** (`08-attorney-hour-agenda.md`): the name (item 1) and the office county (item 2) answered. Do not file before it. If a brand says yes first, move the hour up.
+- [ ] **Name decided.** The name check (`01-name-check-log.md`) is on HOLD. Settle the name first, at the attorney hour at the latest.
+- [ ] **County of the LLC's office decided** (section 4). The Articles must state "the county within this state in which the office of the limited liability company is to be located" (LLC Law §203(e)(2), opened 2026-10-23). That county decides which newspapers you must use and so the cost. Ask the attorney before choosing a county you do not work from (question 1 below). The attorney hour (file 08) must be held before you file; if a brand says yes first, move the hour up (file 08).
 - [ ] **Mailing address for legal papers chosen: [POSTAL ADDRESS].** The Secretary of State is the LLC's agent for service of process and mails papers to an address you give. That address is printed in the newspaper notice for six weeks (LLC Law §206(a), opened 2026-10-23). Use a business mailing address, not a home address, if privacy matters to you.
 - [ ] **Effective date decided.** The LLC exists on the filing date, or on a later date you state, "not to exceed sixty days from the date of such filing" (LLC Law §203(d), opened 2026-10-23). Default: the filing date. The 120-day clock starts on the effective date.
 - [ ] **Purpose wording.** The newspaper notice must state the character or purpose of the business (LLC Law §206(a)). Ask the formation service or attorney for their standard wording.
@@ -41,7 +42,7 @@ Total state fees: \$250. Total with publication: about \$595 (Albany County) to 
 - [ ] **Two publication quotes in hand** for the county you chose (section 3). Ask each for an all-in written price naming both newspapers.
 - [ ] **Founder login ready** for the Department of State's online filing (linked from https://dos.ny.gov/limited-liability-company-articles-organization as "e-corp-online-filing-system"; link not opened here). Needs your login and card.
 
-## 2 · File (day 0, the first verbal brand yes)
+## 2 · File (day 0: the first verbal brand yes, after the attorney hour)
 
 - [ ] **File the Articles of Organization online.** Fee \$200: "The fee for filing the Articles of Organization is \$200." (dos.ny.gov Articles of Organization page, opened 2026-10-23). Pay \$25 more for 24-hour processing only if a brand is waiting on the agreement.
 - [ ] **Save the filing receipt.** Write the filing date and the effective date at the top of the 120-day table in section 5, and put day 90, day 100 and day 120 in your calendar today.
@@ -55,9 +56,9 @@ Total state fees: \$250. Total with publication: about \$595 (Albany County) to 
 
 What the law requires: within 120 days after the Articles take effect, a copy of the Articles or a notice must run "once in each week for six successive weeks" in two newspapers of the county where the office is located, "one newspaper to be printed weekly and one newspaper to be printed daily", both designated by that county's clerk (LLC Law §206(a), nysenate.gov, revision 2014-09-22, opened 2026-10-23). A paper the clerk did not designate does not count.
 
-- [ ] **Order publication** with the county clerk's designated newspapers, directly or through a publication service. Ask for a written price that covers both papers for six weeks, both affidavits of publication, and whether it includes the \$50 state fee.
+- [ ] **Order publication** in the two newspapers the county clerk designates, directly or through a publication service. In New York, Kings, Queens and Bronx counties, a publication vendor says the clerk assigns the papers to each LLC, so there is no list to pick from (section 4; unverified with the clerk). Ask for a written price that covers both papers for six weeks, both affidavits of publication, and whether it includes the \$50 state fee.
 - [ ] **Check the notice text** before it runs. It must include: the LLC's name; the date the Articles were filed (and the formation date if different); the county of the office; the street address of the principal business location, if any; that the Secretary of State is the agent for service of process and the address it mails papers to; any registered agent; any dissolution date; and the purpose (LLC Law §206(a)).
-- [ ] **Holiday check.** Filing on 2026-11-13 means the six weeks run through Thanksgiving, Christmas and New Year. Ask each paper for its holiday deadlines when you order.
+- [ ] **Holiday check.** Filing on Thu 2026-11-19 means the six weeks run through Thanksgiving, Christmas and New Year. Ask each paper for its holiday deadlines when you order.
 - [ ] **Collect both affidavits of publication** after the sixth run.
 - [ ] **File the Certificate of Publication** with both affidavits attached. Fee \$50: "\$50 filing fee for Certificate of Publication." (dos.ny.gov Certificate of Publication page, opened 2026-10-23). The name and filing date on it must match the Department's record exactly. Check that page on the day for how to submit it. Internal target: day 100. Legal limit: day 120.
 - [ ] **Confirm the filing shows** on the Company's record at the Department of State (founder to check in a normal browser; the search could not be opened from here).
@@ -77,15 +78,15 @@ The state does not set publication prices. Each designated newspaper sets its ow
 
 Sources, all opened 2026-10-23:
 - **A.** statebusinesscompliance.com, "New York LLC Publication Requirement 2026 ... County-by-County Fee Breakdown", "Last updated: May 5, 2026", by Daniel Reyes, CPA. The plan's source. It says the figures are "estimated ranges based on 2026 newspaper advertising rates". The footer links an affiliate disclosure. https://www.statebusinesscompliance.com/blog/new-york-llc-publication-requirement-2026-1-500-manhattan-cost-vs-150-upstate-county-by-county-fee-b
-- **B.** LLC Publishers, pricing page. One price per county covering six weeks in the daily paper, six weeks in the weekly paper, affidavit and notarization fees, and the \$50 state fee. No date is shown on the prices. A vendor. https://www.llcpublishers.com/pricing
+- **B.** LLC Publishers, pricing page. One price per county covering six weeks in the daily paper, six weeks in the weekly paper, affidavit and notarization fees, and the \$50 state fee. No date is shown on the prices. A vendor. Prices re-opened unchanged on 2026-10-24 (text saved in `_work/regs/`). https://www.llcpublishers.com/pricing
 - **C.** Cheap NY Publication (operated by Redstone Castle LLC), "NY LLC Publication Cost by County (2026)". Newspaper ballparks "from published rates", with "state's \$50 filing fee not included", plus its own all-in packages. A vendor. https://cheapnypublication.com/llc-publication-cost-by-county
 
 How to read it:
 - **The plan's figures hold up.** New York County is the most expensive, about \$1,000 to \$2,000. Albany County is about \$200 to \$350.
 - **The working figure** is vendor B's price less the \$50 fee, because B is the only source with a firm all-in price for every county. Use it for budgeting until you hold a written quote.
-- **Vendor C's Manhattan promotion is an outlier**, at about a quarter of every other Manhattan figure. It may be real, but before relying on it, get it in writing, check that both papers are on the New York County Clerk's designated list, and check the promotion's dates.
+- **Vendor C's Manhattan promotion is an outlier**, at about a quarter of every other Manhattan figure. It may be real, but before relying on it, get it in writing, check that the New York County Clerk designated both papers for this LLC, and check the promotion's dates.
 - **Brooklyn and the other boroughs** cost far more than Albany and somewhat less than Manhattan. If the attorney says the office county must be where you work, use your own borough's row.
-- **The official designated lists were not confirmed.** The New York County Clerk's page on nycourts.gov showed a bot-protection check, and the Albany County Clerk's old page now returns "404" after a site redesign. Unverified, founder to confirm: ask the publication service or the clerk for the two papers' names, and check them against the clerk's list.
+- **The official designated lists were not confirmed.** The New York County Clerk's page on nycourts.gov showed a bot-protection check, and the Albany County Clerk's old page now returns "404" after a site redesign. In New York, Kings, Queens and Bronx counties the clerk designates the two papers for each LLC: "In Manhattan, Brooklyn, Queens, and the Bronx there is no pre-set newspaper list — the county clerk assigns specific newspapers to each LLC individually." (LLC Publishers pricing page, a vendor, opened 2026-10-24; unverified with the clerk, founder to confirm.) There, get the clerk's designation for this LLC, from the clerk or the publication service, before the first run. In Albany and Richmond counties, ask the clerk or the service for the designated papers and check them against the clerk's published list, if there is one (unverified, founder to confirm).
 
 **The lower-cost county route.** The plan notes that founders often name a lower-cost county, such as Albany, using a registered agent's address there. The statute ties publication to "the county in which the office of the limited liability company is located" (LLC Law §206(a)). Whether naming Albany fits your facts is a legal question (question 1 below). If it does, add a registered agent's yearly fee (needs quote) to the Albany cost. The saving is about \$1,400 (working figures), less that fee.
 
@@ -99,14 +100,16 @@ How to read it:
 
 **Your dates** (derived from three possible filing days; founder to confirm; fill in the real one on the day you file):
 
-| | Filed at Gate 0 | Filed in week 5 | Filed at Gate 1 |
+| | Filed the day after the attorney hour (earliest) | Filed in week 5 | Filed at Gate 1 |
 | --- | --- | --- | --- |
-| Filing and effective date | Fri 2026-11-13 | Mon 2026-11-23 | Fri 2026-12-11 |
-| Order publication by (10 business days) | Mon 2026-11-30 | Tue 2026-12-08 | Mon 2026-12-28 |
-| Operating agreement signed by (day 90) | Thu 2027-02-11 | Sun 2027-02-21 | Thu 2027-03-11 |
-| Certificate of Publication filed by (internal, day 100, previous business day) | Fri 2027-02-19 | Wed 2027-03-03 | Fri 2027-03-19 |
-| Day 120 | Sat 2027-03-13 | Tue 2027-03-23 | Sat 2027-04-10 |
-| Treat as the last day (last business day on or before day 120) | Fri 2027-03-12 | Tue 2027-03-23 | Fri 2027-04-09 |
+| Filing and effective date | Thu 2026-11-19 | Mon 2026-11-23 | Fri 2026-12-11 |
+| Order publication by (10 business days) | Fri 2026-12-04 | Tue 2026-12-08 | Mon 2026-12-28 |
+| Operating agreement signed by (day 90) | Wed 2027-02-17 | Sun 2027-02-21 | Thu 2027-03-11 |
+| Certificate of Publication filed by (internal, day 100, previous business day) | Fri 2027-02-26 | Wed 2027-03-03 | Fri 2027-03-19 |
+| Day 120 | Fri 2027-03-19 | Tue 2027-03-23 | Sat 2027-04-10 |
+| Treat as the last day (last business day on or before day 120) | Fri 2027-03-19 | Tue 2027-03-23 | Fri 2027-04-09 |
+
+Only if the attorney hour was moved into week 3 and a brand said yes at Gate 0 would you file on Fri 2026-11-13; then day 100 is Fri 2027-02-19 (previous business day) and day 120 Sat 2027-03-13 (treat Fri 2027-03-12 as the last day).
 
 **Your real dates, filled in on the filing day:** filed [FILING DATE] · effective [ ] · order publication by [ ] · operating agreement by [ ] · certificate filed by (day 100) [ ] · last day (day 120) [ ]
 
@@ -152,3 +155,5 @@ These four are also in `08-attorney-hour-agenda.md`, the single agenda for the h
 - Round 4 (2026-10-24), final full read: no changes beyond wording.
 - Merge (2026-10-24): renumbered 02 to 04; version 0.5; cross-references updated to the new numbers; "part A/part B" wording removed.
 - Review round 1 (2026-10-24), version 0.6: biennial statement fee corrected to \$9 (LLC Law §1101(c) and the Department's page; the earlier note that it was not in §1101 was wrong); the Transparency Act's 30-day window now cites LLC Law §1107(d), which also asks an exempt company for an attestation of exemption, so the attorney question covers it.
+- Review round 2 (2026-10-24), version 0.7: one filing rule, the same in every file: file at the first verbal brand yes, but never before the attorney hour, and move the hour up if a brand says yes first. The earliest filing day is now Thu 2026-11-19, not Gate 0; the section 5 table leads with that day (dates recomputed), the Gate 0 dates stay as a one-line fallback, and section 1 opens with "Attorney hour held".
+- Review round 3 (2026-10-24), version 0.8: in New York, Kings, Queens and Bronx counties the clerk designates the two papers for each LLC rather than keeping a list (LLC Publishers pricing page, opened 2026-10-24, which also re-confirms the section 4 prices), so the ordering step and the two checks in section 4 now ask for the clerk's designation for this LLC; Albany and Richmond still check a published list.

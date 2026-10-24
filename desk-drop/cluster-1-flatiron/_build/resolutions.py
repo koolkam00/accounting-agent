@@ -259,3 +259,26 @@ UNKNOWN_BAND_REASON = {
     "The Hudson Companies and Broadway Builders": "Neither firm publishes a count.",
     "Grammarly": "Merged; band taken from Built In Superhuman profile.",
 }
+
+# ---------------------------------------------------------------- headcount bands sourced at assembly (critique round 2)
+# Wikipedia infoboxes opened with WebFetch on 2026-10-24. Whole-company figures; the NYC office may be smaller.
+WIKI = "https://en.wikipedia.org/wiki/"
+HEADCOUNT_UPDATES = {
+    "Palantir Technologies": (WIKI + "Palantir_Technologies", "2025", "Wikipedia infobox: 4,429 employees (2025)."),
+    "Kohler Co. (NYC office)": (WIKI + "Kohler_Co.", "2019", "Wikipedia infobox: 40,000 employees (2019)."),
+    "Lockton Re": (WIKI + "Lockton_Companies", "2026-10-24", "Wikipedia infobox for Lockton Companies, the parent: '13,100+' employees (no year given)."),
+    "Jump Trading": (WIKI + "Jump_Trading", "2026-10-24", "Wikipedia infobox: '2000+' employees (no year given)."),
+    "IMG Worldwide (WME Group)": (WIKI + "IMG_(company)", "2026-10-24", "Wikipedia infobox: '3,000+' employees (no year given)."),
+    "ZGF Architects": (WIKI + "ZGF_Architects", "2021-10", "Wikipedia infobox: 750 employees (footnote cites an October 2021 article)."),
+    "Grimshaw (New York studio)": (WIKI + "Grimshaw_Architects", "2026-10-24", "Wikipedia body text: 'employing over 600 staff' (no infobox count)."),
+}
+UNKNOWN_BAND_REASON["Perplexity"] = ("Built In shows 41 and Wikipedia's infobox shows 52 (2024), both of which conflict with a 22,000 sf NYC office leased in 2025-26; "
+                                     "band left unknown rather than set from stale counts.")
+
+# ---------------------------------------------------------------- public map exclusions (brand-founder critique)
+PUBLIC_EXCLUDE = {
+    "New Foods of India": "Niche South Asian grocery: useful only for spice-led or South Asian brands, so private map only.",
+    "Kalustyan's": "Niche spice and international specialty store, so private map only.",
+    "Sunac (765 Sixth Ave)": "Neighbourhood deli-market format with no natural set confirmed, so private map only.",
+    "Sunac (4 West 18th St)": "Neighbourhood deli-market format with no natural set confirmed, so private map only.",
+}

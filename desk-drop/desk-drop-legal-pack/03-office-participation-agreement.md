@@ -2,7 +2,7 @@
 
 # 03 · Office participation agreement: notes for the founder
 
-Version 0.6 · 2026-10-24
+Version 0.8 · 2026-10-24
 
 **The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot in the agreement's first line. Before sending, replace the slot with the exact name on the filed Articles of Organization, or, before filing, the name you will file.
 
@@ -20,7 +20,7 @@ If the attorney then changes anything of substance, send the new page for a fres
 
 **How to send it.** As a PDF through the free e-signature tool the operations workstream sets up (rendered copy: `rendered/03-office-participation-agreement.pdf`). Put a signature field and a date field for each side, and tick-box fields for section 6. Sign second, the same day. If the pantry owner would rather not use an e-signature tool, section 10 lets them reply "I agree" to the email that carries the PDF; save that email with the PDF. Save the signed PDF and record `agreement_signed_date` and `agreement_file` in the signed-offices row.
 
-**Signing before the company exists (why section 9 reads as it does).** Offices sign in weeks 3 to 5; the plan forms the company at the first verbal brand yes. So most office agreements will be signed first. Three ways to handle it were weighed:
+**Signing before the company exists (why section 9 reads as it does).** Offices sign from the attorney hour (by Wed 2026-11-18) through week 5, mostly before formation: the company is filed at the first verbal brand yes, and never before the attorney hour (file 04), so from Thu 2026-11-19 at the earliest. So most office agreements will be signed first. Three ways to handle it were weighed:
 1. Wait to sign until the company is formed. Rejected: it stalls the scarce side for days, for no benefit to the office.
 2. Sign personally now, then ask every office to sign a transfer later. Rejected: five extra signatures and five chances for "let me check with someone."
 3. **Chosen:** you sign for the company before it is formed, and the office agrees in advance that the company takes your place once formed. The company then adopts these agreements in its first written consent (file 05, Schedule B), and you send each office one email (below). Nothing changes for the office. Attorney to confirm this releases you personally under New York law.
@@ -42,9 +42,9 @@ Email to send each office once the company is formed (it is a relationship messa
 
 # Office Participation Agreement
 
-Between **[COMPANY NAME: Desk Drop LLC]** ("**we**", the "**Company**") and the office named below ("**you**"). Version 0.6.
+Between **[COMPANY NAME: Desk Drop LLC]** ("**we**", the "**Company**") and the office named below ("**you**"). Version 0.8.
 
-**In short:** free products, nothing to pay, no penalties, no employee data, and either side can stop on a week's notice.
+**In short:** free products, nothing to pay, no penalties, nothing asked about your employees, and either side can stop on a week's notice.
 
 | | |
 | --- | --- |
@@ -54,17 +54,17 @@ Between **[COMPANY NAME: Desk Drop LLC]** ("**we**", the "**Company**") and the 
 | **Building needs our insurance certificate?** | [YES / NO / NOT SURE] |
 | **First drop planned for** | Week of [DROP DATE: Tue 2027-01-12]; we confirm by email |
 
-**1. What we bring.** Products from vetted emerging snack and drink brands, free, roughly monthly as brands are available (no set schedule). Each drop comes on a Tuesday or Wednesday morning in your receiving window, with a display card. After each drop we send you a summary of your team's feedback. We add to your pantry; we don't replace your supplier.
+**1. What we bring.** Products from vetted emerging snack and drink brands, free, roughly monthly as available. Each drop comes on a Tuesday or Wednesday morning in your receiving window, with a display card. After each drop we send you a summary of your team's feedback. We add to your pantry; we don't replace your supplier.
 
 **2. You choose.** You pick the categories you want. You may veto any brand, category or allergen at any time, and we check each product's label against your vetoes before offering it. For your first three drops, nothing comes unless you reply yes. After that, we email you each brand at least five business days ahead, and it comes unless you say no.
 
-**3. What you do for each drop.** Put it on the shelf within one business day of delivery. Send us one photo of it on the shelf, and one more on day 3 or day 5. Post the survey link once in Slack or by email. Help us reach five or more survey responses (no one has to answer). Give us a ten-minute debrief after the drop. Tell us your usual Tuesday headcount.
+**3. What you do for each drop.** Put it on the shelf at eye level, card in front, within one business day of delivery. Send us one photo of it there the day you place it, and one more on day 3 or day 5. Post the survey link once in Slack or by email. Help us reach five or more survey responses (no one has to answer). Give us a ten-minute debrief after the drop. Tell us your usual Tuesday headcount.
 
 **4. Product standard.** Only individually packaged, sealed, shelf-stable products, commercially labeled with ingredients and allergens. Never alcohol, cannabis, CBD or THC, dietary supplements, refrigerated or perishable products, or products with health claims. We never open a package or change its label, and every display card repeats the product's allergen statement. Each brand must show us product liability insurance of at least \$1 million before it ships, and we will carry general liability insurance before your first drop. If your building requires it, we will name its owner and managing agent as additional insureds on that insurance and send it a certificate before our first delivery.
 
-**5. Your team.** Employees take products only if they want to, and we will not hold you responsible for how anyone uses them. If anyone reports a problem with a product, tell us: we remove it from your pantry right away and tell the brand the same day. We collect no personal data about your employees, except an email address an employee chooses to give for a brand's newsletter. Otherwise the survey is anonymous.
+**5. Your team.** Employees take products only if they want to, and we will not hold you responsible for how anyone uses them. If anyone reports a problem with a product, tell us: we remove it from your pantry right away and tell the brand the same day. If a brand recalls a product, we tell you that day and collect what is left. We collect no personal data about your employees, except an email address an employee chooses to give for a brand's newsletter. Otherwise the survey is anonymous.
 
-**6. Photos and your name.** We photograph only the shelf and display (never people, screens or whiteboards). We may share those photos with brands, and use them in our own materials without anything that identifies your office. We give a brand your company name and address only after it signs with us, only to run its campaign. Our agreement with the brand requires it to keep them confidential and not to approach you to arrange placements directly for six months. Anywhere else, we name you only if you tick a box here: ☐ on our founding roster, which brands see ☐ publicly, for example on our website.
+**6. Photos and your name.** We photograph only the shelf and display (never people, screens or whiteboards). We may share them with brands and use them in our own materials without anything that identifies your office. We give a brand your company name and address only after it signs with us, only to run its campaign. Our agreement with the brand requires it to keep them confidential and not to approach you for direct placements for six months. Anywhere else, we name you only if you tick a box here: ☐ on our founding roster, which brands see ☐ publicly, such as our website.
 
 **7. No money, no penalties.** Neither side pays the other anything. You will never owe us money or damages under this agreement. If something here stops working for you, tell us; either of us may simply end participation.
 
@@ -89,3 +89,5 @@ Between **[COMPANY NAME: Desk Drop LLC]** ("**we**", the "**Company**") and the 
 - Merge (2026-10-24): renumbered 11 to 03; company name moved into the `[COMPANY NAME: …]` slot; version 0.5.
 - Merge review (2026-10-24): attorney, brand confidentiality is now our requirement on the brand, not a promise about the brand's conduct; signer shown as "for the Company", which is true before and after formation. Broker, we commit in writing to name a building that requires it, which may satisfy a blanket endorsement's written-contract condition; if the carrier says not, it adds the building by name (CG 20 26; file 12). Pantry owner, an "In short" line, an "I agree" reply as a signature, and "can say yes to this" in place of a formal authority sentence.
 - Review round 1 (2026-10-24), version 0.6: the office is now "Office (your company's legal name)" with an [OFFICE LEGAL NAME] slot, also in the signature block, so "Company" means only us; the page is sent only after the attorney clears it (file 08, by Wed 2026-11-18), with a cover-email line if the hour slips; the merge-review changelog line no longer states a legal conclusion about blanket endorsements.
+- Review round 2 (2026-10-24), version 0.7: the "In short" line says "nothing asked about your employees", which section 5's newsletter exception does not contradict; section 5 adds the recall step for units an office keeps; these notes give the signing timing as from the attorney hour through week 5, mostly before formation.
+- Review round 3 (2026-10-24), version 0.8: section 3 asks for the product at eye level with the card in front (the plan's placement standard, which the brand agreement promises "where the pantry allows") and for the first photo on the day it is placed, so the brand agreement's T+1 confirmation can rely on it; still one page.

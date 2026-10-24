@@ -42,10 +42,11 @@
 .doc ul.ticks li, .doc ul.plain li { position: relative; padding-left: .17in; margin-bottom: .035in; }
 .doc ul.ticks li::before { content: ""; position: absolute; left: .01in; top: .06in; width: .08in; height: .045in;
   border-left: 1.6px solid var(--dd-ink); border-bottom: 1.6px solid var(--dd-ink); transform: rotate(-45deg); }
-.doc ul.plain li::before { content: ""; position: absolute; left: .03in; top: .075in; width: .05in; height: .05in; background: var(--dd-ink); border-radius: 50%; }
+.doc ul.plain li::before { content: ""; position: absolute; left: .03in; top: .5em; width: .42em; height: .42em; background: var(--dd-ink); border-radius: 50%; }
 .doc ul.dash li::before { content: ""; position: absolute; left: .02in; top: .085in; width: .08in; height: 1.5px; background: var(--dd-ink); border-radius: 0; }
 .doc .note { font-size: 7.5pt; line-height: 1.35; color: var(--dd-ink-soft); }
 .doc .num { font-variant-numeric: tabular-nums; }
+.doc .dd-ex { color: var(--dd-stone); }   /* an example on a mock page: grey, never the yellow placeholder mark */
 .doc .nowrap { white-space: nowrap; }
 
 /* layout: 6-column grid with 0.2 in gutters */

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en" data-page="404">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page not found</title>
+<meta name="description" content="Page not found.">
+<meta name="theme-color" content="#F7F3EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1F1D1A" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Page not found">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/site.css">
+<script src="site.config.js"></script>
+<script src="assets/js/boot.js"></script>
+<script src="assets/js/site.js" defer></script>
+</head>
+<body>
+<!-- HEADER:START (same on every page; tests/check_site.py keeps them equal) -->
+<a class="skip-link" href="#main">Skip to main content</a>
+<p class="staging-bar">Staging preview, not public. The name is a working name and not yet cleared.</p>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="index.html"><svg class="brand-symbol" viewBox="0 0 96 100" aria-hidden="true" focusable="false"><rect class="sym-shelf" x="0" y="81" width="96" height="19" rx="3.5"/><rect class="sym-box" x="20.44" y="5.69" width="61.13" height="61.13" rx="4.2" transform="rotate(-12 51 36.25)"/></svg><span class="dd-brand-name" data-config="BRAND_NAME"></span><span class="visually-hidden"> home</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="brands.html">For brands</a>
+      <a href="offices.html">For offices</a>
+    </nav>
+  </div>
+</header>
+<!-- HEADER:END -->
+
+<main id="main" tabindex="-1">
+  <section class="section">
+    <div class="wrap prose">
+      <h1>Page not found</h1>
+      <p>That page does not exist. Try one of these:</p>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="brands.html">For brands</a></li>
+        <li><a href="offices.html">For offices</a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<!-- FOOTER:START (same on every page) -->
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div>
+      <p class="footer-brand"><span class="dd-brand-name" data-config="BRAND_NAME"></span></p>
+      <p data-config="TAGLINE"></p>
+    </div>
+    <nav aria-label="Footer">
+      <ul>
+        <li><a href="brands.html">For brands</a></li>
+        <li><a href="offices.html">For offices</a></li>
+        <li><a href="privacy.html">Privacy</a></li>
+        <li><a href="survey-privacy.html">Survey privacy notice</a></li>
+      </ul>
+    </nav>
+    <div>
+      <p>Email: <a data-config="CONTACT_EMAIL" data-config-mailto></a></p>
+      <p>Mail: <span data-config="POSTAL_ADDRESS"></span></p>
+    </div>
+  </div>
+</footer>
+<!-- FOOTER:END -->
+</body>
+</html>

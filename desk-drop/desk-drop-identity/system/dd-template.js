@@ -16,7 +16,13 @@
                   rendered from the terminal) or an embedded picture chosen in the panel.
     type 'table': a list of rows. `columns` are field definitions (text or image) for one row.
                   The panel shows one fold-out group per row, with Add and Remove buttons.
+    picture: 'logo' on an image field keeps SVG as is and PNG transparency (no JPEG conversion).
+  Record options (cfg): recordLabel ('Card', 'Label'): the panel then has a picker to edit any
+    record, plus "Add" and "Remove" buttons; recordName(rec, k) names one in the picker;
+    newRecord(rec, k) makes the record that "Add" inserts (default: a copy of the current one).
+  Messages carry a "Card 3: " prefix only when there is more than one record.
   v1.1 adds image and table fields and the deep scan; v1.0 templates work unchanged.
+  v1.2 (2026-10-24, review round 1): record picker, plain single-record messages, logo pictures.
   Nothing here talks to the network. It works from file:// in Chrome.
 */
 (function () {
@@ -103,9 +109,13 @@
   // ---------- status ----------
   function newStatus() { return { ready: false, errors: [], warnings: [], sample: false, placeholders: [] }; }
   DD.status = newStatus();
-  const push = (list, rec, msg) => { const m = (rec != null ? `record ${rec + 1}: ` : '') + msg; if (!list.includes(m)) list.push(m); };
+  DD.recLabel = () => (DD.cfg && DD.cfg.recordLabel) || 'Record';
+  // "Card 3: " when several records are loaded; nothing for a single record (no jargon).
+  DD.prefix = (rec) => (rec != null && DD.records().length > 1) ? `${DD.recLabel()} ${rec + 1}: ` : '';
+  const push = (list, rec, msg) => { const m = DD.prefix(rec) + msg; if (!list.includes(m)) list.push(m); };
   DD.error = (rec, msg) => push(DD.status.errors, rec, msg);
   DD.warn = (rec, msg) => push(DD.status.warnings, rec, msg);
+  DD.placeholder = (rec, what) => push(DD.status.placeholders, rec, what);
 
   const isEmpty = (v) => v == null || (Array.isArray(v) ? v.length === 0 : String(v).trim() === '');
   function anySample(v) {
@@ -121,7 +131,7 @@
     if (f.required && empty) DD.error(i, `"${where || f.label}" is empty.`);
     if (empty) return;
     if (f.type === 'image') return; // pictures: the template decides what an empty or [PHOTO] value means
-    if (DD.isPlaceholder(String(v))) DD.status.placeholders.push(`record ${i + 1}: ${where ? where : f.key}`);
+    if (DD.isPlaceholder(String(v))) DD.placeholder(i, where ? where : f.key);
     if (f.maxChars && String(v).length > f.maxChars) DD.warn(i, `"${where || f.label}" is ${String(v).length} characters; aim for ${f.maxChars} or fewer.`);
   }
   function scan(rec, i, fields) {
@@ -147,7 +157,7 @@
       const src = DD.imgSrc(raw);
       const what = DD.isPlaceholder(raw) ? 'Not attached yet.' : !src ? 'None (prints as "No photo received").' : (src.startsWith('data:') ? `Picture chosen (${Math.round(src.length * 0.75 / 1024)} KB, kept inside the saved JSON).` : `Picture file: ${DD.escape(src.split('/').pop())}`);
       return `<span class="dd-img-pick"><span class="dd-img-what">${what}</span>
-        <label class="dd-file dd-file-sm">Choose picture<input type="file" accept="image/jpeg,image/png,image/webp" data-img="${name}"></label>
+        <label class="dd-file dd-file-sm">Choose picture<input type="file" accept="image/jpeg,image/png,image/webp${f.picture === 'logo' ? ',image/svg+xml' : ''}" data-img="${name}" data-kind="${f.picture || 'photo'}"></label>
         ${src ? `<button type="button" data-act="img-clear" data-name="${name}">Remove</button>` : ''}</span>`;
     }
     if (f.options) return `<select name="${name}">${f.options.map(([o, t]) => `<option value="${DD.escape(o)}"${o === (v || f.options[0][0]) ? ' selected' : ''}>${DD.escape(t)}</option>`).join('')}</select>`;
@@ -180,9 +190,15 @@
   }
   function editable() { return DD.records().map((r) => JSON.parse(JSON.stringify(r || {}))); }
   function commit(cfg, recs) { DD._edited = recs.length === 1 ? recs[0] : recs; DD.renderAll(cfg); }
+  // the record the panel edits (a picker chooses it when several are loaded)
+  DD._cur = 0;
+  const cur = () => Math.max(0, Math.min(DD._cur || 0, DD.records().length - 1));
+  const recName = (cfg, k) => { const r = DD.records()[k] || {}; return cfg.recordName ? cfg.recordName(r, k) : `${DD.recLabel()} ${k + 1}`; };
   // Downscale a photo in the browser so the saved JSON stays small (long edge 1600 px, JPEG).
-  function readPicture(file, cb) {
+  function readPicture(file, cb, kind) {
     const rd = new FileReader();
+    // a logo keeps its own format: SVG as is, PNG with its transparency
+    if (kind === 'logo' && /svg/i.test(file.type)) { rd.onload = () => cb(rd.result); rd.readAsDataURL(file); return; }
     rd.onload = () => {
       const img = new Image();
       img.onload = () => {
@@ -190,7 +206,7 @@
         const cv = document.createElement('canvas');
         cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
         cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-        cb(cv.toDataURL('image/jpeg', 0.85));
+        cb(kind === 'logo' ? cv.toDataURL('image/png') : cv.toDataURL('image/jpeg', 0.85));
       };
       img.onerror = () => alert('That picture could not be read. Use a JPEG or PNG (iPhone: share the photo as "Most Compatible", or export it as JPEG).');
       img.src = rd.result;
@@ -203,8 +219,9 @@
     if (old) old.remove();
     const panel = document.createElement('aside');
     panel.className = 'dd-panel dd-noprint';
-    const rec = DD.records()[0] || {};
-    const multi = DD.records().length > 1;
+    const n = DD.records().length;
+    const rec = DD.records()[cur()] || {};
+    const multi = n > 1;
     let html = `<h2>Fill in this ${DD.escape(cfg.title || 'template')}</h2>
       <p class="dd-panel-help">${cfg.panelIntro || 'Type in the boxes; the page updates as you type. Grey text under a box says where the value comes from. When it looks right, press <b>Print</b> and follow the print settings below the button.'}</p>
       <div class="dd-panel-actions">
@@ -215,7 +232,11 @@
       ${cfg.confirmBeforePrint ? `<label class="dd-confirm"><input type="checkbox" data-act="confirm"> ${DD.escape(cfg.confirmBeforePrint)}</label>` : ''}
       <p class="dd-panel-print">${cfg.printHelp || ''}</p>
       <div class="dd-panel-status" aria-live="polite"></div>`;
-    if (multi) html += `<p class="dd-panel-help"><b>${DD.records().length} records loaded.</b> The boxes edit record 1 only. Edit the JSON file for the others.</p>`;
+    if (multi || cfg.recordLabel) {
+      const L = DD.recLabel(), l = L.toLowerCase();
+      html += `<div class="dd-rec">${multi ? `<label class="dd-field"><span>${DD.escape(L)} you are editing</span><select data-act="rec">${DD.records().map((r, k) => `<option value="${k}"${k === cur() ? ' selected' : ''}>${DD.escape(recName(cfg, k))}</option>`).join('')}</select><small>${n} ${l}s. The boxes below edit the one chosen here. Print prints all of them.</small></label>` : ''}
+        <div class="dd-rec-actions">${cfg.recordLabel ? `<button type="button" data-act="rec-add">Add a ${DD.escape(l)}</button>` : ''}${multi ? `<button type="button" data-act="rec-del">Remove ${DD.escape(recName(cfg, cur()))}</button>` : ''}</div></div>`;
+    }
     let group = null;
     for (const f of cfg.fields) {
       if (f.group && f.group !== group) { group = f.group; html += `<h3>${DD.escape(group)}</h3>`; }
@@ -229,15 +250,17 @@
     panel.addEventListener('input', (e) => {
       const t = e.target;
       if (!t.name) return;
+      if (t.dataset.act === 'rec') return;
       const recs = editable();
       // an emptied box goes back to its placeholder, so the page shows what is still missing
-      setPath(recs[0], t.name, (t.value === '' && t.dataset.ph) ? t.dataset.ph : t.value);
+      setPath(recs[cur()], t.name, (t.value === '' && t.dataset.ph) ? t.dataset.ph : t.value);
       const top = t.name.split('.')[0], col = t.name.split('.')[2];
       if ((cfg.confirmResetKeys || []).some((k) => k === top || k === col)) { const cb = panel.querySelector('input[data-act="confirm"]'); if (cb) cb.checked = false; }
       commit(cfg, recs);
       const sumEl = t.closest('details') && t.closest('details').querySelector('summary em');
       const tf = cfg.fields.find((x) => x.key === top);
-      if (sumEl && tf && tf.summary) { const k = +t.name.split('.')[1]; const s = tf.summary(recs[0][top][k] || {}, k); sumEl.textContent = s === DD.rowName(tf, k) ? '' : s; }
+      if (sumEl && tf && tf.summary) { const k = +t.name.split('.')[1]; const s = tf.summary(recs[cur()][top][k] || {}, k); sumEl.textContent = s === DD.rowName(tf, k) ? '' : s; }
+      if (multi) { const o = panel.querySelector('select[data-act="rec"] option[value="' + cur() + '"]'); if (o) o.textContent = recName(cfg, cur()); }
     });
     panel.addEventListener('click', (e) => {
       const act = e.target.getAttribute && e.target.getAttribute('data-act');
@@ -259,25 +282,38 @@
         const key = e.target.getAttribute('data-table');
         const f = cfg.fields.find((x) => x.key === key);
         const recs = editable();
-        const rows = Array.isArray(recs[0][key]) ? recs[0][key] : [];
+        const rows = Array.isArray(recs[cur()][key]) ? recs[cur()][key] : [];
         if (act === 'row-add') rows.push(f.newRow ? f.newRow(rows.length) : {});
         else rows.splice(+e.target.getAttribute('data-row'), 1);
-        recs[0][key] = rows;
+        recs[cur()][key] = rows;
         DD._edited = recs.length === 1 ? recs[0] : recs;
         buildPanel(cfg); DD.renderAll(cfg);
       }
       if (act === 'img-clear') {
-        const recs = editable(); setPath(recs[0], e.target.getAttribute('data-name'), '');
+        const recs = editable(); setPath(recs[cur()], e.target.getAttribute('data-name'), '');
         DD._edited = recs.length === 1 ? recs[0] : recs; buildPanel(cfg); DD.renderAll(cfg);
+      }
+      if (act === 'rec-add') {
+        const recs = editable(); const k = cur();
+        const add = cfg.newRecord ? cfg.newRecord(recs[k] || {}, recs.length) : JSON.parse(JSON.stringify(recs[k] || {}));
+        recs.splice(k + 1, 0, add); DD._cur = k + 1; DD._edited = recs;
+        buildPanel(cfg); DD.renderAll(cfg);
+      }
+      if (act === 'rec-del') {
+        const recs = editable(); if (recs.length < 2) return;
+        if (!window.confirm(`Remove ${recName(cfg, cur())}?`)) return;
+        recs.splice(cur(), 1); DD._cur = Math.max(0, cur() - 1); DD._edited = recs.length === 1 ? recs[0] : recs;
+        buildPanel(cfg); DD.renderAll(cfg);
       }
     });
     panel.addEventListener('change', (e) => {
       const t = e.target;
       if (t.getAttribute('data-act') === 'confirm') { showStatus(); return; }
+      if (t.getAttribute('data-act') === 'rec') { DD._cur = +t.value; buildPanel(cfg); showStatus(); return; }
       if (t.tagName === 'SELECT') { t.dispatchEvent(new Event('input', { bubbles: true })); return; }
       if (t.dataset && t.dataset.img) {
         const file = t.files[0]; if (!file) return;
-        readPicture(file, (url) => { const recs = editable(); setPath(recs[0], t.dataset.img, url); DD._edited = recs.length === 1 ? recs[0] : recs; buildPanel(cfg); DD.renderAll(cfg); });
+        readPicture(file, (url) => { const recs = editable(); setPath(recs[cur()], t.dataset.img, url); DD._edited = recs.length === 1 ? recs[0] : recs; buildPanel(cfg); DD.renderAll(cfg); }, t.dataset.kind);
         return;
       }
       if (t.getAttribute('data-act') !== 'load') return;
@@ -286,6 +322,7 @@
       const rd = new FileReader();
       rd.onload = () => {
         try { DD._edited = JSON.parse(rd.result); } catch (err) { alert('That file is not valid JSON: ' + err.message); return; }
+        DD._cur = 0;
         buildPanel(cfg);
         DD.renderAll(cfg);
       };
@@ -299,11 +336,10 @@
     if (!box) return;
     const s = DD.status;
     const items = [];
-    const single = DD.records().length === 1;
-    const plain = (m) => single ? m.replace(/^record 1: /, '') : m;   // no jargon for one record
-    const labelOf = (m) => { const k = m.replace(/^record \d+: /, ''); const f = (DD.cfg.fields || []).find(x => x.key === k); return plain(f ? m.replace(k, f.label) : m); };
-    s.errors.forEach((m) => items.push(`<li class="err">Fix before printing: ${DD.escape(plain(m))}</li>`));
-    s.warnings.forEach((m) => items.push(`<li class="warn">Check: ${DD.escape(plain(m))}</li>`));
+    // a placeholder entry is a field key (or a table cell's label): show the box's label instead
+    const labelOf = (m) => { const mm = /^([A-Z][a-z]+ \d+: )?([\s\S]*)$/.exec(m); const f = (DD.cfg.fields || []).find(x => x.key === mm[2]); return (mm[1] || '') + (f ? f.label : mm[2]); };
+    s.errors.forEach((m) => items.push(`<li class="err">Fix before printing: ${DD.escape(m)}</li>`));
+    s.warnings.forEach((m) => items.push(`<li class="warn">Check: ${DD.escape(m)}</li>`));
     if (s.placeholders.length) {
       const list = s.placeholders.map(labelOf);
       const shown = list.slice(0, 12).join('; ') + (list.length > 12 ? `; and ${list.length - 12} more` : '');

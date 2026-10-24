@@ -2,7 +2,7 @@
 
 # 13 · Survey privacy notice
 
-Version 0.5 · 2026-10-24
+Version 0.6 · 2026-10-24
 
 **The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot in the full notice's first line (Part C). Replace it with the name on the filed Articles of Organization before the notice goes live.
 
@@ -27,7 +27,7 @@ Show only if the brand chose the newsletter option in its agreement (file 10, Pa
 > Want [BRAND]'s newsletter and a discount code? Email (optional): [ field ]
 > ☐ Share my email with [BRAND] under its privacy policy. [link: BRAND PRIVACY POLICY URL]
 
-Rules: the box starts unticked. An email with the box left unticked is deleted, not passed on. The checkbox text is the plan's text (appendix I, item 5) and must not be pre-ticked or reworded into a broader consent.
+Rules: the box starts unticked. An email with the box left unticked is never passed on, and is deleted within seven days after the survey closes (D8). The checkbox text is the plan's text (appendix I, item 5) and must not be pre-ticked or reworded into a broader consent.
 
 ## Part C · Full notice: the page at [PRIVACY URL]
 
@@ -65,7 +65,7 @@ To write a one-page report for the brand and a summary for your office, and to i
 
 #### If you give your email
 
-We pass it to [BRAND] only if you tick the box. We send the brand those addresses once, as a list kept separate from survey answers, within seven days after the survey closes. After that, [BRAND]'s privacy policy applies ([BRAND PRIVACY POLICY URL]) and you can unsubscribe from [BRAND] at any time. We delete our copy within 30 days after passing it on. If you change your mind, write to [EMAIL]: if we have not passed your email on yet, we delete it; if we have, we ask [BRAND] to delete it too.
+We pass it to [BRAND] only if you tick the box. If you give an email but leave the box unticked, we delete it within seven days after the survey closes and never pass it on. We send the brand those addresses once, as a list kept separate from survey answers, within seven days after the survey closes. After that, [BRAND]'s privacy policy applies ([BRAND PRIVACY POLICY URL]) and you can unsubscribe from [BRAND] at any time. We delete our copy within 30 days after passing it on. If you change your mind, write to [EMAIL]: if we have not passed your email on yet, we delete it; if we have, we ask [BRAND] to delete it too.
 
 #### How long we keep answers
 
@@ -96,7 +96,7 @@ For the operations workstream (survey form, short links, response sheet) and the
 | D5 | The email field and checkbox are optional and appear only for brands that chose the newsletter option; the box starts unticked | Part B |
 | D6 | The response sheet is shared with no one but the founder | "Your employer does not see your individual answers" |
 | D7 | Consented emails are exported as a list of addresses only, sorted alphabetically, with no answers, timestamps or office codes, sent to the brand once, within seven days after the survey closes at T+4 | "A list kept separate from survey answers" |
-| D8 | Calendar reminders: delete the consented emails 30 days after they are passed on; delete raw answers 12 months after the campaign | Retention promises |
+| D8 | Calendar reminders: delete unticked emails within seven days after T+4 (the same day the consented list goes out, D7, is fine); delete the consented emails 30 days after they are passed on; delete raw answers 12 months after the campaign | Retention promises |
 | D9 | Reports show totals and at most three verbatim comments for the brand; office summaries never list answers row by row | "Who sees what" |
 | D10 | Before quoting a comment, remove any name or identifying detail that slipped in, and note "[name removed]" | "Leave your name out" is a request, not a guarantee |
 | D11 | Short links: use only the link tool's aggregate counts (opens by day). Do not export or keep per-click logs (confirm what the free plan shows) | "We see only totals" |
@@ -105,7 +105,7 @@ For the operations workstream (survey form, short links, response sheet) and the
 
 1. Is "anonymous" the right word when the office can be inferred and comments are quoted? The notice discloses both; the attorney may prefer "we don't ask who you are."
 2. Should the notice name the form and link providers (for example Google, Tally, Bitly) once the operations workstream has chosen them? Recommended default: yes, by name, with links to their policies.
-3. Retention periods (seven days to pass emails on, 30 days to delete our copy, 12 months for answers) are my defaults; the plan sets none.
+3. Retention periods (seven days to pass emails on and to delete unticked ones, 30 days to delete our copy, 12 months for answers) are my defaults; the plan sets none.
 
 ## Sources
 
@@ -120,3 +120,4 @@ For the operations workstream (survey form, short links, response sheet) and the
 - Rounds 1 to 9 (2026-10-23 to 24, part A drafting): two-layer notice, the optional email question word for word, eleven form settings (Part D); retention defaults; name removal before quoting.
 - Merge (2026-10-24): company name moved into the `[COMPANY NAME: …]` slot; version 0.5; numbering unchanged (13 is last in order of use).
 - Merge review (2026-10-24): no change of substance; the brand-agreement reference now points to file 10.
+- Review round 3 (2026-10-24), version 0.6: an email typed in with the box left unticked is deleted within seven days after the survey closes; the full notice says so, the rule under the email question matches, and D8 adds the reminder.
