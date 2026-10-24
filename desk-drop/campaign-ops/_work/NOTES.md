@@ -113,3 +113,34 @@ disagreements; no tool refused); zero's route sheet (T-1 snapshot) and reports a
 regenerated after two tool-only fixes, noted in its log; direct-ship variant re-run; tests/run_all.sh ALL PASS in about 2
 minutes (calendar, blank build and recalculation, awkward rows, forms script, intake mapping, outreach handoff with E's
 09:12 files (5 offices, 1 brand), links and QR 78 links, office summaries, financial-model load, folder rules).
+
+## Review round 1 (independent reviewer, `_review/round-1.md`): builder fixes, 2026-10-24 from about 10:00 UTC
+Findings: 2 blockers, 6 majors, 9 minors. Fixed all except where noted in `_review/round-1.md`, "Builder response".
+Research this round (opened 2026-10-24):
+- Google Workspace help, support.google.com/a/users/answer/9303071: "By default, access is restricted to people inside your
+  organization"; setting "Restrict to users in [your-company.com] and its trusted organizations" under Settings > Responses.
+- Apps Script FormApp reference, developers.google.com/apps-script/reference/forms/form: setRequireLogin(requireLogin) and
+  requiresLogin() are listed under deprecated methods ("should not be used in new scripts"); "available only for forms created by
+  Google Workspace users"; new forms default to false "unless a domain administrator changes the default" (conflicts with the
+  Workspace help page: trust the signed-out test).
+- E's sending-setup.md section 0 (read, not re-researched): [DOMAIN] is name-neutral by default, bought Mon 2026-10-26.
+Changes:
+- approvals.on_drop (Y / N / pending): approved and not turned away at the door. Letters, Gate 2 fewest responses, depletion
+  completeness, photo compliance, offices_under_5, H's `offices` (campaigns.offices_on_drop) use it; tracker.py mirrors it and
+  compare() checks it. Shipping (offices_approved, units, cost split) stays on approvals as planned.
+- campaigns checks: credit due from T+1 (contracted offices not placed by T+1 x $120/$150 vs credit notes); short shipment at
+  receipt; brand not on brands / not qualified / billing missing; founding tier limits; frozen-survey deletion. ship_release
+  holds on qualification and needs a paid date; the Python release (tracker.release_status) is compared with the sheet.
+- stops check: outcome declined/building_refused/not_delivered but every brand logged delivered.
+- brands.e_payment_check + dashboard line: E's payment_1/2 vs invoices tab. export_actuals --pipeline withdrawn.
+- survey_frozen tab + tools/freeze_survey.py; approvals survey columns read frozen totals once present; outside-window and
+  unmatched counts blank after answers_deleted_date.
+- Sizes: six-months default (52,615 formulas, 6,740 INDIRECT) and full (88,405, 11,900); dashboard "Tabs over 90% full".
+- Generators: name check against brand.json (exit 2); report roster note; office summaries skip offices with nothing on the
+  drop and show top-ups; messages skip turned-away offices at day 3/5; placement confirmation credits them; report email needs
+  --reports and a PDF; declined-office follow-up template; route sheet: certificate source for couriers, handed-over count,
+  cases taken back; invoices refuse blank billing; SAMPLE banner line on every SAMPLE text draft (common.write).
+- Forms: "Restrict to users in [domain]" OFF in every form's steps, signed-out test, setRequireLogin(false) in the script
+  (mock-tested); survey-form.md Part 3 now says time stamps could link a sign-up to an answer; Part C suggestion withdrawn.
+- Office summary threshold 3 -> 5. Exception scenario (reviewer's, with the SOP as now written) added as dry-run/exception.
+- dryrun.py counts tool refusals and final dashboard checks as problems. New tests: test_exception.py, test_retention.py.

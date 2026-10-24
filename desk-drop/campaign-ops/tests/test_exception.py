@@ -19,6 +19,7 @@ founder would have it on one day, recalculates it with LibreOffice and requires:
     kit refuses; with its billing details blank, make_invoice.py refuses (exit 2).                 (R1-07)
  6. A rename in the tracker only (config!B2 changed, brand.json not): every generator refuses (exit 2). (R1-04)
  7. The founding tier: a fourth founding brand and a third founding_lock campaign each raise a check. (R1-14)
+ 8. A tab over 90% full (the six-month size) shows on the dashboard.                              (R1-13)
 Writes only to a temporary folder.
 """
 import copy
@@ -191,6 +192,17 @@ def main():
     ok("first three brands only" not in (row(p7, "campaigns", campaign_id="SAMPLE-CMP-090").get("checks") or ""), "the third founding brand raises the four-brand check")
     ok("first three brands only" in (row(p7, "campaigns", campaign_id="SAMPLE-CMP-091").get("checks") or ""), "a fourth founding brand raises no check")
     ok("next two campaigns only" in (row(p7, "campaigns", campaign_id="SAMPLE-CMP-094").get("checks") or ""), "a third founding_lock campaign raises no check")
+
+    # 8. A tab over 90% full shows on the dashboard (rows below the last formula row would not be counted)
+    import build_tracker as B
+    import recalc as RC
+    n = int(0.9 * T.N["hours"]) + 1
+    p8 = os.path.join(tmp, "full-hours.xlsx")
+    B.build(p8, sample={"hours": [{"date": dt.date(2027, 1, 4), "activity": "admin_invoicing", "hours": 0.5, "note": "SAMPLE row"}] * n},
+            today=dt.date(2027, 1, 5), config=DR.SAMPLE_CONFIG)
+    r8 = RC.recalc(p8, os.path.join(tmp, "full-hours-r.xlsx"))
+    d8 = DR.dashboard_checks(r8)[0]
+    ok(d8.get("Tabs over 90% full (rows below the last formula row are not counted)") == 1, "hours %d of %d rows: dashboard %s" % (n, T.N["hours"], d8))
 
     for f in fails:
         print("  FAIL " + f)
