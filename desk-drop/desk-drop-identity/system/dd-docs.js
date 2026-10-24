@@ -82,8 +82,8 @@
 
   // Fit every .page of a sheet. steps: functions that make one thing smaller and return true,
   // or return false when they have nothing left to give. The fixed parts are never in `steps`.
-  X.fitPages = function (sheet, i, steps, what) {
-    const pages = [...sheet.querySelectorAll('.page')];
+  X.fitPages = function (sheet, i, steps, what, only) {
+    const pages = only || [...sheet.querySelectorAll('.page')];
     const over = () => pages.filter((p) => { const b = p.querySelector('.bd'); return b && b.scrollHeight > b.clientHeight + 1; });
     let guard = 0;
     while (over().length && guard++ < 200) {
@@ -114,6 +114,9 @@
     if (found.length) D.warn(i, `${label} uses "${found.join('", "')}". No health, sales, lift, acquisition or "guaranteed" claims; measurement words come from the ladder.`);
   };
 
+  // Editable copy: {BRAND_NAME} becomes the name from brand.json (so a rename never touches copy),
+  // **words** become bold, [PLACEHOLDERS] are highlighted.
+  X.t = (s) => D.text(String(s == null ? '' : s).replace(/\{BRAND_NAME\}/g, D.brand().BRAND_NAME)).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
   X.items = (text) => String(text || '').split(/\n+/).map((s) => s.replace(/^\s*[-*•]\s*/, '').trim()).filter(Boolean);
   X.usd = (n) => '$' + Math.round(Number(n)).toLocaleString('en-US');
   X.num = (v) => { const s = String(v == null ? '' : v).trim(); return /^-?\d+(\.\d+)?$/.test(s) ? Number(s) : null; };

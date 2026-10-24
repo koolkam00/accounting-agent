@@ -21,14 +21,14 @@
 
   // THE LIMITATIONS PARAGRAPH. Fixed text: not a field, never edited per report.
   // Built from plan.md "Measurement and the brand report", one limitation per rung.
-  R.LIMITATIONS = 'Each number is a separate step, counted as described, and none of them is a sale. ' +
-    'Delivered is our count at handoff. Placed is the count of units visible in the placement photo; an office may hold some back for later. ' +
-    'Depleted (gone by day 5) comes from photos or the pantry owner\'s count; one person may take several, and sharing and disposal are invisible. ' +
-    'Tuesday headcount is a range the office reports; not everyone visits the pantry. ' +
-    'Survey responses are anonymous and self-selected, and the samples are small, so one answer can move a share by several points. ' +
-    'A QR scan is curiosity, not intent. Code redemptions are reported by the brand, and some of those people would have bought anyway. ' +
+  R.LIMITATIONS = 'Each number is a separate step, counted as stated, and none of them is a sale. ' +
+    'Delivered: our count at handoff. Placed: units visible in the placement photo; an office may hold some back for later. ' +
+    'Depleted: from photos or the pantry owner\'s count by day 5; one person may take several, and sharing and disposal are invisible. ' +
+    'Tuesday headcount: a range the office reports; not everyone visits the pantry. ' +
+    'Survey responses: anonymous and self-selected, from small samples, so one answer can move a share by several points. ' +
+    'A QR scan is curiosity, not intent. Code redemptions: reported by the brand; some of those people would have bought anyway. ' +
     'Retailer sales, where shown, are confounded by everything else that happened that month and are suggestive only. ' +
-    'We did not measure incremental purchases, so this report does not show whether the campaign caused any sale.';
+    'Incremental purchases were not measured, so this report does not show whether the campaign caused any sale.';
 
   const BANDS = { '40-75': '40 to 75', '76-150': '76 to 150', '151-250': '151 to 250', '251-500': '251 to 500', 'under-40': 'under 40', 'over-500': 'over 500', 'unknown': 'unknown' };
   R.BAND_OPTIONS = [['[BAND]', 'choose'], ['40-75', '40 to 75'], ['76-150', '76 to 150'], ['151-250', '151 to 250'], ['under-40', 'under 40'], ['251-500', '251 to 500'], ['unknown', 'unknown']];
@@ -74,7 +74,14 @@
       if (del != null && pl != null && pl > del) D.error(i, `${L}: placed (${pl}) is more than delivered (${del}).`);
       if (pl != null && dep != null && dep > pl + top) D.error(i, `${L}: depleted by day 5 (${dep}) is more than placed plus topped up (${pl + top}).`);
       if (resp != null && resp < 5) D.warn(i, `${L} has ${resp} survey responses, under the five the office committed to. Report it as it is.`);
-      if (o.placed_within_1bd && !/^[YN]$/.test(String(o.placed_within_1bd).trim())) D.error(i, `${L}: "placed within one business day" must be Y or N.`);
+      const p1 = String(o.placed_within_1bd == null ? '' : o.placed_within_1bd).trim();
+      if (!ph(p1) && !/^[YN]$/.test(p1)) D.error(i, `${L}: "placed within one business day" must be Y or N.`);
+      if (ph(p1)) D.status.placeholders.push(`record ${i + 1}: ${L}: placed within one business day`);
+      for (const [key, what] of [['placement_photo', 'placement photo'], ['later_photo', 'later photo']]) {
+        const v = String(o[key] == null ? '' : o[key]).trim();
+        if (ph(v)) D.status.placeholders.push(`record ${i + 1}: ${L}: ${what}`);
+        else if (!v) D.warn(i, `${L}: no ${what}. The report says "No photo received". Attach it if you have it.`);
+      }
     });
     const total = sum(rows, 'survey_responses');
     const ty = n(r.survey_tried_yes);
@@ -97,6 +104,15 @@
     if (d.ok) { d.cal.errors.forEach((m) => D.error(i, m)); d.cal.warnings.forEach((m) => D.warn(i, m)); }
   };
 
+  // A photo value: a picture, "[PHOTO]" (not attached yet: the template hint), or empty
+  // (the office sent none: reported as "No photo received", never hidden).
+  function photo(v, cls) {
+    const s = String(v == null ? '' : v).trim();
+    if (!s) return `<div class="img-slot none ${cls}"><span><b>No photo received</b></span></div>`;
+    return X.imgSlot(s, '', cls);
+  }
+  R.photo = photo;
+
   const COLS = {
     units_delivered: 'Delivered', units_placed: 'Placed', units_topped_up: 'Topped up', units_depleted_day5: 'Depleted by day 5',
     survey_responses: 'Responses', qr_scans: 'Scans'
@@ -113,44 +129,50 @@
       tDep = sum(rows, 'units_depleted_day5'), tResp = sum(rows, 'survey_responses'), tScan = sum(rows, 'qr_scans');
     const onShelf = (tPl == null || tTop == null) ? null : tPl + tTop;
     const late = rows.filter((o) => String(o.placed_within_1bd || '').trim() === 'N').length;
-    const known1bd = rows.filter((o) => /^[YN]$/.test(String(o.placed_within_1bd || '').trim())).length;
+    const known1bd = rows.filter((o) => /^[YN]$/.test(String(o.placed_within_1bd || '').trim()) && n(o.units_placed) != null).length;
+    const respKnown = rows.every((o) => n(o.survey_responses) != null);
     const resp5 = rows.filter((o) => n(o.survey_responses) != null && n(o.survey_responses) >= 5).length;
     const redeem = String(r.code_redemptions_to_date == null ? '' : r.code_redemptions_to_date).trim();
     const asOf = r.code_redemptions_as_of ? D.text(r.code_redemptions_as_of) : (d.ok ? d.report : '<mark class="dd-ph">[DATE]</mark>');
 
     const rung = (name, value, hint, off) => `<div class="rung${off ? ' off' : ''}"><span class="rn">${name}</span><span class="rv">${value}</span><span class="rh">${hint}</span></div>`;
     const ladder = `<div class="ladder">
-      ${rung('Delivered', totalOr(tDel == null || tTop == null ? null : tDel + tTop), `Counted at handoff.${tTop ? ` Includes ${tTop} day-3 top-ups from reserve.` : ''}`)}
-      ${rung('Placed', totalOr(tPl), known1bd === rows.length && rows.length ? `In the placement photos. ${rows.length - late} of ${rows.length} offices within one business day.` : 'In the placement photos.')}
-      ${rung('Depleted', totalOr(tDep), onShelf ? `Gone by day 5: ${pct(tDep, onShelf) == null ? '[N]' : pct(tDep, onShelf) + '%'} of the ${onShelf} on the shelf.` : 'Gone by day 5.')}
-      ${rung('Responded', totalOr(tResp), rows.length ? `Survey responses. ${resp5} of ${rows.length} offices reached five.` : 'Survey responses.')}
-      ${rung('Scanned', totalOr(tScan), 'QR scans, across all offices. By office below.')}
-      ${rung('Purchased', redeem ? show(redeem) : '<mark class="dd-ph">[N]</mark>', `Code redemptions the brand reported, to ${asOf}.${d.ok ? ` Final check ${d.redemption}.` : ''}`)}
-      ${rung('Incremental', 'Not measured', 'Purchases caused by the campaign. Not measured; see limitations.', true)}
+      ${rung('Delivered', totalOr(tDel == null || tTop == null ? null : tDel + tTop), tTop ? `Incl. ${tTop} day-3 top-ups.` : 'Counted at handoff.')}
+      ${rung('Placed', totalOr(tPl), known1bd === rows.length && rows.length ? `${rows.length - late} of ${rows.length} offices within one business day.` : `<mark class="dd-ph">[N]</mark> of ${rows.length} offices within one business day.`)}
+      ${rung('Depleted', totalOr(tDep), onShelf ? `Gone by day 5: ${pct(tDep, onShelf) == null ? '[N]' : pct(tDep, onShelf) + '%'} of ${onShelf} on the shelf.` : 'Gone by day 5.')}
+      ${rung('Responded', totalOr(tResp), respKnown && rows.length ? `${resp5} of ${rows.length} offices reached five.` : `<mark class="dd-ph">[N]</mark> of ${rows.length} offices reached five.`)}
+      ${rung('Scanned', totalOr(tScan), 'By office in the roster.')}
+      ${rung('Purchased', redeem ? show(redeem) : '<mark class="dd-ph">[N]</mark>', `Code redemptions, per the brand, to ${asOf}.`)}
+      ${rung('Incremental', '<span class="rv-off">Not measured</span>', 'See limitations.', true)}
     </div>`;
 
     const cell = (o, key, dflt) => { const s = String(o[key] == null ? '' : o[key]).trim(); return s ? D.text(s) : (dflt != null ? dflt : '<mark class="dd-ph">[N]</mark>'); };
     const body = rows.map((o, k) => `<tr>
         <td><b>${label(o, k)}</b></td><td>${cell(o, 'industry', '<mark class="dd-ph">[INDUSTRY]</mark>')}</td><td class="nowrap">${o.headcount_band ? D.text(band(o.headcount_band)) : '<mark class="dd-ph">[BAND]</mark>'}</td>
         <td class="r num">${cell(o, 'units_delivered')}</td>
-        <td class="r num">${cell(o, 'units_placed')}${String(o.placed_within_1bd || '').trim() === 'N' ? '<sup>*</sup>' : ''}</td>
+        <td class="r num">${String(o.placed_within_1bd || '').trim() === 'N' ? '<span class="late">*</span>' : ''}${cell(o, 'units_placed')}</td>
         <td class="r num">${cell(o, 'units_topped_up', '0')}</td>
         <td class="r num">${cell(o, 'units_depleted_day5')}</td>
         <td class="r num">${cell(o, 'survey_responses')}</td>
         <td class="r num">${cell(o, 'qr_scans')}</td></tr>`).join('');
-    const roster = `<table class="t roster">
-      <thead><tr><th>Office</th><th>Industry</th><th>Tuesday headcount</th><th class="r">Delivered</th><th class="r">Placed</th><th class="r">Topped up</th><th class="r">Depleted by day 5</th><th class="r">Responses</th><th class="r">Scans</th></tr></thead>
-      <tbody>${body}<tr class="total"><td colspan="3">All ${rows.length} offices</td><td class="r num">${totalOr(tDel)}</td><td class="r num">${totalOr(tPl)}</td><td class="r num">${totalOr(tTop)}</td><td class="r num">${totalOr(tDep)}</td><td class="r num">${totalOr(tResp)}</td><td class="r num">${totalOr(tScan)}</td></tr></tbody></table>
-      ${late ? `<p class="note"><sup>*</sup> Placed after the first business day.</p>` : ''}`;
+    const roster = `<table class="t roster"><colgroup><col style="width:.5in"><col><col style="width:.82in"><col span="6" style="width:.68in"></colgroup>
+      <thead><tr><th>Office</th><th>Industry</th><th>Tuesday<br>headcount</th><th class="r">Delivered</th><th class="r">Placed</th><th class="r">Topped<br>up</th><th class="r">Depleted<br>by day 5</th><th class="r">Responses</th><th class="r">Scans</th></tr></thead>
+      <tbody>${body}<tr class="total"><td colspan="3">All ${rows.length} offices${late ? '<span class="late-note"> · * placed after the first business day</span>' : ''}</td><td class="r num">${totalOr(tDel)}</td><td class="r num">${totalOr(tPl)}</td><td class="r num">${totalOr(tTop)}</td><td class="r num">${totalOr(tDep)}</td><td class="r num">${totalOr(tResp)}</td><td class="r num">${totalOr(tScan)}</td></tr></tbody></table>
+`;
 
     const thumbs = rows.map((o, k) => `<div class="ev">
         <div class="ev-pair">
-          <figure>${X.imgSlot(mock ? '' : o.placement_photo, '', 'ev-img')}<figcaption>${label(o, k)} · day 1</figcaption></figure>
-          <figure>${X.imgSlot(mock ? '' : o.later_photo, '', 'ev-img')}<figcaption>${label(o, k)} · day ${String(o.later_photo_day || '5').trim() === '3' ? '3' : '5'}</figcaption></figure>
+          <figure>${photo(mock ? '[PHOTO]' : o.placement_photo, 'ev-img')}<figcaption>${label(o, k)} · day 1</figcaption></figure>
+          <figure>${photo(mock ? '[PHOTO]' : o.later_photo, 'ev-img')}<figcaption>${label(o, k)} · day ${String(o.later_photo_day || '5').trim() === '3' ? '3' : '5'}</figcaption></figure>
         </div></div>`).join('');
     const anyPhoto = !mock && rows.some((o) => D.imgSrc(o.placement_photo) || D.imgSrc(o.later_photo));
+    const got = (key) => rows.filter((o) => D.imgSrc(o[key])).length;
+    const pending = rows.some((o) => ph(o.placement_photo) || ph(o.later_photo));
+    const compliance = pending ? `Photos received: placement <mark class="dd-ph">[N]</mark> of ${rows.length}, later <mark class="dd-ph">[N]</mark> of ${rows.length}.`
+      : `Photos received: placement ${got('placement_photo')} of ${rows.length}, later ${got('later_photo')} of ${rows.length}.`;
     const evidence = `<div class="evg ${rows.length > 5 ? 'many' : 'few'}">${thumbs}</div>
-      <p class="note">Wide shot of the pantry on day 1, close shot of card and product later. Real pantry photos, no identifiable people.${anyPhoto ? ' Every photo, larger, is on the evidence page that follows.' : ''}</p>`;
+      <p class="note ev-note">${compliance} Wide shot of the pantry on day 1, close shot of card and product later; no identifiable people.${anyPhoto ? ' Every photo, larger, is on page 2.' : ''}</p>
+      <p class="note ev-moved-note">${compliance} All of them are on page 2.</p>`;
 
     // survey
     const ry = n(r.survey_buy_yes), rm = n(r.survey_buy_maybe), rno = n(r.survey_buy_no);
@@ -166,8 +188,7 @@
     const comments = `<div class="cms">${q('comment_1', 1)}${q('comment_2', 2)}${q('comment_3', 3)}</div>
       <p class="note">Three ${r.comments_total ? `of ${D.text(r.comments_total)} ` : ''}comments, copied word for word, not edited. Comments are not linked to an office.</p>`;
 
-    const engagement = `<p class="eng"><b>Engagement:</b> ${totalOr(tScan)} scans across ${rows.length} offices (by office in the table) · ${redeem ? show(redeem) : '<mark class="dd-ph">[N]</mark>'} code redemptions to date, reported by the brand to ${asOf}${d.ok ? `; final check ${d.redemption}` : ''}.
-      ${String(r.retailer_velocity || '').trim() ? `<br><b>Retailer velocity (the brand's own data, suggestive only):</b> ${D.text(r.retailer_velocity)}` : ''}</p>`;
+    const engagement = `<p class="eng"><b>Engagement:</b> ${totalOr(tScan)} QR scans across ${rows.length} offices · ${redeem ? show(redeem) : '<mark class="dd-ph">[N]</mark>'} code redemptions to ${asOf}, per the brand${d.ok ? ` (day-30 check ${d.redemption})` : ''}.${String(r.retailer_velocity || '').trim() ? `<br><b>Retailer velocity, the brand's own data, suggestive only:</b> ${D.text(r.retailer_velocity)}` : ''}</p>`;
 
     const learned = X.items(r.learned);
     const learnedHTML = `<ul class="plain lr">${(learned.length ? learned : ['[WHAT WE LEARNED 1]', '[WHAT WE LEARNED 2]', '[WHAT WE LEARNED 3]']).map((x) => `<li>${D.text(x)}</li>`).join('')}</ul>`;
@@ -176,24 +197,23 @@
     const meta = [
       D.text(r.cluster || 'Flatiron, NoMad and Union Square'),
       `Drop ${d.drop}`,
-      d.ok ? `Window ${d.slot ? '' : ''}${Dt.fmt(d.d1)} to ${Dt.fmt(d.day5)}` : 'Window <mark class="dd-ph">[WINDOW]</mark>',
-      `${tier === 'founding' ? 'Founding' : tier === 'standard' ? 'Standard' : '<mark class="dd-ph">[TIER]</mark>'} campaign, ${rows.length} offices`
+      d.ok ? (d.slot ? `Window <mark class="dd-ph">[WINDOW: ${Dt.fmt(d.d1)} to ${Dt.fmt(d.day5)}]</mark>` : `Window ${Dt.fmt(d.d1)} to ${Dt.fmt(d.day5)}`) : 'Window <mark class="dd-ph">[WINDOW]</mark>',
     ].join(' · ');
+    const tierText = `${tier === 'founding' ? 'Founding' : tier === 'standard' ? 'Standard' : '<mark class="dd-ph">[TIER]</mark>'}, ${rows.length} offices`;
     const reportDate = r.report_date ? D.text(r.report_date) : (d.ok ? d.report : '<mark class="dd-ph">[REPORT DATE]</mark>');
 
     return `<div class="page rpt${mock ? ' mock' : ''}">
       ${mock ? `<div class="mock-band">Mock report page <span>·</span> Illustrative placeholders, not results</div><div class="mock-side">Illustrative placeholders, not results</div>` : '<div class="dd-sample-banner">Sample. Illustrative placeholders, not results.</div>'}
-      ${X.header({ kicker: 'Campaign report', meta: `${D.text(r.campaign_id || '[CAMPAIGN ID]')} · report ${reportDate}` })}
+      ${X.header({ cap: 0.21, kicker: 'Campaign report', meta: `${D.text(r.campaign_id || '[CAMPAIGN ID]')} · ${tierText} · report ${reportDate}` })}
       <div class="bd">
         <div class="rpt-title"><h1 class="title rt">${show(r.brand_name, '[BRAND]')} <span class="sku">· ${show(r.product_sku, '[SKU]')}</span></h1>
           <p class="rpt-meta">${meta}</p></div>
         <section class="sec">${ladder}</section>
         <section class="sec"><h2>Roster</h2>${roster}</section>
-        <section class="sec"><h2>Evidence: two photos per office</h2>${evidence}</section>
+        <section class="sec ev-sec"><h2>Evidence: two photos per office</h2>${evidence}</section>
         <section class="sec"><h2>Survey</h2>${stats}${comments}${engagement}</section>
-        <section class="sec g6 lr-row">
-          <div class="s4"><h2>What we learned</h2>${learnedHTML}</div>
-          <div class="s2 box rec"><h2>Recommendation</h2><p>${show(r.recommendation, '[RENEW INTO WHICH OFFICES, ADJUST WHAT, OR STOP]')}</p></div>
+        <section class="sec lr-row"><h2>What we learned</h2>${learnedHTML}
+          <div class="box rec"><h2>Recommendation</h2><p>${show(r.recommendation, '[RENEW INTO WHICH OFFICES, ADJUST WHAT, OR STOP]')}</p></div>
         </section>
         <section class="sec lim"><h3>Limitations</h3><p class="lim-text">${D.escape(R.LIMITATIONS)}</p></section>
       </div>
@@ -209,8 +229,8 @@
     const when = (o, first) => d.ok ? Dt.fmt(first ? d.d1 : (String(o.later_photo_day || '5').trim() === '3' ? d.day3 : d.day5)) : '';
     const cells = rows.map((o, k) => {
       const L = D.text(o.office_label || String.fromCharCode(65 + k));
-      return `<figure class="ap">${X.imgSlot(o.placement_photo, '', 'ap-img')}<figcaption><b>${L}</b> · placement, day 1${when(o, true) ? ' · ' + when(o, true) : ''}</figcaption></figure>
-              <figure class="ap">${X.imgSlot(o.later_photo, '', 'ap-img')}<figcaption><b>${L}</b> · day ${String(o.later_photo_day || '5').trim() === '3' ? '3' : '5'}${when(o, false) ? ' · ' + when(o, false) : ''}</figcaption></figure>`;
+      return `<figure class="ap">${photo(o.placement_photo, 'ap-img')}<figcaption><b>${L}</b> · day 1, placement${when(o, true) ? ' · ' + when(o, true) : ''}</figcaption></figure>
+              <figure class="ap">${photo(o.later_photo, 'ap-img')}<figcaption><b>${L}</b> · day ${String(o.later_photo_day || '5').trim() === '3' ? '3' : '5'}${when(o, false) ? ' · ' + when(o, false) : ''}</figcaption></figure>`;
     }).join('');
     return `<div class="page rpt-ap">
       <div class="dd-sample-banner">Sample. Illustrative placeholders, not results.</div>
@@ -222,29 +242,36 @@
   };
 
   // ---- fit: the limitations paragraph, the ladder and the numbers never shrink ----
-  R.fit = function (sheet, i) {
-    const pg = sheet.querySelector('.page.rpt');
+  R.fit = function (sheet, i, page) {
+    const pg = page || sheet.querySelector('.page.rpt');
     if (!pg) return true;
     const all = (sel) => [...pg.querySelectorAll(sel)];
-    let cmPt = 9, thumbIn = pg.querySelector('.evg.many') ? 0.56 : 0.78, lrPt = 9.5, tight = false;
+    const many = !!pg.querySelector('.evg.many');
+    const canMove = many && !pg.classList.contains('mock') && !!sheet.querySelector('.page.rpt-ap');
+    let cmPt = 8.75, thumbIn = many ? 0.52 : 0.78, lrPt = 9.5, tight = false, moved = false;
     const set = () => {
       all('.cm').forEach((e) => { e.style.fontSize = cmPt + 'pt'; });
       all('.ev-img').forEach((e) => { e.style.height = thumbIn + 'in'; });
       all('.lr li, .rec p').forEach((e) => { e.style.fontSize = lrPt + 'pt'; });
       pg.classList.toggle('tight', tight);
+      pg.classList.toggle('ev-moved', moved);
     };
     set();
+    // Give-way order, stated in the usage guide. Never touched: the ladder, the numbers, the
+    // comments' words, the limitations paragraph.
     const steps = [
-      () => { if (thumbIn > 0.46) { thumbIn = Math.round((thumbIn - 0.04) * 100) / 100; set(); return true; } },
-      () => { if (cmPt > 8) { cmPt -= 0.25; set(); return true; } },
+      () => { if (thumbIn > 0.46) { thumbIn = Math.round((thumbIn - 0.02) * 100) / 100; set(); return true; } },
+      () => { if (cmPt > 8.25) { cmPt -= 0.25; set(); return true; } },
       () => { if (!tight) { tight = true; set(); return true; } },
       () => { if (lrPt > 8.5) { lrPt -= 0.25; set(); return true; } },
-      () => { if (thumbIn > 0.4) { thumbIn = Math.round((thumbIn - 0.02) * 100) / 100; set(); return true; } },
+      () => { if (canMove && !moved) { moved = true; set(); return true; } },
+      () => { if (cmPt > 8) { cmPt -= 0.25; set(); return true; } },
     ];
-    const ok = X.fitPages(sheet, i, steps, 'The report');
+    const ok = X.fitPages(sheet, i, steps, pg.classList.contains('mock') ? 'The mock report page' : 'The report', [pg]);
+    if (moved) D.warn(i, 'To keep the comments whole, the photo thumbnails moved to page 2; page 1 keeps the count of photos received.');
     const lim = pg.querySelector('.lim-text');
     if (!lim || lim.textContent !== R.LIMITATIONS) D.error(i, 'The limitations paragraph is missing or changed. It is fixed text in system/dd-report.js.');
-    sheet.dataset.fit = JSON.stringify({ comment_pt: cmPt, thumb_in: thumbIn, learned_pt: lrPt, tight, fits: ok });
+    if (!pg.classList.contains('mock')) sheet.dataset.fit = JSON.stringify({ comment_pt: cmPt, thumb_in: thumbIn, learned_pt: lrPt, tight, thumbnails_on_page_2: moved, fits: ok });
     return ok;
   };
 
@@ -252,15 +279,23 @@
   R.CSS = `
   .rpt .bd { padding-top: .12in; }
   .rpt .rpt-title { display: flex; flex-direction: column; }
-  .rpt h1.rt { font-size: 21pt; line-height: 1.05; }
+  .rpt h1.rt { font-size: 19pt; line-height: 1.05; }
   .rpt h1.rt .sku { font: 700 13pt/1.1 var(--dd-font-text); color: var(--dd-ink-soft); letter-spacing: 0; }
-  .rpt .rpt-meta { margin: .04in 0 0; font: 600 9pt/1.3 var(--dd-font-text); color: var(--dd-ink-soft); }
+  .rpt .rpt-meta { margin: .03in 0 0; font: 600 9pt/1.3 var(--dd-font-text); color: var(--dd-ink-soft); }
+  .rpt .rung { padding: .05in .06in .06in; }
+  .rpt .rung .rv { font-size: 15pt; margin-top: .02in; }
+  .rpt .rung .rh { margin-top: .03in; }
   .rpt .sec + .sec { margin-top: .13in; }
   .rpt h2 { font-size: 10.5pt; margin-bottom: .04in; }
   .rpt .ladder { margin-top: .02in; }
-  .rpt table.roster { font-size: 8.5pt; }
-  .rpt table.roster td { padding: .03in .05in; }
-  .rpt.tight table.roster td { padding: .018in .05in; }
+  .rpt .rung .rv-off { font-size: 11pt; line-height: 1.1; }
+  .doc .img-slot.none { background: #fff; border-style: solid; border-color: var(--dd-stone); }
+  .rpt table.roster { font-size: 8.5pt; line-height: 1.15; table-layout: fixed; }
+  .rpt table.roster .late-note { font-weight: 400; font-size: 7.5pt; color: var(--dd-ink-soft); white-space: nowrap; }
+  .rpt table.roster th { font-size: 7pt; line-height: 1.15; padding: .02in .05in .03in; }
+  .rpt table.roster td { padding: .025in .05in; overflow-wrap: anywhere; }
+  .rpt.tight table.roster td { padding: .012in .05in; }
+  .rpt table.roster .late { font-weight: 700; margin-right: .02in; }
   .rpt.tight .sec + .sec { margin-top: .09in; }
   .rpt .evg { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); column-gap: .1in; row-gap: .05in; }
   .rpt .ev-pair { display: grid; grid-template-columns: 1fr 1fr; gap: .04in; }
@@ -270,8 +305,13 @@
   .rpt .ev figcaption { margin-top: .015in; font-size: 7pt; white-space: nowrap; }
   .rpt .evg + .note { margin-top: .03in; }
   .rpt .sv-stats { font-size: 9pt; line-height: 1.38; }
-  .rpt .cms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .14in; margin-top: .06in; }
-  .rpt blockquote.cm { margin: 0; padding-left: .08in; border-left: 2px solid var(--dd-ink); font: 400 9pt/1.34 var(--dd-font-text); font-style: italic; color: var(--dd-ink); }
+  .rpt .cms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .1in; margin-top: .05in; }
+  .rpt blockquote.cm { margin: 0; padding-left: .08in; border-left: 2px solid var(--dd-ink); font: 400 8.75pt/1.33 var(--dd-font-text); color: var(--dd-ink); }
+  .rpt .ev-moved-note { display: none; }
+  .rpt.ev-moved .evg, .rpt.ev-moved .ev-note { display: none; }
+  .rpt.ev-moved .ev-sec { display: flex; align-items: baseline; gap: .1in; }
+  .rpt.ev-moved .ev-sec h2 { margin: 0; flex: none; }
+  .rpt.ev-moved .ev-moved-note { display: block; font-size: 8.5pt; color: var(--dd-ink); }
   .rpt .cms + .note { margin-top: .04in; }
   .rpt .eng { margin-top: .07in; font-size: 9pt; line-height: 1.38; }
   .rpt .lr-row { row-gap: 0; }
@@ -281,8 +321,18 @@
   .rpt .lim { border-top: 1px solid var(--dd-ink); padding-top: .05in; }
   .rpt .lim h3 { font-size: 8pt; margin: 0 0 .02in; }
   .rpt .lim-text { font-size: 7.5pt; line-height: 1.36; color: var(--dd-ink); }
+
+  .page.rpt { padding: .45in .6in .4in; }
+  .page.rpt.mock { padding-top: .48in; }
+  .rpt .hd { padding-bottom: .07in; }
+  .rpt.tight .sec + .sec { margin-top: .075in; }
+  .rpt .rec { display: flex; gap: .12in; align-items: baseline; margin-top: .06in; }
+  .rpt .rec h2 { flex: none; margin: 0; }
+  .rpt .eng { margin-top: .05in; font-size: 8.75pt; }
+  .rpt .lr li::before { width: .045in; height: .045in; top: .07in; }
+  .rpt .rung .rv-off { font-size: 9.5pt; white-space: nowrap; }
   .rpt-ap .apg { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .1in .1in; margin-top: .1in; }
   .rpt-ap .ap-img { width: 100%; height: 1.25in; }
-  .rpt-ap figcaption { font-size: 7.5pt; }
+  .rpt-ap figcaption { font-size: 7pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   `;
 })();

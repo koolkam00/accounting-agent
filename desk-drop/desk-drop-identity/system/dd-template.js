@@ -114,7 +114,7 @@
     const empty = isEmpty(v);
     if (f.required && empty) DD.error(i, `"${where || f.label}" is empty.`);
     if (empty) return;
-    if (f.type === 'image') return; // a picture is never a text placeholder
+    if (f.type === 'image') return; // pictures: the template decides what an empty or [PHOTO] value means
     if (DD.isPlaceholder(String(v))) DD.status.placeholders.push(`record ${i + 1}: ${where ? where : f.key}`);
     if (f.maxChars && String(v).length > f.maxChars) DD.warn(i, `"${where || f.label}" is ${String(v).length} characters; aim for ${f.maxChars} or fewer.`);
   }
@@ -139,7 +139,7 @@
     const hint = isPh ? ` placeholder="${DD.escape(raw)}" data-ph="${DD.escape(raw)}"` : (f.hint ? ` placeholder="${DD.escape(f.hint)}"` : '');
     if (f.type === 'image') {
       const src = DD.imgSrc(raw);
-      const what = !src ? 'No picture yet.' : (src.startsWith('data:') ? `Picture chosen (${Math.round(src.length * 0.75 / 1024)} KB, kept inside the saved JSON).` : `Picture file: ${DD.escape(src.split('/').pop())}`);
+      const what = DD.isPlaceholder(raw) ? 'Not attached yet.' : !src ? 'None (prints as "No photo received").' : (src.startsWith('data:') ? `Picture chosen (${Math.round(src.length * 0.75 / 1024)} KB, kept inside the saved JSON).` : `Picture file: ${DD.escape(src.split('/').pop())}`);
       return `<span class="dd-img-pick"><span class="dd-img-what">${what}</span>
         <label class="dd-file dd-file-sm">Choose picture<input type="file" accept="image/jpeg,image/png,image/webp" data-img="${name}"></label>
         ${src ? `<button type="button" data-act="img-clear" data-name="${name}">Remove</button>` : ''}</span>`;

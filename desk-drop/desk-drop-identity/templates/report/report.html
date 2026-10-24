@@ -34,11 +34,11 @@
   "drop_date": "[DROP DATE: Tue 2027-01-12]",
   "report_date": "",
   "offices": [
-    { "office_label": "A", "industry": "[INDUSTRY]", "headcount_band": "[BAND]", "units_delivered": "[N]", "units_placed": "[N]", "placed_within_1bd": "Y", "units_topped_up": "", "units_depleted_day5": "[N]", "survey_responses": "[N]", "qr_scans": "[N]", "placement_photo": "", "later_photo": "", "later_photo_day": "5" },
-    { "office_label": "B", "industry": "[INDUSTRY]", "headcount_band": "[BAND]", "units_delivered": "[N]", "units_placed": "[N]", "placed_within_1bd": "Y", "units_topped_up": "", "units_depleted_day5": "[N]", "survey_responses": "[N]", "qr_scans": "[N]", "placement_photo": "", "later_photo": "", "later_photo_day": "5" },
-    { "office_label": "C", "industry": "[INDUSTRY]", "headcount_band": "[BAND]", "units_delivered": "[N]", "units_placed": "[N]", "placed_within_1bd": "Y", "units_topped_up": "", "units_depleted_day5": "[N]", "survey_responses": "[N]", "qr_scans": "[N]", "placement_photo": "", "later_photo": "", "later_photo_day": "5" },
-    { "office_label": "D", "industry": "[INDUSTRY]", "headcount_band": "[BAND]", "units_delivered": "[N]", "units_placed": "[N]", "placed_within_1bd": "Y", "units_topped_up": "", "units_depleted_day5": "[N]", "survey_responses": "[N]", "qr_scans": "[N]", "placement_photo": "", "later_photo": "", "later_photo_day": "5" },
-    { "office_label": "E", "industry": "[INDUSTRY]", "headcount_band": "[BAND]", "units_delivered": "[N]", "units_placed": "[N]", "placed_within_1bd": "Y", "units_topped_up": "", "units_depleted_day5": "[N]", "survey_responses": "[N]", "qr_scans": "[N]", "placement_photo": "", "later_photo": "", "later_photo_day": "5" }
+    { "office_label": "A", "industry": "[INDUSTRY]", "headcount_band": "[BAND]", "units_delivered": "[N]", "units_placed": "[N]", "placed_within_1bd": "[Y/N]", "units_topped_up": "", "units_depleted_day5": "[N]", "survey_responses": "[N]", "qr_scans": "[N]", "placement_photo": "[PHOTO]", "later_photo": "[PHOTO]", "later_photo_day": "5" },
+    { "office_label": "B", "industry": "[INDUSTRY]", "headcount_band": "[BAND]", "units_delivered": "[N]", "units_placed": "[N]", "placed_within_1bd": "[Y/N]", "units_topped_up": "", "units_depleted_day5": "[N]", "survey_responses": "[N]", "qr_scans": "[N]", "placement_photo": "[PHOTO]", "later_photo": "[PHOTO]", "later_photo_day": "5" },
+    { "office_label": "C", "industry": "[INDUSTRY]", "headcount_band": "[BAND]", "units_delivered": "[N]", "units_placed": "[N]", "placed_within_1bd": "[Y/N]", "units_topped_up": "", "units_depleted_day5": "[N]", "survey_responses": "[N]", "qr_scans": "[N]", "placement_photo": "[PHOTO]", "later_photo": "[PHOTO]", "later_photo_day": "5" },
+    { "office_label": "D", "industry": "[INDUSTRY]", "headcount_band": "[BAND]", "units_delivered": "[N]", "units_placed": "[N]", "placed_within_1bd": "[Y/N]", "units_topped_up": "", "units_depleted_day5": "[N]", "survey_responses": "[N]", "qr_scans": "[N]", "placement_photo": "[PHOTO]", "later_photo": "[PHOTO]", "later_photo_day": "5" },
+    { "office_label": "E", "industry": "[INDUSTRY]", "headcount_band": "[BAND]", "units_delivered": "[N]", "units_placed": "[N]", "placed_within_1bd": "[Y/N]", "units_topped_up": "", "units_depleted_day5": "[N]", "survey_responses": "[N]", "qr_scans": "[N]", "placement_photo": "[PHOTO]", "later_photo": "[PHOTO]", "later_photo_day": "5" }
   ],
   "survey_tried_yes": "[N]",
   "tried_no_didnt_see": "",
@@ -72,7 +72,7 @@
 (function () {
   'use strict';
   document.getElementById('dd-report-css').textContent = DDReport.CSS;
-  const YN = [['Y', 'Y: within one business day'], ['N', 'N: later']];
+  const YN = [['[Y/N]', 'choose'], ['Y', 'Y: within one business day'], ['N', 'N: later']];
   const FIELDS = [
     { group: 'Campaign', key: 'brand_name', label: 'Brand', required: true, help: 'From paid_brands.csv: brand_name.' },
     { group: 'Campaign', key: 'product_sku', label: 'Product (SKU)', help: 'From product_sku.' },
@@ -85,7 +85,7 @@
       help: 'From the operations tracker. Counts are whole numbers. Use letters (A, B, C) unless the office agreed to be named.',
       rowLabel: (k) => 'Office ' + String.fromCharCode(65 + k),
       summary: (o) => [o.industry, o.units_placed && 'placed ' + o.units_placed].filter((x) => x && !DD.isPlaceholder(String(x))).join(' · '),
-      newRow: (k) => ({ office_label: String.fromCharCode(65 + k), industry: '[INDUSTRY]', headcount_band: '[BAND]', units_delivered: '[N]', units_placed: '[N]', placed_within_1bd: 'Y', units_topped_up: '', units_depleted_day5: '[N]', survey_responses: '[N]', qr_scans: '[N]', placement_photo: '', later_photo: '', later_photo_day: '5' }),
+      newRow: (k) => ({ office_label: String.fromCharCode(65 + k), industry: '[INDUSTRY]', headcount_band: '[BAND]', units_delivered: '[N]', units_placed: '[N]', placed_within_1bd: '[Y/N]', units_topped_up: '', units_depleted_day5: '[N]', survey_responses: '[N]', qr_scans: '[N]', placement_photo: '[PHOTO]', later_photo: '[PHOTO]', later_photo_day: '5' }),
       columns: [
         { key: 'office_label', label: 'Label in the report', help: 'A, B, C... or the office name if it agreed to be named.' },
         { key: 'industry', label: 'Industry', help: 'e.g. Software, Architecture.' },
@@ -97,7 +97,7 @@
         { key: 'units_depleted_day5', label: 'Depleted by day 5', help: 'Placed plus topped up, minus what was left on day 5.' },
         { key: 'survey_responses', label: 'Survey responses', help: 'Responses from this office\'s QR and Slack link.' },
         { key: 'qr_scans', label: 'QR scans', help: 'From this office\'s short link.' },
-        { key: 'placement_photo', label: 'Placement photo (wide shot, day 1)', type: 'image' },
+        { key: 'placement_photo', label: 'Placement photo (wide shot, day 1)', type: 'image', help: 'Press Remove if the office never sent one: the report then says "No photo received".' },
         { key: 'later_photo', label: 'Later photo (close shot)', type: 'image' },
         { key: 'later_photo_day', label: 'Later photo taken on', options: [['5', 'day 5'], ['3', 'day 3']] }
       ] },
