@@ -125,7 +125,7 @@
         : f.multiline
         ? `<textarea name="${f.key}" rows="${f.rows || 3}"${hint}>${DD.escape(val)}</textarea>`
         : `<input name="${f.key}" value="${DD.escape(val)}"${hint}>`;
-      html += `<label class="dd-field"><span>${DD.escape(f.label)}${f.required ? ' <i>required</i>' : ''}</span>${input}${f.help ? `<small>${DD.escape(f.help)}</small>` : ''}</label>`;
+      html += `<label class="dd-field"><span>${DD.escape(f.label)}${f.required ? ' <i>required</i>' : f.requiredHint ? ` <i>${DD.escape(f.requiredHint)}</i>` : ''}</span>${input}${f.help ? `<small>${DD.escape(f.help)}</small>` : ''}</label>`;
     }
     panel.innerHTML = html;
     document.body.appendChild(panel);

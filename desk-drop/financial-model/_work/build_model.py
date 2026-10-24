@@ -605,8 +605,8 @@ for col, t in zip("CDEFG", [
         "Replace the weakest offices, raise the commitment bar; if a third drop misses, stop",
         "Stop; write the post-mortem; keep office relationships warm"]):
     put(ws, f"{col}8", t, align=WRAP)
-for rr in (6, 7, 8):
-    ws.row_dimensions[rr].height = 62 if rr != 6 else 32
+for rr, h in ((6, 32), (7, 62), (8, 92)):
+    ws.row_dimensions[rr].height = h
 levers = [
     ("sc_runs", "Post-Gate-3 drops that run in the six months (of the two scheduled)", [2, 2, 2, 1, 0], "drops", INT,
      "Base and A: two drops a month. B: 'run two more drops'. C: 'if a third drop misses, stop', so one more. D: 'Stop'."),
@@ -1456,6 +1456,7 @@ ch.add_data(Reference(ws, min_col=WK0, max_col=WKN, min_row=27, max_row=27), fro
 ch.set_categories(Reference(ws, min_col=WK0, max_col=WKN, min_row=4, max_row=4))
 ch.legend = None
 ch.x_axis.tickLblPos = "low"
+ch.series[0].smooth = False
 ws.add_chart(ch, f"E{M0 + 20}")
 
 # ==========================================================================
@@ -1495,7 +1496,7 @@ for i, cr in enumerate(caprows):
     put(ws, f"J{rr}", cr[7], align=WRAP)
     ws.row_dimensions[rr].height = 32
 rt = 5 + len(caprows)   # 14
-put(ws, f"B{rt}", "Total (plan capital table; model cash excludes the reserve)", font=F_BOLD)
+put(ws, f"B{rt}", "Total (model cash excludes the reserve)", font=F_BOLD)
 for L in "CDEG":
     put(ws, f"{L}{rt}", f"=SUM({L}5:{L}{rt - 1})", fmt=USD, font=F_BOLD)
 REF["cap_low"] = f"Capital!$C${rt}"
@@ -2085,11 +2086,11 @@ banner(ws, "A3", "Planning estimates, not a forecast. Gates count real numbers o
 ws.row_dimensions[3].height = 30
 put(ws, "B5", "As of", font=F_BOLD)
 put(ws, "C5", f"={R('as_of')}", fmt=DDATE, font=F_BOLD)
-put(ws, "D5", "Scenario in force", font=F_BOLD)
+put(ws, "D5", "Scenario", font=F_BOLD)
 put(ws, "E5", f"={R('active_scenario')}", font=F_BOLD)
-put(ws, "F5", "Model checks", font=F_BOLD)
+put(ws, "F5", "Checks", font=F_BOLD)
 put(ws, "G5", f'=IF({R("ck_integrity")}=0,"all integrity checks pass",{R("ck_integrity")}&" integrity check(s) failing")', font=F_BOLD)
-ws.merge_cells("G5:I5")
+ws.merge_cells("G5:J5")
 ok_cf(ws, "G5", good='"all integrity checks pass"')
 # --- gate rows first, so the headline can point at them
 N_HEAD = 14
@@ -2261,7 +2262,7 @@ for i in range(N_DROPS):
     rr = DS + 2 + i
     s_ = DROP0 + i
     blank = f'Drop_PnL!B{s_}=""'
-    put(ws, f"A{rr}", f"=Drop_PnL!A{s_}")
+    put(ws, f"A{rr}", f'=IF({blank},"",Drop_PnL!A{s_})')
     put(ws, f"B{rr}", f'=IF({blank},"",Schedule!B{s_}&"")')
     put(ws, f"C{rr}", f'=IF({blank},"",Drop_PnL!B{s_})', fmt=DATE)
     put(ws, f"D{rr}", f"=Drop_PnL!{CT['basis']}{s_}")
@@ -2275,7 +2276,7 @@ put(ws, f"A{rr}", "Total", font=F_BOLD)
 for col in "FGHIJK":
     put(ws, f"{col}{rr}", f"=SUM({col}{DS + 2}:{col}{DSE})", fmt={"F": None, "G": INT, "J": HRS}.get(col, USD), font=F_BOLD)
 put(ws, f"L{rr}", f'=IF(J{rr}>0,K{rr}/J{rr},"n/a")', fmt=PH, font=F_BOLD)
-put(ws, f"K{DS}", "Target per hour", font=F_BOLD, fill=FILL_SEC)
+put(ws, f"J{DS}", "Target per founder hour", font=F_BOLD, fill=FILL_SEC)
 put(ws, f"L{DS}", f"={R('g3_per_hour')}", fmt=USD, font=F_BOLD, fill=FILL_SEC)
 ws.conditional_formatting.add(f"L{DS + 2}:L{DSE + 1}", FormulaRule(formula=[f'AND(ISNUMBER(L{DS + 2}),L{DS + 2}>=$L${DS})'], fill=PatternFill("solid", fgColor="C6EFCE")))
 ws.conditional_formatting.add(f"L{DS + 2}:L{DSE + 1}", FormulaRule(formula=[f'AND(ISNUMBER(L{DS + 2}),L{DS + 2}<$L${DS})'], fill=PatternFill("solid", fgColor="FCE4D6")))
@@ -2291,6 +2292,7 @@ ch2.legend = None
 ch2.y_axis.title = "USD"
 ch2.x_axis.title = "Week"
 ch2.x_axis.tickLblPos = "low"
+ch2.series[0].smooth = False
 ws.add_chart(ch2, f"B{DSE + 5}")
 
 # ==========================================================================
@@ -2330,6 +2332,12 @@ WS["Inputs"].sheet_properties.tabColor = "F2C200"
 WS["Schedule"].sheet_properties.tabColor = "F2C200"
 for t in ("Hours_Log", "Toggl_Import", "Pipeline", "Actuals_Campaigns", "Actuals_DropCosts"):
     WS[t].sheet_properties.tabColor = "8FB98B"
+# top-align every cell that has no vertical alignment yet (mixed alignment reads badly in wrapped rows)
+for t in TABS:
+    for row_ in WS[t].iter_rows():
+        for c in row_:
+            if c.value is not None and c.alignment.vertical is None:
+                c.alignment = Alignment(horizontal=c.alignment.horizontal, vertical="top", wrap_text=c.alignment.wrap_text)
 wb.active = TABS.index("Dashboard")
 wb.calculation.fullCalcOnLoad = True
 wb.save(OUT)
