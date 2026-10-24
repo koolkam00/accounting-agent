@@ -1,0 +1,24 @@
+Scenarios A to D
+The plan's four decision situations as assumption sets. Pick one on Inputs ('Scenario in force'). The Active column feeds drops after Gate 3 and the steady state.
+"Planning estimates. Where a scenario does not name a figure, it uses the plan base and says so. Nothing here is a forecast of which scenario will happen."
+
+,Lever,Plan base,A,B,C,D,Active (in force),Unit,Source and reading,,default: Plan base,default: A,default: B,default: C,default: D,Changed?
+,Situation,What has to be true,Both sides work,"Brands pay once, offices love it","Brands willing, offices unreliable",Neither converts
+,What the numbers show,"Three brands per drop, six hours or less per win, 40% renew, $1,500 holds",40% or more of brands renew; placement above 80%; contribution above $50 an hour,Renewal under 30%; offices asking when the next drop is,Placement under 80% twice; photos missing; responses under five,"No renewal, weak placement"
+,What to do next (plan),Run the plan,"Scale: second cluster, roster 20 to 30, price to $1,800 to $2,000, part-time delivery at about $25 an hour above two drops a month, launch-partner tier","Fix the evidence, run two more drops; if renewal is still under 30%, switch to office-paid for offices that named $100 a month or more","Replace the weakest offices, raise the commitment bar; if a third drop misses, stop",Stop; write the post-mortem; keep office relationships warm
+
+,Post-Gate-3 drops that run in the six months (of the two scheduled),2,2,2,1,0,2,drops,"Base and A: two drops a month. B: 'run two more drops'. C: 'if a third drop misses, stop', so one more. D: 'Stop'.",,2,2,2,1,0
+,Brands per drop after Gate 3,3,3,3,3,0,3,brands,Plan: three brands per drop. D stops.,,3,3,3,3,0
+,Renewal rate (share of brand slots that are renewals),0.4,0.4,0,0.4,0,0.4,share,"A: '40% or more', low end. B: 'under 30%' and 'brands pay once': 0%, the low end of 0% to 29%. C: not named, plan base. D: 'No renewal'.",,0.4,0.4,0,0.4,0
+,New offices recruited per post-Gate-3 drop,0,0,0,,0,0,offices,C: 'replace the weakest offices'; the plan gives no count. Blank = 0; founder to set.,,0,0,0,,0
+,Standard price per office for drops after the decision date,150,180,150,150,150,150,USD per office,"A: 'raise the standard price to $1,800 to $2,000' = $180 to $200 per office; low end.",,150,180,150,150,150
+,Steady-state drops per month,2,2,2,2,0,2,drops per month,Plan monthly picture: two drops a month.,,2,2,2,2,0
+,Steady-state brands per drop,3,3,3,3,0,3,brands,Plan monthly picture: three-brand drops.,,3,3,3,3,0
+,Offices on an office-paid tier (steady state),0,0,5,0,0,0,offices,B: offices that named $100 a month or more; at least five.,,0,0,5,0,0
+,Office-paid fee per office per month,,,100,,,0,USD per month,B: $100 to $200 a month; low end.,,,,100
+,Cost to serve one office-paid office per month,,,,,,0,USD per month,Needs quote. The plan prices no cost for guaranteed twice-monthly curated drops.
+,Part-time delivery hire,25,25,,,,25,USD per hour,A: 'about $25 an hour once you run more than two drops a month'. It replaces drop-day hours (model reading).,,25,25
+,Hire once steady-state drops per month exceed,2,2,2,2,2,2,drops per month,Plan: 'more than two drops a month'.,,2,2,2,2,2
+
+,How it works
+,"The two decision-window drops on Schedule (DRP-004, DRP-005) take brands, renewals and new offices from the Active column. Type over those Schedule cells to replace the scenario with real plans. The steady-state view and the sensitivity tables use the Active column too. Drops before Gate 3 do not change with the scenario."

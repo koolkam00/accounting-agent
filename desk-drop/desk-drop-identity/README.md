@@ -30,7 +30,7 @@ Everything the founder needs to look consistent and print the in-office pieces w
 | `fonts/` | Bricolage Grotesque and Atkinson Hyperlegible Next with their OFL license files; `fonts.css` (print, static files), `fonts-variable.css` | Do not edit |
 | `SYSTEM.md` | The rules of the system: color, type, spacing, wordmark, grids, components, template mechanics, render pipeline | For whoever extends the system |
 | `HANDOFF.md` | What this folder feeds the website, outreach and operations workstreams | |
-| `REPORT.md` | Report back: deliverables, choices, assumptions, changelog, tests, questions | |
+| `REPORT.md` | Report back: deliverables, choices, assumptions, changelog, tests, questions. Part 1's report was returned to the orchestrator as text (this session could not write report files); it saves it here | |
 | `render/` | `build-brand.js` (wordmark from `brand.json`), `render.js` (JSON to PDF), `render-page.js` (static page to PDF), `build-pdfs.sh` (rebuild everything) | |
 | `system/` | Template runtime (`dd-template.js`, `dd-print.css`), generated `brand.js`, vendored MIT libraries (QR codes, font outlines) with licenses | |
 | `tests/` | Every test, its outputs and `tests/README.md` with results | `bash tests/run-all.sh` |

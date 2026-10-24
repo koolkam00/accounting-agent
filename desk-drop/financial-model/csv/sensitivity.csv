@@ -1,0 +1,77 @@
+Sensitivity tables
+"Plain formulas, no data tables. Reference drop: standard tier, steady-state delivery model and offices, storage and processing as set on Inputs."
+Each cell recomputes contribution per founder hour from the inputs. Axis starts and steps are on Inputs section 10. A check cell compares the shortcut with the full engine.
+
+,Reference-drop components (from Inputs),,,"Cross-check with the full engine (current price, active renewal rate)"
+,Offices per drop,10,,Brands used for the check,,3
+,Revenue kept after card processing,0.97,,Shortcut formula,,81.1441
+,Revenue per brand from offices beyond the package,0,,Full engine (row 77),,81.1441
+,Package offices priced at the per-office rate,10,,Difference (should be 0),,0
+,"Fixed cost per drop (kits, transport, mailing, allocations)",535,,Gate 3 target per founder hour (colours below),,50
+,Extra card cost per brand beyond the first,0
+,"Fixed hours per drop (existing offices, logistics, admin)",26.5
+,Hours per new brand,8.5
+,Hours per renewing brand,4.5
+
+,"Table 1. Contribution per founder hour: price per office (rows) x brands per drop (columns), all brands new"
+,Price per office \ brands,1,2,3,4,5
+,100,12.4286,32.2989,45.6731,55.2893,62.5362
+,125,19.3571,43.4483,59.6635,71.3223,80.1087
+,150,26.2857,54.5977,73.6538,87.3554,97.6812
+,175,33.2143,65.7471,87.6442,103.3884,115.2536
+,200,40.1429,76.8966,101.6346,119.4215,132.8261
+,225,47.0714,88.046,115.625,135.4545,150.3986
+,250,54,99.1954,129.6154,151.4876,167.971
+,275,60.9286,110.3448,143.6058,167.5207,185.5435
+
+
+,"Table 2. Contribution per founder hour: renewal rate (rows) x brands per drop (columns), at the standard price on Inputs"
+,Renewal rate \ brands,1,2,3,4,5
+,0,26.2857,54.5977,73.6538,87.3554,97.6812
+,0.1,26.5896,55.6206,75.3937,89.7284,100.597
+,0.2,26.9006,56.6826,77.2177,92.2339,103.6923
+,0.3,27.2189,57.7859,79.1322,94.8833,106.9841
+,0.4,27.5449,58.933,81.1441,97.6895,110.4918
+,0.5,27.8788,60.1266,83.2609,100.6667,114.2373
+,0.6,28.2209,61.3695,85.4911,103.831,118.2456
+,0.7,28.5714,62.6649,87.844,107.2008,122.5455
+,0.8,28.9308,64.0162,90.3302,110.7966,127.1698
+,0.9,29.2994,65.427,92.9612,114.6421,132.1569
+,1,29.6774,66.9014,95.75,118.764,137.551
+
+
+,"Table 3. Renewal rate and the monthly steady state (scenario drops per month, brands per drop and post-decision price)"
+,Renewal rate,New brand wins per month,Qualified conversations per month,Founder hours per month,Contribution per month,Contribution per founder hour
+,0,6,30,104,7660,73.6538
+,0.1,5.4,27,101.6,7660,75.3937
+,0.2,4.8,24,99.2,7660,77.2177
+,0.3,4.2,21,96.8,7660,79.1322
+,0.4,3.6,18,94.4,7660,81.1441
+,0.5,3,15,92,7660,83.2609
+,0.6,2.4,12,89.6,7660,85.4911
+,0.7,1.8,9,87.2,7660,87.844
+,0.8,1.2,6,84.8,7660,90.3302
+,0.9,0.6,3,82.4,7660,92.9612
+,1,0,0,80,7660,95.75
+
+
+,"Table 4. Price per office and the monthly steady state (scenario drops per month, brands per drop and renewal rate)"
+,Price per office,Revenue per month,Contribution per month,Founder hours per month,Contribution per founder hour
+,100,6000,4750,94.4,50.3178
+,125,7500,6205,94.4,65.7309
+,150,9000,7660,94.4,81.1441
+,175,10500,9115,94.4,96.5572
+,200,12000,10570,94.4,111.9703
+,225,13500,12025,94.4,127.3835
+,250,15000,13480,94.4,142.7966
+,275,16500,14935,94.4,158.2097
+
+
+,Direction checks (each should be 0)
+,Table 1: cells where a higher price does not raise contribution per hour,0
+,Table 1: cells where one more brand does not raise contribution per hour,0
+,Table 2: cells where a higher renewal rate lowers a positive contribution per hour,0
+
+Full-engine row used by the cross-check above
+Drop or case,Drop date,Delivery model,Tier,Offices,New offices,Brands,of which renewals,of which founding-rate renewals,Standard price per office,Founding price per office,Storage allocated (1/0),Card processing (1/0),Drop runs (1/0),New founding brands,New standard brands,Revenue at founding rate,Revenue at standard rate,Revenue,Display kits,Transport,Kit mailing,Card processing,Storage allocation,Software allocation,Insurance allocation,Hard costs,brand_sales (h),office_coordination (h),receiving_kitting (h),drop_day (h),checks_pickup (h),reporting_debriefs (h),admin_invoicing (h),Founder hours,Contribution,Contribution per founder hour,"Direct costs (kits, transport, mailing, processing)",Overhead allocations (views of monthly costs)
+"Check: steady-state model, current price, active renewal rate",,courier,standard,10,0,3,1.2,0,150,120,1,1,1,0,1.8,0,4500,4500,80,300,0,135,75,30,50,670,13.2,10,4,8,4,6,2,47.2,3830,81.1441,515,155

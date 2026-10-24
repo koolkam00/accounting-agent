@@ -139,7 +139,7 @@ Write each answer in the comparison table (section 3) as you go.
 
 ## Changelog
 
-- Round 1 (2026-10-23): first draft; description matched to the plan and to part A's certificate requests; 20 questions in six groups; comparison table; phone, email and online-form scripts.
+- Round 1 (2026-10-23): first draft; description matched to the plan and to the certificate requests (now files 11 and 12); 20 questions in six groups; comparison table; phone, email and online-form scripts.
 - Round 2 (2026-10-24), broker pass: added the mishandling gap left by the brand agreement's indemnity carve-out; added the business owner's policy comparison; listed what a carrier needs to bind; added both to the comparison table.
 - Round 3 (2026-10-24), full read: removed a doubled "LLC" in the in-formation name; questions 10 to 14 named for later certificate requests; pantry-owner sentence made unambiguous; bind rule now "before any brand ships, latest 2026-12-21", since a brand paid at Gate 1 may ship early; removed an unverified claim about what carriers want; sources line corrected (14 for storage wording, 15 for delivery wording, 12 for the carve-out).
 - Round 4 (2026-10-24), final full read: no changes beyond wording.

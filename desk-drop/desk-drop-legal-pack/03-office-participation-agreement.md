@@ -36,25 +36,25 @@ Email to send each office once the company is formed (it is a relationship messa
 
 # Office Participation Agreement
 
-Between **[COMPANY NAME: Desk Drop LLC]** ("**we**", "**us**", the "**Company**") and the office named below ("**you**"). Version 0.5.
+Between **[COMPANY NAME: Desk Drop LLC]** ("**we**", the "**Company**") and the office below ("**you**"). Version 0.5.
 
-**In short:** free products, nothing to pay, no penalties, no employee data, and either of us can stop at any time with a week's notice.
+**In short:** free products, nothing to pay, no penalties, no employee data, and either side can stop on a week's notice.
 
 | | |
 | --- | --- |
 | **Company and office address, floor** | [COMPANY] · [OFFICE ADDRESS], [FLOOR OR SUITE] |
 | **Pantry owner (signs below)** | [NAME], [TITLE] · [PHONE] · [EMAIL] |
-| **Receiving window and delivery point** | [DAYS AND HOURS] · [WALK-UP, FRONT DESK, LOADING DOCK OR OTHER] |
-| **Does your building ask vendors who deliver for a certificate of insurance?** | [YES / NO / NOT SURE] |
-| **First drop planned for** | The week of [DROP DATE: Tue 2027-01-12]. We confirm the date by email |
+| **Receiving window and delivery point** | [DAYS AND HOURS] · [WALK-UP / FRONT DESK / DOCK / OTHER] |
+| **Building needs our insurance certificate?** | [YES / NO / NOT SURE] |
+| **First drop planned for** | Week of [DROP DATE: Tue 2027-01-12]; we confirm by email |
 
-**1. What we bring.** Products from vetted emerging snack and drink brands, free, roughly monthly as brands are available (there is no set schedule). Each drop arrives on a Tuesday or Wednesday morning inside your receiving window, with a display card. After each drop we send you a summary of your team's feedback. We add to your pantry; we don't replace your current supplier.
+**1. What we bring.** Products from vetted emerging snack and drink brands, free, roughly monthly as brands are available (no set schedule). Each drop arrives on a Tuesday or Wednesday morning inside your receiving window, with a display card. After each drop we send you a summary of your team's feedback. We add to your pantry; we don't replace your current supplier.
 
 **2. You choose.** You pick the categories you want. You may veto any brand, category or allergen at any time, and we check each product's label against your vetoes before offering it. For your first three drops, nothing comes unless you reply yes. After that, we email you each brand at least five business days ahead, and it comes unless you say no.
 
-**3. What you do for each drop.** Put it on the shelf within one business day of delivery. Send us one photo of it on the shelf, and one more on day 3 or day 5. Post the survey link once in Slack or by email. Help us reach five or more survey responses (no one on your team has to answer). Give us a ten-minute debrief after the drop. Tell us how many people are usually in on a Tuesday.
+**3. What you do for each drop.** Put it on the shelf within one business day of delivery. Send us one photo of it on the shelf, and one more on day 3 or day 5. Post the survey link once in Slack or by email. Help us reach five or more survey responses (no one has to answer). Give us a ten-minute debrief after the drop. Tell us how many people are usually in on a Tuesday.
 
-**4. Product standard.** Only individually packaged, sealed, shelf-stable products, commercially labeled with ingredients and allergens. Never alcohol, cannabis, CBD or THC, dietary supplements, refrigerated or perishable products, or products with health claims. We never open a package or change its label, and every display card repeats the product's allergen statement. Each brand must show us product liability insurance of at least \$1 million before it ships, and we will carry general liability insurance before your first drop. If your building requires it, before our first delivery we will add the building's owner and managing agent as additional insureds on that insurance and send the building a certificate.
+**4. Product standard.** Only individually packaged, sealed, shelf-stable products, commercially labeled with ingredients and allergens. Never alcohol, cannabis, CBD or THC, dietary supplements, refrigerated or perishable products, or products with health claims. We never open a package or change its label, and every display card repeats the product's allergen statement. Each brand must show us product liability insurance of at least \$1 million before it ships, and we will carry general liability insurance before your first drop. If your building requires it, we will name its owner and managing agent as additional insureds on that insurance and send it a certificate before our first delivery.
 
 **5. Your team.** Employees take products only if they want to, and we will not hold you responsible for how anyone uses them. If anyone reports a problem with a product, tell us: we remove it from your pantry right away and tell the brand the same day. We collect no personal data about your employees, except an email address an employee chooses to give for a brand's newsletter. Otherwise the survey is anonymous.
 
@@ -66,7 +66,7 @@ Between **[COMPANY NAME: Desk Drop LLC]** ("**we**", "**us**", the "**Company**"
 
 **9. New company.** If the Company's New York registration is not complete when this is signed, [FOUNDER NAME] signs for it. Once it is registered, the Company takes over this agreement in [FOUNDER NAME]'s place, and you agree to that now. We will email you when it happens. Nothing else changes for you.
 
-**10. The whole agreement.** This page and your intake form (preferences, vetoes, headcount) are the whole agreement. Changes need an email from each side. New York law applies. Electronic signatures count, and so does a reply email that says "I agree" to this page. The person signing runs this office's pantry and can say yes to this for the office.
+**10. The whole agreement.** This page and your intake form (preferences, vetoes, headcount) are the whole agreement. Changes need an email from each side. New York law applies. Electronic signatures count, including an email reply saying "I agree". The person signing runs this office's pantry and can say yes to this for the office.
 
 | For the office | For the Company |
 | --- | --- |

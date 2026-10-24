@@ -100,6 +100,17 @@ wb, integ, errs = run([inp("close_rate", 0.1)], "close rate 10%")
 check("close rate 10%: hours per win = 9.75", abs(v(wb, "h_win") - 9.75) < 0.001, v(wb, "h_win"))
 check("close rate 10%: standard runs per hour falls", at(wb, "Dashboard", "C11") < at(base, "Dashboard", "C11"))
 
+# ---------------------------------------------------------------- drop size drivers
+wb, integ, errs = run([inp("std_brands_drop", 2)], "two brands per standard drop")
+check("two brands per standard drop: runs 1 and 2 carry 2 brands and per hour falls",
+      at(wb, "Schedule", "K8") == 2 and at(wb, "Schedule", "K9") == 2 and at(wb, "Dashboard", "C11") < at(base, "Dashboard", "C11"),
+      (at(wb, "Schedule", "K8"), at(wb, "Dashboard", "C11")))
+check("two brands per standard drop: no integrity failures", not integ and not errs, f"{integ[:2]} {errs[:2]}")
+wb, integ, errs = run([inp("goal_offices", 20)], "goal of 20 offices")
+check("goal of 20 offices: run 2 recruits 10 new offices and its hours rise", at(wb, "Schedule", "J9") == 10 and at(wb, "Drop_PnL", "AI9") > at(base, "Drop_PnL", "AI9"),
+      (at(wb, "Schedule", "J9"), at(wb, "Drop_PnL", "AI9")))
+check("goal of 20 offices: the run-2 fatigue warning clears", at(wb, "Schedule", "W9") == "ok", at(wb, "Schedule", "W9"))
+
 # ---------------------------------------------------------------- scenarios
 for sc in ["A", "B", "C", "D"]:
     wb, integ, errs = run([inp("active_scenario", sc)], f"scenario {sc}")

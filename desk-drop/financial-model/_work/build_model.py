@@ -350,7 +350,11 @@ inp("processing_rate", "Card processing rate", 0.03, "share of revenue", "planni
 inp("processing_on", "Brands pay by card? 1 = yes, 0 = bank transfer", 1, "toggle", "setting", P_ECON,
     "1 is the high end of the plan's 0% to 3% range and matches its scenario rows. 0 is the plan's preferred invoicing (Wave, bank transfer).", low=0, high=1)
 
-inp_section("4. Units")
+inp_section("4. Drop size defaults (feed the derived Schedule rows) and units")
+inp("c0_offices", "Offices on campaign zero", 5, "offices", "planning estimate", "plan.md, scenario table: 'Campaign zero: 2 founding brands, 5 offices'")
+inp("c0_brands", "Brands on campaign zero", 2, "brands", "planning estimate", "plan.md, scenario table and Gate 1 ('2 brands paid')")
+inp("std_offices_drop", "Offices per standard drop", 10, "offices", "planning estimate", "plan.md, 'Standard runs of 10 offices and 3 brands per drop'")
+inp("std_brands_drop", "Brands per standard drop", 3, "brands", "planning estimate", "plan.md, What has to be true #1: 'Three brands per drop'", "Feeds the standard Schedule rows and the plan-base scenario.")
 inp("units_per_office", "Units per office per brand", 50, "units", "planning estimate", "plan.md, What brands buy", "Sized to Tuesday headcount (floor 30, ceiling 80).")
 inp("reserve_share", "Reserve the brand ships on top", 0.1, "share", "planning estimate", "plan.md, What brands buy", fmt=PCT)
 
@@ -446,7 +450,7 @@ inp("renewal_rate_base", "Brands that renew within 90 days", 0.4, "share", "plan
 inp("plan_ss_drops", "Drops per month in the plan's monthly picture", 2, "drops per month", "planning estimate", "plan.md, Monthly picture at steady state")
 inp("ss_model", "Steady-state delivery model", "courier", "list", "setting", "Plan reading (e)",
     "The plan's monthly picture is two three-brand courier drops. Direct-ship lifts contribution per hour.", vlist="L_models")
-inp("ss_offices", "Steady-state offices per drop", 10, "offices", "planning estimate", "plan.md, Monthly picture at steady state")
+inp("ss_offices", "Steady-state offices per drop", f"={R('std_offices_drop')}", "offices", "calculated", "Offices per standard drop (section 4)", calc=True)
 inp("founder_cash", "Cash the founder commits to the first six months", None, "USD", "needs founder decision", "plan.md, What I need from you #7",
     "Blank until you decide. The plan's range is $3,360 to $6,510.", fmt=USD)
 inp("founder_cash_date", "Founder cash goes in on", D(2026, 10, 26), "date", "setting", "Model setting", fmt=DATE)
@@ -610,7 +614,7 @@ for rr, h in ((6, 32), (7, 62), (8, 92)):
 levers = [
     ("sc_runs", "Post-Gate-3 drops that run in the six months (of the two scheduled)", [2, 2, 2, 1, 0], "drops", INT,
      "Base and A: two drops a month. B: 'run two more drops'. C: 'if a third drop misses, stop', so one more. D: 'Stop'."),
-    ("sc_brands", "Brands per drop after Gate 3", [3, 3, 3, 3, 0], "brands", INT, "Plan: three brands per drop. D stops."),
+    ("sc_brands", "Brands per drop after Gate 3", [f"={R('std_brands_drop')}", 3, 3, 3, 0], "brands", INT, "Plan: three brands per drop. D stops."),
     ("sc_renewal", "Renewal rate (share of brand slots that are renewals)", [f"={R('renewal_rate_base')}", 0.4, 0, "=C{self}", 0], "share", PCT,
      "A: '40% or more', low end. B: 'under 30%' and 'brands pay once': 0%, the low end of 0% to 29%. C: not named, plan base. D: 'No renewal'."),
     ("sc_new_offices", "New offices recruited per post-Gate-3 drop", [0, 0, 0, None, 0], "offices", INT,
@@ -618,7 +622,7 @@ levers = [
     ("sc_price_after", "Standard price per office for drops after the decision date", [f"={R('price_std_office')}", 180, f"={R('price_std_office')}", f"={R('price_std_office')}", f"={R('price_std_office')}"], "USD per office", USD,
      "A: 'raise the standard price to $1,800 to $2,000' = $180 to $200 per office; low end."),
     ("sc_ss_drops", "Steady-state drops per month", [f"={R('plan_ss_drops')}", 2, 2, 2, 0], "drops per month", INT, "Plan monthly picture: two drops a month."),
-    ("sc_ss_brands", "Steady-state brands per drop", [3, 3, 3, 3, 0], "brands", INT, "Plan monthly picture: three-brand drops."),
+    ("sc_ss_brands", "Steady-state brands per drop", [f"={R('std_brands_drop')}", 3, 3, 3, 0], "brands", INT, "Plan monthly picture: three-brand drops."),
     ("sc_op_offices", "Offices on an office-paid tier (steady state)", [0, 0, 5, 0, 0], "offices", INT, "B: offices that named $100 a month or more; at least five."),
     ("sc_op_fee", "Office-paid fee per office per month", [None, None, 100, None, None], "USD per month", USD, "B: $100 to $200 a month; low end."),
     ("sc_op_cost", "Cost to serve one office-paid office per month", [None, None, None, None, None], "USD per month", USD,
@@ -669,15 +673,15 @@ SCH_HDR = ["drop_id", "Label", "Basis", "Post-Gate-3 sequence", "Drop date", "Da
            "Office slots on drops in the last four weeks", "Roster to date (new offices so far)", "Office fatigue", "Changed from the derived default?"]
 header_row(ws, 6, 1, SCH_HDR, height=45)
 sched = [
-    ("DRP-001", "Campaign zero (founding)", "derived: CONTRACTS s3", None, D(2027, 1, 12), "founder", "founding", 5, 5, 2, 0, 0,
+    ("DRP-001", "Campaign zero (founding)", "derived: CONTRACTS s3", None, D(2027, 1, 12), "founder", "founding", "=" + R("c0_offices"), "=I7", "=" + R("c0_brands"), 0, 0,
      "Stretch option Tue 2026-12-08 only if both brands pay by 2026-11-20. Brands asked to ship by 2026-12-22."),
-    ("DRP-002", "Standard run 1", "derived: CONTRACTS s3", None, D(2027, 2, 9), "courier", "standard", 10, 5, 3, 0, 0,
-     "Campaigns one and two: founder plus courier (plan). Five new offices take the roster from 5 to 10."),
-    ("DRP-003", "Standard run 2", "derived: CONTRACTS s3", None, D(2027, 2, 23), "courier", "standard", 10, 2, 3, 0, 0,
-     "Two new offices reach the six-month goal of 12 active offices. Two weeks after run 1, so most offices get two drops in February."),
-    ("DRP-004", "Decision window drop 1", "derived: scenario", 1, D(2027, 3, 23), "direct-ship", "standard", 10, "sc", "sc", "sc", 0,
+    ("DRP-002", "Standard run 1", "derived: CONTRACTS s3", None, D(2027, 2, 9), "courier", "standard", "=" + R("std_offices_drop"), "=MAX(0,I8-SUM(J$7:J7))", "=" + R("std_brands_drop"), 0, 0,
+     "Campaigns one and two: founder plus courier (plan). New offices fill the drop: five take the roster from 5 to 10."),
+    ("DRP-003", "Standard run 2", "derived: CONTRACTS s3", None, D(2027, 2, 23), "courier", "standard", "=" + R("std_offices_drop"), "=MAX(0,MIN(I9," + R("goal_offices") + "-SUM(J$7:J8)))", "=" + R("std_brands_drop"), 0, 0,
+     "New offices reach the six-month goal of 12 active offices (two). Two weeks after run 1, so most offices get two drops in February."),
+    ("DRP-004", "Decision window drop 1", "derived: scenario", 1, D(2027, 3, 23), "direct-ship", "standard", "=" + R("std_offices_drop"), "sc", "sc", "sc", 0,
      "Campaign three onward: brands ship direct (plan). Brands, renewals and new offices follow the scenario in force."),
-    ("DRP-005", "Decision window drop 2", "derived: scenario", 2, D(2027, 4, 6), "direct-ship", "standard", 10, "sc", "sc", "sc", 0,
+    ("DRP-005", "Decision window drop 2", "derived: scenario", 2, D(2027, 4, 6), "direct-ship", "standard", "=" + R("std_offices_drop"), "sc", "sc", "sc", 0,
      "Second extra drop before the decision (scenario B's 'two more drops'; two drops a month in the base)."),
 ]
 for i in range(N_DROPS):
@@ -729,7 +733,7 @@ ok_cf(ws, f"W{DROP0}:W{DROPN}")
 ws.conditional_formatting.add(f"W{DROP0}:W{DROPN}", FormulaRule(formula=[f'LEFT(W{DROP0},LEN("some"))="some"'], fill=PatternFill("solid", fgColor="FCE4D6")))
 header_row(ws, 6, 27, ["default date", "default model", "default tier", "default offices", "default new offices", "default brands", "default renewals", "default founding renewals"], height=45)
 put(ws, "AA5", "Derived defaults (for the 'Changed' flag; do not edit)", font=F_NOTE)
-put(ws, "A4", "Yellow = your input. Blue = follows the scenario in force (Scenarios tab); type over it to replace. Red 'changed' = the row no longer matches the derived default.", font=F_NOTE)
+put(ws, "A4", "Yellow = your input. Blue = follows Inputs or the scenario in force; type over it to replace. Red 'changed' = the row no longer matches the derived default.", font=F_NOTE)
 REF["sched_fatigue"] = f"Schedule!$W${DROP0}:$W${DROPN}"
 REF["sched_changed"] = f"Schedule!$X${DROP0}:$X${DROPN}"
 r = DROPN + 1

@@ -29,3 +29,14 @@ Started 2026-10-23. This file is my running notebook so nothing is lost on conte
 - Case label: reserve care text, ID no-wrap, banner inside printable area, [PHONE] from brand.json counted as a placeholder for --final.
 - Wordmark sized by cap height everywhere (DD.wordmarkImg) after two-line name test showed tiny letters at fixed box height.
 - QR decode (jsQR in scratchpad, test only): decodes from renders and simulated close photos at 4032 and 2048 px; fails at 1280 px and in the wide shot (not required).
+
+## Round 4 (2026-10-24), food-safety pass
+- Built-in default data was an unmarked sample (allergen text without SAMPLE): hazard. Default is now the blank form; all sample values start with SAMPLE.
+- Added allergen_source (contains_statement | ingredient_list | none_on_label), fixed pointer text for none, ingredients-on-the-other-face fallback for long ingredient-only lists (front capacity ~50 caps words incl. may-contain; back ~85).
+- Panel: grey hints instead of bracket text; plain status messages; allergen check tick before Chrome print; select input; "may contain empty" warning.
+
+## Round 5 (2026-10-24), print-shop pass
+- Variable fonts embedded as Type 3 -> static instances (CID TrueType). Google Fonts API only serves named widths (75, 87.5, 100), so case label narrows to 87.5% not 80%.
+- Lazy font loading made first width measurement use a fallback font -> runtime loads every FontFace before fitting.
+- --mode pro page size was Letter -> @page injected for pro (7.25 x 10.25).
+- Full suite 25/25 pass. REPORT.md write was refused by the harness (subagents return reports as text), so the part-1 report is returned to the orchestrator in the final message.

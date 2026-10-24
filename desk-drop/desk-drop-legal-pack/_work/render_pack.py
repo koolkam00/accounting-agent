@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Render the signable blocks of part A's documents to PDF and DOCX.
+"""Render the signable blocks of the pack (files 03, 05, 10, 13) to PDF and DOCX.
 
-Run from anywhere:  python3 desk-drop-legal-pack/_work/render_partA.py
+Run from anywhere:  python3 desk-drop-legal-pack/_work/render_pack.py
 Source of truth is always the .md file. Edit the .md, then re-run this.
 Outputs go to desk-drop-legal-pack/rendered/ (PDF, DOCX) and
 desk-drop-legal-pack/_work/png/ (page images for visual checks).
@@ -18,10 +18,10 @@ PNG.mkdir(parents=True, exist_ok=True)
 
 # (source file, block marker, output basename, CSS density)
 JOBS = [
-    ("11-office-participation-agreement.md", "AGREEMENT", "11-office-participation-agreement", "tight"),
-    ("12-brand-campaign-agreement.md", "AGREEMENT", "12-brand-campaign-agreement", "normal"),
+    ("03-office-participation-agreement.md", "AGREEMENT", "03-office-participation-agreement", "tight"),
+    ("05-llc-operating-agreement.md", "AGREEMENT", "05-llc-operating-agreement", "normal"),
+    ("10-brand-campaign-agreement.md", "AGREEMENT", "10-brand-campaign-agreement", "normal"),
     ("13-survey-privacy-notice.md", "NOTICE", "13-survey-privacy-notice", "normal"),
-    ("30-llc-operating-agreement.md", "AGREEMENT", "30-llc-operating-agreement", "normal"),
 ]
 
 CSS = {

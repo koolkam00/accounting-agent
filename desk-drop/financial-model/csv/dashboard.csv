@@ -1,0 +1,84 @@
+Desk Drop financial model v1
+Emerging brands. Delivered to your workday.
+"Planning estimates, not a forecast. Gates count real numbers only (pipeline log and actuals). Change assumptions on Inputs; type real numbers into the logs."
+
+,As of,2026-10-24,Scenario,Plan base,Checks,all integrity checks pass
+
+Headline
+,Measure,Value,Detail
+,Next scheduled drop,DRP-001,"Tue 2027-01-12, founder, 2 brand(s), 5 offices"
+,Its contribution per founder hour (plan),16.2105,"revenue $1,200, 57 founder hours"
+,"Standard runs to Gate 3: contribution per founder hour, plan",61.28,actual: not yet; target $50
+,Lowest point of cumulative cash (before founder cash),-3871,"in week 12, starting Mon 2027-01-11"
+,Capital to commit: lowest point plus the reserve,4871,"reserve $1,000 (plan)"
+,Plan capital figure (high end of the plan's table),6510,"low end $3,360"
+,Gap to the plan capital figure (positive = headroom),1639,the plan figure covers the model need
+,Founder cash committed,not set,set it on Inputs (plan question 7)
+,"Overhead paid but not absorbed by drops, six months",1310,"paid $2,010, allocated to drops $700: the ramp-up months carry overhead with few drops"
+,Six months all-in: contribution after all overhead per founder hour,50.2718,includes 45 discovery hours; after one-time startup outlays: $38.9 per hour
+,"Steady state, scenario in force: contribution per month",7660,"per founder hour $81.1; net of all overhead $7,660 a month"
+,Office-fatigue warnings on Schedule,2,drops where some offices get a second drop within four weeks (plan: one drop a month)
+,Schedule rows changed or added since the derived default,0,schedule is the derived default
+,Inputs changed from plan defaults,0,plan figures reproduce
+
+Gate dashboard (live values are actuals only)
+Gate,Test,Review date,Threshold,Model assumes,Live value,Status,If it fails (plan)
+Gate 0,Office conversations held (context),2026-11-13,15,,0,info
+Gate 0,"Offices yes in principle, with owner and receiving window",2026-11-13,5,,0,not yet,"Fewer than 5 offices: change the cluster or office size band, not the model."
+Gate 0,Brand conversations held (context),2026-11-13,15,,0,info
+Gate 0,Brands that would pay $500 or more and control the budget,2026-11-13,3,,0,not yet,Fewer than 3: test the office-paid version for three more weeks before deciding.
+Gate 1,Offices signed,2026-12-11,5,5,0,not yet,Offices sign but no brand pays even $600: pivot to office-paid or stop. No free campaign.
+Gate 1,Combined Tuesday headcount of signed offices,2026-12-11,350,,0,not yet
+Gate 1,Brands paid in full,2026-12-11,2,2,0,not yet,"One paid brand is a soft pass: run it, make the second sale first."
+Gate 2,Units placed within one business day (share of delivered),2027-01-22,0.8,,,not yet,"Fix the procedure once (card, handoff, Slack post). A second miss is a stop signal."
+Gate 2,Brand campaigns under 5 survey responses per office (must be 0),2027-01-22,0,,,not yet
+Gate 2,Reports late (after T+7) or missing (must be 0),2027-01-22,0,,,not yet
+Gate 2,Brands that would buy again,2027-01-22,1,,,not yet
+Gate 3,"Renewals at $1,500 or more, signed by the review date",2027-03-12,1,1,0,not yet,"No renewal: redesign the evidence (velocity, redemptions), run one more drop. A second miss is a stop."
+Gate 3,"Contribution per founder hour, standard runs",2027-03-12,50,61.28,,not yet
+
+Gate,Review date,Overall
+Gate 0,2026-11-13,not yet
+Gate 1,2026-12-11,not yet
+Gate 2,2027-01-22,not yet
+Gate 3,2027-03-12,not yet
+
+"Decision rule (plan): scale, switch to office-paid, or stop"
+,Brand renewal rate (renewed Y / answered Y or N)
+,Offices that named $100 a month or more,0
+,Drops after Gate 3 with actuals in,0
+,Gate 3,not yet
+,The rule says,not yet: no renewal answers
+,Stated once (plan),Scale if Gate 3 passed and renewal is 40% or more. Switch to office-paid if at least five offices named $100 a month or more and brand renewal is under 30% after two extra drops. Stop if both fail.
+
+,"Placement within one business day, all drops with actuals"
+,Drops with actuals below the placement threshold,0
+,"Contribution per founder hour, all drops with actuals"
+,Scenario the real numbers point to,not enough data yet
+
+
+Six-month goals (plan): planned by the schedule against actual
+,Goal,Target,Planned (Schedule),Actual,Status
+,Paid campaigns,6,14,0,not yet
+,Renewals,2,2,0,not yet
+,Active offices,12,12,0,not yet
+,"Contribution per founder hour, standard runs",50,61.28,,not yet
+
+
+"Contribution per founder hour on each drop (live: actual where in, otherwise plan)",,,,,,,,,Target per founder hour,,50
+drop_id,Label,Drop date,Basis,Delivery model,Brands,Offices,Revenue,Hard costs,Founder hours,Contribution,Per founder hour
+DRP-001,Campaign zero (founding),2027-01-12,plan,founder,2,5,1200,276,57,924,16.2105
+DRP-002,Standard run 1,2027-02-09,plan,courier,3,10,4500,670,67,3830,57.1642
+DRP-003,Standard run 2,2027-02-23,plan,courier,3,10,4500,670,58,3830,66.0345
+DRP-004,Decision window drop 1,2027-03-23,plan,direct-ship,3,10,4500,370,41,4130,100.7317
+DRP-005,Decision window drop 2,2027-04-06,plan,direct-ship,3,10,4500,370,41,4130,100.7317
+
+
+
+
+
+
+
+Total,,,,,14,45,19200,2356,264,16844,63.803
+
+"Green: at or above the Gate 3 target per founder hour. Orange: below it. Campaign zero is expected to be below; the plan's own figure for it is $16. The total row is per founder hour across all scheduled drops, before overhead that drops do not absorb."
