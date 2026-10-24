@@ -236,12 +236,12 @@
  "route": {
   "stops": 10,
   "stop_minutes": 150,
-  "walking_minutes": 55.0,
-  "total_minutes": 225.0,
-  "end": "11:45",
-  "metres": 2807,
-  "car_faster_legs": 1,
-  "longest_leg_min": 14.4,
+  "walking_minutes": 43.2,
+  "total_minutes": 213.2,
+  "end": "11:33",
+  "metres": 2173,
+  "car_faster_legs": 0,
+  "longest_leg_min": 9.5,
   "lobby": {
    "unknown": 8,
    "security desk": 2
@@ -251,27 +251,27 @@
    "251-500": 3,
    "151-250": 3
   },
-  "at_12_min_stops": 175.0,
-  "nine_stops": 187.0,
+  "at_12_min_stops": 183.2,
+  "nine_stops": 195.2,
   "reload_minutes": 20.0,
   "reloads": 1,
   "cases_per_load": 5,
-  "total_one_load": 205.0,
-  "end_one_load": "11:25",
-  "over_minutes": 45,
-  "over_one_load": 25,
+  "total_one_load": 193.2,
+  "end_one_load": "11:13",
+  "over_minutes": 33,
+  "over_one_load": 13,
   "variants": {
    "no_security_minimum": {
-    "total_minutes": 225.0,
-    "total_one_load": 205.0,
-    "end": "11:45",
-    "stops": "Aterian (37 East 18th Street); Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Empathy (56 West 22nd Street); Inspiren (61 West 23rd Street); Activate Consulting (11 East 26th Street); Simplebet (373 Park Avenue South); K Health (387 Park Avenue South); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
+    "total_minutes": 213.2,
+    "total_one_load": 193.2,
+    "end": "11:33",
+    "stops": "K Health (387 Park Avenue South); Simplebet (373 Park Avenue South); Activate Consulting (11 East 26th Street); Inspiren (61 West 23rd Street); Empathy (56 West 22nd Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Dashlane (44 West 18th Street); Aterian (37 East 18th Street); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
    },
    "no_band_rule": {
-    "total_minutes": 225.0,
-    "total_one_load": 205.0,
-    "end": "11:45",
-    "stops": "Aterian (37 East 18th Street); Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Empathy (56 West 22nd Street); Inspiren (61 West 23rd Street); Activate Consulting (11 East 26th Street); Simplebet (373 Park Avenue South); K Health (387 Park Avenue South); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
+    "total_minutes": 213.2,
+    "total_one_load": 193.2,
+    "end": "11:33",
+    "stops": "K Health (387 Park Avenue South); Simplebet (373 Park Avenue South); Activate Consulting (11 East 26th Street); Inspiren (61 West 23rd Street); Empathy (56 West 22nd Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Dashlane (44 West 18th Street); Aterian (37 East 18th Street); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
    },
    "high_or_medium": {
     "total_minutes": 194.9,
@@ -288,14 +288,14 @@
   },
   "rule": "at least three bands including one 76-150 office (no high-confidence, occupied 40-75 office with a sourced band remains after review round 2's second headcounts; the high-or-medium variant below keeps a 40-75 office)",
   "stop_list": [
-   "1. Aterian, 37 East 18th Street (unknown; 76-150)",
-   "2. Dashlane, 44 West 18th Street (unknown; 251-500)",
-   "3. Global Trading Systems (GTS), 625 Avenue of the Americas (unknown; 251-500)",
-   "4. Empathy, 56 West 22nd Street (unknown; 151-250)",
-   "5. Inspiren, 61 West 23rd Street (unknown; 76-150)",
-   "6. Activate Consulting, 11 East 26th Street (unknown; 76-150)",
-   "7. Simplebet, 373 Park Avenue South (unknown; 76-150)",
-   "8. K Health, 387 Park Avenue South (unknown; 251-500)",
+   "1. K Health, 387 Park Avenue South (unknown; 251-500)",
+   "2. Simplebet, 373 Park Avenue South (unknown; 76-150)",
+   "3. Activate Consulting, 11 East 26th Street (unknown; 76-150)",
+   "4. Inspiren, 61 West 23rd Street (unknown; 76-150)",
+   "5. Empathy, 56 West 22nd Street (unknown; 151-250)",
+   "6. Global Trading Systems (GTS), 625 Avenue of the Americas (unknown; 251-500)",
+   "7. Dashlane, 44 West 18th Street (unknown; 251-500)",
+   "8. Aterian, 37 East 18th Street (unknown; 76-150)",
    "9. Cognitiv, 215 Park Avenue South (security desk; 151-250)",
    "10. Global Strategy Group, 215 Park Avenue South (security desk; 151-250)"
   ]
@@ -365,31 +365,15 @@
     "session": "1",
     "phase": "core (inside the boundary)",
     "stops": 11,
-    "minutes": "79.9",
+    "minutes": 80,
     "start": "14 St-Union Sq (L), about 1 min walk",
     "end": "23 St-Baruch College (6), about 1 min walk"
-   },
-   {
-    "session": "10",
-    "phase": "outer (stores within ten blocks and coworking sites just outside the line)",
-    "stops": 8,
-    "minutes": "64.8",
-    "start": "28 St (6), about 8 min walk",
-    "end": "34 St-Herald Sq (N Q R W), about 4 min walk"
-   },
-   {
-    "session": "11",
-    "phase": "outer (stores within ten blocks and coworking sites just outside the line)",
-    "stops": 6,
-    "minutes": "72.9",
-    "start": "34 St-Herald Sq (N Q R W), about 1 min walk",
-    "end": "14 St (1 2 3), about 1 min walk"
    },
    {
     "session": "2",
     "phase": "core (inside the boundary)",
     "stops": 14,
-    "minutes": "78.7",
+    "minutes": 79,
     "start": "23 St-Baruch College (6), about 2 min walk",
     "end": "28 St (6), about 2 min walk"
    },
@@ -397,7 +381,7 @@
     "session": "3",
     "phase": "core (inside the boundary)",
     "stops": 13,
-    "minutes": "78.3",
+    "minutes": 78,
     "start": "28 St (6), about 3 min walk",
     "end": "28 St (R W), about 2 min walk"
    },
@@ -405,7 +389,7 @@
     "session": "4",
     "phase": "core (inside the boundary)",
     "stops": 16,
-    "minutes": "77.8",
+    "minutes": 78,
     "start": "28 St (R W), about 2 min walk",
     "end": "23 St (R W), about 3 min walk"
    },
@@ -413,7 +397,7 @@
     "session": "5",
     "phase": "core (inside the boundary)",
     "stops": 15,
-    "minutes": "79.5",
+    "minutes": 79,
     "start": "23 St (R W), about 1 min walk",
     "end": "14 St (F M), about 6 min walk"
    },
@@ -421,7 +405,7 @@
     "session": "6",
     "phase": "core (inside the boundary)",
     "stops": 13,
-    "minutes": "79.0",
+    "minutes": 79,
     "start": "14 St-Union Sq (N Q R W), about 5 min walk",
     "end": "23 St (R W), about 5 min walk"
    },
@@ -429,7 +413,7 @@
     "session": "7",
     "phase": "core (inside the boundary)",
     "stops": 15,
-    "minutes": "78.7",
+    "minutes": 79,
     "start": "23 St (R W), about 5 min walk",
     "end": "23 St (F M), about 2 min walk"
    },
@@ -437,7 +421,7 @@
     "session": "8",
     "phase": "outer (stores within ten blocks and coworking sites just outside the line)",
     "stops": 6,
-    "minutes": "66.1",
+    "minutes": 66,
     "start": "W 4 St-Wash Sq (A C E), about 3 min walk",
     "end": "3 Av (L), about 4 min walk"
    },
@@ -445,9 +429,25 @@
     "session": "9",
     "phase": "outer (stores within ten blocks and coworking sites just outside the line)",
     "stops": 7,
-    "minutes": "64.3",
+    "minutes": 64,
     "start": "3 Av (L), about 5 min walk",
     "end": "23 St-Baruch College (6), about 9 min walk"
+   },
+   {
+    "session": "10",
+    "phase": "outer (stores within ten blocks and coworking sites just outside the line)",
+    "stops": 8,
+    "minutes": 65,
+    "start": "28 St (6), about 8 min walk",
+    "end": "34 St-Herald Sq (N Q R W), about 4 min walk"
+   },
+   {
+    "session": "11",
+    "phase": "outer (stores within ten blocks and coworking sites just outside the line)",
+    "stops": 6,
+    "minutes": 73,
+    "start": "34 St-Herald Sq (N Q R W), about 1 min walk",
+    "end": "14 St (1 2 3), about 1 min walk"
    }
   ],
   "core_sessions": 7,

@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Call guides</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="print.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Call guides</h1>
+</header>
+<h1 id="office-call-guide">Office call guide</h1>
+<p>Version 1.0 · 2026-10-24 · workstream E, part B ·
+<code>desk-drop-outreach/calls/</code></p>
+<p><strong>What it is for.</strong> Running a 20-minute discovery
+conversation with the person who runs an office pantry, and coming away
+with the numbers Gate 0 needs: a yes in principle, the pantry owner's
+name and a receiving window. The seven questions are the plan's (Phase
+0, "Office conversation guide"), word for word and in the plan's order.
+Everything else here is the wrapping: what to have open, what to listen
+for, which tracker column each answer goes in, and how to answer their
+questions truthfully.</p>
+<p><strong>When it is used.</strong> Weeks 1 to 3 (Mon 2026-10-26 to Fri
+2026-11-13, derived, founder to confirm) on every office call, video
+call or sit-down. After Gate 0 the same guide runs recruiting calls,
+with the close in section 5 doing more of the work. A lobby walk-in uses
+the short version in section 7.</p>
+<p><strong>No selling in weeks 1 to 3.</strong> You are learning how
+their pantry works. You do not offer a drop date, a brand, or a sign-up.
+The only things you may ask for are the answers below, a referral, and
+"can I send you a one-pager?" at the end (plan, Phase 1 conversion path,
+step 1).</p>
+<hr />
+<h2 id="1-before-the-call-2-minutes">1. Before the call (2 minutes)</h2>
+<ul>
+<li>Open the contact's row in the Clay offices table and a new row on
+<strong>Office_Log</strong> in
+<code>tracking/conversation-tracker.xlsx</code> (Google Sheets). Paste
+the <code>row_id</code>, company, name and title now, so the note later
+is only answers.</li>
+<li>Glance at: <code>onsite_band</code> (an estimate; never say it to
+them), the building's lobby type
+(<code>cluster-1-flatiron/companies.csv</code>,
+<code>building_lobby_type</code>), and the two or three nearest stores
+in <code>cluster-1-flatiron/retailers.csv</code>.</li>
+<li>Have the budget probe (question 6) on screen. It is read word for
+word.</li>
+<li>Have <code>calls/post-call-note-template.md</code> open in a second
+tab. Block ten minutes after the call for it.</li>
+<li>Start a 20-minute timer. The plan says 20 minutes; keep the
+promise.</li>
+</ul>
+<h2 id="2-opening-30-seconds">2. Opening (30 seconds)</h2>
+<p>Say who you are and what this is, then ask permission to take
+notes.</p>
+<blockquote>
+<p>"Thanks for making the time. I'm [FOUNDER NAME]. I'm looking at
+whether it would help offices around here to get vetted emerging snack
+and drink brands for free, in exchange for a shelf photo and a
+three-question team survey. Before I build anything I want to understand
+how pantries actually work. I'm not selling anything today. Is it OK if
+I ask about seven questions and take notes? It'll take 20 minutes."</p>
+</blockquote>
+<p>If they ask "who are you with?": the honest answer on the day. Until
+the company is formed, "I'm setting up a small New York business called
+{BRAND_NAME}; it isn't formed yet, and nothing would arrive before it's
+formed and insured." (<code>{BRAND_NAME}</code> is the working name,
+kept in one place in
+<code>desk-drop-legal-pack/02-email-footer-and-checklist.md</code> and
+<code>messages/</code>.)</p>
+<h2 id="3-the-seven-questions-plan-wording-plan-order">3. The seven
+questions (plan wording, plan order)</h2>
+<p>Time boxes add up to about 17 minutes, leaving 3 for the close. Write
+down their words, not your summary; the tracker columns for each answer
+are in the right-hand cell.</p>
+<table>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Ask exactly</th>
+<th>Minutes</th>
+<th>Listen for, then probe</th>
+<th>Goes in (Office_Log)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>"How does your pantry work today? Who chooses, who delivers, how
+often, and roughly what does it cost a month?"</td>
+<td>4</td>
+<td>Who decides (that may be the pantry owner: note the name and title).
+How it arrives (a grocery order, a snack service, a Costco run).
+Cadence. A cost figure or range. If they won't give a cost, move on: it
+is optional.</td>
+<td><code>q1_pantry_today_verbatim</code>, <code>pantry_vendor</code>,
+<code>monthly_pantry_spend_usd</code> (a number only if they gave one; a
+range: its low end), <code>monthly_pantry_spend_verbatim</code>; owner
+name into <code>pantry_owner_name</code> /
+<code>pantry_owner_title</code></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>"How many people are actually in on a Tuesday?"</td>
+<td>1</td>
+<td>A number or range for Tuesday, not total headcount. If they only
+know total staff, ask "roughly what share come in on a Tuesday?" and
+note both.</td>
+<td><code>tuesday_headcount</code> (low end of a range),
+<code>headcount_verbatim</code></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>"Do brands ever reach out offering free product? What happens when
+they do?"</td>
+<td>2</td>
+<td>Whether they ignore, accept or block such offers, and why. This
+tells you how the first email will be read.</td>
+<td><code>q3_free_product_verbatim</code></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>"If a vetted emerging brand showed up with 50 units and a card
+explaining it, what would you need to say yes? What would make you say
+no?"</td>
+<td>4</td>
+<td>Allergens, approvals (facilities, HR, a landlord), building rules
+(security desk, certificate of insurance, freight hours), where it would
+sit, categories they would never want. Probe each "no" once: "what would
+make that OK?"</td>
+<td><code>q4_yes_needs_verbatim</code>,
+<code>q4_no_triggers_verbatim</code>, <code>objection_1</code> to
+<code>objection_3</code> (codes), <code>objections_verbatim</code>,
+<code>veto_categories</code> (category keys),
+<code>veto_verbatim</code>, <code>receiving_type</code>,
+<code>coi_required</code>, <code>security_notes</code></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>"Would you take a photo of it on the shelf and post a three-question
+survey link in Slack?"</td>
+<td>2</td>
+<td>Yes, no, or "we use email / Teams". A hesitation here is an
+objection: code it (<code>commitments_too_much</code> or
+<code>survey_concern</code>).</td>
+<td><code>q5_photo_and_survey</code> (Y, N, maybe),
+<code>q5_verbatim</code></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>First one line of framing, so it is not heard as a catch: "One
+hypothetical question, and it changes nothing about the free drop." Then
+the budget probe, word for word: <strong>"If this goes well and we
+offered a guaranteed twice-monthly curated drop of products your team
+voted for, would that have a budget? Roughly what range per
+month?"</strong></td>
+<td>2</td>
+<td>Read it exactly, then stop talking. Do not suggest a number. If they
+ask "what would it cost?", say "I don't know yet; that's why I'm
+asking." Write the answer word for word, including "no budget" and "I'd
+have to ask".</td>
+<td><code>budget_probe_asked</code> = Y,
+<code>budget_probe_verbatim</code>, <code>budget_probe_low_usd</code>
+and <code>budget_probe_high_usd</code> (USD per month; a range: low and
+high; "no budget" or "zero": 0 and 0; "don't know" or no number: both
+blank)</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>"Who else runs a pantry nearby that I should talk to?"</td>
+<td>1</td>
+<td>Company and title (business contacts only). Then ask: "Would it be
+all right if I said you suggested I get in touch?"</td>
+<td><code>referrals_given_count</code>, <code>referrals_given</code>
+("Company - Title; ..."). Each name becomes a new Clay row; their answer
+about being named goes in that row's
+<code>referrer_ok_to_name</code></td>
+</tr>
+</tbody>
+</table>
+<p>The probe is asked once, at intake (plan, "The budget probe"). If you
+are speaking to an office for the second time and already have the
+answer, set <code>budget_probe_asked</code> = N and leave the verbatim
+blank. The first answer is the one that counts.</p>
+<h2 id="4-a-yes-a-maybe-and-a-no">4. A yes, a maybe and a no</h2>
+<p><strong>What a yes looks like</strong> (plan, Phase 0): they name a
+receiving window unprompted, they ask "when", or they introduce you to a
+colleague before the call ends. Tick which you saw in
+<code>yes_signals</code>.</p>
+<p><strong>What counts for Gate 0.</strong> An office counts toward the
+5 of 15 only when all three are in the row:
+<code>yes_in_principle</code> = Y, <code>pantry_owner_named</code> = Y,
+and a <code>receiving_window</code>. The scorecard does this check; a Y
+without the other two shows up as follow-up work ("Offices that said Y
+but owner or window is missing").</p>
+<table>
+<thead>
+<tr class="header">
+<th>They say</th>
+<th><code>yes_in_principle</code></th>
+<th>Also set</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"Yes, we'd do that. [Name] receives deliveries, mornings are
+best."</td>
+<td>Y</td>
+<td><code>pantry_owner_named</code> = Y,
+<code>owner_can_say_yes_alone</code> = Y, the window</td>
+</tr>
+<tr class="even">
+<td>"Sounds good, but I'd have to ask facilities / HR / the
+landlord."</td>
+<td>maybe</td>
+<td><code>owner_can_say_yes_alone</code> = N, objection
+<code>needs_approval</code>. Plan Phase 1: this is a maybe, not a
+yes</td>
+</tr>
+<tr class="odd">
+<td>"Interesting, send me something."</td>
+<td>maybe</td>
+<td>Ask the close questions in section 5 before you hang up</td>
+</tr>
+<tr class="even">
+<td>"Not for us."</td>
+<td>N</td>
+<td>Their reason in <code>objections_verbatim</code> and a code</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-the-close-3-minutes">5. The close (3 minutes)</h2>
+<ol type="1">
+<li><strong>If they sounded positive, get the two Gate 0 facts.</strong>
+"If we did a first drop, who would receive it, and what's a good window
+on a Tuesday or Wednesday morning?" Write the name, title and window. Do
+not propose a date in weeks 1 to 3.</li>
+<li><strong>Ask the plan's closing question:</strong> "Can I send you a
+one-pager?" In weeks 1 to 3 that is the discovery one-pager
+(<code>desk-drop-identity/pdf/discovery-one-pager-BLANK.pdf</code>, once
+your details are filled in). From Gate 0, the office one-pager with a
+proposed first-drop week
+(<code>messages/10-office-post-call-conversion.md</code>, step 1, sends
+it the same day).</li>
+<li><strong>Thank them and stop on time.</strong></li>
+<li>After the call, mark <code>shortlist</code> = Y if this is one of
+the offices you would pursue first (the plan's Gate 0 deliverable is a
+shortlist of 8). Anyone you knew before this call is
+<code>channel</code> = warm-intro; the plan wants five of the fifteen
+office conversations from your own network.</li>
+</ol>
+<h2 id="6-their-questions-answered-truthfully">6. Their questions,
+answered truthfully</h2>
+<p>Say only what is true on the day. Progress claims (offices signed,
+brands lined up, a drop date) come from the tracker and
+<code>messages/04-slot-state.csv</code>, never from memory.</p>
+<table>
+<thead>
+<tr class="header">
+<th>They ask</th>
+<th>Say</th>
+<th>Never say</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"Which brands?"</td>
+<td>"None yet. I'm talking to emerging New York brands this month. You'd
+see each one before it came, and you could veto any."</td>
+<td>A brand name you have not qualified</td>
+</tr>
+<tr class="even">
+<td>"When would it start?"</td>
+<td>Weeks 1 to 3: "Not before January. The first drop is planned for
+[DROP DATE: Tue 2027-01-12], and only once five offices and the first
+brands have signed." After that, the slot in
+<code>messages/04-slot-table.csv</code></td>
+<td>A firm date before <code>drop_date_confirmed = Y</code></td>
+</tr>
+<tr class="odd">
+<td>"What does it cost us?"</td>
+<td>"Nothing. No fees in either direction. We ask for the shelf
+placement the day it arrives, two photos, one survey post and a
+ten-minute chat afterwards."</td>
+<td>"Free forever"</td>
+</tr>
+<tr class="even">
+<td>"Who else is doing it?"</td>
+<td>Weeks 1 to 3: "You'd be one of the first. I'm talking to about
+fifteen office managers around here."</td>
+<td>"Lots of offices nearby"</td>
+</tr>
+<tr class="odd">
+<td>"Is it safe? Allergens?"</td>
+<td>"Only sealed, shelf-stable, commercially labeled products, and the
+card repeats the allergen line from the package word for word."</td>
+<td>Any health claim about a product</td>
+</tr>
+<tr class="even">
+<td>"Do you collect our employees' details?"</td>
+<td>"No. The survey is anonymous. Nobody signs in."</td>
+<td>Anything about collecting emails (the optional brand-newsletter box
+is the brand's, opt-in, and only if a brand chooses it)</td>
+</tr>
+<tr class="odd">
+<td>"Are you insured?"</td>
+<td>Before insurance is bound: "We will carry general liability
+insurance before your first drop." After <code>gl_bound = Y</code>: "We
+carry general liability insurance."</td>
+<td>"Fully insured" before it is bound</td>
+</tr>
+<tr class="even">
+<td>"What happens to leftovers?"</td>
+<td>"Collected at the end of the week or left with you, whichever the
+brand chose. Nothing is left in a lobby."</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="7-the-lobby-walk-in-version-3-minutes-offices-only">7. The lobby
+walk-in version (3 minutes, offices only)</h2>
+<p>Use it when the person who runs the pantry comes down to the lobby or
+the reception desk after you ask for them (the walk-in words are in
+<code>messages/08-warm-intro-referral-walk-in.md</code>, part 3). Bring
+nothing to sell; the plan allows walk-ins only on that basis.</p>
+<ol type="1">
+<li>One sentence on who you are (section 2, shortened).</li>
+<li>Question 2 ("How many people are actually in on a Tuesday?").</li>
+<li>Question 4, the yes half only ("what would you need to say
+yes?").</li>
+<li>"Could we do the full 20 minutes this week or next? Phone or here,
+whichever is easier."</li>
+<li>Log it: on a walk-in, set Clay <code>touch_1_date</code> and
+<code>channel</code> = walk-in. It becomes an Office_Log row
+(<code>call_type</code> = walk-in) only if you asked questions 1, 2 and
+4 of the person who runs the pantry. Otherwise it is a touch, not a
+conversation, and the tracker does not count it.</li>
+</ol>
+<h2 id="8-what-counts-as-a-conversation">8. What counts as a
+conversation</h2>
+<p>The scorecard counts a conversation once per office (distinct Clay
+<code>row_id</code>). Log a row on Office_Log when you spoke to the
+person who runs the pantry, or to someone who could name them, and asked
+at least questions 1, 2 and 4. A receptionist taking a message is not a
+conversation; it is a touch, recorded in Clay only.</p>
+<h2 id="9-lines-you-do-not-cross">9. Lines you do not cross</h2>
+<ul>
+<li>Business contacts only. Never write an employee's name or anything
+about one. The pantry owner is a business contact; their colleagues are
+not.</li>
+<li>No photos of people, ever. No photos inside an office unless the
+pantry owner offers.</li>
+<li>Verbatims are their words. If you could not catch the exact words,
+start the cell with "paraphrase:".</li>
+<li>An opt-out in any words ("please don't contact me again") ends it:
+thank them, and the same day set <code>do_not_contact</code> = Y,
+<code>status</code> = <code>do_not_contact</code> and
+<code>opt_out_date</code> in Clay.</li>
+</ul>
+<h2 id="changelog">Changelog</h2>
+<ul>
+<li>Round 1 (2026-10-24): plan questions kept verbatim and in order;
+added prep, opening, probes, column map, Gate 0 rule, close, truthful
+answers, walk-in version.</li>
+<li>Round 3 (2026-10-24): critique as an office manager who deletes
+forty vendor emails a day: the budget probe right after "it's free"
+reads like a bait and switch, so it now gets one line of framing before
+it (the probe itself is unchanged); <code>shortlist</code> added to the
+close for the plan's 8 offices; <code>channel</code> = warm-intro is now
+defined as "anyone you knew before", which the Scorecard counts against
+the plan's five warm conversations.</li>
+</ul>
+<h1 id="brand-call-guide">Brand call guide</h1>
+<p>Version 1.0 · 2026-10-24 · workstream E, part B ·
+<code>desk-drop-outreach/calls/</code></p>
+<p><strong>What it is for.</strong> Running a 20 to 30 minute discovery
+conversation with a founder or marketing lead at an emerging snack or
+drink brand, and coming away with what Gate 0 needs: the number they
+would pay, named before they hear $1,500, and whether the person saying
+it controls the budget. The seven questions are the plan's (Phase 0,
+"Brand conversation guide"), word for word and in the plan's order.
+Section 6 adds the seven qualification checks for the qualifying calls
+of weeks 4 to 7.</p>
+<p><strong>When it is used.</strong> Discovery: weeks 1 to 3 (Mon
+2026-10-26 to Fri 2026-11-13, derived, founder to confirm). Qualifying
+calls: weeks 4 to 7, once Gate 0 has passed (sections 3 and 6
+together).</p>
+<p><strong>No selling in weeks 1 to 3.</strong> You are learning what
+trial is worth to them. You do not send a proposal, quote the founding
+offer unprompted, or ask for a commitment. Startup CPG contacts in
+particular stay research conversations: the community does not allow
+cold selling (plan, "Brand pipeline").</p>
+<hr />
+<h2 id="1-before-the-call-2-minutes-1">1. Before the call (2
+minutes)</h2>
+<ul>
+<li>Open their Clay brands row and a new row on
+<strong>Brand_Log</strong> in
+<code>tracking/conversation-tracker.xlsx</code>. Paste the
+<code>row_id</code>, brand, name and title.</li>
+<li>Read <code>nearest_stocked_retailer</code> and its
+<code>nearest_retailer_grade</code>. Never say you saw them on a shelf
+unless the grade is <code>seen_on_shelf</code>, which only you set after
+seeing it. <code>store_selector</code> means "the store's own site lists
+you"; <code>brand_claim</code> means "your store locator lists it".</li>
+<li>If B has made a map for them, have it open
+(<code>cluster-1-flatiron/brand-maps/&lt;slug&gt;.png</code>).</li>
+<li>Read <code>why_now</code> and open <code>why_now_url</code> if you
+plan to mention it.</li>
+<li>Start a 25-minute timer and open
+<code>calls/post-call-note-template.md</code>.</li>
+</ul>
+<h2 id="2-opening-30-seconds-1">2. Opening (30 seconds)</h2>
+<blockquote>
+<p>"Thanks for the time. I'm [FOUNDER NAME]. I'm testing an idea:
+putting emerging snack and drink brands into a handful of New York
+offices for a week, with placement photos and employee feedback, near
+the stores that carry them. Before I build it I want to know what brands
+actually need from trial. I'm not asking you to buy anything today. One
+thing up front: I'm testing price too, so at one point I'll ask what
+this would be worth to you before I tell you the number I have in mind.
+OK if I ask seven questions and take notes? About 25 minutes."</p>
+</blockquote>
+<h2 id="3-the-seven-questions-plan-wording-plan-order-1">3. The seven
+questions (plan wording, plan order)</h2>
+<table>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Ask exactly</th>
+<th>Minutes</th>
+<th>Listen for, then probe</th>
+<th>Goes in (Brand_Log)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>"How are you getting people to try the product right now? What is
+working and what is not?"</td>
+<td>4</td>
+<td>Demos, street teams, online sampling, events, influencer boxes. What
+they say has not worked is the most useful part.</td>
+<td><code>q1_trial_now_verbatim</code></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>"What do you spend on sampling or field marketing a quarter, and who
+signs off on it?"</td>
+<td>3</td>
+<td>A number or range per quarter. Then the approver: "you, or someone
+else?"</td>
+<td><code>q2_sampling_budget_quarter_low_usd</code>,
+<code>..._high_usd</code>, <code>q2_budget_verbatim</code>,
+<code>budget_approver</code>; <code>controls_budget</code> = Y only if
+this person can approve the spend alone (a joint decision is N)</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>"Have you ever seeded offices? What happened?"</td>
+<td>2</td>
+<td>Who they tried, what it took, whether anything came back. "We tried,
+nobody sent photos" is gold.</td>
+<td><code>q3_seeded_offices</code> (Y/N), <code>q3_verbatim</code></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>"If I could put 500 units into 10 Flatiron offices in one week,
+within walking distance of Whole Foods Union Square, with placement
+photos and employee feedback, what would that be worth to you?"
+<strong>Let them name a number before you mention $1,500.</strong></td>
+<td>5</td>
+<td>See "The anchor rule" below. Write their first number and their
+exact words before saying anything about price.</td>
+<td><code>wtp_before_usd</code>, <code>wtp_before_verbatim</code>,
+<code>wtp_conversion_note</code>; then
+<code>price_1500_mentioned</code>, <code>wtp_after_usd</code>,
+<code>wtp_after_verbatim</code></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>"What would the report need to show for you to do it again?"</td>
+<td>3</td>
+<td>Photos, depletion, verbatim feedback, scans, code redemptions,
+retailer velocity. If they say "sales lift", note it: the report will
+not claim lift (plan, measurement).</td>
+<td><code>q5_report_needs_verbatim</code>; objection
+<code>want_sales_data</code> if lift is a must</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>"Where can someone buy you within ten blocks of Madison Square
+Park?"</td>
+<td>2</td>
+<td>A store and street, or "online, with a code". Compare with Clay's
+<code>nearest_stocked_retailer</code>. A store they name that Clay
+lacks: add it to <code>notes</code> for the Clay row, graded
+<code>brand_claim</code>.</td>
+<td><code>q6_buy_path_type</code>,
+<code>q6_buy_path_verbatim</code></td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>"What would stop you: budget timing, inventory, shelf life,
+something else?"</td>
+<td>3</td>
+<td>Each stopper is an objection code: <code>budget_timing</code>,
+<code>inventory</code>, <code>shelf_life</code>, or another.</td>
+<td><code>q7_stoppers_verbatim</code>, <code>objection_1</code> to
+<code>objection_3</code>, <code>objections_verbatim</code></td>
+</tr>
+</tbody>
+</table>
+<p>In question 4 you may name their own nearest store in place of Whole
+Foods Union Square if Clay's grade for it is
+<code>store_selector</code>, <code>brand_claim</code> or
+<code>seen_on_shelf</code> ("within walking distance of [their store]").
+Keep the rest of the question as written.</p>
+<h3 id="the-anchor-rule-question-4">The anchor rule (question 4)</h3>
+<ol type="1">
+<li>Ask the question as written. Then stop talking, even through a
+pause.</li>
+<li>If they ask "what do you charge?": "I'll tell you, but I'd like your
+number first. It's the main thing I'm testing." Wait again.</li>
+<li>Write their number and words in <code>wtp_before_usd</code> and
+<code>wtp_before_verbatim</code>. Convert to one campaign of 500 units
+in 10 offices if they gave another unit, and say how in
+<code>wtp_conversion_note</code> ("<span class="math inline">$1 a unit x
+500 = 500"; "$</span>150 a store x 10 = 1500"). "Nothing" or "we'd want
+it free" is 0. "I don't know" is blank, with the words kept.</li>
+<li>Only then say the price: <strong>"For reference, the standard price
+I'm testing is $1,500 for ten offices. How does that land?"</strong> Set
+<code>price_1500_mentioned</code> = Y and write the answer in
+<code>wtp_after_usd</code> and <code>wtp_after_verbatim</code>.</li>
+<li>If they still refuse to name a number before hearing a price, say
+the $1,500 line, leave <code>wtp_before_usd</code> blank and write
+"declined to name a number" in <code>wtp_before_verbatim</code>.</li>
+</ol>
+<p><strong>The founding price is not volunteered in discovery.</strong>
+If they ask whether there is anything smaller or cheaper, the true
+answer: "The first three brands get five offices for $600, paid up
+front, and keep $120 an office for their next two campaigns." Note in
+<code>notes</code> that they asked; it is a buying signal.</p>
+<p><strong>What counts for Gate 0.</strong> A brand counts toward the 3
+of 15 when the higher of its two numbers is $500 or more and
+<code>controls_budget</code> = Y (the same rule the financial model
+uses). The scorecard also shows a strict read: $500 or more named before
+$1,500 was mentioned.</p>
+<h2 id="4-the-close-2-minutes">4. The close (2 minutes)</h2>
+<ol type="1">
+<li><strong>Referral:</strong> "Who else should I be talking to?" Brand
+and title, business contacts only. Ask whether you may say they
+suggested it (goes in the new Clay row's
+<code>referrer_ok_to_name</code>).</li>
+<li><strong>Permission to come back:</strong> in weeks 1 to 3, "Can I
+come back to you once five offices have signed up?" Set Clay
+<code>next_action</code> = <code>recontact</code> and
+<code>next_action_date</code> = Mon 2026-11-16 (the Monday after Gate 0,
+derived, founder to confirm).</li>
+<li><strong>After the call,</strong> mark <code>shortlist</code> = Y if
+this is one of the brands you would pursue first (the plan's Gate 0
+deliverable is a shortlist of 6).</li>
+<li><strong>One-pager, if they ask for something in writing:</strong>
+the discovery one-pager
+(<code>desk-drop-identity/pdf/discovery-one-pager-BLANK.pdf</code>, once
+your details are filled). No proposal before Gate 0.</li>
+</ol>
+<h2 id="5-their-questions-answered-truthfully">5. Their questions,
+answered truthfully</h2>
+<table>
+<thead>
+<tr class="header">
+<th>They ask</th>
+<th>Say</th>
+<th>Never say</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>"Which offices?"</td>
+<td>Weeks 1 to 3: "None has signed yet. I'm talking to about fifteen
+office managers around Flatiron this month." Later, the
+<code>[ROSTER LINE]</code> from <code>messages/04-slot-table.csv</code>,
+which counts only signed offices and their own Tuesday numbers. Company
+names only after signature (plan, "The proposal")</td>
+<td>A count, an industry list or a headcount the tracker does not
+show</td>
+</tr>
+<tr class="even">
+<td>"What results have other brands had?"</td>
+<td>"None yet. The first campaign is planned for [DROP DATE: Tue
+2027-01-12]. I'd rather tell you that than make up a number."</td>
+<td>Any number at all</td>
+</tr>
+<tr class="odd">
+<td>"Do you guarantee sales?"</td>
+<td>"No. You get placement photos from each office, depletion counts,
+what employees said in their own words, scans and code redemptions, and
+a recommendation. Not a sales guarantee." (plan objection 4)</td>
+<td>"Lift", "conversions", "ROI", "new customers"</td>
+</tr>
+<tr class="even">
+<td>"Can we do a free trial first?"</td>
+<td>"No. The founding price is the trial." (plan objection 3; only if
+they ask)</td>
+<td>"Maybe for you"</td>
+</tr>
+<tr class="odd">
+<td>"We can seed offices ourselves."</td>
+<td>Discovery: write it down, code it <code>seed_ourselves</code>, and
+ask "what would you need to make that work?" Do not argue in weeks 1 to
+3. The answer for later is in
+<code>messages/09-reply-playbook.md</code>, J</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>"Can we pick the offices?"</td>
+<td>"The offices approve each brand, and the campaign has a fixed number
+of them. You'd see them by neighborhood, industry and Tuesday headcount
+before you pay."</td>
+<td>Promising a specific company</td>
+</tr>
+<tr class="odd">
+<td>"Do we get the employees' emails?"</td>
+<td>"No. The survey is anonymous. If you want, the survey can carry an
+unticked box for your newsletter under your own privacy policy, and only
+people who tick it are passed on."</td>
+<td>Any other data</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-qualifying-call-add-on-weeks-4-to-7-after-gate-0">6.
+Qualifying call add-on (weeks 4 to 7, after Gate 0)</h2>
+<p>On a call with a brand that named $500 or more and controls the
+budget, run the plan's seven checks (Phase 2, "Brand qualification
+checklist") after question 7. Record the brand's own answer: Y, N or
+unsure. You verify each one yourself before any ship date
+(<code>handoff/how-to-fill-handoff-files.md</code>, the
+<code>verified_</code> columns).</p>
+<table>
+<thead>
+<tr class="header">
+<th>Check</th>
+<th>Ask</th>
+<th>Brand_Log column</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>"Is it individually packaged, sealed and shelf-stable, with at least
+60 days of shelf life left on the drop date?"</td>
+<td><code>qual_q1_sealed_shelf_stable_60d</code></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>"Does the label show ingredients and all nine major allergens,
+sesame included?"</td>
+<td><code>qual_q2_labeled_ingredients_allergens</code></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>"Which store within about ten blocks of here stocks you, or can you
+issue a discount code online?"</td>
+<td><code>qual_q3_buy_path_near_cluster</code></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>"Could you ship 275 units, 250 plus a reserve, to one Manhattan
+address within ten business days?"</td>
+<td><code>qual_q4_can_ship_275_in_10bd</code></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>"Do you carry product liability insurance, and could you send a
+certificate naming us as additional insured?"</td>
+<td><code>qual_q5_product_liability_insurance</code></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>"Could you approve $600 yourself, without a committee?"</td>
+<td><code>qual_q6_contact_can_approve_600</code></td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>"Why New York, and why now?" (a new store, a launch, a local
+push)</td>
+<td><code>qual_q7_why_now</code> (their words)</td>
+</tr>
+<tr class="even">
+<td>Excluded</td>
+<td>Check yourself: no alcohol, cannabis, CBD or THC, no Supplement
+Facts panel, nothing refrigerated or needing preparation, no health
+claim on the pack ("supports gut health" is a health claim; "10g
+protein" is not, but note it for review)</td>
+<td><code>qual_not_excluded</code></td>
+</tr>
+</tbody>
+</table>
+<p>All seven Y plus <code>qual_not_excluded</code> = Y makes the brand
+"qualified on a call" on the scorecard. Then the proposal goes out
+within 24 hours (<code>messages/11-brand-post-call-conversion.md</code>,
+step 1). Any N stops it; any unsure is a question in the proposal email,
+not a guess.</p>
+<h2 id="7-lines-you-do-not-cross">7. Lines you do not cross</h2>
+<ul>
+<li>No pitching inside the Startup CPG Slack or at its events. A
+conversation that starts there stays research until they ask what you
+do.</li>
+<li>Never claim a shelf sighting you did not make, offices that have not
+signed, or results that do not exist.</li>
+<li>The ladder words stay separate: delivered, placed, depleted,
+responded, scanned, purchased (code redemptions). Incremental purchases
+are not measured, and you say so.</li>
+<li>An opt-out in any words ends it the same day:
+<code>do_not_contact</code> = Y, <code>status</code> =
+<code>do_not_contact</code>, <code>opt_out_date</code> in Clay.</li>
+</ul>
+<h2 id="changelog-1">Changelog</h2>
+<ul>
+<li>Round 1 (2026-10-24): plan questions kept verbatim and in order;
+added prep, opening, probes, column map, the anchor rule, Gate 0 rule,
+close, truthful answers, the seven-check add-on.</li>
+<li>Round 3 (2026-10-24): critique as a CPG founder pitched by every
+sampling vendor: "I'm not selling anything" followed by a price question
+would be seen through, so the opening now says plainly that a price
+question is coming and that their number comes first;
+<code>shortlist</code> added for the plan's 6 brands.</li>
+</ul>
+<h1 id="post-call-note-template">Post-call note template</h1>
+<p>Version 1.0 · 2026-10-24 · workstream E, part B ·
+<code>desk-drop-outreach/calls/</code></p>
+<p><strong>What it is for.</strong> Turning a call into one tracker row
+and a Clay update in ten minutes or less, with the person's words intact
+(plan, Phase 0: "Write notes within ten minutes of each call, with
+quotes verbatim").</p>
+<p><strong>How it works.</strong> The fields below are in the same order
+as the columns of <strong>Office_Log</strong> and
+<strong>Brand_Log</strong> in
+<code>tracking/conversation-tracker.xlsx</code>. Three ways to use them,
+fastest first:</p>
+<ol type="1">
+<li><strong>The Note_Office or Note_Brand tab</strong> of the tracker:
+the same fields top to bottom with dropdowns, which also works on a
+phone. Fill column B, copy the "row to paste", and paste it into the
+log's next empty row as values only (Ctrl+Shift+V). Then clear column
+B.</li>
+<li>Type straight across one row of the log.</li>
+<li>Copy the text block below into a notes app before the call, fill it
+as you talk, then type it into the Note tab.</li>
+</ol>
+<hr />
+<h2 id="the-ten-minutes">The ten minutes</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Minutes</th>
+<th>Do</th>
+<th>Why this order</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0 to 4</td>
+<td>Verbatims, while you still hear them: every
+<code>..._verbatim</code> field, the objections in their words, the
+budget-probe answer.</td>
+<td>Words fade first; numbers and codes do not</td>
+</tr>
+<tr class="even">
+<td>4 to 7</td>
+<td>Numbers and codes: headcount, spend, probe low and high, willingness
+to pay, Y/N fields, objection codes, category keys</td>
+<td>Dropdowns on the sheet make these quick</td>
+</tr>
+<tr class="odd">
+<td>7 to 9</td>
+<td><strong>Clay write-back</strong> (box below), and a new Clay row for
+each referral</td>
+<td>Clay is the status store; the daily view and follow-ups read it</td>
+</tr>
+<tr class="even">
+<td>9 to 10</td>
+<td><code>note_minutes</code> (honest), <code>clay_updated</code> =
+Y</td>
+<td>The scorecard reports minutes per note, so the ten-minute rule is
+visible</td>
+</tr>
+</tbody>
+</table>
+<p>If a note runs long, cut the probing notes, never the verbatims.</p>
+<h2 id="number-rules-both-sides">Number rules (both sides)</h2>
+<ul>
+<li>A range: the low end goes in the <code>_low_usd</code> or main
+field, the high end in <code>_high_usd</code> where there is one. "$100
+to $200 a month" is 100 and 200.</li>
+<li>"No budget", "zero", "we wouldn't pay": <strong>0</strong>. It
+counts in the median.</li>
+<li>"I don't know", "I'd have to ask", no number:
+<strong>blank</strong>, with the words kept in the verbatim.</li>
+<li>Office budget probe: USD per month. Brand willingness to pay: USD
+for the whole 500-unit, 10-office campaign (convert and write how in
+<code>wtp_conversion_note</code>).</li>
+<li>Dates: YYYY-MM-DD. Money: plain numbers, no $ sign.</li>
+<li>A verbatim you could not catch word for word starts with
+"paraphrase:".</li>
+</ul>
+<hr />
+<h2 id="office-note-office_log-one-row">Office note (Office_Log, one
+row)</h2>
+<pre class="text"><code>row_id:                     (paste from Clay before the call)
+company:
+contact_name:
+contact_title:
+source:                     Clay offices table / warm network / walk-in / referral from &lt;row_id&gt;
+channel:                    email / linkedin / warm-intro / walk-in
+call_date:                  YYYY-MM-DD
+call_type:                  phone / video / in-person / walk-in
+q1_pantry_today_verbatim:   &quot;...&quot;
+pantry_vendor:
+monthly_pantry_spend_usd:   (number or blank)
+monthly_pantry_spend_verbatim: &quot;...&quot;
+tuesday_headcount:          (number; low end of a range)
+headcount_verbatim:         &quot;...&quot;
+q3_free_product_verbatim:   &quot;...&quot;
+q4_yes_needs_verbatim:      &quot;...&quot;
+q4_no_triggers_verbatim:    &quot;...&quot;
+q5_photo_and_survey:        Y / N / maybe
+q5_verbatim:                &quot;...&quot;
+budget_probe_asked:         Y / N        (Y only if read word for word)
+budget_probe_verbatim:      &quot;...&quot;
+budget_probe_low_usd:       (USD a month; 0 = no budget; blank = no number)
+budget_probe_high_usd:
+referrals_given_count:
+referrals_given:            Company - Title; Company - Title
+pantry_owner_named:         Y / N
+pantry_owner_name:
+pantry_owner_title:
+owner_can_say_yes_alone:    Y / N / maybe   (&quot;I need to ask facilities or HR&quot; = N)
+receiving_window:           e.g. Tue-Wed 9-11am   (blank if not named)
+receiving_type:             walk-up / front desk / security desk / loading dock / other / unknown
+coi_required:               yes / no / unsure
+security_notes:
+veto_categories:            category keys; semicolons
+veto_verbatim:              &quot;...&quot;
+objection_1:                (code, list below)
+objection_2:
+objection_3:
+objections_verbatim:        &quot;...&quot;
+yes_in_principle:           Y / N / maybe
+yes_signals:                named_window_unprompted; asked_when; introduced_colleague
+shortlist:                  Y / N        (on your list of 8 offices to pursue)
+note_minutes:
+clay_updated:               Y
+notes:</code></pre>
+<h2 id="brand-note-brand_log-one-row">Brand note (Brand_Log, one
+row)</h2>
+<pre class="text"><code>row_id:
+company:
+contact_name:
+contact_title:
+source:                     Clay brands table / Startup CPG event / shelf photo / warm network / referral from &lt;row_id&gt;
+channel:                    email / linkedin / warm-intro / walk-in
+call_date:                  YYYY-MM-DD
+call_type:                  phone / video / in-person
+q1_trial_now_verbatim:      &quot;...&quot;
+q2_sampling_budget_quarter_low_usd:
+q2_sampling_budget_quarter_high_usd:
+q2_budget_verbatim:         &quot;...&quot;
+budget_approver:            (their words: &quot;me&quot;, &quot;my cofounder and I&quot;)
+controls_budget:            Y / N        (Y only if this person approves alone)
+q3_seeded_offices:          Y / N
+q3_verbatim:                &quot;...&quot;
+wtp_before_usd:             (their number BEFORE you said $1,500; 0 = nothing; blank = no number)
+wtp_before_verbatim:        &quot;...&quot;
+wtp_conversion_note:        e.g. &quot;$1 a unit x 500 = 500&quot;
+price_1500_mentioned:       Y / N
+wtp_after_usd:              (their number AFTER hearing $1,500)
+wtp_after_verbatim:         &quot;...&quot;
+q5_report_needs_verbatim:   &quot;...&quot;
+q6_buy_path_type:           retailer-in-cluster / retailer-within-10-blocks / online-with-code / online-no-code / none / unknown
+q6_buy_path_verbatim:       store and street, or the site
+q7_stoppers_verbatim:       &quot;...&quot;
+qual_q1_sealed_shelf_stable_60d:        Y / N / unsure   (qualifying calls, weeks 4 to 7; else blank)
+qual_q2_labeled_ingredients_allergens:  Y / N / unsure
+qual_q3_buy_path_near_cluster:          Y / N / unsure
+qual_q4_can_ship_275_in_10bd:           Y / N / unsure
+qual_q5_product_liability_insurance:    Y / N / unsure
+qual_q6_contact_can_approve_600:        Y / N / unsure
+qual_q7_why_now:                        &quot;...&quot;
+qual_not_excluded:                      Y / N
+objection_1:
+objection_2:
+objection_3:
+objections_verbatim:        &quot;...&quot;
+yes_in_principle:           Y / N / maybe
+shortlist:                  Y / N        (on your list of 6 brands to pursue)
+referrals_given_count:
+referrals_given:            Brand - Title; Brand - Title
+note_minutes:
+clay_updated:               Y
+notes:</code></pre>
+<hr />
+<h2 id="clay-write-back-minutes-7-to-9">Clay write-back (minutes 7 to
+9)</h2>
+<p>Clay holds status and next steps; the tracker holds what was said.
+Write these on the person's Clay row, both sides:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Clay column</th>
+<th>Write</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>call_date</code></td>
+<td>the call date</td>
+<td>Same as the tracker row</td>
+</tr>
+<tr class="even">
+<td><code>status</code></td>
+<td>see the table below</td>
+<td>CONTRACTS section 4 values only</td>
+</tr>
+<tr class="odd">
+<td><code>yes_in_principle</code></td>
+<td>Y or N</td>
+<td>Y if they said Y; a maybe is N in Clay</td>
+</tr>
+<tr class="even">
+<td><code>call_notes</code></td>
+<td>one line + "see tracker YYYY-MM-DD"</td>
+<td>The full note lives in the tracker, not in Clay</td>
+</tr>
+<tr class="odd">
+<td><code>call_note_hook</code></td>
+<td>twelve words or fewer they said, e.g. "the Thursday bagel
+order"</td>
+<td>Used by the post-call email
+(<code>messages/03-personalization-fields.csv</code>). Leave blank if
+nothing fits</td>
+</tr>
+<tr class="even">
+<td><code>next_action</code></td>
+<td>one key: <code>send_one_pager</code>, <code>book_call</code>,
+<code>send_proposal</code>, <code>recontact</code>,
+<code>ask_referral</code>, <code>none</code> ...</td>
+<td>Clay is the only place next actions live</td>
+</tr>
+<tr class="odd">
+<td><code>next_action_date</code></td>
+<td>YYYY-MM-DD</td>
+<td>Drives tomorrow's follow-up list</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Status after the call</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>What happened</th>
+<th>Clay <code>status</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Office: Y, with the pantry owner and the receiving window named</td>
+<td><code>yes_in_principle</code></td>
+</tr>
+<tr class="even">
+<td>Brand: Y at a number they named</td>
+<td><code>yes_in_principle</code></td>
+</tr>
+<tr class="odd">
+<td>Anything else that was a real conversation (maybe, interested,
+undecided, Y without owner or window)</td>
+<td><code>call_done</code></td>
+</tr>
+<tr class="even">
+<td>"Not now, try me in [month]"</td>
+<td><code>not_now</code>, with <code>next_action</code> =
+<code>recontact</code> and the date they gave</td>
+</tr>
+<tr class="odd">
+<td>A clear no</td>
+<td><code>no</code> (ask for one referral first,
+<code>messages/08-warm-intro-referral-walk-in.md</code> 2c)</td>
+</tr>
+<tr class="even">
+<td>"Please don't contact me again", in any words</td>
+<td><code>do_not_contact</code>, plus <code>do_not_contact</code> = Y
+and <code>opt_out_date</code> = today. Same day, never reversed</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Each referral:</strong> add a Clay row (company, name if
+given, title) with <code>referral_from</code> = this person's
+<code>row_id</code>, <code>status</code> = <code>new</code>, and
+<code>referrer_ok_to_name</code> = Y only if they said you may use their
+name.</p>
+<hr />
+<h2 id="objection-codes">Objection codes</h2>
+<p><strong>Office side</strong> (<code>objection_1</code> to
+<code>objection_3</code> on Office_Log)</p>
+<table>
+<thead>
+<tr class="header">
+<th>Code</th>
+<th>Means</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>needs_approval</code></td>
+<td>I need to ask facilities, HR or someone else</td>
+</tr>
+<tr class="even">
+<td><code>existing_vendor</code></td>
+<td>We already have a pantry vendor or contract</td>
+</tr>
+<tr class="odd">
+<td><code>allergy_policy</code></td>
+<td>Allergy or food-safety worry</td>
+</tr>
+<tr class="even">
+<td><code>healthy_policy</code></td>
+<td>We only stock healthy items (wellness policy)</td>
+</tr>
+<tr class="odd">
+<td><code>building_receiving</code></td>
+<td>Building security, receiving or certificate rules</td>
+</tr>
+<tr class="even">
+<td><code>low_attendance</code></td>
+<td>Not enough people in on a given day</td>
+</tr>
+<tr class="odd">
+<td><code>commitments_too_much</code></td>
+<td>Photos, survey or debrief are too much work</td>
+</tr>
+<tr class="even">
+<td><code>survey_concern</code></td>
+<td>Survey or employee-data worry</td>
+</tr>
+<tr class="odd">
+<td><code>vendor_fatigue</code></td>
+<td>We don't want vendors or marketing in the office</td>
+</tr>
+<tr class="even">
+<td><code>space</code></td>
+<td>No shelf or counter space</td>
+</tr>
+<tr class="odd">
+<td><code>supply_irregular</code></td>
+<td>Irregular, roughly monthly supply isn't useful</td>
+</tr>
+<tr class="even">
+<td><code>quality_unknown</code></td>
+<td>Don't know these brands; quality worry</td>
+</tr>
+<tr class="odd">
+<td><code>other</code></td>
+<td>Anything else (the verbatim says what)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Brand side</strong> (<code>objection_1</code> to
+<code>objection_3</code> on Brand_Log). The first four are the plan's
+four objections (Phase 2).</p>
+<table>
+<thead>
+<tr class="header">
+<th>Code</th>
+<th>Means</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>seed_ourselves</code></td>
+<td>We can seed offices ourselves for free</td>
+</tr>
+<tr class="even">
+<td><code>price_per_sample</code></td>
+<td>$600 / the price is more than we pay per sample elsewhere</td>
+</tr>
+<tr class="odd">
+<td><code>free_trial</code></td>
+<td>Can we do a free trial first?</td>
+</tr>
+<tr class="even">
+<td><code>what_we_get</code></td>
+<td>What do we actually get out of it?</td>
+</tr>
+<tr class="odd">
+<td><code>budget_timing</code></td>
+<td>No budget now / budget timing</td>
+</tr>
+<tr class="even">
+<td><code>inventory</code></td>
+<td>Inventory or shipping the units</td>
+</tr>
+<tr class="odd">
+<td><code>shelf_life</code></td>
+<td>Shelf life</td>
+</tr>
+<tr class="even">
+<td><code>not_our_audience</code></td>
+<td>Office workers aren't our customer</td>
+</tr>
+<tr class="odd">
+<td><code>want_proof</code></td>
+<td>Show me results from other brands first</td>
+</tr>
+<tr class="even">
+<td><code>want_sales_data</code></td>
+<td>We need sales or lift data, not feedback</td>
+</tr>
+<tr class="odd">
+<td><code>no_buy_path</code></td>
+<td>No store near the cluster and no online code</td>
+</tr>
+<tr class="even">
+<td><code>insurance</code></td>
+<td>No product liability certificate</td>
+</tr>
+<tr class="odd">
+<td><code>other</code></td>
+<td>Anything else</td>
+</tr>
+</tbody>
+</table>
+<p>The scorecard ranks these codes, so pick the closest one and keep the
+exact words in <code>objections_verbatim</code>.</p>
+<hr />
+<h2 id="a-filled-example-sample-illustrative-placeholders-not-results">A
+filled example (SAMPLE: illustrative placeholders, not results)</h2>
+<pre class="text"><code>row_id:                     SAMPLE-O-001
+company:                    SAMPLE Office 01
+contact_name:               SAMPLE Contact O01
+contact_title:              Office Manager
+source:                     SAMPLE warm network
+channel:                    warm-intro
+call_date:                  2026-10-27
+call_type:                  video
+q1_pantry_today_verbatim:   &quot;SAMPLE: I order from a grocery site every Monday, I pick most of it, people ask in Slack.&quot;
+pantry_vendor:              SAMPLE grocery order
+monthly_pantry_spend_usd:   800
+monthly_pantry_spend_verbatim: &quot;SAMPLE: about $800 a month&quot;
+tuesday_headcount:          60
+headcount_verbatim:         &quot;SAMPLE: around 60 on a Tuesday, Fridays are dead&quot;
+q3_free_product_verbatim:   &quot;SAMPLE: brands email us, we ignore most&quot;
+q4_yes_needs_verbatim:      &quot;SAMPLE: allergen info and no work for me&quot;
+q4_no_triggers_verbatim:    &quot;SAMPLE: anything with nuts&quot;
+q5_photo_and_survey:        Y
+q5_verbatim:                &quot;SAMPLE: a photo is fine, we have a #random channel&quot;
+budget_probe_asked:         Y
+budget_probe_verbatim:      &quot;SAMPLE: maybe $100 to $200 a month&quot;
+budget_probe_low_usd:       100
+budget_probe_high_usd:      200
+referrals_given_count:      1
+referrals_given:            SAMPLE Office 30 - Office Manager
+pantry_owner_named:         Y
+pantry_owner_name:          SAMPLE Owner O01
+pantry_owner_title:         Office Manager
+owner_can_say_yes_alone:    Y
+receiving_window:           SAMPLE Tue-Wed 9-11am
+receiving_type:             front desk
+coi_required:               no
+security_notes:             SAMPLE: sign in at desk
+veto_categories:            meat-snacks
+veto_verbatim:              &quot;SAMPLE: no jerky&quot;
+objection_1:                allergy_policy
+objections_verbatim:        &quot;SAMPLE: we have two people with nut allergies&quot;
+yes_in_principle:           Y
+yes_signals:                asked_when
+shortlist:                  Y
+note_minutes:               9
+clay_updated:               Y</code></pre>
+<p>Clay write-back for it: <code>call_date</code> 2026-10-27,
+<code>status</code> <code>yes_in_principle</code>,
+<code>yes_in_principle</code> Y, <code>call_notes</code> "SAMPLE: yes;
+owner and window named; nut allergies; see tracker 2026-10-27",
+<code>call_note_hook</code> "SAMPLE: the Monday grocery order",
+<code>next_action</code> <code>send_one_pager</code>,
+<code>next_action_date</code> 2026-10-27; one new row for the referral
+with <code>referral_from</code> = SAMPLE-O-001.</p>
+<h2 id="changelog-2">Changelog</h2>
+<ul>
+<li>Round 1 (2026-10-24): field order copied from the tracker's columns;
+ten-minute plan; number rules; Clay write-back; status table; objection
+codes; a SAMPLE example.</li>
+<li>Round 2 (2026-10-24): checked by script that both blocks list
+exactly the tracker's columns in the tracker's order (44 office fields,
+44 brand fields), so the note types straight across one row; verbatims
+first, codes second in the ten-minute plan; the qualification checks sit
+in the brand block, blank outside weeks 4 to 7; added Part A's
+<code>call_note_hook</code> and <code>referrer_ok_to_name</code> to the
+write-back so the post-call emails have what they need without a second
+pass.</li>
+<li>Round 3 (2026-10-24): critique as an operations lead: 45 columns
+typed across one row is slow and impossible on a phone, so the tracker
+gained Note_Office and Note_Brand tabs (vertical form, one row to paste
+as values, tested); added <code>shortlist</code> for the plan's 8
+offices and 6 brands; field order re-checked by script (45 and 45).</li>
+</ul>
+</body>
+</html>

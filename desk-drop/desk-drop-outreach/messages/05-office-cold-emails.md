@@ -6,7 +6,7 @@ Version 1.0 · 2026-10-24 · Part A of workstream E · folder `desk-drop-outreac
 
 **When it is used.** Each weekday, for the office rows in today's daily view whose `channel` is `email` and whose `email_status` is `verified`. Not before `domain_ready = Y` in `04-slot-state.csv` (the sending guide in `sending/` decides when the new domain is warm; until then the office side runs on warm intros, LinkedIn and walk-ins, files 07 and 08).
 
-**How to fill it in.** Every `{token}` comes from the Clay Offices row and has a fallback (`03-personalization-fields.csv`). `{?token}` is a sentence that is left out when its field is empty or stale. Every `[SLOT]` is set by the tracker state in `04-slot-state.csv`; `04-slot-table.csv` says which words to use at which state. `[FOUNDER NAME]`, `[PHONE]`, `[EMAIL]` and `[POSTAL ADDRESS]` stay as placeholders until you fill them once in your signature. `{SIGNATURE}` is the outreach signature with the legal pack's footer (file 02). To make ten ready-to-paste drafts from the daily view instead of typing, see `_render/README.md`.
+**How to fill it in.** Every `{token}` comes from the Clay Offices row and has a fallback (`03-personalization-fields.csv`). `{?token}` is a sentence that is left out when its field is empty or stale. Every `[SLOT]` is set by the tracker state in `04-slot-state.csv`; `04-slot-table.csv` says which words to use at which state. `[FOUNDER NAME]`, `[PHONE]`, `[EMAIL]` and `[POSTAL ADDRESS]` stay as placeholders until you fill them once in your signature. `{SIGNATURE}` is the outreach signature with the legal pack's footer (file 02). To make ten ready-to-paste drafts from the daily view instead of typing, see `_render/HOW-TO-RUN.md`.
 
 ---
 
@@ -14,7 +14,7 @@ Version 1.0 · 2026-10-24 · Part A of workstream E · folder `desk-drop-outreac
 
 1. One ask per email. The ask is the last sentence and is the only question.
 2. No link, no attachment, no picture in touch 1, ever (sending guide). The one-pager goes only to someone who asks for it.
-3. Touch 2 is sent 3 business days after touch 1, touch 3 is sent 7 business days after touch 1, both as replies in the same thread (so "Re:" is true). Business days skip weekends and the federal holidays in CONTRACTS section 3. Do not send on Fri 2026-11-27, or between Fri 2026-12-18 and Mon 2027-01-04; anything due then goes out Tue 2027-01-05.
+3. Touch 2 is sent 3 business days after touch 1, touch 3 is sent 7 business days after touch 1, both as replies in the same thread (so "Re:" is true). Business days skip weekends and the federal holidays in CONTRACTS section 3. No new first touches on Wed 2026-11-25 (the day before Thanksgiving; follow-ups due that day still go), nothing at all on Fri 2026-11-27, and nothing between Fri 2026-12-18 and Mon 2027-01-04; anything due then goes out on the next sending day (the sending guide's warm-up calendar in `sending/` has the same days).
 4. Any reply stops the sequence. The reply playbook (09) takes over.
 5. A row keeps one subject variant (`A` or `B`) for all three touches. Record it in Clay as `sequence` = `office-discovery-A`, `office-discovery-B`, `office-selling-A` or `office-selling-B`, and the send dates in `touch_1_date`, `touch_2_date`, `touch_3_date`.
 6. Never more than three emails without a reply. After touch 3, silence parks the row (09, "Silence").
@@ -39,7 +39,7 @@ stage: discovery
 touch: 1
 channel: email
 subject_A: Question about the pantry at {company}
-subject_B: How does the {company} pantry work?
+subject_B: How does the pantry at {company} work?
 ask: a 20-minute research call
 ---
 {greeting}
@@ -105,7 +105,7 @@ side: office
 stage: selling
 touch: 1
 channel: email
-subject_A: Emerging snack brands for the {company} pantry
+subject_A: Emerging snack brands for the pantry at {company}
 subject_B: New snack brands for {company}, you choose what comes
 ask: may I send the one-page outline
 ---
@@ -131,7 +131,7 @@ ask: may I send the one-page outline
 ---
 {greeting}
 
-What arrives is one labeled case and a card for the shelf. [MOCK CARD LINE] Nothing is ever charged to {company}, nothing is asked about your employees, and you can leave with a week's notice.
+What arrives is one labeled case and a 5 by 7 inch card for the shelf: the brand's name, two sentences about it, the allergen line copied from the package, and a QR code to the survey. Nothing is ever charged to {company}, nothing is asked about your employees, and you can leave with a week's notice.
 
 Shall I send the outline?
 
@@ -156,12 +156,14 @@ I'll stop here. If the pantry is someone else's call at {company}, who should I 
 
 ---
 
-## Why the copy reads this way (the three critics, round by round)
+## Why the copy reads this way (the three critics)
 
 - **The office manager who deletes forty vendor emails a day** reads the subject and the first line only. So the subject names their company and their pantry, not a product, and the first line says why it is them: a neighbor, researching their street. The selling version lists every ask up front (out the day it arrives, two photos, one survey post, ten minutes), because "what's the catch" is the question that gets an email deleted. It says two photos, not the plan's "one photo": the participation agreement asks for two (desk-drop-legal-pack/03).
-- **The deliverability specialist** wants no "free" in a cold subject, no link or attachment in touch 1, short plain text, replies in-thread, and a hard stop at three. All five hold. "Free" appears in the body only.
+- **The deliverability specialist** wants no "free" in a cold subject, no link, attachment or picture in any cold touch, short plain text, replies in-thread, and a hard stop at three. All hold. "Free" appears in the body only, and touch 2 describes the card in words rather than attaching a photo.
 - **Honesty.** "Planned for" is used until both brands have paid and all five offices have approved them; the opener changes once five offices have signed; nothing claims a roster, a brand or a date the tracker does not hold.
 
 ## Changelog
 
 - Round 1 (2026-10-24): drafted both versions from plan appendix A and the Phase 0 and Phase 1 pitch lines, with the deliverability rules from `sending/` (Part B's note) and the agreement's two photos.
+- Round 2 (2026-10-24): subjects rewritten so the company fallback reads ("the pantry at your office", not "the your office pantry", seen in the fallback render); touch 2 says what arrives once instead of twice.
+- Round 4 (2026-10-24): send-day rules matched to the sending guide's warm-up calendar (no new first touches on Wed 2026-11-25).

@@ -23,25 +23,29 @@ If the tracker workbook in `tracking/` gets a settings tab with the same keys, i
 
 ## The slots, by what unlocks them
 
-| Unlocked by | Slot | Before | After |
-| --- | --- | --- | --- |
-| `offices_signed` | `[OFFICE OPENER]` (office selling, touch 1) | 0 to 4: "I'm signing up five founding offices around {area} for a first drop planned for the [FIRST DROP WEEK: week of Mon 2027-01-11]." | 5 or more: "I'm adding offices around {area} for drops from [NEXT DROP DATE: Tue 2027-02-09]." |
-| `offices_signed` | `[OFFICE PROGRESS LINE]` | 0: left out | 1 to 4: "[N] have signed so far." (1: "One has signed so far.") 5+: left out |
-| `offices_yes`, `offices_signed`, `tuesday_headcount` | `[ROSTER LINE]` (brand selling, proposal email) | fewer than 2 yes: the brand selling sequence is not used | 2+ yes, 0 signed: "[N] offices around {CLUSTER} have said yes in principle to receiving emerging brands. None has signed yet." 1 to 4 signed: "[N] offices around {CLUSTER} have signed up to receive emerging brands, with about [TUESDAY HEADCOUNT] people in on a Tuesday, by their own count. I'm aiming for five." 5+: "Five offices around {CLUSTER} have signed up ..., by their own count." |
-| `founding_taken` | `[OFFER LINE]` | 0 to 2: the founding offer ($600, five offices, paid before you ship, $120 an office for the next two campaigns) | 3: the standard offer ($1,500, ten offices, half on signing, half on placement confirmation) |
-| `founding_taken` | `[FOUNDING LINE]` | 0: "The founding price is open to the first three brands that sign." | 1 or 2: "[N] of the three founding places are taken." 3: "The next drop is [NEXT DROP DATE: Tue 2027-02-09]." |
-| a qualified brand at yes in principle | `[FIRST BRAND LINE]` (office approval) | "I'm lining up the first brands now. You'll see each one before it comes, and nothing comes unless you say yes." | "The first brand I'd suggest is {brand_name}, {category_phrase}{?from_city}. ..." |
-| `gl_bound` | `[INSURANCE LINE]` | "We will carry general liability insurance before your first drop." | "We carry general liability insurance." |
-| `llc_formed` and `attorney_cleared` | `[FORMATION LINE]` (brand proposal) | "The agreement and invoice come by [AGREEMENT DATE: Thu 2026-11-19]. Nothing is due before then." | left out |
-| `mock_card_photo_ready` | `[MOCK CARD LINE]` | The card in words: "It's a 5 by 7 inch card: the brand's name, two sentences about it, the allergen line copied from the package, and a QR code to the survey." | Replies and conversion: "Attached is a photo of the card on a real pantry shelf." Cold touch 2 keeps the words (no pictures in cold email). |
-| `*_onepager_ready`, `proposal_ready` | `[ONE-PAGER]` | Not offered | Attached, only in a reply or a later touch |
-| `intake_form_ready` | `[INTAKE FORM LINK]` | Six questions by reply | The form's address |
-| `site_live` and `name_decided` | `[WEBSITE]` | Left out everywhere | In replies, conversion emails and the signature; never in touch 1 |
-| `office_hours_per_signing` | `[OFFICE HOURS LINE]` | Left out | "Signing each office has taken me about [H] hours so far." |
-| `name_decided` | LinkedIn headline (01) | Version 1, no name | Version 2, with `{BRAND_NAME}` |
+The exact words before and after each unlock are in `04-slot-table.csv` (column `locked_text` and `unlocked_text`); `_render/fill.py lint` fails if the engine's wording and that file ever differ. In short:
 
-The dates in the copy and where they come from are in `04-slot-table.csv` (drop date, first drop week, next drop date, ship-by, cancel-by, materials due, agreement date, report date, code valid through, recontact date).
+| Unlocked by | Slots |
+| --- | --- |
+| `offices_signed` | `[OFFICE OPENER]` (five founding offices, then "adding offices"), `[OFFICE PROGRESS LINE]` ("Three have signed so far."), `[LAST CHECK LINE]`, `[ROSTER LINE]`, `[TUESDAY HEADCOUNT]`, LinkedIn headline version 3 |
+| `offices_yes` | `brand_selling_on` (two or more), `[ROSTER LINE]` before any office has signed ("said yes in principle; none has signed yet") |
+| `founding_taken` | `[OFFER LINE]` and `[OFFER SHORT]` (founding offer, then the standard offer at 3), `[FOUNDING LINE]` |
+| a qualified brand at yes in principle | `[FIRST BRAND LINE]` in the office approval email |
+| `drop_date_confirmed` | "planned for" becomes "set for" |
+| `gl_bound` | `[INSURANCE LINE]` |
+| `llc_formed`, `attorney_cleared` | `[FORMATION LINE]`, `[AGREEMENT TIMING LINE]`, `[AGREEMENT DATE]`, and whether the agreement emails may go at all |
+| `mock_card_photo_ready` | `[MOCK CARD LINE]` (photo in replies and conversion; words in cold email) |
+| `office_onepager_ready`, `proposal_ready`, `discovery_onepager_ready` | `[OFFICE ONE-PAGER LINE]`, `[PROPOSAL LINE]`, `[ONE-PAGER]` |
+| `intake_form_ready` | `[INTAKE PARAGRAPH]`, `[INTAKE FORM LINK]` |
+| `site_live`, `name_decided` | `[WEBSITE]`, LinkedIn headline version 2 |
+| `office_hours_per_signing` | `[OFFICE HOURS LINE]` |
+
+**Dates that move with the send date.** `[AGREEMENT DATE]` is the later of Thu 2026-11-19 and five business days after the email is sent, so a slow week never prints a day that has passed. `[CHECK-BACK DATE]`, `[SIGN-BY DATE]` and `[INVOICE DUE]` are five business days after sending. `[LAST OFFER DATE: Tue 2026-12-08]` is the last day a brand new to the pipeline is offered the campaign zero drop: after it, the agreement, payment and certificate cannot all land before the asked ship-by date, so the brand is offered [NEXT DROP DATE: Tue 2027-02-09] instead.
+
+**What the reader sees.** The templates keep the bracketed form CONTRACTS section 3 asks for. When you fill a message, write the date in plain words: "Tuesday, January 12" in a body, "January 12" in a subject, "the week of January 11". The draft maker in `_render/` does this for you.
 
 ## Changelog
 
 - Round 1 (2026-10-24): every progress-dependent claim in the copy turned into a slot with its unlocking state, source and before and after wording; today's state recorded (all switches N, all counts 0).
+- Round 2 (2026-10-24): dates that depend on the send date are computed (the agreement date can no longer print a day that has passed, which the first renders did); recipients read plain dates ("Tuesday, January 12") while templates keep the CONTRACTS slot form.
+- Round 3 (2026-10-24): last-offer date for campaign zero (Tue 2026-12-08); step 0 and step 1 opener slots; `04-slot-table.csv` regenerated from the engine's exact wording, and the lint now fails if the two drift (it found five drifted sentences).

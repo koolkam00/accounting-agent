@@ -65,8 +65,9 @@ def build():
                 ends[(round(pt[0], 5), round(pt[1], 5))].add(name)
     pts = []  # (street_no, avenue, e, n)
     for (lon, lat), names in ends.items():
-        streets = [int(STREET_RE.match(n).group(1)) for n in names if STREET_RE.match(n)]
-        aves = [AVENUES[n] for n in names if n in AVENUES]
+        # review round 3: sorted, so the pick does not depend on Python's per-process string hashing
+        streets = [int(STREET_RE.match(n).group(1)) for n in sorted(names) if STREET_RE.match(n)]
+        aves = [AVENUES[n] for n in sorted(names) if n in AVENUES]
         if streets and aves:
             e, n = to_m(lat, lon)
             pts.append((streets[0], aves[0], e, n))

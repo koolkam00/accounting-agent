@@ -21,7 +21,7 @@ Version 1.0 · 2026-10-24 · Part A of workstream E · folder `desk-drop-outreac
 | `wrong_person` | "That's not me", "Talk to our office manager" | `wrong_person`; the named person becomes a new row with `referral_from` = this `row_id` | `none` on this row | Yes, E |
 | `referral` | "You should talk to X at Y" | `replied`; new row for X with `referral_from` | `ask_referral` (permission) | Yes, F |
 | `not_now` | "Ask me in January", "No budget until Q1" | `not_now` with `next_action_date` | `recontact` | Yes, G |
-| `no` | A decline after a real conversation that leaves the door open: "Not for us this year, but keep me posted" | `no` | `none` | Yes, H |
+| `no` | A decline after a real conversation, without asking you to stop: "Not for us, thanks for the call" | `no` | `none` | Yes, H (thanks and one referral ask) |
 | `opt_out` | "No thanks", "Not interested", "Stop", "Unsubscribe", "Remove me", or any reply that says so in other words | `do_not_contact`, `do_not_contact = Y`, `opt_out_date` = today, the same day | `none` | **No reply at all** |
 | `obj_seed_ourselves` | "We can seed offices ourselves for free" | `replied` | `book_call` | Yes, J1 |
 | `obj_price` | "$600 for 250 units is more than we pay per sample elsewhere" | `replied` | `book_call` | Yes, J2 |
@@ -228,12 +228,12 @@ ask: none
 ---
 {greeting}
 
-Thank you for telling me, and for the time you gave this. I won't follow up on it.
+Thank you for telling me, and for your time. I won't follow up on this; is there one person you'd suggest I talk to instead?
 
 {SIGNATURE}
 ```
 
-`status = no`. Do not ask for a referral in the same email; if you want one, 08 part 2c, once, a week later. Never put a `no` row back in a daily view.
+`status = no`. This is the plan's "thank them, ask for one referral, move on", in one email. Never put a `no` row back in a daily view.
 
 ### I. `opt_out`: no reply, same-day write-back
 
@@ -372,3 +372,5 @@ No reply 5 business days after the last touch of a sequence:
 ## Changelog
 
 - Round 1 (2026-10-24): drafted every reply type in Part B's `reply_type` list, the plan's four objections (rewritten so each is true on the day it is sent, with T-ROC's checked demo price and the agreement's per-office refund), the facilities and HR note and the silence rule.
+- Round 1 corrections (2026-10-24, before the first render): office answers corrected to the plan (roughly monthly, one case per brand sized to the Tuesday headcount); the guarantee answer rewritten without a promise; ladder words in the "what do we get" answer.
+- Round 3 (2026-10-24): a `no` now gets thanks and one referral ask in one email (plan Phase 1 step 5; Part B's note template).

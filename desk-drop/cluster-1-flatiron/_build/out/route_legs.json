@@ -4,8 +4,8 @@
    "stop": 1,
    "path": [
     [
-     -73.989367,
-     40.737722
+     -73.984174,
+     40.742833
     ]
    ]
   },
@@ -13,20 +13,12 @@
    "stop": 2,
    "path": [
     [
-     -73.989492,
-     40.737553
+     -73.984231,
+     40.742858
     ],
     [
-     -73.991708,
-     40.738502
-    ],
-    [
-     -73.991819,
-     40.738352
-    ],
-    [
-     -73.994249,
-     40.739393
+     -73.984668,
+     40.742269
     ]
    ]
   },
@@ -34,16 +26,16 @@
    "stop": 3,
    "path": [
     [
-     -73.994249,
-     40.739393
+     -73.984668,
+     40.742269
     ],
     [
-     -73.995274,
-     40.739832
+     -73.984794,
+     40.7421
     ],
     [
-     -73.994977,
-     40.740232
+     -73.987399,
+     40.743215
     ]
    ]
   },
@@ -51,16 +43,20 @@
    "stop": 4,
    "path": [
     [
-     -73.994977,
-     40.740232
+     -73.987399,
+     40.743215
     ],
     [
-     -73.993425,
-     40.742319
+     -73.988338,
+     40.743617
     ],
     [
-     -73.99275,
-     40.74203
+     -73.989725,
+     40.741752
+    ],
+    [
+     -73.991859,
+     40.742666
     ]
    ]
   },
@@ -68,20 +64,20 @@
    "stop": 5,
    "path": [
     [
-     -73.99275,
-     40.74203
-    ],
-    [
-     -73.993177,
-     40.742213
+     -73.991859,
+     40.742666
     ],
     [
      -73.992604,
-     40.742984
+     40.742985
     ],
     [
-     -73.99186,
-     40.742666
+     -73.993177,
+     40.742214
+    ],
+    [
+     -73.992749,
+     40.74203
     ]
    ]
   },
@@ -89,20 +85,16 @@
    "stop": 6,
    "path": [
     [
-     -73.99186,
-     40.742666
+     -73.992749,
+     40.74203
     ],
     [
-     -73.989644,
-     40.741717
+     -73.993425,
+     40.74232
     ],
     [
-     -73.988257,
-     40.743583
-    ],
-    [
-     -73.987398,
-     40.743215
+     -73.994978,
+     40.740232
     ]
    ]
   },
@@ -110,16 +102,16 @@
    "stop": 7,
    "path": [
     [
-     -73.987398,
-     40.743215
+     -73.994978,
+     40.740232
     ],
     [
-     -73.984794,
-     40.7421
+     -73.995275,
+     40.739833
     ],
     [
-     -73.984668,
-     40.742269
+     -73.994249,
+     40.739393
     ]
    ]
   },
@@ -127,12 +119,20 @@
    "stop": 8,
    "path": [
     [
-     -73.984668,
-     40.742269
+     -73.994249,
+     40.739393
     ],
     [
-     -73.984231,
-     40.742857
+     -73.990322,
+     40.737711
+    ],
+    [
+     -73.990211,
+     40.73786
+    ],
+    [
+     -73.989493,
+     40.737553
     ]
    ]
   },
@@ -140,11 +140,15 @@
    "stop": 9,
    "path": [
     [
-     -73.984231,
-     40.742857
+     -73.989493,
+     40.737553
     ],
     [
-     -73.988655,
+     -73.988494,
+     40.737125
+    ],
+    [
+     -73.988656,
      40.736907
     ]
    ]
@@ -154,7 +158,7 @@
    "path": [
     [
      -73.988546,
-     40.736861
+     40.73686
     ]
    ]
   }
@@ -177,16 +181,16 @@
  },
  "variants": {
   "no_security_minimum": {
-   "total_minutes": 225.0,
-   "total_one_load": 205.0,
-   "end": "11:45",
-   "stops": "Aterian (37 East 18th Street); Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Empathy (56 West 22nd Street); Inspiren (61 West 23rd Street); Activate Consulting (11 East 26th Street); Simplebet (373 Park Avenue South); K Health (387 Park Avenue South); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
+   "total_minutes": 213.2,
+   "total_one_load": 193.2,
+   "end": "11:33",
+   "stops": "K Health (387 Park Avenue South); Simplebet (373 Park Avenue South); Activate Consulting (11 East 26th Street); Inspiren (61 West 23rd Street); Empathy (56 West 22nd Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Dashlane (44 West 18th Street); Aterian (37 East 18th Street); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
   },
   "no_band_rule": {
-   "total_minutes": 225.0,
-   "total_one_load": 205.0,
-   "end": "11:45",
-   "stops": "Aterian (37 East 18th Street); Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Empathy (56 West 22nd Street); Inspiren (61 West 23rd Street); Activate Consulting (11 East 26th Street); Simplebet (373 Park Avenue South); K Health (387 Park Avenue South); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
+   "total_minutes": 213.2,
+   "total_one_load": 193.2,
+   "end": "11:33",
+   "stops": "K Health (387 Park Avenue South); Simplebet (373 Park Avenue South); Activate Consulting (11 East 26th Street); Inspiren (61 West 23rd Street); Empathy (56 West 22nd Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Dashlane (44 West 18th Street); Aterian (37 East 18th Street); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
   },
   "high_or_medium": {
    "total_minutes": 194.9,

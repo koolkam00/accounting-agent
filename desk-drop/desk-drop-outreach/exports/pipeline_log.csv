@@ -1,0 +1,211 @@
+date,side,org_id,org_name,event,value_number,value_text,controls_budget,notes
+2026-10-26,office,SAMPLE-O-001,SAMPLE Office 01,outreach_sent,,,,touch_1; office-discovery-A; warm-intro
+2026-10-26,office,SAMPLE-O-002,SAMPLE Office 02,outreach_sent,,,,touch_1; office-discovery-B; linkedin
+2026-10-26,office,SAMPLE-O-003,SAMPLE Office 03,outreach_sent,,,,touch_1; office-discovery-A; walk-in
+2026-10-26,office,SAMPLE-O-019,SAMPLE Office 19,outreach_sent,,,,touch_1; office-discovery-A; linkedin
+2026-10-26,office,SAMPLE-O-038,SAMPLE Office 38,outreach_sent,,,,touch_1; office-discovery-B; linkedin
+2026-10-26,brand,SAMPLE-B-001,SAMPLE Brand 01,outreach_sent,,,,touch_1; brand-discovery-A; warm-intro
+2026-10-26,brand,SAMPLE-B-002,SAMPLE Brand 02,outreach_sent,,,,touch_1; brand-discovery-B; warm-intro
+2026-10-26,brand,SAMPLE-B-003,SAMPLE Brand 03,outreach_sent,,,,touch_1; brand-discovery-A; linkedin
+2026-10-26,brand,SAMPLE-B-019,SAMPLE Brand 19,outreach_sent,,,,touch_1; brand-discovery-A; linkedin
+2026-10-26,brand,SAMPLE-B-038,SAMPLE Brand 38,outreach_sent,,,,touch_1; brand-discovery-B; linkedin
+2026-10-27,office,SAMPLE-O-001,SAMPLE Office 01,conversation,,,,video
+2026-10-27,office,SAMPLE-O-001,SAMPLE Office 01,yes_in_principle,,,,owner: Office Manager; window: SAMPLE Tue-Wed 9-11am
+2026-10-27,office,SAMPLE-O-001,SAMPLE Office 01,budget_probe,100,SAMPLE: maybe $100 to $200 a month,,range to 200 per month
+2026-10-27,brand,SAMPLE-B-001,SAMPLE Brand 01,conversation,,,,video
+2026-10-27,brand,SAMPLE-B-001,SAMPLE Brand 01,yes_in_principle,,,Y,
+2026-10-27,brand,SAMPLE-B-001,SAMPLE Brand 01,budget_probe,500,SAMPLE: maybe $500 for that,Y,
+2026-10-27,brand,SAMPLE-B-001,SAMPLE Brand 01,budget_probe,800,"SAMPLE: $1,500 is steep, $800 maybe",Y,after_1500
+2026-10-27,office,SAMPLE-O-004,SAMPLE Office 04,outreach_sent,,,,touch_1; office-discovery-B; linkedin
+2026-10-27,office,SAMPLE-O-032,SAMPLE Office 32,outreach_sent,,,,touch_1; office-discovery-B; linkedin
+2026-10-27,brand,SAMPLE-B-004,SAMPLE Brand 04,outreach_sent,,,,touch_1; brand-discovery-B; warm-intro
+2026-10-27,brand,SAMPLE-B-032,SAMPLE Brand 32,outreach_sent,,,,touch_1; brand-discovery-B; linkedin
+2026-10-28,office,SAMPLE-O-002,SAMPLE Office 02,conversation,,,,phone
+2026-10-28,office,SAMPLE-O-002,SAMPLE Office 02,budget_probe,0,"SAMPLE: honestly, no budget for that",,
+2026-10-28,brand,SAMPLE-B-002,SAMPLE Brand 02,conversation,,,,video
+2026-10-28,brand,SAMPLE-B-002,SAMPLE Brand 02,yes_in_principle,,,Y,
+2026-10-28,brand,SAMPLE-B-002,SAMPLE Brand 02,budget_probe,250,SAMPLE: a couple hundred,Y,
+2026-10-28,brand,SAMPLE-B-002,SAMPLE Brand 02,budget_probe,600,"SAMPLE: at $600 for five offices, yes",Y,after_1500
+2026-10-28,office,SAMPLE-O-005,SAMPLE Office 05,outreach_sent,,,,touch_1; office-discovery-A; linkedin
+2026-10-28,office,SAMPLE-O-026,SAMPLE Office 26,outreach_sent,,,,touch_1; office-discovery-B; linkedin
+2026-10-28,brand,SAMPLE-B-005,SAMPLE Brand 05,outreach_sent,,,,touch_1; brand-discovery-A; warm-intro
+2026-10-28,brand,SAMPLE-B-026,SAMPLE Brand 26,outreach_sent,,,,touch_1; brand-discovery-B; linkedin
+2026-10-29,office,SAMPLE-O-003,SAMPLE Office 03,conversation,,,,walk-in
+2026-10-29,office,SAMPLE-O-003,SAMPLE Office 03,budget_probe,,SAMPLE: I don't know,,
+2026-10-29,brand,SAMPLE-B-003,SAMPLE Brand 03,conversation,,,,video
+2026-10-29,brand,SAMPLE-B-003,SAMPLE Brand 03,budget_probe,,SAMPLE: no idea what that's worth,Y,
+2026-10-29,brand,SAMPLE-B-003,SAMPLE Brand 03,budget_probe,0,SAMPLE: not at that price,Y,after_1500
+2026-10-29,office,SAMPLE-O-006,SAMPLE Office 06,outreach_sent,,,,touch_1; office-discovery-B; walk-in
+2026-10-29,office,SAMPLE-O-020,SAMPLE Office 20,outreach_sent,,,,touch_1; office-discovery-B; linkedin
+2026-10-29,office,SAMPLE-O-039,SAMPLE Office 39,outreach_sent,,,,touch_1; office-discovery-A; linkedin
+2026-10-29,office,SAMPLE-O-019,SAMPLE Office 19,outreach_sent,,,,touch_2; office-discovery-A; linkedin
+2026-10-29,office,SAMPLE-O-038,SAMPLE Office 38,outreach_sent,,,,touch_2; office-discovery-B; linkedin
+2026-10-29,brand,SAMPLE-B-006,SAMPLE Brand 06,outreach_sent,,,,touch_1; brand-discovery-B; linkedin
+2026-10-29,brand,SAMPLE-B-020,SAMPLE Brand 20,outreach_sent,,,,touch_1; brand-discovery-B; linkedin
+2026-10-29,brand,SAMPLE-B-039,SAMPLE Brand 39,outreach_sent,,,,touch_1; brand-discovery-A; linkedin
+2026-10-29,brand,SAMPLE-B-019,SAMPLE Brand 19,outreach_sent,,,,touch_2; brand-discovery-A; linkedin
+2026-10-29,brand,SAMPLE-B-038,SAMPLE Brand 38,outreach_sent,,,,touch_2; brand-discovery-B; linkedin
+2026-10-30,office,SAMPLE-O-007,SAMPLE Office 07,outreach_sent,,,,touch_1; office-discovery-A; linkedin
+2026-10-30,office,SAMPLE-O-033,SAMPLE Office 33,outreach_sent,,,,touch_1; office-discovery-A; linkedin
+2026-10-30,office,SAMPLE-O-032,SAMPLE Office 32,outreach_sent,,,,touch_2; office-discovery-B; linkedin
+2026-10-30,brand,SAMPLE-B-007,SAMPLE Brand 07,outreach_sent,,,,touch_1; brand-discovery-A; warm-intro
+2026-10-30,brand,SAMPLE-B-033,SAMPLE Brand 33,outreach_sent,,,,touch_1; brand-discovery-A; linkedin
+2026-10-30,brand,SAMPLE-B-032,SAMPLE Brand 32,outreach_sent,,,,touch_2; brand-discovery-B; linkedin
+2026-11-02,office,SAMPLE-O-004,SAMPLE Office 04,conversation,,,,video
+2026-11-02,office,SAMPLE-O-004,SAMPLE Office 04,yes_in_principle,,,,owner: Office Manager; window: SAMPLE mornings before 10
+2026-11-02,office,SAMPLE-O-004,SAMPLE Office 04,budget_probe,300,SAMPLE: around $300 a month,,
+2026-11-02,brand,SAMPLE-B-004,SAMPLE Brand 04,conversation,,,,video
+2026-11-02,brand,SAMPLE-B-004,SAMPLE Brand 04,budget_probe,1000,"SAMPLE: a thousand, but my cofounder decides",N,
+2026-11-02,brand,SAMPLE-B-004,SAMPLE Brand 04,budget_probe,1500,"SAMPLE: $1,500 could work",N,after_1500
+2026-11-02,office,SAMPLE-O-027,SAMPLE Office 27,outreach_sent,,,,touch_1; office-discovery-A; email
+2026-11-02,office,SAMPLE-O-026,SAMPLE Office 26,outreach_sent,,,,touch_2; office-discovery-B; linkedin
+2026-11-02,brand,SAMPLE-B-027,SAMPLE Brand 27,outreach_sent,,,,touch_1; brand-discovery-A; email
+2026-11-02,brand,SAMPLE-B-026,SAMPLE Brand 26,outreach_sent,,,,touch_2; brand-discovery-B; linkedin
+2026-11-03,office,SAMPLE-O-005,SAMPLE Office 05,conversation,,,,phone
+2026-11-03,office,SAMPLE-O-005,SAMPLE Office 05,budget_probe,0,"SAMPLE: zero, it would come out of my budget",,
+2026-11-03,brand,SAMPLE-B-005,SAMPLE Brand 05,conversation,,,,video
+2026-11-03,brand,SAMPLE-B-005,SAMPLE Brand 05,budget_probe,0,SAMPLE: we would want it free,Y,
+2026-11-03,office,SAMPLE-O-008,SAMPLE Office 08,outreach_sent,,,,touch_1; office-discovery-B; email
+2026-11-03,office,SAMPLE-O-021,SAMPLE Office 21,outreach_sent,,,,touch_1; office-discovery-A; email
+2026-11-03,office,SAMPLE-O-040,SAMPLE Office 40,outreach_sent,,,,touch_1; office-discovery-B; linkedin
+2026-11-03,office,SAMPLE-O-039,SAMPLE Office 39,outreach_sent,,,,touch_2; office-discovery-A; linkedin
+2026-11-03,brand,SAMPLE-B-008,SAMPLE Brand 08,outreach_sent,,,,touch_1; brand-discovery-B; email
+2026-11-03,brand,SAMPLE-B-021,SAMPLE Brand 21,outreach_sent,,,,touch_1; brand-discovery-A; email
+2026-11-03,brand,SAMPLE-B-040,SAMPLE Brand 40,outreach_sent,,,,touch_1; brand-discovery-B; linkedin
+2026-11-03,brand,SAMPLE-B-039,SAMPLE Brand 39,outreach_sent,,,,touch_2; brand-discovery-A; linkedin
+2026-11-04,office,SAMPLE-O-006,SAMPLE Office 06,conversation,,,,in-person
+2026-11-04,office,SAMPLE-O-006,SAMPLE Office 06,yes_in_principle,,,,owner: Office Manager; window: SAMPLE Tue 8-10am
+2026-11-04,office,SAMPLE-O-006,SAMPLE Office 06,budget_probe,50,"SAMPLE: fifty dollars, maybe",,
+2026-11-04,brand,SAMPLE-B-006,SAMPLE Brand 06,conversation,,,,video
+2026-11-04,brand,SAMPLE-B-006,SAMPLE Brand 06,yes_in_principle,,,Y,
+2026-11-04,brand,SAMPLE-B-006,SAMPLE Brand 06,budget_probe,750,SAMPLE: $750 feels right,Y,
+2026-11-04,brand,SAMPLE-B-006,SAMPLE Brand 06,budget_probe,1200,"SAMPLE: we could stretch to $1,200",Y,after_1500
+2026-11-04,office,SAMPLE-O-009,SAMPLE Office 09,outreach_sent,,,,touch_1; office-discovery-A; linkedin
+2026-11-04,office,SAMPLE-O-010,SAMPLE Office 10,outreach_sent,,,,touch_1; office-discovery-B; warm-intro
+2026-11-04,office,SAMPLE-O-015,SAMPLE Office 15,outreach_sent,,,,touch_1; office-discovery-A; email
+2026-11-04,office,SAMPLE-O-034,SAMPLE Office 34,outreach_sent,,,,touch_1; office-discovery-B; email
+2026-11-04,office,SAMPLE-O-033,SAMPLE Office 33,outreach_sent,,,,touch_2; office-discovery-A; linkedin
+2026-11-04,brand,SAMPLE-B-009,SAMPLE Brand 09,outreach_sent,,,,touch_1; brand-discovery-A; linkedin
+2026-11-04,brand,SAMPLE-B-034,SAMPLE Brand 34,outreach_sent,,,,touch_1; brand-discovery-B; email
+2026-11-04,brand,SAMPLE-B-033,SAMPLE Brand 33,outreach_sent,,,,touch_2; brand-discovery-A; linkedin
+2026-11-05,office,SAMPLE-O-007,SAMPLE Office 07,conversation,,,,video
+2026-11-05,office,SAMPLE-O-007,SAMPLE Office 07,budget_probe,,SAMPLE: wouldn't want to say,,
+2026-11-05,brand,SAMPLE-B-007,SAMPLE Brand 07,conversation,,,,video
+2026-11-05,brand,SAMPLE-B-007,SAMPLE Brand 07,budget_probe,300,SAMPLE: $300,Y,
+2026-11-05,brand,SAMPLE-B-007,SAMPLE Brand 07,budget_probe,300,SAMPLE: still $300,Y,after_1500
+2026-11-05,office,SAMPLE-O-011,SAMPLE Office 11,outreach_sent,,,,touch_1; office-discovery-A; email
+2026-11-05,office,SAMPLE-O-012,SAMPLE Office 12,outreach_sent,,,,touch_1; office-discovery-B; email
+2026-11-05,office,SAMPLE-O-028,SAMPLE Office 28,outreach_sent,,,,touch_1; office-discovery-B; linkedin
+2026-11-05,office,SAMPLE-O-027,SAMPLE Office 27,outreach_sent,,,,touch_2; office-discovery-A; email
+2026-11-05,brand,SAMPLE-B-010,SAMPLE Brand 10,outreach_sent,,,,touch_1; brand-discovery-B; email
+2026-11-05,brand,SAMPLE-B-011,SAMPLE Brand 11,outreach_sent,,,,touch_1; brand-discovery-A; email
+2026-11-05,brand,SAMPLE-B-028,SAMPLE Brand 28,outreach_sent,,,,touch_1; brand-discovery-B; linkedin
+2026-11-05,brand,SAMPLE-B-027,SAMPLE Brand 27,outreach_sent,,,,touch_2; brand-discovery-A; email
+2026-11-06,office,SAMPLE-O-001,SAMPLE Office 01,conversation,,,,phone
+2026-11-06,office,SAMPLE-O-001,SAMPLE Office 01,yes_in_principle,,,,owner: Office Manager; window: SAMPLE Tue-Wed 9-11am
+2026-11-06,office,SAMPLE-O-001,SAMPLE Office 01,budget_probe,150,SAMPLE: $150 a month,,
+2026-11-06,office,SAMPLE-O-013,SAMPLE Office 13,outreach_sent,,,,touch_1; office-discovery-A; walk-in
+2026-11-06,office,SAMPLE-O-022,SAMPLE Office 22,outreach_sent,,,,touch_1; office-discovery-B; email
+2026-11-06,office,SAMPLE-O-021,SAMPLE Office 21,outreach_sent,,,,touch_2; office-discovery-A; email
+2026-11-06,brand,SAMPLE-B-012,SAMPLE Brand 12,outreach_sent,,,,touch_1; brand-discovery-B; linkedin
+2026-11-06,brand,SAMPLE-B-013,SAMPLE Brand 13,outreach_sent,,,,touch_1; brand-discovery-A; email
+2026-11-06,brand,SAMPLE-B-022,SAMPLE Brand 22,outreach_sent,,,,touch_1; brand-discovery-B; email
+2026-11-06,brand,SAMPLE-B-021,SAMPLE Brand 21,outreach_sent,,,,touch_2; brand-discovery-A; email
+2026-11-09,office,SAMPLE-O-008,SAMPLE Office 08,conversation,,,,phone
+2026-11-09,office,SAMPLE-O-008,SAMPLE Office 08,yes_in_principle,,,,owner: Office Manager; window: SAMPLE Wed 9-12
+2026-11-09,office,SAMPLE-O-008,SAMPLE Office 08,budget_probe,0,SAMPLE: we would not pay,,
+2026-11-09,brand,SAMPLE-B-008,SAMPLE Brand 08,conversation,,,,video
+2026-11-09,brand,SAMPLE-B-008,SAMPLE Brand 08,yes_in_principle,,,Y,
+2026-11-09,brand,SAMPLE-B-008,SAMPLE Brand 08,budget_probe,2000,"SAMPLE: we spend $2,000 a weekend on demos",Y,
+2026-11-09,office,SAMPLE-O-016,SAMPLE Office 16,outreach_sent,,,,touch_1; office-discovery-B; linkedin
+2026-11-09,office,SAMPLE-O-035,SAMPLE Office 35,outreach_sent,,,,touch_1; office-discovery-A; email
+2026-11-09,office,SAMPLE-O-034,SAMPLE Office 34,outreach_sent,,,,touch_2; office-discovery-B; email
+2026-11-09,brand,SAMPLE-B-016,SAMPLE Brand 16,outreach_sent,,,,touch_1; brand-discovery-B; linkedin
+2026-11-09,brand,SAMPLE-B-035,SAMPLE Brand 35,outreach_sent,,,,touch_1; brand-discovery-A; email
+2026-11-09,brand,SAMPLE-B-034,SAMPLE Brand 34,outreach_sent,,,,touch_2; brand-discovery-B; email
+2026-11-10,office,SAMPLE-O-009,SAMPLE Office 09,conversation,,,,phone
+2026-11-10,office,SAMPLE-O-010,SAMPLE Office 10,conversation,,,,video
+2026-11-10,office,SAMPLE-O-010,SAMPLE Office 10,yes_in_principle,,,,owner: Office Manager; window: SAMPLE Tue 10-11
+2026-11-10,office,SAMPLE-O-010,SAMPLE Office 10,budget_probe,200,SAMPLE: $200 to $400 if the team votes on it,,range to 400 per month
+2026-11-10,brand,SAMPLE-B-009,SAMPLE Brand 09,conversation,,,,video
+2026-11-10,office,SAMPLE-O-029,SAMPLE Office 29,outreach_sent,,,,touch_1; office-discovery-A; email
+2026-11-10,office,SAMPLE-O-028,SAMPLE Office 28,outreach_sent,,,,touch_2; office-discovery-B; linkedin
+2026-11-10,brand,SAMPLE-B-014,SAMPLE Brand 14,outreach_sent,,,,touch_1; brand-discovery-B; email
+2026-11-10,brand,SAMPLE-B-029,SAMPLE Brand 29,outreach_sent,,,,touch_1; brand-discovery-A; email
+2026-11-10,brand,SAMPLE-B-028,SAMPLE Brand 28,outreach_sent,,,,touch_2; brand-discovery-B; linkedin
+2026-11-11,brand,SAMPLE-B-010,SAMPLE Brand 10,conversation,,,,video
+2026-11-11,brand,SAMPLE-B-010,SAMPLE Brand 10,budget_probe,400,SAMPLE: $400 tops,N,
+2026-11-12,office,SAMPLE-O-011,SAMPLE Office 11,conversation,,,,phone
+2026-11-12,office,SAMPLE-O-012,SAMPLE Office 12,conversation,,,,video
+2026-11-12,office,SAMPLE-O-012,SAMPLE Office 12,budget_probe,100,"SAMPLE: a hundred a month, tops",,
+2026-11-12,brand,SAMPLE-B-011,SAMPLE Brand 11,conversation,,,,video
+2026-11-12,brand,SAMPLE-B-002,SAMPLE Brand 02,conversation,,,,video
+2026-11-12,brand,SAMPLE-B-011,SAMPLE Brand 11,yes_in_principle,,,Y,
+2026-11-12,brand,SAMPLE-B-002,SAMPLE Brand 02,yes_in_principle,,,Y,
+2026-11-12,brand,SAMPLE-B-011,SAMPLE Brand 11,budget_probe,600,SAMPLE: $600,Y,
+2026-11-12,brand,SAMPLE-B-011,SAMPLE Brand 11,budget_probe,900,SAMPLE: $900,Y,after_1500
+2026-11-12,brand,SAMPLE-B-002,SAMPLE Brand 02,budget_probe,700,SAMPLE: $700 on reflection,Y,after_1500
+2026-11-12,office,SAMPLE-O-023,SAMPLE Office 23,outreach_sent,,,,touch_1; office-discovery-A; email
+2026-11-12,office,SAMPLE-O-022,SAMPLE Office 22,outreach_sent,,,,touch_2; office-discovery-B; email
+2026-11-12,brand,SAMPLE-B-015,SAMPLE Brand 15,outreach_sent,,,,touch_1; brand-discovery-A; linkedin
+2026-11-12,brand,SAMPLE-B-023,SAMPLE Brand 23,outreach_sent,,,,touch_1; brand-discovery-A; email
+2026-11-12,brand,SAMPLE-B-022,SAMPLE Brand 22,outreach_sent,,,,touch_2; brand-discovery-B; email
+2026-11-13,office,SAMPLE-O-013,SAMPLE Office 13,conversation,,,,in-person
+2026-11-13,office,SAMPLE-O-013,SAMPLE Office 13,yes_in_principle,,,,owner: Office Manager; window: SAMPLE Tue 9am
+2026-11-13,brand,SAMPLE-B-012,SAMPLE Brand 12,conversation,,,,video
+2026-11-13,brand,SAMPLE-B-013,SAMPLE Brand 13,conversation,,,,video
+2026-11-13,brand,SAMPLE-B-013,SAMPLE Brand 13,yes_in_principle,,,Y,
+2026-11-13,brand,SAMPLE-B-012,SAMPLE Brand 12,budget_probe,100,SAMPLE: a hundred bucks,Y,
+2026-11-13,brand,SAMPLE-B-013,SAMPLE Brand 13,budget_probe,500,SAMPLE: five hundred,Y,
+2026-11-13,office,SAMPLE-O-017,SAMPLE Office 17,outreach_sent,,,,touch_1; office-discovery-A; email
+2026-11-13,office,SAMPLE-O-036,SAMPLE Office 36,outreach_sent,,,,touch_1; office-discovery-B; linkedin
+2026-11-13,office,SAMPLE-O-016,SAMPLE Office 16,outreach_sent,,,,touch_2; office-discovery-B; linkedin
+2026-11-13,brand,SAMPLE-B-017,SAMPLE Brand 17,outreach_sent,,,,touch_1; brand-discovery-A; email
+2026-11-13,brand,SAMPLE-B-036,SAMPLE Brand 36,outreach_sent,,,,touch_1; brand-discovery-B; linkedin
+2026-11-13,brand,SAMPLE-B-016,SAMPLE Brand 16,outreach_sent,,,,touch_2; brand-discovery-B; linkedin
+2026-11-16,office,SAMPLE-O-014,SAMPLE Office 14,conversation,,,,video
+2026-11-16,office,SAMPLE-O-014,SAMPLE Office 14,yes_in_principle,,,,owner: Office Manager; window: SAMPLE Wed 8-9am
+2026-11-16,office,SAMPLE-O-030,SAMPLE Office 30,outreach_sent,,,,touch_1; office-discovery-B; email
+2026-11-16,office,SAMPLE-O-029,SAMPLE Office 29,outreach_sent,,,,touch_2; office-discovery-A; email
+2026-11-16,office,SAMPLE-O-015,SAMPLE Office 15,outreach_sent,,,,touch_3; office-discovery-A; email
+2026-11-16,brand,SAMPLE-B-030,SAMPLE Brand 30,outreach_sent,,,,touch_1; brand-discovery-B; email
+2026-11-16,brand,SAMPLE-B-029,SAMPLE Brand 29,outreach_sent,,,,touch_2; brand-discovery-A; email
+2026-11-17,brand,SAMPLE-B-014,SAMPLE Brand 14,conversation,,,,video
+2026-11-17,brand,SAMPLE-B-014,SAMPLE Brand 14,yes_in_principle,,,Y,
+2026-11-17,brand,SAMPLE-B-014,SAMPLE Brand 14,budget_probe,900,SAMPLE: $900,Y,
+2026-11-17,brand,SAMPLE-B-014,SAMPLE Brand 14,budget_probe,1500,"SAMPLE: fine at $1,500",Y,after_1500
+2026-11-17,office,SAMPLE-O-024,SAMPLE Office 24,outreach_sent,,,,touch_1; office-discovery-B; linkedin
+2026-11-17,office,SAMPLE-O-023,SAMPLE Office 23,outreach_sent,,,,touch_2; office-discovery-A; email
+2026-11-17,brand,SAMPLE-B-024,SAMPLE Brand 24,outreach_sent,,,,touch_1; brand-discovery-B; linkedin
+2026-11-17,brand,SAMPLE-B-023,SAMPLE Brand 23,outreach_sent,,,,touch_2; brand-discovery-A; email
+2026-11-18,brand,SAMPLE-B-015,SAMPLE Brand 15,conversation,,,,video
+2026-11-18,brand,SAMPLE-B-015,SAMPLE Brand 15,budget_probe,50,SAMPLE: fifty,N,
+2026-11-18,office,SAMPLE-O-018,SAMPLE Office 18,outreach_sent,,,,touch_1; office-discovery-B; email
+2026-11-18,office,SAMPLE-O-037,SAMPLE Office 37,outreach_sent,,,,touch_1; office-discovery-A; email
+2026-11-18,office,SAMPLE-O-017,SAMPLE Office 17,outreach_sent,,,,touch_2; office-discovery-A; email
+2026-11-18,office,SAMPLE-O-036,SAMPLE Office 36,outreach_sent,,,,touch_2; office-discovery-B; linkedin
+2026-11-18,office,SAMPLE-O-022,SAMPLE Office 22,outreach_sent,,,,touch_3; office-discovery-B; email
+2026-11-18,brand,SAMPLE-B-018,SAMPLE Brand 18,outreach_sent,,,,touch_1; brand-discovery-B; email
+2026-11-18,brand,SAMPLE-B-037,SAMPLE Brand 37,outreach_sent,,,,touch_1; brand-discovery-A; email
+2026-11-18,brand,SAMPLE-B-017,SAMPLE Brand 17,outreach_sent,,,,touch_2; brand-discovery-A; email
+2026-11-18,brand,SAMPLE-B-036,SAMPLE Brand 36,outreach_sent,,,,touch_2; brand-discovery-B; linkedin
+2026-11-18,brand,SAMPLE-B-022,SAMPLE Brand 22,outreach_sent,,,,touch_3; brand-discovery-B; email
+2026-11-19,office,SAMPLE-O-031,SAMPLE Office 31,outreach_sent,,,,touch_1; office-discovery-A; email
+2026-11-19,brand,SAMPLE-B-031,SAMPLE Brand 31,outreach_sent,,,,touch_1; brand-discovery-A; email
+2026-11-20,office,SAMPLE-O-025,SAMPLE Office 25,outreach_sent,,,,touch_1; office-discovery-A; email
+2026-11-20,office,SAMPLE-O-024,SAMPLE Office 24,outreach_sent,,,,touch_2; office-discovery-B; linkedin
+2026-11-20,office,SAMPLE-O-029,SAMPLE Office 29,outreach_sent,,,,touch_3; office-discovery-A; email
+2026-11-20,brand,SAMPLE-B-025,SAMPLE Brand 25,outreach_sent,,,,touch_1; brand-discovery-A; email
+2026-11-20,brand,SAMPLE-B-024,SAMPLE Brand 24,outreach_sent,,,,touch_2; brand-discovery-B; linkedin
+2026-11-20,brand,SAMPLE-B-029,SAMPLE Brand 29,outreach_sent,,,,touch_3; brand-discovery-A; email
+2026-11-23,office,SAMPLE-O-018,SAMPLE Office 18,outreach_sent,,,,touch_2; office-discovery-B; email
+2026-11-23,office,SAMPLE-O-037,SAMPLE Office 37,outreach_sent,,,,touch_2; office-discovery-A; email
+2026-11-23,brand,SAMPLE-B-018,SAMPLE Brand 18,outreach_sent,,,,touch_2; brand-discovery-B; email
+2026-11-23,brand,SAMPLE-B-037,SAMPLE Brand 37,outreach_sent,,,,touch_2; brand-discovery-A; email
+2026-11-24,office,SAMPLE-O-001,SAMPLE Office 01,signed,62,,,SAMPLE-O-101
+2026-11-24,office,SAMPLE-O-031,SAMPLE Office 31,outreach_sent,,,,touch_2; office-discovery-A; email
+2026-11-24,office,SAMPLE-O-036,SAMPLE Office 36,outreach_sent,,,,touch_3; office-discovery-B; linkedin
+2026-11-24,brand,SAMPLE-B-031,SAMPLE Brand 31,outreach_sent,,,,touch_2; brand-discovery-A; email
+2026-11-24,brand,SAMPLE-B-036,SAMPLE Brand 36,outreach_sent,,,,touch_3; brand-discovery-B; linkedin
+2026-12-03,brand,SAMPLE-B-001,SAMPLE Brand 01,paid,600,,,payment 1; SAMPLE-BR-101; founding; invoice SAMPLE-INV-0001
+2027-01-27,brand,SAMPLE-B-001,SAMPLE Brand 01,renewal_answer,,maybe,,"SAMPLE: debrief, wants the report first"

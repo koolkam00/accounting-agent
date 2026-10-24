@@ -1,0 +1,689 @@
+[
+ {
+  "id": "office-discovery-email-full",
+  "side": "office",
+  "title": "Office cold email, discovery version: three touches",
+  "label": "every field filled",
+  "row_id": "SAMPLE-O-001",
+  "state": "SAMPLE-discovery-wk2",
+  "variant": "A",
+  "start_date": "2026-11-03",
+  "messages": [
+   {
+    "id": "office-discovery-1",
+    "offset_bd": 0
+   },
+   {
+    "id": "office-discovery-2",
+    "offset_bd": 3
+   },
+   {
+    "id": "office-discovery-3",
+    "offset_bd": 7
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "office-discovery-email-fallbacks",
+  "side": "office",
+  "title": "Office cold email, discovery version: three touches",
+  "label": "every fallback triggered",
+  "row_id": "SAMPLE-O-002",
+  "state": "SAMPLE-discovery-wk2",
+  "variant": "B",
+  "start_date": "2026-11-03",
+  "messages": [
+   {
+    "id": "office-discovery-1",
+    "offset_bd": 0
+   },
+   {
+    "id": "office-discovery-2",
+    "offset_bd": 3
+   },
+   {
+    "id": "office-discovery-3",
+    "offset_bd": 7
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "office-selling-email-full",
+  "side": "office",
+  "title": "Office cold email, selling version: three touches",
+  "label": "every field filled",
+  "row_id": "SAMPLE-O-001",
+  "state": "SAMPLE-office-selling-progress",
+  "variant": "A",
+  "start_date": "2026-11-17",
+  "messages": [
+   {
+    "id": "office-selling-1",
+    "offset_bd": 0
+   },
+   {
+    "id": "office-selling-2",
+    "offset_bd": 3
+   },
+   {
+    "id": "office-selling-3",
+    "offset_bd": 7
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "office-selling-email-fallbacks",
+  "side": "office",
+  "title": "Office cold email, selling version: three touches",
+  "label": "every fallback triggered",
+  "row_id": "SAMPLE-O-002",
+  "state": "SAMPLE-office-selling-none-yet",
+  "variant": "B",
+  "start_date": "2026-11-17",
+  "messages": [
+   {
+    "id": "office-selling-1",
+    "offset_bd": 0
+   },
+   {
+    "id": "office-selling-2",
+    "offset_bd": 3
+   },
+   {
+    "id": "office-selling-3",
+    "offset_bd": 7
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "office-discovery-linkedin-full",
+  "side": "office",
+  "title": "Office LinkedIn, discovery version: note, message on acceptance, one follow-up",
+  "label": "every field filled",
+  "row_id": "SAMPLE-O-001",
+  "state": "SAMPLE-linkedin-discovery",
+  "variant": "A",
+  "start_date": "2026-10-27",
+  "messages": [
+   {
+    "id": "li-office-discovery-note",
+    "offset_bd": 0
+   },
+   {
+    "id": "li-office-discovery-1",
+    "offset_bd": 1
+   },
+   {
+    "id": "li-office-discovery-2",
+    "offset_bd": 6
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "office-discovery-linkedin-fallbacks",
+  "side": "office",
+  "title": "Office LinkedIn, discovery version: note, message on acceptance, one follow-up",
+  "label": "every fallback triggered",
+  "row_id": "SAMPLE-O-002",
+  "state": "SAMPLE-linkedin-discovery",
+  "variant": "A",
+  "start_date": "2026-10-27",
+  "messages": [
+   {
+    "id": "li-office-discovery-note",
+    "offset_bd": 0
+   },
+   {
+    "id": "li-office-discovery-1",
+    "offset_bd": 1
+   },
+   {
+    "id": "li-office-discovery-2",
+    "offset_bd": 6
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "office-selling-linkedin-full",
+  "side": "office",
+  "title": "Office LinkedIn, selling version: note, message on acceptance, one follow-up",
+  "label": "every field filled",
+  "row_id": "SAMPLE-O-001",
+  "state": "SAMPLE-linkedin-selling",
+  "variant": "A",
+  "start_date": "2026-11-18",
+  "messages": [
+   {
+    "id": "li-office-selling-note",
+    "offset_bd": 0
+   },
+   {
+    "id": "li-office-selling-1",
+    "offset_bd": 1
+   },
+   {
+    "id": "li-office-selling-2",
+    "offset_bd": 6
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "office-selling-linkedin-fallbacks",
+  "side": "office",
+  "title": "Office LinkedIn, selling version: note, message on acceptance, one follow-up",
+  "label": "every fallback triggered",
+  "row_id": "SAMPLE-O-002",
+  "state": "SAMPLE-linkedin-selling-first-yes",
+  "variant": "A",
+  "start_date": "2026-11-18",
+  "messages": [
+   {
+    "id": "li-office-selling-note",
+    "offset_bd": 0
+   },
+   {
+    "id": "li-office-selling-1",
+    "offset_bd": 1
+   },
+   {
+    "id": "li-office-selling-2",
+    "offset_bd": 6
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "brand-discovery-email-full",
+  "side": "brand",
+  "title": "Brand cold email, discovery version: three touches",
+  "label": "every field filled",
+  "row_id": "SAMPLE-B-001",
+  "state": "SAMPLE-discovery-wk2",
+  "variant": "A",
+  "start_date": "2026-11-04",
+  "messages": [
+   {
+    "id": "brand-discovery-1",
+    "offset_bd": 0
+   },
+   {
+    "id": "brand-discovery-2",
+    "offset_bd": 3
+   },
+   {
+    "id": "brand-discovery-3",
+    "offset_bd": 7
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "brand-discovery-email-fallbacks",
+  "side": "brand",
+  "title": "Brand cold email, discovery version: three touches",
+  "label": "every fallback triggered",
+  "row_id": "SAMPLE-B-002",
+  "state": "SAMPLE-discovery-wk2",
+  "variant": "B",
+  "start_date": "2026-11-04",
+  "messages": [
+   {
+    "id": "brand-discovery-1",
+    "offset_bd": 0
+   },
+   {
+    "id": "brand-discovery-2",
+    "offset_bd": 3
+   },
+   {
+    "id": "brand-discovery-3",
+    "offset_bd": 7
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "brand-selling-email-full",
+  "side": "brand",
+  "title": "Brand cold email, selling version: three touches",
+  "label": "every field filled",
+  "row_id": "SAMPLE-B-001",
+  "state": "SAMPLE-brand-selling-progress",
+  "variant": "A",
+  "start_date": "2026-11-19",
+  "messages": [
+   {
+    "id": "brand-selling-1",
+    "offset_bd": 0
+   },
+   {
+    "id": "brand-selling-2",
+    "offset_bd": 3
+   },
+   {
+    "id": "brand-selling-3",
+    "offset_bd": 7
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "brand-selling-email-fallbacks",
+  "side": "brand",
+  "title": "Brand cold email, selling version: three touches",
+  "label": "every fallback triggered",
+  "row_id": "SAMPLE-B-002",
+  "state": "SAMPLE-brand-selling-first-yes",
+  "variant": "B",
+  "start_date": "2026-11-19",
+  "messages": [
+   {
+    "id": "brand-selling-1",
+    "offset_bd": 0
+   },
+   {
+    "id": "brand-selling-2",
+    "offset_bd": 3
+   },
+   {
+    "id": "brand-selling-3",
+    "offset_bd": 7
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "brand-discovery-linkedin-full",
+  "side": "brand",
+  "title": "Brand LinkedIn, discovery version: note, message on acceptance, one follow-up",
+  "label": "every field filled",
+  "row_id": "SAMPLE-B-001",
+  "state": "SAMPLE-linkedin-discovery",
+  "variant": "A",
+  "start_date": "2026-10-27",
+  "messages": [
+   {
+    "id": "li-brand-discovery-note",
+    "offset_bd": 0
+   },
+   {
+    "id": "li-brand-discovery-1",
+    "offset_bd": 1
+   },
+   {
+    "id": "li-brand-discovery-2",
+    "offset_bd": 6
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "brand-discovery-linkedin-fallbacks",
+  "side": "brand",
+  "title": "Brand LinkedIn, discovery version: note, message on acceptance, one follow-up",
+  "label": "every fallback triggered",
+  "row_id": "SAMPLE-B-002",
+  "state": "SAMPLE-linkedin-discovery",
+  "variant": "A",
+  "start_date": "2026-10-27",
+  "messages": [
+   {
+    "id": "li-brand-discovery-note",
+    "offset_bd": 0
+   },
+   {
+    "id": "li-brand-discovery-1",
+    "offset_bd": 1
+   },
+   {
+    "id": "li-brand-discovery-2",
+    "offset_bd": 6
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "brand-selling-linkedin-full",
+  "side": "brand",
+  "title": "Brand LinkedIn, selling version: note, message on acceptance, one follow-up",
+  "label": "every field filled",
+  "row_id": "SAMPLE-B-001",
+  "state": "SAMPLE-linkedin-selling",
+  "variant": "A",
+  "start_date": "2026-11-18",
+  "messages": [
+   {
+    "id": "li-brand-selling-note",
+    "offset_bd": 0
+   },
+   {
+    "id": "li-brand-selling-1",
+    "offset_bd": 1
+   },
+   {
+    "id": "li-brand-selling-2",
+    "offset_bd": 6
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "brand-selling-linkedin-fallbacks",
+  "side": "brand",
+  "title": "Brand LinkedIn, selling version: note, message on acceptance, one follow-up",
+  "label": "every fallback triggered",
+  "row_id": "SAMPLE-B-002",
+  "state": "SAMPLE-linkedin-selling-first-yes",
+  "variant": "A",
+  "start_date": "2026-11-18",
+  "messages": [
+   {
+    "id": "li-brand-selling-note",
+    "offset_bd": 0
+   },
+   {
+    "id": "li-brand-selling-1",
+    "offset_bd": 1
+   },
+   {
+    "id": "li-brand-selling-2",
+    "offset_bd": 6
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "office-conversion-full",
+  "side": "office",
+  "title": "Office post-call conversion: discovery thanks, one-pager, card, yes, intake, agreement, brand approval",
+  "label": "every field filled; the yes path",
+  "row_id": "SAMPLE-O-001",
+  "brand_row_id": "SAMPLE-B-001",
+  "state": "SAMPLE-office-conversion-ready",
+  "variant": "A",
+  "start_date": "2026-11-03",
+  "messages": [
+   {
+    "id": "office-conversion-0",
+    "offset_bd": 0,
+    "state": {
+     "office_selling_on": "N",
+     "offices_signed": "0",
+     "offices_yes": "0",
+     "attorney_cleared": "N"
+    },
+    "branch": "discovery call, week 2"
+   },
+   {
+    "id": "office-conversion-1",
+    "offset_bd": 8,
+    "branch": "after Gate 0; they said yes to step 0",
+    "slot_values": {
+     "_after_step0": true
+    }
+   },
+   {
+    "id": "office-conversion-2",
+    "offset_bd": 11
+   },
+   {
+    "id": "office-conversion-5",
+    "offset_bd": 13,
+    "branch": "they replied yes to step 2"
+   },
+   {
+    "id": "office-conversion-6",
+    "offset_bd": 16
+   },
+   {
+    "id": "office-conversion-7",
+    "offset_bd": 28
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00",
+   "INTAKE FORM LINK": "https://example.com/SAMPLE-intake",
+   "ALLERGEN LINE, VERBATIM FROM THE LABEL": "SAMPLE Contains: milk."
+  }
+ },
+ {
+  "id": "office-conversion-fallbacks",
+  "side": "office",
+  "title": "Office post-call conversion: discovery thanks, then the silence path, and the intake if they had said yes",
+  "label": "every fallback triggered; nothing ready yet",
+  "row_id": "SAMPLE-O-002",
+  "state": "SAMPLE-office-conversion-nothing-ready",
+  "variant": "A",
+  "start_date": "2026-11-03",
+  "messages": [
+   {
+    "id": "office-conversion-0",
+    "offset_bd": 0,
+    "branch": "discovery call, week 2"
+   },
+   {
+    "id": "office-conversion-1",
+    "offset_bd": 8,
+    "state": {
+     "office_selling_on": "Y"
+    },
+    "branch": "after Gate 0",
+    "slot_values": {
+     "_after_step0": true
+    }
+   },
+   {
+    "id": "office-conversion-2",
+    "offset_bd": 11,
+    "state": {
+     "office_selling_on": "Y"
+    }
+   },
+   {
+    "id": "office-conversion-3",
+    "offset_bd": 15,
+    "state": {
+     "office_selling_on": "Y"
+    }
+   },
+   {
+    "id": "office-conversion-4",
+    "offset_bd": 20,
+    "state": {
+     "office_selling_on": "Y"
+    }
+   },
+   {
+    "id": "office-conversion-5",
+    "offset_bd": 16,
+    "state": {
+     "office_selling_on": "Y"
+    },
+    "branch": "if they had said yes after step 3 instead"
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00"
+  }
+ },
+ {
+  "id": "brand-conversion-full",
+  "side": "brand",
+  "title": "Brand post-call conversion: proposal, day 3, agreement, invoice, the five things, reminder, paid",
+  "label": "every field filled; company formed",
+  "row_id": "SAMPLE-B-001",
+  "state": "SAMPLE-brand-conversion-ready",
+  "variant": "A",
+  "start_date": "2026-11-23",
+  "messages": [
+   {
+    "id": "brand-conversion-0",
+    "offset_bd": 0,
+    "state": {
+     "brand_selling_on": "N",
+     "offices_yes": "1",
+     "offices_signed": "0"
+    },
+    "branch": "discovery call, week 3",
+    "days_before": 8
+   },
+   {
+    "id": "brand-conversion-1",
+    "offset_bd": 0,
+    "slot_values": {
+     "_after_step0": true
+    }
+   },
+   {
+    "id": "brand-conversion-2",
+    "offset_bd": 3
+   },
+   {
+    "id": "brand-conversion-6",
+    "offset_bd": 4,
+    "branch": "they replied yes to step 2; company formed, agreement cleared"
+   },
+   {
+    "id": "brand-conversion-7",
+    "offset_bd": 6
+   },
+   {
+    "id": "brand-conversion-8",
+    "offset_bd": 6
+   },
+   {
+    "id": "brand-conversion-9",
+    "offset_bd": 9
+   },
+   {
+    "id": "brand-conversion-10",
+    "offset_bd": 11
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00",
+   "SIGN-BY DATE": "SAMPLE Tue 2026-12-01",
+   "INVOICE ID": "SAMPLE-INV-001",
+   "INVOICE DUE: five business days from today": "SAMPLE Wed 2026-12-09",
+   "WHAT ARRIVED": "SAMPLE the logo and the two sentences",
+   "WHAT IS MISSING, BY NUMBER": "SAMPLE 1 (the insurance certificate), 2 (the allergen statement) and 5 (the discount code)",
+   "SHIP-TO ADDRESS": "SAMPLE receiving address from campaign-ops/",
+   "ONE THING THEY SAID THAT CHANGED YOUR THINKING": "SAMPLE paying for sampling only when someone sends a shelf photo"
+  }
+ },
+ {
+  "id": "brand-conversion-fallbacks",
+  "side": "brand",
+  "title": "Brand post-call conversion: follow-ups to day 14, and the verbal yes before the company exists",
+  "label": "every fallback triggered; before formation",
+  "row_id": "SAMPLE-B-002",
+  "state": "SAMPLE-brand-conversion-before-formation",
+  "variant": "A",
+  "start_date": "2026-11-17",
+  "messages": [
+   {
+    "id": "brand-conversion-0",
+    "offset_bd": 0,
+    "state": {
+     "brand_selling_on": "N",
+     "offices_yes": "1",
+     "offices_signed": "0"
+    },
+    "branch": "discovery call",
+    "days_before": 8
+   },
+   {
+    "id": "brand-conversion-1",
+    "offset_bd": 0,
+    "slot_values": {
+     "_after_step0": true
+    }
+   },
+   {
+    "id": "brand-conversion-2",
+    "offset_bd": 3
+   },
+   {
+    "id": "brand-conversion-3",
+    "offset_bd": 7
+   },
+   {
+    "id": "brand-conversion-4",
+    "offset_bd": 14
+   },
+   {
+    "id": "brand-conversion-5",
+    "offset_bd": 8,
+    "branch": "if they had said yes after day 7 instead"
+   }
+  ],
+  "slot_values": {
+   "TIME OPTION 1": "SAMPLE Tue 2026-11-24 at 10:00",
+   "TIME OPTION 2": "SAMPLE Wed 2026-11-25 at 14:00",
+   "SIGN-BY DATE": "SAMPLE Tue 2026-12-01",
+   "INVOICE ID": "SAMPLE-INV-001",
+   "INVOICE DUE: five business days from today": "SAMPLE Wed 2026-12-09",
+   "WHAT ARRIVED": "SAMPLE the logo and the two sentences",
+   "WHAT IS MISSING, BY NUMBER": "SAMPLE 1 (the insurance certificate), 2 (the allergen statement) and 5 (the discount code)",
+   "SHIP-TO ADDRESS": "SAMPLE receiving address from campaign-ops/"
+  }
+ }
+]

@@ -69,6 +69,8 @@ def as_date(v):
 
 # ----------------------------------------------------------------------------- expected values
 CUTS = {"B": dt.date(2026, 10, 30), "C": dt.date(2026, 11, 6), "D": dt.date(2026, 11, 13), "E": S.AS_OF}
+QUAL = ("qual_q1_sealed_shelf_stable_60d", "qual_q2_labeled_ingredients_allergens", "qual_q3_buy_path_near_cluster",
+        "qual_q4_can_ship_275_in_10bd", "qual_q5_product_liability_insurance", "qual_q6_contact_can_approve_600", "qual_not_excluded")
 
 
 def first_per_org(rows, pred, cut):
@@ -98,6 +100,8 @@ def expected_office(cut):
     e["o_yes"] = len(first_per_org(L, lambda r: r["yes_in_principle"] == "Y" and r["pantry_owner_named"] == "Y" and r["receiving_window"].strip(), cut))
     e["o_yes_any"] = len(first_per_org(L, lambda r: r["yes_in_principle"] == "Y", cut))
     e["o_maybe"] = len(first_per_org(L, lambda r: r["yes_in_principle"] == "maybe", cut))
+    e["o_warm"] = len(first_per_org(L, lambda r: r["channel"] == "warm-intro", cut))
+    e["o_short"] = len(first_per_org(L, lambda r: r.get("shortlist") == "Y", cut))
     bp = [r["budget_probe_low_usd"] for r in first_per_org(L, lambda r: num(r["budget_probe_low_usd"]), cut)]
     e["o_bp_med"] = median_or(bp)
     e["o_bp_n"] = len(bp)
@@ -124,6 +128,8 @@ def expected_brand(cut):
     wa = [r["wtp_after_usd"] for r in first_per_org(L, lambda r: num(r["wtp_after_usd"]), cut)]
     e["b_wb_med"], e["b_wb_n"] = median_or(wb), len(wb)
     e["b_wa_med"], e["b_wa_n"] = median_or(wa), len(wa)
+    e["b_short"] = len(first_per_org(L, lambda r: r.get("shortlist") == "Y", cut))
+    e["b_qualified"] = len(first_per_org(L, lambda r: all(r[k] == "Y" for k in QUAL) and r["qual_q7_why_now"].strip(), cut))
     return e
 
 
@@ -237,6 +243,55 @@ def test_sample(b):
     check("median pantry spend (as of)", v(f"E{b.sc['o_spend']}"), spend)
     q2 = [r["q2_sampling_budget_quarter_low_usd"] for r in first_per_org(S.BRAND_LOG, lambda r: num(r["q2_sampling_budget_quarter_low_usd"]), S.AS_OF)]
     check("median quarterly sampling budget (as of)", v(f"E{b.sc['b_q2']}"), statistics.median(q2))
+    # Gate 1 block (Gate 1 date and as of)
+    g1 = dt.date(2026, 12, 11)
+    for col, cut in (("D", g1), ("E", S.AS_OF)):
+        signed = [r for r in S.SIGNED_OFFICES if r["agreement_signed_date"] <= cut]
+        check(f"Gate 1 offices signed @ {cut}", v(f"{col}{b.sc['g1_signed']}"), len(signed))
+        check(f"Gate 1 headcount @ {cut}", v(f"{col}{b.sc['g1_headcount']}"), sum(r["tuesday_headcount"] for r in signed))
+        full = 0
+        for r in S.PAID_BRANDS:
+            tot = (r["payment_1_usd"] or 0) + (r["payment_2_usd"] or 0)
+            dd = max(d for d in (r["payment_1_date"], r["payment_2_date"]) if d)
+            if tot >= r["price_usd"] and dd <= cut:
+                full += 1
+        check(f"Gate 1 brands paid in full @ {cut}", v(f"{col}{b.sc['g1_paid']}"), full)
+        o_st = "PASS" if (len(signed) >= 5 and sum(r["tuesday_headcount"] for r in signed) >= 350) else ("not yet" if cut < g1 else "FAIL")
+        b_st = "PASS" if full >= 2 else ("not yet" if cut < g1 else ("SOFT PASS" if full == 1 else "FAIL"))
+        check(f"Gate 1 office status @ {cut}", v(f"{col}{b.sc['g1_o_status']}"), o_st)
+        check(f"Gate 1 brand status @ {cut}", v(f"{col}{b.sc['g1_b_status']}"), b_st)
+    # numbers for the Startup CPG posts (as of)
+    L, Lb, cut = S.OFFICE_LOG, S.BRAND_LOG, S.AS_OF
+    f1 = lambda rows, pred: len(first_per_org(rows, pred, cut))
+    check("post: office conversations", v(f"E{b.sc['post_office_conv']}"), expected_office(cut)["o_conv"])
+    check("post: brands reach out", v(f"E{b.sc['post_reach']}"), f1(L, lambda r: r["q3_brands_reach_out"] == "Y"))
+    check("post: one person decides", v(f"E{b.sc['post_alone']}"), f1(L, lambda r: r["owner_can_say_yes_alone"] == "Y"))
+    check("post: photo and survey yes", v(f"E{b.sc['post_q5']}"), f1(L, lambda r: r["q5_photo_and_survey"] == "Y"))
+    check("post: use a snack service", v(f"E{b.sc['post_svc']}"), f1(L, lambda r: r["uses_snack_service"] == "Y"))
+    hcs = [r["tuesday_headcount"] for r in first_per_org(L, lambda r: num(r["tuesday_headcount"]), cut)]
+    check("post: Tuesday range", v(f"E{b.sc['post_hc']}"), f"{min(hcs)} to {max(hcs)}")
+    from collections import Counter
+    ap = Counter(r["other_approver"] for r in L if r["call_date"] <= cut and r["other_approver"])
+    order = BT.LISTS["other_approver"]
+    best = max(ap.values())
+    check("post: most common other approver", v(f"E{b.sc['post_appr']}"), [a for a in order if ap.get(a, 0) == best][0])
+    lo = [r["q2_sampling_budget_quarter_low_usd"] for r in first_per_org(Lb, lambda r: num(r["q2_sampling_budget_quarter_low_usd"]), cut)]
+    hi = [r["q2_sampling_budget_quarter_high_usd"] for r in first_per_org(Lb, lambda r: num(r["q2_sampling_budget_quarter_low_usd"]), cut)]
+    check("post: brand spend range", v(f"E{b.sc['post_spend']}"), f"${min(lo):,} to ${max(hi + lo):,}")
+    check("post: seeded offices", v(f"E{b.sc['post_seeded']}"), f1(Lb, lambda r: r["q3_seeded_offices"] == "Y"))
+    check("post: median number named", v(f"E{b.sc['post_median']}"), expected_brand(cut)["b_wb_med"])
+    check("post: top blocker equals top brand objection", v(f"E{b.sc['post_blocker']}"), v(f"A{b.sc['top_brand_1']}"))
+    check("post: quotes allowed", v(f"E{b.sc['post_quotes']}"), f1(L, lambda r: r["quote_ok_to_share"] == "Y") + f1(Lb, lambda r: r["quote_ok_to_share"] == "Y"))
+    # copy-slot counts
+    oy = sum(1 for r in S.CLAY_OFFICES if r["status"] in ("yes_in_principle", "materials_sent", "signed"))
+    check("slot offices_yes", v(f"E{b.sc['slot_offices_yes']}"), oy)
+    check("slot offices_signed", v(f"E{b.sc['slot_offices_signed']}"), sum(1 for r in S.CLAY_OFFICES if r["status"] == "signed"))
+    check("slot tuesday_headcount", v(f"E{b.sc['slot_headcount']}"), sum(r["tuesday_headcount"] for r in S.SIGNED_OFFICES))
+    check("slot founding_taken", v(f"E{b.sc['slot_founding']}"), sum(1 for r in S.PAID_BRANDS if r["tier"] == "founding"))
+    check("slot brands_paid", v(f"E{b.sc['slot_brands_paid']}"), len(S.PAID_BRANDS))
+    eb_asof = expected_brand(S.AS_OF)
+    check("slot brand_selling_on", v(f"E{b.sc['slot_brand_selling']}"), "Y" if (eb_asof["b_yes"] >= 3 and oy >= 2) else "N")
+    check("check: duplicate handoff rows", v(f"E{b.sc['chk_Duplicate clay_row_id on signed_offices or paid_brands']}"), 0)
     # top three objections
     for side, rows, lst in (("office", S.OFFICE_LOG, "office_objection"), ("brand", S.BRAND_LOG, "brand_objection")):
         exp = expected_top3(rows, BT.LISTS[lst], BT.LISTS[lst + "_label"], S.AS_OF)
@@ -293,6 +348,16 @@ def test_sample(b):
     check("signed_offices budget_probe_monthly_usd", so[f"{S_.L('budget_probe_monthly_usd')}2"].value, first_probe["budget_probe_low_usd"])
     pb = wb["paid_brands"]
     check("paid_brands payment_received_date", as_date(pb[f"{b.paid_cols.L('payment_received_date')}2"].value), S.PAID_BRANDS[0]["payment_1_date"])
+    # note entry tab: the row to paste equals the first office log row
+    ne = wb["Note_Office"]
+    nr = b.note_row_office
+    got_row = [as_date(ne.cell(row=nr, column=j + 1).value) for j in range(len(BT.OFFICE_COLS))]
+    want_row = [S.OFFICE_LOG[0].get(c[0]) for c in BT.OFFICE_COLS]
+    want_row = ["" if v is None else v for v in want_row]
+    got_row = ["" if v is None else v for v in got_row]
+    check("Note_Office row to paste equals the log row", got_row, want_row)
+    check("Note_Office check cell", ne.cell(row=nr - 2, column=2).value, "OK to paste")
+    check("Note_Brand row to paste is blank when empty", all(wb["Note_Brand"].cell(row=b.note_row_brand, column=j + 1).value in (None, "") for j in range(len(BT.BRAND_COLS))), True)
     # pipeline export
     pl = wb["pipeline_log"]
     check("pipeline_log header", [pl.cell(row=1, column=j).value for j in range(1, 10)], BT.PIPELINE_COLS)
@@ -342,7 +407,7 @@ def test_sample_ignored(b):
     wb, _ = recalc(p)
     sc = wb["Scorecard"]
     check("include_sample=N: error cells", len(errors(wb)), 0)
-    for k in ("o_conv", "o_yes", "b_conv", "b_yes", "office_first", "brand_first"):
+    for k in ("o_conv", "o_yes", "b_conv", "b_yes", "office_first", "brand_first", "g1_signed", "g1_paid", "slot_brands_paid", "slot_offices_yes"):
         check(f"include_sample=N: {k} as of", sc[f"E{b.sc[k]}"].value, 0)
     check("include_sample=N: median reads none yet", sc[f"E{b.sc['o_bp_med']}"].value, "none yet")
     pl = wb["pipeline_log"]
@@ -366,6 +431,32 @@ def test_blank():
     return wb
 
 
+def test_f_columns():
+    """Every column operations (F) reads from signed_offices.csv and paid_brands.csv is in the files (parsed, not imported)."""
+    import ast
+    f = os.path.join(os.path.dirname(ROOT), "campaign-ops", "tools", "trackerdef.py")
+    if not os.path.exists(f):
+        say("skip F column check: campaign-ops/tools/trackerdef.py not found")
+        return
+    tree = ast.parse(open(f, encoding="utf-8").read())
+    lists = {}
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and isinstance(node.value, ast.List) and isinstance(node.targets[0], ast.Name):
+            try:
+                lists[node.targets[0].id] = ast.literal_eval(node.value)
+            except ValueError:
+                pass
+    import csv as _csv
+    so = next(_csv.reader(open(os.path.join(ROOT, "handoff", "signed_offices.csv"), encoding="utf-8")))
+    pb = next(_csv.reader(open(os.path.join(ROOT, "handoff", "paid_brands.csv"), encoding="utf-8")))
+    need_so = lists.get("OFFICE_INTAKE_COLS", []) + lists.get("SIGNED_OFFICES_EXTRA", []) + lists.get("SIGNED_OFFICES_REQUESTED", [])
+    need_pb = lists.get("BRAND_INTAKE_COLS", []) + lists.get("PAID_BRANDS_EXTRA", []) + lists.get("PAID_BRANDS_REQUESTED", [])
+    check("F reads from signed_offices.csv: columns missing", [c for c in need_so if c not in so], [])
+    check("F reads from paid_brands.csv: columns missing", [c for c in need_pb if c not in pb], [])
+    check("signed_offices.csv starts with the office_intake columns in order", so[:21], BT.OFFICE_INTAKE)
+    check("paid_brands.csv starts with the brand_intake columns in order", pb[:27], BT.BRAND_INTAKE)
+
+
 def main():
     b = BT.build(True, os.path.join(ROOT, "tracking", "conversation-tracker-SAMPLE.xlsx"))
     BT.build(False, os.path.join(ROOT, "tracking", "conversation-tracker.xlsx"))
@@ -378,6 +469,8 @@ def main():
     test_sample_ignored(b)
     say("== blank workbook")
     test_blank()
+    say("== operations (F) columns")
+    test_f_columns()
     say(f"RESULT: {len(FAILS)} failing of {sum(1 for l in LOG if l.startswith(('ok  ', 'FAIL')))} checks")
     with open(os.path.join(ROOT, "_work", "partB", "test_log.txt"), "w") as f:
         f.write("\n".join(LOG) + "\n")

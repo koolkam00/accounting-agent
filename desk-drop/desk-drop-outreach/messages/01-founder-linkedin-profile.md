@@ -8,7 +8,7 @@ Version 1.0 · 2026-10-24 · Part A of workstream E · folder `desk-drop-outreac
 
 **The name rule.** The legal pack holds any "public website or social profile under the working name" until the name is decided (desk-drop-legal-pack/name-check-log.md, status HOLD on 2026-10-23; a business called "DeskDrop" already sells chocolate gifts to offices). Your own profile is public. So version 1 does not name the business; your emails and calls do, one to one, which the log allows. Version 2 names it, from `{BRAND_NAME}` in `desk-drop-identity/brand.json`, only once `name_decided = Y` (`04-slot-state.csv`). This differs from the plan, which says to name it in the headline in week 1; the reason is the name check, and it is listed as a conflict in the report.
 
-**Lengths.** LinkedIn's editor allows 220 characters for the headline and 2,600 for About (Hublead's 2026 list, https://www.hublead.io/linkedin-character-limit, opened 2026-10-24; these are editor limits, not published by LinkedIn; check in the editor). The headlines below are 118 to 140 characters, so they show in full in search results on a phone as far as LinkedIn allows.
+**Lengths.** LinkedIn's editor allows 220 characters for the headline and 2,600 for About (Hublead's 2026 list, https://www.hublead.io/linkedin-character-limit, opened 2026-10-24; these are editor limits, not published by LinkedIn; check in the editor). The headlines below are 120 to 125 characters with the working name and a two-digit office count.
 
 ---
 
@@ -67,3 +67,4 @@ Only the number from `04-slot-state.csv`, updated the day it changes. Never "par
 ## Changelog
 
 - Round 1 (2026-10-24): drafted three versions keyed to the name-check hold and the tracker state; About written around the plan's measurement ladder; background left as a slot rather than invented.
+- Round 2 (2026-10-24): About restored to the ladder words (placed, depleted, purchased; "put out" and "gone" were softer renames); headline lengths restated from a count (120 to 125 characters).

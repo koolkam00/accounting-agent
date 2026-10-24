@@ -1,0 +1,350 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//campaign-ops//sop//EN
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-yes@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270119
+DTEND;VALUE=DATE:20270120
+SUMMARY:SAMPLE-model-direct-ship yes: you
+DESCRIPTION:Brand says yes: send the campaign agreement (legal pack file 1
+ 0\, Part 1 from the campaign row)\, the invoice (tools/make_invoice.py) an
+ d the certificate request (file 11)\, and ask for the allergen sheet\, log
+ o\, two card sentences\, discount code or landing page\, the unused-produc
+ t election and the newsletter choice. Latest date that still leaves five b
+ usiness days to pay before T-10.\nLog: campaigns row (tier\, offices\, ter
+ ms)\; invoices row
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-approvals_ask@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270119
+DTEND;VALUE=DATE:20270120
+SUMMARY:SAMPLE-model-direct-ship approvals ask: you
+DESCRIPTION:Ask each office on the route about this brand (template 01). A
+ n office's first three drops need its explicit yes\; after that\, notice a
+ t least five business days ahead and it comes unless they say no.\nLog: ap
+ provals rows: asked_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-building_coi@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270119
+DTEND;VALUE=DATE:20270120
+SUMMARY:SAMPLE-model-direct-ship building coi: you
+DESCRIPTION:Offices whose building wants our certificate (coi_required yes
+  or unsure): request it from our carrier at least 10 business days before 
+ that office's first drop (legal pack file 12)\, only once general liabilit
+ y is bound.\nLog: offices: building_coi_status\, building_coi_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-paid@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270126
+DTEND;VALUE=DATE:20270127
+SUMMARY:SAMPLE-model-direct-ship paid: brand
+DESCRIPTION:Payment lands in the business account: log paid_date and paid_
+ amount on invoices. Founding: due within five business days of the invoice
+  and before shipping\; standard: the first 50% on signing. Five business d
+ ays late: you decide whether to cancel and refund (file 10\, section 3).\n
+ Log: invoices: paid_date\, paid_amount_usd\, method\, bank_reference
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-coi_check@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270126
+DTEND;VALUE=DATE:20270127
+SUMMARY:SAMPLE-model-direct-ship coi check: you
+DESCRIPTION:Brand's certificate in: the five-minute check in legal pack fi
+ le 11. Tick coi_check_ok on brands. If the policy ends before 12 months af
+ ter the window\, diary the renewal certificate.\nLog: campaigns: coi_recei
+ ved_date\; brands: coi_check_ok\, coi_policy_end_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-release@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270126
+DTEND;VALUE=DATE:20270127
+SUMMARY:SAMPLE-model-direct-ship release: you
+DESCRIPTION:When campaigns shows ship_release RELEASED (payment\, agreemen
+ t\, certificate\, every office approved)\, send the ship-date email (templ
+ ate 02) the same day. Never confirm a ship date on HOLD.\nLog: campaigns: 
+ ship_release
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-direct_plan@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270126
+DTEND;VALUE=DATE:20270127
+SUMMARY:SAMPLE-model-direct-ship direct plan: you and brand
+DESCRIPTION:Direct-ship: send the brand each office's address and case lab
+ els (labels.pdf)\, ask for a service that delivers on T\, one tracking num
+ ber per office by T-2\, and the reserve shipped to you by T-5.\nLog: stops
+ : carrier_tracking later
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-ship@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270126
+DTEND;VALUE=DATE:20270127
+SUMMARY:SAMPLE-model-direct-ship ship: brand
+DESCRIPTION:Hard ship-by and cancel-by date (T-10). Approvals due. If T-10
+  to T-5 crosses 18 to 31 December\, brands were asked to ship earlier (shi
+ p_by_requested).\nLog: approvals: reply\, reply_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-receive_ds@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270202
+DTEND;VALUE=DATE:20270203
+SUMMARY:SAMPLE-model-direct-ship receive ds: you
+DESCRIPTION:Direct-ship: receive the reserve and check one package of each
+  flavor: best-by\, lot\, and the allergen line word for word.\nLog: invent
+ ory: received (reserve)
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-card_proof@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270202
+DTEND;VALUE=DATE:20270203
+SUMMARY:SAMPLE-model-direct-ship card proof: you
+DESCRIPTION:Send the brand the card text before printing (brand agreement 
+ section 1): two sentences\, allergen line\, buy line.\nLog: campaigns: car
+ d_proof_sent_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-forms@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270203
+DTEND;VALUE=DATE:20270204
+SUMMARY:SAMPLE-model-direct-ship forms: you
+DESCRIPTION:Make each campaign's survey form (forms/survey-form.md) and\, 
+ if the brand chose it\, its newsletter sign-up form. Paste the prefill tem
+ plate into campaigns. Then make the links and QR codes and import them int
+ o the link tool.\nLog: campaigns: survey_form_url\, survey_prefill_templat
+ e\, newsletter_form_url
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-kit_print@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270204
+DTEND;VALUE=DATE:20270205
+SUMMARY:SAMPLE-model-direct-ship kit print: you
+DESCRIPTION:Not arrived (founder\, courier) = slip exactly one week (tools
+ /opscal.py slip) and tell every office and the brand today (template 12). 
+ Otherwise print cards and labels (make_kit.py\; qr-check.txt must say all 
+ OK)\, test-scan every card\, and send each office its window and Slack pos
+ t (template 03).\nLog: stops: slack_post_sent_date\; costs: kit
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-kit_mail@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270204
+DTEND;VALUE=DATE:20270205
+SUMMARY:SAMPLE-model-direct-ship kit mail: you
+DESCRIPTION:Direct-ship: mail each office its tent cards and the Slack pos
+ t\, to arrive by T-1.\nLog: stops: kit_mailed_date\; costs: other_direct (
+ postage)
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-tracking@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270205
+DTEND;VALUE=DATE:20270206
+SUMMARY:SAMPLE-model-direct-ship tracking: brand
+DESCRIPTION:Direct-ship: one tracking number per office\, delivering on T.
+ \nLog: stops: carrier_tracking
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-confirm@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270208
+DTEND;VALUE=DATE:20270209
+SUMMARY:SAMPLE-model-direct-ship confirm: you
+DESCRIPTION:Text each pantry owner to confirm (template 04). Pack one labe
+ led case per office per brand against the kit checklist\; bag and label th
+ e reserve. Print the route sheet. Charge the phone\, load the hand truck. 
+ Read every link's total after your test scans and log it as the baseline.\
+ nLog: stops: confirm_text_sent_date\; scans: baseline
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-drop_ds@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270209
+DTEND;VALUE=DATE:20270210
+SUMMARY:SAMPLE-model-direct-ship drop ds: carrier and office
+DESCRIPTION:Direct-ship: watch tracking\; each office confirms the count a
+ nd sends the placement photo. Visit every office whose first drop this is.
+ \nLog: inventory: delivered (count_source office_count)\; photos\; counts
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-placement_confirm@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270210
+DTEND;VALUE=DATE:20270211
+SUMMARY:SAMPLE-model-direct-ship placement confirm: you
+DESCRIPTION:Placement confirmation to each brand (template 06): the office
+ s placed by today\, each with its photo. Office not placed by today: credi
+ t note row and refund or take it off the balance ($120 founding\, $150 sta
+ ndard). Standard: issue the balance invoice today.\nLog: invoices: credit_
+ note\, standard_balance
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-day3@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270211
+DTEND;VALUE=DATE:20270212
+SUMMARY:SAMPLE-model-direct-ship day3: you and office
+DESCRIPTION:Day 3: ask each office for a count (template 07)\; top up from
+  reserve where empty\; nudge any office under five responses. Read the lin
+ ks (mid).\nLog: counts: remaining_day3\; inventory: topped_up\; scans: mid
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-close@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270216
+DTEND;VALUE=DATE:20270217
+SUMMARY:SAMPLE-model-direct-ship close: you and office
+DESCRIPTION:Day 5: last photo and count (template 08)\; collect leftovers 
+ (brand chose return) or leave them (release). At the end of the day turn o
+ ff 'Accepting responses' on every campaign survey form and read every link
+  total (close).\nLog: counts: remaining_day5\; photos: later\; inventory: 
+ collected or released_to_office\; scans: close
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-pass_on@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270217
+DTEND;VALUE=DATE:20270218
+SUMMARY:SAMPLE-model-direct-ship pass on: you
+DESCRIPTION:Newsletter (only where chosen): send the ticked addresses once
+  (template 09)\, delete the unticked responses today\, log the count only.
+  Reconcile stock: reserve and leftovers on hand. Ask for the return label 
+ (brand chose return).\nLog: campaigns: newsletter_passed_date\, newsletter
+ _passed_count\, newsletter_unticked_deleted_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-report_draft@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270218
+DTEND;VALUE=DATE:20270219
+SUMMARY:SAMPLE-model-direct-ship report draft: you
+DESCRIPTION:Pick three comments word for word (replace names with [name re
+ moved])\, write three 'learned' lines and the recommendation on the campai
+ gn row.\nLog: campaigns: comment_1..3\, learned\, recommendation
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-report@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270219
+DTEND;VALUE=DATE:20270220
+SUMMARY:SAMPLE-model-direct-ship report: you
+DESCRIPTION:Report (make_report.py) to each brand with template 10\; stand
+ ard: after the balance is paid. Office summaries to each office. Log repor
+ t_delivered_date.\nLog: campaigns: report_delivered_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-office_debrief@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270223
+DTEND;VALUE=DATE:20270224
+SUMMARY:SAMPLE-model-direct-ship office debrief: you and office
+DESCRIPTION:Ten-minute debrief with each office (templates/debrief-office.
+ md). Log the date and the one-question answer.\nLog: stops: office_debrief
+ _date\, office_would_do_again
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-debrief@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270224
+DTEND;VALUE=DATE:20270225
+SUMMARY:SAMPLE-model-direct-ship debrief: you and brand
+DESCRIPTION:Brand debrief\, 20 minutes (templates/debrief-brand.md)\; send
+  the renewal proposal the same day. Export actuals for the financial model
+  (export_actuals.py) and set Actuals in = Y there once money\, costs and h
+ ours are final.\nLog: campaigns: debrief_date\, brand_would_buy_again\, re
+ newed\; hours: reporting_debriefs
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-return_deadline@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270302
+DTEND;VALUE=DATE:20270303
+SUMMARY:SAMPLE-model-direct-ship return deadline: you
+DESCRIPTION:Ten business days after the window: no prepaid return label = 
+ unused reserve to roster offices\, collected leftovers back to their own o
+ ffice or disposed (brand agreement section 9). Stock on hand must be zero.
+ \nLog: inventory: returned_to_brand / given_to_roster_office / released_to
+ _office / disposed
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-redemption@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270311
+DTEND;VALUE=DATE:20270312
+SUMMARY:SAMPLE-model-direct-ship redemption: brand
+DESCRIPTION:Day 30 (calendar): ask the brand for code redemptions (templat
+ e 11). Log them\; export actuals again\; update renewed.\nLog: redemptions
+ \; campaigns: renewed
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-newsletter_delete@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270319
+DTEND;VALUE=DATE:20270320
+SUMMARY:SAMPLE-model-direct-ship newsletter delete: you
+DESCRIPTION:Thirty days after passing the list on: delete every response i
+ n the sign-up form\, the form itself and the sent email\; empty the trash.
+  Log the date.\nLog: campaigns: newsletter_deleted_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-testimonial@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270326
+DTEND;VALUE=DATE:20270327
+SUMMARY:SAMPLE-model-direct-ship testimonial: brand
+DESCRIPTION:Founding brands only\, if we delivered everything in section 1
+ : the short written statement is due (brand agreement section 3).\nLog: ca
+ mpaigns: notes
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-model-direct-ship-answers_delete@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20280216
+DTEND;VALUE=DATE:20280217
+SUMMARY:SAMPLE-model-direct-ship answers delete: you
+DESCRIPTION:Twelve months after the campaign: delete the campaign's survey
+  tab\, the form's responses and the form. Log the date.\nLog: campaigns: a
+ nswers_deleted_date
+TRANSP:TRANSPARENT
+END:VEVENT
+END:VCALENDAR

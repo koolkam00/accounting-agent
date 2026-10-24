@@ -414,6 +414,30 @@ def model_route(c, b, min_security=2, bands_required=("40-75", "76-150"), confs=
                 seq += best[1]
         return sum(T[a][b2] for a, b2 in zip(seq, seq[1:])), seq
 
+    def order_exact(S):
+        """Review round 3: the exact order within each lobby class, counting the hop into the next class (a backward
+        pass over the classes). Before, each class was solved alone, so a reversed path with the same internal length
+        could leave the route at the wrong end of its class (K Health at 27th St, then 215 Park Ave S at 18th St)."""
+        groups = {}
+        for i in S:
+            groups.setdefault(LOBBY_RANK[recs[i]["lobby_type"]], []).append(i)
+        G = [groups[k] for k in sorted(groups)]
+        nxt = None   # start element -> (cost from it to the end, sequence)
+        for g in reversed(G):
+            cur = {}
+            for pm in itertools.permutations(g):
+                c_in = sum(T[a][b2] for a, b2 in zip(pm, pm[1:]))
+                if nxt:
+                    f, (c_n, s_n) = min(nxt.items(), key=lambda kv: T[pm[-1]][kv[0]] + kv[1][0])
+                    tot, seq_ = c_in + T[pm[-1]][f] + c_n, list(pm) + s_n
+                else:
+                    tot, seq_ = c_in, list(pm)
+                if pm[0] not in cur or tot < cur[pm[0]][0] - 1e-9:
+                    cur[pm[0]] = (tot, seq_)
+            nxt = cur
+        tot, seq_ = min(nxt.values(), key=lambda v: v[0])
+        return tot, seq_
+
     cache = {}
 
     def cost_of(S):
@@ -481,7 +505,7 @@ def model_route(c, b, min_security=2, bands_required=("40-75", "76-150"), confs=
         cur, S = improve(S)
         if cur < best[0] - 1e-9:
             best = (cur, sorted(S))
-    cost, seq = order(best[1], exact=True)
+    cost, seq = order_exact(best[1])
     rows, legs = [], []
     t = 8 * 60.0
     prev = None
@@ -515,7 +539,7 @@ def model_route(c, b, min_security=2, bands_required=("40-75", "76-150"), confs=
             "car_minutes_est": round(cm, 1) if cm is not None else "",
             "load": 1 + k // int(P["cases_per_load"]),
             "reload_minutes_before": reload,
-            "car_faster": ("Y" if cm is not None and cm < lm else "N") if prev is not None else "",
+            "car_faster": "" if (prev is None or cm is None) else ("Y" if cm < lm else "N"),   # blank on a same-building stop, as on the tab
             "stop_minutes": P["minutes_per_stop"],
             "arrive_est": hhmm(arrive), "depart_est": hhmm(t),
             "receiving_window_from_intake": "",

@@ -317,6 +317,7 @@ def define():
         ("price_override_usd", "I", d(fmt=MONEY, help="Only if the signed price differs from price_expected. Leave empty otherwise.")),
         ("agreement_signed_date", "I", d(fmt=DATE)), ("agreement_version", "I", d(width=8)),
         ("product_sku", "I", d(width=22, help="As on the package, with pack size.")),
+        ("units_per_case", "I", d(width=7, help="Units in one of the brand's shipping cartons (for example 24 cans). Empty = each office's units fit one labeled case.")),
         ("card_sentences", "I", d(width=30, help="The brand's two sentences, no claims (desk-drop-identity/templates/tent-card/FIELDS.md).")),
         ("allergen_source", "I", d(dv=dv_list(["contains_statement", "ingredient_list", "single_ingredient"]))),
         ("allergen_line_verbatim", "I", d(width=30, help="Word for word from the package. Checked against the package at receiving.")),
@@ -401,6 +402,10 @@ def define():
         ("later_photo_day", "A", d(width=6)), ("both_photos", "A", d(width=6)),
         ("survey_responses", "A", d(width=7)), ("tried_yes", "A", d(width=7)), ("qr_scans", "A", d(width=7)),
         ("post_link_opens", "A", d(width=7)), ("checks", "A", d(width=40)),
+        ("tried_no_didnt_see", "A", d(width=6)), ("tried_no_not_for_me", "A", d(width=6)), ("tried_no_gone", "A", d(width=6)),
+        ("rating_n", "A", d(width=6)), ("rating_sum", "A", d(width=6)), ("buy_yes", "A", d(width=6)),
+        ("buy_maybe", "A", d(width=6)), ("buy_no", "A", d(width=6)), ("comments", "A", d(width=6)),
+        ("seq_key", "A", d(width=12)), ("window_end", "A", d(fmt=DATE)), ("resp_min_key", "A", d(width=8)),
     ]), N["approvals"], "One row per office per campaign: the office's yes, its units, and its whole ladder.", color="E2EFDA", group="Campaign"))
 
     add(Tab("stops", _cols([
@@ -414,6 +419,8 @@ def define():
         ("arrival_time", "I", d(fmt=TIME, width=8)), ("departure_time", "I", d(fmt=TIME, width=8)),
         ("handed_to_role", "I", d(dv=dv_list(["pantry owner", "front desk", "other staff", "carrier"]))),
         ("outcome", "I", d(dv=dv_list(OUTCOMES))), ("notes", "I", d(width=24)),
+        ("office_debrief_date", "I", d(fmt=DATE, help="The office's ten-minute debrief after this drop.")),
+        ("office_would_do_again", "I", d(dv=dv_list(["yes", "maybe", "no"]), help="The one-question satisfaction at the office debrief.")),
         ("drop_date", "A", d(fmt=DATE)), ("company", "A", d(width=18)), ("office_address", "A", d(width=22)),
         ("floor_suite", "A"), ("receiving_window", "A"), ("receiving_type", "A"), ("pantry_owner_name", "A"),
         ("owner_phone", "A"), ("front_desk_fallback_ok", "A", d(width=7)), ("building_coi_status", "A"),
@@ -431,6 +438,7 @@ def define():
         ("note", "I", d(width=24)),
         ("drop_date", "A", d(fmt=DATE)), ("reserve_delta", "A", d(width=7)), ("rejected_delta", "A", d(width=7)),
         ("leftover_delta", "A", d(width=7)), ("best_by_ok", "A", d(width=7)), ("checks", "A", d(width=30)),
+        ("key", "A", d(width=20)),
     ]), N["inventory"], "Every unit that moves: received, rejected, delivered, topped up, collected, returned, given, disposed.", color="E2EFDA", group="Campaign"))
 
     add(Tab("counts", _cols([
@@ -454,6 +462,7 @@ def define():
         ("note", "I", d(width=20)),
         ("drop_date", "A", d(fmt=DATE)), ("window_day", "A", d(width=6)), ("usable", "A", d(width=7)),
         ("expected_file_name", "A", d(width=34)), ("checks", "A", d(width=30)),
+        ("key", "A", d(width=20)), ("key2", "A", d(width=24)),
     ]), N["photos"], "Evidence: one row per photo.", color="E2EFDA", group="Campaign"))
 
     add(Tab("links", _cols([

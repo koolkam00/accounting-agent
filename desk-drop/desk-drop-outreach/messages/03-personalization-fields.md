@@ -17,7 +17,9 @@ Version 1.0 · 2026-10-24 · Part A of workstream E · folder `desk-drop-outreac
 | `how_we_know` | both | Fifteen words or fewer, true and checkable | You, for `known_to_founder = Y` rows |
 | `referrer_ok_to_name` | both | Y once the referrer agreed to be named | You, from their reply |
 
-All six are optional. Every one has a fallback, so a blank never stops a send.
+All six are optional. Every one has a fallback, so a blank never breaks a message.
+
+**The floor.** A fallback keeps the copy readable; it does not make a message personal. If a touch 1 would go out with nothing about the person or company in it (no name, no company, no street, no store, no why-now), `_render/fill.py` warns "fix the row before sending". In a real daily view that means the row is missing its company or contact and should not have been queued.
 
 ---
 
@@ -26,12 +28,15 @@ All six are optional. Every one has a fallback, so a blank never stops a send.
 | Token | Clay column | Rule | Fallback |
 | --- | --- | --- | --- |
 | `{greeting}` | `first_name` | "Hi {first_name}," for a real first name | "Hello," (blank, or a role word such as team, office, info, admin, hr) |
-| `{company}` | `company` | Trailing Inc, LLC, Corp, Co, Ltd, PBC removed | "your office" (offices), "your brand" (brands) |
+| `{company}` | `company` | Trailing Inc, LLC, Corp, Co, Ltd, PBC removed. Sentences are built so the fallback reads: "the pantry at {company}", never "the {company} pantry" | "your office" (offices), "your brand" (brands) |
 | `{area}` | `street_short`, else the address column | Street name only, W and E spelled out | the cluster name: "Flatiron, NoMad and Union Square" |
 | `{?why_now_hook}` | `why_now_hook` with `why_now_date`, `why_now_url` | Only if filled, under 120 days old on the send date, and you opened the source | left out |
 | `{product}` | `product_short` (from `product_example`) | Two to four words, the product's own name | the brand name, then "your product" |
 | `{?retailer_line}` | `nearest_stocked_retailer`, `nearest_retailer_grade` | By grade, below | left out (grade `unverified` or blank) |
 | `{category_phrase}` | `category` (brand intake `category` later) | "a chips and crisps brand" (CONTRACTS section 4 label) | "an emerging brand" |
+| `{category_short}`, `{category_only_phrase}` | `category` | "chips and crisps"; "the only chips and crisps brand" | "brand in your category"; "the only brand in your category" |
+| `{brand_name}`, `{brand_category_phrase}`, `{?brand_from_city}`, `{?retailer_for_office}` | the brand's row, inside an office email (10, step 7) | so the brand's fields never mix with the office's `{company}` | "the brand"; "an emerging brand"; left out; left out |
+| `{first_name_or_founder}` | `first_name` | the founder's first name, in an ask to a connector (08) | "the founder" |
 | `{?from_city}` | `hq_city` | " from Queens"; never a value marked unverified | left out |
 | `{call_note_hook_line}` | `call_note_hook` | "Thanks again for today, and for the detail about {call_note_hook}." | "Thanks again for the time today." |
 | `{referrer_name}` | `referral_from` → that row, plus `referrer_ok_to_name` | Named only with Y | not named; ordinary first touch |
@@ -67,8 +72,10 @@ The grade decides the verb. A sentence never claims more than its evidence (CONT
 
 ## Two filled examples per sequence
 
-`examples/` holds each sequence filled twice at phone width (390 px): once from a full SAMPLE row and once with every fallback triggered. Their rows are in `examples/SAMPLE-rows.csv`; no real daily view existed on 2026-10-24. `_render/README.md` says how to rebuild them, and how to make paste-ready drafts from a real daily view.
+`examples/` holds each sequence filled twice at phone width (390 px): once from a full SAMPLE row and once with every fallback triggered. Their rows are in `examples/SAMPLE-rows.csv`; no real daily view existed on 2026-10-24. `_render/HOW-TO-RUN.md` says how to rebuild them, and how to make paste-ready drafts from a real daily view.
 
 ## Changelog
 
 - Round 1 (2026-10-24): mapped every token to the CONTRACTS 6.2 stable columns; six optional E columns added to the same tables; fallbacks for every field; the retailer sentence tied to the evidence grade.
+- Round 2 (2026-10-24): after the fallback renders, sentences built so the company fallback reads everywhere ("the pantry at your office"); category and city tokens split; the brand's own tokens inside office emails; capital letters restored where a sentence starts with a fallback.
+- Round 3 (2026-10-24): the personalization floor (a warning when a touch 1 prints nothing about the person); CSV regenerated to list every token the fill script implements.

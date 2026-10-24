@@ -43,11 +43,11 @@ ask: a 20-minute research call
 
 {?why_now_hook}
 
-I'm talking to 15 founders of snack and drink brands about how they get people in New York to try their product, and what it costs them. {?retailer_line}
+I'm talking to 15 founders of snack and drink brands about how they get people in New York to try their product, and what it costs them.
 
-The idea I'm testing is putting sealed product in offices near the stores that carry it, with photos and employee feedback afterwards. Before I build it, I want to hear what has worked for you and what hasn't.
+The idea I'm testing: sealed product in offices near the stores that carry it, with photos and employee feedback afterwards. {?retailer_line}
 
-There's nothing to buy yet; I'm asking questions. Would you give me 20 minutes in the next two weeks?
+There's nothing to buy yet; I'm asking questions. Would you give me 20 minutes in the next two weeks to hear what has worked for you?
 
 {SIGNATURE}
 ```
@@ -90,7 +90,7 @@ Touch 3 is a promise. Send it only if you will write and send the summary (the p
 
 ## Part 2 · Selling version (from `brand_selling_on = Y`)
 
-Unlocked when the brand-side Gate 0 pass is recorded and at least two offices have said yes in principle (`offices_yes >= 2`). Before that, brands get the discovery version, because the selling email's main fact is the office roster. A brand that took a discovery call never gets this sequence: it is in the post-call path (11).
+Unlocked when the brand-side Gate 0 pass is recorded and at least two offices have said yes in principle (`offices_yes >= 2`). The roster sentence also says, while fewer than five offices have signed, that no brand is invoiced until five have: the plan builds the offices "before any brand is asked for money" (Phase 1). Before that, brands get the discovery version, because the selling email's main fact is the office roster. A brand that took a discovery call never gets this sequence: it is in the post-call path (11).
 
 | Touch | Sent | Subject | The one ask |
 | --- | --- | --- | --- |
@@ -104,17 +104,17 @@ side: brand
 stage: selling
 touch: 1
 channel: email
-subject_A: {company} in Flatiron office pantries for a week
+subject_A: {company} in {CLUSTER_SHORT} office pantries for a week
 subject_B: Office sampling near {CLUSTER_SHORT}: what it costs and what you get
 ask: is it worth a 20-minute call
 ---
 {greeting}
 
-{?retailer_line} [ROSTER LINE]
+[ROSTER LINE] {?retailer_line}
 
-[OFFER LINE] Nothing is promised about sales: the report says what happened, and what it can't show.
+[OFFER LINE] No sales promises: the report says what happened and what it can't show.
 
-Is it worth 20 minutes to see whether it fits?
+Is it worth 20 minutes to see if it fits?
 
 {SIGNATURE}
 ```
@@ -130,9 +130,9 @@ ask: may I send the proposal
 ---
 {greeting}
 
-In case price is the first question: one in-store demo shift, a single demonstrator for four to eight hours at one store, runs about $300 to $700 (T-ROC's 2026 pricing guide). This is a week in office pantries, seen by the same people each day, with photos, counts and their comments in a one-page report.
+In case price is the first question: one in-store demo shift (one person, four to eight hours, one store) runs about $300 to $700, per T-ROC's 2026 price guide. This is a week in five office pantries, seen by the same teams each day, with photos, counts and their comments in a report.
 
-Should I send the one-page proposal, with the offices by industry and size and a map of the stores near them?
+Shall I send the one-page proposal, with the offices and a map of the stores near them?
 
 {SIGNATURE}
 ```
@@ -153,7 +153,7 @@ Last note from me. [FOUNDING LINE] If the timing is wrong, when would be a bette
 {SIGNATURE}
 ```
 
-When `founding_taken = 3`, `[FOUNDING LINE]` becomes: "The next drop is [NEXT DROP DATE: Tue 2027-02-09]." and touch 1 carries the standard `[OFFER LINE]` ($1,500 for ten offices). Source for the demo price: T-ROC, "In-store demo services" pricing guide, https://trocglobal.com/in-store-demo-services/, article dated 2026-05-06, opened 2026-10-24: "about $300-700 per 4-8 hour shift with one demonstrator". If that page changes, change the sentence or drop it.
+After [LAST OFFER DATE: Tue 2026-12-08] a brand new to the pipeline cannot make campaign zero: put [NEXT DROP DATE: Tue 2027-02-09] in `[OFFER LINE]` instead (the draft maker refuses the January date after that day). When `founding_taken = 3`, `[FOUNDING LINE]` becomes: "The next drop is [NEXT DROP DATE: Tue 2027-02-09]." and touch 1 carries the standard `[OFFER LINE]` ($1,500 for ten offices). Source for the demo price: T-ROC, "In-store demo services" pricing guide, https://trocglobal.com/in-store-demo-services/, article dated 2026-05-06, opened 2026-10-24: "about $300-700 per 4-8 hour shift with one demonstrator". If that page changes, change the sentence or drop it.
 
 ---
 
@@ -166,3 +166,5 @@ When `founding_taken = 3`, `[FOUNDING LINE]` becomes: "The next drop is [NEXT DR
 ## Changelog
 
 - Round 1 (2026-10-24): drafted both versions from plan appendix C, the Phase 0 brand guide and the Phase 2 objection answers; demo price checked against T-ROC's page (four to eight hours, not the plan's "a few hours").
+- Round 2 (2026-10-24): discovery touch 1 reordered (the idea before the store sentence, which had read as if the founder already had offices); selling touch 1 cut from 148 to 124 words, with "plus your product and freight" stated; touch 2 cut; while fewer than five offices have signed the roster sentence says no brand is invoiced until five have (plan, Phase 1).
+- Round 3 (2026-10-24): the last day to offer campaign zero to a new brand, Tue 2026-12-08.

@@ -127,7 +127,7 @@ The office call guide ends with "Who else runs a pantry nearby that I should tal
 id: referral-permission
 side: both
 stage: discovery
-touch: 1
+touch: reply
 channel: email
 subject: Re: (your thank-you email after the call)
 ask: may I say they suggested it
@@ -202,7 +202,7 @@ Never after an opt-out. "No thanks", "not interested" or "stop" is an opt-out (0
 
 - **Yes:** hand over the one-pager or card with the note below. Thank them. Leave.
 - **No, or "they don't take visitors":** "No problem, thank you." Leave. Log it as `walk-in`, note "desk declined" in `call_notes`, and try LinkedIn.
-- **"What company are you with?":** "{BRAND_NAME}. It's a research stage idea, nothing to sell yet."
+- **"What company are you with?":** "{BRAND_NAME}. It's a small New York business I'm setting up; there's nothing to sell yet." (The same answer as the call guide in `calls/`.)
 
 ### 3b. At a reception desk (an office on its own floor, or a walk-up)
 
@@ -230,7 +230,7 @@ side: office
 stage: discovery
 touch: 2
 channel: walk-in
-subject: Following up from the {company} front desk today
+subject: Following up from your front desk today
 ask: a time for the call
 ---
 {greeting}
@@ -249,3 +249,4 @@ Would [TIME OPTION 1] or [TIME OPTION 2] work for 20 minutes?
 ## Changelog
 
 - Round 1 (2026-10-24): drafted the warm, referral and walk-in pieces from plan Phase 0 (five warm of fifteen; walk-ins with nothing to sell; question 7) and Phase 1 step 5 (ask for one referral).
+- Round 2 (2026-10-24): the walk-in follow-up subject no longer breaks on the company fallback; the "what company are you with?" answer matches the call guide in `calls/`; the referral permission ask is marked as a reply.

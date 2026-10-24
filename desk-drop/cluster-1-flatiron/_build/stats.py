@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Numbers quoted in the Method tab, README and REPORT. Writes _build/out/stats.json."""
-import json, os, sys
+import json, math, os, sys
 import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
@@ -76,8 +76,8 @@ S["route"] = {"stops": len(route), "stop_minutes": 15 * len(route), "walking_min
               "metres": int(route.leg_metres_est.astype(float).sum()),
               "car_faster_legs": int((route.car_faster == "Y").sum()), "longest_leg_min": float(route.leg_minutes_est.astype(float).max()),
               "lobby": route.lobby_type.value_counts().to_dict(), "bands": route.headcount_band.value_counts().to_dict(),
-              "at_12_min_stops": round(legsum + 12 * len(route), 1),
-              "nine_stops": round(route.leg_minutes_est.astype(float).iloc[:9].sum() + 15 * 9, 1)}
+              "at_12_min_stops": round(legsum + 12 * len(route) + route.reload_minutes_before.astype(float).sum(), 1),
+              "nine_stops": round(route.leg_minutes_est.astype(float).iloc[:9].sum() + 15 * 9 + route.reload_minutes_before.astype(float).iloc[:9].sum(), 1)}
 # review round 2 (R2-06): reloads between loads of build.P["cases_per_load"] cases
 rel = float(route.reload_minutes_before.astype(float).sum())
 S["route"]["reload_minutes"] = round(rel, 1)
@@ -116,6 +116,10 @@ S["coworking_high_with_second"] = int(((w.confidence == "high") & (w.second_sour
 S["coworking_high"] = int((w.confidence == "high").sum())
 ws = walk.groupby("session").agg(phase=("phase", "first"), stops=("order", "count"), minutes=("session_minutes_est", "first"),
                                  start=("start_point", "first"), end=("end_point", "first"))
+# review round 3: session minutes as the Walk tab computes them (sum of the rounded row values, rounded), so the totals agree
+_wk = walk.assign(_m=walk.walk_minutes_from_previous_est.astype(float) + walk.dwell_minutes_est.astype(float))
+ws["minutes"] = _wk.groupby("session")._m.sum().map(lambda v: int(math.floor(v + 0.5 + 1e-6)))   # half up, as the sheet's ROUND
+ws = ws.reindex(sorted(ws.index, key=int))
 S["walk"] = {"sessions": int(len(ws)), "total_minutes": round(float(ws.minutes.astype(float).sum())), "stops": int(len(walk)),
              "table": ws.reset_index().to_dict("records"),
              "core_sessions": int((ws.phase.str.startswith("core")).sum()), "outer_sessions": int((ws.phase.str.startswith("outer")).sum()),

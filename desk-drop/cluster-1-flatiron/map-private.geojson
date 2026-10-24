@@ -16,27 +16,27 @@
     "coordinates": [
      [
       [
-       -73.997729,
-       40.737251
+       -73.99773,
+       40.737252
       ],
       [
-       -73.992112,
+       -73.992114,
        40.734846
       ],
       [
-       -73.99232,
+       -73.992322,
        40.734566
       ],
       [
-       -73.987787,
+       -73.987789,
        40.732625
       ],
       [
-       -73.986862,
+       -73.986864,
        40.733868
       ],
       [
-       -73.989392,
+       -73.989394,
        40.734952
       ],
       [
@@ -44,12 +44,12 @@
        40.744591
       ],
       [
-       -73.989846,
-       40.747854
+       -73.989845,
+       40.747855
       ],
       [
-       -73.997729,
-       40.737251
+       -73.99773,
+       40.737252
       ]
      ]
     ]
@@ -11983,22 +11983,22 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     -73.989367,
-     40.737722
+     -73.984174,
+     40.742833
     ]
    },
    "properties": {
     "layer": "route-stop",
     "stop": "1",
-    "company_id": "B-C-048",
-    "company_name": "Aterian",
-    "street_address": "37 East 18th Street",
+    "company_id": "B-C-160",
+    "company_name": "K Health",
+    "street_address": "387 Park Avenue South",
     "lobby_type": "unknown",
     "arrive_est": "08:00",
     "depart_est": "08:15",
     "leg_minutes_est": "0.0",
     "reload_minutes_before": "0.0",
-    "entrance_note": ""
+    "entrance_note": "Corner building: the address is on Park Avenue South, and the building also fronts East 27th Street. The pin sits on the Park Avenue South side; check which door takes deliveries."
    }
   },
   {
@@ -12006,22 +12006,22 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     -73.994287,
-     40.739342
+     -73.984606,
+     40.742242
     ]
    },
    "properties": {
     "layer": "route-stop",
     "stop": "2",
-    "company_id": "B-C-031",
-    "company_name": "Dashlane",
-    "street_address": "44 West 18th Street",
+    "company_id": "B-C-128",
+    "company_name": "Simplebet",
+    "street_address": "373 Park Avenue South",
     "lobby_type": "unknown",
-    "arrive_est": "08:23",
-    "depart_est": "08:38",
-    "leg_minutes_est": "8.4",
+    "arrive_est": "08:16",
+    "depart_est": "08:31",
+    "leg_minutes_est": "1.4",
     "reload_minutes_before": "0.0",
-    "entrance_note": ""
+    "entrance_note": "Corner building: the address is on Park Avenue South, and the building also fronts East 26th Street. The pin sits on the Park Avenue South side; check which door takes deliveries."
    }
   },
   {
@@ -12029,43 +12029,20 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     -73.994996,
-     40.74024
+     -73.987329,
+     40.743309
     ]
    },
    "properties": {
     "layer": "route-stop",
     "stop": "3",
-    "company_id": "B-C-050",
-    "company_name": "Global Trading Systems (GTS)",
-    "street_address": "625 Avenue of the Americas",
+    "company_id": "B-C-129",
+    "company_name": "Activate Consulting",
+    "street_address": "11 East 26th Street",
     "lobby_type": "unknown",
-    "arrive_est": "08:41",
-    "depart_est": "08:56",
-    "leg_minutes_est": "3.0",
-    "reload_minutes_before": "0.0",
-    "entrance_note": "Corner building: the address is on Avenue of the Americas, and the building also fronts West 19th Street. The pin sits on the Avenue of the Americas side; check which door takes deliveries."
-   }
-  },
-  {
-   "type": "Feature",
-   "geometry": {
-    "type": "Point",
-    "coordinates": [
-     -73.992892,
-     40.741838
-    ]
-   },
-   "properties": {
-    "layer": "route-stop",
-    "stop": "4",
-    "company_id": "B-C-085",
-    "company_name": "Empathy",
-    "street_address": "56 West 22nd Street",
-    "lobby_type": "unknown",
-    "arrive_est": "09:02",
-    "depart_est": "09:17",
-    "leg_minutes_est": "6.4",
+    "arrive_est": "08:36",
+    "depart_est": "08:51",
+    "leg_minutes_est": "5.1",
     "reload_minutes_before": "0.0",
     "entrance_note": ""
    }
@@ -12081,13 +12058,36 @@
    },
    "properties": {
     "layer": "route-stop",
-    "stop": "5",
+    "stop": "4",
     "company_id": "B-C-096",
     "company_name": "Inspiren",
     "street_address": "61 West 23rd Street",
     "lobby_type": "unknown",
-    "arrive_est": "09:21",
-    "depart_est": "09:36",
+    "arrive_est": "09:01",
+    "depart_est": "09:16",
+    "leg_minutes_est": "9.5",
+    "reload_minutes_before": "0.0",
+    "entrance_note": ""
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.992892,
+     40.741838
+    ]
+   },
+   "properties": {
+    "layer": "route-stop",
+    "stop": "5",
+    "company_id": "B-C-085",
+    "company_name": "Empathy",
+    "street_address": "56 West 22nd Street",
+    "lobby_type": "unknown",
+    "arrive_est": "09:19",
+    "depart_est": "09:34",
     "leg_minutes_est": "3.8",
     "reload_minutes_before": "0.0",
     "entrance_note": ""
@@ -12098,21 +12098,44 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     -73.987329,
-     40.743309
+     -73.994996,
+     40.74024
     ]
    },
    "properties": {
     "layer": "route-stop",
     "stop": "6",
-    "company_id": "B-C-129",
-    "company_name": "Activate Consulting",
-    "street_address": "11 East 26th Street",
+    "company_id": "B-C-050",
+    "company_name": "Global Trading Systems (GTS)",
+    "street_address": "625 Avenue of the Americas",
     "lobby_type": "unknown",
-    "arrive_est": "10:06",
-    "depart_est": "10:21",
-    "leg_minutes_est": "9.5",
+    "arrive_est": "10:01",
+    "depart_est": "10:16",
+    "leg_minutes_est": "6.4",
     "reload_minutes_before": "20.0",
+    "entrance_note": "Corner building: the address is on Avenue of the Americas, and the building also fronts West 19th Street. The pin sits on the Avenue of the Americas side; check which door takes deliveries."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.994287,
+     40.739342
+    ]
+   },
+   "properties": {
+    "layer": "route-stop",
+    "stop": "7",
+    "company_id": "B-C-031",
+    "company_name": "Dashlane",
+    "street_address": "44 West 18th Street",
+    "lobby_type": "unknown",
+    "arrive_est": "10:19",
+    "depart_est": "10:34",
+    "leg_minutes_est": "3.0",
+    "reload_minutes_before": "0.0",
     "entrance_note": ""
    }
   },
@@ -12121,45 +12144,22 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     -73.984606,
-     40.742242
-    ]
-   },
-   "properties": {
-    "layer": "route-stop",
-    "stop": "7",
-    "company_id": "B-C-128",
-    "company_name": "Simplebet",
-    "street_address": "373 Park Avenue South",
-    "lobby_type": "unknown",
-    "arrive_est": "10:26",
-    "depart_est": "10:41",
-    "leg_minutes_est": "5.1",
-    "reload_minutes_before": "0.0",
-    "entrance_note": "Corner building: the address is on Park Avenue South, and the building also fronts East 26th Street. The pin sits on the Park Avenue South side; check which door takes deliveries."
-   }
-  },
-  {
-   "type": "Feature",
-   "geometry": {
-    "type": "Point",
-    "coordinates": [
-     -73.984174,
-     40.742833
+     -73.989367,
+     40.737722
     ]
    },
    "properties": {
     "layer": "route-stop",
     "stop": "8",
-    "company_id": "B-C-160",
-    "company_name": "K Health",
-    "street_address": "387 Park Avenue South",
+    "company_id": "B-C-048",
+    "company_name": "Aterian",
+    "street_address": "37 East 18th Street",
     "lobby_type": "unknown",
     "arrive_est": "10:42",
     "depart_est": "10:57",
-    "leg_minutes_est": "1.4",
+    "leg_minutes_est": "8.4",
     "reload_minutes_before": "0.0",
-    "entrance_note": "Corner building: the address is on Park Avenue South, and the building also fronts East 27th Street. The pin sits on the Park Avenue South side; check which door takes deliveries."
+    "entrance_note": ""
    }
   },
   {
@@ -12178,9 +12178,9 @@
     "company_name": "Cognitiv",
     "street_address": "215 Park Avenue South",
     "lobby_type": "security desk",
-    "arrive_est": "11:12",
-    "depart_est": "11:27",
-    "leg_minutes_est": "14.4",
+    "arrive_est": "11:00",
+    "depart_est": "11:15",
+    "leg_minutes_est": "2.6",
     "reload_minutes_before": "0.0",
     "entrance_note": "Corner building: the address is on Park Avenue South, and the building also fronts East 18th Street. The pin sits on the Park Avenue South side; check which door takes deliveries."
    }
@@ -12201,8 +12201,8 @@
     "company_name": "Global Strategy Group",
     "street_address": "215 Park Avenue South",
     "lobby_type": "security desk",
-    "arrive_est": "11:30",
-    "depart_est": "11:45",
+    "arrive_est": "11:18",
+    "depart_est": "11:33",
     "leg_minutes_est": "3.0",
     "reload_minutes_before": "0.0",
     "entrance_note": "Corner building: the address is on Park Avenue South, and the building also fronts East 18th Street. The pin sits on the Park Avenue South side; check which door takes deliveries."
@@ -12214,75 +12214,79 @@
     "type": "LineString",
     "coordinates": [
      [
-      -73.989367,
-      40.737722
-     ],
-     [
-      -73.991708,
-      40.738502
-     ],
-     [
-      -73.991819,
-      40.738352
-     ],
-     [
-      -73.994249,
-      40.739393
-     ],
-     [
-      -73.995274,
-      40.739832
-     ],
-     [
-      -73.994977,
-      40.740232
-     ],
-     [
-      -73.993425,
-      40.742319
-     ],
-     [
-      -73.99275,
-      40.74203
-     ],
-     [
-      -73.993177,
-      40.742213
-     ],
-     [
-      -73.992604,
-      40.742984
-     ],
-     [
-      -73.99186,
-      40.742666
-     ],
-     [
-      -73.989644,
-      40.741717
-     ],
-     [
-      -73.988257,
-      40.743583
-     ],
-     [
-      -73.987398,
-      40.743215
-     ],
-     [
-      -73.984794,
-      40.7421
+      -73.984174,
+      40.742833
      ],
      [
       -73.984668,
       40.742269
      ],
      [
-      -73.984231,
-      40.742857
+      -73.984794,
+      40.7421
      ],
      [
-      -73.988655,
+      -73.987399,
+      40.743215
+     ],
+     [
+      -73.988338,
+      40.743617
+     ],
+     [
+      -73.989725,
+      40.741752
+     ],
+     [
+      -73.991859,
+      40.742666
+     ],
+     [
+      -73.992604,
+      40.742985
+     ],
+     [
+      -73.993177,
+      40.742214
+     ],
+     [
+      -73.992749,
+      40.74203
+     ],
+     [
+      -73.993425,
+      40.74232
+     ],
+     [
+      -73.994978,
+      40.740232
+     ],
+     [
+      -73.995275,
+      40.739833
+     ],
+     [
+      -73.994249,
+      40.739393
+     ],
+     [
+      -73.990322,
+      40.737711
+     ],
+     [
+      -73.990211,
+      40.73786
+     ],
+     [
+      -73.989493,
+      40.737553
+     ],
+     [
+      -73.988494,
+      40.737125
+     ],
+     [
+      -73.988656,
       40.736907
      ]
     ]
@@ -13580,7 +13584,7 @@
     "order": "68",
     "stops_here": "B-B-015 10 West 18th Street",
     "street_address": "10 West 18th Street",
-    "walk_minutes_from_previous_est": "0.6",
+    "walk_minutes_from_previous_est": "0.5",
     "dwell_minutes_est": "3.0"
    }
   },

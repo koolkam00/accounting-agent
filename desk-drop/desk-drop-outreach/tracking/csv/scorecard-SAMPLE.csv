@@ -1,0 +1,136 @@
+measure,fri_wk1,fri_wk2,gate0,as_of,target,how_counted
+"SAMPLE: this file holds 113 SAMPLE rows. Illustrative placeholders, not results. include_sample = Y (SAMPLE rows are counted)",,,,,,
+Desk Drop · Friday scorecard,,,,,,
+"As of Fri 2026-12-11. Gate 0 is Fri 2026-11-13 (derived, founder to confirm). Counts are distinct offices or brands, by call_date.",,,,,,
+Measure,Fri wk 1,Fri wk 2,Gate 0,As of,Target,How it is counted
+Cut-off date,2026-10-30,2026-11-06,2026-11-13,2026-12-11,,
+Offices (Gate 0: at least 5 of 15 say yes in principle AND name a pantry owner AND a receiving window),,,,,,
+Office conversations held,3,7,13,14,15,Distinct row_ids in Office_Log with a call_date on or before the cut-off.
+"Yes in principle, pantry owner named, receiving window named",1,3,6,7,5,"The Gate 0 count. One per office, from its first qualifying conversation."
+"Gate 0, office side",not yet,not yet,PASS,PASS,,PASS once the count reaches the target. Before Gate 0 a shortfall reads 'not yet'; on or after Gate 0 it reads FAIL.
+"Yes in principle, any (owner or window may be missing)",2,4,8,9,,Offices that said Y at least once. The gap to the row above is follow-up work: get the owner and the window.
+Conversations with people you already know (channel warm-intro),1,1,2,2,5,Plan Phase 0: five of the fifteen office conversations should come from your own network. Set channel = warm-intro for anyone you knew before.
+Said maybe at least once (someone else must agree),0,1,2,2,,"Plan Phase 1: 'I need to ask facilities and HR' is a maybe, not a yes."
+"Median budget-probe answer, USD a month",50,50,75,75,,First numeric answer per office; a range counts at its low end; 'no budget' counts as 0; no number is left out.
+Offices that gave a number (0 included),2,5,8,8,,The n behind the median.
+"Of those, said no budget (0)",1,2,3,3,,Counted inside the median.
+"Offices naming $100 a month or more (decision-rule input), as of",,,,4,,Plan decision rule: office-paid tier is tested if at least five offices named $100 a month or more.
+Shortlisted offices (shortlist = Y),2,5,9,10,8,Plan Phase 0 deliverable: a shortlist of 8 offices to pursue.
+"Median monthly pantry spend today, USD, as of",,,,850,8,"First number per office, from Q1. Context for the budget probe."
+Brands (Gate 0: at least 3 of 15 say they would pay $500 or more AND the speaker controls the budget),,,,,,
+Brand conversations held,3,7,13,15,15,Distinct row_ids in Brand_Log with a call_date on or before the cut-off.
+Would pay $500 or more and controls the budget,2,3,6,7,3,"The Gate 0 count: the higher of the before and after numbers is $500 or more, and controls_budget = Y. Same rule as the financial model."
+"Gate 0, brand side",not yet,PASS,PASS,PASS,,PASS once the count reaches the target. Before Gate 0 a shortfall reads 'not yet'; on or after Gate 0 it reads FAIL.
+"Strict read: named $500 or more BEFORE hearing $1,500, and controls the budget",1,2,5,6,,Shown so an anchored answer is not mistaken for an unprompted one.
+Said $500 or more but the speaker does not control the budget,0,1,1,1,,Not counted for Gate 0 from that conversation. Ask for a call with the budget owner.
+"Median brand number before $1,500 was mentioned, USD per campaign",375,400,500,500,,First numeric before-answer per brand; 'nothing' counts as 0; no number is left out.
+"Brands that named a number before $1,500",2,6,11,13,,The n behind the median.
+"Median brand number after hearing $1,500, USD per campaign",600,700,800,850,,First numeric after-answer per brand.
+"Brands that answered after hearing $1,500",3,6,7,8,,The n behind the median.
+"Brands qualified on a call (all seven checks Y, not excluded)",2,2,5,5,,"From the qualifying-call columns (qual_q1 to qual_q7, qual_not_excluded). The brand's word; the founder verifies at payment."
+Shortlisted brands (shortlist = Y),2,3,6,7,6,Plan Phase 0 deliverable: a shortlist of 6 brands to pursue.
+"Median quarterly sampling budget, USD (low end), as of",,,,2000,15,"From Q2. Context: a $600 or $1,500 campaign against what they spend now."
+Gate 0 overall,,,,,,
+Gate 0 result,not yet,not yet,PASS,PASS,,
+Sentence for the Gate 0 decision (as of),As of 2026-12-11: 7 of 14 offices said yes with a pantry owner and a receiving window (target 5); 7 of 15 brands would pay $500 or more and control the budget (target 3). Gate 0: PASS.,,,,,
+If it fails (plan),"Fewer than 3 brands: test the office-paid version for three more weeks. Fewer than 5 offices: change the cluster or the office size band, not the model.",,,,,
+"Top three objections per side, as of (mentions across objection_1 to objection_3)",,,,,,
+Office,Mentions,First quote logged for that code,,,,
+Office side,,,,,,
+"1. I need to ask facilities, HR or someone else (needs_approval)",5,SAMPLE: needs_approval (office 04),,,,
+2. Allergy or food-safety worry (allergy_policy),5,SAMPLE: allergy_policy (office 01),,,,
+3. We already have a pantry vendor or contract (existing_vendor),2,SAMPLE: existing_vendor / allergy_policy (office 02),,,,
+Brand side,,,,,,
+1. $600 / the price is more than we pay per sample elsewhere (price_per_sample),4,SAMPLE: price_per_sample / what_we_get (brand 01),,,,
+2. We can seed offices ourselves for free (seed_ourselves),3,SAMPLE: seed_ourselves / price_per_sample (brand 03),,,,
+3. What do we actually get out of it? (what_we_get),3,SAMPLE: what_we_get (brand 04),,,,
+Pace and reply rate (from the Friday Clay paste),,,,,,
+Measure,Fri wk 1,Fri wk 2,Gate 0,As of,,How it is counted
+Office first touches sent,14,27,33,39,,Clay rows with touch_1_date on or before the cut-off.
+"Office replies (any human reply, opt-outs included)",9,18,22,24,,Rows with last_reply_date on or before the cut-off; bounces and auto-replies excluded.
+Office reply rate,0.642857142857143,0.666666666666667,0.666666666666667,0.615384615384615,,Replies / first touches. The plan needs 20%.
+Office positive replies,7,15,16,17,,"reply_type yes, maybe, needs_approval, send_info or referral."
+Office conversations per first touch,0.214285714285714,0.259259259259259,0.393939393939394,0.358974358974359,,Conversations (above) / first touches. 15 from about 75 first touches is 20%.
+Office opt-outs,0,1,2,2,,Rows with opt_out_date on or before the cut-off. Every one must have do_not_contact = Y.
+Office reply-rate check (as of),OK: at or above 20%.,,,,,
+Brand first touches sent,14,26,34,40,,Clay rows with touch_1_date on or before the cut-off.
+"Brand replies (any human reply, opt-outs included)",9,16,23,25,,Rows with last_reply_date on or before the cut-off; bounces and auto-replies excluded.
+Brand reply rate,0.642857142857143,0.615384615384615,0.676470588235294,0.625,,Replies / first touches. The plan needs 20%.
+Brand positive replies,7,13,17,18,,"reply_type yes, maybe, needs_approval, send_info or referral."
+Brand conversations per first touch,0.214285714285714,0.269230769230769,0.382352941176471,0.375,,Conversations (above) / first touches. 15 from about 75 first touches is 20%.
+Brand opt-outs,0,1,2,2,,Rows with opt_out_date on or before the cut-off. Every one must have do_not_contact = Y.
+Brand reply-rate check (as of),OK: at or above 20%.,,,,,
+Email bounces to date (offices + brands) / first touches to date,,,,0.0506329113924051,,"Two or more bounces in a week, or over 2% once 100 email first touches have gone, pauses cold email for five business days (sending guide 3.4)."
+"By sequence variant and by channel, as of (pick winners only on large gaps; see sending guide 6.4)",,,,,,
+Sequence or channel,Side,First touches,Replies,Reply rate,,Positive replies
+office-discovery-A,office,20,9,0.45,,7
+office-discovery-B,office,19,15,0.789473684210526,,10
+office-selling-A,office,0,0,,,0
+office-selling-B,office,0,0,,,0
+brand-discovery-A,brand,20,10,0.5,,8
+brand-discovery-B,brand,20,15,0.75,,10
+brand-selling-A,brand,0,0,,,0
+brand-selling-B,brand,0,0,,,0
+office-conversion-A,office,0,0,,,0
+brand-conversion-A,brand,0,0,,,0
+channel: email,office,17,6,0.352941176470588,,4
+channel: email,brand,18,8,0.444444444444444,,6
+channel: linkedin,office,17,13,0.764705882352941,,8
+channel: linkedin,brand,17,12,0.705882352941177,,7
+channel: warm-intro,office,2,2,1,,2
+channel: warm-intro,brand,5,5,1,,5
+channel: walk-in,office,3,3,1,,3
+channel: walk-in,brand,0,0,,,0
+Sequence names come from Clay's sequence column. Edit the names in column A to match the variants Part A's copy uses.,,,,,,
+After Gate 0: Gate 1 progress (five offices signed with 350+ on a Tuesday; two founding brands paid in full),,,,,,
+Measure,,,Gate 1,As of,Target,How it is counted
+Cut-off date,,,2026-12-11,2026-12-11,,
+Offices signed (signed_offices rows),,,1,1,5,Rows with a clay_row_id and agreement_signed_date on or before the cut-off.
+Combined Tuesday headcount of signed offices,,,62,62,350,"Each office's own intake number, never the Clay estimate."
+Brands paid in full,,,1,1,2,payment_1_usd + payment_2_usd reach price_usd. Ship dates and office approvals (also Gate 1) are tracked in operations.
+Brands with any payment,,,1,1,,"A standard brand's deposit counts here, not above."
+"Gate 1, office side",,,FAIL,FAIL,,"Five signed and 350 or more on a Tuesday, all inside the cluster (plan Phase 1)."
+"Gate 1, brand side",,,SOFT PASS,SOFT PASS,,"Plan: one paid brand is a soft pass: run the campaign, and the second sale is the first task after it."
+"Numbers for the Startup CPG posts (messages/12), as of: distinct offices or brands",,,,,,
+[OFFICE CONVERSATIONS],,,,14,,
+[N GET BRAND OFFERS]: q3_brands_reach_out = Y,,,,7,,
+[N ONE PERSON DECIDES]: owner_can_say_yes_alone = Y,,,,9,,
+[WHO ELSE DECIDES]: most common other_approver,,,,facilities,,
+[N WOULD PHOTO AND SURVEY]: q5_photo_and_survey = Y,,,,9,,
+[TUESDAY RANGE]: lowest to highest tuesday_headcount (first answer per office),,,,35 to 200,,
+[N USE A SERVICE]: uses_snack_service = Y,,,,4,,
+[BRAND CONVERSATIONS],,,,15,,
+"[BRAND SPEND RANGE]: lowest low to highest high quarterly sampling spend, USD",,,,"$0 to $4,500",,
+[N SEEDED OFFICES]: q3_seeded_offices = Y,,,,0,,
+"[MEDIAN NUMBER NAMED]: median brand number before $1,500",,,,500,,
+[TOP BLOCKER]: top brand objection (above),,,,1. $600 / the price is more than we pay per sample elsewhere (price_per_sample),,
+[QUOTE]: people who said yes to being quoted without their name (offices + brands),,,,5,,
+"Quote only rows with quote_ok_to_share = Y, never with a name. The other slots in messages/12 (top yes and no reasons, what happened, top report need) are read from the verbatims.",,,,,,
+Counts for the copy slots (copy these into messages/04-slot-state.csv each Friday; that file wins),,,,,,
+"offices_yes: Clay offices with status yes_in_principle, materials_sent or signed",,,,7,,
+offices_signed: Clay offices with status signed,,,,1,,
+tuesday_headcount: sum of tuesday_headcount on signed_offices (blank until one has signed),,,,62,,
+founding_taken: paid_brands rows with tier founding (0 to 3),,,,1,,
+brands_paid: paid_brands rows,,,,1,,
+brand_selling_on: brand Gate 0 PASS (as of) and offices_yes 2 or more,,,,Y,,
+"Switches the founder sets (domain_ready, attorney_cleared, llc_formed and the rest) live only in messages/04-slot-state.csv.",,,,,,
+Data checks (fix every FIX before reading the numbers above),,,,,,
+Check,,,,Count,Result,What to do
+Office_Log rows with a sync issue,,,,3,FIX,"Read calc_sync_issue on Office_Log; fix in Clay, then re-paste."
+Brand_Log rows with a sync issue,,,,1,FIX,Read calc_sync_issue on Brand_Log.
+Clay office rows with an issue,,,,2,FIX,"Sync tab, office list."
+Clay brand rows with an issue,,,,1,FIX,"Sync tab, brand list."
+Handoff rows whose Clay status is not signed / paid,,,,0,OK,Set the Clay status to signed or paid.
+Clay columns missing from a paste,,,,0,OK,Export all columns from Clay (CONTRACTS 6.2 names).
+Days since the Clay offices paste (as of),,,,0,OK,Paste a fresh export each Friday and type its date on Config.
+Days since the Clay brands paste (as of),,,,0,OK,Same.
+Offices that said Y but owner or window is missing,,,,2,info,They do not count for Gate 0 until both are named.
+Budget probe asked but no verbatim,,,,0,OK,Type the answer word for word.
+Brand number given but no verbatim,,,,0,OK,Type the answer word for word.
+Log rows with a row_id but no real call_date,,,,0,OK,Type the date as YYYY-MM-DD.
+Clay touch_1_date cells stored as text,,,,0,OK,"Reformat the column as a date in Clay or here, or they drop out of every count."
+Pipeline events beyond the export rows,,,,0,OK,"Raise EXPORT_N in tools/build_tracker.py and rebuild, or split the file."
+Notes over the ten-minute target (as of),,,,5,info,"If this grows, trim the note template, not the verbatims."
+Median minutes per note (as of),,,,9,info,Target 10 or less.
+Duplicate clay_row_id on signed_offices or paid_brands,,,,0,OK,One row per office and per brand. A second campaign for the same brand stays on its first row (renewals go on later_events).
+SAMPLE rows in this file,,,,113,SAMPLE,"Delete them before real use, or keep include_sample = N so they are ignored."

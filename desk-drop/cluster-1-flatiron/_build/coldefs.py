@@ -135,7 +135,7 @@ ROUTE = {
     "same_building": "Y if the stop is in the same building as the previous one (elevator transfer).",
     "leg_minutes_est": "Estimate: metres / hand-truck pace + crossings x expected signal wait; or the same-building transfer time.",
     "car_minutes_est": "Estimate for the same leg by car: overhead + metres x detour factor / CBD car speed.",
-    "car_faster": "Y if the car estimate beats the walk estimate.",
+    "car_faster": "Y if the car estimate beats the walk estimate, N if not; blank on the first stop and on a same-building transfer.",
     "stop_minutes": "Minutes at the stop (plan.md: 15).",
     "arrive_est": "Estimated arrival (start 08:00 at stop 1).",
     "depart_est": "Estimated departure.",

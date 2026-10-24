@@ -7,19 +7,33 @@ Generic words (job titles, category keys) are not prefixed.
 import datetime as dt
 
 D = dt.date
-AS_OF = D(2026, 11, 20)   # fixed so the test does not depend on the day it runs
+AS_OF = D(2026, 12, 11)   # Gate 1 day; fixed so the test does not depend on the day it runs
+START = D(2026, 10, 26)   # week 1 Monday; no outreach before this
+DOMAIN_EMAIL_FROM = D(2026, 11, 2)   # week 2 Monday: first cold email from the new domain (sending guide)
+HOLIDAYS = {D(2026, 11, 11)}
+
+
+def add_bd(d, n):
+    """Add n business days (negative to go back), skipping weekends and the federal holiday."""
+    step = 1 if n >= 0 else -1
+    k = 0
+    while k != n:
+        d += dt.timedelta(days=step)
+        if d.weekday() < 5 and d not in HOLIDAYS:
+            k += step
+    return d
 
 # ---------------------------------------------------------------- office log
 # one row per conversation; SAMPLE-O-001 has two calls (second row near the end)
 _o = [
     # rid, date, yes, owner_named, window, headcount, bp_verbatim, bp_low, bp_high, asked, spend, objections (codes), note_min, call_type, channel
     ("SAMPLE-O-001", D(2026, 10, 27), "Y", "Y", "SAMPLE Tue-Wed 9-11am", 60, "SAMPLE: maybe $100 to $200 a month", 100, 200, "Y", 800, ["allergy_policy"], 9, "video", "warm-intro"),
-    ("SAMPLE-O-002", D(2026, 10, 28), "Y", "Y", "", 45, "SAMPLE: honestly, no budget for that", 0, 0, "Y", 400, ["existing_vendor", "allergy_policy"], 12, "phone", "email"),
+    ("SAMPLE-O-002", D(2026, 10, 28), "Y", "Y", "", 45, "SAMPLE: honestly, no budget for that", 0, 0, "Y", 400, ["existing_vendor", "allergy_policy"], 12, "phone", "linkedin"),
     ("SAMPLE-O-003", D(2026, 10, 29), "N", "N", "", 120, "SAMPLE: I don't know", None, None, "Y", None, ["vendor_fatigue"], 8, "walk-in", "walk-in"),
     ("SAMPLE-O-004", D(2026, 11, 2), "Y", "Y", "SAMPLE mornings before 10", 90, "SAMPLE: around $300 a month", 300, 300, "Y", 1500, ["needs_approval"], 10, "video", "linkedin"),
-    ("SAMPLE-O-005", D(2026, 11, 3), "maybe", "N", "", 150, "SAMPLE: zero, it would come out of my budget", 0, 0, "Y", None, ["needs_approval", "building_receiving"], 7, "phone", "email"),
+    ("SAMPLE-O-005", D(2026, 11, 3), "maybe", "N", "", 150, "SAMPLE: zero, it would come out of my budget", 0, 0, "Y", None, ["needs_approval", "building_receiving"], 7, "phone", "linkedin"),
     ("SAMPLE-O-006", D(2026, 11, 4), "Y", "Y", "SAMPLE Tue 8-10am", 55, "SAMPLE: fifty dollars, maybe", 50, 50, "Y", 300, ["allergy_policy"], 11, "in-person", "walk-in"),
-    ("SAMPLE-O-007", D(2026, 11, 5), "N", "Y", "", 200, "SAMPLE: wouldn't want to say", None, None, "Y", 2500, ["commitments_too_much"], 6, "video", "email"),
+    ("SAMPLE-O-007", D(2026, 11, 5), "N", "Y", "", 200, "SAMPLE: wouldn't want to say", None, None, "Y", 2500, ["commitments_too_much"], 6, "video", "linkedin"),
     ("SAMPLE-O-008", D(2026, 11, 9), "Y", "Y", "SAMPLE Wed 9-12", 70, "SAMPLE: we would not pay", 0, 0, "Y", 600, ["allergy_policy", "needs_approval"], 10, "phone", "email"),
     ("SAMPLE-O-009", D(2026, 11, 10), "N", "N", "", 35, "", None, None, "N", None, ["existing_vendor"], 5, "phone", "linkedin"),
     ("SAMPLE-O-010", D(2026, 11, 10), "Y", "Y", "SAMPLE Tue 10-11", 110, "SAMPLE: $200 to $400 if the team votes on it", 200, 400, "Y", 1200, [], 9, "video", "warm-intro"),
@@ -38,7 +52,8 @@ for i, (rid, d, yes, own, win, hc, bpv, lo, hi, asked, spend, objs, nm, ct, ch) 
         "contact_title": "Office Manager" if n % 2 else "Workplace Experience Manager",
         "source": "SAMPLE warm network" if ch == "warm-intro" else "SAMPLE Clay offices table",
         "channel": ch, "call_date": d, "call_type": ct,
-        "q1_pantry_today_verbatim": f"SAMPLE: pantry answer {n:02d}", "pantry_vendor": "SAMPLE grocery order",
+        "q1_pantry_today_verbatim": f"SAMPLE: pantry answer {n:02d}", "pantry_vendor": "SAMPLE snack service" if n % 3 == 0 else "SAMPLE grocery order",
+        "uses_snack_service": "Y" if n % 3 == 0 else "N", "q3_brands_reach_out": "Y" if n % 2 else "N",
         "monthly_pantry_spend_usd": spend, "monthly_pantry_spend_verbatim": f"SAMPLE: about ${spend} a month" if spend else "",
         "tuesday_headcount": hc, "headcount_verbatim": f"SAMPLE: around {hc} on a Tuesday",
         "q3_free_product_verbatim": "SAMPLE: brands email us, we ignore most",
@@ -48,6 +63,7 @@ for i, (rid, d, yes, own, win, hc, bpv, lo, hi, asked, spend, objs, nm, ct, ch) 
         "referrals_given_count": 1 if n in (1, 10) else 0, "referrals_given": "SAMPLE Office 30 - Office Manager" if n in (1, 10) else "",
         "pantry_owner_named": own, "pantry_owner_name": f"SAMPLE Owner O{n:02d}" if own == "Y" else "",
         "pantry_owner_title": "Office Manager" if own == "Y" else "", "owner_can_say_yes_alone": "Y" if yes == "Y" else "N",
+        "other_approver": "" if yes == "Y" else ("facilities" if n % 2 else "hr"),
         "receiving_window": win, "receiving_type": "front desk" if n % 3 else "walk-up", "coi_required": "unsure" if n % 4 == 0 else "no",
         "security_notes": "SAMPLE: sign in at desk" if n % 3 else "",
         "veto_categories": "meat-snacks" if n % 2 else "chocolate-candy;sparkling-soda", "veto_verbatim": "SAMPLE: no jerky",
@@ -55,6 +71,8 @@ for i, (rid, d, yes, own, win, hc, bpv, lo, hi, asked, spend, objs, nm, ct, ch) 
         "objection_3": objs[2] if len(objs) > 2 else "",
         "objections_verbatim": ("SAMPLE: " + " / ".join(objs) + f" (office {n:02d})") if objs else "",
         "yes_in_principle": yes, "yes_signals": "asked_when" if yes == "Y" else "",
+        "shortlist": "Y" if (yes == "Y" and own == "Y") or n in (5, 12) else "",
+        "quote_ok_to_share": "Y" if n in (1, 4, 8) else "",
         "note_minutes": nm, "clay_updated": "Y", "notes": "",
     })
 
@@ -85,12 +103,16 @@ for (rid, d, wb, wbv, ctl, men, wa, wav, objs, nm) in _b:
     BRAND_LOG.append({
         "row_id": rid, "company": f"SAMPLE Brand {n:02d}", "contact_name": f"SAMPLE Contact B{n:02d}",
         "contact_title": "Founder" if n % 2 else "Head of Marketing", "source": "SAMPLE Clay brands table",
-        "channel": "email" if n % 3 else "linkedin", "call_date": d, "call_type": "video",
+        "channel": ("email" if d >= D(2026, 11, 6) else "warm-intro") if n % 3 else "linkedin", "call_date": d, "call_type": "video",
         "q1_trial_now_verbatim": "SAMPLE: demos at two stores", "q2_sampling_budget_quarter_low_usd": 1000 * (n % 5),
         "q2_sampling_budget_quarter_high_usd": 1000 * (n % 5) + 500, "q2_budget_verbatim": "SAMPLE: a few thousand a quarter",
         "budget_approver": "SAMPLE: me" if ctl == "Y" else "SAMPLE: my cofounder", "controls_budget": ctl,
-        "can_approve_600_alone": ctl, "q3_seeded_offices": "N", "q3_verbatim": "SAMPLE: never tried offices",
-        "wtp_before_usd": wb, "wtp_before_verbatim": wbv, "wtp_conversion_note": "",
+        "q3_seeded_offices": "N", "q3_verbatim": "SAMPLE: never tried offices",
+        "qual_q1_sealed_shelf_stable_60d": "Y" if n % 4 else "unsure", "qual_q2_labeled_ingredients_allergens": "Y",
+        "qual_q3_buy_path_near_cluster": "Y" if n != 12 else "N", "qual_q4_can_ship_275_in_10bd": "Y" if n % 5 else "unsure",
+        "qual_q5_product_liability_insurance": "Y" if n != 7 else "N", "qual_q6_contact_can_approve_600": ctl,
+        "qual_q7_why_now": "SAMPLE: new store near the cluster" if n % 2 else "", "qual_not_excluded": "Y",
+        "wtp_before_usd": wb, "wtp_before_verbatim": wbv, "wtp_unit_note": "",
         "price_1500_mentioned": men, "wtp_after_usd": wa, "wtp_after_verbatim": wav,
         "q5_report_needs_verbatim": "SAMPLE: photos and what people said", "q6_buy_path_type": "retailer-in-cluster" if n % 2 else "online-with-code",
         "q6_buy_path_verbatim": "SAMPLE Store, SAMPLE street", "q7_stoppers_verbatim": "SAMPLE: budget timing",
@@ -98,6 +120,8 @@ for (rid, d, wb, wbv, ctl, men, wa, wav, objs, nm) in _b:
         "objection_3": objs[2] if len(objs) > 2 else "",
         "objections_verbatim": ("SAMPLE: " + " / ".join(objs) + f" (brand {n:02d})") if objs else "",
         "yes_in_principle": "Y" if (ctl == "Y" and max(wb or 0, wa or 0) >= 500) else "N",
+        "shortlist": "Y" if (ctl == "Y" and max(wb or 0, wa or 0) >= 500) else "",
+        "quote_ok_to_share": "Y" if n in (1, 6) else "",
         "referrals_given_count": 0, "referrals_given": "", "note_minutes": nm, "clay_updated": "Y", "notes": "",
     })
 
@@ -119,8 +143,8 @@ def _clay_rows(side, log):
     for r in log:
         logged.setdefault(r["row_id"], []).append(r)
     reply_cycle = ["", "", "no", "opt_out", "bounce", "out_of_office", "not_now", "", "maybe", ""]
-    days = [D(2026, 10, 26) + dt.timedelta(days=k) for k in range(0, 26)]
-    weekdays = [d for d in days if d.weekday() < 5]
+    days = [START + dt.timedelta(days=k) for k in range(0, 26)]
+    weekdays = [d for d in days if d.weekday() < 5 and d not in HOLIDAYS]
     for n in range(1, 41):
         rid = f"SAMPLE-{letter}-{n:03d}"
         if side == "office" and n == 14:
@@ -132,17 +156,19 @@ def _clay_rows(side, log):
                     "email_status": "verified", "channel": "email" if n % 4 else "linkedin", "score": 100 - n,
                     "score_reason": "SAMPLE: score reason", "do_not_contact": "N", "status": "contacted",
                     "sequence": f"{side}-discovery-{'A' if n % 2 else 'B'}", "touch_1_date": t1, "found_date": D(2026, 10, 22)})
+        if row["channel"] == "email" and t1 < DOMAIN_EMAIL_FROM:
+            row["channel"] = "linkedin"
         if n % 5 != 0:
-            row["touch_2_date"] = t1 + dt.timedelta(days=3)
+            row["touch_2_date"] = add_bd(t1, 3)
         if n % 7 == 1:
-            row["touch_3_date"] = t1 + dt.timedelta(days=7)
+            row["touch_3_date"] = add_bd(t1, 7)
         if rid in logged:
             calls = sorted(logged[rid], key=lambda r: r["call_date"])
             first, last = calls[0], calls[-1]
-            row["touch_1_date"] = first["call_date"] - dt.timedelta(days=5)
+            row["touch_1_date"] = max(add_bd(first["call_date"], -4), START)
             row["touch_2_date"] = ""
             row["touch_3_date"] = ""
-            row["last_reply_date"] = first["call_date"] - dt.timedelta(days=3)
+            row["last_reply_date"] = min(add_bd(row["touch_1_date"], 1), first["call_date"])
             row["reply_type"] = "yes"
             row["call_date"] = last["call_date"]
             any_yes = any(c["yes_in_principle"] == "Y" for c in calls)
@@ -154,9 +180,9 @@ def _clay_rows(side, log):
             rt = reply_cycle[n % len(reply_cycle)]
             row["reply_type"] = rt
             if rt in ("no", "opt_out", "not_now", "maybe", "out_of_office"):
-                row["last_reply_date"] = t1 + dt.timedelta(days=1)
+                row["last_reply_date"] = add_bd(t1, 1)
             if rt == "opt_out":
-                row["status"], row["do_not_contact"], row["opt_out_date"] = "do_not_contact", "Y", t1 + dt.timedelta(days=1)
+                row["status"], row["do_not_contact"], row["opt_out_date"] = "do_not_contact", "Y", add_bd(t1, 1)
             elif rt == "no":
                 row["status"] = "no"
             elif rt == "not_now":
@@ -204,6 +230,8 @@ SIGNED_OFFICES = [{
     "agreement_file": "SAMPLE-participation-agreement-office-01.pdf", "founding_roster_named": "N",
     # budget_probe_verbatim, budget_probe_date, budget_probe_monthly_usd are formulas from Office_Log
     "agreement_version": "0.8", "owner_can_say_yes_alone": "Y",
+    "industry": "SAMPLE software", "pantry_owner_phone": "SAMPLE 000-000-0002", "pantry_owner_email": "SAMPLE-owner@SAMPLE-office-01.example",
+    "public_naming_ok": "N", "building_id": "SAMPLE-B-B-001",
 }]
 SIGNED_OFFICES[0]["office_id"] = "SAMPLE-O-101"
 
@@ -238,6 +266,8 @@ PAID_BRANDS = [{
     "verified_q5_product_liability_insurance": "Y", "verified_q6_contact_can_approve_600": "Y",
     "verified_q7_why_now": "Y", "verified_not_excluded": "Y", "verified_date": D(2026, 12, 4),
     "verified_notes": "SAMPLE: unit seen, best-by 2027-06; certificate checked",
+    "campaign_id": "SAMPLE-CMP-001", "brand_legal_name": "SAMPLE Brand 01 LLC", "billing_address": "SAMPLE 2 Example Avenue, Brooklyn, NY",
+    "billing_email": "SAMPLE-billing@SAMPLE-brand-01.example", "code_site": "SAMPLE-brand-01.example",
 }]
 
 LATER_EVENTS = [{

@@ -44,3 +44,16 @@ connection requests per month. Each message can be up to 200 characters." Premiu
 So on a free account the connection NOTE is for at most 3 people a month and must be 200 characters or fewer.
 Part B's week-one plan therefore sends most LinkedIn invitations with no note, and the LinkedIn follow-up
 message (sent once they accept) carries the ask.
+
+## Fields for messages/12 slots (added 2026-10-24, round 4)
+The tracker Scorecard block "Numbers for the Startup CPG posts" computes these, as of the Friday date, distinct offices or brands:
+[OFFICE CONVERSATIONS] = Office_Log conversations; [N GET BRAND OFFERS] = q3_brands_reach_out = Y;
+[N ONE PERSON DECIDES] = owner_can_say_yes_alone = Y; [WHO ELSE DECIDES] = most common other_approver;
+[N WOULD PHOTO AND SURVEY] = q5_photo_and_survey = Y; [TUESDAY RANGE] = min to max tuesday_headcount;
+[N USE A SERVICE] = uses_snack_service = Y; [BRAND CONVERSATIONS]; [BRAND SPEND RANGE] = q2 low/high;
+[N SEEDED OFFICES] = q3_seeded_offices = Y; [MEDIAN NUMBER NAMED] = median wtp_before_usd (first per brand);
+[TOP BLOCKER] = top brand objection code. [QUOTE]: only rows with quote_ok_to_share = Y (asked at the close of
+every call), never with a name. Not coded, read from verbatims: [WHAT HAPPENS TO IT], [TOP YES REASON],
+[TOP NO REASON] (the top office objection is the coded proxy), [WHAT HAPPENED], [TOP REPORT NEED].
+Your table says [OFFICE CONVERSATIONS] = Clay rows at call_done or later; the tracker counts Office_Log
+conversations by call_date. They agree when the Friday sync is clean; the tracker number is the one to print.

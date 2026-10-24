@@ -1,0 +1,109 @@
+{
+ "_readme": "SAMPLE tracker states for the examples. Each overrides ../04-slot-state.csv (today's real state: every switch N, every count 0). Illustrative placeholders, not results.",
+ "SAMPLE-discovery-wk2": {
+  "domain_ready": "Y",
+  "discovery_onepager_ready": "Y"
+ },
+ "SAMPLE-office-selling-progress": {
+  "domain_ready": "Y",
+  "office_selling_on": "Y",
+  "offices_yes": "4",
+  "offices_signed": "3",
+  "tuesday_headcount": "265",
+  "mock_card_photo_ready": "Y"
+ },
+ "SAMPLE-office-selling-none-yet": {
+  "domain_ready": "Y",
+  "office_selling_on": "Y",
+  "offices_yes": "1",
+  "offices_signed": "0",
+  "mock_card_photo_ready": "N"
+ },
+ "SAMPLE-brand-selling-progress": {
+  "domain_ready": "Y",
+  "office_selling_on": "Y",
+  "brand_selling_on": "Y",
+  "offices_yes": "4",
+  "offices_signed": "3",
+  "tuesday_headcount": "265",
+  "founding_taken": "1"
+ },
+ "SAMPLE-brand-selling-first-yes": {
+  "domain_ready": "Y",
+  "office_selling_on": "Y",
+  "brand_selling_on": "Y",
+  "offices_yes": "2",
+  "offices_signed": "0",
+  "founding_taken": "0"
+ },
+ "SAMPLE-office-conversion-ready": {
+  "domain_ready": "Y",
+  "office_selling_on": "Y",
+  "office_onepager_ready": "Y",
+  "mock_card_photo_ready": "Y",
+  "intake_form_ready": "Y",
+  "attorney_cleared": "Y",
+  "offices_yes": "4",
+  "offices_signed": "3"
+ },
+ "SAMPLE-office-conversion-nothing-ready": {
+  "domain_ready": "Y",
+  "offices_yes": "1",
+  "offices_signed": "0"
+ },
+ "SAMPLE-brand-conversion-ready": {
+  "domain_ready": "Y",
+  "office_selling_on": "Y",
+  "brand_selling_on": "Y",
+  "proposal_ready": "Y",
+  "llc_formed": "Y",
+  "attorney_cleared": "Y",
+  "offices_yes": "5",
+  "offices_signed": "5",
+  "tuesday_headcount": "410",
+  "founding_taken": "0"
+ },
+ "SAMPLE-brand-conversion-before-formation": {
+  "domain_ready": "Y",
+  "office_selling_on": "Y",
+  "brand_selling_on": "Y",
+  "proposal_ready": "N",
+  "offices_yes": "3",
+  "offices_signed": "1",
+  "tuesday_headcount": "60",
+  "founding_taken": "0"
+ },
+ "SAMPLE-linkedin-discovery": {},
+ "SAMPLE-linkedin-selling": {
+  "office_selling_on": "Y",
+  "brand_selling_on": "Y",
+  "offices_yes": "4",
+  "offices_signed": "3",
+  "tuesday_headcount": "265",
+  "founding_taken": "1"
+ },
+ "SAMPLE-linkedin-selling-first-yes": {
+  "office_selling_on": "Y",
+  "brand_selling_on": "Y",
+  "offices_yes": "2",
+  "offices_signed": "0",
+  "founding_taken": "0"
+ },
+ "lint-all-unlocked": {
+  "domain_ready": "Y",
+  "office_selling_on": "Y",
+  "brand_selling_on": "Y",
+  "offices_yes": "4",
+  "offices_signed": "3",
+  "tuesday_headcount": "265",
+  "founding_taken": "1",
+  "mock_card_photo_ready": "Y",
+  "office_onepager_ready": "Y",
+  "intake_form_ready": "Y",
+  "attorney_cleared": "Y",
+  "llc_formed": "Y",
+  "proposal_ready": "Y",
+  "startup_cpg_joined": "Y",
+  "discovery_onepager_ready": "Y"
+ }
+}

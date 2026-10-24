@@ -25,3 +25,6 @@ mkdir -p out/qa/brand-map
 python3 xlsx.py                     # cluster-1-flatiron.xlsx
 python3 pin_qa.py | head -3         # pin checks incl. the CSCL block-face test  -> _build/out/pin_qa.csv
 NODE_PATH="$(npm root -g)" node render.js "$ROOT"   # public-map.png, route-private.png, QA screenshots
+# REPORT.md (review round 3): report_text.py prints it from stats.json and method_text.py. The builder's harness refuses
+# report-file writes, so this script does not save it; the orchestrator or the founder runs, from cluster-1-flatiron/:
+#   python3 _build/report_text.py > REPORT.md

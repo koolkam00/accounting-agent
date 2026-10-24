@@ -62,7 +62,7 @@ ask: what has worked for founders who seeded offices
 ---
 *What [OFFICE CONVERSATIONS] office managers in Flatiron told me about free product from brands*
 
-Over the last two weeks I've asked people who run office pantries around Flatiron, NoMad and Union Square how their pantries actually work. Sharing what I heard in case it helps anyone thinking about office sampling. Small sample, one neighborhood, so treat it as a field note, not research.
+Over the last [TIME PERIOD: two weeks] I've asked people who run office pantries around Flatiron, NoMad and Union Square how their pantries actually work. Sharing what I heard in case it helps anyone thinking about office sampling. Small sample, one neighborhood, so treat it as a field note, not research.
 
 • [N GET BRAND OFFERS] of [OFFICE CONVERSATIONS] said brands already offer them free product. What usually happens to it: [WHAT HAPPENS TO IT].
 • In [N ONE PERSON DECIDES] offices one person can say yes alone. In the rest it goes to [WHO ELSE DECIDES].
@@ -87,7 +87,7 @@ ask: what would make office sampling worth paying for
 ---
 *What [BRAND CONVERSATIONS] snack and drink founders told me about sampling in New York*
 
-I've spent the last few weeks asking founders how they get people in New York to try their product. Thank you to everyone here who gave me time. A summary, with no names:
+I've spent the last [TIME PERIOD: three weeks] asking founders how they get people in New York to try their product. [THANKS LINE] A summary, with no names:
 
 • Quarterly sampling spend ran from [BRAND SPEND RANGE], and in most cases [WHO SIGNS OFF] signs off on it.
 • [N SEEDED OFFICES] of [BRAND CONVERSATIONS] have sent product to offices. The usual result: [WHAT HAPPENED].
@@ -99,7 +99,7 @@ The pattern I keep hearing: [ONE SENTENCE THE NOTES SUPPORT].
 If you've paid for sampling that you could actually measure, what did the report show you?
 ```
 
-`[WHO SIGNS OFF]` is brand question 2's second half (who approves the spend), the most common answer. The median number named for office placement is deliberately not in this post: it is pricing evidence for you, and posting it reads as an anchor for a sale.
+`[THANKS LINE]` is "Thank you to everyone here who gave me time." only if at least one of those founders came through this community (`call_notes` says "asked in Startup CPG"); otherwise delete it. `[WHO SIGNS OFF]` is brand question 2's second half (who approves the spend), the most common answer. The median number named for office placement is deliberately not in this post: it is pricing evidence for you, and posting it reads as an anchor for a sale.
 
 ## Post 3 · Delivered is not tried: the counts I'd want from any sampling
 
@@ -141,3 +141,4 @@ What counts do you get from your sampling today?
 ## Changelog
 
 - Round 1 (2026-10-24): drafted three posts with slots mapped to the plan's two call guides; community size and the missing public rules checked on startupcpg.com (opened 2026-10-24).
+- Round 2 (2026-10-24): "the last two weeks" and the thank-you to the community became slots, so neither is claimed unless true.

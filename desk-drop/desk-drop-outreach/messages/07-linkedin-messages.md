@@ -39,7 +39,11 @@ touch: 1
 channel: linkedin
 ask: a 20-minute research call
 ---
-{greeting} thanks for connecting. I'm researching how offices around {area} stock their pantries. The idea I'm testing: emerging snack brands send sealed product to a few nearby offices, free, and the team says what it thought. Before I build anything, I'd like to hear whether that would help or get in the way at {company}. Would you have 20 minutes in the next two weeks?
+{greeting} thanks for connecting.
+
+I'm researching how offices around {area} stock their pantries. The idea I'm testing: emerging snack brands send sealed product to a few nearby offices, free, and the team says what it thought. Before I build anything, I'd like to hear whether that would help or get in the way at {company}.
+
+Would you have 20 minutes in the next two weeks?
 ```
 
 ```message
@@ -61,7 +65,7 @@ side: office
 stage: selling
 touch: 0
 channel: linkedin-note
-ask: accept the request
+ask: accept the request (the note's only job)
 ---
 {greeting} I'm picking five {CLUSTER_SHORT} offices to get free drops from emerging snack brands, roughly monthly. You choose what comes. Happy to share the details.
 ```
@@ -74,7 +78,11 @@ touch: 1
 channel: linkedin
 ask: may I send the one-page outline
 ---
-{greeting} thanks for connecting. [OFFICE OPENER] Each drop is sealed snacks or drinks from one to three emerging brands, free. You choose the categories and can say no to any brand. In return: out the day it arrives, two photos, a three-question survey for your team, and ten minutes afterwards. Could I send you the one-page outline?
+{greeting} thanks for connecting.
+
+[OFFICE OPENER] Each drop is sealed snacks or drinks from one to three emerging brands, free. You choose the categories and can say no to any brand. In return: out the day it arrives, two photos, a three-question survey for your team, and ten minutes afterwards.
+
+Could I send you the one-page outline?
 ```
 
 ```message
@@ -96,7 +104,7 @@ side: brand
 stage: discovery
 touch: 0
 channel: linkedin-note
-ask: accept the request
+ask: accept the request (the note's only job)
 ---
 {greeting} I'm asking snack and drink founders how they get New Yorkers to try their product. I'd value 20 minutes of yours. Questions only, nothing to sell.
 ```
@@ -109,7 +117,11 @@ touch: 1
 channel: linkedin
 ask: a 20-minute research call
 ---
-{greeting} thanks for connecting. I'm talking to 15 founders of snack and drink brands about how they get people in New York to try their product, and what it costs. The idea I'm testing is putting sealed product in offices near the stores that carry it, with photos and feedback afterwards. There's nothing to buy yet. Would you give me 20 minutes in the next two weeks?
+{greeting} thanks for connecting.
+
+I'm talking to 15 founders of snack and drink brands about how they get people in New York to try their product, and what it costs. The idea I'm testing: sealed product in offices near the stores that carry it, with photos and feedback afterwards. There's nothing to buy yet.
+
+Would you give me 20 minutes in the next two weeks?
 ```
 
 ```message
@@ -131,9 +143,9 @@ side: brand
 stage: selling
 touch: 0
 channel: linkedin-note
-ask: accept the request
+ask: accept the request (the note's only job)
 ---
-{greeting} I place emerging snack brands in {CLUSTER_SHORT} office pantries for a week, with photos, counts and a report. Could I share what it costs?
+{greeting} I'm lining up emerging snack brands for a week in {CLUSTER_SHORT} office pantries, with photos, counts and a report. Happy to share what it costs.
 ```
 
 ```message
@@ -144,7 +156,11 @@ touch: 1
 channel: linkedin
 ask: is it worth a 20-minute call
 ---
-{greeting} thanks for connecting. [ROSTER LINE] [OFFER LINE] No sales promises: the report says what happened and what it can't show. Is it worth 20 minutes to see whether it fits?
+{greeting} thanks for connecting.
+
+[ROSTER LINE] [OFFER SHORT] No sales promises: the report says what happened and what it can't show.
+
+Is it worth 20 minutes to see whether it fits?
 ```
 
 ```message
@@ -169,3 +185,4 @@ ask: when to check back
 ## Changelog
 
 - Round 1 (2026-10-24): drafted from plan appendix B and the email sequences; rebuilt around LinkedIn's three-notes-a-month, 200-character limit for free accounts (LinkedIn Help, opened 2026-10-24), which the plan's 300-character message does not fit.
+- Round 2 (2026-10-24): paragraph breaks for phone reading; the brand selling note said "I place", untrue before any campaign, now "I'm lining up"; a shorter `[OFFER SHORT]` keeps the brand message under 600 characters.

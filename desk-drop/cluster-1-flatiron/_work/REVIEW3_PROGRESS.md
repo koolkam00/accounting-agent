@@ -25,3 +25,15 @@ Backup of pre-fix outputs: scratchpad B-r3fix/before/.
       B-W-005 keeps high via the 215 PAS rent roll (SEC, 2026-02, not re-opened).
 - [x] R3-05: Wikipedia raw wikitext opened 2026-10-24: GA 'purchased by the Adecco Group in 2018' (last edited 2026-10-05); Corcoran
       'parent = Compass, Inc.' (2026-05-27); BrainPop 'owner = Kirkbi' (2026-10-09). Pass over the rest running (scratchpad B-r3fix/wiki).
+- [x] R3-05 pass done: PARENT_R3 (Biohub/CZI, Matador/Boat Rocker, Daily Harvest/Chobani, Kodansha USA/Kodansha, Foursquare/Infillion
+      (announced 2026-09-18), Everlast/Frasers, MCM/Sungjoo) + GA/Adecco, Corcoran/Compass, BrainPOP/Kirkbi -> 16 candidates with a parent.
+- [x] R3-04 rule (occupied needs dated or own page): 6 candidates, 16 rows. R3-07 notes + 12 hedged notes; banned list widened.
+- [x] R3-08 walk: all 8 outside coworking in phase 2 -> 11 sessions, 124 stops, 820 min. R3-09 texts in method/coldefs/Key. R3-10 dates + ';'.
+- [x] R3-02 brand map: --labels, --out-dir, collision pass (fontTools widths), 40 px frame, QA maps in _build/out/qa/brand-map/.
+- [x] Found and fixed a route bug: exact order per lobby class ignored the hop into the next class (reverse ties). DP now; 213.2 min, 11:33.
+- [ ] Final run_all + checks + LO recalc; look at PNGs; REPORT.md (try Write); README, HANDOFF; builder response.
+- [!] REPORT.md Write refused a third time (harness). Not circumvented. _build/report_text.py prints it; command in README/HANDOFF/run_all;
+      full text goes in the final response.
+- [x] Builder response appended to _review/round-3.md.
+- [x] Found: grid.py picked street/avenue from a set of names (string-hash order) -> grid model varied per process -> walk minutes
+      varied by 0.1 (820/821). Fixed with sorted(); car_faster blank on same-building stop (tab = CSV). Final double run_all for hashes.

@@ -62,6 +62,7 @@ LISTS = {
     "yn": ["Y", "N"],
     "ynm": ["Y", "N", "maybe"],
     "yesno_unsure": ["yes", "no", "unsure"],
+    "yesno_unsure_yn": ["Y", "N", "unsure"],
     "channel": ["email", "linkedin", "warm-intro", "walk-in"],
     "call_type": ["phone", "video", "in-person", "walk-in"],
     "receiving_type": ["walk-up", "front desk", "security desk", "loading dock", "other", "unknown"],
@@ -104,6 +105,7 @@ LISTS = {
     "renewal_value": ["yes", "maybe", "no"],
     "allergen_source": ["contains_statement", "ingredient_list", "single_ingredient"],
     "yes_signals": ["named_window_unprompted", "asked_when", "introduced_colleague"],
+    "other_approver": ["facilities", "hr", "ceo-or-assistant", "landlord-or-building", "finance", "other"],
 }
 SEQUENCES = ["office-discovery-A", "office-discovery-B", "office-selling-A", "office-selling-B",
              "brand-discovery-A", "brand-discovery-B", "brand-selling-A", "brand-selling-B",
@@ -122,10 +124,12 @@ OFFICE_COLS = [
     ("call_type", "list:call_type", 9, "phone, video, in-person or walk-in.", ""),
     ("q1_pantry_today_verbatim", "text", 34, "Q1. How the pantry works today: who chooses, who delivers, how often. Their words.", "office guide Q1"),
     ("pantry_vendor", "text", 14, "Q1. Who supplies the pantry now, if they said.", "office guide Q1"),
+    ("uses_snack_service", "list:yn", 7, "Q1. Y if a snack delivery service or vendor stocks the pantry (not a grocery order or a store run).", "messages/12 [N USE A SERVICE]"),
     ("monthly_pantry_spend_usd", "num", 9, "Q1. Monthly pantry spend in USD if they named one. Number only; a range: its low end. Blank if not said.", "plan: Monthly pantry spend"),
     ("monthly_pantry_spend_verbatim", "text", 20, "Q1. Their words about cost.", "plan: Monthly pantry spend"),
     ("tuesday_headcount", "num", 9, "Q2. People actually in on a Tuesday. A range: its low end, with the range in headcount_verbatim.", "plan: Peak-day headcount"),
     ("headcount_verbatim", "text", 16, "Q2. Their words.", "plan: Peak-day headcount"),
+    ("q3_brands_reach_out", "list:yn", 7, "Q3. Y if brands do reach out offering free product.", "office guide Q3; messages/12 [N GET BRAND OFFERS]"),
     ("q3_free_product_verbatim", "text", 26, "Q3. Do brands offer free product, and what happens when they do.", "office guide Q3"),
     ("q4_yes_needs_verbatim", "text", 26, "Q4. What they would need to say yes.", "office guide Q4"),
     ("q4_no_triggers_verbatim", "text", 26, "Q4. What would make them say no.", "office guide Q4"),
@@ -141,6 +145,7 @@ OFFICE_COLS = [
     ("pantry_owner_name", "text", 15, "The pantry owner's name (business contact).", "office_intake pantry_owner_name"),
     ("pantry_owner_title", "text", 15, "The pantry owner's title.", "office_intake pantry_owner_title"),
     ("owner_can_say_yes_alone", "list:ynm", 7, "Can the owner say yes alone? 'I need to ask facilities or HR' is N.", "plan Phase 1 targeting"),
+    ("other_approver", "list:other_approver", 12, "If someone else must agree, who: facilities, hr, ceo-or-assistant, landlord-or-building, finance, other.", "messages/12 [WHO ELSE DECIDES]"),
     ("receiving_window", "text", 15, "When a delivery can be received, in their words (e.g. Tue-Wed 9-11am). Blank if not named.", "plan: receiving window; Gate 0"),
     ("receiving_type", "list:receiving_type", 11, "walk-up, front desk, security desk, loading dock, other, unknown.", "plan: security; office_intake receiving_type"),
     ("coi_required", "list:yesno_unsure", 8, "Does the building require a certificate of insurance for deliveries? yes, no, unsure.", "office_intake coi_required"),
@@ -153,6 +158,8 @@ OFFICE_COLS = [
     ("objections_verbatim", "text", 30, "Every objection in their words.", "plan: Objections, verbatim"),
     ("yes_in_principle", "list:ynm", 7, "Y: would take a first drop in principle. maybe: interested but someone else must agree. N: no.", "plan: Yes in principle; Gate 0"),
     ("yes_signals", "text", 16, "Plan's yes signals seen: named_window_unprompted; asked_when; introduced_colleague.", "plan: A yes looks like"),
+    ("shortlist", "list:yn", 7, "Y if this office is on your Gate 0 shortlist of offices to pursue (plan: 8). Set on any of its rows.", "plan Phase 0 deliverables: shortlist"),
+    ("quote_ok_to_share", "list:yn", 7, "Y only if they said yes to you quoting their words without their name (for example in a Startup CPG post). Blank or N: never quoted.", "messages/12 [QUOTE]"),
     ("note_minutes", "num", 7, "Minutes from hanging up to finishing this row and the Clay write-back. Target 10 or less.", "ten-minute rule"),
     ("clay_updated", "list:yn", 7, "Y once call_date, status, yes_in_principle, call_notes, next_action and next_action_date are written to the Clay row.", "sync"),
     ("notes", "text", 24, "Anything else.", ""),
@@ -173,12 +180,11 @@ BRAND_COLS = [
     ("q2_budget_verbatim", "text", 24, "Q2. Their words about budget.", "plan: Quarterly sampling budget"),
     ("budget_approver", "text", 16, "Q2. Who signs off, in their words (business title).", "plan: who approves"),
     ("controls_budget", "list:yn", 7, "Does the person on this call control the budget? Y or N. Gate 0 counts a brand only if Y.", "plan Gate 0; pipeline controls_budget"),
-    ("can_approve_600_alone", "list:ynm", 7, "Could they approve $600 without a committee? Y, N or maybe. (Qualification check 6.)", "plan Phase 2 checklist"),
     ("q3_seeded_offices", "list:yn", 7, "Q3. Have they ever seeded offices? Y or N.", "brand guide Q3"),
     ("q3_verbatim", "text", 22, "Q3. What happened.", "brand guide Q3"),
     ("wtp_before_usd", "num", 9, "Q4. The number they named BEFORE you said $1,500, as USD for the 10-office, 500-unit campaign. 'Nothing': 0. No number: blank.", "plan: Willingness to pay before $1,500; pipeline budget_probe"),
     ("wtp_before_verbatim", "text", 28, "Q4. Their words, before you said $1,500.", "plan: Willingness to pay, verbatim"),
-    ("wtp_conversion_note", "text", 18, "If they gave a per-unit or per-store figure, how you turned it into a campaign number (e.g. $2 a unit x 500 = 1000).", ""),
+    ("wtp_unit_note", "text", 18, "If they gave a per-unit or per-store figure, how you turned it into a campaign number (e.g. $2 a unit x 500 = 1000).", ""),
     ("price_1500_mentioned", "list:yn", 7, "Did you then say the $1,500 standard price on this call? Y or N.", "plan: before and after hearing $1,500"),
     ("wtp_after_usd", "num", 9, "Q4. Their number AFTER hearing $1,500, USD per campaign. Blank if none.", "plan: Willingness to pay after $1,500; pipeline budget_probe (after_1500)"),
     ("wtp_after_verbatim", "text", 28, "Q4. Their words after hearing $1,500.", "plan: Willingness to pay, verbatim"),
@@ -186,13 +192,23 @@ BRAND_COLS = [
     ("q6_buy_path_type", "list:buy_path_type", 14, "Q6. Buy path near the cluster.", "plan: Buy path inside the cluster"),
     ("q6_buy_path_verbatim", "text", 22, "Q6. Store name and street, or the site, in their words.", "plan: Buy path inside the cluster"),
     ("q7_stoppers_verbatim", "text", 24, "Q7. What would stop them: budget timing, inventory, shelf life, something else.", "brand guide Q7"),
+    ("qual_q1_sealed_shelf_stable_60d", "list:yesno_unsure_yn", 7, "Qualifying call (weeks 4 to 7). Individually packaged, sealed, shelf-stable, 60+ days of shelf life at delivery? Y, N or unsure, in their words.", "plan Phase 2 checklist 1; brand_intake q1"),
+    ("qual_q2_labeled_ingredients_allergens", "list:yesno_unsure_yn", 7, "Label shows ingredients and the nine major allergens?", "checklist 2; brand_intake q2"),
+    ("qual_q3_buy_path_near_cluster", "list:yesno_unsure_yn", 7, "Stocked within ten blocks of the cluster, or online with a discount code? (Q6 above.)", "checklist 3; brand_intake q3"),
+    ("qual_q4_can_ship_275_in_10bd", "list:yesno_unsure_yn", 7, "Can ship 275 units (250 plus reserve) to one Manhattan address within ten business days?", "checklist 4; brand_intake q4"),
+    ("qual_q5_product_liability_insurance", "list:yesno_unsure_yn", 7, "Carries product liability insurance and can send a certificate naming the company?", "checklist 5; brand_intake q5"),
+    ("qual_q6_contact_can_approve_600", "list:yesno_unsure_yn", 7, "Can this person approve $600 without a committee?", "checklist 6; brand_intake q6"),
+    ("qual_q7_why_now", "text", 20, "Their reason to want New York trial now (new store, launch, local push), in their words. Blank if none.", "checklist 7; brand_intake q7"),
+    ("qual_not_excluded", "list:yn", 7, "Y = not alcohol, cannabis, CBD or THC, a supplement, refrigerated, needing preparation, or carrying a health claim (CONTRACTS 4).", "CONTRACTS section 4"),
     ("objection_1", "list:brand_objection", 14, "Main objection, as a code (Lists tab).", "plan: Objections"),
     ("objection_2", "list:brand_objection", 14, "Second objection code.", "plan: Objections"),
     ("objection_3", "list:brand_objection", 14, "Third objection code.", "plan: Objections"),
     ("objections_verbatim", "text", 30, "Every objection in their words.", "plan: Objections, verbatim"),
     ("yes_in_principle", "list:ynm", 7, "Y: would buy a campaign in principle at a price they named. maybe. N.", "plan: Yes in principle"),
+    ("shortlist", "list:yn", 7, "Y if this brand is on your Gate 0 shortlist of brands to pursue (plan: 6). Set on any of its rows.", "plan Phase 0 deliverables: shortlist"),
     ("referrals_given_count", "num", 7, "How many other founders they named or introduced.", "plan: Referrals given"),
     ("referrals_given", "text", 20, "Who: brand and title, semicolons. Each becomes a new Clay row with referral_from = this row_id.", "plan: Referrals given"),
+    ("quote_ok_to_share", "list:yn", 7, "Y only if they said yes to you quoting their words without their name (for example in a Startup CPG post). Blank or N: never quoted.", "messages/12 [QUOTE]"),
     ("note_minutes", "num", 7, "Minutes from hanging up to finishing this row and the Clay write-back. Target 10 or less.", "ten-minute rule"),
     ("clay_updated", "list:yn", 7, "Y once call_date, status, yes_in_principle, call_notes, next_action and next_action_date are written to Clay.", "sync"),
     ("notes", "text", 24, "Anything else.", ""),
@@ -220,6 +236,11 @@ SIGNED_EXTRA = [
     ("budget_probe_monthly_usd", "formula", 9, "Filled from Office_Log: USD per month if they named a number (0 for 'no budget'), else blank.", "CONTRACTS 6.4"),
     ("agreement_version", "text", 8, "Version of the participation agreement signed (e.g. 0.8). Added at the legal pack's suggestion.", "addition (G)"),
     ("owner_can_say_yes_alone", "list:yn", 7, "Y if the pantry owner can approve a brand alone.", "addition (plan Phase 1)"),
+    ("industry", "text", 14, "The office's industry, from Clay or cluster-1-flatiron/companies.csv (industry). Shown in brand proposals by industry, never by name.", "addition (requested by operations)"),
+    ("pantry_owner_phone", "text", 14, "The pantry owner's business phone, from the agreement's top table.", "addition (requested by operations)"),
+    ("pantry_owner_email", "text", 20, "The pantry owner's business email, from the agreement's top table.", "addition (requested by operations)"),
+    ("public_naming_ok", "list:yn", 7, "Y only if the office ticked 'publicly' in section 6 of the agreement. Otherwise reports show it as a letter.", "addition (requested by operations; legal pack 03 section 6)"),
+    ("building_id", "id", 10, "B-B-### from cluster-1-flatiron (companies.csv building_id), if known.", "addition (requested by operations)"),
 ]
 PAID_EXTRA = [
     ("brand_id", "id", 11, "BR-### assigned at payment (CONTRACTS 6.4).", "CONTRACTS 6.4"),
@@ -267,6 +288,11 @@ PAID_EXTRA = [
     ("verified_not_excluded", "list:yn", 7, "Not alcohol, cannabis, CBD or THC, supplement, refrigerated, needing preparation, or carrying a health claim (CONTRACTS 4).", "addition: excluded list"),
     ("verified_date", "date", 11, "Date the founder finished the checks.", "addition"),
     ("verified_notes", "text", 30, "Evidence for the checks (best-by date seen, certificate details, store and street).", "addition"),
+    ("campaign_id", "id", 10, "CMP-### of this brand's first campaign, from operations. Blank until operations assigns it.", "addition (requested by operations)"),
+    ("brand_legal_name", "text", 20, "The brand's legal name from the signed agreement (Part 1). Printed on invoices.", "addition (requested by operations)"),
+    ("billing_address", "text", 24, "Business billing address from the agreement.", "addition (requested by operations)"),
+    ("billing_email", "text", 22, "Business email for invoices.", "addition (requested by operations)"),
+    ("code_site", "text", 18, "Where the discount code works, short form without https:// (for example example.com).", "addition (requested by operations; tent card)"),
 ]
 LATER_COLS = [
     ("date", "date", 11, "Date of the event.", "pipeline_log date"),
@@ -345,7 +371,7 @@ class Book:
         self.wb.remove(self.wb.active)
         self.list_ref = {}
         self.cfg = {}
-        for name in ["Start", "Scorecard", "Office_Log", "Brand_Log", "signed_offices", "paid_brands", "later_events",
+        for name in ["Start", "Scorecard", "Office_Log", "Brand_Log", "Note_Office", "Note_Brand", "signed_offices", "paid_brands", "later_events",
                      "Clay_Offices", "Clay_Brands", "Sync", "pipeline_log", "Pipeline_Sort", "Pipeline_Calc",
                      "Config", "Lists", "Dictionary", "Clay_Columns"]:
             self.wb.create_sheet(name)
@@ -369,7 +395,7 @@ class Book:
         rows = [
             ("company_name", COMPANY_NAME, "The working name, in one place. Rename here; every tab title follows."),
             ("tagline", TAGLINE, "Working tagline."),
-            ("as_of_date", dt.date(2026, 11, 20) if self.sample else "=TODAY()", "The Friday you are reading. Default =TODAY(). Type a date to read an earlier week."),
+            ("as_of_date", dt.date(2026, 12, 11) if self.sample else "=TODAY()", "The Friday you are reading. Default =TODAY(). Type a date to read an earlier week."),
             ("week1_readout", dt.date(2026, 10, 30), "Friday of week 1 (derived, founder to confirm)."),
             ("week2_readout", dt.date(2026, 11, 6), "Friday of week 2 (derived, founder to confirm)."),
             ("gate0_date", dt.date(2026, 11, 13), "Gate 0, Friday of week 3 (CONTRACTS section 3; derived, founder to confirm)."),
@@ -385,9 +411,14 @@ class Book:
             ("note_minutes_target", 10, "Plan: notes within ten minutes of each call."),
             ("include_sample", "Y" if self.sample else "N", "N: rows whose row_id starts with SAMPLE are ignored everywhere. Y only in the SAMPLE test copy."),
             ("sample_criterion", '=IF(B18="Y","<>","<>SAMPLE*")', "Calculated. Do not edit."),
-            ("clay_offices_export_date", dt.date(2026, 11, 20) if self.sample else None, "Type the date you exported the Clay offices table into Clay_Offices."),
-            ("clay_brands_export_date", dt.date(2026, 11, 20) if self.sample else None, "Type the date you exported the Clay brands table into Clay_Brands."),
+            ("clay_offices_export_date", dt.date(2026, 12, 11) if self.sample else None, "Type the date you exported the Clay offices table into Clay_Offices."),
+            ("clay_brands_export_date", dt.date(2026, 12, 11) if self.sample else None, "Type the date you exported the Clay brands table into Clay_Brands."),
             ("pipeline_export_rows", EXPORT_N, "Rows available on pipeline_log. A check turns red if events exceed this."),
+            ("gate1_date", dt.date(2026, 12, 11), "Gate 1, Friday of week 7 (CONTRACTS section 3; derived, founder to confirm)."),
+            ("target_offices_signed", 5, "Gate 1: five signed offices with intake complete."),
+            ("target_tuesday_headcount", 350, "Gate 1: combined Tuesday headcount of the signed offices."),
+            ("target_brands_paid", 2, "Gate 1: two founding campaigns paid in full. One is a soft pass (plan Phase 2)."),
+            ("founding_price_usd", 600, "Founding price, paid in full before shipping."),
         ]
         header(ws, 2, 1, "setting", width=30)
         header(ws, 2, 2, "value", width=46)
@@ -435,7 +466,9 @@ class Book:
                     "calc_yes_incomplete", "calc_bp_has", "calc_bp_first", "calc_bp_w1", "calc_bp_w2", "calc_bp_g0", "calc_bp_asof",
                     "calc_bp100_first", "calc_spend_has", "calc_spend_first", "calc_spend_asof", "calc_probe_row", "calc_probe_first",
                     "calc_probe_key", "calc_probe_missing_text", "calc_obj1", "calc_obj2", "calc_obj3", "calc_note_min", "calc_yes_any",
-                    "calc_maybe", "calc_maybe_first", "calc_yes_any_first", "calc_bp100",
+                    "calc_maybe", "calc_maybe_first", "calc_yes_any_first", "calc_bp100", "calc_short", "calc_short_first", "calc_warm", "calc_warm_first",
+                    "calc_reach", "calc_reach_first", "calc_alone", "calc_alone_first", "calc_q5y", "calc_q5y_first", "calc_svc", "calc_svc_first",
+                    "calc_hc_has", "calc_hc_first", "calc_hc_asof", "calc_appr", "calc_quote", "calc_quote_first",
                     "calc_clay_idx", "calc_clay_status", "calc_clay_rank", "calc_clay_yes", "calc_clay_call_date"]
         else:
             calc = ["calc_sync_issue", "calc_row", "calc_valid", "calc_conv_first", "calc_latest", "calc_g0", "calc_g0_first",
@@ -444,6 +477,8 @@ class Book:
                     "calc_wa_has", "calc_wa_first", "calc_wa_w1", "calc_wa_w2", "calc_wa_g0", "calc_wa_asof",
                     "calc_q2_has", "calc_q2_first", "calc_q2_asof", "calc_wtp_missing_text",
                     "calc_obj1", "calc_obj2", "calc_obj3", "calc_note_min", "calc_yes_any", "calc_yes_any_first",
+                    "calc_qualified", "calc_qualified_first", "calc_short", "calc_short_first",
+                    "calc_seeded", "calc_seeded_first", "calc_q2hi_asof", "calc_quote", "calc_quote_first",
                     "calc_clay_idx", "calc_clay_status", "calc_clay_rank", "calc_clay_yes", "calc_clay_call_date"]
         C = Cols(specs, calc)
         self._input_tab(ws, specs, LOG_N)
@@ -534,6 +569,11 @@ class Book:
                 for tag, cutoff in (("w1", W1), ("w2", W2), ("g0", G0), ("asof", AS)):
                     f[f"calc_wb_{tag}"] = cut("calc_wb_first", "wtp_before_usd", cutoff, r)
                     f[f"calc_wa_{tag}"] = cut("calc_wa_first", "wtp_after_usd", cutoff, r)
+                qs = [f'{C.L(k)}{r}="Y"' for k in ("qual_q1_sealed_shelf_stable_60d", "qual_q2_labeled_ingredients_allergens",
+                      "qual_q3_buy_path_near_cluster", "qual_q4_can_ship_275_in_10bd", "qual_q5_product_liability_insurance",
+                      "qual_q6_contact_can_approve_600", "qual_not_excluded")]
+                f["calc_qualified"] = (f'=IF(AND({C.L("calc_valid")}{r}=1,{",".join(qs)},TRIM({C.L("qual_q7_why_now")}{r})<>""),1,0)')
+                f["calc_qualified_first"] = earliest("calc_qualified", r)
                 q2 = f'{C.L("q2_sampling_budget_quarter_low_usd")}{r}'
                 f["calc_q2_has"] = f'=IF(AND({C.L("calc_valid")}{r}=1,ISNUMBER({q2})),1,0)'
                 f["calc_q2_first"] = earliest("calc_q2_has", r)
@@ -543,6 +583,26 @@ class Book:
                 f["calc_yes_any_first"] = (f'=IF(AND({C.L("calc_valid")}{r}=1,{C.L("yes_in_principle")}{r}="Y"),'
                                            f'IF(COUNTIFS({R("row_id")},$A{r},{R("yes_in_principle")},"Y",{R("calc_valid")},1,{R("call_date")},"<"&{d})'
                                            f'+COUNTIFS({R("row_id")},$A{r},{R("yes_in_principle")},"Y",{R("calc_valid")},1,{R("call_date")},{d},{R("calc_row")},"<"&{C.L("calc_row")}{r})=0,1,0),0)')
+            f["calc_short"] = f'=IF(AND({C.L("calc_valid")}{r}=1,{C.L("shortlist")}{r}="Y"),1,0)'
+            f["calc_short_first"] = earliest("calc_short", r)
+            f["calc_quote"] = f'=IF(AND({C.L("calc_valid")}{r}=1,{C.L("quote_ok_to_share")}{r}="Y"),1,0)'
+            f["calc_quote_first"] = earliest("calc_quote", r)
+            V_ = f'{C.L("calc_valid")}{r}=1'
+            if side == "office":
+                f["calc_warm"] = f'=IF(AND({C.L("calc_valid")}{r}=1,{C.L("channel")}{r}="warm-intro"),1,0)'
+                f["calc_warm_first"] = earliest("calc_warm", r)
+                for key, col_, val in (("calc_reach", "q3_brands_reach_out", "Y"), ("calc_alone", "owner_can_say_yes_alone", "Y"),
+                                       ("calc_q5y", "q5_photo_and_survey", "Y"), ("calc_svc", "uses_snack_service", "Y")):
+                    f[key] = f'=IF(AND({V_},{C.L(col_)}{r}="{val}"),1,0)'
+                    f[key + "_first"] = earliest(key, r)
+                f["calc_hc_has"] = f'=IF(AND({V_},ISNUMBER({C.L("tuesday_headcount")}{r})),1,0)'
+                f["calc_hc_first"] = earliest("calc_hc_has", r)
+                f["calc_hc_asof"] = cut("calc_hc_first", "tuesday_headcount", AS, r)
+                f["calc_appr"] = f'=IF(AND({V_},{C.L("call_date")}{r}<={AS}),{C.L("other_approver")}{r}&"","")'
+            else:
+                f["calc_seeded"] = f'=IF(AND({V_},{C.L("q3_seeded_offices")}{r}="Y"),1,0)'
+                f["calc_seeded_first"] = earliest("calc_seeded", r)
+                f["calc_q2hi_asof"] = cut("calc_q2_first", "q2_sampling_budget_quarter_high_usd", AS, r)
             st, rk = f'{C.L("calc_clay_status")}{r}', f'{C.L("calc_clay_rank")}{r}'
             f["calc_sync_issue"] = (
                 f'=IF(TRIM($A{r})="","",IF(AND(LEFT($A{r},6)="SAMPLE",{INC}<>"Y"),"",'
@@ -566,6 +626,43 @@ class Book:
                                       FormulaRule(formula=[f'LEN({sync_col}2)>0'], fill=FILL_FAIL))
         setattr(self, f"C_{side}", C)
         return C
+
+    # ------------------------------------------------------------------ note entry tabs
+    def build_note_tab(self, side):
+        """A vertical form for one conversation, and one row of references to paste into the log as values."""
+        name = "Note_Office" if side == "office" else "Note_Brand"
+        log = "Office_Log" if side == "office" else "Brand_Log"
+        ws = self.ws[name]
+        specs = OFFICE_COLS if side == "office" else BRAND_COLS
+        put(ws, "A1", f"{log} note entry: one conversation, filled top to bottom (works on a phone)", font=F_TITLE)
+        put(ws, "A2", (f"1. Fill column B.  2. Select the whole 'row to paste' (row {len(specs) + 7}) and copy it.  "
+                       f"3. On {log}, click column A of the first empty row and paste values only (Ctrl+Shift+V, or Edit > Paste special > Values only).  "
+                       f"4. Clear B4:B{len(specs) + 3}."), font=F_NOTE, align=WRAP)
+        ws.merge_cells("A2:C2")
+        ws.row_dimensions[2].height = 44
+        header(ws, 3, 1, "field", width=34)
+        header(ws, 3, 2, "answer", width=46)
+        header(ws, 3, 3, "what to write", width=80)
+        for i, (k, kind, w, helptext, maps) in enumerate(specs):
+            r = 4 + i
+            put(ws, f"A{r}", k, font=F_BOLD)
+            c = put(ws, f"B{r}", None, align=WRAP)
+            if kind == "date":
+                c.number_format = DATE_FMT
+            self._validation(ws, kind, f"B{r}")
+            put(ws, f"C{r}", helptext, font=F_NOTE, align=WRAP)
+        cr = len(specs) + 7
+        put(ws, f"A{cr - 2}", "Check before pasting", font=F_BOLD)
+        put(ws, f"B{cr - 2}", f'=IF(OR(TRIM(B4)="",NOT(ISNUMBER(B10))),"row_id and a real call_date are required","OK to paste")', font=F_BOLD)
+        put(ws, f"A{cr - 1}", f"Row to paste into {log} (formulas; paste as values only)", font=F_BOLD)
+        for j in range(len(specs)):
+            c = ws.cell(row=cr, column=j + 1, value=f'=IF(Note_{"Office" if side == "office" else "Brand"}!$B${4 + j}="","",Note_{"Office" if side == "office" else "Brand"}!$B${4 + j})')
+            c.fill = FILL_CALC
+            if specs[j][1] == "date":
+                c.number_format = DATE_FMT
+        assert specs[6][0] == "call_date"
+        ws.freeze_panes = "B4"
+        setattr(self, f"note_row_{side}", cr)
 
     # ------------------------------------------------------------------ Clay pastes and sync
     def build_clay_paste(self, side):
@@ -663,6 +760,25 @@ class Book:
                     ws[f"{col_}{r}"].fill = FILL_CALC
         self.hand_rid = {"office": so_col, "brand": pb_col}
 
+    def build_gate1_helpers(self):
+        """Sync columns X..Y: the date each paid_brands row reached its full price (blank if not yet)."""
+        ws = self.ws["Sync"]
+        P = self.paid_cols
+        INC = self.cfg["include_sample"]
+        header(ws, 21, 24, "paid_brands row", calc=True, width=10)
+        header(ws, 21, 25, "paid in full on", calc=True, width=12)
+        for i in range(HAND_N):
+            r, pr = 22 + i, i + 2
+            rid = f"paid_brands!{P.L('clay_row_id')}{pr}"
+            p1, p2 = f"paid_brands!{P.L('payment_1_usd')}{pr}", f"paid_brands!{P.L('payment_2_usd')}{pr}"
+            d1, d2 = f"paid_brands!{P.L('payment_1_date')}{pr}", f"paid_brands!{P.L('payment_2_date')}{pr}"
+            price = f"paid_brands!{P.L('price_usd')}{pr}"
+            ws[f"X{r}"] = pr
+            ws[f"Y{r}"] = (f'=IF(OR(TRIM({rid})="",AND(LEFT({rid},6)="SAMPLE",{INC}<>"Y")),"",'
+                           f'IF(AND(N({price})>0,N({p1})+N({p2})>=N({price})),IF(N({p2})>0,MAX(N({d1}),N({d2})),N({d1})),""))')
+            ws[f"Y{r}"].number_format = DATE_FMT
+            ws[f"X{r}"].fill = ws[f"Y{r}"].fill = FILL_CALC
+
     # ------------------------------------------------------------------ handoff tabs
     def build_handoff(self):
         # signed_offices
@@ -708,15 +824,6 @@ class Book:
             if k == "source":
                 return "list:intake_source"
             return "text"
-        LISTS_EXTRA = {"yesno_unsure_yn": ["Y", "N", "unsure"]}
-        for nm, vals in LISTS_EXTRA.items():
-            if nm not in self.list_ref:
-                wsl = self.ws["Lists"]
-                col = wsl.max_column + 1
-                header(wsl, 1, col, nm, width=14)
-                for i, v in enumerate(vals, start=2):
-                    wsl.cell(row=i, column=col, value=v)
-                self.list_ref[nm] = f"Lists!${CL(col)}$2:${CL(col)}${len(vals) + 1}"
         specs = [(k, bkind(k), 14, "Copied from the brand_intake row (CONTRACTS 6.3), same column order.", "CONTRACTS 6.3 brand_intake")
                  for k in BRAND_INTAKE] + PAID_EXTRA
         self._input_tab(ws, specs, HAND_N)
@@ -816,7 +923,7 @@ class Book:
             "budget_probe", value=lambda rr: num(f"Brand_Log!{BL.L('wtp_before_usd')}{rr}"),
             vtext=lambda rr: txt(f"Brand_Log!{BL.L('wtp_before_verbatim')}{rr}"),
             ctrl=lambda rr: txt(f"Brand_Log!{BL.L('controls_budget')}{rr}"),
-            notes=lambda rr: f'IF(Brand_Log!{BL.L("wtp_conversion_note")}{rr}="","","before_1500; "&Brand_Log!{BL.L("wtp_conversion_note")}{rr})'))
+            notes=lambda rr: f'IF(Brand_Log!{BL.L("wtp_unit_note")}{rr}="","","before_1500; "&Brand_Log!{BL.L("wtp_unit_note")}{rr})'))
         emit_log(7, "brand budget_probe after $1,500", log_gen(
             "Brand_Log", BL, "brand",
             lambda rr: (f'AND({V("Brand_Log", BL, rr)},Brand_Log!{BL.L("price_1500_mentioned")}{rr}="Y",'
@@ -941,7 +1048,7 @@ class Book:
         cfg = self.cfg
         OL, BL = self.C_office, self.C_brand
         INC, SC = cfg["include_sample"], cfg["sample_criterion"]
-        for col_, w in zip("ABCDEFGH", [58, 13, 13, 13, 13, 11, 60, 4]):
+        for col_, w in zip("ABCDEFGH", [70, 12, 12, 12, 12, 9, 70, 4]):
             ws.column_dimensions[col_].width = w
         sample_count = ("COUNTIF(Office_Log!$A$2:$A$201,\"SAMPLE*\")+COUNTIF(Brand_Log!$A$2:$A$201,\"SAMPLE*\")"
                         f"+COUNTIF(signed_offices!${self.hand_rid['office']}$2:${self.hand_rid['office']}${HAND_N + 1},\"SAMPLE*\")"
@@ -1027,6 +1134,8 @@ class Book:
         row_status("Gate 0, office side", self.sc["o_yes"], cfg["target_office_yes"], "o_status")
         row_counts("Yes in principle, any (owner or window may be missing)", "Office_Log", OL, "calc_yes_any_first", None,
                    "Offices that said Y at least once. The gap to the row above is follow-up work: get the owner and the window.", "o_yes_any")
+        row_counts("Conversations with people you already know (channel warm-intro)", "Office_Log", OL, "calc_warm_first", 5,
+                   "Plan Phase 0: five of the fifteen office conversations should come from your own network. Set channel = warm-intro for anyone you knew before.", "o_warm")
         row_counts("Said maybe at least once (someone else must agree)", "Office_Log", OL, "calc_maybe_first", None,
                    "Plan Phase 1: 'I need to ask facilities and HR' is a maybe, not a yes.", "o_maybe")
         row_median("Median budget-probe answer, USD a month", "Office_Log", OL, "calc_bp",
@@ -1039,6 +1148,8 @@ class Book:
         put(ws, f"G{r}", "Plan decision rule: office-paid tier is tested if at least five offices named $100 a month or more.", font=F_NOTE, align=WRAP)
         self.sc["o_bp100"] = r
         r += 1
+        row_counts("Shortlisted offices (shortlist = Y)", "Office_Log", OL, "calc_short_first", 8,
+                   "Plan Phase 0 deliverable: a shortlist of 8 offices to pursue.", "o_short")
         put(ws, f"A{r}", "Median monthly pantry spend today, USD, as of")
         rg = rng("Office_Log", OL, "calc_spend_asof")
         put(ws, f"E{r}", f'=IF(COUNT({rg})=0,"none yet",MEDIAN({rg}))', fmt='"$"#,##0', font=F_BOLD)
@@ -1063,6 +1174,10 @@ class Book:
         row_median("Median brand number after hearing $1,500, USD per campaign", "Brand_Log", BL, "calc_wa",
                    "First numeric after-answer per brand.", "b_wa_med")
         row_count_vals("Brands that answered after hearing $1,500", "Brand_Log", BL, "calc_wa", "The n behind the median.", "b_wa_n")
+        row_counts("Brands qualified on a call (all seven checks Y, not excluded)", "Brand_Log", BL, "calc_qualified_first", None,
+                   "From the qualifying-call columns (qual_q1 to qual_q7, qual_not_excluded). The brand's word; the founder verifies at payment.", "b_qualified")
+        row_counts("Shortlisted brands (shortlist = Y)", "Brand_Log", BL, "calc_short_first", 6,
+                   "Plan Phase 0 deliverable: a shortlist of 6 brands to pursue.", "b_short")
         put(ws, f"A{r}", "Median quarterly sampling budget, USD (low end), as of")
         rg = rng("Brand_Log", BL, "calc_q2_asof")
         put(ws, f"E{r}", f'=IF(COUNT({rg})=0,"none yet",MEDIAN({rg}))', fmt='"$"#,##0', font=F_BOLD)
@@ -1190,7 +1305,7 @@ class Book:
         bounce_b = f'IFERROR(COUNTIFS({clay_col("brand", "reply_type")},"bounce",{clay_col("brand", "row_id")},{SC}),0)'
         put(ws, f"A{r}", "Email bounces to date (offices + brands) / first touches to date")
         put(ws, f"E{r}", f"=IF((E{self.sc['office_first']}+E{self.sc['brand_first']})=0,\"\",({bounce_o}+{bounce_b})/(E{self.sc['office_first']}+E{self.sc['brand_first']}))", fmt="0.0%", font=F_BOLD)
-        put(ws, f"G{r}", "Stop cold email from the domain and check the list if this passes 2% (sending guide section 6).", font=F_NOTE, align=WRAP)
+        put(ws, f"G{r}", "Two or more bounces in a week, or over 2% once 100 email first touches have gone, pauses cold email for five business days (sending guide 3.4).", font=F_NOTE, align=WRAP)
         self.sc["bounce"] = r
         r += 1
 
@@ -1221,6 +1336,120 @@ class Book:
         put(ws, f"A{r}", "Sequence names come from Clay's sequence column. Edit the names in column A to match the variants Part A's copy uses.", font=F_NOTE)
         r += 1
 
+        section("After Gate 0: Gate 1 progress (five offices signed with 350+ on a Tuesday; two founding brands paid in full)")
+        for j, h in enumerate(["Measure", "", "", "Gate 1", "As of", "Target", "How it is counted"], start=1):
+            if h:
+                header(ws, r, j, h)
+        r += 1
+        put(ws, f"A{r}", "Cut-off date", font=F_NOTE)
+        put(ws, f"D{r}", f"={cfg['gate1_date']}", fmt=DATE_FMT, font=F_NOTE)
+        put(ws, f"E{r}", f"={cfg['as_of_date']}", fmt=DATE_FMT, font=F_NOTE)
+        g1cut = r
+        r += 1
+        S_, P_ = self.signed_cols, self.paid_cols
+        srid = f"signed_offices!${S_.L('clay_row_id')}$2:${S_.L('clay_row_id')}${HAND_N + 1}"
+        sdate = f"signed_offices!${S_.L('agreement_signed_date')}$2:${S_.L('agreement_signed_date')}${HAND_N + 1}"
+        shc = f"signed_offices!${S_.L('tuesday_headcount')}$2:${S_.L('tuesday_headcount')}${HAND_N + 1}"
+        prid = f"paid_brands!${P_.L('clay_row_id')}$2:${P_.L('clay_row_id')}${HAND_N + 1}"
+        pd1 = f"paid_brands!${P_.L('payment_1_date')}$2:${P_.L('payment_1_date')}${HAND_N + 1}"
+        ptier = f"paid_brands!${P_.L('tier')}$2:${P_.L('tier')}${HAND_N + 1}"
+        g1rows = [
+            ("g1_signed", "Offices signed (signed_offices rows)", lambda c: f'=COUNTIFS({srid},"<>",{srid},{SC},{sdate},"<="&{c})', "0", cfg["target_offices_signed"],
+             "Rows with a clay_row_id and agreement_signed_date on or before the cut-off."),
+            ("g1_headcount", "Combined Tuesday headcount of signed offices", lambda c: f'=SUMIFS({shc},{srid},"<>",{srid},{SC},{sdate},"<="&{c})', "0", cfg["target_tuesday_headcount"],
+             "Each office's own intake number, never the Clay estimate."),
+            ("g1_paid", "Brands paid in full", lambda c: f'=COUNTIFS(Sync!$Y$22:$Y${21 + HAND_N},"<="&{c})', "0", cfg["target_brands_paid"],
+             "payment_1_usd + payment_2_usd reach price_usd. Ship dates and office approvals (also Gate 1) are tracked in operations."),
+            ("g1_anypay", "Brands with any payment", lambda c: f'=COUNTIFS({prid},"<>",{prid},{SC},{pd1},"<="&{c})', "0", None,
+             "A standard brand's deposit counts here, not above."),
+        ]
+        for key, label, fn, fmt, target, how in g1rows:
+            put(ws, f"A{r}", label)
+            for col_ in "DE":
+                put(ws, f"{col_}{r}", fn(f"{col_}${g1cut}"), fmt=fmt, font=F_BOLD)
+            if target is not None:
+                put(ws, f"F{r}", f"={target}")
+            put(ws, f"G{r}", how, font=F_NOTE, align=WRAP)
+            self.sc[key] = r
+            r += 1
+        put(ws, f"A{r}", "Gate 1, office side", font=F_BOLD)
+        for col_ in "DE":
+            put(ws, f"{col_}{r}", (f'=IF(AND({col_}{self.sc["g1_signed"]}>={cfg["target_offices_signed"]},{col_}{self.sc["g1_headcount"]}>={cfg["target_tuesday_headcount"]}),"PASS",'
+                                   f'IF({col_}${g1cut}<{cfg["gate1_date"]},"not yet","FAIL"))'), font=F_BOLD)
+        put(ws, f"G{r}", "Five signed and 350 or more on a Tuesday, all inside the cluster (plan Phase 1).", font=F_NOTE, align=WRAP)
+        self.sc["g1_o_status"] = r
+        r += 1
+        put(ws, f"A{r}", "Gate 1, brand side", font=F_BOLD)
+        for col_ in "DE":
+            pc = f"{col_}{self.sc['g1_paid']}"
+            put(ws, f"{col_}{r}", (f'=IF({pc}>={cfg["target_brands_paid"]},"PASS",IF({col_}${g1cut}<{cfg["gate1_date"]},"not yet",'
+                                   f'IF({pc}=1,"SOFT PASS","FAIL")))'), font=F_BOLD)
+        put(ws, f"G{r}", "Plan: one paid brand is a soft pass: run the campaign, and the second sale is the first task after it.", font=F_NOTE, align=WRAP)
+        self.sc["g1_b_status"] = r
+        r += 1
+
+        section("Numbers for the Startup CPG posts (messages/12), as of: distinct offices or brands")
+        def cnt(tab, C, flag):
+            return f'=COUNTIFS({rng(tab, C, flag)},1,{rng(tab, C, "call_date")},"<="&$E${cut_row})'
+        hc = rng("Office_Log", OL, "calc_hc_asof")
+        q2lo, q2hi = rng("Brand_Log", BL, "calc_q2_asof"), rng("Brand_Log", BL, "calc_q2hi_asof")
+        appr = rng("Office_Log", OL, "calc_appr")
+        appr_list = LISTS["other_approver"]
+        appr_mode = ("=IF(" + "+".join(f'COUNTIF({appr},"{a}")' for a in appr_list) + '=0,"none named yet",'
+                     + "".join(f'IF(COUNTIF({appr},"{a}")=MAX(' + ",".join(f'COUNTIF({appr},"{b}")' for b in appr_list) + f'),"{a}",' for a in appr_list)
+                     + '""' + ")" * len(appr_list) + ")")
+        post_rows = [
+            ("post_office_conv", "[OFFICE CONVERSATIONS]", f"=E{self.sc['o_conv']}"),
+            ("post_reach", "[N GET BRAND OFFERS]: q3_brands_reach_out = Y", cnt("Office_Log", OL, "calc_reach_first")),
+            ("post_alone", "[N ONE PERSON DECIDES]: owner_can_say_yes_alone = Y", cnt("Office_Log", OL, "calc_alone_first")),
+            ("post_appr", "[WHO ELSE DECIDES]: most common other_approver", appr_mode),
+            ("post_q5", "[N WOULD PHOTO AND SURVEY]: q5_photo_and_survey = Y", cnt("Office_Log", OL, "calc_q5y_first")),
+            ("post_hc", "[TUESDAY RANGE]: lowest to highest tuesday_headcount (first answer per office)",
+             f'=IF(COUNT({hc})=0,"none yet",MIN({hc})&" to "&MAX({hc}))'),
+            ("post_svc", "[N USE A SERVICE]: uses_snack_service = Y", cnt("Office_Log", OL, "calc_svc_first")),
+            ("post_brand_conv", "[BRAND CONVERSATIONS]", f"=E{self.sc['b_conv']}"),
+            ("post_spend", "[BRAND SPEND RANGE]: lowest low to highest high quarterly sampling spend, USD",
+             f'=IF(COUNT({q2lo})=0,"none yet","$"&TEXT(MIN({q2lo}),"#,##0")&" to $"&TEXT(MAX({q2hi},{q2lo}),"#,##0"))'),
+            ("post_seeded", "[N SEEDED OFFICES]: q3_seeded_offices = Y", cnt("Brand_Log", BL, "calc_seeded_first")),
+            ("post_median", "[MEDIAN NUMBER NAMED]: median brand number before $1,500", f"=E{self.sc['b_wb_med']}"),
+            ("post_blocker", "[TOP BLOCKER]: top brand objection (above)", f"=A{self.sc['top_brand_1']}"),
+            ("post_quotes", "[QUOTE]: people who said yes to being quoted without their name (offices + brands)",
+             "=" + cnt("Office_Log", OL, "calc_quote_first")[1:] + "+" + cnt("Brand_Log", BL, "calc_quote_first")[1:]),
+        ]
+        for key, label, fml in post_rows:
+            put(ws, f"A{r}", label)
+            put(ws, f"E{r}", fml, font=F_BOLD, fmt='"$"#,##0' if key == "post_median" else None)
+            self.sc[key] = r
+            r += 1
+        put(ws, f"A{r}", "Quote only rows with quote_ok_to_share = Y, never with a name. The other slots in messages/12 (top yes and no reasons, what happened, top report need) are read from the verbatims.", font=F_NOTE)
+        r += 1
+
+        section("Counts for the copy slots (copy these into messages/04-slot-state.csv each Friday; that file wins)")
+        co_status = clay_col("office", "status")
+        co_rid = clay_col("office", "row_id")
+        slot_rows = [
+            ("slot_offices_yes", "offices_yes: Clay offices with status yes_in_principle, materials_sent or signed",
+             "=" + "+".join(f'IFERROR(COUNTIFS({co_status},"{st}",{co_rid},{SC}),0)' for st in ("yes_in_principle", "materials_sent", "signed"))),
+            ("slot_offices_signed", "offices_signed: Clay offices with status signed",
+             f'=IFERROR(COUNTIFS({co_status},"signed",{co_rid},{SC}),0)'),
+            ("slot_headcount", "tuesday_headcount: sum of tuesday_headcount on signed_offices (blank until one has signed)",
+             f'=IF(E{self.sc["g1_signed"]}=0,"",E{self.sc["g1_headcount"]})'),
+            ("slot_founding", "founding_taken: paid_brands rows with tier founding (0 to 3)",
+             f'=COUNTIFS({prid},"<>",{prid},{SC},{ptier},"founding")'),
+            ("slot_brands_paid", "brands_paid: paid_brands rows",
+             f'=COUNTIFS({prid},"<>",{prid},{SC})'),
+            ("slot_brand_selling", "brand_selling_on: brand Gate 0 PASS (as of) and offices_yes 2 or more",
+             f'=IF(AND(E{self.sc["b_status"]}="PASS",N(E{{OY}})>=2),"Y","N")'),
+        ]
+        first_slot = r
+        for key, label, fml in slot_rows:
+            put(ws, f"A{r}", label)
+            put(ws, f"E{r}", fml.replace("{OY}", str(first_slot)), font=F_BOLD)
+            self.sc[key] = r
+            r += 1
+        put(ws, f"A{r}", "Switches the founder sets (domain_ready, attorney_cleared, llc_formed and the rest) live only in messages/04-slot-state.csv.", font=F_NOTE)
+        r += 1
+
         section("Data checks (fix every FIX before reading the numbers above)")
         for j, h in enumerate(["Check", "", "", "", "Count", "Result", "What to do"], start=1):
             if h:
@@ -1245,6 +1474,9 @@ class Book:
             ("Pipeline events beyond the export rows", f'=MAX(0,COUNT(Pipeline_Calc!$A$2:$A${self.calc_last})-{EXPORT_N})', "fix", "Raise EXPORT_N in tools/build_tracker.py and rebuild, or split the file."),
             ("Notes over the ten-minute target (as of)", f'=COUNTIF(Office_Log!${OL.L("calc_note_min")}$2:${OL.L("calc_note_min")}${LOG_N + 1},">"&{cfg["note_minutes_target"]})+COUNTIF(Brand_Log!${BL.L("calc_note_min")}$2:${BL.L("calc_note_min")}${LOG_N + 1},">"&{cfg["note_minutes_target"]})', "info", "If this grows, trim the note template, not the verbatims."),
             ("Median minutes per note (as of)", f'=IFERROR(MEDIAN(Office_Log!${OL.L("calc_note_min")}$2:${OL.L("calc_note_min")}${LOG_N + 1},Brand_Log!${BL.L("calc_note_min")}$2:${BL.L("calc_note_min")}${LOG_N + 1}),"none yet")', "info", "Target 10 or less."),
+            ("Duplicate clay_row_id on signed_offices or paid_brands",
+             f'=SUMPRODUCT(({srid}<>"")*1)-SUMPRODUCT(({srid}<>"")/COUNTIF({srid},{srid}&""))+SUMPRODUCT(({prid}<>"")*1)-SUMPRODUCT(({prid}<>"")/COUNTIF({prid},{prid}&""))',
+             "fix", "One row per office and per brand. A second campaign for the same brand stays on its first row (renewals go on later_events)."),
             ("SAMPLE rows in this file", f"={sample_count}", "sample", "Delete them before real use, or keep include_sample = N so they are ignored."),
         ]
         for label, fml, kind, todo in checks:
@@ -1263,6 +1495,11 @@ class Book:
             self.sc["chk_" + label] = r
             r += 1
         self.sc["last"] = r
+        for rr in range(5, r):
+            for col_ in "ABCDEFG":
+                c = ws[f"{col_}{rr}"]
+                c.alignment = Alignment(wrap_text=(col_ in "AG" or c.alignment.wrap_text), vertical="center",
+                                        horizontal=c.alignment.horizontal)
         # colors
         rng_all = f"B7:F{r}"
         ws.conditional_formatting.add(rng_all, FormulaRule(formula=['B7="PASS"'], fill=FILL_PASS))
@@ -1287,7 +1524,7 @@ class Book:
             ("It is not a status store. Status, touches, replies, next actions and do-not-contact live in the Clay tables only (CONTRACTS 6.2).", "bold"),
             ("", ""),
             ("After every call (ten minutes, calls/post-call-note-template.md)", "bold"),
-            ("1. Type one row on Office_Log or Brand_Log: verbatims first, then numbers and codes.", ""),
+            ("1. Fill Note_Office or Note_Brand top to bottom (verbatims first, then numbers and codes), copy its 'row to paste', and paste it into the next empty log row as values only (Ctrl+Shift+V). Or type straight into the log row.", ""),
             ("2. Write back to the Clay row: call_date, status (call_done or yes_in_principle), yes_in_principle, call_notes ('see tracker <date>'), next_action, next_action_date.", ""),
             ("3. Set clay_updated = Y and note_minutes.", ""),
             ("", ""),
@@ -1299,7 +1536,7 @@ class Book:
             ("5. When an office signs or a brand pays: add the row on signed_offices or paid_brands, download that tab as CSV to desk-drop-outreach/handoff/.", ""),
             ("", ""),
             ("Tabs", "bold"),
-            ("Scorecard: the Friday readout against Gate 0.  Office_Log, Brand_Log: one row per conversation.  signed_offices, paid_brands: handoff rows for operations (CONTRACTS 6.4).", ""),
+            ("Scorecard: the Friday readout against Gate 0 and Gate 1.  Office_Log, Brand_Log: one row per conversation.  Note_Office, Note_Brand: a vertical form for one note, phone-friendly.  signed_offices, paid_brands: handoff rows for operations (CONTRACTS 6.4).", ""),
             ("later_events: renewal answers and roster exits.  Clay_Offices, Clay_Brands: the weekly Clay paste.  Sync: disagreements between Clay and this file.", ""),
             ("pipeline_log: generated export for the financial model (exactly its nine columns).  Pipeline_Sort, Pipeline_Calc: helpers, do not edit.", ""),
             ("Config: dates, targets, the company name.  Lists: dropdown values and objection codes.  Dictionary: every column.  Clay_Columns: the 13 columns to add in Clay.", ""),
@@ -1374,6 +1611,11 @@ class Book:
                         raise ValueError(f"{tab}!{c.coordinate} is a formula; sample tried to write {k}")
                     c.value = v
         write_rows("Office_Log", self.C_office, S.OFFICE_LOG)
+        ws = self.ws["Note_Office"]
+        for i, (k, *_rest) in enumerate(OFFICE_COLS):
+            v = S.OFFICE_LOG[0].get(k)
+            if v not in (None, ""):
+                ws[f"B{4 + i}"] = v
         write_rows("Brand_Log", self.C_brand, S.BRAND_LOG)
         write_rows("signed_offices", self.signed_cols, S.SIGNED_OFFICES)
         write_rows("paid_brands", self.paid_cols, S.PAID_BRANDS)
@@ -1402,11 +1644,14 @@ def build(sample, path):
     b.build_config()
     b.build_log("office")
     b.build_log("brand")
+    b.build_note_tab("office")
+    b.build_note_tab("brand")
     b.build_clay_paste("office")
     b.build_clay_paste("brand")
     b.build_sync()
     b.build_handoff()
     b.fix_hand_refs()
+    b.build_gate1_helpers()
     b.build_pipeline()
     b.build_scorecard()
     b.build_start()

@@ -1,0 +1,36 @@
+date,weekday,week,phase,cold_email_first_touches,email_touch_2_due,email_touch_3_due,cold_email_total_worst_case,cold_email_daily_cap,other_channel_first_touches_target,total_first_touches_target,notes
+2026-10-26,Mon,1,discovery (weeks 1 to 3),0,0,0,0,0,5,5,"Setup day: domain, Workspace, SPF; warm asks from your existing address, phone or LinkedIn."
+2026-10-27,Tue,1,discovery (weeks 1 to 3),0,0,0,0,0,10,10,"Walk sessions 1 and 2 (B's walk.csv), 8 to 11 am; walk-in asks; LinkedIn invitations without a note."
+2026-10-28,Wed,1,discovery (weeks 1 to 3),0,0,0,0,0,10,10,Walk sessions 3 and 4; DKIM key generated and published (24 to 72 hours after Gmail was turned on).
+2026-10-29,Thu,1,discovery (weeks 1 to 3),0,0,0,0,0,10,10,Check SPF and DKIM pass on a test email to your own Gmail (Show original). LinkedIn messages to accepted invitations.
+2026-10-30,Fri,1,discovery (weeks 1 to 3),0,0,0,0,0,10,10,First Friday scorecard. DMARC (p=none) goes in once SPF and DKIM have passed for 48 hours: today or Monday before the first send.
+2026-11-02,Mon,2,discovery (weeks 1 to 3),3,0,0,3,20,7,10,"First cold email from [DOMAIN]. Confirm DMARC is published and a test email shows SPF, DKIM and DMARC = PASS."
+2026-11-03,Tue,2,discovery (weeks 1 to 3),4,0,0,4,20,6,10,
+2026-11-04,Wed,2,discovery (weeks 1 to 3),5,0,0,5,20,5,10,
+2026-11-05,Thu,2,discovery (weeks 1 to 3),5,3,0,8,20,5,10,
+2026-11-06,Fri,2,discovery (weeks 1 to 3),5,4,0,9,20,5,10,
+2026-11-09,Mon,3,discovery (weeks 1 to 3),6,5,0,11,20,4,10,
+2026-11-10,Tue,3,discovery (weeks 1 to 3),7,5,0,12,20,3,10,
+2026-11-11,Wed,3,discovery (weeks 1 to 3),0,0,0,0,20,10,10,Federal holiday (CONTRACTS section 3): no cold email; follow-ups move to the next business day.
+2026-11-12,Thu,3,discovery (weeks 1 to 3),8,5,3,16,20,2,10,
+2026-11-13,Fri,3,discovery (weeks 1 to 3),8,6,4,18,20,2,10,
+2026-11-16,Mon,4,recruit and sell (weeks 4 to 7),8,7,5,20,30,,,
+2026-11-17,Tue,4,recruit and sell (weeks 4 to 7),8,8,5,21,30,,,
+2026-11-18,Wed,4,recruit and sell (weeks 4 to 7),9,8,5,22,30,,,
+2026-11-19,Thu,4,recruit and sell (weeks 4 to 7),9,8,6,23,30,,,
+2026-11-20,Fri,4,recruit and sell (weeks 4 to 7),10,8,7,25,30,,,
+2026-11-23,Mon,5,recruit and sell (weeks 4 to 7),8,9,8,25,30,,,
+2026-11-24,Tue,5,recruit and sell (weeks 4 to 7),8,9,8,25,30,,,
+2026-11-25,Wed,5,recruit and sell (weeks 4 to 7),0,10,8,18,30,,,Day before Thanksgiving: no new cold first touches; due follow-ups still go.
+2026-11-26,Thu,5,recruit and sell (weeks 4 to 7),0,0,0,0,30,,,Federal holiday (CONTRACTS section 3): no cold email; follow-ups move to the next business day.
+2026-11-27,Fri,5,recruit and sell (weeks 4 to 7),0,0,0,0,30,,,Day after Thanksgiving: many people out. No cold email at all; follow-ups due today go on Monday.
+2026-11-30,Mon,6,recruit and sell (weeks 4 to 7),8,8,8,24,40,,,
+2026-12-01,Tue,6,recruit and sell (weeks 4 to 7),10,8,9,27,40,,,
+2026-12-02,Wed,6,recruit and sell (weeks 4 to 7),10,0,9,19,40,,,
+2026-12-03,Thu,6,recruit and sell (weeks 4 to 7),10,8,10,28,40,,,
+2026-12-04,Fri,6,recruit and sell (weeks 4 to 7),10,10,8,28,40,,,
+2026-12-07,Mon,7,recruit and sell (weeks 4 to 7),10,10,8,28,40,,,
+2026-12-08,Tue,7,recruit and sell (weeks 4 to 7),10,10,0,20,40,,,
+2026-12-09,Wed,7,recruit and sell (weeks 4 to 7),10,10,8,28,40,,,
+2026-12-10,Thu,7,recruit and sell (weeks 4 to 7),10,10,10,30,40,,,
+2026-12-11,Fri,7,recruit and sell (weeks 4 to 7),10,10,10,30,40,,,
