@@ -421,7 +421,7 @@ def walk_plan(b, w, r, c):
             x.lon, x.grid_s, x.grid_x, dwell, "RETAILER: " + CHECK_RETAIL, 1 if x.inside_boundary == "Y" else 2)
     pace = P["walk_pace_m_per_min"]
     stations = subway_stations()
-    rows, sess0, order = [], 0, 0
+    rows, sess0, order = [], 1, 0
     for phase in (1, 2):
         S = [s for s in stops.values() if s["phase"] == phase]
         n = len(S)
@@ -453,7 +453,7 @@ def walk_plan(b, w, r, c):
                          "observed_lobby_type": "", "security_desk": "", "loading_dock_hours": "", "coi_signage": "",
                          "receiving_hours": "", "emerging_set_photo_taken": "", "founder_notes": "",
                          "_s": st["grid_s"], "_x": st["grid_x"]})
-        sess0 = max(rw["session"] for rw in rows)
+        sess0 = max(rw["session"] for rw in rows) + 1
     walk = pd.DataFrame(rows)
     walk["cumulative_minutes_est"] = walk.groupby("session").apply(
         lambda g: (g.walk_minutes_from_previous_est + g.dwell_minutes_est).cumsum()).reset_index(level=0, drop=True).round(1)

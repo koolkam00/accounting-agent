@@ -53,22 +53,10 @@ You need: the brand's details (from the paid brand row or their email, so you ca
 8. Press **Save as JSON** so you can reuse the card (for the next office, press **Load JSON**, change only the QR link and the office ID).
 9. Press **Print** and set: Destination your printer, Paper Letter, Scale 100 (or "Actual size"), Margins Default, More settings > **Background graphics** on. Load one sheet of cardstock. Print.
 
-For the next office of the same brand: **Load JSON**, change **QR link for THIS office** and **Office ID**, check the status box, print. About one minute each.
+For the next office of the same brand: **Load JSON**, change **QR link for THIS office** and **Office ID**, tick the allergen box again (loading a file always unticks it), check the status box, print. About two minutes each.
 
-**If something goes wrong**
+If the status box shows anything red, or the card looks wrong, see section 18.
 
-| You see | Do this |
-| --- | --- |
-| Red "Fix before printing" | Do what it says. The card will not be right until it is gone. |
-| A big red DO NOT PLACE panel on the card | The text cannot fit with the allergen text at 14 pt. Shorten the two sentences, product line or retailer line. |
-| "The two sentences were left off" | Same: shorten them, or accept the card without them (tell the brand). |
-| "The ingredient list ... prints in full on the other face" | The list is too long for the front; the front now points to the back. Stand the card where both sides can be seen and photograph both faces. |
-| Brand name looks squeezed | Use the short brand name (24 characters or fewer reads best across a pantry). |
-| No cobalt band on paper | "Background graphics" was off. Print again with it on. |
-| Card prints small or off-centre | Scale was not 100. Print again at 100 or "Actual size". |
-| Fonts look different from the screen | Open the file from inside the `desk-drop-identity` folder, not a copy elsewhere; the fonts live in `fonts/`. |
-
----
 
 ## 3. Make every card for a drop at once (optional, terminal)
 
@@ -265,7 +253,23 @@ No spending without your written yes: get the quote, then decide. The plan budge
 
 ---
 
-## 18. Documents: if something goes wrong
+## 18. If something goes wrong
+
+### Tent card
+
+| You see | Do this |
+| --- | --- |
+| Red "Fix before printing" | Do what it says. The card will not be right until it is gone. |
+| A big red DO NOT PLACE panel on the card | The text cannot fit with the allergen text at 14 pt. Shorten the two sentences, product line or retailer line. |
+| "The two sentences were left off" | Same: shorten them, or accept the card without them (tell the brand). |
+| "The ingredient list ... prints in full on the other face" | The list is too long for the front; the front now points to the back. Stand the card where both sides can be seen and photograph both faces. |
+| Brand name looks squeezed | Use the short brand name (24 characters or fewer reads best across a pantry). |
+| No cobalt band on paper | "Background graphics" was off. Print again with it on. |
+| Card prints small or off-centre | Scale was not 100. Print again at 100 or "Actual size". |
+| Fonts look different from the screen | Open the file from inside the `desk-drop-identity` folder, not a copy elsewhere; the fonts live in `fonts/`. |
+
+
+### Documents
 
 | You see | Do this |
 | --- | --- |
