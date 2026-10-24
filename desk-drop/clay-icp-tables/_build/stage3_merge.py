@@ -89,9 +89,9 @@ EXTRAS = ["contact_name_as_found", "contact_record_date", "contact_note", "conta
 REASON = {"office": ["score_reason_core", "channel_base"],
           "brand": ["score_reason_core", "score_reason_tail", "channel_base"]}
 HELPERS = {"office": ["in_flight", "dnc_any", "group_key", "group_blocked", "eligible", "view_pick", "in_daily_view",
-                      "view_slot", "walk_slot", "row_order"],
+                      "view_slot", "walk_ok", "walk_slot", "intact", "row_order"],
            "brand": ["in_flight", "dnc_any", "group_key", "group_blocked", "eligible", "view_pick", "in_daily_view",
-                     "view_slot", "review_slot", "row_order"]}
+                     "view_slot", "review_ok", "review_slot", "intact", "row_order"]}
 ENRICH_COLS = ["row_id", "work_email", "email_status", "backup_work_email", "backup_email_status", "note"]
 WALK_VIEW = ["row_id", "company", "score", "street_address", "floor", "building_name", "lobby_type", "lobby_note",
              "coi_required", "website", "linkedin_company_url", "check_before_send", "status", "walk_slot"]
@@ -468,11 +468,14 @@ def view(df, side):
     if side == "office":
         m = ((df.channel == "walk-in") & (df.gate_result == "pass") & (df.status == "new") & (df.dnc_any == "N")
              & (df.group_blocked == "N") & (df.hold_before_outreach != "Y"))
+        df["walk_ok"] = m.map({True: "Y", False: "N"})
         df["walk_slot"] = _rank_in(df, m, WALK_SIZE)
     else:
         m = ((df.gate_result == "pass") & (df.review_blocking == "Y") & (df.founder_review_cleared != "Y")
              & (df.status == "new") & (df.dnc_any == "N"))
+        df["review_ok"] = m.map({True: "Y", False: "N"})
         df["review_slot"] = _rank_in(df, m, REVIEW_SIZE)
+    df["intact"] = "Y"  # in the workbook: N when a paste has replaced this row's formulas
     return df
 
 

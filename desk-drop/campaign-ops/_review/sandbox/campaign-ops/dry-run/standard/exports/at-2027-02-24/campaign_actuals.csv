@@ -1,6 +1,0 @@
-campaign_id,drop_id,drop_date,delivery_model,tier,brand_id,offices,units_received,units_delivered,units_placed,units_placed_within_1bd,units_topped_up,units_depleted_day5,survey_responses,survey_tried_yes,qr_scans,code_redemptions_day30,revenue_usd,invoice_paid_date,processing_fee_usd,report_delivered_date,brand_would_buy_again,renewed,deposit_usd,deposit_paid_date,survey_responses_min_office
-SAMPLE-CMP-001,SAMPLE-DRP-001,2027-01-12,founder,founding,SAMPLE-BR-001,5,276,250,248,198,5,200,34,25,45,11,480,2026-12-10,0,2027-01-22,yes,Y,,,4
-SAMPLE-CMP-002,SAMPLE-DRP-001,2027-01-12,founder,founding,SAMPLE-BR-002,5,275,250,250,250,6,238,32,21,39,4,600,2026-12-11,0,2027-01-22,maybe,N,,,5
-SAMPLE-CMP-003,SAMPLE-DRP-002,2027-02-09,courier,standard,SAMPLE-BR-003,10,510,485,485,485,0,443,76,54,83,,1500,2027-02-16,0,2027-02-19,yes,Y,750,2027-01-07,6
-SAMPLE-CMP-004,SAMPLE-DRP-002,2027-02-09,courier,standard,SAMPLE-BR-004,9,501,455,455,455,6,428,71,55,71,,1350,2027-02-17,0,2027-02-19,maybe,pending,750,2027-01-11,6
-SAMPLE-CMP-005,SAMPLE-DRP-002,2027-02-09,courier,standard,SAMPLE-BR-005,10,567,515,515,515,12,474,77,51,79,,1500,2027-02-12,0,2027-02-19,yes,pending,750,2027-01-12,4

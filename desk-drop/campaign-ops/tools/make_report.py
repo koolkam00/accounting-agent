@@ -213,7 +213,7 @@ def office_summaries(tr, drop_id, out_dir):
         for a in tr.approvals_for(cid):
             if TR._s(a["office_id"]) not in offices:
                 offices.append(TR._s(a["office_id"]))
-    min_n = int(TR._n(tr.config.get("office_summary_min_answers")) or 3)
+    min_n = int(TR._n(tr.config.get("office_summary_min_answers")) or 5)
     for oid in offices:
         o = tr.office(oid)
         lines = ["%s: what your team said" % TR._s(o.get("company")), ""]

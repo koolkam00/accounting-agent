@@ -1,3 +1,0 @@
-// Reviewer round 2: decode QR codes in PNG/JPEG-converted-PNG files with jsQR 1.4.0 (downloaded to the session scratchpad).
-const jsQR = require('/tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/r2qr/jsqr/package/dist/jsQR.js'); const { PNG } = require('/tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/r2qr/pngjs/package/lib/png.js'); const fs = require('fs');
-for (const f of process.argv.slice(2)) { const png = PNG.sync.read(fs.readFileSync(f)); const r = jsQR(new Uint8ClampedArray(png.data), png.width, png.height); console.log(f.split('/').pop(), png.width + 'x' + png.height, '->', r ? r.data : 'NO DECODE'); }

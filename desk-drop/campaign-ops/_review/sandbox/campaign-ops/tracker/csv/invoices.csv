@@ -1,1 +1,0 @@
-invoice_id,campaign_id,invoice_type,issued_date,amount_usd,sales_tax_usd,sent_to,paid_date,paid_amount_usd,method,bank_reference,processing_fee_usd,note

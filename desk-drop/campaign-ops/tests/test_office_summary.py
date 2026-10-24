@@ -4,7 +4,7 @@
   python3 tests/test_office_summary.py
 
 From the standard dry run's final tracker (summaries written to a temporary folder):
-  1. with the threshold as shipped (config office_summary_min_answers = 3), no summary quotes the SAMPLE name the
+  1. with the threshold as shipped (config office_summary_min_answers = 5), no summary quotes the SAMPLE name the
      survey comments contain ("Priya"), and every comment it quotes is word for word apart from [name removed];
   2. with the threshold set to 9 (as if the config cell said 9), every office-brand block with fewer than 9 answers shows the count only (no
      rating, no would-buy split, no comment), and no rating or would-buy split is drawn from fewer than 9 people.

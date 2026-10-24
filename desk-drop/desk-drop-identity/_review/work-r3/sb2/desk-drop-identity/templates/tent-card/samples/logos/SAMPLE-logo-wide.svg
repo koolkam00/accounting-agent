@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="600" height="120" viewBox="0 0 600 120">
-  <!-- SAMPLE logo drawn for the template test. Not a real brand. -->
-  <circle cx="58" cy="62" r="46" fill="#7A2E4D"/>
-  <path d="M58 30 C 40 48, 40 80, 58 94 C 76 80, 76 48, 58 30 Z" fill="#F2C14E"/>
-  <rect x="55" y="18" width="6" height="16" rx="3" fill="#3B6B35"/>
-  <text x="122" y="40" font-family="DejaVu Sans, Arial, sans-serif" font-size="20" font-weight="700" fill="#7A2E4D" letter-spacing="4">SAMPLE</text>
-  <text x="120" y="96" font-family="DejaVu Serif, Georgia, serif" font-size="58" font-weight="700" fill="#2A1A22">Kettle &amp; Fig</text>
-</svg>

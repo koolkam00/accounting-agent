@@ -1,1 +1,0 @@
-{ "name": "ops-test-tools", "private": true, "description": "Test-only helpers: QR decoding for the link checks.", "dependencies": { "jsqr": "1.4.0", "pngjs": "7.0.0" } }

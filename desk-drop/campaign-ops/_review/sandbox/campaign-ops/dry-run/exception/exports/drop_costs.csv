@@ -1,4 +1,0 @@
-drop_id,drop_date,delivery_model,offices,brands,kit_cost_usd,transport_cost_usd,other_direct_cost_usd,notes
-SAMPLE-DRP-001,2027-01-12,founder,5,2,80,63,9,SAMPLE campaign zero
-SAMPLE-DRP-002,2027-02-09,courier,10,3,232,358,0,SAMPLE first standard run
-SAMPLE-DRP-003,2027-02-23,courier,10,1,80,300,0,SAMPLE second standard run (reviewer exception run)
