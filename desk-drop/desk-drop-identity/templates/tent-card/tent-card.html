@@ -577,14 +577,19 @@
       if (texts[1]) texts[1].remove();
       back.querySelector('.qr-slot').innerHTML = DD.qrSvg(r.qr_url, QR_MAX);
       res = fitFace(back, r, i);
-      front.className = 'face front';
-      front.innerHTML = ingredientFaceHTML(r);
-      // the room face with "Take one." and the QR first; without them only if the list needs the room
-      front.innerHTML = ingredientFaceHTML(r, true);
-      front.querySelector('.qr-slot').innerHTML = DD.qrSvg(r.qr_url, QR_MIN);
-      ingr = fitIngredientFace(front, r);
-      let qrRoom = !ingr.blocked && !ingr.gave.includes('buy_line_to_other_face');
-      if (!qrRoom) { front.className = 'face front'; front.innerHTML = ingredientFaceHTML(r, false); ingr = fitIngredientFace(front, r); }
+      // v1.4 (R3-06): the room face with "Take one." and the QR first (A). Without them (B) only if
+      // A does not fit, or if A had to send the buy line to the other face while B keeps it there.
+      const buildA = () => { front.className = 'face front'; front.innerHTML = ingredientFaceHTML(r, true); front.querySelector('.qr-slot').innerHTML = DD.qrSvg(r.qr_url, QR_MIN); return fitIngredientFace(front, r); };
+      const buildB = () => { front.className = 'face front'; front.innerHTML = ingredientFaceHTML(r, false); return fitIngredientFace(front, r); };
+      const keepsBuy = (x) => !x.gave.includes('buy_line_to_other_face');
+      let qrRoom = true;
+      ingr = buildA();
+      if (ingr.blocked || !keepsBuy(ingr)) {
+        const a = ingr, b = buildB();
+        if (!b.blocked && (a.blocked || keepsBuy(b))) { ingr = b; qrRoom = false; }
+        else if (!a.blocked) { ingr = buildA(); }
+        else { ingr = b; qrRoom = false; }
+      }
       ingr.qr_on_room_face = qrRoom;
       if (!qrRoom) DD.warn(i, 'The ingredient list leaves no room for the QR on the side facing the room, so the QR and "Take one" are only on the side facing the product. Survey answers from this office then lean on the Slack or email post: check that the office posted it, and say so in the report\'s "What we learned".');
       frontBlocked = ingr.blocked;
@@ -592,7 +597,7 @@
       split = true;
       guard(front, r, i, verbatim);
       guard(back, r, i, [POINTER_TEXT]);
-      DD.warn(i, 'The ingredient list is too long to share a face with the story and QR at 14 pt. The front now carries the name, the whole list and where to buy; the other face has the story and the QR. Stand the card with the side marked "this side faces the room" toward the room, and take the close photo of that side.');
+      DD.warn(i, `The ingredient list is too long to share a face with the story at 14 pt. The front now carries the name, the whole list${qrRoom ? ', "Take one." with the QR' : ''} and where to buy; the other face has the story and the QR. Stand the card with the side marked "this side faces the room" toward the room, and take the close photo of that side.`);
     } else {
       guard(front, r, i, verbatim);
       back.innerHTML = front.innerHTML;
