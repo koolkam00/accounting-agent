@@ -30,7 +30,7 @@ Version 1.0 · 2026-10-24 · workstream E, part B · `desk-drop-outreach/sending
 | Item | Cost | Needs your login | Note |
 | --- | --- | --- | --- |
 | Domain [DOMAIN] | Plan budget: $100 for domain and email for six months (plan, capital table) | Yes: the registrar you choose | Choose it after the name check (`desk-drop-legal-pack/01-name-check-log.md`). Buy one domain. A second "sending" domain is not recommended: at 10 to 30 emails a day it adds cost and a lookalike address that reads like automation |
-| Google Workspace Business Starter, one seat | $7 a user a month on a one-year commitment, or $8.40 billed monthly (third-party listing dated 2026-06-22, S8; Google's own pricing page did not show prices from this location: **unverified, founder to confirm at checkout**) | Yes: Google | Google offers a 14-day trial (S8). Trial accounts can send 500 messages a day (S6): far above this plan. **Stop at the checkout page and decide; this is a spend.** Monthly billing keeps the exit open |
+| Google Workspace Business Starter, one seat | $7 a user a month on a one-year commitment, or $8.40 billed monthly (third-party listing dated 2026-06-22, S8; Google's own pricing page did not show prices from this location: **unverified, founder to confirm at checkout**) | Yes: Google | Google's own pricing page offers a 14-day trial (noted under S8). Trial accounts can send 500 messages a day (S6): far above this plan. **Stop at the checkout page and decide; this is a spend.** Monthly billing keeps the exit open |
 | Gmail templates, scheduled send | $0 | No | Built into Gmail (S9, S10) |
 | Postmaster Tools | $0 | Yes: Google | Optional. It will likely show no data at this volume (S5) |
 
@@ -100,18 +100,18 @@ Check these every Friday on the tracker's Scorecard ("Email bounces to date" and
 | Anyone marks a message as spam (you will rarely know; a reply saying "spam" counts) | Same: five business days off, read the message again for anything that looks like a blast |
 | A test email to your own Gmail or Outlook.com account lands in spam | Same, and re-run section 2 step 5 for PASS on all three |
 | Week's reply rate on email under 10% after 30 first touches | Assume delivery first (section 6.2), not copy |
-| Clean week (no bounces over 2%, no spam signal) | Advance to the next week's row |
+| Clean week (fewer than two bounces, no spam signal, test emails in the inbox) | Advance to the next week's row |
 
 ---
 
 ## 4. Week one without the new domain
 
-The domain is bought on Monday, DKIM cannot be generated until Wednesday at the earliest, and DMARC waits 48 hours after that (S2, S3). So week 1 runs on channels that do not depend on [DOMAIN]. Totals match `warmup-schedule.csv`: 5 first touches on Monday, then 10 a day.
+The domain is bought on Monday, the DKIM key can only be generated 24 to 72 hours after Gmail is turned on (Tuesday to Thursday), and DMARC waits 48 hours after SPF and DKIM pass (S2, S3). So week 1 runs on channels that do not depend on [DOMAIN]. Totals match `warmup-schedule.csv`: 5 first touches on Monday, then 10 a day.
 
 | Day | Offices | Brands | Setup |
 | --- | --- | --- | --- |
 | **Mon 2026-10-26** | 3 warm asks to people you know by name (office managers, workplace leads, executive assistants), from your existing email, phone or LinkedIn (`messages/08-warm-intro-referral-walk-in.md` 1a or 1c) | 2 warm asks to founders you know | Name check (`desk-drop-legal-pack/01`); domain; Workspace; MX; SPF; tracker into Google Sheets; join the Startup CPG Slack and list its New York events for the next six weeks (plan, week 1 setup) |
-| **Tue 2026-10-27** | Walk sessions 1 and 2 from `cluster-1-flatiron/walk.csv`, 8 to 11 am: ask for the person who runs the pantry at the candidate offices on the route (08 part 3). About 6 asks. Fill the walk's grey columns as you go | 2 LinkedIn messages to people already connected to you; send LinkedIn invitations **without a note** to the next week's LinkedIn contacts (both sides), no more than about 20 a day | Update the LinkedIn headline (`messages/01-founder-linkedin-profile.md`, version 1 until the name is decided) |
+| **Tue 2026-10-27** | Walk sessions 1 and 2 from `cluster-1-flatiron/walk.csv`, 8 to 11 am: ask for the person who runs the pantry at the candidate offices on the route (08 part 3). About 6 asks. Fill the walk's grey columns as you go | 2 LinkedIn messages to people already connected to you; 2 warm or Startup CPG contacts; send LinkedIn invitations **without a note** to the next week's LinkedIn contacts (both sides), no more than about 20 a day | Update the LinkedIn headline (`messages/01-founder-linkedin-profile.md`, version 1 until the name is decided) |
 | **Wed 2026-10-28** | Walk sessions 3 and 4, 8 to 11 am. About 6 asks | 2 LinkedIn messages; 2 warm or Startup CPG contacts (research conversations only, never a pitch inside the community) | DKIM key (section 2 step 4) |
 | **Thu 2026-10-29** | 3 LinkedIn messages to accepted invitations (07 follow-up) | 3 LinkedIn messages; 2 warm or community; 2 messages to brands' own business accounts on Instagram, where the brand lists that as its contact route (optional; Instagram's limits were not checked) | Test email: SPF and DKIM PASS |
 | **Fri 2026-10-30** | 3 LinkedIn messages; 2 warm follow-ups | 3 LinkedIn messages; 2 warm or community | DMARC if DKIM has passed for 48 hours; first Friday scorecard (`tracking/how-the-tracker-works.md`) |
@@ -120,6 +120,7 @@ Rules for week one:
 - **LinkedIn notes are rationed.** On a free account LinkedIn allows "a personalized message to up to three connection requests per month", each "up to 200 characters" (S14). Use the three on the three best contacts who have no email and no walk-in route. Every other invitation goes without a note; the message with the ask (`messages/07-linkedin-messages.md`) goes once they accept, and that is touch 1. An invitation alone is not a touch: in Clay set `next_action = await_connection`. LinkedIn Premium lifts the note limit but is a paid plan whose price was not checked; it is not recommended inside the budget, and if you consider it, stop at checkout.
 - **Warm messages from your existing address carry the footer too** (`messages/08`, "Which address sends these"). Once [DOMAIN] passes all three checks, start new threads from [EMAIL]; leave old threads where they are.
 - **Walk-ins only on Tuesday or Wednesday mornings**, when pantry owners are in and the lobby looks as it will on a drop day (B's walk notes). Bring nothing to sell (plan). If the walk sessions run short, log what you saw on the walk sheet anyway; it feeds the building columns.
+- **If invitations are not accepted by Thursday,** make the LinkedIn share up with warm asks and Startup CPG contacts that day; walk-ins stay on Tuesday and Wednesday mornings.
 - **If the warm list is short,** move its share to walk-ins (offices) and to Startup CPG events and LinkedIn (brands). Do not fill the gap with cold email from [DOMAIN] in week 1, and do not use a personal or another business's domain for cold email.
 - **Log every touch the same day** in Clay: `touch_1_date`, `channel`, `sequence`, `status = contacted`.
 
@@ -169,7 +170,7 @@ Change one thing at a time, in this order, and give each change a week or 30 fir
 
 ### 6.3 Check who you are writing to
 - Look at the replies you did get: which titles, company sizes, channels and `known_to_founder` values? Move the next week's list toward them (in Clay, A's scoring).
-- Offices: is the person really the pantry owner? At 40 to 150 people that is usually the office manager or an executive assistant; a "head of workplace" at a larger firm often is not. Brands: founders at the smaller end of $500k to $10M answer more of their own email than marketing leads at the top end (judgment; check against your own replies).
+- Offices: is the person really the pantry owner? At 40 to 150 people that is usually the office manager or an executive assistant; a "head of workplace" at a larger firm often is not (judgment; check it against who actually replied). Brands: founders at the smaller end of $500k to $10M answer more of their own email than marketing leads at the top end (judgment; check against your own replies).
 - Is the why-now line true and recent (under 120 days, `messages/03`)? A stale hook reads like a template.
 
 ### 6.4 Change the copy, one variable at a time
@@ -198,6 +199,9 @@ The legal pack's footer and checklist (`desk-drop-legal-pack/02-email-footer-and
 
 ## Changelog
 
+Round numbers are part B's rounds; a round that did not change this file is not listed.
+
 - Round 1 (2026-10-24): DNS steps from Google's pages (S1 to S3, S16); warm-up schedule generated and checked by script; week-one plan built on B's walk sessions, warm asks and LinkedIn; tool comparison from vendors' pricing pages (S11 to S13); under-20% playbook.
 - Round 2 (2026-10-24): unsourced lines reworded as judgment or removed (follow-up reply share, "pixel by default"); the Gmail rule narrowed to what Google's page says (mail to personal Gmail accounts); the day after Thanksgiving made a no-send day after the schedule showed 18 follow-ups landing on it; caps re-checked by script.
 - Round 3 (2026-10-24): critique as a deliverability specialist who has watched new domains get burned: the one-week-old-domain risk is now stated with the safer alternative (start email on Mon 2026-11-09); the 2% bounce rule tripped on a single bounce at week-2 volumes, so it is now "two bounces in a week, or 2% after 100"; the Scorecard text matches.
+- Round 4 (2026-10-24): read-through: week-one Tuesday added up to 8 touches (now 10); DKIM timing restated as Google's 24 to 72 hours; the clean-week rule now uses the new bounce rule; a fallback for unaccepted LinkedIn invitations; one unlabeled judgment labeled; the trial's source cited correctly.

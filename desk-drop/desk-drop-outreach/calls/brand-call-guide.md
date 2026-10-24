@@ -94,6 +94,8 @@ All seven Y plus `qual_not_excluded` = Y makes the brand "qualified on a call" o
 
 ## Changelog
 
+Round numbers are part B's rounds; a round that did not change this file is not listed.
+
 - Round 1 (2026-10-24): plan questions kept verbatim and in order; added prep, opening, probes, column map, the anchor rule, Gate 0 rule, close, truthful answers, the seven-check add-on.
-- Round 4 (2026-10-24): the close asks permission before anyone is quoted (`quote_ok_to_share`), which the Startup CPG posts require.
 - Round 3 (2026-10-24): critique as a CPG founder pitched by every sampling vendor: "I'm not selling anything" followed by a price question would be seen through, so the opening now says plainly that a price question is coming and that their number comes first; `shortlist` added for the plan's 6 brands.
+- Round 4 (2026-10-24): the close asks permission before anyone is quoted (`quote_ok_to_share`), which the Startup CPG posts require.

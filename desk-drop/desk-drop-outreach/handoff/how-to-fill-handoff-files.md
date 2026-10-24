@@ -234,5 +234,7 @@ Generated from `tools/build_tracker.py`; the same text is on the tracker's Dicti
 
 ## Changelog
 
+Round numbers are part B's rounds; a round that did not change this file is not listed.
+
 - Round 1 (2026-10-24): fill steps for both handoff tabs and the pipeline export; event table checked against `tools/test_tracker.py` (every row of the SAMPLE export matches an independent computation); `opt_out` narrowed to roster exits after reading the financial model's active-office formula; column tables generated from the builder.
 - Round 2 (2026-10-24): the SAMPLE export pasted into a scratch copy of the financial model passes H's own header, text and event checks, and H's Gate 0 and Gate 1 counts and medians equal the tracker's (`tools/test_h_compat.py`); added the ten columns operations requests (`campaign-ops/tools/trackerdef.py`, read 2026-10-24).

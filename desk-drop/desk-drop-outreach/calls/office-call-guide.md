@@ -101,6 +101,8 @@ The scorecard counts a conversation once per office (distinct Clay `row_id`). Lo
 
 ## Changelog
 
+Round numbers are part B's rounds; a round that did not change this file is not listed.
+
 - Round 1 (2026-10-24): plan questions kept verbatim and in order; added prep, opening, probes, column map, Gate 0 rule, close, truthful answers, walk-in version.
-- Round 4 (2026-10-24): `uses_snack_service`, `q3_brands_reach_out` and `other_approver` added so the Startup CPG post numbers (`messages/12-startup-cpg-posts.md`) are counts, not guesses; the close now asks permission before anyone is quoted (`quote_ok_to_share`).
 - Round 3 (2026-10-24): critique as an office manager who deletes forty vendor emails a day: the budget probe right after "it's free" reads like a bait and switch, so it now gets one line of framing before it (the probe itself is unchanged); `shortlist` added to the close for the plan's 8 offices; `channel` = warm-intro is now defined as "anyone you knew before", which the Scorecard counts against the plan's five warm conversations.
+- Round 4 (2026-10-24): `uses_snack_service`, `q3_brands_reach_out` and `other_approver` added so the Startup CPG post numbers (`messages/12-startup-cpg-posts.md`) are counts, not guesses; the close now asks permission before anyone is quoted (`quote_ok_to_share`).

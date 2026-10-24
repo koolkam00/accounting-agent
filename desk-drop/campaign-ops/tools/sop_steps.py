@@ -2,7 +2,8 @@
 so the written SOP and each drop's dated checklist never disagree.
 
 Each step: (id, anchor, offset, kind, models, owner, what, log, tool)
-  anchor  "T" (the drop day) or another step id
+  anchor  "T" (the drop day), "ship_req" (the requested ship-by: T-10, or earlier when T-10 to T-5
+          crosses the December blackout, CONTRACTS section 3) or another step id
   kind    "bd" business days, "cal" calendar days, "by" a deadline counted in business days
   models  "all" or a set of founder / courier / direct-ship
 Dates come from tools/opscal.py, which refuses any drop day that is a Monday, Friday, holiday or blackout.
@@ -12,22 +13,22 @@ F, C, DS = "founder", "courier", "direct-ship"
 
 STEPS = [
     # ---- before T-10: from the brand's yes
-    ("yes", "T", -15, "by", ALL, "you",
-     "Brand says yes: send the campaign agreement (legal pack file 10, Part 1 from the campaign row), the invoice (tools/make_invoice.py) and the certificate request (file 11), and ask for the allergen sheet, logo, two card sentences, discount code or landing page, the unused-product election and the newsletter choice. Latest date that still leaves five business days to pay before T-10.",
+    ("yes", "ship_req", -5, "by", ALL, "you",
+     "Brand says yes: send the campaign agreement (legal pack file 10, Part 1 from the campaign row), the invoice (tools/make_invoice.py) and the certificate request (file 11), and ask for the allergen sheet, logo, two card sentences, discount code or landing page, the unused-product election and the newsletter choice. Latest date that still leaves five business days to pay before the requested ship date.",
      "campaigns row (tier, offices, terms); invoices row", "make_invoice.py"),
-    ("approvals_ask", "T", -15, "by", ALL, "you",
+    ("approvals_ask", "ship_req", -5, "by", ALL, "you",
      "Ask each office on the route about this brand (template 01). An office's first three drops need its explicit yes; after that, notice at least five business days ahead and it comes unless they say no.",
      "approvals rows: asked_date", "make_messages.py approvals"),
     ("building_coi", "T", -15, "by", ALL, "you",
      "Offices whose building wants our certificate (coi_required yes or unsure): request it from our carrier at least 10 business days before that office's first drop (legal pack file 12), only once general liability is bound.",
      "offices: building_coi_status, building_coi_date", ""),
-    ("paid", "T", -10, "by", ALL, "brand",
+    ("paid", "ship_req", 0, "by", ALL, "brand",
      "Payment lands in the business account: log paid_date and paid_amount on invoices. Founding: due within five business days of the invoice and before shipping; standard: the first 50% on signing. Five business days late: you decide whether to cancel and refund (file 10, section 3).",
      "invoices: paid_date, paid_amount_usd, method, bank_reference", ""),
-    ("coi_check", "T", -10, "by", ALL, "you",
+    ("coi_check", "ship_req", 0, "by", ALL, "you",
      "Brand's certificate in: the five-minute check in legal pack file 11. Tick coi_check_ok on brands. If the policy ends before 12 months after the window, diary the renewal certificate.",
      "campaigns: coi_received_date; brands: coi_check_ok, coi_policy_end_date", ""),
-    ("release", "T", -10, "by", ALL, "you",
+    ("release", "ship_req", 0, "by", ALL, "you",
      "When campaigns shows ship_release RELEASED (payment, agreement, certificate, every office approved), send the ship-date email (template 02) the same day. Never confirm a ship date on HOLD.",
      "campaigns: ship_release", "make_messages.py ship_release"),
     ("direct_plan", "T", -10, "by", {DS}, "you and brand",
@@ -127,7 +128,7 @@ def dates(T, model):
         sid, anchor, off, kind = st[0], st[1], st[2], st[3]
         if not applies(st, model):
             continue
-        base = T if anchor == "T" else out.get(anchor)
+        base = T if anchor == "T" else opscal.sop_dates(T)["ship_by_requested"] if anchor == "ship_req" else out.get(anchor)
         if base is None:
             continue
         if kind in ("bd", "by"):

@@ -265,6 +265,8 @@ Clay write-back for it: `call_date` 2026-10-27, `status` `yes_in_principle`, `ye
 
 ## Changelog
 
+Round numbers are part B's rounds; a round that did not change this file is not listed.
+
 - Round 1 (2026-10-24): field order copied from the tracker's columns; ten-minute plan; number rules; Clay write-back; status table; objection codes; a SAMPLE example.
 - Round 2 (2026-10-24): checked by script that both blocks list exactly the tracker's columns in the tracker's order (44 office fields, 44 brand fields), so the note types straight across one row; verbatims first, codes second in the ten-minute plan; the qualification checks sit in the brand block, blank outside weeks 4 to 7; added Part A's `call_note_hook` and `referrer_ok_to_name` to the write-back so the post-call emails have what they need without a second pass.
 - Round 3 (2026-10-24): critique as an operations lead: 45 columns typed across one row is slow and impossible on a phone, so the tracker gained Note_Office and Note_Brand tabs (vertical form, one row to paste as values, tested); added `shortlist` for the plan's 8 offices and 6 brands; field order re-checked by script (45 and 45).

@@ -74,7 +74,9 @@ def build(T, model, drop_id, out, company=""):
         rel = "T" if d == T else ("T%+d" % (opscal.window_day(T, d) - 1) if d > T else "T-%d" % sum(1 for i in range((T - d).days) if opscal.is_business_day(d + dt.timedelta(days=i))))
         if st[3] == "cal":
             rel = "+%d cal" % (d - (T if st[1] == "T" else ds[st[1]])).days
-        rows.append("<tr><td class='small'>%s<br><b>%s</b></td><td class='small'>%s%s</td><td class='small'>%s</td><td class='small'>%s</td><td><span class='chk'></span></td></tr>" % (
+        if st[1] == "ship_req":
+            rel = "ship-by" + ("" if st[2] == 0 else " %+d" % st[2])
+        rows.append("<tr><td class='small' style='white-space:nowrap'>%s<br><b>%s</b></td><td class='small'>%s%s</td><td class='small'>%s</td><td class='small'>%s</td><td><span class='chk'></span></td></tr>" % (
             E(d.strftime("%a %Y-%m-%d")), E(rel), "<b>By</b> " if st[3] == "by" else "", E(st[6]), E(st[5]), E(st[7] + ((" · " + st[8]) if st[8] else ""))))
     w = opscal.window(T)
     body = ("<h1>SOP · %s · %s</h1><p>Delivery model <b>%s</b>. Window %s to %s (day 1 to day 5). Report due %s, debrief %s, redemption check %s. "

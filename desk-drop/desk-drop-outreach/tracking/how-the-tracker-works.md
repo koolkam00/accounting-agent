@@ -111,8 +111,10 @@ Rows whose `row_id` starts with SAMPLE are ignored everywhere while Config `incl
 
 ## Changelog
 
+Round numbers are part B's rounds; a round that did not change this file is not listed.
+
 - Round 1 (2026-10-24): workbook, scorecard, sync check and pipeline export built by script; 189 checks.
 - Round 2 (2026-10-24): qualification checks on Brand_Log, Gate 1 block, copy-slot counts for Part A, duplicate-handoff check; SAMPLE data made to obey the calendar and the week-one email rule; 214 checks.
-- Round 5 (2026-10-24): the ten columns operations reads but the handoff tabs lacked were added (F's `trackerdef.py`, read 2026-10-24) and the test now checks F's full list; the financial-model compatibility test was added; 245 checks.
-- Round 4 (2026-10-24): four coded fields and a scorecard block so every counted slot in Part A's Startup CPG posts comes from the tracker, with a per-person `quote_ok_to_share`; 241 checks.
 - Round 3 (2026-10-24): critique as an operations lead: a 45-column row is slow to type and impossible on a phone, so Note_Office and Note_Brand were added (vertical form, one row to paste, round trip tested); the plan's "five of fifteen from your own network" and "shortlist of 8 offices and 6 brands" are now counted; the Clay paste step says how to paste without breaking the formulas; scorecard cells centred vertically after the render showed values sitting below their labels; 229 checks.
+- Round 4 (2026-10-24): four coded fields and a scorecard block so every counted slot in Part A's Startup CPG posts comes from the tracker, with a per-person `quote_ok_to_share`; 241 checks.
+- Round 5 (2026-10-24): the ten columns operations reads but the handoff tabs lacked were added (F's `trackerdef.py`, read 2026-10-24) and the test now checks F's full list; the financial-model compatibility test was added; 245 checks.

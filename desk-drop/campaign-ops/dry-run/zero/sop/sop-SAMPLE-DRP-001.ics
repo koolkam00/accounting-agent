@@ -5,23 +5,23 @@ CALSCALE:GREGORIAN
 BEGIN:VEVENT
 UID:SAMPLE-DRP-001-yes@campaign-ops
 DTSTAMP:20261024T120000Z
-DTSTART;VALUE=DATE:20261218
-DTEND;VALUE=DATE:20261219
+DTSTART;VALUE=DATE:20261215
+DTEND;VALUE=DATE:20261216
 SUMMARY:SAMPLE-DRP-001: Brand says yes (you)
 DESCRIPTION:Brand says yes: send the campaign agreement (legal pack file 1
  0\, Part 1 from the campaign row)\, the invoice (tools/make_invoice.py) an
  d the certificate request (file 11)\, and ask for the allergen sheet\, log
  o\, two card sentences\, discount code or landing page\, the unused-produc
  t election and the newsletter choice. Latest date that still leaves five b
- usiness days to pay before T-10.\nLog it in: campaigns row (tier\, offices
- \, terms)\; invoices row
+ usiness days to pay before the requested ship date.\nLog it in: campaigns 
+ row (tier\, offices\, terms)\; invoices row
 TRANSP:TRANSPARENT
 END:VEVENT
 BEGIN:VEVENT
 UID:SAMPLE-DRP-001-approvals_ask@campaign-ops
 DTSTAMP:20261024T120000Z
-DTSTART;VALUE=DATE:20261218
-DTEND;VALUE=DATE:20261219
+DTSTART;VALUE=DATE:20261215
+DTEND;VALUE=DATE:20261216
 SUMMARY:SAMPLE-DRP-001: Ask each office on the route about this brand (tem
  plate 01). (you)
 DESCRIPTION:Ask each office on the route about this brand (template 01). A
@@ -46,8 +46,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:SAMPLE-DRP-001-paid@campaign-ops
 DTSTAMP:20261024T120000Z
-DTSTART;VALUE=DATE:20261228
-DTEND;VALUE=DATE:20261229
+DTSTART;VALUE=DATE:20261222
+DTEND;VALUE=DATE:20261223
 SUMMARY:SAMPLE-DRP-001: Payment lands in the business account (brand)
 DESCRIPTION:Payment lands in the business account: log paid_date and paid_
  amount on invoices. Founding: due within five business days of the invoice
@@ -59,8 +59,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:SAMPLE-DRP-001-coi_check@campaign-ops
 DTSTAMP:20261024T120000Z
-DTSTART;VALUE=DATE:20261228
-DTEND;VALUE=DATE:20261229
+DTSTART;VALUE=DATE:20261222
+DTEND;VALUE=DATE:20261223
 SUMMARY:SAMPLE-DRP-001: Brand's certificate in (you)
 DESCRIPTION:Brand's certificate in: the five-minute check in legal pack fi
  le 11. Tick coi_check_ok on brands. If the policy ends before 12 months af
@@ -71,8 +71,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:SAMPLE-DRP-001-release@campaign-ops
 DTSTAMP:20261024T120000Z
-DTSTART;VALUE=DATE:20261228
-DTEND;VALUE=DATE:20261229
+DTSTART;VALUE=DATE:20261222
+DTEND;VALUE=DATE:20261223
 SUMMARY:SAMPLE-DRP-001: When campaigns shows ship_release RELEASED (paymen
  t\, agreeme (you)
 DESCRIPTION:When campaigns shows ship_release RELEASED (payment\, agreemen
