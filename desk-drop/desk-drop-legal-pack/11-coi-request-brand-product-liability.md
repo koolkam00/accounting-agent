@@ -4,11 +4,11 @@
 
 Version 0.5 · 2026-10-24
 
+**The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot on the "Additional insured" line of the block to forward. Replace it with the name on the filed Articles of Organization, letter for letter, including "LLC".
+
 **What it is for.** Product liability sits with the brand (plan, legal table). Before a brand's product ships, it must show product liability coverage of at least \$1,000,000 and add the company as an additional insured (plan; brand agreement file 10, section 2(c)). This file is the request the founder sends, the version the brand forwards to its broker, a reminder, and the check to run when the certificate arrives.
 
 **When it is used.** In the "close and collect" email on the brand's yes, with the signed agreement and invoice (plan, Phase 2 step 4). It must be checked and filed before the ship-by date (T−10). For campaign zero, ship-by is Tuesday 2026-12-22 (derived, founder to confirm), so send the request no later than Tuesday 2026-12-08.
-
-**The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot on the "Additional insured" line of the block to forward. Replace it with the name on the filed Articles of Organization, letter for letter, including "LLC".
 
 **How to fill it in.** Replace the brackets. If the company is not yet formed, do not send this request yet: the brand agreement is signed only after formation (file 10 notes).
 

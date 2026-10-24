@@ -1,2 +1,63 @@
 PASS baseline: no integrity failures and no error cells  [[] []]
    baseline low -3871, end 12014, steady per hour 81.14, next drop per hour 16.21
+PASS price $180: standard runs per hour rises  [61.28 -> 75.25]
+PASS price $180: cash at week 26 rises  [12014 -> 15506]
+PASS price $180: inputs-changed count = 1 and plan checks still reproduce (scenario rows use plan prices)  [changed 1]
+PASS price $180: no integrity failures  [[] []]
+PASS bank transfer: campaign zero contribution = $960  [960]
+PASS bank transfer: low point improves  [-3871 -> -3835]
+PASS bank transfer: no integrity failures  [[] []]
+PASS home storage: standard run hard costs = $595  [595]
+PASS home storage: no storage paid in the cash flow
+PASS home storage: steady-state overhead = $160  [160]
+PASS insurance monthly: five payments of $100 inside the window  [-500]
+PASS insurance monthly: low point improves  [-3871 -> -2871]
+PASS insurance monthly: no integrity failures  [[] []]
+PASS close rate 10%: hours per win = 9.75  [9.75]
+PASS close rate 10%: standard runs per hour falls
+PASS two brands per standard drop: runs 1 and 2 carry 2 brands and per hour falls  [(2, 43.9814814814815)]
+PASS two brands per standard drop: no integrity failures  [[] []]
+PASS goal of 20 offices: run 2 recruits 10 new offices and its hours rise  [(10, 82)]
+PASS goal of 20 offices: the run-2 fatigue warning clears  [ok]
+PASS scenario A: no integrity failures  [[] []]
+   scenario A: D4 brands 3 renewals 1; D5 brands 3 renewals 1; end cash 12014; steady contrib 9406; steady net 9406; steady per hour 99.6398305084746
+PASS A: steady state at $180 per office earns more than base
+PASS scenario B: no integrity failures  [[] []]
+   scenario B: D4 brands 3 renewals 0; D5 brands 3 renewals 0; end cash 12014; steady contrib 7660; steady net 8160; steady per hour 73.6538461538462
+PASS B: no renewals scheduled and office-paid revenue $500  [500]
+PASS scenario C: no integrity failures  [[] []]
+   scenario C: D4 brands 3 renewals 1; D5 brands 0 renewals 0; end cash 7729; steady contrib 7660; steady net 7660; steady per hour 81.1440677966102
+PASS C: only one decision-window drop runs
+PASS scenario D: no integrity failures  [[] []]
+   scenario D: D4 brands 0 renewals 0; D5 brands 0 renewals 0; end cash 3444; steady contrib 0; steady net -310; steady per hour n/a
+PASS D: no decision-window drops and zero steady state
+PASS D: cash at week 26 below base
+PASS zero brands on run 1: the drop does not run, cost 0
+PASS zero brands on run 1: no integrity failures  [[] []]
+PASS one office on run 1: finite per hour  [-2.60989010989011]
+PASS three renewals on D4: brand sales 6 h  [6]
+PASS a Friday drop is flagged and fails the schedule check
+PASS a drop in the December blackout is flagged
+PASS an added drop flows into the cash flow (deposit inside the window)  [12014 -> 16299]
+PASS an added drop shows as a changed schedule row  [1]
+PASS added drop: no integrity failures  [[] []]
+PASS SAMPLE: no integrity or data failures  [[] []]
+   gate rows: {"Test": "Status", "Office conversations held (context)": "info", "Offices yes in principle, with owner and receiving window": "pass", "Brand conversations held (context)": "info", "Brands that would pay $500 or more and control the budget": "pass", "Offices signed": "pass", "Combined Tuesday headcount of signed offices": "pass", "Brands paid in full": "pass", "Units placed within one business day (share of delivered)": "pass", "Brand campaigns under 5 survey responses per office (must be 0)": "miss", "Reports late (after T+7) or missing (must be 0)": "pass", "Brands that would buy again": "pass", "Renewals at $1,500 or more, signed by the review date": "not yet", "Contribution per founder hour, standard runs": "not yet"}
+   gate overall: {'Gate': 'Overall', 'Gate 0': 'pass', 'Gate 1': 'pass', 'Gate 2': 'miss', 'Gate 3': 'not yet'}
+PASS SAMPLE: Gate 0 passes (5 offices yes, 3 brands at $500+ controlling budget; duplicate row and non-controller ignored)  [pass]
+PASS SAMPLE: Gate 1 passes (5 signed, 510 headcount, 2 paid)  [pass]
+PASS SAMPLE: Gate 2 misses (one campaign under 5 responses per office)  [miss]
+PASS SAMPLE: Gate 3 not yet  [not yet]
+PASS SAMPLE: Drop_Actuals revenue $1,200 and hard costs $160 + $80 allocations  [(1200, 240)]
+PASS SAMPLE: actual hours for DRP-001 = 50 hand + 1.5 Toggl  [51.5]
+PASS SAMPLE: placement within a day = 450/500  [0.9]
+PASS SAMPLE: live basis switches to actual  [actual]
+PASS SAMPLE: actual receipts replace plan receipts for DRP-001 (both $1,200, in week 7)  [(0, 1200)]
+PASS SAMPLE: actual drop costs hit the cash flow on the drop date (week 12)  [-160]
+PASS SAMPLE: Toggl hours read = 2.25  [2.25]
+PASS SAMPLE: weekly hours log sums all hand and Toggl hours  [58.25]
+PASS SAMPLE: scenario pointer has data  [between scenarios: see the rule]
+PASS SAMPLE: median office probe = 150  [150]
+PASS bad activity key and bad event are flagged as data failures  [['Hours_Log: invalid activity keys', 'Pipeline: rows with a bad event or side']]
+
+54 of 54 tests pass

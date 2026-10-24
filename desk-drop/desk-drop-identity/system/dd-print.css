@@ -1,4 +1,4 @@
-/* dd-print.css: shared screen and print rules for every template (v1.0, 2026-10-23).
+/* dd-print.css: shared screen and print rules for every template (v1.1, 2026-10-24; v1.1 adds table and picture fields).
    Depends on tokens/tokens.css and fonts/fonts.css. */
 
 * { box-sizing: border-box; }
@@ -71,6 +71,23 @@ mark.dd-ph {
 .dd-panel-status .err { background: #FBE3E1; color: #7A1A14; font-weight: 700; }
 .dd-panel-status .warn { background: #FFF6CC; color: #4A3D00; }
 .dd-panel-status .ok { background: #E3F1E5; color: #1D4D24; font-weight: 700; }
+
+
+/* v1.1: table fields (one fold-out group per row) and picture fields */
+.dd-table { margin: 0 0 14px; }
+.dd-table-title { font-weight: 700; margin: 0 0 2px; }
+.dd-table-title i { font-style: normal; font-weight: 400; color: var(--dd-error); font-size: 12px; }
+.dd-table-help { display: block; color: var(--dd-stone); font-size: 12px; margin: 0 0 6px; }
+.dd-row { border: 1px solid #C9C3B8; border-radius: var(--dd-radius-1); background: #fff; margin: 0 0 6px; padding: 0 10px; }
+.dd-row[open] { padding-bottom: 8px; }
+.dd-row summary { cursor: pointer; font-weight: 700; padding: 7px 0; }
+.dd-row summary em { font-style: normal; font-weight: 400; color: var(--dd-stone); margin-left: 8px; }
+.dd-row .dd-field { margin-bottom: 8px; }
+.dd-panel button.dd-row-add, .dd-panel button.dd-row-del { font-size: 13px; padding: 6px 10px; }
+.dd-panel button.dd-row-del { border-color: #B9B3A8; color: var(--dd-ink-soft); }
+.dd-img-pick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.dd-img-what { flex: 1 0 100%; font-size: 12px; color: var(--dd-ink-soft); }
+.dd-panel .dd-file-sm, .dd-img-pick button { font-size: 13px; padding: 6px 10px; }
 
 /* On-screen-only error overlay on a sheet */
 .dd-sheet-error {

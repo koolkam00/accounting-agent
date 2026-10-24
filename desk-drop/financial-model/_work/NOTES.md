@@ -46,3 +46,11 @@
 6 Gate 3 model renewals signed by Gate 3; 7 office-fatigue flag (12 offices, two drops in 14 days); 8 scenario-driven cells styled;
 9 Scenarios defaults/changed; 10 schedule changed flags; 11 dashboard: unabsorbed overhead + all-in per hour incl. discovery;
 12 README: taxes, refunds not modeled; 13 tests; 14 visual; 15 deliverable files.
+
+## Round 2-3 (2026-10-24)
+- Google Sheets list re-opened 2026-10-24: DATEVALUE, TIMEVALUE, FIND, COUNTA, SUMIFS, EDATE, EOMONTH, MEDIAN, ROUNDUP, WORKDAY all listed. All 37 functions used are on the list.
+- Final figures: low -3,871 (week 12, Mon 2027-01-11); commit 4,871; gap to 6,510 = 1,639; week-26 cash 12,014; unabsorbed overhead 1,310;
+  all-in 50.3/h (38.9 after startup); standard runs 61.3/h; steady 7,660/mo at 81.1/h (plan reading 73.65); startup 3,520; b* 1.81; price* 107.73.
+- Scenarios: A steady 9,406/mo 99.6/h; B 7,660 + 500 office-paid (cost unknown) 73.7/h; C week-26 cash 7,729; D week-26 cash 3,444, steady -310/mo.
+- Goal 20 offices -> run 2 = 82 h, 46.7/h; Gate 3 combined 51.4/h.
+- Tests 54/54; audit clean; 28/28 checks.

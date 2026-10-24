@@ -40,3 +40,16 @@ Started 2026-10-23. This file is my running notebook so nothing is lost on conte
 - Lazy font loading made first width measurement use a fallback font -> runtime loads every FontFace before fitting.
 - --mode pro page size was Letter -> @page injected for pro (7.25 x 10.25).
 - Full suite 25/25 pass. REPORT.md write was refused by the harness (subagents return reports as text), so the part-1 report is returned to the orchestrator in the final message.
+
+# Part 2 (documents, signature, avatar), started 2026-10-24
+
+## Round 0 decisions (before drafting)
+- Every new document is a data-driven HTML template on the part-1 runtime (fill-in panel, JSON block, render.js), so the founder edits in Chrome with no design tool. Canva/Figma: no logins; HTML is the editable source and the PDF is the output.
+- Copy blocks of the one-pagers are panel fields (grouped "Copy"), so the founder can change words without touching code; every document checks it still fits on its page and refuses to print if not.
+- dd-template.js gains a `table` field type (rows x columns grid with add/remove) for the proposal roster, retailer list and report roster; scan() goes deep into arrays for placeholders and SAMPLE values.
+- Shared modules: system/dd-docs.css (Letter document layout), system/dd-dates.js (CONTRACTS section 3 business days, holidays, blackouts), system/dd-report.js (the one report renderer, used by report.html and by the proposal's mock page so the mock is exactly the real layout).
+- Report is one page; photo thumbnails on it; full-size photos on an optional evidence appendix page (assumption).
+- Survey numbers entered as counts; template computes shares and always prints counts beside percentages.
+- Limitations paragraph is fixed in code (not a field), checked present on every render.
+- Signature and avatar generated from brand.json and the symbol by build scripts (rename = rebuild). Signature: text-only default (no image hosting needed), logo variant for when [DOMAIN] hosts the PNG; outreach variant appends the legal pack's Footer B line, read from desk-drop-legal-pack/02-email-footer-and-checklist.md at build time.
+- Web search budget for the run is exhausted; direct page fetches used: Gmail signature limit 10,000 characters (support.google.com/mail/answer/8395), LinkedIn Page logo 400x400 recommended, 268x268 minimum (linkedin.com/help/linkedin/answer/a563309), Slack profile photo 512x512 minimum, 1024x1024 maximum (slack.com/help/articles/115005506003). All opened 2026-10-24.

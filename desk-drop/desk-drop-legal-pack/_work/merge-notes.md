@@ -49,3 +49,9 @@ Started 2026-10-24. Inputs: parts A and B (see `partA-notes.md`, `partB-notes.md
 - **Merge round 3 (broker):** office page section 4 now promises to name a building's owner and managing agent when the building requires it, giving a blanket additional-insured endorsement the written contract it needs; files 06 (question 10) and 12 (question 1) point carriers to it; file 11's limit check now covers a separate product liability policy.
 - **Merge round 4 (food-safety inspector):** one storage sentence in 06, 07, 10 and 11 ("off the floor, away from heat and as the label directs"); a unit placed in one office never moves to another (07 fact 8, 10 section 9).
 - **Merge round 5 (pantry owner):** "In short" line under the title; "I agree" email reply counts as a signature; "can say yes to this" replaces a formal authority sentence; office page trimmed back to one Letter page with the signature block (rendered and viewed).
+- **Merge round 6 (full four-person pass on the rendered pages and the notes):** wording and placement only (index name-decision line aligned with file 01; HANDOFF's state-answer line made exact; the company note moved up in files 11 and 12). Stop rule met.
+
+## Status at hand-off
+
+- Done: items 1 to 10 of the to-do list, except REPORT.md. The harness refused to let this subagent write a file named REPORT.md ("Subagents should return findings as text"), so its full text went back to the orchestrator in the final response, to be saved verbatim as `desk-drop-legal-pack/REPORT.md`.
+- Removed as superseded: `_work/render_partA.py`, `_work/check_partA.py` (replaced by `render_pack.py`, `check_pack.py`), and the old renders under the old numbers.

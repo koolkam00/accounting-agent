@@ -118,13 +118,14 @@ README = [
           "Incremental purchases are not measured, and the column says so. There is no field for sales lift, conversions or ROI."),
 
     ("h", "Google Sheets"),
-    ("p", "Built to open in Google Sheets with formulas intact: no macros, scripts, data tables, array formulas, named ranges or add-ons. Every function used appears in Google's "
-          "Sheets function list (support.google.com/docs/table/25273, opened 2026-10-23). Import: File, Import, Upload, Replace spreadsheet. A live import was not possible from the build "
+    ("p", "Built to open in Google Sheets with formulas intact: no macros, scripts, data tables, array formulas, named ranges or add-ons. Every function used (37) appears in Google's "
+          "Sheets function list (support.google.com/docs/table/25273, opened 2026-10-23 and 2026-10-24). Import: File, Import, Upload, Replace spreadsheet. A live import was not possible from the build "
           "environment, so check Dashboard and Checks after the first import (unverified, founder to confirm)."),
 
     ("h", "Changelog"),
 ] + [("kv", (f"Round {i + 1}", line)) for i, line in enumerate([
     "Draft: built every tab on one shared drop engine; plan rows, hour table, capital table and steady state reproduce. The audit found one numeric literal (a '2' in the scenario pointer), a ROW() call, the company name inside a source quote, and a circular reference between the error scan and Dashboard cells that read Checks. All fixed; 28 of 28 checks pass.",
     "Pulled the legal pack's figures.csv (publication $1,745, attorney $400 and accountant $300, IT-204-LL $25, trademark out of the six months, two needs-quote insurance add-ons). Added office-fatigue warnings, change tracking on Scenarios and Schedule, overhead-not-absorbed and six-month all-in views, Gate 3 planned renewals counted by signature date, and tolerance cells instead of exact equality. Re-laid the Dashboard after a visual check.",
-    "Moved offices and brands per drop onto Inputs and made the derived Schedule rows formulas of them (new offices backed out from the 12-office goal). Unsmoothed the cash chart, top-aligned every cell, blanked unused drop rows. 50 of 50 behaviour tests pass, including a SAMPLE actuals run through every gate.",
+    "Moved offices and brands per drop onto Inputs and made the derived Schedule rows formulas of them (new offices backed out from the 12-office goal). Unsmoothed the cash chart, top-aligned every cell, blanked unused drop rows. Behaviour tests cover a SAMPLE actuals run through every gate.",
+    "Final review: verified the last three functions (DATEVALUE, TIMEVALUE, FIND) on Google's Sheets list, made every plan-row tolerance the same, wrote HANDOFF, README and REPORT, and regenerated the CSV snapshots. Audit 0 literals; 28 of 28 checks; 54 of 54 tests.",
 ])]

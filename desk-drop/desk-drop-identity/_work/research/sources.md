@@ -19,3 +19,13 @@
 | S15 | Vistaprint table tents: "only available in a 5" x 7" size in vertical orientation"; glossy or matte; 14 pt standard and 16 pt premium stock; ship flat and unfolded; quantity options start at 10. Price not shown in the fetched content | https://www.vistaprint.com/marketing-materials/table-tents | 2026-10-24 | opened |
 
 Note 2026-10-24: the shared web-search budget for this run was used up, so no further searches were made. Copy-shop (FedEx Office, Staples) cardstock printing options and prices are unverified, founder to confirm.
+
+## Part 2 sources (opened 2026-10-24)
+
+| # | Fact used | Source | Opened | Status |
+| --- | --- | --- | --- | --- |
+| S16 | Gmail: "You can put up to 10,000 characters in your signature." Images count toward the limit | https://support.google.com/mail/answer/8395 | 2026-10-24 | opened |
+| S17 | LinkedIn Page logo: recommended 400 x 400 px, minimum 268 x 268 px | https://www.linkedin.com/help/linkedin/answer/a563309 | 2026-10-24 | opened |
+| S18 | Slack profile photo: "a minimum of 512x512 pixels, but no larger than 1024x1024 pixels" | https://slack.com/help/articles/115005506003-Upload-a-profile-photo | 2026-10-24 | opened |
+| S19 | Commercial email footer (Footer B line), CAN-SPAM postal address rule | ../desk-drop-legal-pack/02-email-footer-and-checklist.md v0.5 (cites the FTC guide, opened by G on 2026-10-23) | 2026-10-24 | read (internal) |
+| S20 | Print-run gate: HOLD; recommended default is to pick a fallback name by Fri 2026-11-13 | ../desk-drop-legal-pack/name-check-log.md and 01-name-check-log.md v0.5 | 2026-10-24 | read (internal) |

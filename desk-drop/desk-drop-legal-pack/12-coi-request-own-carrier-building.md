@@ -4,11 +4,11 @@
 
 Version 0.5 · 2026-10-24
 
+**The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot on the "Named insured" line of the Step 3 request. Replace it with the name on the filed Articles of Organization.
+
 **What it is for.** Some Manhattan buildings will not let a vendor deliver until they hold a certificate of insurance naming the building, and often its managing agent, as additional insured (plan, legal table row "General liability insurance"; risk table "Building access and insurance demands"). This file gets the building's exact requirements from the office, asks our carrier or broker for the certificate, and checks it before drop day.
 
 **When it is used.** Only after our general liability policy is bound (plan: bind before the first product arrives; target \$1M per occurrence and \$2M aggregate, a plan figure, not a quote). Start the moment an office's intake says `coi_required = yes` or `unsure`, and no later than ten business days before that office's first drop. The plan puts certificate-only buildings "on the list for later", so for campaign zero this is used only if a signed office turns out to need it.
-
-**The company in this file.** The company's legal name is set once, in the `[COMPANY NAME: …]` slot on the "Named insured" line of the Step 3 request. Replace it with the name on the filed Articles of Organization.
 
 **How to fill it in.** Replace the brackets. Copy the building's names and wording exactly as the building gives them; buildings check the names.
 

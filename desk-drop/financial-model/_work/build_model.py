@@ -1810,7 +1810,7 @@ pc_in = lambda **kw: dict({"date": None, "tier": "standard", "offices": 10, "new
                            "price_std": 150, "price_fnd": 120, "storage_on": 1, "proc_on": 1}, **kw)
 PC = [
     ("P1", pc_in(id="1. Campaign zero: 2 founding brands, 5 offices, you deliver", model="founder", tier="founding", offices=5, new_offices=5, brands=2, storage_on=0),
-     (1200, 280, 57, 920, 16), (10, 0.01, 0.5), "reproduce", "(b) storage $0 at home, transport $120, processing 3%: $276, which the plan rounds to $280."),
+     (1200, 280, 57, 920, 16), (5, 0.01, 0.5), "reproduce", "(b) storage $0 at home, transport $120, processing 3%: $276, which the plan rounds to $280."),
     ("P2", pc_in(id="2. Standard drop, 1 brand, 10 offices, courier", model="courier", brands=1), (1500, 580, 35, 920, 26), (5, 0.01, 0.5), "reproduce", ""),
     ("P3", pc_in(id="3. Standard drop, 3 brands, 10 offices, courier", model="courier", brands=3), (4500, 670, 52, 3830, 74), (5, 0.01, 0.5), "reproduce",
      "(a) kit $8 per office per drop. Per brand it would be $830."),
@@ -2308,7 +2308,7 @@ rt_mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(rt_mod)
 ws = WS["README"]
 put(ws, "A1", f'={R("company_name")}&" financial model v1: README"', font=F_TITLE)
-put(ws, "A2", "Version 1, built 2026-10-23. The company name lives in one cell (Inputs, section 1, 'Company name'); rename it there only.", font=F_SUB)
+put(ws, "A2", "Version 1, built 2026-10-23 to 2026-10-24. The company name lives in one cell (Inputs, section 1, 'Company name'); rename it there only.", font=F_SUB)
 rr = 4
 for kind, text in rt_mod.README:
     if kind == "h":

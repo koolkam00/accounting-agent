@@ -5,7 +5,8 @@
   Usage (from the desk-drop-identity folder):
     node render/render.js <template> <data.json> <out.pdf> [options]
 
-    <template>   tent-card | case-label | a path to any template .html in templates/
+    <template>   tent-card | case-label | report | proposal | office-one-pager | brand-one-pager |
+                 discovery-one-pager | a path to any template .html
     <data.json>  one object, or an array of objects (one printed sheet each; for the
                  case label, two labels per sheet)
     <out.pdf>    the PDF to write
@@ -52,6 +53,24 @@ if (!fs.existsSync(tplPath)) { console.error(`No template at ${tplPath}`); proce
 let data;
 try { data = JSON.parse(fs.readFileSync(dataPath, 'utf8')); }
 catch (e) { console.error(`Cannot read ${dataPath}: ${e.message}`); process.exit(1); }
+
+// Picture paths in the data (photos, maps) are relative to the JSON file. Turn them into
+// file:// URLs the page can load, and stop early if a picture file is missing.
+const missingPictures = [];
+const dataDir = path.dirname(path.resolve(dataPath));
+const PIC = /\.(jpe?g|png|webp|gif|svg)$/i;
+(function walk(v, parent, key) {
+  if (Array.isArray(v)) { v.forEach((x, i) => walk(x, v, i)); return; }
+  if (v && typeof v === 'object') { Object.keys(v).forEach((k) => walk(v[k], v, k)); return; }
+  if (typeof v !== 'string' || !PIC.test(v.trim()) || /^(data:|https?:|file:)/i.test(v.trim()) || /^\[/.test(v.trim())) return;
+  const abs = path.isAbsolute(v.trim()) ? v.trim() : path.resolve(dataDir, v.trim());
+  if (!fs.existsSync(abs)) missingPictures.push(v.trim());
+  parent[key] = 'file://' + abs.split(path.sep).map(encodeURIComponent).join('/').replace(/^%3A/, ':');
+})(data, null, null);
+if (missingPictures.length) {
+  console.error('ERROR   picture file not found (paths are relative to the JSON file): ' + missingPictures.join(', '));
+  process.exit(2);
+}
 
 (async () => {
   const { chromium } = require('playwright');
