@@ -1,6 +1,6 @@
 # Copy deck
 
-Version 1.0 · 2026-10-24 · Workstream C (website)
+Version 1.1 · 2026-10-24 (review round 1) · Workstream C (website)
 
 Every word on the site, page by page, and where each claim comes from. **The pages are the one place copy is edited** (`site/*.html`, plus the few values in `site/site.config.js`). Part 2 below is regenerated from the pages by `python3 tools/export_copy.py`, so this deck cannot drift from the site. Part 1 is written by hand: update it when you change a claim.
 
@@ -8,15 +8,15 @@ Voice: plain, specific, honest, warm. Short sentences. "We" for the business. No
 
 ## Part 1. Claims ledger
 
-Each claim on the site and what backs it. "Prompt" is `prompts/C-website.md`, "Decided so far". "G 10" is `desk-drop-legal-pack/10-brand-campaign-agreement.md` (version 0.7, draft for attorney review); "G 03" is the office participation agreement; "G 13" the survey notice. If the attorney changes G 10 or G 03, change the matching line on the site.
+Each claim on the site and what backs it. "Prompt" is `prompts/C-website.md`, "Decided so far". "G 10" is `desk-drop-legal-pack/10-brand-campaign-agreement.md` (version 0.8, draft for attorney review); "G 03" is the office participation agreement; "G 13" the survey notice (version 0.6). "Assumption n" is the numbered list in `README.md`. If the attorney changes G 10 or G 03, change the matching line on the site.
 
 | # | Claim on the site | Page | Source |
 | --- | --- | --- | --- |
 | 1 | "500 units into 10 New York offices in one week, within walking distance of the stores that carry you, with photos, feedback and a report." (word for word) | brands H1, home | Prompt; plan "The revised model" |
 | 2 | "Vetted emerging snacks and drinks, free, roughly monthly. You pick the categories and can veto anything. All we ask: on the shelf the day it arrives, one photo, and three questions for your team." (word for word) | offices hero | Prompt |
 | 3 | Founding: $600 for 5 offices, first three brands only, paid in full up front, price locked for the next two campaigns | brands price, home | Prompt |
-| 4 | The lock is "$120 per office" | brands price | G 10 section 3 and its choice 3 (up to 10 offices). Matches D's `dd-offer.js` and H's model |
-| 5 | Founding brands give a short honest statement and case-study rights if everything promised is delivered | brands price | Plan price table; G 10 section 3. Disclosed so no founding term is hidden |
+| 4 | "Price locked for your next two campaigns: $120 per office, for up to 10 offices (any more at $150)" | brands price | G 10 v0.8 section 3, word for word in substance. Matches D's `dd-offer.js` and H's model |
+| 5 | Founding brands give a short honest statement and case-study rights if everything promised is delivered; "When we publish them, we say you were a founding brand at a founding price" | brands price | Plan price table; G 10 v0.8 section 3 (the material-connection disclosure). Disclosed so no founding term is hidden |
 | 6 | Standard: $1,500 for 10 offices ($150 per office), 50% at signature, 50% at placement confirmation | brands price, home | Prompt |
 | 7 | Placement confirmation = "our email, by the day after the drop, listing each office where your product was placed, with its photo" | brands price | G 10 section 3 (v0.7 definition, T+1) |
 | 8 | Extra office $150, same terms | brands price | Prompt; plan price table |
@@ -36,16 +36,16 @@ Each claim on the site and what backs it. "Prompt" is `prompts/C-website.md`, "D
 | 22 | Timeline: ship T−10, count and check T−5, drop day, day 3 photo and top-up, day 5 close, report T+7, debrief | brands | Plan campaign calendar; CONTRACTS section 3 |
 | 23 | Leftovers returned at the brand's cost or released to the office, as elected at signing | brands | Plan appendix F clause 10; G 10 section 9 |
 | 24 | Late product: not arrived by T−3, the drop moves one week and every office hears the same day | brands | Plan "When things go wrong"; G 10 section 8 |
-| 25 | Office not placed by the day after the drop: off the invoice or its share refunded, unless replaced | brands FAQ | G 10 section 8 (v0.7). Not in the plan: attorney to confirm (assumption 8) |
-| 26 | Cancel by email: before the ship-by date (T−10) full refund less $100; after that 50% kept | brands FAQ | Plan appendix F clause 9; G 10 section 8 and its choice 1 (ten business days) |
+| 25 | Office not placed by the day after the drop: off the invoice or its share refunded, unless replaced | brands FAQ | G 10 section 8 (v0.8). Not in the plan: attorney to confirm (assumption 8) |
+| 26 | Cancel by email until the drop day: before the cancel-by date (T−10) a full refund less $100; after that 50% kept; from the drop day on, the full price is due | brands FAQ | Plan appendix F clause 9; G 10 v0.8 section 8 and Part 1 ("no cancellation from the drop day"). Fixed in review round 1: the cut-off was missing |
 | 27 | Each office sees the brand first and can say no; first three drops need a yes, then opt-out | brands, offices, home | Plan "How a campaign runs" step 3; G 03 section 2 |
 | 28 | The seven qualification checks | brands fit and form | Prompt |
 | 29 | Not for: alcohol; cannabis, CBD or THC; supplements (Supplement Facts panel); refrigerated, perishable or needing preparation; health claims ("supports gut health" is one; "10g protein" is not but is reviewed) | brands, offices | Prompt; CONTRACTS section 4 |
-| 30 | Store map and list (16 stores, numbers as on B's map), "not an endorsement", researched 2026-10-24 | brands, offices | `cluster-1-flatiron/map-public.geojson` (as_of 2026-10-24) and B's footnote in `cluster-1-flatiron/HANDOFF.md` |
+| 30 | Store map and list (14 stores, numbers as on B's map), "not an endorsement", researched 2026-10-24 | brands, offices | `cluster-1-flatiron/map-public.geojson` (as_of 2026-10-24) and B's footnote in `cluster-1-flatiron/HANDOFF.md` |
 | 31 | Cluster: about 14th to 30th Street, Sixth Avenue to Park Avenue South, plus the blocks around Union Square | brands, offices | B's boundary (`cluster-1-flatiron/HANDOFF.md`, suggested alt text) |
 | 32 | Card: brand name, two sentences, allergen statement word for word, nearest store or code, QR unique per office; card text sent for approval before printing | brands | Plan kit and appendix G; G 10 section 1; D's tent card |
-| 33 | No employee personal data; anonymous survey; newsletter only through an unticked box, under the brand's policy | brands FAQ, offices | Prompt; plan "Privacy"; G 13 Part B |
-| 34 | Offices with about 40 to 250 people in on a Tuesday; pantry owner who can say yes alone; coworking rule | brands FAQ, offices | Prompt |
+| 33 | No employee personal data; the survey never asks for a name or work email; the one optional exception is an email typed in for a brand's newsletter, passed on only if the person ticks an unticked box, under the brand's policy | brands FAQ, offices | Prompt; plan "Privacy"; G 13 Parts B and C |
+| 34 | Offices with about 40 to 250 people in on a Tuesday; "Under 30 or over 250, we can't take you yet"; 30 to 39 "send the form and we will tell you honestly"; pantry owner who can say yes alone; "Not yet": under 30 or over 250, outside the cluster, companies inside a coworking space on their own; an operator that runs the pantry may join as one office | brands FAQ, offices | Prompt (hard floor 30, 30 to 39 the founder's call; coworking rule); plan "Excluded in the first six months". Stated plainly since review round 1 (assumption 10) |
 | 35 | Proposal lists offices by neighborhood, industry and Tuesday headcount; names after the brand signs | brands FAQ, offices notice, privacy | Plan "The proposal"; G 10 section 13 |
 | 36 | One to three brands per drop, never two in the same category | brands FAQ | Plan "Operating unit"; plan "What brands buy" |
 | 37 | Sealed cases, room temperature, clean, dry; never opened, repacked or relabeled | brands FAQ | Plan "Storage" and legal table "Food handling scope"; G 10 section 5 |
@@ -55,11 +55,15 @@ Each claim on the site and what backs it. "Prompt" is `prompts/C-website.md`, "D
 | 41 | "Vetted" means: sealed, shelf-stable, 60+ days, labeled, insured, not excluded | offices | Prompt (the seven checks) |
 | 42 | Founding offices: on the roster only if they say yes; veto and profile; feedback summary; leave on a week's notice | offices | Plan "The founding-office offer" (its "first drop within four weeks" is left out, per G's calendar conflict note) |
 | 43 | "Offices get vetted products free, roughly monthly as supply allows" | home | Plan "What offices get" and risk table (never promise a cadence) |
-| 44 | "We are signing our founding offices now. No campaign has run yet, so there are no results to show." | home, brands (`ROSTER_STATUS`) | True on 2026-10-24 (nothing signed). The founder updates it in `site.config.js` |
+| 44 | "No offices are signed yet and no campaign has run, so there are no results to show." | home, brands (`ROSTER_STATUS`) | True on 2026-10-24 (`ROSTER_STATUS_DATE`), and stays true until the first office signs (weeks 3 to 7, CONTRACTS section 3). The founder rewrites it in `site.config.js`; `tools/preflight.py` refuses to publish if its date is more than 14 days old (assumption 13) |
 | 45 | Office form "About 90 seconds" | offices | QA.md, P9 estimate |
 | 46 | What each form collects and why; Google Sheet plus one email; seen only by the founder; deleted within 12 months if nothing proceeds | both form notices, privacy | Draft for attorney review. Retention period is this workstream's default (assumption 9) |
 | 47 | GoatCounter: no cookies, no IP addresses stored, a random code that cannot be traced back; totals only; Do Not Track and Global Privacy Control respected | privacy | goatcounter.com home, /help/sessions and /help/gdpr, opened 2026-10-24; DNT handling is the site's own code |
-| 48 | Survey privacy notice | survey-privacy | G 13 Part C, version 0.5, word for word (checked by `tests/check_site.py`) |
+| 48 | Survey privacy notice | survey-privacy | G 13 Part C, version 0.6, word for word (checked by `tests/check_site.py`); company name, email and postal address filled from `site.config.js` |
+| 49 | "Who runs this: {FOUNDER_NAME}, founder. You deal with me from the first call to the debrief, and I write every report myself." Email, phone and LinkedIn; "Run by {FOUNDER_NAME}, founder. You deal with me for every drop" on the office page; founder and phone in every footer | brands hero, offices form, footer | Prompt ("solo founder", one contact); plan setup checklist ("Update your LinkedIn headline … People check before they reply"). Added in review round 1 (assumption 12) |
+| 50 | Units to send: about 275 for 5 offices (250 plus 25), about 550 for 10 (500 plus 50); the count follows each office's Tuesday headcount, 30 to 80 units per office | brands "What you send" | Prompt (10% reserve, 275 in check 4); plan brand checklist ("275 units (250 plus reserve)"); G 10 Part 1 "Units" (30 to 80 per office) |
+| 51 | Check 6 and form question 6 ask about $600 while the founding tier is open and $1,500 once it closes | brands fit and form | Prompt and plan checklist ($600, the founding price); the standard price is $1,500, the amount the signer approves (G 10 section 14). Assumption 11 |
+| 52 | Office category labels: CONTRACTS section 4 labels without the "shelf-stable" qualifier ("Jerky and meat sticks", "Tea, juice and other non-carbonated drinks", "Ready-to-drink coffee") | offices form | CONTRACTS section 4 (keys exact); every product is shelf-stable by rule, so the qualifier is noise for offices. Deviation listed in `HANDOFF.md` (assumption 14) |
 
 **Deliberately not on the site:** testimonials, logos, "trusted by", results, case studies, any number not in the table above, the revenue band of target brands, any date (the drop dates in CONTRACTS section 3 are still "derived, founder to confirm"), a first-drop timing promise to offices, and anything implying sales, lift, acquisition or conversion.
 
@@ -74,10 +78,13 @@ Generated by `tools/export_copy.py` from `site/*.html` and `site/site.config.js`
 | --- | --- |
 | `BRAND_NAME` | Desk Drop |
 | `TAGLINE` | Emerging brands. Delivered to your workday. |
-| `ROSTER_STATUS` | We are signing our founding offices now. No campaign has run yet, so there are no results to show. |
+| `ROSTER_STATUS` | No offices are signed yet and no campaign has run, so there are no results to show. |
+| `ROSTER_STATUS_DATE` | 2026-10-24 |
 | `CONTACT_EMAIL` | [EMAIL] |
+| `PHONE` | [PHONE] |
 | `POSTAL_ADDRESS` | [POSTAL ADDRESS] |
 | `FOUNDER_NAME` | [FOUNDER NAME] |
+| `FOUNDER_LINKEDIN` | [LINKEDIN URL] |
 | `COMPANY_LEGAL_NAME` | [COMPANY NAME] |
 | `DOMAIN` | [DOMAIN] |
 
@@ -85,7 +92,7 @@ Generated by `tools/export_copy.py` from `site/*.html` and `site/site.config.js`
 
 - Staging bar (only while STAGING is true): Staging preview, not public. The name is a working name and not yet cleared.
 - Header: {BRAND_NAME}, links For brands, For offices
-- Footer: {BRAND_NAME}, {TAGLINE}; For brands, For offices, Privacy, Survey privacy notice; Email: {CONTACT_EMAIL}; Mail: {POSTAL_ADDRESS}
+- Footer: {BRAND_NAME}, {TAGLINE}; For brands, For offices, Privacy, Survey privacy notice; Founder: {FOUNDER_NAME}; Email: {CONTACT_EMAIL}; Phone: {PHONE} (hidden when PHONE is empty); Mail: {POSTAL_ADDRESS}
 
 ---
 
@@ -135,6 +142,8 @@ Check fit and apply See the price
 - 5 days on the shelf, counted in business days
 - 1 page report within 7 business days
 Where things stand: {ROSTER_STATUS}
+Who runs this: {FOUNDER_NAME}, founder. You deal with me from the first call to the debrief, and I write every report myself.
+Email {CONTACT_EMAIL} · Phone {PHONE} · LinkedIn {FOUNDER_LINKEDIN}
 ## What a campaign includes
 - 5 offices (founding) or 10 offices (standard), all in one walkable cluster. No other brand in your category in the same drop.
 - About 50 units per office, sized to that office's Tuesday headcount. You ship 10% extra as a reserve for top-ups.
@@ -149,8 +158,8 @@ Founding · first three brands only
 $600
 for 5 offices ($120 per office)
 - Paid in full up front.
-- Price locked for your next two campaigns, at $120 per office.
-- If we deliver everything promised, you give us a short, honest written statement and let us publish a case study from your report.
+- Price locked for your next two campaigns: $120 per office, for up to 10 offices (any more at $150).
+- If we deliver everything promised, you give us a short, honest written statement and let us publish a case study from your report. When we publish them, we say you were a founding brand at a founding price.
 Standard
 $1,500
 for 10 offices ($150 per office)
@@ -162,7 +171,7 @@ per office
 - Same terms as the campaign it joins.
 No free pilots. The founding price is the trial. On top of the price, you supply the product plus a 10% reserve, with inbound freight prepaid.
 ### What you send
-- The units plus the 10% reserve, freight prepaid, to one Manhattan address.
+- The units plus the 10% reserve, freight prepaid, to one Manhattan address: about 275 for 5 offices (250 plus 25), or about 550 for 10 offices (500 plus 50). The exact count follows each office's Tuesday headcount, 30 to 80 units per office.
 - An ingredient and allergen sheet.
 - A certificate of product liability insurance, $1M or more, naming us as additional insured.
 - A discount code or a landing page for the QR code.
@@ -218,7 +227,7 @@ If your product is late: if it has not arrived three business days before the dr
 - Sold in a store inside or within ten blocks of the cluster, or online with a discount code.
 - Able to ship 275 units to one Manhattan address within ten business days.
 - Covered by product liability insurance.
-- The person we talk to can approve $600 alone.
+- The person we talk to can approve {$600 | $1,500 once the founding tier closes} alone.
 - A reason to want New York trial now: a new store, a launch, a local push.
 ### Not for
 - Alcohol.
@@ -235,20 +244,18 @@ The cluster runs from about 14th to 30th Street, between Sixth Avenue and Park A
 - 1.LifeThyme Natural Market410 Sixth Avenue · 5 blocks outside
 - 2.Wegmans Astor Place770 Broadway · 4 blocks outside
 - 3.Whole Foods Market Union Square4 Union Square South · inside the cluster
-- 4.Whole Foods Market Chelsea250 Seventh Avenue · 4 blocks outside
+- 4.Whole Foods Market Chelsea250 Seventh Avenue · 3 blocks outside
 - 5.Whole Foods Market NoMad63 Madison Avenue · inside the cluster
 ### Specialty, gourmet or natural-format markets
 - 6.Citarella Greenwich Village424 Sixth Avenue · 4 blocks outside
 - 7.Westside Market NYC (84 Third Ave)84 Third Avenue · 1 block outside
-- 8.Merci Market Union Square59 Fifth Avenue · 1 block outside
-- 9.Westside Market NYC (77 Seventh Ave)77 Seventh Avenue · 2 blocks outside
-- 10.Westside Market NYC (180 Third Ave)180 Third Avenue · 2 blocks outside
-- 11.Wholesome Organic Market343 Second Avenue · 6 blocks outside
-- 12.Eden Gourmet Marketplace Gramercy Park275 Third Avenue · 4 blocks outside
-- 13.Westside Market NYC (170 West 23rd St)170 West 23rd Street · 2 blocks outside
-- 14.Eataly NYC Flatiron200 Fifth Avenue · inside the cluster
-- 15.Fairway Market Chelsea766 Sixth Avenue · inside the cluster
-- 16.Fairway Market Kips Bay550 Second Avenue · 7 blocks outside
+- 8.Westside Market NYC (77 Seventh Ave)77 Seventh Avenue · 2 blocks outside
+- 9.Westside Market NYC (180 Third Ave)180 Third Avenue · 2 blocks outside
+- 10.Eden Gourmet Marketplace Gramercy Park275 Third Avenue · 4 blocks outside
+- 11.Westside Market NYC (170 West 23rd St)170 West 23rd Street · 2 blocks outside
+- 12.Eataly NYC Flatiron200 Fifth Avenue · inside the cluster
+- 13.Fairway Market Chelsea766 Sixth Avenue · inside the cluster
+- 14.Fairway Market Kips Bay550 Second Avenue · 7 blocks outside
 Store list researched on 2026-10-24 from each store's own website and the New York State retail food store license list. A store on this map is not an endorsement, and being on it does not mean the store carries any particular brand. Streets and parks: NYC Street Centerline and NYC Parks Properties, NYC Open Data.
 Open the map full size
 ## What the card on the shelf says
@@ -262,13 +269,13 @@ A: No. We don't run free pilots. The founding price is the trial, and it stays l
 **Q:** Do you guarantee sales?
 A: No. We commit to the work, and we report what we observe. Nothing in the report is counted as a sale unless it is a redemption of your code, and even then some of those people would have bought anyway.
 **Q:** Can we have the employees' emails?
-A: No. We collect no personal data about employees, and the survey is anonymous. If you choose, the survey can offer your newsletter: anyone who ticks an unticked box is passed to you, under your own privacy policy.
+A: No. We collect no personal data about employees, and the survey is anonymous. If you choose, the survey can offer your newsletter: anyone who ticks an unticked box has their email passed to you, under your own privacy policy.
 **Q:** Which offices?
 A: Offices with about 40 to 250 people in on a Tuesday, each with a pantry owner who can say yes alone. The proposal lists them by neighborhood, industry and Tuesday headcount. You get the office names once you sign.
 **Q:** What if an office does not place it?
 A: An office that has not placed your product by the day after the drop comes off your invoice, or its share is refunded ($150, or $120 at the founding price), unless we can replace it with another office on the roster.
 **Q:** Can we cancel?
-A: Yes, by email. Before the ship-by date, 10 business days before the drop: a full refund less $100. After that, we keep 50%. If your product is late, the drop moves one week at no charge.
+A: Yes, by email, until the drop day. Before the cancel-by date, 10 business days before the drop: a full refund less $100. After that, we keep 50%. From the drop day on, the full price is due. If your product is late, the drop moves one week at no charge.
 **Q:** Who else is in the drop?
 A: One to three brands per drop, and never two in the same category.
 **Q:** How is the product handled?
@@ -344,7 +351,7 @@ Field group / question: 5. Covered by product liability insurance?
 Label: Yes
 Label: No
 Label: Not sure
-Field group / question: 6. Can you approve $600 on your own, without a committee?
+Field group / question: 6. Can you approve {$600 | $1,500 once the founding tier closes} on your own, without a committee?
 Label: Yes
 Label: No
 Label: Not sure
@@ -372,7 +379,7 @@ For office and workplace managers
 # Vetted emerging snacks and drinks, free, roughly monthly.
 You pick the categories and can veto anything. All we ask: on the shelf the day it arrives, one photo, and three questions for your team.
 Sign up your office About 90 seconds. No fees, either way.
-For offices around Flatiron, NoMad and Union Square with about 40 to 250 people in on a Tuesday.
+For offices around Flatiron, NoMad and Union Square with about 40 to 250 people in on a Tuesday. Under 30 or over 250, we can't take you yet. Who can join
 ## What you get and what we ask
 ### What you get
 - One to three vetted emerging brands per drop, free, roughly monthly as supply allows.
@@ -399,6 +406,7 @@ Five business days later the survey closes, and you get your team's feedback.
 What you sign: a one-page participation agreement listing what each side commits to. No fees either way, no penalties.
 ## Sign up your office
 About 90 seconds: 11 required answers, five of them one tap.
+Run by {FOUNDER_NAME}, founder. You deal with me for every drop: {CONTACT_EMAIL} · {PHONE}
 Staging: submissions are not live yet. This form sends nothing.
 ### Please check these answers
 Field group / question: You
@@ -454,7 +462,7 @@ Label: Nuts, seeds and trail mix
 Label: Jerky and meat sticks
 Label: Dried fruit and fruit snacks
 Label: Sparkling water and soda
-Label: Tea, juice and other still drinks
+Label: Tea, juice and other non-carbonated drinks
 Label: Ready-to-drink coffee
 Label: Other snacks
 Label: Other drinks
@@ -473,13 +481,17 @@ Your answers go to a private Google Sheet and one email to our inbox, seen only 
 - "Vetted" means each brand has passed our checks: sealed and shelf-stable with at least 60 days of shelf life, fully labeled, carrying product liability insurance, and outside every excluded category below.
 - Never alcohol, cannabis or CBD, supplements, anything refrigerated or needing preparation, or products that make health claims.
 ## Your team's privacy
-No personal data about your employees. The survey is anonymous: no login, no email. If a brand offers its newsletter, the box starts unticked, and an email goes to the brand only if someone ticks it.
+No personal data about your employees. The survey is anonymous: no login, and it never asks for anyone's name or work email. The one exception is optional: if a brand offers its newsletter, a person can type an email and tick a box that starts unticked. Only then does that email go to the brand.
 Read the survey privacy notice
 ## Who can join
 - Offices inside the cluster: about 14th to 30th Street, between Sixth Avenue and Park Avenue South, plus the blocks around Union Square.
-- About 40 to 250 people in the office on a Tuesday. Near the edges? Send the form anyway and we will tell you honestly.
+- About 40 to 250 people in the office on a Tuesday. Between 30 and 39? Send the form and we will tell you honestly.
 - A pantry owner who can say yes alone.
-- Inside a coworking space? Companies there cannot join on their own, because the operator runs the pantry. An operator that runs its own pantry can join as one office.
+- A coworking operator that runs the pantry itself can join as one office.
+### Not yet
+- Offices with fewer than 30 or more than 250 people in on a Tuesday.
+- Offices outside the cluster.
+- Companies inside a coworking space, on their own: the operator runs the pantry.
 ### Founding offices
 - Named on the founding roster, which brands see, only if you say yes.
 - A standing veto and a category profile you can change any time.
@@ -488,7 +500,7 @@ Read the survey privacy notice
 - Office cluster
 - Grocer with a documented natural, local or emerging set
 - Specialty, gourmet or natural-format market
-Open the map full size
+The numbers are food stores in and near the cluster; the list is on the brand page. Open the map full size
 
 ---
 
@@ -531,8 +543,8 @@ Page title: Survey privacy notice
 Meta description: How the anonymous employee survey handles answers and the optional newsletter email.
 Draft for attorney review. Not legal advice.
 # Survey privacy notice
-This is the notice the anonymous employee survey links to. Its text is the legal pack's draft notice (version 0.5), unchanged. Brackets are filled per campaign.
-Last updated [DATE]. This survey is run by [COMPANY NAME: {BRAND_NAME} LLC] ("we", "us"), which brings products from emerging snack and drink brands to offices. Questions: [EMAIL], [POSTAL ADDRESS].
+This is the notice the anonymous employee survey links to. Its text is the legal pack's draft notice (version 0.6), unchanged. The company name and contact details come from the site settings; the brand slots are filled per campaign.
+Last updated [DATE]. This survey is run by {COMPANY_LEGAL_NAME} ("we", "us"), which brings products from emerging snack and drink brands to offices. Questions: {CONTACT_EMAIL}, {POSTAL_ADDRESS}.
 ## What we collect
 - Your answers to the survey questions, and your comment if you write one.
 - Which office the survey link came from (it is built into the link on the card and in your office's post) and when you answered.
@@ -548,7 +560,7 @@ To write a one-page report for the brand and a summary for your office, and to i
 - Your office gets a summary of your team's answers, which may include comments quoted word for word.
 - Comments are quoted as written, except that we remove any name we find. Please leave out your name and anything that identifies you or anyone else.
 ## If you give your email
-We pass it to [BRAND] only if you tick the box. We send the brand those addresses once, as a list kept separate from survey answers, within seven days after the survey closes. After that, [BRAND]'s privacy policy applies ([BRAND PRIVACY POLICY URL]) and you can unsubscribe from [BRAND] at any time. We delete our copy within 30 days after passing it on. If you change your mind, write to [EMAIL]: if we have not passed your email on yet, we delete it; if we have, we ask [BRAND] to delete it too.
+We pass it to [BRAND] only if you tick the box. If you give an email but leave the box unticked, we delete it within seven days after the survey closes and never pass it on. We send the brand those addresses once, as a list kept separate from survey answers, within seven days after the survey closes. After that, [BRAND]'s privacy policy applies ([BRAND PRIVACY POLICY URL]) and you can unsubscribe from [BRAND] at any time. We delete our copy within 30 days after passing it on. If you change your mind, write to {CONTACT_EMAIL}: if we have not passed your email on yet, we delete it; if we have, we ask [BRAND] to delete it too.
 ## How long we keep answers
 We keep survey answers for 12 months after the campaign, then delete them. Reports keep only totals and quoted comments.
 ## Your choices

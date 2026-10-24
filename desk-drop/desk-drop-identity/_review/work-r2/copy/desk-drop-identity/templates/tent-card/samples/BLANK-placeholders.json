@@ -1,0 +1,16 @@
+{
+  "brand_name": "[BRAND NAME]",
+  "brand_logo": "",
+  "product_name": "",
+  "card_sentences": "[TWO SENTENCES: WHO MAKES IT, WHY IT EXISTS]",
+  "allergen_source": "contains_statement",
+  "allergen_line_verbatim": "[ALLERGEN STATEMENT, WORD FOR WORD FROM THE PACKAGE]",
+  "may_contain_verbatim": "",
+  "retailer_line": "",
+  "discount_code": "",
+  "code_site": "",
+  "qr_url": "[QR URL FOR THIS OFFICE]",
+  "qr_display": "",
+  "office_id": "[OFFICE ID]",
+  "campaign_id": "[CAMPAIGN ID]"
+}

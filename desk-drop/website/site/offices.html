@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow"><!-- staging; removed in the production copy (tools/make_production.py) -->
 <title>For offices: free emerging snacks and drinks</title>
 <meta name="description" content="Vetted emerging snacks and drinks for offices around Flatiron, NoMad and Union Square, free, roughly monthly. You pick the categories and can veto anything.">
 <meta name="theme-color" content="#F7F3EA" media="(prefers-color-scheme: light)">
@@ -43,7 +44,7 @@
       <h1>Vetted emerging snacks and drinks, free, roughly monthly.</h1>
       <p class="lead">You pick the categories and can veto anything. All we ask: on the shelf the day it arrives, one photo, and three questions for your team.</p>
       <p class="hero-actions"><a class="btn" href="#join">Sign up your office</a> <span class="muted">About 90 seconds. No fees, either way.</span></p>
-      <p>For offices around Flatiron, NoMad and Union Square with about 40 to 250 people in on a Tuesday.</p>
+      <p>For offices around Flatiron, NoMad and Union Square with about 40 to 250 people in on a Tuesday. Under 30 or over 250, we can't take you yet. <a href="#area">Who can join</a></p>
     </div>
   </section>
 
@@ -93,10 +94,11 @@
     <div class="wrap form-wrap">
       <h2 id="join-h">Sign up your office</h2>
       <p>About 90 seconds: 11 required answers, five of them one tap.</p>
+      <p class="founder-line">Run by <span data-config="FOUNDER_NAME"></span>, founder. You deal with me for every drop: <a data-config="CONTACT_EMAIL" data-config-mailto></a><span data-config-line="PHONE"> · <a data-config="PHONE" data-config-tel></a></span></p>
       <p class="form-staging" data-staging-form>Staging: submissions are not live yet. This form sends nothing.</p>
-      <noscript><p class="form-staging is-shown">This form needs JavaScript. You can also email us instead.</p></noscript>
+      <noscript><p class="form-staging is-shown">This form needs JavaScript, which is off in your browser. Please email us instead, at the address at the bottom of this page.</p></noscript>
 
-      <form class="intake" id="office-form" data-form="office" novalidate>
+      <form class="intake" id="office-form" data-form="office" method="post" novalidate>
         <div class="error-summary" tabindex="-1" hidden>
           <h3>Please check these answers</h3>
           <ul></ul>
@@ -244,7 +246,7 @@
                 <label><input type="checkbox" name="categories_wanted" value="meat-snacks"> Jerky and meat sticks</label>
                 <label><input type="checkbox" name="categories_wanted" value="fruit-snacks"> Dried fruit and fruit snacks</label>
                 <label><input type="checkbox" name="categories_wanted" value="sparkling-soda"> Sparkling water and soda</label>
-                <label><input type="checkbox" name="categories_wanted" value="tea-juice"> Tea, juice and other still drinks</label>
+                <label><input type="checkbox" name="categories_wanted" value="tea-juice"> Tea, juice and other non-carbonated drinks</label>
                 <label><input type="checkbox" name="categories_wanted" value="coffee-rtd"> Ready-to-drink coffee</label>
                 <label><input type="checkbox" name="categories_wanted" value="other-snack"> Other snacks</label>
                 <label><input type="checkbox" name="categories_wanted" value="other-drink"> Other drinks</label>
@@ -269,7 +271,7 @@
           <input type="text" id="o-hp_url" name="hp_url" tabindex="-1" autocomplete="off">
         </div>
 
-        <button type="submit" class="btn btn-big">Sign up my office</button>
+        <button type="submit" class="btn btn-big" disabled>Sign up my office</button>
         <p class="form-status" role="status" aria-live="polite"></p>
       </form>
 
@@ -301,7 +303,7 @@
       </div>
       <div>
         <h2 id="privacy-h">Your team's privacy</h2>
-        <p>No personal data about your employees. The survey is anonymous: no login, no email. If a brand offers its newsletter, the box starts unticked, and an email goes to the brand only if someone ticks it.</p>
+        <p>No personal data about your employees. The survey is anonymous: no login, and it never asks for anyone's name or work email. The one exception is optional: if a brand offers its newsletter, a person can type an email and tick a box that starts unticked. Only then does that email go to the brand.</p>
         <p><a href="survey-privacy.html">Read the survey privacy notice</a></p>
       </div>
     </div>
@@ -313,9 +315,15 @@
         <h2 id="area-h">Who can join</h2>
         <ul class="checks">
           <li>Offices inside the cluster: about 14th to 30th Street, between Sixth Avenue and Park Avenue South, plus the blocks around Union Square.</li>
-          <li>About 40 to 250 people in the office on a Tuesday. Near the edges? Send the form anyway and we will tell you honestly.</li>
+          <li>About 40 to 250 people in the office on a Tuesday. Between 30 and 39? Send the form and we will tell you honestly.</li>
           <li>A pantry owner who can say yes alone.</li>
-          <li>Inside a coworking space? Companies there cannot join on their own, because the operator runs the pantry. An operator that runs its own pantry can join as one office.</li>
+          <li>A coworking operator that runs the pantry itself can join as one office.</li>
+        </ul>
+        <h3>Not yet</h3>
+        <ul class="crosses">
+          <li>Offices with fewer than 30 or more than 250 people in on a Tuesday.</li>
+          <li>Offices outside the cluster.</li>
+          <li>Companies inside a coworking space, on their own: the operator runs the pantry.</li>
         </ul>
         <div class="boxed">
           <h3>Founding offices</h3>
@@ -330,7 +338,7 @@
       <div>
 <!-- MAP:START (generated by tools/build_map.py; edit there, not here) -->
 <figure class="map-figure map-small">
-  <img src="assets/img/cluster-map.svg" width="611" height="726" loading="lazy" decoding="async" alt="Map of the office cluster: Flatiron, NoMad and Union Square, about 14th to 30th Street between Sixth Avenue and Park Avenue South, plus the blocks around Union Square. 16 numbered food stores, 4 of them inside the cluster, are listed next to the map.">
+  <img src="assets/img/cluster-map.svg" width="604" height="726" loading="lazy" decoding="async" alt="Map of the office cluster: Flatiron, NoMad and Union Square, about 14th to 30th Street between Sixth Avenue and Park Avenue South, plus the blocks around Union Square. 14 numbered food stores, 4 of them inside the cluster, are listed next to the map.">
   <figcaption>
     <ul class="map-legend">
       <li><span class="lg lg-area" aria-hidden="true"></span>Office cluster</li>
@@ -340,7 +348,7 @@
   </figcaption>
 </figure>
 <!-- MAP:END -->
-        <p class="small"><a href="assets/img/cluster-map.svg">Open the map full size</a></p>
+        <p class="small">The numbers are food stores in and near the cluster; the list is on the <a href="brands.html#stores">brand page</a>. <a href="assets/img/cluster-map.svg">Open the map full size</a></p>
       </div>
     </div>
   </section>
@@ -362,7 +370,9 @@
       </ul>
     </nav>
     <div>
+      <p>Founder: <span data-config="FOUNDER_NAME"></span></p>
       <p>Email: <a data-config="CONTACT_EMAIL" data-config-mailto></a></p>
+      <p data-config-line="PHONE">Phone: <a data-config="PHONE" data-config-tel></a></p>
       <p>Mail: <span data-config="POSTAL_ADDRESS"></span></p>
     </div>
   </div>

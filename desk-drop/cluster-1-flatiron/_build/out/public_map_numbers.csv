@@ -6,12 +6,10 @@ n,retailer_id,retailer_name,street_address,buy_path_tier
 5,B-R-010,Whole Foods Market NoMad,"63 Madison Avenue, New York, NY 10016",A
 6,B-R-023,Citarella Greenwich Village,"424 Sixth Avenue, New York, NY 10011",B
 7,B-R-013,Westside Market NYC (84 Third Ave),"84 Third Avenue, New York, NY 10003",B
-8,B-R-012,Merci Market Union Square,"59 Fifth Avenue, New York, NY 10003",B
-9,B-R-018,Westside Market NYC (77 Seventh Ave),"77 Seventh Avenue, New York, NY 10011",B
-10,B-R-016,Westside Market NYC (180 Third Ave),"180 Third Avenue, New York, NY 10003",B
-11,B-R-026,Wholesome Organic Market,"343 Second Avenue, New York, NY 10010",B
-12,B-R-020,Eden Gourmet Marketplace Gramercy Park,"275 Third Avenue, New York, NY 10010",B
-13,B-R-017,Westside Market NYC (170 West 23rd St),"170 West 23rd Street, New York, NY 10011",B
-14,B-R-001,Eataly NYC Flatiron,"200 Fifth Avenue, New York, NY 10010",B
-15,B-R-003,Fairway Market Chelsea,"766 Sixth Avenue, New York, NY 10010",B
-16,B-R-029,Fairway Market Kips Bay,"550 Second Avenue, New York, NY 10016",B
+8,B-R-018,Westside Market NYC (77 Seventh Ave),"77 Seventh Avenue, New York, NY 10011",B
+9,B-R-016,Westside Market NYC (180 Third Ave),"180 Third Avenue, New York, NY 10003",B
+10,B-R-020,Eden Gourmet Marketplace Gramercy Park,"275 Third Avenue, New York, NY 10010",B
+11,B-R-017,Westside Market NYC (170 West 23rd St),"170 West 23rd Street, New York, NY 10011",B
+12,B-R-001,Eataly NYC Flatiron,"200 Fifth Avenue, New York, NY 10010",B
+13,B-R-003,Fairway Market Chelsea,"766 Sixth Avenue, New York, NY 10010",B
+14,B-R-029,Fairway Market Kips Bay,"550 Second Avenue, New York, NY 10016",B

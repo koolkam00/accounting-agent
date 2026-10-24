@@ -6,6 +6,7 @@ Writes CSVs into cluster-1-flatiron/ and JSON intermediates into _build/out/.
 import itertools
 import json
 import math
+import random
 import os
 import re
 import sys
@@ -44,7 +45,8 @@ CONTRACT_COMPANY = ["company_id", "company_name", "website", "industry", "buildi
                     "lat", "lon", "in_boundary", "headcount_band", "headcount_scope", "headcount_source_url",
                     "address_source_url", "address_source_date", "second_source_url", "confidence", "in_coworking",
                     "coworking_id", "linkedin_company_url", "notes", "found_date"]
-EXTRA_COMPANY = ["building_lobby_type", "candidate_status", "lease_status", "move_in_date", "headcount_source_date", "headcount_unknown_reason",
+EXTRA_COMPANY = ["hq_city", "hq_in_nyc", "hq_source_url",
+                 "building_lobby_type", "candidate_status", "lease_status", "move_in_date", "headcount_source_date", "headcount_unknown_reason",
                  "address_source_type", "second_source_date", "coworking_check", "bbl", "blocks_outside",
                  "leased_sf_mentioned", "research_slice"]
 CONTRACT_BUILDING = ["building_id", "street_address", "building_name", "lat", "lon", "lobby_type", "lobby_source_url",
@@ -58,12 +60,13 @@ EXTRA_COWORK = ["in_boundary", "blocks_outside", "status", "floors", "building_i
                 "second_source_url", "exclusive_food_contract_signal", "research_id", "found_date"]
 CONTRACT_RETAIL = ["retailer_id", "retailer_name", "street_address", "lat", "lon", "inside_boundary", "blocks_outside",
                    "shelf_set", "source_url", "source_date", "confidence", "notes"]
-EXTRA_RETAIL = ["buy_path_tier", "public_map", "public_map_reason", "candidates_within_5_blocks", "nearest_candidate_building_id",
+EXTRA_RETAIL = ["buy_path_tier", "public_map", "public_map_reason", "public_description", "walk_minutes_from_cluster_edge", "candidates_within_5_blocks", "nearest_candidate_building_id",
                 "nearest_candidate_blocks", "emerging_brand_evidence", "operating_evidence_url", "bbl", "research_id",
                 "found_date"]
 
 
 REG = os.path.join(HERE, "id_registry.json")
+ILS_KICKS = 400  # route search: random two-swap kicks after the seeded local search
 
 
 def assign_ids(keys, prefix, kind):
@@ -153,6 +156,11 @@ def main():
     r["public_map_reason"] = r.apply(lambda x: "" if x.public_map == "Y" else R.PUBLIC_EXCLUDE.get(
         x.retailer_name, "Tier C (mass, conventional or private label): a landmark, not a buy path." if x.buy_path_tier == "C"
         else "Low confidence: the store may have closed; walk it first."), axis=1)
+    r["public_description"] = r.retailer_name.map(lambda n: R.PUBLIC_DESC.get(n, ""))
+    r["walk_minutes_from_cluster_edge"] = r.blocks_outside_f.map(
+        lambda v: 0 if v <= 0 else max(1, int(round(v * grid.model()["spacing_m"] / P["walk_pace_m_per_min"]))))
+    miss = r[(r.public_map == "Y") & (r.public_description == "")]
+    assert miss.empty, list(miss.retailer_name)
     b["retailer_ids"] = b.bbl.map(lambda k: "; ".join(r[r.bbl == k].retailer_id))
     cand_b = b[b.candidate_company_count > 0]
     near_n, near_b, near_d = [], [], []
@@ -185,6 +193,16 @@ def main():
 
     # ---------------- route
     route, legs = model_route(c, b)
+    variants = {}
+    for key, kw in (("no_security_minimum", {"min_security": 0}),
+                    ("no_band_rule", {"bands_required": ()}),
+                    ("high_or_medium", {"confs": ("high", "medium")}),
+                    ("high_or_medium_no_security_minimum", {"confs": ("high", "medium"), "min_security": 0})):
+        rv, _ = model_route(c, b, kicks=120, **kw)
+        tot = rv.leg_minutes_est.sum() + P["minutes_per_stop"] * len(rv)
+        variants[key] = {"total_minutes": round(float(tot), 1), "end": rv.depart_est.iloc[-1],
+                         "stops": "; ".join(f"{x.company_name} ({x.street_address})" for x in rv.itertuples())}
+        print("variant", key, variants[key]["total_minutes"], variants[key]["end"])
     # ---------------- walk
     walk = walk_plan(b, w, r, c)
 
@@ -192,21 +210,25 @@ def main():
     comp_tab = c[c.candidate_status.isin(["candidate", "excluded-coworking", "excluded-not-office"])]
     near = c[c.candidate_status.str.startswith("near-miss")].copy()
     near["near_miss_reason"] = near.apply(near_reason, axis=1)
+    near["near_miss_class"] = near.apply(near_class, axis=1)
+    near["company_wide_count_cited"] = near.apply(lambda x: company_count(x)[0] or "", axis=1)
+    near["nyc_office_may_fit"] = near.apply(nyc_may_fit, axis=1)
     cols_c = CONTRACT_COMPANY + EXTRA_COMPANY
     comp_tab[cols_c].to_csv(os.path.join(ROOT, "companies.csv"), index=False)
-    near[cols_c + ["near_miss_reason"]].to_csv(os.path.join(ROOT, "near_miss.csv"), index=False)
+    near[cols_c + ["near_miss_reason", "near_miss_class", "company_wide_count_cited", "nyc_office_may_fit"]].to_csv(os.path.join(ROOT, "near_miss.csv"), index=False)
     b[CONTRACT_BUILDING + EXTRA_BUILDING].to_csv(os.path.join(ROOT, "buildings.csv"), index=False)
     w[CONTRACT_COWORK + EXTRA_COWORK].to_csv(os.path.join(ROOT, "coworking.csv"), index=False)
     r[CONTRACT_RETAIL + EXTRA_RETAIL].to_csv(os.path.join(ROOT, "retailers.csv"), index=False)
     route.to_csv(os.path.join(ROOT, "route.csv"), index=False)
     walk.drop(columns=["_s", "_x"]).to_csv(os.path.join(ROOT, "walk.csv"), index=False)
     b_other.to_csv(os.path.join(ROOT, "_work", "buildings_no_candidate.csv"), index=False)
-    json.dump({"legs": legs, "params": P}, open(os.path.join(OUT, "route_legs.json"), "w"), indent=1)
+    json.dump({"legs": legs, "params": P, "variants": variants}, open(os.path.join(OUT, "route_legs.json"), "w"), indent=1)
     # grid coordinates for the map builder
     for name, df in (("companies", c), ("buildings", b), ("coworking", w), ("retailers", r)):
         df.to_csv(os.path.join(OUT, f"final_{name}.csv"), index=False)
     walk.to_csv(os.path.join(OUT, "final_walk.csv"), index=False)
 
+    content_checks()
     # summary
     print("companies tab", len(comp_tab), "near-miss", len(near))
     print("buildings tab", len(b), "other buildings", len(b_other))
@@ -216,9 +238,60 @@ def main():
     print(walk.groupby("session").agg(phase=("phase", "first"), stops=("order", "count"), mins=("session_minutes_est", "first"), start=("start_point", "first"), end=("end_point", "first")).to_string())
 
 
-def near_reason(x):
+COUNT_RX = [r"([\d][\d,]*)\+?'? total employees", r"Wikipedia[^.|]*?'?([\d][\d,]*)\+?'?\s*(?:employees|staff)",
+            r"employing over ([\d][\d,]*)", r"'?([\d][\d,]{2,})\+?'?\s*(?:employees|staff|FTE|people)"]
+
+
+def company_count(x):
+    """Company-wide count cited for a near-miss row: (number, where it comes from)."""
+    if x.company_name in R.NEAR_COUNT_OVERRIDES:
+        return R.NEAR_COUNT_OVERRIDES[x.company_name]
+    for rx in COUNT_RX:
+        m = re.search(rx, x.notes, re.I)
+        if m:
+            return int(m.group(1).replace(",", "")), "the count quoted in this row's notes"
+    return None, ""
+
+
+def near_class(x):
+    """R1-16: 'just over 500' means 501 to 1,000. Bigger firms stay visible but are tagged."""
     if x.candidate_status == "near-miss-outside":
-        why = f"Outside the boundary by {x.blocks_outside:.1f} blocks"
+        return "outside-line"
+    n, _ = company_count(x)
+    if n is None:
+        return "over-500-count-not-cited"
+    if n <= 1000:
+        return "just-over-500 (501 to 1,000)"
+    if n < 5000:
+        return "over-1,000 (1,001 to 4,999)"
+    return "not-near (5,000 or more)"
+
+
+def nyc_may_fit(x):
+    return "Y" if re.search(r"NYC office (itself )?may|in New York|NYC office size unknown|NYC team|New York headcount",
+                            x.notes) else "N"
+
+
+def content_checks():
+    """Review round 1 (R1-09, R1-11): fail the build if a data file guesses at size in its notes
+    or carries the working business name (the name lives in one config cell per deliverable)."""
+    bad = []
+    for f in ("companies.csv", "near_miss.csv", "buildings.csv", "coworking.csv", "retailers.csv", "route.csv", "walk.csv"):
+        d = pd.read_csv(os.path.join(ROOT, f), dtype=str).fillna("")
+        for col in d.columns:
+            for i, v in d[col].items():
+                for rx in R.BANNED_NOTE_PATTERNS:
+                    if re.search(rx, v, re.I):
+                        bad.append(f"{f} row {i + 2} {col}: '{rx}'")
+    if bad:
+        raise SystemExit("content check failed:\n" + "\n".join(bad))
+    print("content checks: no size guesses and no business name in the data files")
+
+
+def near_reason(x):
+    cls = near_class(x)
+    if x.candidate_status == "near-miss-outside":
+        why = f"outside-line: outside the boundary by {x.blocks_outside:.1f} blocks"
         a = x.street_address
         if re.search(r"West 2\dth|West 1\dth", a) and float(x.grid_x) < -300:
             why += " (side street west of Sixth Ave)"
@@ -229,12 +302,9 @@ def near_reason(x):
         if x.headcount_band == "over-500":
             why += "; also over 500 company-wide"
         return why
-    m = re.search(r"(\d[\d,]*) total employees", x.notes)
-    fig = int(m.group(1).replace(",", "")) if m else None
-    s = "Over 500 company-wide"
-    if fig and fig <= 650:
-        s += f" (Built In shows {fig:,}, just over 500)"
-    if re.search(r"NYC office (itself )?may|in New York|NYC office size unknown|NYC team|New York headcount", x.notes):
+    n, src = company_count(x)
+    s = f"{cls}: over 500 company-wide" + (f" ({n:,}; {src})" if n else " (no count cited; over 500 per the row's source)")
+    if nyc_may_fit(x) == "Y":
         s += "; the NYC office alone may fit the 40-250 band, founder to confirm"
     return s
 
@@ -252,14 +322,15 @@ def car_minutes(lg):
     return P["car_overhead_min"] + lg["metres"] * P["car_detour_factor"] / m_per_min
 
 
-def model_route(c, b):
+def model_route(c, b, min_security=2, bands_required=("40-75", "76-150"), confs=("high",), kicks=None):
     """Pick ten compact, high-confidence, occupied candidates (band known) and order them by
     lobby class: walk-up, unknown, loading dock, security desk. Minimises estimated minutes.
     Search: every seed's nearest set, then swap-based local search; the winner's order inside
     each lobby class is solved exactly."""
     lob = dict(zip(b.building_id, b.lobby_type))
-    pool = c[(c.candidate_status == "candidate") & (c.confidence == "high") & (c.lease_status == "occupied")
-             & (c.headcount_band.isin(["40-75", "76-150", "151-250", "251-500"])) & (c.building_id != "")].copy()
+    pool = c[(c.candidate_status == "candidate") & (c.confidence.isin(confs)) & (c.lease_status == "occupied")
+             & (c.headcount_band.isin(["40-75", "76-150", "151-250", "251-500"])) & (c.building_id != "")
+             & ~c.industry.str.contains(R.CPG_INDUSTRY_RX, case=False, regex=True)].copy()  # R1-17: no food or drink brand offices
     pool["lobby_type"] = pool.building_id.map(lob)
     recs = pool.reset_index(drop=True).to_dict("records")
     n = len(recs)
@@ -282,9 +353,10 @@ def model_route(c, b):
             per_b[recs[j]["building_id"]] = per_b.get(recs[j]["building_id"], 0) + 1
         if max(per_b.values()) > 2:
             return False
-        if len({recs[j]["headcount_band"] for j in S}) < 3:
+        bands = [recs[j]["headcount_band"] for j in S]
+        if len(set(bands)) < 3 or any(bq not in bands for bq in bands_required):  # R1-17: offices near 50 and 100 too
             return False
-        return sum(1 for j in S if recs[j]["lobby_type"] == "security desk") >= 2
+        return sum(1 for j in S if recs[j]["lobby_type"] == "security desk") >= min_security
 
     def order(S, exact=False):
         groups = {}
@@ -320,17 +392,7 @@ def model_route(c, b):
             cache[k] = order(sorted(S))[0] if feasible(S) else 1e9
         return cache[k]
 
-    best = None
-    for s0 in range(n):
-        near = sorted(range(n), key=lambda j: (T[s0][j] if j != s0 else -1, j))
-        S = []
-        for j in near:
-            if len(S) == 10:
-                break
-            if sum(1 for q in S if recs[q]["building_id"] == recs[j]["building_id"]) < 2:
-                S.append(j)
-        if len(S) < 10:
-            continue
+    def improve(S):
         cur = cost_of(S)
         while True:  # best-improvement swap search
             cand = None
@@ -343,9 +405,49 @@ def model_route(c, b):
                     if cst < cur - 1e-9 and (cand is None or cst < cand[0]):
                         cand = (cst, S2)
             if cand is None:
-                break
+                return cur, S
             cur, S = cand
+
+    best = None
+    for s0 in range(n):
+        near = sorted(range(n), key=lambda j: (T[s0][j] if j != s0 else -1, j))
+        S = []
+
+        def room(j):
+            return j not in S and sum(1 for q in S if recs[q]["building_id"] == recs[j]["building_id"]) < 2
+        # seed with s0 and the stops the constraints need (nearest first), then fill with the nearest others
+        S.append(s0)
+        preds = []
+        for bq in bands_required:
+            if recs[s0]["headcount_band"] != bq:
+                preds.append(lambda j, bq=bq: recs[j]["headcount_band"] == bq)
+        for _ in range(max(0, min_security - (recs[s0]["lobby_type"] == "security desk"))):
+            preds.append(lambda j: recs[j]["lobby_type"] == "security desk")
+        for pred in preds:
+            hit = next((j for j in near if pred(j) and room(j)), None)
+            if hit is not None:
+                S.append(hit)
+        for j in near:
+            if len(S) >= 10:
+                break
+            if room(j):
+                S.append(j)
+        if len(S) < 10:
+            continue
+        S = S[:10]
+        cur, S = improve(S)
         if cur < 1e9 and (best is None or cur < best[0] - 1e-9):
+            best = (cur, sorted(S))
+    # iterated local search (review round 1): kick the best set by two random swaps, re-improve, keep the better
+    rng = random.Random(20261024)
+    for _ in range(ILS_KICKS if kicks is None else kicks):
+        S = list(best[1])
+        for _k in range(2):
+            out_ = rng.choice(S)
+            in_ = rng.choice([j for j in range(n) if j not in S])
+            S = [q for q in S if q != out_] + [in_]
+        cur, S = improve(S)
+        if cur < best[0] - 1e-9:
             best = (cur, sorted(S))
     cost, seq = order(best[1], exact=True)
     rows, legs = [], []

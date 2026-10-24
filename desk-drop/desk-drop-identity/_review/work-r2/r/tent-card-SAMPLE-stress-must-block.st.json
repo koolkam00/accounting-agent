@@ -1,0 +1,33 @@
+{
+  "ready": true,
+  "errors": [
+    "Too much text for the card even at the smallest sizes. The allergen text is locked; shorten the product name or retailer line."
+  ],
+  "warnings": [
+    "\"Brand name\" is 49 characters; aim for 28 or fewer.",
+    "\"Product (optional)\" is 54 characters; aim for 40 or fewer.",
+    "\"Two sentences: who makes it and why\" is 265 characters; aim for 200 or fewer.",
+    "The product line was left off so the allergen text keeps its locked size."
+  ],
+  "sample": true,
+  "placeholders": [],
+  "fit": [
+    {
+      "name_px": 56,
+      "name_width": 87.5,
+      "name_lines": 2,
+      "logo": "type",
+      "logo_in": null,
+      "story_pt": 12,
+      "qr_px": 110.39999999999999,
+      "find_pt": 10,
+      "tight": true,
+      "story_dropped": false,
+      "product_dropped": true,
+      "ingredients_on_front_face": false
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/tent-card/tent-card.html",
+  "records": 1
+}

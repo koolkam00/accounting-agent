@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Check every located row's pin against its address: side of street from house-number
-parity, avenue side, and distance to the PLUTO lot centroid. Writes _build/out/pin_qa.csv."""
+parity, avenue side, distance to the PLUTO lot centroid, and (review round 1, R1-04) the
+CSCL block-face test: the pin must be on the addressed side of the street and at least 15 m
+nearer the addressed street than the parallel one. Writes _build/out/pin_qa.csv."""
 import json, math, os, re, sys
 import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-import grid, router
+import grid, router, frontage
 pl = json.load(open(os.path.join(HERE, "out", "pluto_cache.json")))
 ST = re.compile(r"^\s*(\d+)[A-Za-z]?\s+(East|West)\s+(\d+)(st|nd|rd|th)?\s+Street", re.I)
 AV = re.compile(r"^\s*(\d+)[A-Za-z]?\s+(.*)$")
@@ -43,18 +45,26 @@ def check(addr, lat, lon, bbl):
     if p and p.get("latitude"):
         dist = round(math.dist(grid.to_m(float(lat), float(lon)), grid.to_m(float(p["latitude"]), float(p["longitude"]))))
         if dist > 90: out.append(f"PLUTO centroid {dist} m away")
-    return "; ".join(out), dist, (p or {}).get("address", "")
+    t = frontage.face(lat, lon, addr)
+    face = ""
+    if t["testable"]:
+        face = f"{t['d_addr']:.0f} m to {t['label']}, {t['d_par']:.0f} m to {t['par_label']}" + (f" (exempt: {t['exempt']})" if t.get("exempt") else "")
+        if not t["ok"]:
+            out.append("block face: " + ("wrong side of the street" if t["side_ok"] is False else f"only {t['margin']:.0f} m nearer {t['label']} than {t['par_label']}"))
+    else:
+        face = "not testable: " + t["why"]
+    return "; ".join(out), dist, (p or {}).get("address", ""), face
 rows = []
 for f, idc, namec in (("companies.csv", "company_id", "company_name"), ("near_miss.csv", "company_id", "company_name"),
                       ("buildings.csv", "building_id", "building_name"), ("coworking.csv", "coworking_id", "location_name"),
                       ("retailers.csv", "retailer_id", "retailer_name")):
     d = pd.read_csv(os.path.join(ROOT, f), dtype=str).fillna("")
     for _, r in d.iterrows():
-        issue, dist, pa = check(r.street_address.split(",")[0], r.lat, r.lon, r.get("bbl", ""))
+        issue, dist, pa, face = check(r.street_address.split(",")[0], r.lat, r.lon, r.get("bbl", ""))
         rows.append({"file": f, "id": r[idc], "name": r[namec], "street_address": r.street_address, "lat": r.lat, "lon": r.lon,
-                     "pluto_address": pa, "pluto_centroid_m": dist, "issue": issue})
+                     "pluto_address": pa, "pluto_centroid_m": dist, "block_face": face, "issue": issue})
 q = pd.DataFrame(rows)
 q.to_csv(os.path.join(HERE, "out", "pin_qa.csv"), index=False)
 bad = q[q.issue != ""]
-print(len(q), "pins checked;", len(bad), "with an issue")
+print(len(q), "pins checked;", len(bad), "with an issue;", int((~q.block_face.str.startswith("not testable")).sum()), "block-face tested")
 print(bad[["file", "id", "name", "street_address", "pluto_address", "issue"]].drop_duplicates(subset=["street_address", "issue"]).to_string())

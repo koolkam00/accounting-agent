@@ -1,5 +1,5 @@
 /*
-  dd-report.js: the one-page campaign report (v1.1, 2026-10-24). Load after dd-template.js,
+  dd-report.js: the one-page campaign report (v1.2, 2026-10-24). Load after dd-template.js,
   dd-dates.js and dd-docs.js. Used by templates/report/report.html and, in mock mode, by the
   proposal's mock page, so the mock is always exactly the real layout.
 
@@ -228,7 +228,7 @@
         </section>
         <section class="sec lim"><p class="lim-p"><b class="lim-h">Limitations.</b> <span class="lim-text">${D.escape(R.LIMITATIONS)}</span></p></section>
       </div>
-      ${X.footer(`Prepared by ${D.text(r.prepared_by || D.contact('FOUNDER_NAME'))} · ${X.contact(' · ', ['PHONE', 'EMAIL'])}`, `${X.brandName()} · report template v1.1`)}
+      ${X.footer(`Prepared by ${D.text(r.prepared_by || D.contact('FOUNDER_NAME'))} · ${X.contact(' · ', ['PHONE', 'EMAIL'])}`, `${X.brandName()} · report template v1.2`)}
     </div>`;
   };
 
@@ -248,7 +248,7 @@
       ${X.header({ kicker: 'Campaign report · evidence', meta: `${D.text(r.campaign_id || '[CAMPAIGN ID]')} · ${show(r.brand_name, '[BRAND]')}` })}
       <div class="bd"><h2>Evidence: every photo</h2><p class="note">Two photos per office, as taken. No identifiable people. Cropped to fit; the original files are available on request.</p>
         <div class="apg">${cells}</div></div>
-      ${X.footer(`Page 2 of the report for ${D.text(r.campaign_id || '[CAMPAIGN ID]')}`, `${X.brandName()} · report template v1.1`)}
+      ${X.footer(`Page 2 of the report for ${D.text(r.campaign_id || '[CAMPAIGN ID]')}`, `${X.brandName()} · report template v1.2`)}
     </div>`;
   };
 

@@ -1,0 +1,58 @@
+{
+  "ready": true,
+  "errors": [
+    "The proposal runs past the bottom of the page even at the smallest sizes. Shorten it."
+  ],
+  "warnings": [],
+  "sample": true,
+  "placeholders": [],
+  "fit": [
+    {
+      "arrangement": "three-up-roster",
+      "map_in": 0.95,
+      "tight": true,
+      "tried": [
+        {
+          "name": "standard",
+          "over_in": 1.65
+        },
+        {
+          "name": "terms-right",
+          "over_in": 0.94
+        },
+        {
+          "name": "send-right",
+          "over_in": 0.86
+        },
+        {
+          "name": "wide-roster",
+          "over_in": 0.54
+        },
+        {
+          "name": "wide-roster-terms-right",
+          "over_in": 1.02
+        },
+        {
+          "name": "three-up-roster",
+          "over_in": 0.19
+        },
+        {
+          "name": "three-up-roster-terms-right",
+          "over_in": 0.66
+        },
+        {
+          "name": "wide-timeline",
+          "over_in": 2.02
+        },
+        {
+          "name": "wide-roster-wide-timeline",
+          "over_in": 0.92
+        }
+      ]
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/proposal/proposal.html",
+  "records": 1
+}
+No PDF written. Fix the errors above (or pass --force to see the broken layout).

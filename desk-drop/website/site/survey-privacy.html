@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow"><!-- staging; removed in the production copy (tools/make_production.py) -->
 <title>Survey privacy notice</title>
 <meta name="description" content="How the anonymous employee survey handles answers and the optional newsletter email.">
 <meta name="theme-color" content="#F7F3EA" media="(prefers-color-scheme: light)">
@@ -40,9 +41,9 @@
     <div class="wrap prose">
       <p class="draft-flag">Draft for attorney review. Not legal advice.</p>
       <h1>Survey privacy notice</h1>
-      <p class="muted">This is the notice the anonymous employee survey links to. Its text is the legal pack's draft notice (version 0.5), unchanged. Brackets are filled per campaign.</p>
+      <p class="muted">This is the notice the anonymous employee survey links to. Its text is the legal pack's draft notice (version 0.6), unchanged. The company name and contact details come from the site settings; the brand slots are filled per campaign.</p>
       <!-- NOTICE START: copied word for word from desk-drop-legal-pack/13-survey-privacy-notice.md Part C. Edit there first. -->
-      <p>Last updated <span class="ph">[DATE]</span>. This survey is run by <strong><span class="ph">[COMPANY NAME: <span data-config="BRAND_NAME"></span> LLC]</span></strong> ("<strong>we</strong>", "<strong>us</strong>"), which brings products from emerging snack and drink brands to offices. Questions: <span class="ph">[EMAIL]</span>, <span class="ph">[POSTAL ADDRESS]</span>.</p>
+      <p>Last updated <span class="ph">[DATE]</span>. This survey is run by <strong><span data-config="COMPANY_LEGAL_NAME"></span></strong> ("<strong>we</strong>", "<strong>us</strong>"), which brings products from emerging snack and drink brands to offices. Questions: <a data-config="CONTACT_EMAIL" data-config-mailto></a>, <span data-config="POSTAL_ADDRESS"></span>.</p>
 
       <h2>What we collect</h2>
       <ul>
@@ -68,7 +69,7 @@
       </ul>
 
       <h2>If you give your email</h2>
-      <p>We pass it to <span class="ph">[BRAND]</span> only if you tick the box. We send the brand those addresses once, as a list kept separate from survey answers, within seven days after the survey closes. After that, <span class="ph">[BRAND]</span>'s privacy policy applies (<span class="ph">[BRAND PRIVACY POLICY URL]</span>) and you can unsubscribe from <span class="ph">[BRAND]</span> at any time. We delete our copy within 30 days after passing it on. If you change your mind, write to <span class="ph">[EMAIL]</span>: if we have not passed your email on yet, we delete it; if we have, we ask <span class="ph">[BRAND]</span> to delete it too.</p>
+      <p>We pass it to <span class="ph">[BRAND]</span> only if you tick the box. If you give an email but leave the box unticked, we delete it within seven days after the survey closes and never pass it on. We send the brand those addresses once, as a list kept separate from survey answers, within seven days after the survey closes. After that, <span class="ph">[BRAND]</span>'s privacy policy applies (<span class="ph">[BRAND PRIVACY POLICY URL]</span>) and you can unsubscribe from <span class="ph">[BRAND]</span> at any time. We delete our copy within 30 days after passing it on. If you change your mind, write to <a data-config="CONTACT_EMAIL" data-config-mailto></a>: if we have not passed your email on yet, we delete it; if we have, we ask <span class="ph">[BRAND]</span> to delete it too.</p>
 
       <h2>How long we keep answers</h2>
       <p>We keep survey answers for 12 months after the campaign, then delete them. Reports keep only totals and quoted comments.</p>
@@ -99,7 +100,9 @@
       </ul>
     </nav>
     <div>
+      <p>Founder: <span data-config="FOUNDER_NAME"></span></p>
       <p>Email: <a data-config="CONTACT_EMAIL" data-config-mailto></a></p>
+      <p data-config-line="PHONE">Phone: <a data-config="PHONE" data-config-tel></a></p>
       <p>Mail: <span data-config="POSTAL_ADDRESS"></span></p>
     </div>
   </div>

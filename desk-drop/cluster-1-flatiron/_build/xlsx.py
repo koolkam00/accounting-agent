@@ -189,9 +189,12 @@ def route_sheet(ws, route, S):
         ws.cell(row=i, column=2, value=f)
     ws[f"B{t + 5}"].number_format = "hh:mm"
     notes = [
-        "How to read this: stop 1 starts at 08:00. Each leg follows the street grid to the corner and across (never mid-block) at hand-truck pace, plus an expected signal wait per crossing. Each stop takes the plan's 15 minutes.",
-        f"Result: {S['route']['stops']} stops = {S['route']['stop_minutes']} min at stops + {S['route']['walking_minutes']} min walking = {S['route']['total_minutes']} min, finishing about {S['route']['end']}. That is over the 3-hour window by about {round(S['route']['total_minutes'] - 180)} min with no slack, even though this is the most compact high-confidence set found.",
-        "What makes ten fit: 12-minute stops at repeat offices (about 153 min), nine stops (about 163 min), more roster offices sharing a building, or splitting a ten-office drop across Tuesday and Wednesday (the plan allows both days).",
+        "How to read this: stop 1 starts at 08:00. Each leg runs sidewalk to sidewalk along the street grid, to the corner and across (never mid-block), at hand-truck pace, plus an expected signal wait per crossing. The walk from the kerb to the door is inside each stop's 15 minutes.",
+        (f"Result: {S['route']['stops']} stops = {S['route']['stop_minutes']} min at stops + {S['route']['walking_minutes']} min walking = {S['route']['total_minutes']} min, finishing about {S['route']['end']}. "
+         + ("That fits the 3-hour window." if S['route']['over_minutes'] <= 0 else f"That is about {S['route']['over_minutes']} min over the 3-hour window, inside the model's error.")
+         + " The stops: high-confidence, occupied offices with one 40-75 and one 76-150 office, two security desks last, and no food or drink brand."),
+        "What makes ten fit: a compact roster. Allowing medium-confidence offices, the best set found (about three blocks, 21st to 23rd St between Fifth and Sixth Ave) takes about "
+        + f"{S['route']['variants']['high_or_medium']['total_minutes']:.0f} min and ends about {S['route']['variants']['high_or_medium']['end']}. 12-minute stops at repeat offices give about {S['route']['at_12_min_stops']:.0f} min. Splitting a ten-office drop across Tuesday and Wednesday also works (the plan allows both days).",
         "Load check: ten 50-unit cases of a canned drink weigh about 200 kg (50 cans x about 0.37 kg each, by arithmetic). Check the hand truck's printed load rating; heavy products need a mid-route reload or two loops.",
         "8 am check: a walk-up office needs a person there at 08:00. Confirm every receiving window at intake and re-order the stops to match. Security desks often send deliveries to a freight elevator or loading dock with set hours.",
         "Lobby types: no walk-up lobby is sourced yet, so unknown-lobby buildings come first and the two sourced security-desk buildings come last. Re-run the order after the verification walk.",
@@ -246,6 +249,7 @@ def walk_sheet(ws, walk):
     ws.cell(row=tr, column=sc + 2, value=f"=SUM({get_column_letter(sc + 2)}2:{get_column_letter(sc + 2)}{tr - 1})")
     ws.cell(row=tr, column=sc + 3, value=f"=SUM({get_column_letter(sc + 3)}2:{get_column_letter(sc + 3)}{tr - 1})")
     ws.cell(row=tr + 1, column=sc, value="Times are estimates: walking at 73 m/min (MUTCD 4 ft/s) plus signal waits, and the dwell rule in Method. Fill the grey founder columns on foot.").font = NOTEF
+    ws.cell(row=tr + 2, column=sc, value=f"Do sessions 1 to {walk[walk.phase.str.startswith('core')].session.astype(int).max()} (the core, inside the boundary) on Tuesday or Wednesday mornings between 8 and 11 am, two sessions a morning, so lobby observations (security desk staffed? receiving hours?) match drop day.").font = Font(bold=True, color="B3261E")
 
 
 # ------------------------------------------------------------------ Method

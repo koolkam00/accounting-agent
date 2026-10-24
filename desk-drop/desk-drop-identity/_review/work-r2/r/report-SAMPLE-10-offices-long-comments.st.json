@@ -1,0 +1,28 @@
+{
+  "ready": true,
+  "errors": [],
+  "warnings": [
+    "Office D has 4 survey responses, under the five the office committed to. Report it as it is.",
+    "Office D: no later photo. The report says \"No photo received\". Attach it if you have it."
+  ],
+  "sample": true,
+  "placeholders": [
+    "brand.json: FOUNDER_NAME (fill it in brand.json, then run node render/build-brand.js)",
+    "brand.json: PHONE (fill it in brand.json, then run node render/build-brand.js)",
+    "brand.json: EMAIL (fill it in brand.json, then run node render/build-brand.js)"
+  ],
+  "fit": [
+    {
+      "comment_pt": 8.25,
+      "thumb_in": 0.38,
+      "learned_pt": 9.5,
+      "tight": true,
+      "later_photos_on_page_2": false,
+      "thumbnails_on_page_2": false,
+      "fits": true
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/report/report.html",
+  "records": 1
+}

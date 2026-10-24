@@ -1,6 +1,6 @@
 # Setup guide
 
-Version 1.0 · 2026-10-24 · Workstream C (website). Steps marked **[FOUNDER LOGIN]** need your own account; nothing here has been signed up for, deployed or published. Sources were opened on 2026-10-24 and are listed in section 12.
+Version 1.1 · 2026-10-24 (review round 1) · Workstream C (website). Steps marked **[FOUNDER LOGIN]** need your own account; nothing here has been signed up for, deployed or published. Sources were opened on 2026-10-24 and are listed in section 12.
 
 **Status: build now, publish later.** The name is on HOLD (`desk-drop-legal-pack/name-check-log.md`), the form notices are drafts for attorney review, and the plan keeps the site private until Gate 1. Section 10 is the publish step; `tools/preflight.py` refuses to pass until all of that is done.
 
@@ -13,13 +13,13 @@ Version 1.0 · 2026-10-24 · Workstream C (website). Steps marked **[FOUNDER LOG
 | Look | `site/assets/css/tokens.css` (the identity workstream's tokens, copied) and `site.css`. Fonts self-hosted (Atkinson Hyperlegible Next, Bricolage Grotesque, SIL Open Font License) | No third-party requests; fast |
 | Forms | A Google Apps Script web app (`apps-script/Code.gs`) attached to one Google Sheet with tabs `office_intake` and `brand_intake` | Free; one row and one email per submission |
 | Visit counts | GoatCounter, called directly (no script from them) | Free for "small-to-medium business" use, no cookies |
-| Hosting | Cloudflare Pages, Free plan, drag-and-drop upload of the `site/` folder | Free, custom domains, preview URLs carry `X-Robots-Tag: noindex` by default |
+| Hosting | Cloudflare Pages, Free plan, drag-and-drop upload: the `site/` folder for a preview, the `publish/` folder (written by `tools/make_production.py`) for production | Free, custom domains, preview URLs carry `X-Robots-Tag: noindex` by default |
 
 ## 2. Own every account from day one
 
 Create each account yourself with the business address [EMAIL]: Google (Sheet and script), Cloudflare, GoatCounter and the domain registrar. Then there is nothing to transfer. If someone else ever sets one up for you:
 - **Google Sheet and script:** they share the Sheet with you as editor, then use Share > transfer ownership; the script moves with the Sheet. Redeploy the web app from your account (section 3, step 4) so it runs as you, and paste the new URL into the config. (Ownership transfer rules differ between personal and Workspace accounts: unverified, founder to confirm.)
-- **Cloudflare Pages:** do not transfer; create a new project in your account and drag the same `site/` folder in (two minutes), then move the custom domain.
+- **Cloudflare Pages:** do not transfer; create a new project in your account and drag the same folder in (two minutes), then move the custom domain.
 - **GoatCounter:** create your own and change `ANALYTICS.ENDPOINT`; old counts stay behind.
 - **Domain:** a registrar-to-registrar or account-to-account push; steps vary by registrar (unverified, founder to confirm).
 
@@ -37,9 +37,10 @@ Create each account yourself with the business address [EMAIL]: Google (Sheet an
 
 ## 4. Staging and hosting **[FOUNDER LOGIN]**
 
-- **Staging now:** a private claude.ai Artifact of `site/` (forms show "staging: submissions are not live yet"; no counting).
+- **There is no staging URL yet.** To look at the site on your own computer, from `website/`: `python3 -m http.server 8000 --directory site`, then open http://localhost:8000.
 - **Cloudflare Pages:** dashboard > Workers & Pages > Create application > Drag and drop your files > name the project > drop the `site/` folder > Deploy. For a staging copy, create a new deployment to the **preview** environment (branch name `staging`): preview URLs get `X-Robots-Tag: noindex` automatically. Drag-and-drop takes up to 1,000 files of 25 MiB each; the site is about 25 files.
-- **How staging stays out of search:** while `STAGING` is true every page adds a `noindex, nofollow` robots tag, `robots.txt` disallows everything, and `_headers` sends `X-Robots-Tag: noindex`. Google notes that a robots.txt block also stops it from seeing a noindex tag, so a staging URL that someone links publicly could still appear as a bare link. Do not post or share staging links.
+- **Lock the previews (recommended):** in the Pages project, Settings > General > **Enable access policy**. Preview deployments then open only for your Cloudflare account (Cloudflare Access). It protects preview links only, not the `pages.dev` or custom domain. Whether Access stays free on your account was not shown on Cloudflare's pricing page: unverified, founder to confirm before you turn it on.
+- **How staging stays out of search:** while `STAGING` is true, every page carries `<meta name="robots" content="noindex, nofollow">` in its HTML (so it holds without JavaScript), `_headers` sends `X-Robots-Tag: noindex`, and `robots.txt` **allows** crawling. That last part is deliberate: Google says a page blocked by robots.txt cannot show it the noindex, and could then appear as a bare link. Still, do not post or share staging links.
 
 ## 5. Editing copy
 
@@ -55,11 +56,11 @@ The brand page has a labeled slot for one photo: a printed test card on a real p
 
 ## 7. Renaming
 
-Change `BRAND_NAME` in `site/site.config.js`. That is the whole site: every page, title and notice reads it from there (`tests/e2e.js` proves it). The Apps Script and the favicon contain no name. Then, outside the site: the domain, the email address, and the identity workstream's wordmark (`desk-drop-identity/brand.json`).
+Change `BRAND_NAME` in `site/site.config.js`. That is the whole site: every page, title and notice reads it from there (`tests/e2e.js` proves it). For production, run `python3 tools/make_production.py` again afterwards (you do that at every publish anyway): it writes the new name into the HTML of the upload copy, for link previews and visitors without JavaScript. The Apps Script and the favicon contain no name. Then, outside the site: the domain, the email address, and the identity workstream's wordmark (`desk-drop-identity/brand.json`).
 
 ## 8. Retiring the founding tier
 
-After the third founding brand: set `FOUNDING_TIER_OPEN: false` in `site/site.config.js`. The $600 card, every "founding price" line and the founding FAQ answer disappear; standard and extra office stay. Brand question 6 still asks about approving $600 because the sheet column is `q6_contact_can_approve_600`; agree any wording change with the operations workstream first.
+After the third founding brand: set `FOUNDING_TIER_OPEN: false` in `site/site.config.js`. The $600 card, every "founding price" line and the founding FAQ answer disappear; standard and extra office stay. Check 6 and form question 6 switch from "approve $600" to "approve $1,500" by themselves, and those rows arrive with `form_version` `brand-2.0` (the column name `q6_contact_can_approve_600` stays, so the sheet does not change; the operations workstream knows, `HANDOFF.md`).
 
 ## 9. Visit counts **[FOUNDER LOGIN]**
 
@@ -70,25 +71,27 @@ After the third founding brand: set `FOUNDING_TIER_OPEN: false` in `site/site.co
 
 ## 10. Publish (only when all of these are true)
 
-Name cleared or replaced (section 7); attorney has cleared the form notices and both privacy pages; Gate 1 reached (plan); domain bought.
+Name cleared or replaced (section 7), with the legal pack's log saying `Public launch (C): CLEARED YYYY-MM-DD`; attorney has cleared the form notices and both privacy pages; Gate 1 reached (plan); domain bought.
 
 1. **DNS [FOUNDER LOGIN].** Recommended: add the domain to Cloudflare (Free plan) and switch the registrar's nameservers to the two Cloudflare gives you; then in Pages > your project > Custom domains, add `DOMAIN` and `www.DOMAIN`. Alternative without moving nameservers: use `www.DOMAIN` only, add it in Pages first, then create a CNAME `www` → `PROJECT.pages.dev` at your registrar (adding the CNAME before the Pages step gives a 522 error). Keep your email's MX records when moving DNS.
-2. In `site/site.config.js`: fill `DOMAIN`, `CONTACT_EMAIL`, `POSTAL_ADDRESS`, `FOUNDER_NAME`, `COMPANY_LEGAL_NAME`, `FORM_ENDPOINT`, `ANALYTICS.ENDPOINT`, and a true `ROSTER_STATUS`.
-3. Fill `[DATE]` in `privacy.html` and `survey-privacy.html`; remove each "Draft for attorney review" line only once the attorney has cleared that text.
-4. Run `python3 tools/make_production.py` (writes the production `robots.txt` and `sitemap.xml`, removes the staging noindex header), then set `STAGING: false`.
-5. Run `python3 tools/preflight.py`. It must say `0 blocking`.
-6. Upload `site/` to the **production** environment of the Cloudflare Pages project.
-7. Check: `curl -I https://DOMAIN` shows no `x-robots-tag`; `https://DOMAIN/robots.txt` says `Allow: /`; do the real-visit check (section 9) and one SAMPLE submission per form (section 3, step 6).
+2. In `site/site.config.js`: fill `DOMAIN`, `CONTACT_EMAIL`, `PHONE` (or `""` to show no phone), `POSTAL_ADDRESS`, `FOUNDER_NAME`, `FOUNDER_LINKEDIN` (or `""`), `COMPANY_LEGAL_NAME`, `FORM_ENDPOINT` and `ANALYTICS.ENDPOINT`. Rewrite `ROSTER_STATUS` so it is true today (for example "Five founding offices are signed. No campaign has run yet, so there are no results to show.") and set `ROSTER_STATUS_DATE` to today. Leave `STAGING: true`: the production copy sets it.
+3. In the pages: fill `[DATE]` in `privacy.html` and `survey-privacy.html`, and replace the survey notice's `[BRAND]` and `[BRAND PRIVACY POLICY URL]` slots with the legal pack's generic wording once it gives one (`HANDOFF.md`, question to G). Remove each "Draft for attorney review" line only once the attorney has cleared that text.
+4. Run `python3 tools/preflight.py`. Fix every `BLOCK` line except the last one ("no production copy yet").
+5. Run `python3 tools/make_production.py`. It runs the same checks, refuses to write anything while one blocks, then writes `publish/` and checks it. `site/` is not changed.
+6. Upload the **`publish/`** folder (not `site/`) to the **production** environment of the Cloudflare Pages project.
+7. Check: `curl -I https://DOMAIN` shows no `x-robots-tag`; `https://DOMAIN/robots.txt` says `Allow: /` and names the sitemap; paste `https://DOMAIN/brands` into a Slack or LinkedIn message and see the name in the preview; open `https://DOMAIN/brands/x` and see a styled "Page not found"; do the real-visit check (section 9) and one SAMPLE submission per form (section 3, step 6).
 8. Send the outreach workstream the live URL and deep links (`HANDOFF.md`).
+
+Every later change: edit `site/`, run `tools/make_production.py` again, upload `publish/` again.
 
 ## 11. Running the tests
 
-`bash tests/run_all.sh` from `website/` (needs `npm install` once in `tests/`). What each test proves: `QA.md`.
+`bash tests/run_all.sh` from `website/` (needs `npm install` once in `tests/`; about 10 minutes). What each test proves: `QA.md` and `tests/README.md`.
 
 ## 12. Sources (opened 2026-10-24)
 
 - Google Apps Script, web apps: https://developers.google.com/apps-script/guides/web (doPost, deploy steps, "Execute as me", reserved parameter names `c` and `sid`); deployments: https://developers.google.com/apps-script/concepts/deployments (new version, same URL); Content service redirects: https://developers.google.com/apps-script/guides/content; quotas: https://developers.google.com/apps-script/guides/services/quotas (email recipients 100 a day personal, 1,500 Workspace).
 - Reading the script's JSON reply from a web page: the community pattern in https://raw.githubusercontent.com/jamiewilson/form-to-google-sheets/master/README.md (`fetch(...).then(response => response.json())`). Not Google documentation: verified only by the section 3, step 6 test.
 - GoatCounter: https://www.goatcounter.com/ (free for "personal website or small-to-medium business"; no unique identifiers; "doesn't need a GDPR notice" in its own words), https://www.goatcounter.com/help/pixel (`/count` parameters `p`, `t`, `r`, `e`, `s`, `b`, `rnd`; building your own integration "should be safe"), https://www.goatcounter.com/help/events, https://www.goatcounter.com/help/sessions (IP and User-Agent never stored), https://www.goatcounter.com/help/gdpr.
-- Cloudflare Pages: direct upload https://developers.cloudflare.com/pages/get-started/direct-upload/; preview noindex https://developers.cloudflare.com/pages/configuration/preview-deployments/; custom domains https://developers.cloudflare.com/pages/configuration/custom-domains/; `_headers` https://developers.cloudflare.com/pages/configuration/headers/; Free plan limits https://developers.cloudflare.com/pages/platform/limits/. The pricing page (https://www.cloudflare.com/plans/developer-platform/) did not render as text: Free plan cost unverified, founder to confirm at sign-up.
-- Google Search, noindex and robots.txt: https://developers.google.com/search/docs/crawling-indexing/block-indexing (a robots.txt block stops Google from seeing a noindex tag); JavaScript-added robots meta: https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics.
+- Cloudflare Pages: direct upload https://developers.cloudflare.com/pages/get-started/direct-upload/; preview noindex and "Enable access policy" for previews https://developers.cloudflare.com/pages/configuration/preview-deployments/ (re-opened 2026-10-24 in review round 1); `.html` redirected to extension-less URLs and the nested 404 lookup ("ending in /404.html") https://developers.cloudflare.com/pages/configuration/serving-pages/ (opened 2026-10-24 in review round 1); Zero Trust plans https://www.cloudflare.com/plans/zero-trust-services/ (opened 2026-10-24; the Access price did not render as text: unverified); custom domains https://developers.cloudflare.com/pages/configuration/custom-domains/; `_headers` https://developers.cloudflare.com/pages/configuration/headers/; Free plan limits https://developers.cloudflare.com/pages/platform/limits/. The pricing page (https://www.cloudflare.com/plans/developer-platform/) did not render as text: Free plan cost unverified, founder to confirm at sign-up.
+- Google Search, noindex and robots.txt: https://developers.google.com/search/docs/crawling-indexing/block-indexing ("For the noindex rule to be effective, the page or resource must not be blocked by a robots.txt file"; why staging robots.txt now allows crawling); JavaScript-added robots meta: https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics.

@@ -4,7 +4,8 @@
 Every test writes to a temp copy; the deliverable is never modified.
 SAMPLE rows used here start with 'SAMPLE' (CONTRACTS s2) and never ship.
 Cells are found through ref_map.json (written by build_model.py), so a layout change does not break the tests.
-Tests tagged [R1-xx] cover the fixes for the independent review, round 1 (_review/round-1.md); [R2-xx] cover round 2 (_review/round-2.md).
+Tests tagged [R1-xx] cover the fixes for the independent review, round 1 (_review/round-1.md); [R2-xx] cover round 2 (_review/round-2.md);
+[R3-xx] cover round 3 (_review/round-3.md).
 Usage: python3 test_model.py   (exit 1 on any failure)
 """
 import datetime as dt
@@ -95,9 +96,9 @@ pub_r = row_of("su_pub")
 check("[R1-02] publication default = plan high end $2,000, low $250, high $2,000",
       at(base, "Inputs", f"C{pub_r}") == 2000 and at(base, "Inputs", f"E{pub_r}") == 250 and at(base, "Inputs", f"F{pub_r}") == 2000,
       (at(base, "Inputs", f"C{pub_r}"), at(base, "Inputs", f"E{pub_r}"), at(base, "Inputs", f"F{pub_r}")))
-check("[R1-02] low point -$4,126, capital to commit $5,126, gap to $6,510 $1,384",
-      near(b_low, -4126) and near(v(base, "cf_commit"), 5126) and near(v(base, "cf_gap"), 1384),
-      (b_low, v(base, "cf_commit"), v(base, "cf_gap")))
+check("[R1-02][R3-02] low point -$4,476 in week 13 (trademark at Gate 2), capital to commit $5,476, gap to $6,510 $1,034",
+      near(b_low, -4476) and v(base, "cf_low_week") == 13 and near(v(base, "cf_commit"), 5476) and near(v(base, "cf_gap"), 1034),
+      (b_low, v(base, "cf_low_week"), v(base, "cf_commit"), v(base, "cf_gap")))
 check("[R1-02] one-brand campaigns to recover startup cash = 5", v(base, "be_n_one") == 5, v(base, "be_n_one"))
 # [R1-18c] a drop with no actual data shows no allocation and a blank contribution
 check("[R1-18c] Drop_Actuals: drop without actuals shows a blank contribution and $0 allocations",
@@ -135,11 +136,12 @@ name_cells = [f"{ws.title}!{c.coordinate}" for ws in wf.worksheets for row in ws
 check("[R1-12] the company name sits in one cell only", name_cells == [REF["company_name"].replace("$", "")], name_cells)
 # [R1-13] planning-estimate label on every tab built on defaults
 missing = []
-for t in ["Dashboard", "Inputs", "Scenarios", "Schedule", "Calculator", "Drop_PnL", "Cash_Flow", "Steady_State", "Sensitivity", "Plan_Check", "Capital", "Cash_Ledger"]:
+for t in ["Dashboard", "Inputs", "Scenarios", "Schedule", "Calculator", "Drop_PnL", "Cash_Flow", "Steady_State", "Sensitivity", "Plan_Check", "Capital", "Cash_Ledger",
+          "Drop_Actuals"]:
     txt = " ".join(str(wf[t].cell(r, c).value) for r in range(1, 5) for c in range(1, 4) if wf[t].cell(r, c).value)
     if "planning estimate" not in txt.lower():
         missing.append(t)
-check("[R1-13][R2-09d] 'Planning estimates' label in rows 1 to 4 of every tab built on defaults, Cash_Ledger included", not missing, missing)
+check("[R1-13][R2-09d][R3-11a] 'Planning estimates' label in rows 1 to 4 of every tab built on defaults, Cash_Ledger and Drop_Actuals included", not missing, missing)
 # [R1-18a] Plan_Check colours the expected difference
 cf_rules = [r.formula for rng in wf["Plan_Check"].conditional_formatting for r in rng.rules]
 check("[R1-18a] Plan_Check has a colour rule for 'differs, as expected'", any('"differs, as expected"' in str(f) for f in cf_rules))
@@ -355,6 +357,8 @@ ed += [("Toggl_Import", "A10", "SAMPLE"), ("Toggl_Import", "B10", "DRP-001"), ("
 ed.append(("Cash_Flow", "O30", -3000))
 wb, integ, errs = run(ed, "SAMPLE actuals")
 check("SAMPLE: no integrity or data failures", not integ and not errs, f"{integ[:3]} {errs[:3]}")
+check("[R3-01] SAMPLE run with real dates and numbers: the banner reads 'all integrity and data checks pass'", at(wb, "Dashboard", "G5") == "all integrity and data checks pass",
+      at(wb, "Dashboard", "G5"))
 status, gates = gate_tables(wb)
 print("   gate rows:", json.dumps(status, default=str)[:900])
 print("   gate overall:", gates)
@@ -412,12 +416,12 @@ import audit_formulas
 _aud = audit_formulas.audit(SRC)
 check("[R2-01] audit: no INDEX over a one-row range without a row argument, and at least 6,000 written as INDEX(range, 1, column)",
       _aud[7] == [] and _aud[8] >= 6000, (len(_aud[7]), _aud[8]))
-check("[R2-01] the README's post-import cells read as expected: Scenarios!H10 = 2 and Cash_Flow!C35 = 12 (week of the low point)",
-      at(base, "Scenarios", "H10") == 2 and at(base, "Cash_Flow", "C35") == 12 and REF["cf_low_week"] == "Cash_Flow!$C$35",
+check("[R2-01] the README's post-import cells read as expected: Scenarios!H10 = 2 and Cash_Flow!C35 = 13 (week of the low point)",
+      at(base, "Scenarios", "H10") == 2 and at(base, "Cash_Flow", "C35") == 13 and REF["cf_low_week"] == "Cash_Flow!$C$35",
       (at(base, "Scenarios", "H10"), at(base, "Cash_Flow", "C35")))
 wb, integ, errs = run([inp("active_scenario", "A")], "scenario A, INDEX column pick")
 check("[R2-01] scenario A: the selector picks column D (post-decision price $180) and the low-point week is still found",
-      v(wb, "sc_price_after") == 180 and v(wb, "cf_low_week") == 12, (v(wb, "sc_price_after"), v(wb, "cf_low_week")))
+      v(wb, "sc_price_after") == 180 and v(wb, "cf_low_week") == 13, (v(wb, "sc_price_after"), v(wb, "cf_low_week")))
 
 # [R2-07] legal-pack timing and new lines
 att_r, acc_r, llc_r = row_of("su_attorney"), row_of("su_accountant"), row_of("su_llc")
@@ -441,7 +445,7 @@ check("[R2-08] stop points: Gate 0 paid out -$160, Gate 1 paid out -$3,120 with 
       near(v(base, "dash_cr_out_gate0_date"), -160) and near(v(base, "dash_cr_out_gate1_date"), -3120) and near(v(base, "dash_cr_rec_gate1_date"), 1200)
       and near(v(base, "dash_cr_cum_gate1_date"), at(base, "Cash_Flow", "I27")) and near(v(base, "dash_cr_cum_gate1_date"), -3856),
       (v(base, "dash_cr_out_gate0_date"), v(base, "dash_cr_out_gate1_date"), v(base, "dash_cr_rec_gate1_date"), v(base, "dash_cr_cum_gate1_date")))
-check("[R2-08] stop points: at the decision date paid out plus received equals week-26 cumulative cash ($11,759)",
+check("[R2-08] stop points: at the decision date paid out plus received equals week-26 cumulative cash ($11,409)",
       near(v(base, "dash_cr_out_decision_date") + v(base, "dash_cr_rec_decision_date"), v(base, "cf_end")) and near(v(base, "dash_cr_cum_decision_date"), v(base, "cf_end")),
       (v(base, "dash_cr_out_decision_date"), v(base, "dash_cr_rec_decision_date"), v(base, "cf_end")))
 
@@ -457,7 +461,8 @@ check("[R2-09a] README price text is live: '(now $150)' at defaults, '(now $180)
       "(now $150)" in readme_price_text(base) and "(now $180)" in readme_price_text(wb), (readme_price_text(base)[:60], readme_price_text(wb)[:60]))
 wb, integ, errs = run([("Actuals_Campaigns", "AK5", 1)], "value pasted in AK")
 check("[R2-09b] a value in Actuals_Campaigns AK (last buffer column) is flagged", any("Actuals_Campaigns: header row differs" in f[2] for f in integ), [f[2] for f in integ])
-check("[R2-09c] break-even: 3 brand campaigns, which is 1 standard drop at three brands", v(base, "be_n_three") == 3 and v(base, "be_n_std_drops") == 1,
+check("[R2-09c][R3-02] break-even: 4 brand campaigns, which is 2 standard drops at three brands (startup outlays now include the $350 trademark)",
+      v(base, "be_n_three") == 4 and v(base, "be_n_std_drops") == 2,
       (v(base, "be_n_three"), v(base, "be_n_std_drops")))
 
 # [R2-06] no standard drop runs: no storage unit
@@ -549,6 +554,154 @@ wb, integ, errs = run([("Hours_Log", "A5", D(2027, 1, 5)), ("Hours_Log", "D5", "
                        ("Pipeline", "A5", D(2026, 11, 1)), ("Pipeline", "B5", "office"), ("Pipeline", "C5", "SAMPLE-O-9"), ("Pipeline", "E5", "meeting")], "bad data")
 labels = [f[2] for f in integ]
 check("bad activity key and bad event are flagged as data failures", any("invalid activity" in l for l in labels) and any("bad event" in l for l in labels), labels)
+
+# ================================================================ review round 3
+BANNER_OK = "all integrity and data checks pass"
+
+
+def checks_rows(wb_):
+    ws_ = wb_["Checks"]
+    out_ = {}
+    r_ = 5
+    while ws_[f"A{r_}"].value is not None:
+        out_[ws_[f"C{r_}"].value] = (ws_[f"B{r_}"].value, ws_[f"D{r_}"].value, ws_[f"E{r_}"].value)
+        r_ += 1
+    return out_
+
+
+def text_fail(integ_, tab):
+    return any(f[2].startswith(tab + ":") and "stored as text" in f[2] for f in integ_)
+
+
+check("[R3-01] baseline: the Dashboard banner reads 'all integrity and data checks pass'", at(base, "Dashboard", "G5") == BANNER_OK, at(base, "Dashboard", "G5"))
+
+
+# [R3-01] text in a date or money column: the same campaign-zero rows pasted with real dates and with the dates as text
+def c0_case(text_dates=False, text_revenue=False):
+    e = [inp("as_of_override", D(2027, 1, 29)), ("Schedule", "N7", "Y")]
+    for i, row_ in enumerate(camp):
+        for j, val in enumerate(row_):
+            if val is None:
+                continue
+            if text_dates and isinstance(val, dt.date):
+                val = val.isoformat()
+            if text_revenue and j == 17:
+                val = str(val)
+            e.append(("Actuals_Campaigns", f"{openpyxl.utils.get_column_letter(j + 1)}{5 + i}", val))
+    for j, val in enumerate(["DRP-001", D(2027, 1, 12), "founder", 5, 2, 45, 95, 20, "SAMPLE"]):
+        if text_dates and isinstance(val, dt.date):
+            val = val.isoformat()
+        e.append(("Actuals_DropCosts", f"{openpyxl.utils.get_column_letter(j + 1)}5", val))
+    return run(e, "campaign zero actuals")
+
+
+wb_r, integ_r, errs_r = c0_case()
+check("[R3-01] real dates: receipts $1,200 in week 7, no data failure, banner green",
+      at(wb_r, "Cash_Flow", "I10") == 1200 and not integ_r and not errs_r and at(wb_r, "Dashboard", "G5") == BANNER_OK,
+      (at(wb_r, "Cash_Flow", "I10"), integ_r[:2], at(wb_r, "Dashboard", "G5")))
+wb, integ, errs = c0_case(text_dates=True)
+check("[R3-01] the same rows with text dates: receipts vanish (the failure the check exists for), Checks flags both paste tabs, the banner names data failures",
+      at(wb, "Cash_Flow", "I10") == 0 and text_fail(integ, "Actuals_Campaigns") and text_fail(integ, "Actuals_DropCosts")
+      and str(at(wb, "Dashboard", "G5")).endswith("data check(s) failing: pasted rows are ignored or misread (see Checks)"),
+      (at(wb, "Cash_Flow", "I10"), [f[2][:50] for f in integ], at(wb, "Dashboard", "G5")))
+wb, integ, errs = c0_case(text_revenue=True)
+check("[R3-01] revenue typed as text ('600'): flagged on Checks and on the banner", text_fail(integ, "Actuals_Campaigns") and at(wb, "Dashboard", "G5") != BANNER_OK,
+      ([f[2][:50] for f in integ], at(wb, "Dashboard", "G5")))
+txt_rows = [("Pipeline", "A5", "2026-11-04"), ("Pipeline", "B5", "office"), ("Pipeline", "C5", "SAMPLE-O-1"), ("Pipeline", "E5", "yes_in_principle"),
+            ("Pipeline", "A6", D(2026, 11, 20)), ("Pipeline", "B6", "office"), ("Pipeline", "C6", "SAMPLE-O-1"), ("Pipeline", "E6", "signed"), ("Pipeline", "F6", "60"),
+            ("Hours_Log", "A5", "2026-11-02"), ("Hours_Log", "D5", "brand_sales"), ("Hours_Log", "E5", 2),
+            ("Hours_Log", "A6", D(2026, 11, 3)), ("Hours_Log", "D6", "brand_sales"), ("Hours_Log", "E6", "1.5")]
+wb, integ, errs = run(txt_rows, "text in pipeline and hours")
+ck_ = checks_rows(wb)
+check("[R3-01] a text date and a text headcount on Pipeline, and a text date and text hours on Hours_Log, are each counted (2 and 2)",
+      ck_["Pipeline: dates or value_number stored as text (columns A and F)"][1] == 2 and ck_["Hours_Log: dates or hours stored as text (columns A and E)"][1] == 2
+      and text_fail(integ, "Pipeline") and text_fail(integ, "Hours_Log"),
+      (ck_["Pipeline: dates or value_number stored as text (columns A and F)"], ck_["Hours_Log: dates or hours stored as text (columns A and E)"]))
+
+# [R3-02] trademark in the six months at Gate 2
+tm_r = row_of("su_tm")
+check("[R3-02] trademark $350 included (default Y), timed on the Gate 2 day (2027-01-22)",
+      at(base, "Inputs", f"N{tm_r}") == "Y" and at(base, "Inputs", f"S{tm_r}") == "Y" and str(at(base, "Inputs", f"R{tm_r}"))[:10] == "2027-01-22"
+      and at(base, "Inputs", f"Q{tm_r}") == 350, (at(base, "Inputs", f"N{tm_r}"), at(base, "Inputs", f"R{tm_r}"), at(base, "Inputs", f"Q{tm_r}")))
+wb, integ, errs = run([("Inputs", f"N{tm_r}", "N")], "trademark excluded")
+check("[R3-02] Include = N restores the round-2 figures: low -$4,126 in week 12, commit $5,126, and the line shows as changed",
+      near(v(wb, "cf_low"), -4126) and v(wb, "cf_low_week") == 12 and near(v(wb, "cf_commit"), 5126) and v(wb, "changed_count") == 1,
+      (v(wb, "cf_low"), v(wb, "cf_low_week"), v(wb, "cf_commit"), v(wb, "changed_count")))
+
+# [R3-03] a drop added mid-sequence (Tue 2027-03-16, between DRP-003 and DRP-004) in the next spare row
+mid = [("Schedule", "B12", "SAMPLE added drop"), ("Schedule", "E12", D(2027, 3, 16)), ("Schedule", "G12", "courier"), ("Schedule", "H12", "standard"),
+       ("Schedule", "I12", 10), ("Schedule", "J12", 0), ("Schedule", "K12", 3), ("Schedule", "L12", 0), ("Schedule", "M12", 0), inp("as_of_override", D(2027, 3, 10))]
+wb, integ, errs = run(mid, "drop added mid-sequence")
+ck_ = checks_rows(wb)
+info = [k for k in ck_ if k and "out of date order" in k][0]
+check("[R3-03] a mid-sequence drop: no integrity failure; the out-of-order row is information only (value 1, 'info')",
+      not integ and not errs and ck_[info][0] == "Info" and ck_[info][1] == 1 and ck_[info][2] == "info" and at(wb, "Dashboard", "G5") == BANNER_OK,
+      (integ[:2], ck_[info], at(wb, "Dashboard", "G5")))
+check("[R3-03] as of 2027-03-10 the next scheduled drop is the added DRP-006 (Tue 2027-03-16), not DRP-004 (Tue 2027-03-23)",
+      v(wb, "dash_next") == "DRP-006" and "2027-03-16" in str(at(wb, "Dashboard", "D" + str(row_of("dash_next")))),
+      (v(wb, "dash_next"), at(wb, "Dashboard", "D" + str(row_of("dash_next")))))
+wb, integ, errs = run([inp("as_of_override", D(2027, 4, 30))], "no drop left")
+check("[R3-03] with no upcoming drop the Dashboard says 'none scheduled' and errors nowhere", v(wb, "dash_next") == "none scheduled" and not errs, (v(wb, "dash_next"), errs[:2]))
+
+# [R3-04] a lever a scenario does not name follows the plan base
+wb, integ, errs = run([inp("std_brands_drop", 2), inp("active_scenario", "A")], "two brands per drop under scenario A")
+scq = [at(wb, "Scenarios", f"Q{r_}") for r_ in range(10, 22)]
+check("[R3-04] two brands per standard drop under scenario A: the decision-window drops and the steady state carry 2 brands; no scenario cell shows 'changed'",
+      at(wb, "Schedule", "K10") == 2 and at(wb, "Schedule", "K11") == 2 and v(wb, "sc_ss_brands") == 2 and "changed" not in scq and not integ,
+      (at(wb, "Schedule", "K10"), v(wb, "sc_ss_brands"), scq))
+check("[R3-04] the A steady state moves with it: two-brand drops at $180 earn less than its three-brand $9,406", v(wb, "ss_contrib") < 9406 - 1, v(wb, "ss_contrib"))
+wb, integ, errs = run([("Inputs", f"C{row_of('plan_ss_drops')}", 3), inp("active_scenario", "B")], "three drops a month under B")
+check("[R3-04] three steady-state drops a month on Inputs reach scenario B (and its hire threshold still follows the plan base)",
+      v(wb, "sc_ss_drops") == 3 and at(wb, "Scenarios", "H21") == 2, (v(wb, "sc_ss_drops"), at(wb, "Scenarios", "H21")))
+
+# [R3-05] cash at each stop point: refunds owed and the net
+check("[R3-05] Gate 1 net equals paid out (founding cash received is refundable): -$3,120",
+      near(v(base, "dash_cr_net_gate1_date"), -3120) and near(v(base, "dash_cr_ref_gate1_date"), 1200), (v(base, "dash_cr_net_gate1_date"), v(base, "dash_cr_ref_gate1_date")))
+check("[R3-05] Gate 2 net -$4,126 (paid out -$5,326 plus $1,200 received, nothing to refund)",
+      near(v(base, "dash_cr_net_gate2_date"), -4126) and near(v(base, "dash_cr_ref_gate2_date"), 0), (v(base, "dash_cr_net_gate2_date"), v(base, "dash_cr_ref_gate2_date")))
+check("[R3-05] Gate 3: DRP-004's $2,250 of deposits are owed back, so the net is paid out + received - $2,250",
+      near(v(base, "dash_cr_ref_gate3_date"), 2250)
+      and near(v(base, "dash_cr_net_gate3_date"), v(base, "dash_cr_out_gate3_date") + v(base, "dash_cr_rec_gate3_date") - 2250) and v(base, "dash_cr_net_gate3_date") > 0,
+      (v(base, "dash_cr_out_gate3_date"), v(base, "dash_cr_rec_gate3_date"), v(base, "dash_cr_ref_gate3_date"), v(base, "dash_cr_net_gate3_date")))
+
+# [R3-06] unpriced lines are named beside the cash need
+com_r = row_of("dash_commit")
+hn_r = row_of("su_hnoa")
+check("[R3-06] the capital-to-commit line says it counts 5 unpriced cost lines as $0", v(base, "unpriced_count") == 5 and "counts 5 unpriced cost line(s)" in str(at(base, "Dashboard", f"D{com_r}")),
+      (v(base, "unpriced_count"), at(base, "Dashboard", f"D{com_r}")))
+wb, integ, errs = run([("Inputs", f"C{hn_r}", 200)], "auto add-on quoted")
+check("[R3-06] a $200 auto add-on quote: 4 unpriced lines left and the low point deepens by $200", v(wb, "unpriced_count") == 4 and near(v(wb, "cf_low"), b_low - 200),
+      (v(wb, "unpriced_count"), v(wb, "cf_low")))
+
+# [R3-07] renewal rate counts brands
+rows7 = [("SAMPLE-CMP-1", "SAMPLE-BR-1", "Y"), ("SAMPLE-CMP-2", "SAMPLE-BR-1", "N"), ("SAMPLE-CMP-3", "SAMPLE-BR-2", "N")]
+e7 = []
+for i, (cid, bid, w) in enumerate(rows7):
+    e7 += [("Actuals_Campaigns", f"A{5 + i}", cid), ("Actuals_Campaigns", f"B{5 + i}", "DRP-001"), ("Actuals_Campaigns", f"C{5 + i}", D(2027, 1, 12)),
+           ("Actuals_Campaigns", f"F{5 + i}", bid), ("Actuals_Campaigns", f"G{5 + i}", 5), ("Actuals_Campaigns", f"W{5 + i}", w)]
+wb, integ, errs = run(e7, "renewal per brand")
+check("[R3-07] brand 1 renewed then declined, brand 2 declined: the renewal rate is 1 of 2 brands (50%), not 1 of 3 campaigns",
+      near(v(wb, "dash_renewal"), 0.5, 0.0001), v(wb, "dash_renewal"))
+
+# [R3-08] scenario A grows the roster
+wb, integ, errs = run([inp("active_scenario", "A")], "scenario A roster")
+check("[R3-08] scenario A: each decision-window drop recruits 4 new offices (roster 12 to 20) and carries 12 more office hours",
+      at(wb, "Schedule", "J10") == 4 and at(wb, "Schedule", "J11") == 4 and at(wb, "Schedule", "V11") == 20
+      and near(at(wb, "Drop_PnL", "AC10") - at(base, "Drop_PnL", "AC10"), 12), (at(wb, "Schedule", "J10"), at(wb, "Schedule", "V11"), at(wb, "Drop_PnL", "AC10")))
+
+# [R3-09] week 1 moved on its own
+wb, integ, errs = run([inp("week1_start", D(2026, 11, 9))], "week 1 moved alone")
+check("[R3-09] week 1 moved two weeks with every gate and drop date left: a schedule check fails and the banner turns red",
+      any("Week 1 moved" in f[2] for f in integ) and at(wb, "Dashboard", "G5") != BANNER_OK, ([f[2][:40] for f in integ], at(wb, "Dashboard", "G5")))
+wb, integ, errs = run([inp("week1_start", D(2026, 11, 9)), inp("gate0_date", D(2026, 11, 27))], "week 1 and Gate 0 moved")
+check("[R3-09] week 1 and Gate 0 moved together: the check is quiet", not any("Week 1 moved" in f[2] for f in integ), [f[2][:40] for f in integ])
+
+# [R3-11] polish
+wb, integ, errs = run([inp("c0_brands", 0), inp("std_brands_drop", 0)], "zero brands, headline rates")
+check("[R3-11d] zero brands everywhere: both Gate 3 headline rates read 'n/a'", v(wb, "dash_g3_rate") == "n/a" and v(wb, "dash_g3_roster") == "n/a",
+      (v(wb, "dash_g3_rate"), v(wb, "dash_g3_roster")))
+check("[R3-11b] README tab: verified legal-pack fees are named in the opening paragraph", "or the legal pack" in readme_txt)
+check("[R3-11c] one import route: the README tab gives File, Import, 'Replace spreadsheet'", "'Replace spreadsheet'" in readme_txt)
 
 # ---------------------------------------------------------------- [R1-17] clean CSV exports
 import csv as _csv

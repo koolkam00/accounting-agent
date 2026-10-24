@@ -1,0 +1,37 @@
+{
+  "ready": true,
+  "errors": [],
+  "warnings": [
+    "Office D has 4 survey responses, under the five the office committed to. Report it as it is."
+  ],
+  "sample": true,
+  "placeholders": [
+    "brand.json: FOUNDER_NAME (fill it in brand.json, then run node render/build-brand.js)",
+    "brand.json: PHONE (fill it in brand.json, then run node render/build-brand.js)",
+    "brand.json: EMAIL (fill it in brand.json, then run node render/build-brand.js)",
+    "Office A: placement photo",
+    "Office A: later photo",
+    "Office B: placement photo",
+    "Office B: later photo",
+    "Office C: placement photo",
+    "Office C: later photo",
+    "Office D: placement photo",
+    "Office D: later photo",
+    "Office E: placement photo",
+    "Office E: later photo"
+  ],
+  "fit": [
+    {
+      "comment_pt": 8.75,
+      "thumb_in": 0.78,
+      "learned_pt": 9.5,
+      "tight": false,
+      "later_photos_on_page_2": false,
+      "thumbnails_on_page_2": false,
+      "fits": true
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/report/report.html",
+  "records": 1
+}

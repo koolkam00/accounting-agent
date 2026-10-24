@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow"><!-- staging; removed in the production copy (tools/make_production.py) -->
 <title>Privacy notice</title>
 <meta name="description" content="How this website and its two forms handle your information. Business contact details only; no cookies.">
 <meta name="theme-color" content="#F7F3EA" media="(prefers-color-scheme: light)">
@@ -97,7 +98,9 @@
       </ul>
     </nav>
     <div>
+      <p>Founder: <span data-config="FOUNDER_NAME"></span></p>
       <p>Email: <a data-config="CONTACT_EMAIL" data-config-mailto></a></p>
+      <p data-config-line="PHONE">Phone: <a data-config="PHONE" data-config-tel></a></p>
       <p>Mail: <span data-config="POSTAL_ADDRESS"></span></p>
     </div>
   </div>

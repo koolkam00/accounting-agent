@@ -84,3 +84,21 @@
 - Defaults unchanged: low -4,126 wk 12, commit 5,126, gap 1,384, Gate 3 plan 61.3, steady 7,660, all-in 33.8 / 52.5.
 - Stop points: Gate 0 -160, Gate 1 -3,120 (receipts 1,200 that day; week end -3,856), Gate 2 -5,326, Gate 3 -6,844, decision -7,441 vs 19,200 received.
 - Google INDEX page opened 2026-10-24: syntax INDEX(reference, [row], [column]); row 'OPTIONAL - 0 by default'; nothing on one-dimensional references.
+
+## Review round 3 response (2026-10-24)
+- Reviewer: _review/round-3.md (0 blockers, 4 majors, 6 minors and one polish item). Fixed all eleven; one remedy wording changed (R3-01: a format change does not convert stored text, so the README gives DATEVALUE/VALUE plus paste values).
+- R3-01 text checks: COUNTA-COUNT per date/number range (AC C, G:U, X:Z; DC B, D:H; HL A, E; PL A, F). Dashboard G5 names data failures ("N data check(s) failing ...") and is red; green text is now "all integrity and data checks pass".
+- R3-02 legal pack figures.csv re-read after its 02:33 update (trademark timing now inside six months; new fda_food_facility_registration $0). Trademark Include = Y at Gate 2: low -4,476 wk 13 (Mon 2027-01-18), commit 5,476, gap 1,034, week-26 cash 11,409 (roadmap only 2,839). Include = N restores -4,126 wk 12.
+- Timing choice: Gate 2 day (Fri 2027-01-22). Legal pack says "from about Mon 2027-01-25"; in week 14 the DRP-002 deposits (2027-01-26) would net it away from the weekly low; Gate 2 is the cautious reading.
+- R3-03 Drop_PnL BJ next_date; Dashboard next drop = MATCH(MIN(BJ)); "Drop dates out of order" now an Info row (E = "info"; recalc.py treats it as non-failing).
+- R3-04 Scenarios D:F rows 11, 15, 16 and D:G row 21 = $C (blue). Test: std brands 2 + scenario A -> K10 = 2, steady 2 brands.
+- R3-05 stop points: Gate 1 net -3,120 (refund 1,200), Gate 2 net -4,126, Gate 3 paid -7,194, received 12,450, refunds 2,250, net +3,007; decision 11,409.
+- R3-06 Inputs unpriced count = 5 (mailbox, HNOA, endorsements, kit mail, extra cards).
+- R3-07 AC helpers AQ (brand's first Y/N), AR (brand's first Y); rate = SUM(AR)/SUM(AQ).
+- R3-08 scenario A new offices 4 per DW drop (roster 12 -> 20), +12 office hours each.
+- R3-09 Schedule check: week 1 changed while gates 0, 1, 3, decision and DRP-001 date are unchanged.
+- R3-10 HANDOFF cites the brief for E's file; REPORT lists the conflict with CONTRACTS s6.
+- R3-11 Drop_Actuals banner; README row 7; import route = File, Import, Replace spreadsheet (support.google.com/docs/answer/40608 opened 2026-10-24: six import options listed; no text-conversion option documented); C13/C14 "n/a".
+- Google DATEVALUE page (support.google.com/docs/answer/3093039, opened 2026-10-24): "Converts a provided date string in a known format to a date value"; understood formats = those autoconverted when typed.
+- WebSearch unavailable this round (turn budget used up); only WebFetch.
+- Result: audit 20,306 formulas, 0 literals, 38 functions all on Google's list, 0 one-row INDEX without a row. 38/38 checks (+1 info). 151/151 tests.

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Campaign proposal template</title>
 <!--
-  ONE-PAGE CAMPAIGN PROPOSAL plus a MOCK REPORT PAGE, US Letter portrait. Template v1.1, 2026-10-24.
+  ONE-PAGE CAMPAIGN PROPOSAL plus a MOCK REPORT PAGE, US Letter portrait. Template v1.2, 2026-10-24.
   Contents: plan.md Phase 2 "The proposal" (roster by neighborhood, industry and Tuesday headcount;
   map of retailers that carry the brand; campaign specification; price, terms, founding lock;
   what the brand supplies and by when; timeline with the drop date; what the report contains,
@@ -49,12 +49,22 @@
   .pr .rep { margin-top: .12in; border-top: 2px solid var(--dd-ink); padding-top: .06in; }
   .pr .runin { font: 800 10.5pt/1.15 var(--dd-font-display); font-variation-settings: "opsz" 96; margin-right: .04in; }
   .pr.tight p, .pr.tight li { font-size: 8.5pt; line-height: 1.3; }
+  .pr.tight h1.title { font-size: 14.5pt; }
   .pr .roster-note { margin-top: .03in; }
   .pr .terms { margin-top: .05in; }
   .pr.many table.t td { padding: .015in .04in; }
   .pr .wide { margin-top: .12in; }
   .pr .rs2-g { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: .25in; align-items: start; }
   .pr .rs2-total { margin-top: .04in; }
+  .pr .rs3-g { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: .2in; align-items: start; }
+  .pr .tl2 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: .12in; row-gap: .05in; }
+  .pr .tl2-c { border-top: 2px solid var(--dd-mist); padding-top: .03in; min-width: 0; }
+  .pr .tl2-c.drop { border-top-color: var(--dd-cobalt); }
+  .pr .tl2-l { display: block; font: 400 7.5pt/1.2 var(--dd-font-text); color: var(--dd-ink-soft); }
+  .pr .tl2-d { display: block; font: 700 9pt/1.25 var(--dd-font-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pr .terms { margin-top: 0; }
+  .pr .col [data-sec="terms"] { margin-top: .04in; }
+  .pr .price .agr { margin-top: .03in; }
   .pr table.ro { table-layout: fixed; }
   .pr table.ro th:nth-child(4) { white-space: normal; }
 </style>
@@ -184,10 +194,10 @@
     // dates
     const f = Dt.readDateField(r.drop_date);
     const c = f.iso ? Dt.campaign(f.iso) : null;
-    const dt = (label, d) => !c ? `<mark class="dd-ph">[${label}]</mark>` : f.slot ? `<mark class="dd-ph">[${label}: ${Dt.fmt(d)}]</mark>` : Dt.fmt(d);
+    const dt = (label, d) => `<span class="nowrap">${!c ? `<mark class="dd-ph">[${label}]</mark>` : f.slot ? `<mark class="dd-ph">[${label}: ${Dt.fmt(d)}]</mark>` : Dt.fmt(d)}</span>`;
     const shipReq = Dt.parse(r.ship_by_requested);
-    const shipLine = c ? (shipReq ? `${f.slot ? `<mark class="dd-ph">[SHIP BY: ${Dt.fmt(shipReq)}]</mark>` : Dt.fmt(shipReq)} (latest ${dt('LATEST', c.dates.ship_by)})` : dt('SHIP BY', c.dates.ship_by)) : '<mark class="dd-ph">[SHIP BY]</mark>';
-    const dropTxt = !c ? show(r.drop_date, '[DROP DATE]') : f.slot ? DD.text(r.drop_date) : Dt.fmt(c.dates.drop);
+    const shipLine = c ? (shipReq ? `<span class="nowrap">${f.slot ? `<mark class="dd-ph">[SHIP BY: ${Dt.fmt(shipReq)}]</mark>` : Dt.fmt(shipReq)}</span> (latest ${dt('LATEST', c.dates.ship_by)})` : dt('SHIP BY', c.dates.ship_by)) : '<mark class="dd-ph">[SHIP BY]</mark>';
+    const dropTxt = `<span class="nowrap">${!c ? show(r.drop_date, '[DROP DATE]') : f.slot ? DD.text(r.drop_date) : Dt.fmt(c.dates.drop)}</span>`;
 
     // checks
     if (c) { c.errors.forEach((m) => DD.error(i, m)); c.warnings.forEach((m) => DD.warn(i, m)); }
@@ -214,13 +224,21 @@
     const half = Math.ceil(offices.length / 2);
     const roster2 = `<div class="rs2-g"><table class="t ro">${head}<tbody>${offices.slice(0, half).map((o, k) => rosterRow(o, k)).join('')}</tbody></table>
       <table class="t ro">${head}<tbody>${offices.slice(half).map((o, k) => rosterRow(o, k + half)).join('')}</tbody></table></div>
-      <p class="note rs2-total"><b>All ${want} offices: ${unitsTxt} units.</b> Company names are shared after you sign. Each office approves your brand by reply before the drop, and any office may say no.</p>`;
+      <p class="note rs2-total"><b>All ${want} offices: ${unitsTxt} units.</b> Company names are shared after you sign; each office approves your brand by reply before the drop and may say no.</p>`;
+    // nine or more offices: three narrow tables, with the neighborhoods listed once underneath
+    const third = Math.ceil(offices.length / 3);
+    const head3 = '<colgroup><col style="width:.44in"><col><col style="width:.7in"><col style="width:.36in"></colgroup><thead><tr><th>Office</th><th>Industry</th><th>Tuesday headcount</th><th class="r">Units</th></tr></thead>';
+    const row3 = (o, k) => `<tr><td><b>${String.fromCharCode(65 + k)}</b></td><td>${show(o.industry, '[INDUSTRY]')}</td><td class="nowrap">${o.headcount_band && !DD.isPlaceholder(o.headcount_band) ? DD.escape(({ '40-75': '40 to 75', '76-150': '76 to 150', '151-250': '151 to 250', 'under-40': 'under 40', '251-500': '251 to 500' })[o.headcount_band] || o.headcount_band) : '<mark class="dd-ph">[BAND]</mark>'}</td><td class="r num">${show(o.planned_units, '[N]')}</td></tr>`;
+    const hoods = [];
+    offices.forEach((o, k) => { const h = String(o.neighborhood || '').trim() || '[NEIGHBORHOOD]'; let g = hoods.find((x) => x[0] === h); if (!g) hoods.push(g = [h, []]); g[1].push(String.fromCharCode(65 + k)); });
+    const roster3 = `<div class="rs3-g">${[0, 1, 2].map((t) => `<table class="t ro">${head3}<tbody>${offices.slice(t * third, (t + 1) * third).map((o, k) => row3(o, k + t * third)).join('')}</tbody></table>`).join('')}</div>
+      <p class="note rs2-total"><b>Neighborhoods:</b> ${hoods.map(([h, ls]) => `${DD.text(h)} ${ls.join(', ')}`).join(' · ')}. <b>All ${want} offices: ${unitsTxt} units.</b> Company names are shared after you sign; each office approves your brand by reply before the drop and may say no.</p>`;
 
     const priceBox = tier === 'founding'
       ? `<div class="price"><p class="kicker">Founding price</p><div class="ph"><span class="big">${X.usd(total)}</span><span class="per">${want} offices${extra ? ` (${P.offices} at ${X.usd(P.per)}, ${extra} extra at ${X.usd(PRICE.extra)})` : `, ${X.usd(P.per)} per office`}</span></div>
-          <ul class="plain"><li>For our first three brands only. Paid in full on signing, before you ship, by bank transfer against our invoice.</li><li>Your next two campaigns: ${X.usd(O.founding.per_office)} per office for up to ${O.founding.lock_max_offices} offices (any office beyond ${O.founding.lock_max_offices} at ${X.usd(PRICE.extra)}).</li><li>An office where your product is not placed by the day after the drop is refunded (${X.usd(P.per)}).</li><li>If it runs as promised, you give us a short written statement of your honest experience, and case-study rights.</li></ul></div>`
+          <ul class="plain"><li>Our first three brands only. Paid in full within five business days of our invoice, before you ship.</li><li>Your next two campaigns: ${X.usd(O.founding.per_office)} per office, up to ${O.founding.lock_max_offices} offices (more at ${X.usd(PRICE.extra)} each).</li><li>Any office not placed by the day after the drop is refunded (${X.usd(P.per)}).</li><li>If it runs as promised: a short written statement of your honest experience, and case-study rights.</li></ul><p class="note agr">The campaign agreement sets every term.</p></div>`
       : `<div class="price"><p class="kicker">Standard price</p><div class="ph"><span class="big">${X.usd(total)}</span><span class="per">${want} offices, ${X.usd(P.per)} per office; extra offices ${X.usd(PRICE.extra)} each, same terms</span></div>
-          <ul class="plain"><li>${O.standard.deposit_pct}% (${X.usd(total * O.standard.deposit_pct / 100)}) on signing, by bank transfer against our invoice.</li><li>${100 - O.standard.deposit_pct}% on our placement confirmation: an email by the day after the drop listing each office where your product was placed, with its photo. Any office not placed by then comes off the invoice.</li></ul></div>`;
+          <ul class="plain"><li>${O.standard.deposit_pct}% (${X.usd(total * O.standard.deposit_pct / 100)}) on signing, by bank transfer within five business days of our invoice.</li><li>${100 - O.standard.deposit_pct}% on our placement confirmation: an email by the day after the drop listing each office where your product was placed, with its photo. Any office not placed by then comes off the invoice.</li></ul><p class="note agr">The campaign agreement sets every term.</p></div>`;
 
     const storeList = retailers.length ? `<table class="t"><thead><tr><th>Store</th><th>Street</th><th>From the offices</th></tr></thead><tbody>${retailers.map((x) => `<tr><td>${show(x.retailer_name, '[RETAILER]')}</td><td>${show(x.street, '[STREET]')}</td><td>${show(x.distance, '[DISTANCE]')}</td></tr>`).join('')}</tbody></table>` : '';
     const mapSrc = DD.imgSrc(r.map_image);
@@ -230,7 +248,7 @@
     const online = site ? `<p class="note" style="margin-top:.05in">${retailers.length ? 'Or online: ' : 'Online: '}the card carries your code for <b>${DD.text(site)}</b>.</p>` : '';
 
     const spec = `<ul class="plain">
-      <li>On the shelf within one business day of delivery, at eye level, with a display card: your two sentences, your allergen statement word for word, and a QR code unique to each office. You approve the card text before we print.</li>
+      <li>On the shelf within one business day of delivery, at eye level where the pantry allows, with a display card: your two sentences, your allergen statement word for word, and a QR code unique to each office. You approve the card text before we print.</li>
       <li>Two photos per office: placement on day 1, a close shot on day 3 or 5. Top-ups from your reserve where an office runs out.</li>
       <li>A three-question anonymous employee survey; each office commits to five or more responses.</li>
       <li>${cat ? `No other ${DD.escape(cat)} brand in the same drop.` : 'No other brand in your category in the same drop (<mark class="dd-ph">[CATEGORY]</mark>).'}</li></ul>`;
@@ -241,38 +259,45 @@
       <li><b>Ingredient and allergen sheet</b>, logo files, and two sentences for the card: who makes it and why.</li>
       <li><b>A discount code</b> or landing page for the QR.</li></ul>`;
 
-    const timeline = `<table class="t dates"><tbody>
-      <tr><td>You ship (latest)</td><td>${dt('DATE', c ? c.dates.ship_by : null)}</td></tr>
-      <tr><td>We receive and count</td><td>${dt('DATE', c ? c.dates.receive : null)}</td></tr>
-      <tr><td><b>Drop day</b> (day 1)</td><td><b>${dropTxt}</b></td></tr>
-      <tr><td>Day-3 photo and top-ups</td><td>${dt('DATE', c ? c.dates.day3 : null)}</td></tr>
-      <tr><td>Window and survey close</td><td>${dt('DATE', c ? c.dates.close : null)}</td></tr>
-      <tr><td>One-page report</td><td>${dt('DATE', c ? c.dates.report : null)}</td></tr>
-      <tr><td>20-minute debrief</td><td>${dt('DATE', c ? c.dates.debrief : null)}</td></tr>
-      <tr><td>Code redemption check (day 30)</td><td>${dt('DATE', c ? c.dates.redemption : null)}</td></tr></tbody></table>`;
+    const MILESTONES = [
+      ['You ship (latest)', dt('DATE', c ? c.dates.ship_by : null)],
+      ['We receive and count', dt('DATE', c ? c.dates.receive : null)],
+      ['<b>Drop day</b> (day 1)', `<b>${dropTxt}</b>`],
+      ['Day-3 photo and top-ups', dt('DATE', c ? c.dates.day3 : null)],
+      ['Window and survey close', dt('DATE', c ? c.dates.close : null)],
+      ['One-page report', dt('DATE', c ? c.dates.report : null)],
+      ['20-minute debrief', dt('DATE', c ? c.dates.debrief : null)],
+      ['Code redemption check (day 30)', dt('DATE', c ? c.dates.redemption : null)],
+    ];
+    const timeline = `<table class="t dates"><tbody>${MILESTONES.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</tbody></table>`;
+    // the same dates as a full-width strip, two rows of four (used when that balances the page)
+    const timeline2 = `<div class="tl2">${MILESTONES.map(([a, b], k) => `<div class="tl2-c${k === 2 ? ' drop' : ''}"><span class="tl2-l">${a}</span><span class="tl2-d">${b}</span></div>`).join('')}</div>`;
 
     const page1 = `<div class="page pr">
       <div class="dd-sample-banner">Sample. Illustrative placeholders, not results.</div>
       ${X.header({ kicker: 'Campaign proposal', meta: `For ${show(r.brand_name, '[BRAND]')}${r.prepared_for ? ', ' + DD.text(r.prepared_for) : ''} · ${show(r.proposal_date, '[PROPOSAL DATE]')}` })}
       <div class="bd">
         <h1 class="title">${headline}</h1>
-        <p class="lead">A ${tier} Office Placement Campaign for <b>${show(r.brand_name, '[BRAND]')}</b>, ${show(r.product_sku, '[PRODUCT AND PACK SIZE]')}: ${want} offices in one walkable cluster (Flatiron, NoMad and Union Square), five business days from <span class="nowrap">${dropTxt}</span> to <span class="nowrap">${dt('WINDOW CLOSES', c ? c.dates.close : null)}</span>.</p>
+        <p class="lead">A ${tier} Office Placement Campaign for <b>${show(r.brand_name, '[BRAND]')}</b>, ${show(r.product_sku, '[PRODUCT AND PACK SIZE]')}: ${want} offices in Flatiron, NoMad and Union Square, five business days from <span class="nowrap">${dropTxt}</span> to <span class="nowrap">${dt('WINDOW CLOSES', c ? c.dates.close : null)}</span>.</p>
         <section class="sec wide rs2" data-sec="roster2" style="display:none"><h2>The offices on this route</h2>${roster2}</section>
+        <section class="sec wide rs2" data-sec="roster3" style="display:none"><h2>The offices on this route</h2>${roster3}</section>
         <div class="cols">
           <div class="col cl">
             <section class="sec" data-sec="roster"><h2>The offices on this route</h2>${roster}</section>
             <section class="sec" data-sec="buy"><h2>Where people can buy you nearby</h2>${mapHTML}${storeList}${online}</section>
-            <section class="sec" data-sec="send"><h2>What you send, and by when</h2>${send}<p class="note terms">If plans change: cancel before ${dt('DATE', c ? c.dates.ship_by : null)} for a full refund less ${X.usd(O.cancel_fee_before_ship_by)}; from then on we keep ${O.cancel_kept_pct_after_ship_by}%, and from the drop day the full price is due. Product not here 3 business days before the drop moves it a week, free.</p></section>
+            <section class="sec" data-sec="send"><h2>What you send, and by when</h2>${send}</section>
+            <section class="sec" data-sec="terms"><p class="note terms">If plans change: cancel before ${dt('DATE', c ? c.dates.ship_by : null)} for a full refund less ${X.usd(O.cancel_fee_before_ship_by)}; from then on we keep ${O.cancel_kept_pct_after_ship_by}%, and from the drop day the full price is due. Product not here 3 business days before the drop moves it a week, free.</p></section>
           </div>
           <div class="col cr">
             <section class="sec" data-sec="price">${priceBox}</section>
             <section class="sec" data-sec="incl"><h2>What the campaign includes</h2>${spec}</section>
             <section class="sec" data-sec="time"><h2>Timeline</h2>${timeline}</section>
+            <section class="sec wide" data-sec="time2" style="display:none"><h2>Timeline</h2>${timeline2}</section>
           </div>
         </div>
-        <section class="sec rep"><p><b class="runin">The report.</b> One page, by ${dt('REPORT', c ? c.dates.report : null)}: every count by office (delivered, placed, depleted by day 5, survey responses, QR scans), three comments word for word, code redemptions to date, what we learned, and our recommendation: renew into which offices, adjust what, or stop. A mock page is overleaf. <b>No sales guarantee:</b> each count is reported separately, and sales caused by the campaign are not measured.</p></section>
+        <section class="sec rep"><p><b class="runin">The report.</b> One page by ${dt('REPORT', c ? c.dates.report : null)}: each count by office (delivered, placed, depleted, responses, scans), three comments word for word, code redemptions, what we learned and our recommendation; a mock page is overleaf. <b>No sales guarantee:</b> each count stands alone, and sales caused by the campaign are not measured.</p></section>
       </div>
-      ${X.footer(`${X.contact(' · ', ['FOUNDER_NAME', 'PHONE', 'EMAIL'])} · ${DD.text(DD.contact('POSTAL_ADDRESS'))}`, 'The campaign agreement sets the terms.')}
+      ${X.footer(X.contact(' · ', ['FOUNDER_NAME', 'PHONE', 'EMAIL']), DD.text(DD.contact('POSTAL_ADDRESS')))}
     </div>`;
     sheet.innerHTML = page1 + DDReport.page(mockData(r, tier), { mock: true });
   }
@@ -280,19 +305,27 @@
   // Column arrangements, tried in this order; the first that fits wins, else the one that
   // overflows least, and then the give-way steps run. Sections never split.
   const ARRANGE = [
-    { name: 'send-left', wide: false, L: ['roster', 'buy', 'send'], R: ['price', 'incl', 'time'] },
-    { name: 'send-right', wide: false, L: ['roster', 'buy'], R: ['price', 'incl', 'time', 'send'] },
-    { name: 'wide-roster', wide: true, L: ['buy', 'send'], R: ['price', 'incl', 'time'] },
-    { name: 'wide-roster-send-right', wide: true, L: ['buy'], R: ['price', 'incl', 'time', 'send'] },
-    { name: 'wide-roster-price-left', wide: true, L: ['price', 'buy'], R: ['incl', 'time', 'send'] },
+    { name: 'standard', top: [], L: ['roster', 'buy', 'send', 'terms'], R: ['price', 'incl', 'time'], bottom: [] },
+    { name: 'terms-right', top: [], L: ['roster', 'buy', 'send'], R: ['price', 'terms', 'incl', 'time'], bottom: [] },
+    { name: 'send-right', top: [], L: ['roster', 'buy'], R: ['price', 'incl', 'time', 'send', 'terms'], bottom: [] },
+    { name: 'wide-roster', top: ['roster2'], L: ['buy', 'send', 'terms'], R: ['price', 'incl', 'time'], bottom: [] },
+    { name: 'wide-roster-terms-right', top: ['roster2'], L: ['buy', 'send'], R: ['price', 'terms', 'incl', 'time'], bottom: [] },
+    { name: 'three-up-roster', top: ['roster3'], L: ['buy', 'send', 'terms'], R: ['price', 'incl', 'time'], bottom: [] },
+    { name: 'three-up-roster-terms-right', top: ['roster3'], L: ['buy', 'send'], R: ['price', 'terms', 'incl', 'time'], bottom: [] },
+    { name: 'wide-timeline', top: [], L: ['roster', 'buy', 'send'], R: ['price', 'terms', 'incl'], bottom: ['time2'] },
+    { name: 'wide-roster-wide-timeline', top: ['roster2'], L: ['buy', 'send'], R: ['price', 'terms', 'incl'], bottom: ['time2'] },
   ];
+  const ALL = ['roster', 'roster2', 'roster3', 'buy', 'send', 'terms', 'price', 'incl', 'time', 'time2'];
   function arrange(p1, a) {
     const sec = (k) => p1.querySelector(`[data-sec="${k}"]`);
-    const L = p1.querySelector('.col.cl'), R = p1.querySelector('.col.cr');
+    const L = p1.querySelector('.col.cl'), R = p1.querySelector('.col.cr'), cols = p1.querySelector('.cols');
+    const used = [...a.top, ...a.L, ...a.R, ...a.bottom];
+    ALL.forEach((k) => { sec(k).style.display = used.includes(k) ? '' : 'none'; });
+    a.top.forEach((k) => cols.parentNode.insertBefore(sec(k), cols));
     a.L.forEach((k) => L.appendChild(sec(k)));
     a.R.forEach((k) => R.appendChild(sec(k)));
-    sec('roster2').style.display = a.wide ? '' : 'none';
-    sec('roster').style.display = a.wide ? 'none' : '';
+    let after = cols;
+    a.bottom.forEach((k) => { after.parentNode.insertBefore(sec(k), after.nextSibling); after = sec(k); });
     const bd = p1.querySelector('.bd');
     return bd.scrollHeight - bd.clientHeight;
   }
@@ -304,22 +337,39 @@
     const mi = p1.querySelector('.map-img');
     let mapIn = 1.3;
     if (mi && mi.naturalWidth) { mapIn = Math.min(2.2, (mi.clientWidth / 96) * mi.naturalHeight / mi.naturalWidth); mi.style.height = mapIn + 'in'; if (mi.naturalHeight > mi.naturalWidth) DD.warn(i, 'The map picture is taller than it is wide, so it prints small. Use a landscape map of the cluster (about 2.5 to 1) with this brand\'s stores marked and no office pins.'); }
-    const options = ARRANGE.filter((a) => !a.wide || (r.offices || []).length >= 4);
-    let chosen = null, best = null;
-    for (const a of options) {
-      const over = arrange(p1, a);
-      if (over <= 1) { chosen = a; break; }
-      if (!best || over < best.over) best = { a, over };
-    }
-    if (!chosen) { chosen = best.a; arrange(p1, chosen); }
+    const nOff = (r.offices || []).length;
+    const options = ARRANGE.filter((a) => (!a.top.includes('roster2') || nOff >= 4) && (!a.top.includes('roster3') || nOff >= 9));
+    // Give-way inside one arrangement: the map 1.3 (or its own height) down to 0.95 in, then body
+    // text 8.8 to 8.5 pt. Each arrangement is tried with its give-way, in order; the first that
+    // fits wins. Otherwise the one that overflows least is shown and the page refuses.
+    const map0 = mapIn;
     let tight = false;
+    const bd = p1.querySelector('.bd');
+    const over = () => bd.scrollHeight - bd.clientHeight;
+    const setMap = () => p1.querySelectorAll('.map').forEach((m) => { m.style.height = mapIn + 'in'; });
     const steps = [
-      () => { if (mapIn > 0.95) { mapIn -= 0.05; p1.querySelectorAll('.map').forEach((m) => { m.style.height = mapIn + 'in'; }); return true; } },
+      () => { if (mapIn > 0.95) { mapIn = Math.max(0.95, mapIn - 0.05); setMap(); return true; } },
       () => { if (!tight) { tight = true; p1.classList.add('tight'); return true; } },
     ];
-    X.fitPages(sheet, i, steps, 'The proposal', [p1]);
+    const attempt = (a) => {
+      mapIn = map0; setMap(); tight = false; p1.classList.remove('tight');
+      arrange(p1, a);
+      let g = 0;
+      while (over() > 1 && g++ < 60) { if (!steps.some((st) => st())) break; }
+      return over();
+    };
+    let chosen = null, best = null;
+    const tried = [];
+    for (const a of options) {
+      const o = attempt(a);
+      tried.push({ name: a.name, over_in: Math.round(o / 96 * 100) / 100 });
+      if (o <= 1) { chosen = a; break; }
+      if (!best || o < best.o) best = { a, o };
+    }
+    if (!chosen) { chosen = best.a; attempt(chosen); }
+    X.fitPages(sheet, i, [], 'The proposal', [p1]);
     DDReport.fit(sheet, i, sheet.querySelector('.page.rpt.mock'));
-    sheet.dataset.fit = JSON.stringify({ arrangement: chosen.name, map_in: mapIn, tight });
+    sheet.dataset.fit = JSON.stringify({ arrangement: chosen.name, map_in: Math.round(mapIn * 100) / 100, tight, tried });
   }
 
   DD.init({

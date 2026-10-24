@@ -3,10 +3,13 @@
 Each stop gets a sidewalk anchor from its street address:
   "<n> East|West <k>th Street"  -> on the <k>th St line, on the building's side
   "<n> Fifth Avenue" etc.        -> on that avenue's line, on the building's side
-  Broadway / squares / other     -> the address point itself (Broadway is diagonal)
-A leg follows the grid: along the origin's street or avenue, turn once or twice, arrive
-along the destination's street or avenue. Distance is the polyline length on the grid.
-Signal crossings are counted per street line and avenue line crossed.
+  "<n> Broadway"                 -> on the Broadway line at the pin's street index, on the building's side
+  squares / other                -> the address point itself
+A leg runs from sidewalk anchor to sidewalk anchor (review round 1, R1-03: the walk from the
+lot centroid to the door is inside the building and already inside the 15-minute stop). It
+follows the grid: along the origin's street or avenue, turn once or twice, arrive along the
+destination's street or avenue. Distance is the polyline length on the grid. Signal crossings
+are counted per street line and avenue line crossed. The pin is kept only for drawing.
 """
 import re
 
@@ -86,6 +89,10 @@ def anchor(address, s, x):
             ax = AVE_X[name]
             side = 1 if x > ax else -1
             return ("avenue", ax, s, ax + side * 12)
+    if re.search(r"^\s*\d+[A-Za-z]?\s+broadway\b", address or "", re.I) and 14.0 <= s <= 33.9:
+        bx = broadway_x(s)
+        side = 1 if x > bx else -1
+        return ("free", None, s, bx + side * 12)
     return ("free", None, s, x)
 
 
@@ -104,7 +111,7 @@ def leg(a, b):
     metres, avenue_crossings, street_crossings."""
     ka, la, sa, xa = anchor(a["street_address"], a["grid_s"], a["grid_x"])
     kb, lb, sb, xb = anchor(b["street_address"], b["grid_s"], b["grid_x"])
-    P = [(a["grid_s"], a["grid_x"]), (sa, xa)]
+    P = [(sa, xa)]
     if abs(sa - sb) < 1e-6 and abs(xa - xb) < 1e-6:
         pass
     elif ka == "avenue" and kb == "avenue" and la == lb:
@@ -127,7 +134,8 @@ def leg(a, b):
         st = min(ks, key=lambda k: abs(k - sb)) if ks else round((sa + sb) / 2)
         st = st + (0.12 if sb > st else -0.12)
         P += [(st, xa), (st, xb), (sb, xb)]
-    P.append((b["grid_s"], b["grid_x"]))
+    if abs(P[-1][0] - sb) > 1e-6 or abs(P[-1][1] - xb) > 1e-6:
+        P.append((sb, xb))
     # clean duplicates
     Q = [P[0]]
     for p in P[1:]:

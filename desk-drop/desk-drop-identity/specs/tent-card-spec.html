@@ -11,7 +11,7 @@
 <section class="page">
   <header class="hd">
     <img class="wm" src="../wordmark/wordmark-light.svg" alt="">
-    <div><h1>Tent card: print spec</h1><p class="sub">Template v1.0 · 2026-10-23 · file: templates/tent-card/tent-card.html</p></div>
+    <div><h1>Tent card: print spec</h1><p class="sub">Template v1.2 · 2026-10-23 · file: templates/tent-card/tent-card.html</p></div>
   </header>
   <p class="warn"><b>No commercial print run until the name is cleared</b> (desk-drop-legal-pack/name-check-log.md). Home test prints are fine.</p>
 
@@ -66,12 +66,13 @@
   <table class="spec type">
     <tr><th>Element</th><th>Face</th><th>Size</th><th>Rule</th></tr>
     <tr class="lock"><td>Allergen statement and "may contain" line</td><td>Atkinson Hyperlegible Next SemiBold, black</td><td><b>14 pt, LOCKED</b></td><td>Copied word for word from the package. Never shortened, never smaller. Everything else gives way to it. The template refuses to print if it would render under 14 pt or if the text differs from what was entered.</td></tr>
-    <tr><td>Brand name</td><td>Bricolage Grotesque ExtraBold</td><td>36 to 72 pt</td><td>One line where possible; narrows to 75% width before it shrinks; two balanced lines only as a last resort.</td></tr>
+    <tr><td>Brand name</td><td>Bricolage Grotesque ExtraBold</td><td>36 to 72 pt</td><td>One line where possible; narrows to 75% width before it shrinks, and widens again at each smaller size if it can; two balanced lines only as a last resort.</td></tr>
+    <tr><td>Brand logo (optional)</td><td>The brand's own file (SVG, or PNG at least 300 px tall)</td><td>0.55 to 0.9 in tall</td><td>Never wider than the safe area. A wide logo (2.2 times wider than tall or more) replaces the typed name; a square or stacked logo prints beside the typed name.</td></tr>
     <tr><td>"Take one."</td><td>Bricolage Grotesque ExtraBold, cobalt</td><td>22 pt</td><td>Fixed copy.</td></tr>
     <tr><td>Two sentences</td><td>Atkinson Hyperlegible Next Regular</td><td>12 to 15 pt</td><td>200 characters or fewer.</td></tr>
     <tr><td>"Tell us what you think", product line</td><td>Atkinson Bold / SemiBold</td><td>13 pt</td><td></td></tr>
     <tr><td>Find it at ... or use code ...</td><td>Atkinson SemiBold</td><td>10 to 11 pt</td><td>Works with the retailer half alone, the code half alone, or both.</td></tr>
-    <tr><td>"Allergens, as printed on the package" label</td><td>Atkinson Bold</td><td>9 pt</td><td>Fixed copy.</td></tr>
+    <tr><td>"Allergens, as printed on the package" label</td><td>Atkinson Bold</td><td>9 pt</td><td>Fixed copy. Three versions, from where the package declares its allergens: a "Contains" statement; the whole ingredient list (no "Contains" line); a single-ingredient product's name (no ingredient list). There is no "no allergens" option: nobody judges an ingredient list by eye.</td></tr>
     <tr><td>"Brought to you by" and wordmark</td><td>Atkinson Regular; wordmark file</td><td>8.5 pt; wordmark cap height 0.13 in</td><td>Wordmark sized by cap height, so a longer name stays readable.</td></tr>
     <tr><td>Short link under the QR</td><td>Atkinson Regular</td><td>7.5 pt</td><td></td></tr>
     <tr><td>Card ID (office and campaign)</td><td>Atkinson Regular, stone</td><td>7 pt</td><td>For kitting only.</td></tr>
@@ -81,12 +82,13 @@
 
 <section class="page">
   <h2>When the card is full: the give-way order</h2>
-  <p>The template fits the card itself. If text does not fit, it gives way in this order and tells you on screen and in the render output: (1) the two sentences shrink from 15 to 12 pt; (2) spacing tightens; (3) the find-it line goes from 11 to 10 pt; (4) the QR shrinks from 1.45 to 1.15 in; (5) a two-line brand name goes back to one condensed line if it can; (6) the brand name shrinks toward 36 pt; (7) the product line is left off; (8) the two sentences are left off. For a package whose only allergen declaration is its ingredient list, a list too long for the front then prints in full, at 14 pt, on the other face, and the front's panel points to it. If it still does not fit, the card prints a red DO NOT PLACE panel and the render command writes no PDF. The allergen panel never changes.</p>
+  <p>The template fits the card itself. If text does not fit, it gives way in this order and tells you on screen and in the render output: (1) a brand logo shrinks from 0.9 to 0.55 in; (2) the two sentences shrink from 15 to 12 pt; (3) spacing tightens; (4) the find-it line goes from 11 to 10 pt; (5) the QR shrinks from 1.45 to 1.15 in; (6) a two-line brand name goes back to one condensed line if it can; (7) the product line is left off; (8) the brand name shrinks toward 36 pt, widening again where it can; (9) the two sentences are left off. The name, the thing the wide photo depends on, gives way after the product line (review round 1).</p>
+  <p><b>Long ingredient lists.</b> For a package whose only allergen declaration is its ingredient list, a list too long to share a face with the story and QR moves to a face of its own, and that face is the <b>front</b>: the brand name (43 to 36 pt), the whole list and "may contain" line at 14 pt, and where to buy. It is marked "this side faces the room" beside the card ID. The other face carries the story, "Take one" and the QR, and its panel points to the list. If the list is still too long, the "Take one" sentence and then the buy line leave the front (both are on the other face). If it still does not fit, the card prints a red DO NOT PLACE panel and the render command writes no PDF. The allergen panel never changes.</p>
 
   <h2>Placement and photos (from the plan's per-stop procedure)</h2>
   <ul>
-    <li>At eye level beside the existing snacks, never inside a cabinet. Card in front of the product, allergen panel visible. One display per pantry.</li>
-    <li>Wide photo: the whole pantry, product and card in view. Close photo: card and product from about arm's length (the card spans at least a fifth of the photo's width; closer is better). Check that you can read the allergen panel when you zoom in. No identifiable people in either photo.</li>
+    <li>At eye level beside the existing snacks, never inside a cabinet. Card in front of the product, allergen panel visible. One display per pantry. A card marked "this side faces the room" stands with that side toward the room.</li>
+    <li>Drop day: the wide photo (the whole pantry, product and card in view) is the report's placement photo; take a close photo too, for your own check. Day 3 or 5: the office sends a close photo of card and product (the report's later photo). Close photo: about arm's length, the card at least a fifth of the photo's width; zoom in and check you can read the allergen panel. No identifiable people in any photo.</li>
   </ul>
 
   <h2>Fold and stand</h2>
@@ -100,7 +102,7 @@
       <circle cx="130" cy="20" r="4" fill="#B3261E"/>
       <text x="138" y="16" fill="#B3261E" font-weight="700">fold (top)</text>
       <text x="8" y="80" fill="#1F1D1A">front face</text><text x="8" y="92" fill="#1F1D1A">faces the room</text>
-      <text x="184" y="80" fill="#1F1D1A">back face</text><text x="184" y="92" fill="#1F1D1A">(same content)</text>
+      <text x="184" y="80" fill="#1F1D1A">back face</text><text x="184" y="92" fill="#1F1D1A">(same content,</text><text x="184" y="104" fill="#1F1D1A">but see "long</text><text x="184" y="116" fill="#1F1D1A">ingredient lists")</text>
       <text x="96" y="128" fill="#6B675F">about 4 in</text>
     </svg>
     <ol class="steps">

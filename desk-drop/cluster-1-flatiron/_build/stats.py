@@ -58,6 +58,27 @@ S["route"] = {"stops": len(route), "stop_minutes": 15 * len(route), "walking_min
               "lobby": route.lobby_type.value_counts().to_dict(), "bands": route.headcount_band.value_counts().to_dict(),
               "at_12_min_stops": round(legsum + 12 * len(route), 1),
               "nine_stops": round(route.leg_minutes_est.astype(float).iloc[:9].sum() + 15 * 9, 1)}
+S["route"]["over_minutes"] = round(S["route"]["total_minutes"] - 180)
+S["route"]["variants"] = json.load(open(os.path.join(HERE, "out", "route_legs.json"))).get("variants", {})
+S["route"]["stop_list"] = [f"{x.stop}. {x.company_name}, {x.street_address} ({x.lobby_type}; {x.headcount_band})" for x in route.itertuples()]
+# review round 1 numbers
+band4 = ["40-75", "76-150", "151-250", "251-500"]
+S["candidates_occupied_banded"] = int(((cand.lease_status == "occupied") & cand.headcount_band.isin(band4)).sum())
+S["candidates_banded"] = int(cand.headcount_band.isin(band4).sum())
+S["candidates_banded_hq"] = cand[cand.headcount_band.isin(band4)].hq_in_nyc.value_counts().to_dict()
+S["candidates_hq"] = cand.hq_in_nyc.value_counts().to_dict()
+S["candidates_under40_founder_call"] = cand[cand.headcount_band == "under-40"].company_name.tolist()
+S["near_classes"] = n.near_miss_class.value_counts().to_dict()
+S["near_nyc_may_fit"] = int((n.nyc_office_may_fit == "Y").sum())
+allpins = pd.concat([c[["notes"]], n[["notes"]], b[["pin_check"]].rename(columns={"pin_check": "notes"}),
+                     w[["notes"]], r[["notes"]]])
+S["pins_moved_frontage"] = {f: int(d[col].str.contains("Pin moved to frontage at review round 1").sum())
+                            for f, d, col in (("companies", c, "notes"), ("near_miss", n, "notes"), ("buildings", b, "pin_check"),
+                                              ("coworking", w, "notes"), ("retailers", r, "notes"))}
+S["pins_published_coordinate"] = int(r.notes.str.contains("store's own published coordinate").sum())
+S["public_walk_minutes"] = {x.retailer_name: int(x.walk_minutes_from_cluster_edge) for x in r[r.public_map == "Y"].itertuples()}
+S["coworking_high_with_second"] = int(((w.confidence == "high") & (w.second_source_url != "")).sum())
+S["coworking_high"] = int((w.confidence == "high").sum())
 ws = walk.groupby("session").agg(phase=("phase", "first"), stops=("order", "count"), minutes=("session_minutes_est", "first"),
                                  start=("start_point", "first"), end=("end_point", "first"))
 S["walk"] = {"sessions": int(len(ws)), "total_minutes": round(float(ws.minutes.astype(float).sum())), "stops": int(len(walk)),

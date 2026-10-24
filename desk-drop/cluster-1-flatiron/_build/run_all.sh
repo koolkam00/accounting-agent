@@ -12,6 +12,9 @@ python3 build.py                    # IDs, tabs, route, walk                    
 python3 stats.py >/dev/null         # numbers for Method, README, REPORT        -> _build/out/stats.json
 python3 maps.py                     # GeoJSON, KML, private HTML map, route sheet
 python3 public_map.py "$FTPY"       # public-map.svg
+# per-brand landscape map for D's proposal (review round 1, R1-08): the SAMPLE layout test only.
+# For a real brand: python3 public_map.py "$FTPY" --brand <slug> --stores <retailer_ids>  (writes brand-maps/<slug>.svg)
+python3 public_map.py "$FTPY" --brand SAMPLE-brightside --stores B-R-011,B-R-010,B-R-025 --sample
 python3 xlsx.py                     # cluster-1-flatiron.xlsx
-python3 pin_qa.py | head -3         # pin checks                                -> _build/out/pin_qa.csv
+python3 pin_qa.py | head -3         # pin checks incl. the CSCL block-face test  -> _build/out/pin_qa.csv
 NODE_PATH="$(npm root -g)" node render.js "$ROOT"   # public-map.png, route-private.png, QA screenshots

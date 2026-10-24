@@ -1,0 +1,28 @@
+{
+  "ready": true,
+  "errors": [],
+  "warnings": [
+    "The product line was left off so the allergen text keeps its locked size."
+  ],
+  "sample": true,
+  "placeholders": [],
+  "fit": [
+    {
+      "name_px": 0,
+      "name_width": 100,
+      "name_lines": 0,
+      "logo": "logo-wide",
+      "logo_in": 0.55,
+      "story_pt": 12,
+      "qr_px": 110.39999999999999,
+      "find_pt": 10,
+      "tight": true,
+      "story_dropped": false,
+      "product_dropped": true,
+      "ingredients_on_front_face": false
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/tent-card/tent-card.html",
+  "records": 1
+}

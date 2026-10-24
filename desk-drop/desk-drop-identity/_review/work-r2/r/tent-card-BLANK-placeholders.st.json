@@ -1,0 +1,37 @@
+{
+  "ready": true,
+  "errors": [
+    "Add a retailer, or a code and its site. The card needs a place to buy."
+  ],
+  "warnings": [
+    "No \"may contain\" or shared-facility line entered. Leave it empty only if the package has none."
+  ],
+  "sample": false,
+  "placeholders": [
+    "brand_name",
+    "card_sentences",
+    "allergen_line_verbatim",
+    "qr_url",
+    "office_id",
+    "campaign_id"
+  ],
+  "fit": [
+    {
+      "name_px": 94,
+      "name_width": 100,
+      "name_lines": 1,
+      "logo": "type",
+      "logo_in": null,
+      "story_pt": 15,
+      "qr_px": 139.2,
+      "find_pt": 11,
+      "tight": false,
+      "story_dropped": false,
+      "product_dropped": false,
+      "ingredients_on_front_face": false
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/tent-card/tent-card.html",
+  "records": 1
+}

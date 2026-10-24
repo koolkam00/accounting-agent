@@ -1,0 +1,20 @@
+1. open templates/tent-card/tent-card.html in Chrome (guide step 1)
+2. Brand name = SAMPLE Oddfellow Pretzel
+3. Product (optional) = SAMPLE Everything Bagel Pretzel Thins
+4. Two sentences: who makes it and why = SAMPLE A former deli baker in Sunnyside makes these in a ...
+5. Where the package declares allergens = contains_statement
+6. Allergen statement, exactly as on the package = SAMPLE CONTAINS: WHEAT, SESAME, SOY, MILK. PRODUCED IN A ...
+7. "May contain" or facility line, exactly as on the package = SAMPLE MAY CONTAIN TRACES OF MUSTARD AND OTHER TREE NUTS.
+8. tick "I read the allergen text against the package itself, word for word"
+9. Retailer and street = SAMPLE Eataly NYC Flatiron, 200 Fifth Avenue
+10. Discount code = SAMPLEPRETZEL10
+11. Site for the code = oddfellow.example.com
+12. QR link for THIS office = https://example.com/s/SAMPLE-O-007
+13. Office ID = SAMPLE-O-007
+14. Campaign ID = SAMPLE-CMP-004
+15. read the status box (guide step 7)
+16. Save as JSON (guide step 8)
+17. Print (guide step 9: printer, Letter, Scale 100, Background graphics on)
+
+Status box:
+This is SAMPLE data. It prints with a SAMPLE banner.

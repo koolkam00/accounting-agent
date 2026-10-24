@@ -1,0 +1,43 @@
+{
+  "ready": true,
+  "errors": [],
+  "warnings": [],
+  "sample": false,
+  "placeholders": [],
+  "fit": [
+    {
+      "arrangement": "three-up-roster",
+      "map_in": 0.95,
+      "tight": true,
+      "tried": [
+        {
+          "name": "standard",
+          "over_in": 1.36
+        },
+        {
+          "name": "terms-right",
+          "over_in": 0.66
+        },
+        {
+          "name": "send-right",
+          "over_in": 0.86
+        },
+        {
+          "name": "wide-roster",
+          "over_in": 0.26
+        },
+        {
+          "name": "wide-roster-terms-right",
+          "over_in": 0.89
+        },
+        {
+          "name": "three-up-roster",
+          "over_in": 0
+        }
+      ]
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/proposal/proposal.html",
+  "records": 1
+}

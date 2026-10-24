@@ -1,12 +1,12 @@
 # Case label: field list and render command
 
-Template: `templates/case-label/case-label.html` (v1.0, 2026-10-23). One JSON object = one label. A JSON array prints two labels per US Letter sheet, top then bottom. `{"_skip": true}` leaves a slot blank (to start on the bottom label of a half-used sheet).
+Template: `templates/case-label/case-label.html` (v1.2, 2026-10-24). One JSON object = one label. A JSON array prints two labels per US Letter sheet, top then bottom. `{"_skip": true}` leaves a slot blank (to start on the bottom label of a half-used sheet). In Chrome the panel edits every label: choose one under **Label you are editing**, press **Add a label** for the next case (a copy of the one chosen), or **Remove** one you do not need. Messages start with "Label N: " when there is more than one.
 
 ## Fields
 
 | Key | Required | Source (CONTRACTS section 6.3 and 6.4) | Rule |
 | --- | --- | --- | --- |
-| `label_type` | no | | `office` (default) or `reserve`. A reserve label prints RESERVE instead of an office and ignores the office fields. |
+| `label_type` | no | | `office` (default) or `reserve` (a choice box in the panel). A reserve label prints RESERVE instead of an office and ignores the office fields. |
 | `office_name` | yes for office labels | `signed_offices.company` | The short name people say. Narrows, then shrinks to 26 pt, then wraps. |
 | `office_address` | no | `signed_offices.office_address` | Street address. |
 | `floor_suite` | no | `signed_offices.floor_suite` | Printed after the address. |

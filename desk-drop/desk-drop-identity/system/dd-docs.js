@@ -1,5 +1,5 @@
 /*
-  dd-docs.js: shared pieces for the Letter documents (v1.1, 2026-10-24). Load after dd-template.js.
+  dd-docs.js: shared pieces for the Letter documents (v1.2, 2026-10-24). Load after dd-template.js.
     DDDocs.header({ kicker, meta })        wordmark left, kicker and meta right, cobalt rule under
     DDDocs.footer(left, right)              hairline footer
     DDDocs.contact(sep)                     "[FOUNDER NAME] · [PHONE] · [EMAIL]" from brand.json

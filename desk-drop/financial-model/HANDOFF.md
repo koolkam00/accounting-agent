@@ -2,11 +2,13 @@
 
 H feeds nothing. The founder reads the workbook. H consumes three things: per-campaign actuals from operations (F), pipeline events from outreach (E), and formation, publication and insurance figures from the legal pack (G).
 
-This file is the layout H expects. Per CONTRACTS section 6.5, where it differs from CONTRACTS, this file wins and F matches it. Header-only templates sit in `financial-model/handoff-templates/`.
+This file is the layout H expects. For F's three files, CONTRACTS section 6.5 says that where this file differs from CONTRACTS, this file wins and F matches it. For E's `pipeline_log.csv` (CONTRACTS 6.6), H's authority is its brief (`prompts/H-financial-model.md`, Handoffs: "Publish the column layout you expect so it builds to it"); CONTRACTS section 6 lets producers add columns, so that difference is listed as a conflict in REPORT.md, as CONTRACTS asks (review R3-10). Header-only templates sit in `financial-model/handoff-templates/`.
 
 General rules (CONTRACTS section 5): UTF-8 CSV, one header row, snake_case columns, dates `YYYY-MM-DD`, money as plain USD numbers with no `$`, booleans `Y` or `N`.
 
-**These four files carry exactly the columns below, in this order, and nothing else.** H's layout wins (CONTRACTS 6.5). Put any extra field in a separate file. The founder pastes each file into a tab of the workbook; every paste area is followed by ten or more blank columns before the model's helper formulas, and the Checks tab flags a header row that differs from this file or anything pasted into the blank columns. This replaces the earlier "producers may add columns at the end" (review round 1, finding R1-06).
+**Dates must reach the workbook as real dates, and amounts and counts as numbers, not text** (review R3-01). Every date window and every amount in the model is a SUMIFS, so a value stored as text drops out of the cash flow and the gates with no error. Export plain values: no quotes around dates or numbers, no leading apostrophe, no `$` or thousands separators. The Checks tab counts text in each date and number column of every paste tab ("stored as text"), and the Dashboard banner turns red until it is fixed (README tab, "Dates and amounts must be real dates and numbers").
+
+**These four files carry exactly the columns below, in this order, and nothing else.** For F's files H's layout wins (CONTRACTS 6.5); for E's file this is H's brief's published layout (see above). Put any extra field in a separate file. The founder pastes each file into a tab of the workbook; every paste area is followed by ten or more blank columns before the model's helper formulas, and the Checks tab flags a header row that differs from this file or anything pasted into the blank columns. This replaces the earlier "producers may add columns at the end" (review round 1, finding R1-06).
 
 ## 1. Drop IDs: one rule for F, E and the founder
 
@@ -21,7 +23,7 @@ The workbook's Schedule tab holds the drop list. Its `drop_id` values are the ke
 | DRP-005 | Decision window drop 2 | Tue 2027-04-06 |
 | DRP-006 to DRP-012 | Spare rows for drops the founder adds | blank |
 
-If a drop slips, keep its `drop_id` and change the date. A new drop takes the next spare ID. A row whose `drop_id` is not on Schedule is flagged on Checks ("not in schedule") and ignored.
+If a drop slips, keep its `drop_id` and change the date. A new drop takes the next spare ID. An added drop may sit out of date order (for example DRP-006 on Tue 2027-03-16, before DRP-004): that is fine, because the model sorts by date everywhere, including the Dashboard's next drop (review R3-03). Never re-sort the Schedule rows, because the `drop_id` is the join key for every actuals file. A row whose `drop_id` is not on Schedule is flagged on Checks ("not in schedule") and ignored.
 
 ## 2. From F: `campaign-ops/exports/` (consumed)
 
@@ -36,7 +38,7 @@ Paste into the workbook tab **Actuals_Campaigns**, header in row 4, columns A to
 | 3 | `drop_date` | date | Report due date (T+7 business days) |
 | 4 | `delivery_model` | `founder`, `courier`, `direct-ship` | Label only |
 | 5 | `tier` | `founding`, `standard` | Label only |
-| 6 | `brand_id` | BR-### | Label only |
+| 6 | `brand_id` | BR-### | Key for the renewal rate: keep one `brand_id` per brand across all its campaigns (review R3-07) |
 | 7 | `offices` | number | Responses per office when column 26 is blank |
 | 8 | `units_received` | number | Count at receipt (not a ladder rung) |
 | 9 | `units_delivered` | number | Ladder: delivered; Gate 2 denominator |
@@ -53,7 +55,7 @@ Paste into the workbook tab **Actuals_Campaigns**, header in row 4, columns A to
 | 20 | `processing_fee_usd` | USD | Actual card fee; 0 for bank transfer |
 | 21 | `report_delivered_date` | date | Gate 2: late if after T+7 business days, missing if blank |
 | 22 | `brand_would_buy_again` | `yes`, `maybe`, `no` | Gate 2: count of `yes` |
-| 23 | `renewed` | `Y`, `N`, `pending` | Decision rule: renewal rate = Y / (Y + N) |
+| 23 | `renewed` | `Y`, `N`, `pending` | Decision rule: renewal rate = brands with any `Y` / brands with any `Y` or `N`, each `brand_id` once (the plan's "40% of brands renew") |
 | 24 | `deposit_usd` | USD, optional | **H addition.** Standard brands pay 50% at signature. If filled, the model books it on column 25 and the rest of `revenue_usd` on column 19 |
 | 25 | `deposit_paid_date` | date, optional | **H addition.** Cash date of the deposit |
 | 26 | `survey_responses_min_office` | number, optional | **H addition.** Fewest responses at any one office in this campaign. Gate 2 needs 5 per office; with this column the test is exact, without it H uses the average per office |
@@ -109,6 +111,8 @@ The Gate 3 rate is judged only when every standard run dated on or before the Ga
 
 Paste into **Pipeline**, header in row 4, columns A to I (9 columns). One row per event, in date order. Columns are CONTRACTS 6.6 unchanged. Columns J to S stay blank; the helpers start at T.
 
+**For E:** CONTRACTS section 6 lets a producer add columns, but this file must carry exactly these nine. An extra column would land in the blank buffer columns J to S, fail the Pipeline header check on Checks and turn the Dashboard banner red. Put any extra field (for example the Clay `row_id` of the contact, `sequence` or `touch_1_date`) in a separate file. `date` must be a real date and `value_number` a plain number or blank.
+
 | # | Column | Type |
 | --- | --- | --- |
 | 1 | `date` | date of the event |
@@ -139,9 +143,9 @@ What H reads from each event (this pins down two points CONTRACTS leaves open):
 
 `org_id`: the workbook counts distinct organizations, so one organization must keep one ID from its first event to its last. Repeated `budget_probe` rows for one organization feed each median once (review R2-05). Recommendation: use the Clay `row_id` (CONTRACTS 6.2) as `org_id` for every event. The office_id (O-###) and brand_id (BR-###) assigned at signing can go in `notes`. Repeated rows for the same org and event are counted once; this includes Gate 3 renewals (one per brand).
 
-## 4. From G: `desk-drop-legal-pack/figures.csv` (consumed, read 2026-10-24, re-read after its 01:52 update)
+## 4. From G: `desk-drop-legal-pack/figures.csv` (consumed, read 2026-10-24, re-read after its 01:52 and 02:33 updates)
 
-The file appeared during this build and was read in full. It changed again at 01:52 on 2026-10-24, after the round-1 build; it was re-read in full for review round 2 (finding R2-07) and the changes below are in the workbook. Each figure used is copied into Inputs section 11 with its status and source. A G figure replaces the plan's default only once G marks it `verified`; until then the plan's figure (or, for a range with no working figure, the plan's high end) stays the default and G's figure sits in the notes. Google Sheets cannot read a local CSV, so when G updates the file, the founder updates those cells by hand (working, low, high, status).
+The file appeared during this build and was read in full. It changed at 01:52 on 2026-10-24, after the round-1 build, and was re-read in full for review round 2 (finding R2-07). It changed again at 02:33, after the round-2 build: the trademark timing moved inside the six months and a new `fda_food_facility_registration` row ($0) appeared. It was re-read in full for review round 3 (finding R3-02), together with G's HANDOFF note to H, and the changes below are in the workbook. Each figure used is copied into Inputs section 11 with its status and source. A G figure replaces the plan's default only once G marks it `verified`; until then the plan's figure (or, for a range with no working figure, the plan's high end) stays the default and G's figure sits in the notes. Google Sheets cannot read a local CSV, so when G updates the file, the founder updates those cells by hand (working, low, high, status).
 
 | figures.csv item | Working used | Status in G | Inputs line |
 | --- | --- | --- | --- |
@@ -153,13 +157,15 @@ The file appeared during this build and was read in full. It changed again at 01
 | `attorney_hour` | $400 ($300 to $500) | plan estimate | Attorney hour, paid Wed 2026-11-18 (held by then, before the filing) |
 | `accountant_hour` | $300 ($200 to $400) | plan estimate | Accountant hour, paid Fri 2026-11-20 |
 | `nys_llc_annual_filing_fee_it204ll` | $25 | verified 2026-10-23 | IT-204-LL |
-| `trademark_application_per_class` | $350 ($350 to $850) | verified 2026-10-23 | Trademark, Include = N (G times it outside the first six months) |
+| `trademark_application_per_class` | $350 ($350 to $850) | verified 2026-10-23 | Trademark, **Include = Y, in the six months at Gate 2 pass** (Fri 2027-01-22), per the plan's setup checklist ("After campaign zero: Trademark application, if the campaign was a pass") and G's timing since 02:33 ("from about Mon 2027-01-25, inside the six-month model"). The plan's capital table has no line for it. Set N if the attorney advises against filing (prior DESK-DROP descriptiveness refusal) |
 | `hired_non_owned_auto_addon_annual` | blank | needs quote | Hired and non-owned auto add-on |
 | `additional_insured_building_endorsement_each` | blank | needs quote (G now expects one per building that requires it) | Additional-insured endorsements |
 | `mailing_address_mailbox_annual` | blank (G: unknown, not researched) | needs quote; only if the founder will not use a home address | Mailing address, timed in week 1 (before the first outreach email), Include = Y |
 | `registered_agent_albany_if_used` | blank (G: unknown, not researched) | needs quote; only on the Albany County route | Registered agent, timed at the filing, Include = N |
 
-Not used: the per-county publication rows (the county-not-chosen row is the budget line), EIN and operating agreement ($0), the optional expedited filing, name-change amendment and Transparency Act filing (each $0 unless a condition applies), and the $9 biennial statement (first due November 2028, outside the six months).
+Not used: the per-county publication rows (the county-not-chosen row is the budget line), EIN and operating agreement ($0), the optional expedited filing, name-change amendment and Transparency Act filing (each $0 unless a condition applies), `fda_food_facility_registration` ($0, verified 2026-10-24; only if cases are held outside the founder's home, and the default storage for campaign zero is home), and the $9 biennial statement (first due November 2028, outside the six months).
+
+Brand terms G's HANDOFF names that touch cash timing (re-read 2026-10-24 after its 02:33 update; `10-brand-campaign-agreement.md` sections 3 and 8). Neither moves a default, and both are listed under "Not modeled" in REPORT.md assumption 15: the founding price is due within five business days of our invoice and before shipping, which fits the model's founding payment on Gate 1 day (D4) if the invoice goes out by Fri 2026-12-04; and a brand may cancel for a full refund if outside events move a drop more than once or by more than three weeks in all.
 
 ## 5. Deviations from CONTRACTS, in one place
 
@@ -168,7 +174,9 @@ Not used: the per-county publication rows (the county-not-chosen row is the budg
 3. `renewal_answer` carries `yes`, `maybe` or `no` in `value_text` and the committed USD in `value_number`.
 4. `org_id` should be the Clay `row_id` for every event, so distinct counts hold across conversation, yes, signed and paid.
 5. `drop_id` values follow the workbook's Schedule rows (section 1).
-6. The four files carry exactly the columns listed, in order, with no extra columns (CONTRACTS section 6 lets producers add columns; H's layout wins under 6.5). Extra fields go in a separate file.
+6. The four files carry exactly the columns listed, in order, with no extra columns. CONTRACTS section 6 lets producers add columns. For F's three files H's layout wins under 6.5. For E's `pipeline_log.csv` the authority is H's brief (Handoffs: "Publish the column layout you expect so it builds to it"), and REPORT.md lists the difference as a conflict with CONTRACTS section 6 (review R3-10). Extra fields go in a separate file.
 7. Gate 3 counts a `renewal_answer` only when `value_text` is `yes`, and each brand once.
 8. A brand's answer after hearing $1,500 is a second `budget_probe` row with `notes = after_1500`. CONTRACTS events are unchanged.
 9. `paid` carries the USD received in that payment; Gate 1's "paid in full" is a brand whose payments add up to the founding package price.
+10. `brand_id` in `campaign_actuals.csv` is a key, not a label: the renewal rate counts each brand once (review R3-07).
+11. Dates arrive as real dates and amounts as numbers; text in a date or number column is flagged on Checks (review R3-01).

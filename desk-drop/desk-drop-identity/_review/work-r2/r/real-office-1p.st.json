@@ -1,0 +1,17 @@
+{
+  "ready": true,
+  "errors": [],
+  "warnings": [],
+  "sample": false,
+  "placeholders": [],
+  "fit": [
+    {
+      "tight": true,
+      "card_in": 2.4,
+      "tighter_gaps": true
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/office-one-pager/office-one-pager.html",
+  "records": 1
+}

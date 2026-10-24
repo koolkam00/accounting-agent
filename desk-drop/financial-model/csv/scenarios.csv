@@ -1,13 +1,13 @@
 lever,label,plan_base,a,b,c,d,active_in_force,unit,source_and_reading,changed,blank_in_force
 sc_runs,Post-Gate-3 drops that run in the six months (of the two scheduled),2,2,2,1,0,2,drops,"Base and A: two drops a month. B: 'run two more drops'. C: 'if a third drop misses, stop', so one more. D: 'Stop'.",,0
-sc_brands,Brands per drop after Gate 3,3,3,3,3,0,3,brands,Plan: three brands per drop. D stops.,,0
+sc_brands,Brands per drop after Gate 3,3,3,3,3,0,3,brands,"Plan: three brands per drop (Inputs, 'Brands per standard drop'). A, B and C do not name a figure, so they follow the plan base. D stops.",,0
 sc_renewal,Renewal rate (share of brand slots that are renewals),0.4,0.4,0,0.4,0,0.4,share,"A: '40% or more', low end. B: 'under 30%' and 'brands pay once': 0%, the low end of 0% to 29%. C: not named, plan base. D: 'No renewal'.",,0
-sc_new_offices,New offices recruited per post-Gate-3 drop,0,0,0,,0,0,offices,C: 'replace the weakest offices'; the plan gives no count. Blank = 0; founder to set.,,0
+sc_new_offices,New offices recruited per post-Gate-3 drop,0,4,0,,0,0,offices,"A: 'Grow the roster to 20 to 30 offices': 4 new offices on each of the two decision-window drops take the 12-office roster to 20, the low end (derived, founder to confirm; review R3-08). C: 'replace the weakest offices'; the plan gives no count. Blank = 0; founder to set.",,0
 sc_price_after,Standard price per office for drops after the decision date,150,180,150,150,150,150,USD per office,"A: 'raise the standard price to $1,800 to $2,000' = $180 to $200 per office; low end.",,0
-sc_ss_drops,Steady-state drops per month,2,2,2,2,0,2,drops per month,Plan monthly picture: two drops a month.,,0
-sc_ss_brands,Steady-state brands per drop,3,3,3,3,0,3,brands,Plan monthly picture: three-brand drops.,,0
+sc_ss_drops,Steady-state drops per month,2,2,2,2,0,2,drops per month,"Plan monthly picture: two drops a month (Inputs section 8). A, B and C follow the plan base. D stops.",,0
+sc_ss_brands,Steady-state brands per drop,3,3,3,3,0,3,brands,"Plan monthly picture: three-brand drops (Inputs, 'Brands per standard drop'). A, B and C follow the plan base. D stops.",,0
 sc_op_offices,Offices on an office-paid tier (steady state),0,0,5,0,0,0,offices,B: offices that named $100 a month or more; at least five.,,0
 sc_op_fee,Office-paid fee per office per month,,,100,,,0,USD per month,B: $100 to $200 a month; low end.,,1
 sc_op_cost,Cost to serve one office-paid office per month,,,,,,0,USD per month,Needs quote. The plan prices no cost for guaranteed twice-monthly curated drops.,,1
 sc_hire_rate,Part-time delivery hire,25,25,,,,25,USD per hour,A: 'about $25 an hour once you run more than two drops a month'. It replaces drop-day hours (model reading).,,0
-sc_hire_threshold,Hire once steady-state drops per month exceed,2,2,2,2,2,2,drops per month,Plan: 'more than two drops a month'.,,0
+sc_hire_threshold,Hire once steady-state drops per month exceed,2,2,2,2,2,2,drops per month,"Plan: 'more than two drops a month'. One rule for every scenario, so A to D follow the plan base.",,0

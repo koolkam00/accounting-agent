@@ -33,7 +33,17 @@
   .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--ink); flex: none; }
   .sq { width: 13px; height: 13px; background: #8E44AD; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--ink); flex: none; }
   .note { font-size: 13px; color: var(--stone); line-height: 1.4; }
-  .leaflet-popup-content { font: 14px/1.4 var(--font); max-width: 300px; }
+  .leaflet-popup-content { font: 14px/1.4 var(--font); max-width: 280px; margin: 10px 12px; }
+  .pop .pmeta { font-size: 13px; margin: 2px 0; }
+  /* review round 1 (R1-07): the heading and lobby line stay put; only the office list scrolls */
+  .pop .plist { max-height: min(36vh, 300px); overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+                border-top: 1px solid var(--mist); margin-top: 6px; padding-top: 2px; }
+  .pop .plist li { margin: 4px 0; }
+  .pop details summary { cursor: pointer; color: var(--cobalt); font-weight: 600; padding: 6px 0; }
+  .store { width: 13px; height: 13px; transform: rotate(45deg); border: 2px solid #1F1D1A; box-sizing: border-box; margin: 3px; }
+  .store.tA { background: #2E47C9; } .store.tB { background: #7A8FE8; }
+  .store.tC { background: #FFFFFF; border: 2.5px solid #6B675F; }
+  .leader { pointer-events: none; }
   .leaflet-popup-content h3 { font-size: 15px; margin: 0 0 4px; }
   .leaflet-popup-content ul { padding-left: 18px; margin: 4px 0; }
   .pill { display: inline-block; font-size: 12px; padding: 1px 6px; border-radius: 10px; background: var(--cobalt-tint); color: var(--ink); }
@@ -76,11 +86,11 @@
     <div class="legend-row"><span class="dot" style="background:#1E8E3E"></span>Building, walk-up (sourced)</div>
     <div class="legend-row"><span class="dot" style="background:#6B675F"></span>Building, lobby unknown (check on the walk)</div>
     <div class="legend-row"><span class="sq"></span>Coworking site (one potential office; members excluded)</div>
-    <div class="legend-row"><span class="dot" style="background:#2E47C9"></span>Store, tier A (documented local or emerging set)</div>
-    <div class="legend-row"><span class="dot" style="background:#7A8FE8"></span>Store, tier B (specialty; emerging set unverified)</div>
-    <div class="legend-row"><span class="dot" style="background:#9C978C"></span>Store, tier C (mass or private label; landmark)</div>
+    <div class="legend-row"><span class="store tA"></span>Store (diamond), tier A (documented local or emerging set)</div>
+    <div class="legend-row"><span class="store tB"></span>Store, tier B (specialty; emerging set unverified)</div>
+    <div class="legend-row"><span class="store tC"></span>Store, tier C, hollow (mass or private label; landmark)</div>
     <div class="legend-row"><span class="num" style="width:22px;height:22px;line-height:22px;font-size:12px">1</span>Model route stop (Tuesday, 8 to 11 am, estimate)</div>
-    <p class="note">Bigger building dots hold more candidate offices. Nothing here is verified on foot yet. This page holds company names:
+    <p class="note">Bigger building dots hold more candidate offices. Numbers that would sit on top of each other fan out, with a thin line to the true spot. Nothing here is verified on foot yet. This page holds company names:
       never publish it, not even as an unlisted link. Map data &copy; OpenStreetMap contributors.</p>
   </div>
 </div>
@@ -116,7 +126,24 @@ function companyLine(p) {
   const flag = p.lease_status === "signed-not-occupied" ? ` <span class="warn">signed, not moved in (${esc(p.move_in_date || "date unknown")})</span>` :
                p.lease_status === "moving-out" ? ` <span class="warn">may be moving out</span>` : "";
   const st = p.candidate_status === "candidate" ? "" : ` <span class="pill">${esc(p.candidate_status)}</span>`;
-  return `<li><b>${esc(p.company_name)}</b> ${esc(p.company_id)}, floor ${esc(p.floor || "unknown")}, ${esc(p.headcount_band)} (${esc(p.headcount_scope)}), ${esc(p.confidence)}${st}${flag} ${link(p.address_source_url, "source " + (p.address_source_date || ""))}</li>`;
+  const hq = p.hq_in_nyc === "N" ? `, HQ ${esc(p.hq_city)}` : "";
+  return `<li><b>${esc(p.company_name)}</b> ${esc(p.company_id)}, floor ${esc(p.floor || "unknown")}, ${esc(p.headcount_band)} (${esc(p.headcount_scope)}${hq}), ${esc(p.confidence)}${st}${flag} ${link(p.address_source_url, "source " + (p.address_source_date || ""))}</li>`;
+}
+const POPUP = () => ({maxWidth: Math.max(220, Math.min(280, innerWidth - 120)), autoPanPaddingTopLeft: L.point(56, 64),
+                      autoPanPaddingBottomRight: L.point(10, 20), keepInView: true});
+function buildingPopup(p, list, n) {
+  const cands = list.filter(c => c.candidate_status === "candidate"), others = list.filter(c => c.candidate_status !== "candidate");
+  const addr = p.building_name === p.street_address ? (p.also_known_as ? "also " + esc(p.also_known_as) : "") :
+               esc(p.street_address) + (p.also_known_as ? " (also " + esc(p.also_known_as) + ")" : "");
+  let h = `<div class="pop"><h3>${esc(p.building_name)}</h3>${addr ? `<div class="pmeta">${addr}</div>` : ""}
+    <div class="pmeta">${esc(p.building_id)} &middot; lobby: <b>${esc(p.lobby_type)}</b> ${link(p.lobby_source_url)} &middot; COI: ${esc(p.coi_required)}${p.pluto_numfloors ? " &middot; " + esc(p.pluto_numfloors) + " floors" : ""}</div>
+    <div class="pmeta">${n} candidate office${n === 1 ? "" : "s"}${p.coworking_ids ? " &middot; coworking: " + esc(p.coworking_ids) : ""}${p.retailer_ids ? " &middot; store: " + esc(p.retailer_ids) : ""}</div>`;
+  if (cands.length || others.length) {
+    h += `<div class="plist">${cands.length ? `<ul>${cands.map(companyLine).join("")}</ul>` : ""}`;
+    if (others.length) h += `<details${cands.length ? "" : " open"}><summary>${others.length} more here (not candidates)</summary><ul>${others.map(companyLine).join("")}</ul></details>`;
+    h += `</div>`;
+  }
+  return h + `</div>`;
 }
 
 // buildings
@@ -125,11 +152,8 @@ const gBuild = L.layerGroup().addTo(map);
   const p = f.properties, [lon, lat] = f.geometry.coordinates;
   const n = +p.candidate_company_count || 0;
   const m = L.circleMarker([lat, lon], {radius: 6 + Math.min(10, n * 1.5), color: "#fff", weight: 2, fillColor: LOBBY[p.lobby_type] || "#6B675F", fillOpacity: 0.95});
-  const list = (companiesByBuilding[p.building_id] || []).sort((a, b) => (a.candidate_status === "candidate" ? 0 : 1) - (b.candidate_status === "candidate" ? 0 : 1));
-  m.bindPopup(`<h3>${esc(p.building_name)}</h3>${p.building_name === p.street_address ? "" : esc(p.street_address)}${p.also_known_as ? " (also " + esc(p.also_known_as) + ")" : ""}${p.building_name === p.street_address && !p.also_known_as ? "" : "<br>"}
-    ${esc(p.building_id)} &middot; lobby: <b>${esc(p.lobby_type)}</b> ${link(p.lobby_source_url)} &middot; COI: ${esc(p.coi_required)}${p.pluto_numfloors ? " &middot; " + esc(p.pluto_numfloors) + " floors" : ""}<br>
-    ${n} candidate office${n === 1 ? "" : "s"}${p.coworking_ids ? " &middot; coworking: " + esc(p.coworking_ids) : ""}${p.retailer_ids ? " &middot; store: " + esc(p.retailer_ids) : ""}
-    <ul>${list.map(companyLine).join("")}</ul>`, {maxWidth: 320});
+  const list = (companiesByBuilding[p.building_id] || []);
+  m.bindPopup(() => buildingPopup(p, list, n), POPUP());
   m.addTo(gBuild);
   searchIndex.push({label: p.building_name, sub: p.street_address + " · building", marker: m, latlng: [lat, lon]});
   list.forEach(c => searchIndex.push({label: c.company_name, sub: c.street_address + " · " + c.candidate_status, marker: m, latlng: [lat, lon]}));
@@ -141,7 +165,7 @@ const gNear = L.layerGroup();
   const p = f.properties, [lon, lat] = f.geometry.coordinates;
   if (p.building_id) return;
   const m = L.circleMarker([lat, lon], {radius: 5, color: "#fff", weight: 1, fillColor: "#9C978C", fillOpacity: 0.9})
-    .bindPopup(`<h3>${esc(p.company_name)}</h3>${esc(p.street_address)}<br>Near-miss: ${esc(p.candidate_status)}<ul>${companyLine(p)}</ul>`);
+    .bindPopup(`<div class="pop"><h3>${esc(p.company_name)}</h3>${esc(p.street_address)}<br>Near-miss: ${esc(p.candidate_status)}<ul>${companyLine(p)}</ul></div>`, POPUP());
   m.addTo(gNear);
   searchIndex.push({label: p.company_name, sub: p.street_address + " · near-miss", marker: m, latlng: [lat, lon]});
 });
@@ -153,7 +177,7 @@ const gCow = L.layerGroup().addTo(map);
   const icon = L.divIcon({className: "", html: '<div class="sq"></div>', iconSize: [17, 17], iconAnchor: [8, 8]});
   const m = L.marker([lat, lon], {icon, keyboard: true, title: p.location_name}).bindPopup(
     `<h3>${esc(p.location_name)}</h3>${esc(p.operator)}<br>${esc(p.street_address)}<br>${esc(p.coworking_id)} &middot; pantry: <b>${esc(p.pantry_control)}</b> &middot; ${esc(p.status)} &middot; ${esc(p.confidence)}<br>
-     ${p.in_boundary === "Y" ? "" : "<span class='warn'>outside the boundary</span><br>"}Members flagged: ${esc(p.tenant_company_ids || "none")} ${link(p.source_url)}`);
+     ${p.in_boundary === "Y" ? "" : "<span class='warn'>outside the boundary</span><br>"}Members flagged: ${esc(p.tenant_company_ids || "none")} ${link(p.source_url)}`, POPUP());
   m.addTo(gCow);
   searchIndex.push({label: p.location_name, sub: p.street_address + " · coworking", marker: m, latlng: [lat, lon]});
 });
@@ -162,13 +186,43 @@ const gCow = L.layerGroup().addTo(map);
 const gRet = L.layerGroup().addTo(map);
 (by["retailer"] || []).forEach(f => {
   const p = f.properties, [lon, lat] = f.geometry.coordinates;
-  const m = L.circleMarker([lat, lon], {radius: 9, color: "#1F1D1A", weight: 2, fillColor: TIER[p.buy_path_tier] || "#9C978C", fillOpacity: 1})
+  const sicon = L.divIcon({className: "", html: `<div class="store t${esc(p.buy_path_tier || "C")}"></div>`, iconSize: [19, 19], iconAnchor: [9.5, 9.5]});
+  const m = L.marker([lat, lon], {icon: sicon, keyboard: true, title: p.retailer_name})
     .bindPopup(`<h3>${esc(p.retailer_name)}</h3>${esc(p.street_address)}<br>${esc(p.retailer_id)} &middot; tier ${esc(p.buy_path_tier)} &middot; ${esc(p.confidence)}<br>
       ${esc(p.shelf_set)}<br>${p.inside_boundary === "Y" ? "Inside the boundary" : esc(p.blocks_outside) + " blocks outside"} &middot; ${esc(p.candidates_within_5_blocks)} candidate offices within 5 blocks
-      <br>${link(p.source_url)} ${p.public_map === "Y" ? "" : "<br><span class='pill'>not on the public map</span>"}`);
+      <br>${link(p.source_url)} ${p.public_map === "Y" ? "" : "<br><span class='pill'>not on the public map</span>"}`, POPUP());
   m.addTo(gRet);
   searchIndex.push({label: p.retailer_name, sub: p.street_address + " · store", marker: m, latlng: [lat, lon]});
 });
+
+// numbered markers that would overlap fan out around their true spot, with a thin leader line
+// (review round 1, R1-19). Re-run on every zoom.
+const routeMarkers = [], walkMarkers = [];
+const gLeaders = L.layerGroup().addTo(map);
+function declutter() {
+  gLeaders.clearLayers();
+  const sets = [routeMarkers.filter(m => map.hasLayer(m)), walkMarkers.filter(m => map.hasLayer(m))];
+  sets.forEach(ms => {
+    ms.forEach(m => { if (!m._home) m._home = m.getLatLng(); m.setLatLng(m._home); });
+    const pts = ms.map(m => map.latLngToLayerPoint(m._home)), used = new Array(ms.length).fill(false);
+    for (let i = 0; i < ms.length; i++) {
+      if (used[i]) continue;
+      const grp = [i]; used[i] = true;
+      for (let j = i + 1; j < ms.length; j++) if (!used[j] && grp.some(k => pts[k].distanceTo(pts[j]) < 26)) { grp.push(j); used[j] = true; }
+      if (grp.length < 2) continue;
+      const c = grp.reduce((a, k) => a.add(pts[k]), L.point(0, 0)).divideBy(grp.length);
+      const r = 16 + 5 * grp.length;
+      grp.forEach((k, idx) => {
+        const a = -Math.PI / 2 + 2 * Math.PI * idx / grp.length;
+        const ll = map.layerPointToLatLng(L.point(c.x + r * Math.cos(a), c.y + r * Math.sin(a)));
+        ms[k].setLatLng(ll);
+        L.polyline([ms[k]._home, ll], {color: "#1F1D1A", weight: 1.5, opacity: 0.7, className: "leader", interactive: false}).addTo(gLeaders);
+        L.circleMarker(ms[k]._home, {radius: 2.5, color: "#1F1D1A", weight: 1, fillOpacity: 1, interactive: false}).addTo(gLeaders);
+      });
+    }
+  });
+}
+map.on("zoomend", declutter);
 
 // model route
 const gRoute = L.layerGroup().addTo(map);
@@ -176,9 +230,10 @@ const gRoute = L.layerGroup().addTo(map);
 (by["route-stop"] || []).forEach(f => {
   const p = f.properties, [lon, lat] = f.geometry.coordinates;
   const icon = L.divIcon({className: "", html: `<div class="num">${esc(p.stop)}</div>`, iconSize: [32, 32], iconAnchor: [16, 16]});
-  L.marker([lat, lon], {icon, zIndexOffset: 1000, title: "Stop " + p.stop}).bindPopup(
+  const rm = L.marker([lat, lon], {icon, zIndexOffset: 1000, title: "Stop " + p.stop}).bindPopup(
     `<h3>Stop ${esc(p.stop)}: ${esc(p.company_name)}</h3>${esc(p.street_address)}<br>Lobby: ${esc(p.lobby_type)}<br>
-     Arrive ${esc(p.arrive_est)}, leave ${esc(p.depart_est)}<br>Leg from previous stop: ${esc(p.leg_minutes_est)} min<br><i>All times are estimates.</i>`).addTo(gRoute);
+     Arrive ${esc(p.arrive_est)}, leave ${esc(p.depart_est)}<br>Leg from previous stop: ${esc(p.leg_minutes_est)} min<br><i>All times are estimates.</i>`, POPUP()).addTo(gRoute);
+  routeMarkers.push(rm);
 });
 
 // walk sessions
@@ -193,8 +248,9 @@ Object.keys(sessions).sort((a, b) => a - b).forEach(s => {
 const oa = document.createElement("option"); oa.value = "all"; oa.textContent = "All sessions"; sel.appendChild(oa);
 function showSession(v) {
   gWalk.clearLayers();
+  walkMarkers.length = 0;
   map.closePopup();
-  if (!v) { gRoute.addTo(map); return; }
+  if (!v) { gRoute.addTo(map); declutter(); return; }
   map.removeLayer(gRoute);  // walk numbers and route numbers would clash; re-add the route from the layers button
   const keys = v === "all" ? Object.keys(sessions) : [v];
   const pts = [];
@@ -205,12 +261,14 @@ function showSession(v) {
     fs.forEach((f, i) => {
       const p = f.properties;
       const icon = L.divIcon({className: "", html: `<div class="wnum">${v === "all" ? esc(p.session) + "." : ""}${i + 1}</div>`, iconSize: [26, 26], iconAnchor: [13, 13]});
-      L.marker(line[i], {icon, zIndexOffset: 500}).bindPopup(`<h3>Session ${esc(p.session)}, stop ${i + 1}</h3>${esc(p.stops_here)}<br>${esc(p.street_address)}<br>
-        Walk from previous: ${esc(p.walk_minutes_from_previous_est)} min &middot; at stop: ${esc(p.dwell_minutes_est)} min (estimates)`).addTo(gWalk);
+      const wm = L.marker(line[i], {icon, zIndexOffset: 500}).bindPopup(`<h3>Session ${esc(p.session)}, stop ${i + 1}</h3>${esc(p.stops_here)}<br>${esc(p.street_address)}<br>
+        Walk from previous: ${esc(p.walk_minutes_from_previous_est)} min &middot; at stop: ${esc(p.dwell_minutes_est)} min (estimates)`, POPUP()).addTo(gWalk);
+      walkMarkers.push(wm);
       pts.push(line[i]);
     });
   });
   if (pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.15));
+  declutter();
 }
 sel.addEventListener("change", e => { showSession(e.target.value); panel.classList.remove("open"); });
 
@@ -253,6 +311,8 @@ q.addEventListener("input", () => {
   });
 });
 map.fitBounds(gBoundary.getBounds().pad(0.02));
+declutter();
+map.on("overlayadd overlayremove", declutter);
 </script>
 </body>
 </html>

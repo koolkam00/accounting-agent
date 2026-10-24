@@ -1,9 +1,11 @@
 // Lighthouse for every page: mobile (default preset) and desktop, on the site as staged
-// (STAGING = true) and on a temporary copy with STAGING = false, which is how SEO is judged
+// (STAGING = true) and on the production copy written by tools/make_production.py with SAMPLE
+// settings (STAGING = false), which is how SEO is judged
 // (QA.md P1 to P4). Chromium comes from Playwright through CHROME_PATH.
 // Usage (from website/): node tests/lighthouse.js      Writes tests/out/lighthouse/*.json and summary.json
 const { chromium } = require('playwright');
 const { spawn, execFileSync } = require('child_process');
+const { buildSample } = require('./sample_build');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -14,20 +16,9 @@ const LH = path.join(__dirname, 'node_modules', '.bin', 'lighthouse');
 const PAGES = ['index', 'brands', 'offices', 'privacy', 'survey-privacy', '404'];
 fs.mkdirSync(OUT, { recursive: true });
 
-function copyDir(src, dst) {
-  fs.mkdirSync(dst, { recursive: true });
-  for (const e of fs.readdirSync(src, { withFileTypes: true })) {
-    const s = path.join(src, e.name), d = path.join(dst, e.name);
-    if (e.isDirectory()) copyDir(s, d); else fs.copyFileSync(s, d);
-  }
-}
-
 (async () => {
-  const prod = fs.mkdtempSync(path.join(os.tmpdir(), 'site-prod-'));
-  copyDir(path.join(ROOT, 'site'), prod);
-  const cfg = path.join(prod, 'site.config.js');
-  fs.writeFileSync(cfg, fs.readFileSync(cfg, 'utf8').replace('STAGING: true', 'STAGING: false'));
-  fs.writeFileSync(path.join(prod, 'robots.txt'), 'User-agent: *\nAllow: /\n');
+  // Production runs use the real production copy (tools/make_production.py) with SAMPLE settings.
+  const prod = buildSample(path.join(os.tmpdir(), 'site-prod-' + Date.now()));
   const servers = [
     spawn('python3', ['-m', 'http.server', '8125', '--bind', '127.0.0.1', '--directory', path.join(ROOT, 'site')], { stdio: 'ignore' }),
     spawn('python3', ['-m', 'http.server', '8126', '--bind', '127.0.0.1', '--directory', prod], { stdio: 'ignore' }),
@@ -60,7 +51,7 @@ function copyDir(src, dst) {
     }
   } finally {
     servers.forEach(s => s.kill());
-    fs.rmSync(prod, { recursive: true, force: true });
+    fs.rmSync(prod, { recursive: true, force: true }); fs.rmSync(prod + '.config.js', { force: true });
     fs.writeFileSync(path.join(OUT, 'summary.json'), JSON.stringify(summary, null, 2));
   }
   const bad = summary.filter(r => r.performance < 95 || r.accessibility < 100 || r.best_practices < 95 ||

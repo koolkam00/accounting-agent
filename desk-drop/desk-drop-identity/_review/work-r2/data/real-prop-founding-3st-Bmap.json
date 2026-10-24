@@ -1,0 +1,63 @@
+{
+ "brand_name": "Brightside",
+ "product_sku": "Sea Salt Lentil Crisps, 1 oz bags",
+ "prepared_for": "Jordan Lee, Founder",
+ "proposal_date": "2026-12-01",
+ "category": "chips-crisps",
+ "tier": "founding",
+ "extra_offices": "0",
+ "drop_date": "2027-01-12",
+ "ship_by_requested": "2026-12-22",
+ "offices": [
+  {
+   "neighborhood": "Flatiron",
+   "industry": "Software",
+   "headcount_band": "76-150",
+   "planned_units": "55"
+  },
+  {
+   "neighborhood": "NoMad",
+   "industry": "Architecture",
+   "headcount_band": "40-75",
+   "planned_units": "40"
+  },
+  {
+   "neighborhood": "Flatiron",
+   "industry": "Media",
+   "headcount_band": "76-150",
+   "planned_units": "50"
+  },
+  {
+   "neighborhood": "Union Square",
+   "industry": "Nonprofit",
+   "headcount_band": "40-75",
+   "planned_units": "40"
+  },
+  {
+   "neighborhood": "NoMad",
+   "industry": "Design studio",
+   "headcount_band": "151-250",
+   "planned_units": "65"
+  }
+ ],
+ "retailers": [
+  {
+   "retailer_name": "Whole Foods Market Union Square",
+   "street": "4 Union Square South",
+   "distance": "1 to 9 blocks"
+  },
+  {
+   "retailer_name": "Whole Foods Market NoMad",
+   "street": "63 Madison Avenue",
+   "distance": "1 to 6 blocks"
+  },
+  {
+   "retailer_name": "Eataly NYC Flatiron",
+   "street": "200 Fifth Avenue",
+   "distance": "1 to 7 blocks"
+  }
+ ],
+ "online_site": "example.com",
+ "map_image": "/home/user/accounting-agent/desk-drop/cluster-1-flatiron/brand-maps/SAMPLE-brightside.png",
+ "map_caption": "Map: workstream B cluster map"
+}

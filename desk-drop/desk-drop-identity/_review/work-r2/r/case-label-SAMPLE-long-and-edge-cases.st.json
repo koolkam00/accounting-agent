@@ -1,0 +1,21 @@
+{
+  "ready": true,
+  "errors": [],
+  "warnings": [
+    "Label 4: Drop date 2027-01-15 is not a Tuesday or Wednesday.",
+    "Label 1: Office name is long; it was set at the smallest size. Use the short name people say."
+  ],
+  "sample": true,
+  "placeholders": [
+    "Label 1: phone (fill PHONE in brand.json)",
+    "Label 2: phone (fill PHONE in brand.json)",
+    "Label 4: phone (fill PHONE in brand.json)"
+  ],
+  "fit": [
+    null,
+    null
+  ],
+  "console_errors": [],
+  "template": "templates/case-label/case-label.html",
+  "records": 4
+}

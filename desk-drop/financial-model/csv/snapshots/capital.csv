@@ -21,15 +21,15 @@ Cash the model spends that the plan's capital table leaves out
 ,Additional-insured endorsements (needs quote),,,0,Startup outlays,0,,Legal pack: expect one per building that requires it; zero only if the carrier confirms its blanket endorsement covers buildings.
 ,"Mailing address, PO box or private mailbox (needs quote)",,,0,Startup outlays,0,,Legal pack: only if you will not use a home address in email footers and the LLC notice (CAN-SPAM).
 ,"Registered agent, Albany County route only (needs quote)",,,0,Startup outlays (Include = N),0,,Legal pack: optional in New York; only if the Articles name Albany County.
-,"Trademark application, one class",350,850,350,Startup outlays (Include = N),0,,"Legal pack: after campaign zero passes, not in the first six months."
+,"Trademark application, one class",350,850,350,Startup outlays (at Gate 2),350,,"Plan setup checklist and legal pack: after campaign zero, if it was a pass, inside the six months. The plan's capital table has no line for it. Include = N if the attorney advises against filing."
 ,"Storage unit, months inside the window",,,,"Overhead (Cash_Ledger, storage)",450,,Plan's standard drops carry a $75 storage allocation.
 ,Display kits on scheduled drops,,,,Per drop,360,,$8 per office per drop.
 ,Transport on drops after the first three,,,,Per drop,0,,Direct-ship drops carry $0.
 ,Card processing,,,,Per receipt,576,,3% while the processing toggle is on.
 ,Kit mailing (needs quote),,,,Per drop,0,,Blank until quoted.
 ,Phone,,,,"Overhead (Cash_Ledger, phone)",0,,$0 in the plan (your own phone).
-,"Total model outflows inside the six months (both tables, excluding the reserve)",,,,,7441
-,"Same total read from Cash_Flow (all outflows, plan basis)",,,,,7441
+,"Total model outflows inside the six months (both tables, excluding the reserve)",,,,,7791
+,"Same total read from Cash_Flow (all outflows, plan basis)",,,,,7791
 ,Difference (should be 0 while no drop has actuals),,,,,0
 
 ,"The plan's $3,360 to $6,510 is a budget to commit, not the model's cash need. The model's need is the lowest point of cumulative cash plus the reserve (Cash_Flow and Dashboard), because brand cash arrives before most drop costs."

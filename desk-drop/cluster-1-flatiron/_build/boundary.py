@@ -78,7 +78,10 @@ def blocks_outside(lat, lon):
 
 
 def polygon_lonlat():
-    ring = [grid.latlon(s, x) for x, s in POLY_XS]
+    """Exterior ring, counter-clockwise as RFC 7946 section 3.1.6 requires (review round 1, R1-14):
+    POLY_XS runs clockwise, so it is reversed here. The grid transform is a rotation, so the
+    winding is the same in lon/lat as in (x, s)."""
+    ring = [grid.latlon(s, x) for x, s in reversed(POLY_XS)]
     ring = [[round(lon, 6), round(lat, 6)] for lat, lon in ring]
     ring.append(ring[0])
     return ring

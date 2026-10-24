@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# run-all.sh: every automated test for the identity system (v1.1: part 2 documents added). Run from anywhere:
+# run-all.sh: every automated test for the identity system (v1.2, 2026-10-24: review round 1 cases added). Run from anywhere:
 #   bash tests/run-all.sh
 # Needs Node 18+ with Playwright and ImageMagick (convert, montage). Optional QR decode test
 # needs jsQR and pngjs: set DD_QR_DECODER to a folder where `npm install jsqr pngjs` was run.
@@ -17,9 +17,17 @@ expect() { # expect <exit-code> <name> <command...>
 T=templates/tent-card/samples; C=templates/case-label/samples
 
 expect 0 "tokens agree and meet contrast" node tests/check-tokens.js
-for s in basic allergen-25-words long-name short-name retailer-only code-only batch-5-offices ingredient-list-37-words ingredient-list-74-words no-allergens-on-label; do
+for s in basic allergen-25-words long-name short-name retailer-only code-only batch-5-offices ingredient-list-37-words ingredient-list-74-words single-ingredient logo-wide logo-compact allergen-max-review; do
   expect 0 "tent card renders: $s" node render/render.js tent-card $T/SAMPLE-$s.json "$TMP/tc-$s.pdf"
 done
+# v1.2 (review round 1): the removed "Nowhere" option is refused; split mode puts the list on the front face;
+# the give-way drops the product line before the name shrinks; a wide logo replaces the typed name
+sed 's/"allergen_source": "single_ingredient"/"allergen_source": "none_on_label"/' $T/SAMPLE-single-ingredient.json > "$TMP/nowhere.json"
+expect 2 "tent card refuses the removed \"Nowhere\" allergen option (none_on_label)" node render/render.js tent-card "$TMP/nowhere.json" "$TMP/nowhere.pdf"
+fitof() { node render/render.js tent-card "$1" "$TMP/fit.pdf" --json 2>/dev/null | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s.slice(s.indexOf("{")));console.log(JSON.stringify(j.fit[0]))})'; }
+F=$(fitof $T/SAMPLE-ingredient-list-74-words.json); echo "$F" | grep -q '"ingredients_on_front_face":true' && ok "74-word ingredient list: the whole list is on the front face (the one marked to face the room)" || bad "split mode front face: $F"
+F=$(fitof $T/SAMPLE-allergen-max-review.json); echo "$F" | grep -q '"product_dropped":true' && [ "$(echo "$F" | sed -E 's/.*"name_px":([0-9.]+).*/\1/' | cut -d. -f1)" -gt 48 ] && ok "reviewer's max allergen card: product line dropped first, name kept above its 36 pt floor ($F)" || bad "give-way order: $F"
+F=$(fitof $T/SAMPLE-logo-wide.json); echo "$F" | grep -q '"logo":"logo-wide"' && ok "a wide brand logo replaces the typed name" || bad "logo: $F"
 expect 2 "tent card refuses an over-full card (stress)" node render/render.js tent-card $T/SAMPLE-stress-must-block.json "$TMP/stress.pdf"
 expect 3 "--final refuses SAMPLE data" node render/render.js tent-card $T/SAMPLE-basic.json "$TMP/final.pdf" --final
 sed 's/"retailer_line": ""/"retailer_line": "[RETAILER, STREET]"/' $T/BLANK-placeholders.json > "$TMP/blank.json"
@@ -38,7 +46,7 @@ done
 expect 3 "case label --final flags [PHONE] from brand.json" node render/render.js case-label $C/SAMPLE-office-and-reserve.json "$TMP/clf.pdf" --final
 
 # visual tests (write PNGs for a person to look at)
-for s in basic allergen-25-words long-name short-name; do
+for s in basic allergen-25-words long-name short-name logo-wide logo-compact ingredient-list-74-words; do
   node render/render.js tent-card $T/SAMPLE-$s.json "$TMP/f.pdf" --face-png tests/out/tc-$s-face.png --dpi 150 >/dev/null 2>&1
   convert tests/out/tc-$s-face.png -filter Triangle -resize x120 -quality 75 tests/downscale/$s-120px.jpg
   convert tests/out/tc-$s-face.png -filter Triangle -resize x60 -quality 75 tests/downscale/$s-60px.jpg
@@ -65,7 +73,9 @@ expect 0 "guide walkthrough (stranger fills the card from USAGE-GUIDE.md section
 # part 2: documents, signature, avatar (v1.1)
 expect 0 "swap test: a new brand onto the card from the guide alone, under 10 minutes; every box the guide names exists" node tests/guide-walkthrough/swap-test.js
 expect 0 "signature builds with filled SAMPLE details (tests/signature/out-filled/)" node render/build-signature.js --brand tests/signature/SAMPLE-brand-filled.json --out tests/signature/out-filled
-expect 0 "documents, report, proposal, signature and avatar (53 checks in tests/documents/doc-tests.js)" node tests/documents/doc-tests.js
+expect 0 "documents, report, proposal, signature and avatar (tests/documents/doc-tests.js)" node tests/documents/doc-tests.js
+expect 0 "panel: pick, add and remove records (case label); no \"record 1:\" jargon" node tests/panel/records-test.js
+expect 0 "details.html: details filled in Chrome alone reach every document; a later terminal build keeps them" node tests/details/details-test.js
 
 rm -rf "$TMP"
 echo "----"

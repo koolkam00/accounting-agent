@@ -1,0 +1,28 @@
+{
+  "ready": true,
+  "errors": [],
+  "warnings": [],
+  "sample": true,
+  "placeholders": [
+    "brand.json: FOUNDER_NAME (fill it in brand.json, then run node render/build-brand.js)",
+    "brand.json: PHONE (fill it in brand.json, then run node render/build-brand.js)",
+    "brand.json: EMAIL (fill it in brand.json, then run node render/build-brand.js)",
+    "brand.json: POSTAL_ADDRESS (fill it in brand.json, then run node render/build-brand.js)"
+  ],
+  "fit": [
+    {
+      "arrangement": "standard",
+      "map_in": 1.3,
+      "tight": false,
+      "tried": [
+        {
+          "name": "standard",
+          "over_in": 0
+        }
+      ]
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/proposal/proposal.html",
+  "records": 1
+}

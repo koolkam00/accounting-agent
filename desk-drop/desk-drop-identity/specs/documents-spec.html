@@ -61,20 +61,20 @@
   <table class="spec">
     <tr><th>Placeholder</th><td><code>[LIKE THIS]</code> with a yellow highlighter, on screen and on paper. Dates derived from a placeholder drop date print as slots too, e.g. <code>[DATE: Mon 2026-12-28]</code>. <code>--final</code> refuses any placeholder, including unfilled <code>brand.json</code> contacts.</td></tr>
     <tr><th>SAMPLE</th><td>Red band across the top: "Sample. Illustrative placeholders, not results." Appears whenever any value starts with SAMPLE.</td></tr>
-    <tr><th>Mock page</th><td>Ink band across the top and a vertical margin label, both "Illustrative placeholders, not results". Used only for the proposal's page 2.</td></tr>
+    <tr><th>Mock page</th><td>Ink band across the top and a vertical margin label, both "Illustrative placeholders, not results". Used only for the proposal's page 2. It carries the brand's own name, product and dates from the proposal; its text slots are grey examples, never the yellow mark, so a finished proposal has nothing yellow.</td></tr>
     <tr><th>Image slot</th><td>Grey dashed box: "Real pantry photo, no identifiable people". A missing photo prints "No photo received" in a white box. Never a stock photo.</td></tr>
   </table>
   <h2>Give-way order when a page is full</h2>
   <table class="spec">
-    <tr><th>Report</th><td>Thumbnails 0.78 (0.52 for six or more offices) down to 0.46 in, comments 8.75 to 8.25 pt, tighter spacing, "learned" 9.5 to 8.5 pt; with six or more offices the thumbnails move to the evidence page (page 1 keeps "Photos received: n of N"); comments to 8 pt. <b>Never:</b> the numbers, the ladder, a comment's words, the limitations paragraph.</td></tr>
-    <tr><th>Proposal</th><td>Map 1.3 to 0.95 in, then body 8.8 to 8.5 pt.</td></tr>
-    <tr><th>One-pagers</th><td>Body 9.5 to 9 pt; card drawing narrower.</td></tr>
+    <tr><th>Report</th><td>Up to five offices: a pair of photos per office, 0.78 down to 0.5 in. Six to twelve: a strip, one column per office, day 1 above and day 3 or 5 below, 0.5 down to 0.38 in. Then comments 8.75 to 8.25 pt, tighter spacing, "learned" 9.5 to 8.5 pt; the later row moves to the evidence page (the day-1 row stays); comments to 8 pt; last resort, every photo moves to the evidence page and page 1 keeps "Photos received: n of N". <b>Never:</b> the numbers, the ladder, a comment's words, the limitations paragraph. Tested: 10 offices with three 70-word comments and a retailer-velocity line, and 12 offices, keep the day-1 strip.</td></tr>
+    <tr><th>Proposal</th><td>Six column arrangements are tried in order, each with its own give-way (map 1.3 to 0.95 in, then body 8.8 to 8.5 pt): the standard columns; the cancellation note under the price; the roster across the full width in two halves; for nine or more offices, three narrow tables with the neighborhoods listed once; the timeline as a full-width strip. The first that fits is used. Up to 12 offices, with a landscape map and four stores, tested with real-length details.</td></tr>
+    <tr><th>One-pagers</th><td>Office: body 9.5 to 9 pt, card drawing narrower, tighter gaps. Brand: tighter text, smaller ladder notes, tighter gaps, smaller lead and title, lists to 8.5 pt. The contact line moves to its own line when it is long.</td></tr>
     <tr><th>Discovery</th><td>Sentences 14 to 12 pt.</td></tr>
     <tr><th>All</th><td>If it still does not fit: a red "does not fit" bar on screen, an error in the panel, and no PDF (exit 2).</td></tr>
   </table>
   <h2>Fixed text (not editable in the panel)</h2>
   <ul>
-    <li>The report's limitations paragraph (<code>DDReport.LIMITATIONS</code>), checked present and unchanged on every render; the ladder rung names; "Incremental: not measured".</li>
+    <li>The report's limitations paragraph (<code>DDReport.LIMITATIONS</code>), checked present and unchanged on every render; the ladder rung names; "Incremental: not measured". Delivered is the count handed over on drop day, the same number in the ladder and the roster; day-3 top-ups are shown beside it, never added to it. Placed shows the Gate 2 share: units placed within one business day out of units delivered.</li>
     <li>The proposal's price box and terms (from <code>system/dd-offer.js</code> and the campaign agreement), the campaign specification and "No sales guarantee".</li>
     <li>The discovery page's rule: exactly five sentences, no selling words.</li>
   </ul>

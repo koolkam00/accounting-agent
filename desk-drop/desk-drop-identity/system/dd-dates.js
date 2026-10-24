@@ -1,5 +1,5 @@
 /*
-  dd-dates.js: the campaign calendar rules from CONTRACTS.md section 3 (v1.1, 2026-10-24).
+  dd-dates.js: the campaign calendar rules from CONTRACTS.md section 3 (v1.1, 2026-10-24; unchanged in v1.2).
   Used by the proposal and the report to work out dates from the drop day, and by the tests.
 
   - Business days: Monday to Friday, not a US federal holiday in HOLIDAYS.

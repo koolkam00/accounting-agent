@@ -141,6 +141,15 @@ for phrase in ["$600", "for 5 offices ($120 per office)", "Paid in full up front
                "No free pilots.", "first three brands only",
                "500 units into 10 New York offices in one week, within walking distance of the stores that carry you, with photos, feedback and a report."]:
     check(phrase in brands, f"brands page states: {phrase}", f"brands page is missing: {phrase}")
+# Terms that review round 1 found missing or softened (G 10 v0.8 sections 3 and 8; plan "Excluded in the first six months").
+for phrase in ["From the drop day on, the full price is due.", "Before the cancel-by date, 10 business days before the drop",
+               "$120 per office, for up to 10 offices (any more at $150)", "we say you were a founding brand at a founding price",
+               "about 550 for 10 offices (500 plus 50)", "Who runs this:"]:
+    check(phrase in brands, f"brands page states: {phrase}", f"brands page is missing: {phrase}")
+for phrase in ["Under 30 or over 250, we can't take you yet.", "Offices with fewer than 30 or more than 250 people in on a Tuesday.",
+               "Companies inside a coworking space, on their own", "Run by "]:
+    check(phrase in offices, f"offices page states: {phrase}", f"offices page is missing: {phrase}")
+check("After that, we keep 50%" not in brands or "From the drop day on" in brands, "cancellation answer carries the drop-day cut-off", "cancellation answer lacks the drop-day cut-off")
 check("Vetted emerging snacks and drinks, free, roughly monthly." in offices and "You pick the categories and can veto anything. All we ask: on the shelf the day it arrives, one photo, and three questions for your team." in offices,
       "offices page states the office pitch word for word", "office pitch missing or changed")
 money = set()
@@ -193,7 +202,11 @@ if os.path.exists(gmd):
     part = part[part.index("Last updated"):]
     page = raw["survey-privacy"]
     mine = page[page.index("<!-- NOTICE START"):page.index("<!-- NOTICE END -->")]
-    mine = re.sub(r'<span data-config="BRAND_NAME"></span>', "Desk Drop", mine)
+    # Slots the site fills from site.config.js stand for the legal pack's own placeholders.
+    company_slot = re.search(r"\[COMPANY NAME:[^\]]*\]", part)
+    slot_for = {"COMPANY_LEGAL_NAME": company_slot.group(0) if company_slot else "[COMPANY NAME]",
+                "CONTACT_EMAIL": "[EMAIL]", "POSTAL_ADDRESS": "[POSTAL ADDRESS]"}
+    mine = re.sub(r'<(span|a)[^>]*\bdata-config="([A-Z_]+)"[^>]*></\1>', lambda m: slot_for.get(m.group(2), "{" + m.group(2) + "}"), mine)
     mine = mine[mine.index("Last updated"):]
     a, b = norm(part), norm(mine)
     if a != b:
@@ -238,10 +251,11 @@ cfg = read(os.path.join(SITE, "site.config.js"))
 staging = re.search(r"STAGING:\s*(true|false)", cfg).group(1) == "true"
 robots = read(os.path.join(SITE, "robots.txt"))
 headers = read(os.path.join(SITE, "_headers"))
-if staging:
-    check("Disallow: /" in robots and "X-Robots-Tag: noindex" in headers, "STAGING = true: robots.txt disallows all and _headers sends X-Robots-Tag noindex", "STAGING = true but robots.txt or _headers would let crawlers index")
-else:
-    check("Disallow: /" not in robots and "X-Robots-Tag" not in headers, "STAGING = false: robots.txt and _headers allow indexing", "STAGING = false but robots.txt or _headers still block indexing")
+check(staging, "site.config.js keeps STAGING = true (production is the separate copy from tools/make_production.py)", "site/site.config.js has STAGING = false; site/ is the staging source, leave it true")
+no_meta = [p for p in PAGES if not re.search(r'<meta name="robots" content="noindex, nofollow">', raw[p])]
+check(not no_meta and "X-Robots-Tag: noindex" in headers and not re.search(r"(?m)^Disallow:\s*/\s*$", robots),
+      "staging: every page carries a static noindex robots tag, _headers sends X-Robots-Tag noindex, and robots.txt lets crawlers fetch pages so they can see both",
+      "staging noindex incomplete: pages without the robots tag %s, or _headers lacks X-Robots-Tag, or robots.txt blocks crawling (which hides the noindex)" % no_meta)
 
 for p in passes:
     print("ok -", p)

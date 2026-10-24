@@ -1,6 +1,6 @@
 # Campaign report: field list and render command
 
-Template: `templates/report/report.html` (v1.1, 2026-10-24). Renderer: `system/dd-report.js` (the same code draws the proposal's mock page). One JSON object is one report. Layout: plan.md appendix M and "Measurement and the brand report".
+Template: `templates/report/report.html` (v1.2, 2026-10-24). Renderer: `system/dd-report.js` (the same code draws the proposal's mock page). One JSON object is one report. Layout: plan.md appendix M and "Measurement and the brand report".
 
 The operations workstream (F) fills this from its tracker. Keys use the CONTRACTS section 6.5 column names wherever one exists.
 
@@ -24,10 +24,10 @@ The operations workstream (F) fills this from its tracker. Keys use the CONTRACT
 | `office_label` | no | | `A`, `B`, `C`... (default by position), or the office's name only if it agreed to be named. |
 | `industry` | yes | `signed_offices` (F's office record) | |
 | `headcount_band` | yes | from `signed_offices.tuesday_headcount` | One of `40-75`, `76-150`, `151-250`, `under-40`, `251-500`, `unknown` (CONTRACTS section 4). Prints "40 to 75". |
-| `units_delivered` | yes | per-office `units_delivered` | Whole number. Units handed over at the office on drop day. |
+| `units_delivered` | yes | per-office `units_delivered` | Whole number. Units handed over at the office on drop day, **before any top-up**. The ladder's Delivered and the roster total are the sum of this column, the same number. |
 | `units_placed` | yes | per-office `units_placed` | Whole number. Units visible in the placement photo. Error if more than delivered. |
 | `placed_within_1bd` | yes | per-office placement lag | `Y` or `N`. `N` prints an asterisk and "placed after the first business day". Sum of `units_placed` where `Y` = `campaign_actuals.units_placed_within_1bd`. |
-| `units_topped_up` | no | per-office `units_topped_up` | Whole number, empty = 0. Reserve units added on day 3. |
+| `units_topped_up` | no | per-office `units_topped_up` | Whole number, empty = 0. Reserve units added on day 3. Shown beside Delivered ("Plus N day-3 top-ups from reserve"), never added to it. |
 | `units_depleted_day5` | yes | per-office `units_depleted_day5` | Whole number. Error if more than placed plus topped up. |
 | `survey_responses` | yes | per-office `survey_responses` | Whole number. Under 5 warns (the office's commitment); it is reported as it is. |
 | `qr_scans` | yes | per-office `qr_scans` | Whole number, from the office's short link. |
@@ -53,12 +53,14 @@ The operations workstream (F) fills this from its tracker. Keys use the CONTRACT
 
 ## Fixed parts (not fields)
 
-- The ladder strip: Delivered, Placed, Depleted, Responded, Scanned, Purchased, Incremental (not measured). Totals are computed from the office rows.
+- The ladder strip: Delivered, Placed, Depleted, Responded, Scanned, Purchased, Incremental (not measured). Totals are computed from the office rows. Placed prints the Gate 2 share: units placed within one business day out of units delivered (`units_placed_within_1bd` / `units_delivered`); the roster's total row counts the offices placed late.
 - The limitations paragraph: `DDReport.LIMITATIONS` in `system/dd-report.js`. The render checks it is present and unchanged on every report.
 
 ## Give-way order when the page is full
 
-Thumbnails shrink to 0.46 in, comments go from 8.75 to 8.25 pt, spacing tightens, the "learned" lines go from 9.5 to 8.5 pt. With six or more offices, the thumbnails then move to the evidence page and page 1 keeps the count of photos received. Last, the comments go to 8 pt. Never changed: the numbers, the ladder, the comments' words, the limitations paragraph. If it still does not fit, no PDF is written (exit 2).
+Up to five offices, page 1 shows a pair of photos per office (0.78 in tall, down to 0.5 in). Six to twelve offices get a strip: one column per office, the day-1 photo above and the day 3 or 5 photo below (0.5 in tall, down to 0.38 in). Then: comments 8.75 to 8.25 pt, tighter spacing, the "learned" lines 9.5 to 8.5 pt; the later row moves to the evidence page while the day-1 row stays; comments to 8 pt; last resort, every thumbnail moves to the evidence page and page 1 keeps the count of photos received. Never changed: the numbers, the ladder, the comments' words, the limitations paragraph. If it still does not fit, no PDF is written (exit 2). `fit[0]` reports `comment_pt`, `thumb_in`, `learned_pt`, `tight`, `later_photos_on_page_2`, `thumbnails_on_page_2`.
+
+Tested (v1.2): the 10-office sample with three 55- to 75-word comments keeps both photo rows on page 1; 10 offices with three 70-word comments plus a retailer-velocity line, and 11 or 12 offices, keep the day-1 row; 10 offices with 100-word "learned" and a 55-word recommendation still fit, with the photos on page 2 (`tests/documents/cases/`).
 
 ## Render command
 

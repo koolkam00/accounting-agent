@@ -1,0 +1,16 @@
+{
+  "brand_name": "SAMPLE Oddfellow Pretzel",
+  "brand_logo": "",
+  "product_name": "SAMPLE Everything Bagel Pretzel Thins",
+  "card_sentences": "SAMPLE A former deli baker in Sunnyside makes these in a shared kitchen. He wanted the crunch of a pretzel with everything-bagel seasoning.",
+  "allergen_source": "contains_statement",
+  "allergen_line_verbatim": "SAMPLE CONTAINS: WHEAT, SESAME, SOY, MILK. PRODUCED IN A FACILITY THAT ALSO HANDLES PEANUTS, TREE NUTS (ALMONDS, CASHEWS), EGGS AND FISH.",
+  "may_contain_verbatim": "SAMPLE MAY CONTAIN TRACES OF MUSTARD AND OTHER TREE NUTS.",
+  "retailer_line": "SAMPLE Eataly NYC Flatiron, 200 Fifth Avenue",
+  "discount_code": "SAMPLEPRETZEL10",
+  "code_site": "oddfellow.example.com",
+  "qr_url": "https://example.com/s/SAMPLE-O-007",
+  "qr_display": "",
+  "office_id": "SAMPLE-O-007",
+  "campaign_id": "SAMPLE-CMP-004"
+}

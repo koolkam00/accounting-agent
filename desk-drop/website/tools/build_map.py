@@ -195,13 +195,16 @@ def main():
             a('<text x="%.0f" y="%d" font-size="13" font-weight="700" fill="%s" text-anchor="middle">%s</text>' % (x, TOP - 10, STONE, label))
     s_lo = math.ceil((y_min - y0) / spacing)
     s_hi = math.floor((y_max - y0) / spacing)
+    rows = []
     for s_idx in range(s_lo, s_hi + 1):
         if s_idx not in (8, 10, 12, 14, 16, 18, 20, 23, 26, 28, 30, 32):
             continue
         _, y = P(0, s_idx * spacing + y0)
         if my0 + 10 < y < my1 - 6:
-            a('<text x="%d" y="%.0f" font-size="13" font-weight="700" fill="%s" text-anchor="end">%s</text>' % (LEFT - 6, y + 4, STONE, ordinal(s_idx)))
-    a('<text x="%d" y="%d" font-size="13" font-weight="700" fill="%s" text-anchor="end">St</text>' % (LEFT - 6, TOP - 10, STONE))
+            rows.append((y, s_idx))
+    for y, s_idx in rows:
+        # Street numbers only ("30th", "28th"): the old "St" header above them read as a clipped label.
+        a('<text x="%d" y="%.0f" font-size="13" font-weight="700" fill="%s" text-anchor="end">%s</text>' % (LEFT - 6, y + 4, STONE, ordinal(s_idx)))
 
     # Store markers.
     for s in stores:
@@ -212,9 +215,15 @@ def main():
 
     # True-north arrow (the map is turned about 29 degrees so the avenues run up the page) and scale bar.
     theta = math.degrees(math.atan2(model["ux"][1], model["ux"][0]))  # about -29
-    nx, ny = mx0 + 26, my0 + 30
-    a('<g transform="translate(%.0f %.0f) rotate(%.1f)"><path d="M0 -16 L7 8 L0 3 L-7 8 Z" fill="%s"/></g>' % (nx, ny, theta, INK))
-    a('<text x="%.0f" y="%.0f" font-size="11" font-weight="700" fill="%s" text-anchor="middle">N</text>' % (nx - 9, ny - 14, INK))
+    # A conventional north arrow: a shaft with an arrowhead, turned to true north, with an upright "N"
+    # just beyond the tip, on a small white disc so it reads over the streets.
+    nx, ny = mx0 + 34, my0 + 44
+    a('<circle cx="%.0f" cy="%.0f" r="28" fill="#FFFFFF" fill-opacity="0.92" stroke="#D3C8B4"/>' % (nx, ny))
+    a('<g transform="translate(%.0f %.0f) rotate(%.1f)"><path d="M0 14 V-3" stroke="%s" stroke-width="2.5" stroke-linecap="round"/>'
+      '<path d="M0 -12 L5.5 -2 L-5.5 -2 Z" fill="%s"/></g>' % (nx, ny, theta, INK, INK))
+    tip = math.radians(theta)
+    tx, ty = nx + 20 * math.sin(tip), ny - 20 * math.cos(tip)
+    a('<text x="%.0f" y="%.0f" font-size="11" font-weight="700" fill="%s" text-anchor="middle">N</text>' % (tx, ty + 4, INK))
     bar_px = 400 * PX_PER_M
     bx, by = mx1 - bar_px - 4, H - 18
     a('<path d="M%.0f %d h%.0f M%.0f %d v-8 M%.0f %d v-8" stroke="%s" stroke-width="3" fill="none"/>' % (bx, by, bar_px, bx, by + 4, bx + bar_px, by + 4, INK))

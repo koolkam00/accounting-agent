@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Office one-pager template</title>
 <!--
-  OFFICE ONE-PAGER, US Letter portrait. Template v1.1, 2026-10-24.
+  OFFICE ONE-PAGER, US Letter portrait. Template v1.2, 2026-10-24.
   Sent the same day as a discovery call that ended in "can I send you a one-pager?", with a
   specific proposed first-drop week (plan.md Phase 1, conversion path step 2).
   Contents, from plan.md: the pitch to offices; "What offices get and give"; what is not asked of
@@ -34,9 +34,9 @@
   .op .vis figcaption, .op figcaption { font-size: 8.5pt; line-height: 1.35; margin-top: .06in; }
   .op ol.steps li { margin-bottom: .05in; }
   .op .found { border: 2px solid var(--dd-ink); padding: .1in .12in; }
-  .op .next { border-top: 2px solid var(--dd-ink); padding-top: .08in; display: flex; justify-content: space-between; gap: .3in; align-items: flex-start; }
-  .op .next p { font-size: 10pt; }
-  .op .next .who { text-align: right; white-space: nowrap; font-size: 10pt; }
+  .op .next { border-top: 2px solid var(--dd-ink); padding-top: .08in; display: flex; flex-wrap: wrap; justify-content: space-between; column-gap: .3in; row-gap: .02in; align-items: baseline; }
+  .op .next p { font-size: 10pt; margin: 0; }
+  .op .next .who { white-space: nowrap; font-size: 10pt; font-weight: 700; }
   .op.tight p, .op.tight li { font-size: 9pt; line-height: 1.35; }
   .op.s-gap .g6 { row-gap: .12in; margin-top: .12in; }
   .op.s-gap .when { margin-top: .1in; }
@@ -120,7 +120,7 @@
           <section class="sec s3">${vis}</section>
           <section class="sec s3"><h2>What is in the case</h2>${list(r.product, 'plain')}<h2 class="h2b">Your team's privacy</h2><p>${X.t(r.privacy)}</p></section>
           <section class="sec s3 found"><h2>Founding offices</h2>${list(r.founding, 'ticks')}<p class="sign">${X.t(r.sign)}</p></section>
-          <section class="sec s6 next"><div><p>${X.t(r.next)}</p></div><div class="who">${X.contact(' · ', ['FOUNDER_NAME', 'PHONE', 'EMAIL'])}</div></section>
+          <section class="sec s6 next"><p>${X.t(r.next)}</p><p class="who">${X.contact(' · ', ['FOUNDER_NAME', 'PHONE', 'EMAIL'])}</p></section>
         </div>
       </div>
       ${X.footer(`${X.brandName()} · ${DD.text(DD.contact('POSTAL_ADDRESS'))}`, DD.escape(DD.brand().TAGLINE || ''))}

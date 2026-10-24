@@ -6,6 +6,8 @@
     with "ui_" and are never sent. The server (apps-script/Code.gs) validates everything again.
   - With FORM_ENDPOINT empty (staging), a valid form shows "Staging: submissions are not live
     yet" and sends nothing. It never shows the thank-you message unless the server said ok.
+  - The submit buttons ship disabled in the HTML, so a browser without JavaScript cannot send a
+    form (it would otherwise put the answers in the address bar). setup() enables each one last.
 
   Visit counts (GoatCounter, no cookies): a page view on load, and the events
   "<form>-intake-started" and "<form>-intake-sent". Off when ANALYTICS.ENDPOINT is empty, and
@@ -120,7 +122,7 @@
     }
     function labelFor(name) {
       var holder = form.querySelector('[data-name="' + name + '"]');
-      if (holder) return holder.querySelector("legend").textContent.trim();
+      if (holder) { var lg = holder.querySelector("legend"); return (lg.innerText || lg.textContent).replace(/\s+/g, " ").trim(); }
       var el = form.elements[name];
       var lab = el && el.id ? form.querySelector('label[for="' + el.id + '"]') : null;
       return lab ? lab.textContent.replace(/\(optional\)/, "").trim() : name;
@@ -259,7 +261,11 @@
 
       var body = new URLSearchParams();
       body.set("form", kind);
-      body.set("form_version", (C.FORM_VERSION && C.FORM_VERSION[kind]) || kind + "-unknown");
+      // Question 6 asks about $1,500 instead of $600 once the founding tier is closed; that form
+      // has its own version so the sheet shows which amount was asked (HANDOFF.md).
+      var fv = C.FORM_VERSION || {};
+      var version = (kind === "brand" && C.FOUNDING_TIER_OPEN === false && fv.brand_standard_only) || fv[kind];
+      body.set("form_version", version || kind + "-unknown");
       body.set("submission_id", submissionId);
       Object.keys(r.data).forEach(function (k) { body.set(k, r.data[k]); });
 
@@ -304,6 +310,8 @@
           button.disabled = false;
         });
     });
+
+    button.disabled = false; // last: the form is ready to send
   }
 
   var forms = document.querySelectorAll("form[data-form]");

@@ -10,3 +10,12 @@ Backup of pre-fix outputs: scratchpad b_before/.
   R1-19 marker declutter, tier C hollow; R1-20 unknown normalisation, Synthesia note; R1-01/02 REPORT.md + breach disclosure.
 
 ## Status
+- [x] Research: CompStak/Empathy/Signal AI own pages confirm (stay high); Simplebet CO 2025-05-22 (stays high);
+      Morning Brew/Bombas/accessiBe -> medium; Pumpkin -> low (own site 666 3rd Ave conflict). Built In HQ for 143 slugs
+      -> _work/builtin_hq_2026-10-24.csv. Synthesia CO 2025-08-14 245 Fifth current. WFM store coords (3). Amazon/Microsoft Wikipedia counts.
+- [x] frontage.py (CSCL side + face test, lot-position frontage); assemble fix_pins rewritten; 43 pin fixes, all pass.
+- [x] resolutions.py review-round block; assemble: undated-profile rule, note edits, normalise, hq fields, coworking/retailer fixes.
+- [x] router anchor-to-anchor; route constraints (40-75 + 76-150, no CPG), seeded + ILS search; variants recorded.
+      Route: 181.3 min, 11:01 (1 over); high+medium 171.8 (10:52).
+- [x] near-miss classes; content checks; boundary CCW; map template popups/declutter/diamond stores; maps.py public wording.
+- [ ] method_text, xlsx notes, public_map.py (brand mode, footnote, minutes), pin_qa, render.js QA, docs, REPORT, builder response.

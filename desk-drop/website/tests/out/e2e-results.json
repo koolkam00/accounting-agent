@@ -1,11 +1,11 @@
 {
-  "date": "2026-10-24T02:25:02.687Z",
+  "date": "2026-10-24T03:24:30.379Z",
   "checks": [
     {
       "name": "office form submitted at phone width: one row, exact columns, one notification",
       "pass": true,
       "row": {
-        "submitted_at": "2026-10-23T22:25:07-04:00",
+        "submitted_at": "2026-10-23T23:24:35-04:00",
         "form_version": "office-1.0",
         "company": "SAMPLE Studio",
         "contact_name": "SAMPLE Jo Park",
@@ -32,7 +32,7 @@
       "name": "brand form submitted at phone width: one row, exact columns, one notification",
       "pass": true,
       "row": {
-        "submitted_at": "2026-10-23T22:25:13-04:00",
+        "submitted_at": "2026-10-23T23:24:40-04:00",
         "form_version": "brand-1.0",
         "brand_name": "SAMPLE Brightside",
         "website": "https://example.com",
@@ -74,7 +74,7 @@
       "name": "office form submitted at desktop width: one row, exact columns, one notification",
       "pass": true,
       "row": {
-        "submitted_at": "2026-10-23T22:25:16-04:00",
+        "submitted_at": "2026-10-23T23:24:44-04:00",
         "form_version": "office-1.0",
         "company": "SAMPLE Studio",
         "contact_name": "SAMPLE Jo Park",
@@ -101,7 +101,7 @@
       "name": "brand form submitted at desktop width: one row, exact columns, one notification",
       "pass": true,
       "row": {
-        "submitted_at": "2026-10-23T22:25:21-04:00",
+        "submitted_at": "2026-10-23T23:24:49-04:00",
         "form_version": "brand-1.0",
         "brand_name": "SAMPLE Brightside",
         "website": "https://example.com",
@@ -176,6 +176,18 @@
     },
     {
       "name": "founding tier retired with one setting: founding price gone, standard and extra office stay; STAGING false removes noindex and bar",
+      "pass": true
+    },
+    {
+      "name": "founding tier closed: question 6 and check 6 ask about $1,500 (error summary too), and the row is marked brand-2.0",
+      "pass": true
+    },
+    {
+      "name": "production copy without JavaScript: name, title, og:site_name, contact details and canonical (extension-less) are in the HTML; no noindex; forms cannot be sent and say why",
+      "pass": true
+    },
+    {
+      "name": "production 404 served for a nested missing path keeps its styles and working links",
       "pass": true
     }
   ],

@@ -1,0 +1,27 @@
+{
+  "ready": true,
+  "errors": [],
+  "warnings": [],
+  "sample": false,
+  "placeholders": [],
+  "fit": [
+    {
+      "arrangement": "terms-right",
+      "map_in": 1.25,
+      "tight": false,
+      "tried": [
+        {
+          "name": "standard",
+          "over_in": 0.07
+        },
+        {
+          "name": "terms-right",
+          "over_in": 0
+        }
+      ]
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/proposal/proposal.html",
+  "records": 1
+}

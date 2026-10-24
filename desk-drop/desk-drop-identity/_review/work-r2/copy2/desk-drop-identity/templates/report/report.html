@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campaign report template</title>
+<!--
+  ONE-PAGE CAMPAIGN REPORT, US Letter portrait. Template v1.2, 2026-10-24.
+  Layout: plan.md appendix M plus "Measurement and the brand report". The limitations paragraph
+  is fixed text in system/dd-report.js and cannot be edited here.
+  Open in Chrome and fill the boxes, or edit the JSON block, or from a terminal:
+    node render/render.js report path/to/report.json out.pdf --final
+  Photo paths in a JSON file are relative to that JSON file. Field list: templates/report/FIELDS.md.
+-->
+<link rel="stylesheet" href="../../fonts/fonts.css">
+<link rel="stylesheet" href="../../tokens/tokens.css">
+<link rel="stylesheet" href="../../system/dd-print.css">
+<link rel="stylesheet" href="../../system/dd-docs.css">
+<style id="dd-report-css"></style>
+</head>
+<body>
+<div id="dd-sheets"></div>
+
+<!-- ============ EDIT THE REPORT HERE (or use the boxes on screen) ============
+     Numbers are counts, whole numbers. The template works out every total and share.
+     Comments: copy them word for word from the survey export. Never edit a comment. -->
+<script type="application/json" id="dd-data">
+{
+  "brand_name": "[BRAND]",
+  "product_sku": "[SKU]",
+  "cluster": "Flatiron, NoMad and Union Square",
+  "tier": "[TIER]",
+  "campaign_id": "[CAMPAIGN ID]",
+  "drop_date": "[DROP DATE: Tue 2027-01-12]",
+  "report_date": "",
+  "offices": [
+    { "office_label": "A", "industry": "[INDUSTRY]", "headcount_band": "[BAND]", "units_delivered": "[N]", "units_placed": "[N]", "placed_within_1bd": "[Y/N]", "units_topped_up": "", "units_depleted_day5": "[N]", "survey_responses": "[N]", "qr_scans": "[N]", "placement_photo": "[PHOTO]", "later_photo": "[PHOTO]", "later_photo_day": "5" },
+    { "office_label": "B", "industry": "[INDUSTRY]", "headcount_band": "[BAND]", "units_delivered": "[N]", "units_placed": "[N]", "placed_within_1bd": "[Y/N]", "units_topped_up": "", "units_depleted_day5": "[N]", "survey_responses": "[N]", "qr_scans": "[N]", "placement_photo": "[PHOTO]", "later_photo": "[PHOTO]", "later_photo_day": "5" },
+    { "office_label": "C", "industry": "[INDUSTRY]", "headcount_band": "[BAND]", "units_delivered": "[N]", "units_placed": "[N]", "placed_within_1bd": "[Y/N]", "units_topped_up": "", "units_depleted_day5": "[N]", "survey_responses": "[N]", "qr_scans": "[N]", "placement_photo": "[PHOTO]", "later_photo": "[PHOTO]", "later_photo_day": "5" },
+    { "office_label": "D", "industry": "[INDUSTRY]", "headcount_band": "[BAND]", "units_delivered": "[N]", "units_placed": "[N]", "placed_within_1bd": "[Y/N]", "units_topped_up": "", "units_depleted_day5": "[N]", "survey_responses": "[N]", "qr_scans": "[N]", "placement_photo": "[PHOTO]", "later_photo": "[PHOTO]", "later_photo_day": "5" },
+    { "office_label": "E", "industry": "[INDUSTRY]", "headcount_band": "[BAND]", "units_delivered": "[N]", "units_placed": "[N]", "placed_within_1bd": "[Y/N]", "units_topped_up": "", "units_depleted_day5": "[N]", "survey_responses": "[N]", "qr_scans": "[N]", "placement_photo": "[PHOTO]", "later_photo": "[PHOTO]", "later_photo_day": "5" }
+  ],
+  "survey_tried_yes": "[N]",
+  "tried_no_didnt_see": "",
+  "tried_no_not_for_me": "",
+  "tried_no_gone": "",
+  "survey_rating_avg": "[N.N]",
+  "survey_rating_n": "[N]",
+  "survey_buy_yes": "[N]",
+  "survey_buy_maybe": "[N]",
+  "survey_buy_no": "[N]",
+  "comments_total": "",
+  "comment_1": "[VERBATIM COMMENT 1]",
+  "comment_2": "[VERBATIM COMMENT 2]",
+  "comment_3": "[VERBATIM COMMENT 3]",
+  "code_redemptions_to_date": "[N]",
+  "code_redemptions_as_of": "",
+  "retailer_velocity": "",
+  "learned": "[WHAT WE LEARNED 1]\n[WHAT WE LEARNED 2]\n[WHAT WE LEARNED 3]",
+  "recommendation": "[RENEW INTO WHICH OFFICES, ADJUST WHAT, OR STOP]",
+  "prepared_by": ""
+}
+</script>
+<!-- ========================================================================= -->
+
+<script src="../../system/brand.js"></script>
+<script src="../../system/dd-template.js"></script>
+<script src="../../system/dd-dates.js"></script>
+<script src="../../system/dd-docs.js"></script>
+<script src="../../system/dd-report.js"></script>
+<script>
+(function () {
+  'use strict';
+  document.getElementById('dd-report-css').textContent = DDReport.CSS;
+  const YN = [['[Y/N]', 'choose'], ['Y', 'Y: within one business day'], ['N', 'N: later']];
+  const FIELDS = [
+    { group: 'Campaign', key: 'brand_name', label: 'Brand', required: true, help: 'From paid_brands.csv: brand_name.' },
+    { group: 'Campaign', key: 'product_sku', label: 'Product (SKU)', help: 'From product_sku.' },
+    { group: 'Campaign', key: 'cluster', label: 'Cluster', help: 'Neighborhoods, as you describe them to the brand.' },
+    { group: 'Campaign', key: 'tier', label: 'Tier', options: [['[TIER]', 'choose'], ['founding', 'Founding'], ['standard', 'Standard']], help: 'From paid_brands.tier.' },
+    { group: 'Campaign', key: 'campaign_id', label: 'Campaign ID', required: true, help: 'e.g. CMP-001. From campaign_actuals.campaign_id.' },
+    { group: 'Campaign', key: 'drop_date', label: 'Drop date (day 1)', required: true, help: 'YYYY-MM-DD, a Tuesday or Wednesday. The window, report date and day-30 check are worked out from it.' },
+    { group: 'Campaign', key: 'report_date', label: 'Report date (optional)', help: 'Leave empty to print the due date, 7 business days after the drop.' },
+    { group: 'Offices', key: 'offices', type: 'table', label: 'One row per office', required: true, minRows: 1, maxRows: 12,
+      help: 'From the operations tracker. Counts are whole numbers. Use letters (A, B, C) unless the office agreed to be named.',
+      rowLabel: (k) => 'Office ' + String.fromCharCode(65 + k),
+      summary: (o) => [o.industry, o.units_placed && 'placed ' + o.units_placed].filter((x) => x && !DD.isPlaceholder(String(x))).join(' · '),
+      newRow: (k) => ({ office_label: String.fromCharCode(65 + k), industry: '[INDUSTRY]', headcount_band: '[BAND]', units_delivered: '[N]', units_placed: '[N]', placed_within_1bd: '[Y/N]', units_topped_up: '', units_depleted_day5: '[N]', survey_responses: '[N]', qr_scans: '[N]', placement_photo: '[PHOTO]', later_photo: '[PHOTO]', later_photo_day: '5' }),
+      columns: [
+        { key: 'office_label', label: 'Label in the report', help: 'A, B, C... or the office name if it agreed to be named.' },
+        { key: 'industry', label: 'Industry', help: 'e.g. Software, Architecture.' },
+        { key: 'headcount_band', label: 'Tuesday headcount', options: DDReport.BAND_OPTIONS, help: 'From the office intake.' },
+        { key: 'units_delivered', label: 'Delivered (drop day)', help: 'Units handed over at the office. campaign_actuals: units_delivered.' },
+        { key: 'units_placed', label: 'Placed', help: 'Units visible in the placement photo.' },
+        { key: 'placed_within_1bd', label: 'Placed within one business day?', options: YN },
+        { key: 'units_topped_up', label: 'Topped up on day 3 (0 if none)', help: 'Units added from your reserve.' },
+        { key: 'units_depleted_day5', label: 'Depleted by day 5', help: 'Placed plus topped up, minus what was left on day 5.' },
+        { key: 'survey_responses', label: 'Survey responses', help: 'Responses from this office\'s QR and Slack link.' },
+        { key: 'qr_scans', label: 'QR scans', help: 'From this office\'s short link.' },
+        { key: 'placement_photo', label: 'Placement photo (wide shot, day 1)', type: 'image', help: 'Press Remove if the office never sent one: the report then says "No photo received".' },
+        { key: 'later_photo', label: 'Later photo (close shot)', type: 'image' },
+        { key: 'later_photo_day', label: 'Later photo taken on', options: [['5', 'day 5'], ['3', 'day 3']] }
+      ] },
+    { group: 'Survey (from the survey export)', key: 'survey_tried_yes', label: 'Said yes to "Did you try it?"', help: 'A count, not a percentage.' },
+    { group: 'Survey (from the survey export)', key: 'tried_no_didnt_see', label: 'Did not try: "didn\'t see it" (optional)' },
+    { group: 'Survey (from the survey export)', key: 'tried_no_not_for_me', label: 'Did not try: "not for me" (optional)' },
+    { group: 'Survey (from the survey export)', key: 'tried_no_gone', label: 'Did not try: "gone by the time I looked" (optional)' },
+    { group: 'Survey (from the survey export)', key: 'survey_rating_avg', label: 'Average rating, 1 to 5', help: 'One decimal, e.g. 4.1.' },
+    { group: 'Survey (from the survey export)', key: 'survey_rating_n', label: 'Number of ratings' },
+    { group: 'Survey (from the survey export)', key: 'survey_buy_yes', label: 'Would buy: yes (count)' },
+    { group: 'Survey (from the survey export)', key: 'survey_buy_maybe', label: 'Would buy: maybe (count)' },
+    { group: 'Survey (from the survey export)', key: 'survey_buy_no', label: 'Would buy: no (count)' },
+    { group: 'Survey (from the survey export)', key: 'comments_total', label: 'How many comments there were in total (optional)' },
+    { group: 'Survey (from the survey export)', key: 'comment_1', label: 'Comment 1, word for word', multiline: true, rows: 3, help: 'Copy and paste from the export. Never fix spelling or reword. Replace any name or identifying detail with [name removed] (legal pack file 13, rule D10). If you must cut, mark the cut with [...] and keep every remaining word.' },
+    { group: 'Survey (from the survey export)', key: 'comment_2', label: 'Comment 2, word for word', multiline: true, rows: 3 },
+    { group: 'Survey (from the survey export)', key: 'comment_3', label: 'Comment 3, word for word', multiline: true, rows: 3, help: 'Pick three that are useful to the brand, including a critical one if there is one.' },
+    { group: 'Purchases', key: 'code_redemptions_to_date', label: 'Code redemptions to date', help: 'The number the brand reports. campaign_actuals: code_redemptions_day30 at day 30.' },
+    { group: 'Purchases', key: 'code_redemptions_as_of', label: 'Redemptions counted up to (date)', help: 'Leave empty to print the report date.' },
+    { group: 'Purchases', key: 'retailer_velocity', label: 'Retailer velocity (optional)', multiline: true, rows: 2, help: 'Only if the brand shares store-level sales for the nearest retailer, two weeks before and after. Write what they sent, with the source.' },
+    { group: 'What we learned and what next', key: 'learned', label: 'What we learned: three lines', multiline: true, rows: 4, help: 'One bullet per line. Include anything the brand should change: flavor, size, card copy.' },
+    { group: 'What we learned and what next', key: 'recommendation', label: 'Recommendation', multiline: true, rows: 3, help: 'Renew into which offices, adjust what, or stop. Plain words.' },
+    { group: 'What we learned and what next', key: 'prepared_by', label: 'Prepared by (optional)', help: 'Leave empty to use FOUNDER_NAME from brand.json.' }
+  ];
+
+  function render(sheet, r, i) {
+    sheet.classList.add('doc');
+    sheet.innerHTML = DDReport.page(r) + DDReport.appendix(r);
+    DDReport.validate(r, i);
+  }
+  function fit(sheet, r, i) { DDReport.fit(sheet, i); }
+
+  DD.init({
+    title: 'campaign report',
+    fields: FIELDS, render, fit, sheetClass: 'doc',
+    confirmBeforePrint: 'I checked every photo shows no identifiable people, and every comment is copied word for word',
+    confirmResetKeys: ['comment_1', 'comment_2', 'comment_3', 'placement_photo', 'later_photo'],
+    fileStem: (r) => 'report_' + (r.campaign_id || 'campaign'),
+    printLabel: 'Print or save as PDF',
+    printHelp: '<b>To make the PDF:</b> press the button, choose Destination "Save as PDF", Paper Letter, Scale 100, Margins Default, and turn on "Background graphics". One page, plus an evidence page when photos are attached.'
+  });
+})();
+</script>
+</body>
+</html>

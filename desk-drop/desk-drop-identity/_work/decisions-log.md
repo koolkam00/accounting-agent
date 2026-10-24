@@ -98,3 +98,12 @@ R1-11 Chrome-only contacts (system/details.html); R1-16 guide photos; tests for 
   office one-pager: four-week promise removed, photo ask aligned with file 03 and the report slots.
   Measured fits: report 10 offices both photo rows (builder sample), 12 offices and 10+velocity keep the day-1 strip,
   longtext/10-max move photos (last resort). Proposal 10/11/12 offices + map + 4 stores fit; founding + map + 4 stores fit.
+- Tent card v1.2: logo slot (wide logo replaces the typed name, compact logo sits beside it; logo 0.9 to 0.55 in first in the
+  give-way); "Nowhere" removed (single_ingredient copies the product's name; none_on_label is refused); split mode puts the
+  whole ingredient list on the FRONT ("this side faces the room"), story and QR on the other face; give-way now drops the
+  product line before the name shrinks, and re-widens the name at each size. Case label and tent card get a record picker.
+- details.html: Chrome-only details (download brand.js, copy signatures), system/dd-signature.js shared with build-signature,
+  render/brand-sync.js copies details saved from Chrome into brand.json on the next terminal build.
+- Proposal: tries six arrangements each with its give-way (terms right, two-up roster, three-up roster with neighborhoods
+  line for 9+, timeline strip); all 10/11/12-office map cases and founding+map fit with blank, real-length and long details.
+  Payment and eye-level wording follow agreement v0.8 (founding paid within five business days of the invoice).

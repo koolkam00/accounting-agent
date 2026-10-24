@@ -4,6 +4,8 @@
 // Usage (from website/): node tests/e2e.js      Writes tests/out/e2e-results.json and _shots/states/.
 const { chromium } = require('playwright');
 const { spawn } = require('child_process');
+const { buildSample } = require('./sample_build');
+const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
@@ -243,6 +245,102 @@ async function main() {
       assert(!/founding price|\$600/i.test(home), 'founding price still on the home page');
       ok('founding tier retired with one setting: founding price gone, standard and extra office stay; STAGING false removes noindex and bar');
       await ctx.close();
+    }
+
+    // ---------- founding tier retired: question 6 asks about $1,500 and the row says brand-2.0 ----------
+    {
+      const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+      await ctx.route('**/site.config.js', r => r.fulfill({ contentType: 'application/javascript', body: config([...LIVE, [/FOUNDING_TIER_OPEN: true/, 'FOUNDING_TIER_OPEN: false']]) }));
+      const page = await ctx.newPage();
+      await page.goto(SITE + 'brands.html#apply', { waitUntil: 'networkidle' });
+      const q6 = await page.innerText('#b-q6_contact_can_approve_600 legend');
+      const fit6 = await page.innerText('.fit-list li:nth-child(6)');
+      assert(q6.includes('$1,500') && !q6.includes('$600'), 'q6 legend: ' + q6);
+      assert(fit6.includes('$1,500') && !fit6.includes('$600'), 'check 6: ' + fit6);
+      await page.click('#brand-form button[type="submit"]');
+      const q6err = await page.$$eval('#brand-form .error-summary li', l => l.map(x => x.textContent).find(t => t.startsWith('6.')));
+      assert(q6err && q6err.includes('$1,500') && !q6err.includes('$600'), 'error summary label for q6: ' + q6err);
+      for (const [k, v] of Object.entries(BRAND)) await page.fill(`#brand-form [name="${k}"]`, v);
+      await page.selectOption('#brand-form select[name="category"]', 'bars');
+      for (const [n, v] of [['budget_approver_is_contact', 'Y'], ['can_issue_discount_code', 'N'], ['preferred_timing', 'Just exploring'],
+        ['q1_sealed_shelf_stable_60d', 'Y'], ['q2_labeled_ingredients_allergens', 'Y'], ['q3_buy_path_near_cluster', 'Y'],
+        ['q4_can_ship_275_in_10bd', 'Y'], ['q5_product_liability_insurance', 'Y'], ['q6_contact_can_approve_600', 'N']]) await page.check(`#brand-form input[name="${n}"][value="${v}"]`);
+      await page.check('#brand-form input[name="excluded_category_confirmed"]');
+      await page.click('#brand-form button[type="submit"]');
+      await page.waitForSelector('#apply .form-done:not([hidden])', { timeout: 10000 });
+      await wait(300);
+      const rows = readCsv(path.join(OUT, 'brand_intake.csv'));
+      const last = Object.fromEntries(rows[0].map((c, i) => [c, rows[rows.length - 1][i]]));
+      assert.strictEqual(last.form_version, 'brand-2.0', 'form_version once the founding tier is closed');
+      assert.strictEqual(last.q6_contact_can_approve_600, 'N');
+      ok('founding tier closed: question 6 and check 6 ask about $1,500 (error summary too), and the row is marked brand-2.0');
+      await ctx.close();
+    }
+
+    // ---------- production copy: no JavaScript, link previews, extension-less URLs, nested 404 ----------
+    {
+      const pub = buildSample(path.join(__dirname, 'out', 'tmp', 'publish-' + Date.now()), { brandName: 'Testname Collective' });
+      // A small stand-in for Cloudflare Pages: /brands serves brands.html, a missing path gets /404.html.
+      const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.txt': 'text/plain', '.xml': 'application/xml' };
+      const cf = http.createServer((req, res) => {
+        let u = decodeURIComponent(req.url.split('?')[0]);
+        if (u.endsWith('/')) u += 'index.html';
+        let f = path.join(pub, u);
+        if (!fs.existsSync(f) && fs.existsSync(f + '.html')) f += '.html';
+        let status = 200;
+        if (!f.startsWith(pub) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { f = path.join(pub, '404.html'); status = 404; }
+        res.writeHead(status, { 'Content-Type': types[path.extname(f)] || 'application/octet-stream' });
+        fs.createReadStream(f).pipe(res);
+      }).listen(8129, '127.0.0.1');
+      await wait(200);
+      const CF = 'http://127.0.0.1:8129/';
+      try {
+        const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, javaScriptEnabled: false });
+        const page = await ctx.newPage();
+        for (const p of ['index', 'brands', 'offices', 'privacy', 'survey-privacy']) {
+          await page.goto(CF + (p === 'index' ? '' : p), { waitUntil: 'load' });
+          const r = await page.evaluate(() => ({
+            title: document.title, header: document.querySelector('.site-header .dd-brand-name').textContent,
+            site: (document.querySelector('meta[property="og:site_name"]') || {}).content, robots: document.querySelectorAll('meta[name="robots"]').length,
+            canonical: (document.querySelector('link[rel="canonical"]') || {}).href, text: document.body.innerText,
+            footerMail: document.querySelector('.site-footer a[href^="mailto:"]') && document.querySelector('.site-footer a[href^="mailto:"]').textContent,
+            phoneLines: [...document.querySelectorAll('[data-config-line="PHONE"]')].filter(e => !e.hidden).length }));
+          assert(r.title.endsWith(' · Testname Collective'), p + ' title: ' + r.title);
+          assert.strictEqual(r.header, 'Testname Collective', p + ' header name without JavaScript');
+          assert.strictEqual(r.site, 'Testname Collective', p + ' og:site_name');
+          assert.strictEqual(r.robots, 0, p + ' production copy has no robots noindex');
+          assert.strictEqual(r.canonical, 'https://sample.example/' + (p === 'index' ? '' : p), p + ' canonical is extension-less');
+          assert(!/Desk\s*Drop/i.test(r.text + r.title), p + ': old name in the production copy');
+          assert(!/\[(EMAIL|FOUNDER NAME|POSTAL ADDRESS|PHONE|LINKEDIN URL|COMPANY NAME)\]/.test(r.text), p + ': config placeholder left in the production copy');
+          assert.strictEqual(r.footerMail, 'hello@sample.example');
+          assert.strictEqual(r.phoneLines, 0, p + ': PHONE "" hides the phone lines');
+        }
+        for (const [p, form] of [['offices', '#office-form'], ['brands', '#brand-form']]) {
+          await page.goto(CF + p, { waitUntil: 'load' });
+          assert(await page.isDisabled(`${form} button[type="submit"]`), p + ': submit disabled without JavaScript');
+          assert.strictEqual(await page.getAttribute(form, 'method'), 'post');
+          assert(/address at the bottom of this page/.test(await page.innerText('#main')), p + ': noscript notice shown');
+          await page.fill(`${form} input[type="text"] >> nth=0`, 'SAMPLE');
+          await page.keyboard.press('Enter');
+          await wait(300);
+          assert.strictEqual(page.url(), CF + p, p + ': Enter without JavaScript does not send the form or put answers in the address bar');
+        }
+        const sm = fs.readFileSync(path.join(pub, 'sitemap.xml'), 'utf8');
+        assert(sm.includes('<loc>https://sample.example/brands</loc>') && !sm.includes('.html'), 'sitemap lists extension-less URLs');
+        await ctx.close();
+        ok('production copy without JavaScript: name, title, og:site_name, contact details and canonical (extension-less) are in the HTML; no noindex; forms cannot be sent and say why');
+
+        const ctx2 = await browser.newContext({ viewport: { width: 390, height: 844 } });
+        const p2 = await ctx2.newPage();
+        const resp = await p2.goto(CF + 'brands/some/missing-page', { waitUntil: 'networkidle' });
+        assert.strictEqual(resp.status(), 404);
+        const nested = await p2.evaluate(() => ({ border: getComputedStyle(document.querySelector('.site-header')).borderBottomWidth,
+          links: [...document.querySelectorAll('main a')].map(a => a.getAttribute('href')), fontsOk: [...document.styleSheets].length }));
+        assert.strictEqual(nested.border, '3px', 'site.css applies on a nested 404');
+        assert.deepStrictEqual(nested.links, ['/', '/brands', '/offices'], '404 links are root-absolute');
+        await ctx2.close();
+        ok('production 404 served for a nested missing path keeps its styles and working links');
+      } finally { cf.close(); }
     }
   } finally {
     await browser.close();

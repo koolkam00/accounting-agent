@@ -211,9 +211,11 @@ def export(wb, outdir):
     rows = []
     r = r0 + 1
     while ws.cell(r, 3).value is not None:
-        rows.append([ws.cell(r, c).value for c in range(2, 7)])
+        rows.append([ws.cell(r, c).value for c in range(2, 9)])
         r += 1
+    # review R3-05: refunds owed on campaigns not yet run, and the net if you stop
     done.append(write(outdir, "cash_at_stop_points.csv", ["review", "date", "paid_out_before_review_day_usd", "brand_cash_received_by_review_day_usd",
+                                                          "refunds_owed_for_drops_not_run_usd", "net_if_you_stop_here_usd",
                                                           "cumulative_net_cash_end_of_review_week_usd"], rows))
     a, b = refs["dash_gate_rows"].split("!")[1].replace("$", "").split(":")
     rows = [[ws.cell(r, c).value for c in range(1, 9)] for r in range(int(a[1:]), int(b[1:]) + 1)]

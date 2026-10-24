@@ -282,3 +282,172 @@ PUBLIC_EXCLUDE = {
     "Sunac (765 Sixth Ave)": "Neighbourhood deli-market format with no natural set confirmed, so private map only.",
     "Sunac (4 West 18th St)": "Neighbourhood deli-market format with no natural set confirmed, so private map only.",
 }
+
+
+# ================================================================ review round 1 (2026-10-24)
+# Fixes for _review/round-1.md. Every value below cites a source opened on 2026-10-24 or a
+# fact already in the row's notes.
+
+# R1-05: undated third-party profiles are undated, not fresh. A "high" needs a dated source on or
+# after CUTOFF_24M, or the company's or operator's own live page, plus one independent confirmation.
+UNDATED_PROFILE_DOMAINS = {"builtinnyc.com", "builtin.com", "deskpass.com", "api.deskpass.com", "liquidspace.com"}
+
+BI = "https://www.builtinnyc.com/company/"
+REVIEW1_OVERRIDES = {
+    # kept high: the company's own live page (opened 2026-10-24) confirms the address; Built In is the independent second source
+    "CompStak": {
+        "address_source_url": "https://compstak.com/about", "address_source_date": TODAY, "address_source_type": "company-site",
+        "second_source_url": BI + "compstak/offices", "second_source_date": "2026-10-23",
+        "note_add": "Review round 1: CompStak's own About page (opened 2026-10-24) prints '675 6th Ave, Floor 4, New York, NY 10010', so the row stays high on its own page plus Built In. The CO 2022-12-20 lease is the older third source.",
+    },
+    "Empathy": {
+        "address_source_url": "https://www.empathy.com/", "address_source_date": TODAY, "address_source_type": "company-site",
+        "second_source_url": BI + "empathy/offices", "second_source_date": "2026-10-23",
+        "note_add": "Review round 1: Empathy's own homepage structured data (opened 2026-10-24) gives streetAddress '56 W 22nd Street', 10010, so the row stays high on its own page plus Built In. The CO 2024-03-06 lease is the older third source.",
+    },
+    "Signal AI": {
+        "address_source_url": "https://www.signal-ai.com/", "address_source_date": TODAY, "address_source_type": "company-site",
+        "second_source_url": BI + "signal-ai/offices", "second_source_date": "2026-10-23",
+        "note_add": "Review round 1: Signal AI's own site footer (opened 2026-10-24) lists 'United States 440 Park Avenue South, 14th floor, New York NY 10016' beside its London office, so the row stays high on its own page plus Built In.",
+    },
+    "Simplebet": {
+        "address_source_url": "https://commercialobserver.com/2025/05/empire-capital-buys-373-381-park-avenue-south/",
+        "address_source_date": "2025-05-22", "address_source_type": "leasing-press",
+        "second_source_url": BI + "simplebet/offices", "second_source_date": "2026-10-23",
+        "note_add": "Review round 1: CO 2025-05-22 (opened 2026-10-24): 'Current tenants at 373 Park Avenue South include sports betting firm Simplebet', a dated source under 24 months, so the row stays high with Built In as the independent second source. The company site failed TLS from this environment.",
+    },
+    # lowered: no dated source under 24 months and no own page reachable
+    "Morning Brew": {"confidence": "medium",
+                     "note_add": "Review round 1: lowered from high to medium. Built In is undated and the only other source is the CO 2022-02-24 lease (older than 24 months); morningbrew.com's contact and legal pages print no address (opened 2026-10-24)."},
+    "Bombas": {"confidence": "medium",
+               "note_add": "Review round 1: lowered from high to medium. Built In is undated and the CO lease is 2019-04-10; bombas.com returned HTTP 429 again on 2026-10-24."},
+    "accessiBe": {"confidence": "medium",
+                  "note_add": "Review round 1: lowered from high to medium. Built In is undated and the CO lease is 2022-07-07; accessibe.com's terms and privacy pages print no street address (opened 2026-10-24)."},
+    "Pumpkin Pet Insurance": {
+        "confidence": "low", "lease_status": "occupancy-unconfirmed",
+        "note_add": "Review round 1: CONFLICT, lowered from high to low. Pumpkin's own homepage (opened 2026-10-24) says the agency is 'Domiciled in New York with offices at 666 3rd Avenue, Floor 23, New York, NY 10017' and gives that as its mailing address, which is outside the boundary. Against it: CO 2026-06-08 (https://commercialobserver.com/2026/06/mediaplus-group-lease-432-park-avenue-south/) lists Pumpkin among 432 Park Ave S tenants, citing its January 2023 lease, and Built In lists 432 PAS. Check the 432 PAS lobby directory on the walk before any outreach.",
+    },
+    # R1-06: a source counts the NYC office; R1-20: current office
+    "Normal Computing": {
+        "headcount_band": "under-40", "headcount_scope": "nyc-office",
+        "headcount_source_url": "https://commercialobserver.com/2026/09/normal-computing-inspiren-leases-61-west-23rd-street/",
+        "headcount_source_date": "2026-09-21",
+        "note_add": "Review round 1: band changed from 40-75 (Built In's whole-company 51) to under-40, scope nyc-office, because the address source itself counts the NYC office: about 30 employees at the new HQ (CO 2026-09-21). The brief's hard floor is 30 and 30 to 39 is the founder's call, so the row stays a candidate for the founder to decide.",
+    },
+    "Synthesia": {
+        "note_add": "Review round 1 correction: the current office at 245 Fifth Ave is INSIDE the boundary (not 'outside slice'). CO 2025-08-14 (https://commercialobserver.com/2025/08/synthesia-lease-moinian-245-fifth-avenue/, opened 2026-10-24): a five-year direct lease of 13,600 sf at 245 Fifth Ave, expanding from 6,490 sf on the 16th floor taken in April 2023 when it left 111 E 14th St; CO 2026-10-08 says it will relocate from 245 Fifth to 675 Sixth Ave, date unclear. So Synthesia sits at 245 Fifth Ave today, until the move date. Built In's 111 E 14th St is stale (pre-2023).",
+    },
+}
+FOUNDER_CALL_30_39 = {"Normal Computing"}  # under-40 rows kept as candidates: a source puts the NYC office at about 30
+
+# R1-09, R1-11: notes rewritten to state sources only (no size guesses) and to keep the business name out of the data
+NOTE_EDITS = {
+    "Lepercq de Neuflize & Co.": [("Headcount not found; may be under 40.", "Headcount not sourced (no Built In total, no company figure); founder to confirm at intake.")],
+    "Union Square Hospitality Group": [("Corporate headcount not found; total company including restaurants is likely large, founder to confirm before treating it as a pantry office.",
+                                        "Corporate office headcount not sourced; any company-wide count would include restaurant staff, so it would not describe this office. Founder to confirm at intake before treating it as a pantry office.")],
+    "Gresham Investment Management": [("Headcount unknown; may be under 40.", "Headcount not sourced; founder to confirm at intake.")],
+    "Battery Ventures": [("NYC headcount unknown and may be under 40.", "NYC headcount not sourced; founder to confirm at intake.")],
+    "Delos Capital": [("Headcount unknown; may be under 40.", "Headcount not sourced; founder to confirm at intake.")],
+    "Roboflow": [("the NYC office alone may be under 40.", "the whole company is 44 across two offices, so the NYC office is under 44 by arithmetic; its own count is not sourced.")],
+    "Cobalt Service Partners": [("Headcount not sourced; may be under 40.", "Headcount not sourced; founder to confirm at intake.")],
+    "Instant": [("so the NYC team is likely smaller.", "so the NYC team is at most 40 by arithmetic; its own count is not sourced.")],
+    "Vitesse PSP": [("NYC office size suggests a small team, headcount not sourced.", "NYC headcount not sourced.")],
+    "The Information": [("NYC bureau may be under 40 people (not sourced).", "NYC bureau headcount not sourced.")],
+    "Heard City": [("Headcount not sourced; may be under 40.", "Headcount not sourced; founder to confirm at intake.")],
+    "Sussex Publishers (Psychology Today)": [("Small space; headcount not sourced and may be under 40.", "Headcount not sourced; founder to confirm at intake.")],
+    "Madison Square Park Conservancy": [("Headcount not stated; may be under 40, founder to confirm.", "Headcount not sourced; founder to confirm at intake.")],
+    "OTTO Brand Lab": [("Headcount not found; office size suggests it may be under 40, founder to confirm.", "Headcount not sourced (no Built In total, no company figure); founder to confirm at intake.")],
+    "Sierra": [("162 total employees, likely understated.", "162 total employees; the Built In count is undated."),
+               ("A 94,000 SF space may not be fully occupied yet.", "Occupancy of the 94,000 SF space is not confirmed.")],
+    "Eton (US office and showroom)": [("may be under 40 people in NYC.", "NYC headcount not sourced.")],
+    "Christian Louboutin": [("headcount unknown; likely over 500 globally, not sourced.", "headcount not sourced.")],
+    "Biologique Recherche (US)": [("size suggests under 40 onsite, founder to confirm.", "headcount not sourced; founder to confirm at intake.")],
+    "Davies Group": [("Company-wide headcount not sourced (likely large).", "Company-wide headcount not sourced.")],
+    "IMG Worldwide (WME Group)": [("likely large but headcount not sourced.", "the slice found no count (the Wikipedia figure added at assembly is below).")],
+    "The Ancillary Project": [("Headcount not found; may be under 40.", "Headcount not sourced; founder to confirm at intake.")],
+    "Casa Komos Brand Group": [("never as a Desk Drop brand.", "never as a brand on this programme (alcohol is excluded).")],
+    "Daily Harvest": [("(frozen, so not a Desk Drop product)", "(frozen, so not an eligible product: refrigerated and frozen goods are excluded)")],
+    "Suntory Global Spirits (Jim Beam Brands)": [("the NYC office itself may be in Desk Drop's range", "the NYC office alone may fit the 40-250 band")],
+    "RepRally": [("Also relevant to Desk Drop's brand side", "Also relevant to the programme's brand side")],
+}
+UNKNOWN_BAND_REASON["SEIU 32BJ and 32BJ Benefit Funds"] = ("Staff count not published; the union's membership is building workers, not office staff. "
+                                                           "CO reports 245,000 sf here.")
+# Phrases that must never appear in a note (build.py fails if one does)
+BANNED_NOTE_PATTERNS = [r"suggests? (?:it )?(?:may be )?(?:under|over)", r"may be under", r"likely over", r"likely understated",
+                        r"likely large", r"likely smaller", r"size suggests", r"Desk Drop"]
+
+SEC_NOTE = ("SEC EDGAR source (sec.gov): this agent will not re-open it, because EDGAR serves only requests that carry a "
+            "contact email and the project rule forbids sending one; the founder may open it in a browser.")
+
+# R1-10: coworking source dates are publication dates; the independent source moves from notes into second_source_url
+DESKPASS_NYC = "https://www.deskpass.com/us-en/ny/new-york-city"
+COWORKING_REVIEW1 = {
+    "W-07": {"second_source_url": DESKPASS_NYC},
+    "W-08": {"second_source_url": DESKPASS_NYC},
+    "W-15": {"source_date": "2025-06-19", "second_source_url": "https://commercialobserver.com/2024/11/the-malin-lease-895-broadway"},
+    "W-06": {"second_source_url": "https://commercialobserver.com/2026/03/industrious-leases-110-east-42nd-street/"},
+    "W-12": {"second_source_url": "https://www.connectcre.com/stories/industrious-commits-to-full-floor-space-in-flatiron-district/"},
+    "W-18": {"source_date": "2024-06-26", "second_source_url": DESKPASS_NYC, "confidence": "low", "status": "unverified",
+             "notes_add": "Review round 1: lowered from high to low. The Flatiron NoMad Partnership profile is dated 2024-06-26 (older than 24 months) and the Deskpass index line is an undated listing whose detail page returned 'space not found'; IWG's Spaces held a 2018 lease for the building. Walk it before treating it as open."},
+    "W-14": {"source_date": "2026-03-10", "second_source_url": "https://www.neuehouse.com/private-events/madison-square/"},
+    "W-17": {"second_source_url": "https://liquidspace.com/US/NY/new-york/select-office-suites-flatiron"},
+    "W-09": {"second_source_url": "https://commercialobserver.com/2026/03/industrious-leases-110-east-42nd-street/",
+             "notes_add": "CO 2026-03-19 URL confirmed on 2026-10-24: https://commercialobserver.com/2026/03/industrious-leases-110-east-42nd-street/ ('At J.P. Morgan Investment Management's 776 Avenue of the Americas, Industrious plans to grow by 24,000 square feet')."},
+    "W-13": {"second_source_url": "https://www.deskpass.com/us-en/ny/new-york-city/coworking-space/nomad"},
+    "W-11": {"second_source_url": "https://commercialobserver.com/2026/02/industrious-lease-386-park-avenue-south/"},
+    "W-16": {"source_date": "2024-11-18", "second_source_url": "https://api.deskpass.com/api/spaces/the-malin-nomad"},
+    "W-21": {"second_source_url": "https://api.deskpass.com/api/spaces/luminary"},
+    "W-22": {"second_source_url": "https://api.deskpass.com/api/spaces/sage-workspace"},
+    "W-23": {"second_source_url": "https://api.deskpass.com/api/spaces/nomadworks"},
+    "W-20": {"source_date": "2025-12-04", "second_source_url": "https://residentcompanyclub.com/"},
+    "W-10": {"second_source_url": DESKPASS_NYC},
+    "W-19": {"second_source_url": "https://commercialobserver.com/2025/12/coworking-resident-company-club-lease-113-university-place/"},
+    "W-24": {"second_source_url": "https://api.deskpass.com/api/spaces/two-park-avenue-coworking"},
+}
+
+# R1-04: published store coordinates beat the geocode
+PIN_OVERRIDES = {
+    "Whole Foods Market NoMad": (40.74358, -73.986105, "wholefoodsmarket.com/stores/nomad structured data, opened 2026-10-24"),
+    "Whole Foods Market Union Square": (40.7347324, -73.9908921, "wholefoodsmarket.com/stores/unionsquare structured data, opened 2026-10-24"),
+    "Whole Foods Market Chelsea": (40.745148, -73.995342, "wholefoodsmarket.com/stores/chelsea structured data, opened 2026-10-24"),
+}
+
+# R1-12, R1-13: retailer corrections and the public map's wording
+RETAILER_REVIEW1 = {
+    "Trader Joe's Chelsea (store 543)": {"emerging_brand_evidence": "Assumption: Trader Joe's is mostly private label (not sourced); confirm on the walk."},
+    "Trader Joe's Union Square (store 540)": {"emerging_brand_evidence": "Assumption: Trader Joe's is mostly private label (not sourced); confirm on the walk."},
+    "Wholesome Organic Market": {"street_address": "343 Second Avenue, New York, NY 10003",
+                                 "notes_add": "Review round 1: ZIP corrected from 10010 to 10003, as on NYS licence 752904 (re-opened 2026-10-24: 2,800 sq ft)."},
+}
+PUBLIC_EXCLUDE.update({
+    "Wholesome Organic Market": "Evidence is the licence name only (no operator page opened), so private map only until it is walked.",
+    "Merci Market Union Square": "Deli-and-grocery format with no natural or emerging set confirmed, the same reason the Sunac delis are left off: private map only until walked.",
+})
+PUBLIC_DESC = {  # plain public wording of the store format, from each store's own site or licence record
+    "Eataly NYC Flatiron": "Italian food market and restaurants",
+    "Fairway Market Chelsea": "Specialty supermarket",
+    "Fairway Market Kips Bay": "Specialty supermarket",
+    "Whole Foods Market NoMad": "Natural and organic supermarket",
+    "Whole Foods Market Union Square": "Natural and organic supermarket",
+    "Whole Foods Market Chelsea": "Natural and organic supermarket",
+    "Westside Market NYC (84 Third Ave)": "Gourmet neighbourhood market",
+    "Westside Market NYC (180 Third Ave)": "Gourmet neighbourhood market",
+    "Westside Market NYC (170 West 23rd St)": "Gourmet neighbourhood market",
+    "Westside Market NYC (77 Seventh Ave)": "Gourmet neighbourhood market",
+    "Eden Gourmet Marketplace Gramercy Park": "Gourmet and specialty grocer",
+    "Citarella Greenwich Village": "Gourmet market",
+    "Wegmans Astor Place": "Large supermarket with natural, organic and specialty sections",
+    "LifeThyme Natural Market": "Independent natural and organic grocer",
+}
+
+# R1-17: the model route leaves out food and drink brand offices (a pantry full of a rival's product invites a veto)
+CPG_INDUSTRY_RX = r"beverage|food brand|snack|drink|spirits|wine|coffee brand|consumer packaged|\bcpg\b"
+
+NOTE_EDITS["Suntory Global Spirits (Jim Beam Brands)"].append(("but Desk Drop brands exclude alcohol", "but the programme's brands exclude alcohol"))
+
+# R1-16: company-wide counts for near-miss rows whose notes give no parseable number
+NEAR_COUNT_OVERRIDES = {
+    "Amazon": (1576000, "Wikipedia infobox, Amazon (company): 1,576,000 employees (2025), opened 2026-10-24"),
+    "Microsoft (AdTech hub)": (223000, "Wikipedia infobox, Microsoft: 223,000 employees (2026), opened 2026-10-24"),
+    "MSQ Partners": (1850, "MSQ's own About page as quoted in the slice notes: '1850+' people"),
+}

@@ -5,6 +5,7 @@ Writes _build/out/*.pkl-free CSV intermediates (master_*.csv) that export.py tur
 the deliverables. Run from anywhere: python3 _build/assemble.py
 """
 import json
+import math
 import os
 import re
 import subprocess
@@ -25,6 +26,7 @@ sys.path.insert(0, HERE)
 
 import grid  # noqa: E402
 import boundary  # noqa: E402
+import frontage  # noqa: E402
 import resolutions as R  # noqa: E402
 
 SLICES = ["S1", "S2", "S3", "S4"]
@@ -81,7 +83,7 @@ def apply_merges(c):
 
 
 def apply_overrides(c):
-    for name, o in R.OVERRIDES.items():
+    for name, o in list(R.OVERRIDES.items()) + list(R.REVIEW1_OVERRIDES.items()):
         idx = c.index[c.company_name == name]
         assert len(idx) == 1, name
         i = idx[0]
@@ -118,12 +120,19 @@ def lease_fields(c):
 
 
 def audit_confidence(c):
-    """Apply the B confidence scale strictly. Downgrades only, each noted."""
+    """Apply the B confidence scale strictly. Downgrades only, each noted.
+    Review round 1 (R1-05): an undated third-party profile (Built In, Deskpass, LiquidSpace) counts
+    as one current source for medium, but it cannot be the under-24-month source of a high."""
+    def fresh(url, date):
+        return bool(url) and (date or "") >= R.CUTOFF_24M
+    def dated_fresh(url, date):
+        return fresh(url, date) and domain(url) not in R.UNDATED_PROFILE_DOMAINS
     for i, r in c.iterrows():
-        a_date = r.address_source_date or ""
-        b_date = r.second_source_date or ""
-        recent = (a_date >= R.CUTOFF_24M) or (b_date >= R.CUTOFF_24M)
-        independent = bool(r.second_source_url) and domain(r.second_source_url) != domain(r.address_source_url)
+        a_url, a_date = r.address_source_url, r.address_source_date or ""
+        b_url, b_date = r.second_source_url, r.second_source_date or ""
+        recent = fresh(a_url, a_date) or fresh(b_url, b_date)
+        recent_dated = dated_fresh(a_url, a_date) or dated_fresh(b_url, b_date)
+        independent = bool(b_url) and domain(b_url) != domain(a_url)
         same_release = "same" in r.notes.lower() and ("announcement" in r.notes.lower() or "release" in r.notes.lower())
         conf = r.confidence
         new = conf
@@ -131,6 +140,8 @@ def audit_confidence(c):
         if conf == "high":
             if not recent:
                 new = "low"; why.append("no source under 24 months old")
+            elif not recent_dated:
+                new = "medium"; why.append("the only current source is an undated third-party profile (Built In, Deskpass or LiquidSpace), which cannot carry a high")
             elif not independent:
                 new = "medium"; why.append("second source is the same publisher or missing")
             elif same_release and r.research_slice.startswith("S1") and r.company_name in ("Selldorf Architects",):
@@ -140,6 +151,57 @@ def audit_confidence(c):
         if new != conf:
             c.at[i, "confidence"] = new
             c.at[i, "notes_assembly"] = (c.at[i, "notes_assembly"] + f" Confidence lowered at assembly from {conf} to {new}: {'; '.join(why)}.").strip()
+    return c
+
+
+def note_edits(c):
+    """R1-09 and R1-11: rewrite size guesses and the business name out of the notes."""
+    for name, edits in R.NOTE_EDITS.items():
+        idx = c.index[c.company_name == name]
+        assert len(idx) == 1, name
+        i = idx[0]
+        for old, new in edits:
+            hit = False
+            for f in ("notes", "notes_assembly"):
+                if old in c.at[i, f]:
+                    c.at[i, f] = c.at[i, f].replace(old, new); hit = True
+            assert hit, (name, old)
+    return c
+
+
+def normalise_company_fields(c):
+    """R1-06 and R1-20: an unknown band has an unknown scope; a blank floor or website says unknown;
+    SEC-cited rows say the agent will not re-open the source (R1-02)."""
+    for i, r in c.iterrows():
+        if r.headcount_band == "unknown" and r.headcount_scope != "unknown":
+            c.at[i, "notes_assembly"] = (r.notes_assembly + f" Scope set to unknown at review round 1 (was {r.headcount_scope}): the band is unknown.").strip()
+            c.at[i, "headcount_scope"] = "unknown"
+        for f in ("floor", "website"):
+            if not str(r[f]).strip():
+                c.at[i, f] = "unknown"
+        if any("sec.gov" in str(r[f]) for f in ("address_source_url", "second_source_url", "headcount_source_url")):
+            c.at[i, "notes_assembly"] = (c.at[i, "notes_assembly"] + " " + R.SEC_NOTE).strip()
+    return c
+
+
+def hq_fields(c):
+    """R1-06: hq_city and hq_in_nyc from each row's Built In offices page (opened 2026-10-24, saved in
+    _work/builtin_hq_2026-10-24.csv). Unknown where the row has no Built In page or the page names no HQ."""
+    t = pd.read_csv(os.path.join(WORK, "builtin_hq_2026-10-24.csv"), dtype=str).fillna("")
+    by = {r.builtin_slug: r for r in t.itertuples()}
+    hc, hn, hu = [], [], []
+    for _, r in c.iterrows():
+        row = None
+        for u in (r.headcount_source_url, r.address_source_url, r.second_source_url):
+            m = re.search(r"builtinnyc\.com/company/([^/?#]+)", u or "")
+            if m and m.group(1) in by:
+                row = by[m.group(1)]
+                break
+        if row is not None and row.hq_city != "unknown":
+            hc.append(row.hq_city); hn.append(row.hq_in_nyc); hu.append(row.url)
+        else:
+            hc.append("unknown"); hn.append("unknown"); hu.append(row.url if row is not None else "")
+    c["hq_city"], c["hq_in_nyc"], c["hq_source_url"] = hc, hn, hu
     return c
 
 
@@ -166,7 +228,7 @@ def pluto(bbls):
             "$select": "bbl,address,latitude,longitude,bldgclass,numfloors,yearbuilt,officearea,bldgarea,zipcode,version",
             "$limit": "5000"})
         url = "https://data.cityofnewyork.us/resource/64uk-42ks.json?" + q
-        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "desk-drop-cluster-research/0.1"}), timeout=60) as f:
+        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "cluster-research-script/0.1"}), timeout=60) as f:
             rows = json.load(f)
         for r in rows:
             have[str(int(float(r["bbl"])))] = r
@@ -277,6 +339,12 @@ def load_coworking():
                 w.at[i, "notes"] = (r.notes + " " + v).strip()
             else:
                 w.at[i, f] = v
+    for i, r in w.iterrows():
+        for f, v in R.COWORKING_REVIEW1.get(r.coworking_id, {}).items():
+            if f == "notes_add":
+                w.at[i, "notes"] = (w.at[i, "notes"] + " " + v).strip()
+            else:
+                w.at[i, f] = v
     new = []
     for n in R.NEW_COWORKING:
         g = geocode(n["geocode"])
@@ -347,6 +415,12 @@ def coworking_check(c, w):
 def load_retailers():
     r = pd.read_csv(os.path.join(WORK, "retailers_research.csv"), dtype=str).fillna("")
     r["buy_path_tier"] = r.notes.str.extract(r"Buy-path tier ([ABC])", expand=False).fillna("")
+    for i, x in r.iterrows():
+        for f, v in R.RETAILER_REVIEW1.get(x.retailer_name, {}).items():
+            if f == "notes_add":
+                r.at[i, "notes"] = (r.at[i, "notes"] + " " + v).strip()
+            else:
+                r.at[i, f] = v
     return r
 
 
@@ -356,24 +430,62 @@ PIN_LOG = []
 
 
 def fix_pins(df, label):
-    """A pin for '<n> E/W <k>th Street' must sit on the <k>th St block face its house-number
-    parity names (odd north, even south). Through-lots and corner lots sometimes put the
-    geocoded point on the far frontage. Move such pins to the addressed frontage (same
-    crosstown position, 0.25 block from the street centreline); the tax lot is unchanged."""
+    """Every pin must sit on the block face its address names (review round 1, R1-04).
+    1) A published store coordinate (R.PIN_OVERRIDES) replaces the geocode outright.
+    2) frontage.face(): the pin must be on the addressed side of the street (CSCL address
+       ranges) and at least 15 m nearer the addressed street than the parallel one. A pin
+       that fails moves to its frontage: the house number interpolated along the CSCL
+       segment, 12 m inside the building line. The tax lot is unchanged.
+    3) Addresses CSCL cannot test fall back to the round-3 grid parity rule (odd numbers
+       on the north side of a numbered street)."""
     df["pin_note"] = df.get("pin_note", "")
     for i, r in df.iterrows():
-        m = STREET_ADDR.match(r.street_address.split(",")[0])
-        if not m or not r.lat:
+        if not r.lat:
+            continue
+        addr = r.street_address.split(",")[0]
+        name_key = r.get("retailer_name", "") or r.get("location_name", "")
+        if name_key in R.PIN_OVERRIDES:
+            la, lo, src = R.PIN_OVERRIDES[name_key]
+            d0 = math.dist(grid.to_m(float(r.lat), float(r.lon)), grid.to_m(la, lo))
+            t = frontage.face(la, lo, addr)
+            fr = frontage.frontage(addr, la, lo) if (t["testable"] and not t["ok"]) else None
+            if fr:  # the published point fails the block-face test (e.g. it sits in the roadway): keep its place along the street, on the address side
+                la, lo, how = fr
+                note = (f"Pin set at review round 1 from the store's own published coordinate ({src}), {d0:.0f} m from the geocode; "
+                        f"that point sits {t['d_addr']:.0f} m from the {t['label']} centreline on the wrong side, so it was moved across to the address side ({how}).")
+            else:
+                note = f"Pin set at review round 1 to the store's own published coordinate ({src}), {d0:.0f} m from the geocode."
+            df.at[i, "lat"], df.at[i, "lon"] = f"{la:.6f}", f"{lo:.6f}"
+            df.at[i, "pin_note"] = note
+            PIN_LOG.append((label, addr, "override", round(d0)))
+            continue
+        t = frontage.face(r.lat, r.lon, addr)
+        if t["testable"] and t.get("range_found"):
+            if t["ok"]:
+                continue
+            fr = frontage.frontage(addr, r.lat, r.lon)
+            if fr:
+                la, lo, how = fr
+                t2 = frontage.face(la, lo, addr)
+                df.at[i, "lat"], df.at[i, "lon"] = f"{la:.6f}", f"{lo:.6f}"
+                why = ("wrong side of the street" if t["side_ok"] is False else
+                       f"{t['d_addr']:.0f} m from {t['label']} but {t['d_par']:.0f} m from {t['par_label']}")
+                df.at[i, "pin_note"] = (f"Pin moved to frontage at review round 1: the lot-centroid pin failed the block-face test ({why}); "
+                                        f"{how}. Tax lot unchanged. New pin: {t2['d_addr']:.0f} m from {t2['label']}, "
+                                        f"{t2['d_par']:.0f} m from {t2['par_label']}.")
+                PIN_LOG.append((label, addr, "frontage", t["d_addr"], t["d_par"], t2["d_addr"], t2["d_par"], t2["ok"]))
+                continue
+        m = STREET_ADDR.match(addr)
+        if not m:
             continue
         n, k = int(m.group(1)), int(m.group(3))
         s, x = grid.sx(float(r.lat), float(r.lon))
         north = n % 2 == 1
-        ok = ((s > k) == north) and abs(s - k) <= 0.65
-        if ok:
+        if ((s > k) == north) and abs(s - k) <= 0.65:
             continue
         s2 = k + (0.25 if north else -0.25)
         la, lo = grid.latlon(s2, x)
-        PIN_LOG.append((label, r.street_address, round(s, 2), s2))
+        PIN_LOG.append((label, r.street_address, "grid-parity", round(s, 2), s2))
         df.at[i, "lat"], df.at[i, "lon"] = f"{la:.6f}", f"{lo:.6f}"
         df.at[i, "pin_note"] = (f"Pin moved at assembly from street index {s:.2f} to the {'north' if north else 'south'} "
                                 f"frontage of {k}th St named by the address (tax lot unchanged; the geocoder had placed it on the far side of the lot).")
@@ -389,6 +501,9 @@ def main():
     c = headcount_updates(c)
     c = lease_fields(c)
     c = audit_confidence(c)
+    c = note_edits(c)
+    c = normalise_company_fields(c)
+    c = hq_fields(c)
 
     b_raw = load_buildings()
     # company rows whose tax lot has no slice building row: add a bare row from the company data
@@ -436,7 +551,7 @@ def main():
         elif row.headcount_band == "over-500":
             st = "near-miss-over-500"
         elif row.headcount_band == "under-40":
-            st = "excluded-under-40"
+            st = "candidate" if row.company_name in R.FOUNDER_CALL_30_39 else "excluded-under-40"
         else:
             st = "candidate"
         c.at[i, "candidate_status"] = st

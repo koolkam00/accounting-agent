@@ -4,10 +4,17 @@ no brand name (so a rename never touches it). Drawn on the Manhattan grid, so av
 up the page. Writes public-map.svg (fonts embedded as subsets) and public-map.png.
 
 Usage: python3 public_map.py [path to a python that has fontTools]
+       python3 public_map.py [python] --brand <slug> --stores B-R-010,B-R-011 [--layout landscape] [--sample]
+
+Brand mode (review round 1, R1-08) writes brand-maps/<slug>.svg only: a 1050 x 420 landscape
+map of the boundary and the named stores, with no office pins and no business name, for the
+retailer-map slot in D's proposal. It never touches public-map.svg or map-public.geojson.
+render.js turns every brand-maps/*.svg into a PNG at twice the size.
 """
 import base64
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -23,7 +30,7 @@ import grid  # noqa: E402
 import boundary  # noqa: E402
 import router  # noqa: E402
 
-FT_PY = sys.argv[1] if len(sys.argv) > 1 else sys.executable
+FT_PY = sys.executable  # set from the command line in __main__
 FONT_DIR = os.path.join(DESK, "desk-drop-identity", "fonts", "static")
 # D's tokens (desk-drop-identity/tokens/tokens.css)
 INK, STONE, MIST, PAPER, PAPER_WARM = "#1F1D1A", "#6B675F", "#E6E1D6", "#FFFFFF", "#F7F3EA"
@@ -178,14 +185,16 @@ def main():
         cx = PAD + (i // per_col) * col_w
         cy = y0 + 36 + (i % per_col) * 46
         addr = x.street_address.split(",")[0]
+        where = "inside the cluster" if x.inside_boundary == "Y" else f"about {int(x.walk_minutes_from_cluster_edge)} min walk from the cluster"
         text(cx, cy, f"{x.n}.", 15, 700, COBALT)
         text(cx + 30, cy, x.retailer_name, 15, 600, INK)
-        text(cx + 30, cy + 19, addr, 14, 400, STONE)
+        text(cx + 30, cy + 19, f"{addr} \u00b7 {where}", 14, 400, STONE)
     yf = y0 + 36 + per_col * 46 + 14
     foot = [
-        "Store list researched on 2026-10-24 from each store's own website and the New York State retail food store licence list.",
+        "Store list researched on 2026-10-24 from store websites or the New York State retail food store licence list.",
         "A store on this map is not an endorsement, and being on the map does not mean it carries any particular brand.",
-        "Map is turned so the avenues run up the page. Streets and parks: NYC Street Centerline (CSCL) and NYC Parks Properties, NYC Open Data.",
+        "Walking minutes are from the nearest edge of the cluster at about 73 m a minute. Map is turned so the avenues run up the page.",
+        "Streets and parks: NYC Street Centerline (CSCL) and NYC Parks Properties, NYC Open Data.",
     ]
     for i, t in enumerate(foot):
         text(PAD, yf + i * 22, t, 13, 400, STONE)
@@ -228,5 +237,168 @@ def font_css(chars):
     return "".join(css) + " /* Fonts: Bricolage Grotesque and Atkinson Hyperlegible Next, SIL Open Font License 1.1, subset. */"
 
 
+# ------------------------------------------------------------------ brand mode (landscape, one brand's stores)
+BW, BH = 1050, 420
+
+
+def brand_map(slug, store_ids, sample=False):
+    """A bold, simple 2.5:1 map for the proposal column (it prints about 3 in wide), styled like
+    D's own SAMPLE landscape map: the boundary, numbered store markers with names, a few avenue
+    and street names, no office pins and no business name. Numbers follow the order of --stores,
+    so list the stores in the same order as the proposal's store table."""
+    r = pd.read_csv(os.path.join(ROOT, "retailers.csv"), dtype=str).fillna("")
+    ids = [i.strip() for i in store_ids.split(",") if i.strip()]
+    unknown = [i for i in ids if i not in set(r.retailer_id)]
+    if unknown:
+        raise SystemExit(f"not in retailers.csv: {unknown}. Add the store to _work/retailers_research.csv and rebuild first.")
+    if not re.fullmatch(r"[A-Za-z0-9-]+", slug):
+        raise SystemExit("slug: letters, digits and hyphens only")
+    if sample and not slug.startswith("SAMPLE"):
+        raise SystemExit("a sample map's slug must start with SAMPLE")
+    if not 1 <= len(ids) <= 6:
+        raise SystemExit("one to six stores")
+    st = r.set_index("retailer_id").loc[ids].reset_index()
+    st["s"] = [grid.sx(float(a), float(o))[0] for a, o in zip(st.lat, st.lon)]
+    st["x"] = [grid.sx(float(a), float(o))[1] for a, o in zip(st.lat, st.lon)]
+    ring = boundary.polygon_lonlat()
+    rsx = [grid.sx(la, lo) for lo, la in ring]
+    # u = uptown metres (runs to the right), v = crosstown metres (east runs down)
+    us = [s_ * SP for s_, _ in rsx] + list(st.s * SP)
+    vs = [x_ for _, x_ in rsx] + list(st.x)
+    top = 44 if sample else 8
+    bottom, left, right = 8, 8, 8
+    aw, ah = BW - left - right, BH - top - bottom
+    pad_v = 70.0
+    v0, v1 = min(vs) - pad_v, max(vs) + pad_v
+    sc = ah / (v1 - v0)
+    u_need = (max(us) - min(us)) + 2 * 150.0
+    if u_need * sc > aw:
+        sc = aw / u_need
+    uc, vc = (min(us) + max(us)) / 2, (v0 + v1) / 2
+    u0 = uc - aw / 2 / sc
+
+    def Q(s_, x_):
+        return (left + aw / 2 + (s_ * SP - uc) * sc, top + ah / 2 + (x_ - vc) * sc)
+
+    def qll(lat, lon):
+        s_, x_ = grid.sx(lat, lon)
+        return Q(s_, x_)
+
+    def inside(px, py, m=30):
+        return left - m < px < BW - right + m and top - m < py < BH - bottom + m
+    out, used = [], set()
+
+    def text(x, y, t, size, weight=400, fill=INK, anchor="start", family="text", extra=""):
+        used.update(str(t))
+        fam = "DDDisplay" if family == "display" else "DDText"
+        out.append(f'<text x="{x:.1f}" y="{y:.1f}" font-family="{fam}, Arial, sans-serif" font-size="{size}" '
+                   f'font-weight="{weight}" fill="{fill}" text-anchor="{anchor}" {extra}>{esc(t)}</text>')
+    out.append(f'<rect x="0" y="0" width="{BW}" height="{BH}" fill="{PAPER_WARM}"/>')
+    out.append(f'<clipPath id="bclip"><rect x="{left}" y="{top}" width="{aw}" height="{ah}" rx="6"/></clipPath>')
+    out.append(f'<rect x="{left}" y="{top}" width="{aw}" height="{ah}" rx="6" fill="{PAPER_WARM}"/>')
+    out.append('<g clip-path="url(#bclip)">')
+    parks = json.load(open(os.path.join(GEO, "parks_raw.geojson")))
+    for f in parks["features"]:
+        g = f["geometry"]
+        if not g or float(f["properties"].get("acres") or 0) < 1.0:
+            continue
+        for poly in (g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]):
+            pts = [qll(la, lo) for lo, la in poly[0]]
+            if any(inside(px, py) for px, py in pts):
+                out.append('<path d="M' + " L".join(f"{px:.1f},{py:.1f}" for px, py in pts) + f' Z" fill="{PARK}"/>')
+    stj = json.load(open(os.path.join(GEO, "streets_raw.geojson")))
+    minor, major = [], []
+    for f in stj["features"]:
+        p = f["properties"]
+        if p.get("rw_type") != "1" or not f["geometry"]:
+            continue
+        name = p.get("full_street_name", "")
+        is_major = any(k in name for k in (" AVE", "AVE ", "BROADWAY", "AMERICAS", "IRVING PL", "UNIVERSITY PL", "BOWERY")) or name.endswith("AVE S")
+        g = f["geometry"]
+        for line in (g["coordinates"] if g["type"] == "MultiLineString" else [g["coordinates"]]):
+            pts = [qll(la, lo) for lo, la in line]
+            if any(inside(px, py) for px, py in pts):
+                (major if is_major else minor).append("M" + " L".join(f"{px:.1f},{py:.1f}" for px, py in pts))
+    out.append(f'<path d="{" ".join(minor)}" stroke="{STREET}" stroke-width="3" fill="none" stroke-linecap="round"/>')
+    out.append(f'<path d="{" ".join(major)}" stroke="{AVENUE}" stroke-width="6" fill="none" stroke-linecap="round"/>')
+    bpts = [qll(la, lo) for lo, la in ring]
+    out.append('<path d="M' + " L".join(f"{px:.1f},{py:.1f}" for px, py in bpts) + f' Z" fill="{COBALT_TINT}" fill-opacity="0.8" '
+               f'stroke="{COBALT}" stroke-width="5" stroke-linejoin="round"/>')
+    # a few names, large enough to read at print size: avenues at the uptown (right) edge, where the grid is regular
+    for name, x_ in (("Sixth Ave", -310.6), ("Fifth Ave", 0), ("Park Ave S", 311.4), ("Third Ave", 621.1), ("Seventh Ave", -585), ("Second Ave", 837.5)):
+        px, py = Q((u0 + aw / sc) / SP, x_)
+        if top + 22 < py < BH - bottom - 40:
+            w_ = 9.2 * len(name) + 10
+            out.append(f'<rect x="{BW - right - 4 - w_:.1f}" y="{py - 20:.1f}" width="{w_:.1f}" height="22" rx="4" fill="{PAPER_WARM}" fill-opacity="0.85"/>')
+            text(BW - right - 9, py - 3, name, 16, 600, STONE, "end")
+    for k in (14, 23, 30):
+        px, py = Q(k, v1 - 10)
+        if left + 30 < px < BW - right - 30:
+            suf = "th" if 10 <= k % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(k % 10, "th")
+            text(px, BH - bottom - 10, f"{k}{suf} St", 16, 600, STONE, "middle")
+    out.append("</g>")
+    # stores: numbered markers (order of --stores) with names; the label goes right unless it would leave the frame
+    boxes = []
+    for k, x in enumerate(st.itertuples(), 1):
+        px, py = qll(float(x.lat), float(x.lon))
+        fill = COBALT if x.buy_path_tier == "A" else INK
+        out.append(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="17" fill="{fill}" stroke="{PAPER}" stroke-width="3"/>')
+        text(px, py + 6.5, k, 18, 700, PAPER, "middle")
+        label = x.retailer_name
+        w_est = 10.6 * len(label)
+        right_side = px + 24 + w_est < BW - right - 140
+        tx = px + 24 if right_side else px - 24
+        bx0 = (tx - 5) if right_side else (tx - w_est - 5)
+        out.append(f'<rect x="{bx0:.1f}" y="{py - 15:.1f}" width="{w_est + 10:.1f}" height="28" rx="5" fill="{PAPER}" fill-opacity="0.92"/>')
+        text(tx, py + 6.5, label, 19, 600, INK, "start" if right_side else "end")
+        boxes.append((min(bx0, px - 20), py - 20, max(bx0 + w_est + 10, px + 20), py + 20))
+    # the cluster's own label, in the first spot inside the line that no store label covers
+    lw, lh = 160, 28
+    for s_, x_ in ((25.5, -220), (19.0, -220), (27.5, 120), (17.5, 120), (22.0, 0), (28.5, -60), (16.0, -60)):
+        cx_, cy_ = Q(s_, x_)
+        r_ = (cx_ - lw / 2, cy_ - lh / 2, cx_ + lw / 2, cy_ + lh / 2)
+        if not any(not (r_[2] < b[0] or r_[0] > b[2] or r_[3] < b[1] or r_[1] > b[3]) for b in boxes):
+            text(cx_, cy_ + 8, "Office cluster", 22, 700, COBALT, "middle", "display")
+            break
+    # north arrow top left, scale bar bottom left
+    ax, ay = left + 30, top + 34
+    th = grid.model()["theta_deg"]
+    out.append(f'<circle cx="{ax}" cy="{ay + 6}" r="26" fill="{PAPER}" fill-opacity="0.9"/>')
+    out.append(f'<g transform="rotate({90 - th:.1f} {ax} {ay})"><path d="M{ax},{ay - 18} L{ax + 8},{ay + 8} L{ax},{ay + 4} L{ax - 8},{ay + 8} Z" fill="{INK}"/></g>')
+    text(ax, ay + 26, "N", 12, 700, INK, "middle")
+    L = 400 * sc
+    sx0, sy0 = left + 14, BH - bottom - 16
+    out.append(f'<rect x="{sx0 - 8}" y="{sy0 - 22}" width="{L + 140:.1f}" height="32" rx="5" fill="{PAPER}" fill-opacity="0.92"/>')
+    out.append(f'<path d="M{sx0},{sy0} h{L:.1f}" stroke="{INK}" stroke-width="4"/>')
+    text(sx0 + L + 10, sy0 + 5, "400 m, 5 min", 15, 600, INK)
+    if sample:
+        out.append(f'<rect x="0" y="0" width="{BW}" height="38" fill="#B3261E"/>')
+        text(BW / 2, 26, "SAMPLE: stores picked for a layout test, not a brand's real stockists", 18, 700, PAPER, "middle")
+    body = "\n".join(out)
+    svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {BW} {BH}" width="{BW}" height="{BH}" role="img" aria-labelledby="bt bd">'
+           f'<title id="bt">Map of the Flatiron, NoMad and Union Square office cluster with {len(st)} stores</title>'
+           f'<desc id="bd">Stores: {esc("; ".join(f"{i}. {n}" for i, n in enumerate(st.retailer_name, 1)))}. No office locations are shown. '
+           f'Streets and parks: NYC Open Data (CSCL, NYC Parks).</desc>'
+           f"<style>{font_css(used)}</style>\n{body}\n</svg>\n")
+    d = os.path.join(ROOT, "brand-maps")
+    os.makedirs(d, exist_ok=True)
+    open(os.path.join(d, f"{slug}.svg"), "w").write(svg)
+    print("brand map", slug, "stores", len(st), "bytes", len(svg))
+
+
 if __name__ == "__main__":
-    main()
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("ftpy", nargs="?", default=sys.executable, help="a python that has fontTools")
+    ap.add_argument("--brand", help="slug for brand-maps/<slug>.svg")
+    ap.add_argument("--stores", help="comma-separated retailer_ids from retailers.csv")
+    ap.add_argument("--layout", default="landscape", choices=["landscape"])
+    ap.add_argument("--sample", action="store_true", help="adds the SAMPLE banner (slug must start with SAMPLE)")
+    a = ap.parse_args()
+    FT_PY = a.ftpy
+    if a.brand:
+        if not a.stores:
+            raise SystemExit("--brand needs --stores")
+        brand_map(a.brand, a.stores, a.sample)
+    else:
+        main()

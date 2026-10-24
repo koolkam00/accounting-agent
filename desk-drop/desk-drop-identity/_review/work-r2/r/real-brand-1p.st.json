@@ -1,0 +1,19 @@
+{
+  "ready": true,
+  "errors": [],
+  "warnings": [],
+  "sample": false,
+  "placeholders": [],
+  "fit": [
+    {
+      "steps": [
+        "tight",
+        "s-rung",
+        "s-gap"
+      ]
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/brand-one-pager/brand-one-pager.html",
+  "records": 1
+}

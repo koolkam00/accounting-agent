@@ -2,6 +2,10 @@
 /*
   doc-tests.js: tests for the part-2 documents (one-pagers, discovery, proposal, report),
   the signature and the avatar. Run from anywhere:  node tests/documents/doc-tests.js
+  v1.2 (review round 1): every document with REAL-LENGTH details in brand.json; the proposal with a
+  landscape map for 10, 11 and 12 offices; the report's photo strip for 10 to 12 offices with long
+  text; Delivered as the handoff count; the mock page free of yellow; legal versions in step.
+  Stress inputs in tests/documents/cases/ (several from the round-1 reviewer's own files).
   Needs Node 18+, Playwright, pdftotext and pdfinfo (poppler), ImageMagick identify.
   Writes PNGs for a person to look at in tests/rename-documents/.
 */
@@ -56,11 +60,13 @@ for (const [t, f] of [['report', 'BLANK-placeholders'], ['proposal', 'BLANK-plac
   const comments = load('report', 'SAMPLE-10-offices-long-comments');
   const norm = (s) => s.replace(/\s+/g, ' ').replace(/[“”]/g, '"').trim();
   const whole = ['comment_1', 'comment_2', 'comment_3'].every((k) => norm(tx).includes(norm(comments[k]).slice(0, 60)) && norm(tx).includes(norm(comments[k]).slice(-40)));
-  if (r.code === 0 && fit && fit.fits && whole && /SAMPLE\. ILLUSTRATIVE PLACEHOLDERS, NOT RESULTS/i.test(tx)) ok(`ten offices with three long comments fit on page 1 (comments ${fit.comment_pt} pt, thumbnails on page 2: ${fit.thumbnails_on_page_2}); every comment printed whole; SAMPLE banner present`);
+  if (r.code === 0 && fit && fit.fits && whole && !fit.later_photos_on_page_2 && /SAMPLE\. ILLUSTRATIVE PLACEHOLDERS, NOT RESULTS/i.test(tx)) ok(`ten offices with three long comments fit on page 1 WITH both photo rows (comments ${fit.comment_pt} pt, thumbnails ${fit.thumb_in} in); every comment printed whole; SAMPLE banner present`);
   else bad('ten-office long-comment report', r.out);
   const lad = ['DELIVERED', 'PLACED', 'DEPLETED', 'RESPONDED', 'SCANNED', 'PURCHASED', 'INCREMENTAL', 'Not measured'];
   lad.every((w) => tx.includes(w)) ? ok('report shows every ladder rung, and "Incremental: Not measured"') : bad('ladder rungs missing', lad.filter((w) => !tx.includes(w)).join(', '));
-  /515[\s\S]*495[\s\S]*428[\s\S]*77[\s\S]*103[\s\S]*14/.test(tx) ? ok('report totals computed from the office rows (515 delivered incl. top-ups, 495 placed, 428 depleted, 77 responses, 103 scans, 14 redemptions)') : bad('report totals');
+  /500 495 428 77 103/.test(tx) && !/515/.test(tx) ? ok('report totals computed from the office rows: Delivered 500 is the handoff count, the same in the ladder and the roster (495 placed, 428 depleted, 77 responses, 103 scans)') : bad('report totals');
+  /Plus 15 day-3 top-ups from reserve/.test(tx) && /455 of 500 units \(91%\) within one business day/.test(tx) ? ok('top-ups shown beside Delivered, never added to it; Placed shows the Gate 2 unit share (455 of 500, 91%)') : bad('Delivered and Placed hints');
+  !/none of them is a sale/.test(tx) ? ok('the limitations paragraph no longer says "none of them is a sale" (Purchased is code redemptions)') : bad('old limitations sentence');
   /58 of 77 \(75%\)/.test(tx) && /yes 31 \(42%\), maybe 29 \(39%\), no 14 \(19%\) of 74 who answered/.test(tx) ? ok('survey shares printed beside their counts, with "of 74 who answered"') : bad('survey shares and counts');
   /No photo received/.test(text(out).split('\f')[1] || '') ? ok('a missing photo is reported as "No photo received", not hidden') : bad('missing photo not reported');
 }
@@ -75,7 +81,7 @@ const neg = [
   ['report: a Monday drop date', 'report', (() => { const d = r10(); d.drop_date = '2027-02-08'; return d; })(), /not a Tuesday or Wednesday/],
   ['report: window in the December blackout', 'report', (() => { const d = r10(); d.drop_date = '2026-12-15'; return d; })(), /blackout/],
   ['report: more "tried" than responses', 'report', (() => { const d = r10(); d.survey_tried_yes = '90'; return d; })(), /more than the survey responses/],
-  ['report: far too much text refuses instead of shrinking past the floors', 'report', (() => { const d = r10(); const long = 'SAMPLE ' + 'This is a very long verbatim comment that keeps going and going. '.repeat(9); d.comment_1 = long; d.comment_2 = long; d.comment_3 = long; return d; })(), /runs past the bottom of the page/],
+  ['report: far too much text refuses instead of shrinking past the floors', 'report', (() => { const d = r10(); const long = 'SAMPLE ' + 'This is a very long verbatim comment that keeps going and going. '.repeat(16); d.comment_1 = long; d.comment_2 = long; d.comment_3 = long; return d; })(), /runs past the bottom of the page/],
   ['proposal: wrong number of offices for the tier', 'proposal', (() => { const d = load('proposal', 'SAMPLE-founding'); d.offices = d.offices.slice(0, 4); return d; })(), /lists 4 offices/],
   ['proposal: asked ship-by later than T-10', 'proposal', (() => { const d = load('proposal', 'SAMPLE-founding'); d.ship_by_requested = '2027-01-04'; return d; })(), /later than the latest ship-by/],
   ['proposal: drop window in a blackout', 'proposal', (() => { const d = load('proposal', 'SAMPLE-founding'); d.drop_date = '2027-08-17'; return d; })(), /blackout/],
@@ -94,6 +100,39 @@ for (const [name, t, data, want] of neg) {
   r.status && r.status.warnings.some((w) => /sounds like selling/.test(w)) ? ok('discovery: selling words raise a warning') : bad('discovery selling-word warning');
   const d = render('discovery-one-pager', S('discovery-one-pager', 'DEFAULT'), path.join(TMP, 'd5.pdf'));
   d.status && d.status.fit && d.status.fit[0].sentences === 5 ? ok('discovery: the shipped page has exactly five sentences') : bad('discovery sentence count', JSON.stringify(d.status && d.status.fit));
+}
+
+// ---------- 3b. stress cases: they must FIT, at or above the stated floors ----------
+const C = (f) => path.join(__dirname, 'cases', f + '.json');
+for (const [name, file, want] of [
+  ['report: 10 offices, three ~70-word comments and a retailer-velocity line keep the day-1 photo strip', 'report-10-offices-velocity', (f) => !f.thumbnails_on_page_2],
+  ['report: 12 offices with the sample comments keep the day-1 photo strip', 'report-12-offices', (f) => !f.thumbnails_on_page_2],
+  ['report: 11 offices keep the day-1 photo strip', 'report-11-offices', (f) => !f.thumbnails_on_page_2],
+  ['report: 10 offices with 100-word "learned" and a 55-word recommendation fit (photos may move, counts stay)', 'report-10-offices-long-learned', () => true],
+  ['report: 10 offices with every text field long still fit (photos may move, counts stay)', 'report-10-offices-everything-long', () => true],
+]) {
+  const r = render('report', C(file), path.join(TMP, file + '.pdf'));
+  const f = r.status && r.status.fit && r.status.fit[0];
+  r.code === 0 && f && f.fits && f.comment_pt >= 8 && f.learned_pt >= 8.5 && f.thumb_in >= 0.38 && want(f) ? ok(`${name} (comments ${f.comment_pt} pt, learned ${f.learned_pt} pt, later photos on page 2: ${f.later_photos_on_page_2}, all photos on page 2: ${f.thumbnails_on_page_2})`) : bad(name, r.out.slice(0, 600));
+}
+for (const [name, file, n] of [
+  ['proposal: standard, 10 offices, landscape map, 2 stores', 'proposal-standard-10-map-2stores', 10],
+  ['proposal: standard, 10 offices, landscape map, 4 stores', 'proposal-standard-10-map-4stores', 10],
+  ['proposal: standard plus 1 extra, 11 offices, map, 2 stores', 'proposal-standard-11-map-2stores', 11],
+  ['proposal: standard plus 2 extra, 12 offices, map, 4 stores', 'proposal-standard-12-map-4stores', 12],
+  ['proposal: founding, 5 offices, map, 4 stores', 'proposal-founding-map-4stores', 5],
+]) {
+  const out = path.join(TMP, file + '.pdf');
+  const r = render('proposal', C(file), out);
+  const f = r.status && r.status.fit && r.status.fit[0];
+  r.code === 0 && pages(out) === 2 ? ok(`${name}: fits, two pages (layout ${f.arrangement}, map ${Math.round(f.map_in * 100) / 100} in tall, shown whole)`) : bad(name, r.out.slice(0, 600));
+}
+{
+  const d = JSON.parse(fs.readFileSync(C('proposal-standard-12-map-4stores'), 'utf8'));
+  d.extra_offices = '3'; d.offices.push({ neighborhood: 'Flatiron', industry: 'Retail', headcount_band: '40-75', planned_units: '40' });
+  d.map_image = path.resolve(__dirname, 'cases', d.map_image);
+  const r = render('proposal', d, path.join(TMP, 'p13.pdf'));
+  r.code === 2 && /more than one proposal holds \(12\)/.test((r.status && r.status.errors || []).join(' ')) ? ok('proposal: 13 offices is refused with a plain message (12 is the tested maximum)') : bad('13-office proposal', r.out.slice(0, 400));
 }
 
 // ---------- 4. --final ----------
@@ -115,6 +154,36 @@ const copyRoot = (dir) => { fs.mkdirSync(dir, { recursive: true }); for (const d
   r.code === 0 ? ok('--final accepts a complete, non-sample report once brand.json is filled (temp copy, deleted)') : bad('--final on a complete report', r.out);
   const r2 = render('discovery-one-pager', S('discovery-one-pager', 'DEFAULT'), path.join(TMP, 'final2.pdf'), ['--final'], T);
   r2.code === 0 ? ok('--final accepts the discovery page once brand.json is filled') : bad('--final discovery', r2.out);
+}
+// every document with real-length details: a 20-character name, a 14-character phone, a
+// 25-character email, a 45-character postal address (round-1 review, R1-02), and a longer set for headroom
+for (const [label, det] of [
+  ['real-length details', { FOUNDER_NAME: 'Patricia Example-Lee', PHONE: '(212) 555-0100', EMAIL: 'patricia.lee@examples.com', WEBSITE: 'example.com', POSTAL_ADDRESS: 'PO Box 1234, Madison Square Station, NY 10010' }],
+  ['longer details (headroom)', { FOUNDER_NAME: 'Alexandra Example-Whitfield', PHONE: '+1 (212) 555-0100', EMAIL: 'alexandra.whitfield@examplemail.com', WEBSITE: 'www.example-website.com', POSTAL_ADDRESS: 'PMB 123, 1270 Avenue of the Americas, Suite 7, New York, NY 10020' }],
+]) {
+  const T = copyRoot(path.join(TMP, 'real-' + label.split(' ')[0]));
+  const b = JSON.parse(fs.readFileSync(path.join(T, 'brand.json'), 'utf8'));
+  Object.assign(b.contact, det);
+  fs.writeFileSync(path.join(T, 'brand.json'), JSON.stringify(b, null, 2));
+  execFileSync('node', [path.join(T, 'render/build-brand.js'), '--no-png'], { cwd: T });
+  const fails = [];
+  for (const [t, file] of [['brand-one-pager', C('brand-one-pager-guide-roster')], ['brand-one-pager', C('brand-one-pager-none-signed')], ['brand-one-pager', S('brand-one-pager', 'BLANK-placeholders')],
+    ['office-one-pager', S('office-one-pager', 'BLANK-placeholders')], ['discovery-one-pager', S('discovery-one-pager', 'DEFAULT')],
+    ['proposal', S('proposal', 'SAMPLE-founding')], ['proposal', S('proposal', 'SAMPLE-standard-10-offices')], ['proposal', C('proposal-standard-12-map-4stores')], ['proposal', C('proposal-founding-map-4stores')],
+    ['report', S('report', 'SAMPLE-5-offices')], ['report', S('report', 'SAMPLE-10-offices-long-comments')], ['report', C('report-12-offices')]]) {
+    const r = render(t, file, path.join(TMP, 'real.pdf'), [], T);
+    if (r.code !== 0) fails.push(`${t} ${path.basename(file)}: exit ${r.code} ${(r.status && r.status.errors || []).join(' ')}`);
+  }
+  fails.length ? bad(`with ${label} in brand.json, every document still fits`, fails.join('\n')) : ok(`with ${label} in brand.json, all 12 document cases fit (brand one-pager with the guide's own roster example, proposals with a map, 12-office report)`);
+  if (label.startsWith('real')) {
+    // R1-07: a finished proposal's mock page shows the brand's own name and nothing yellow
+    const d = JSON.parse(JSON.stringify(load('proposal', 'SAMPLE-founding')).replace(/SAMPLE[ -]?/g, ''));
+    d.map_image = '';
+    const out = path.join(TMP, 'final-proposal.pdf');
+    const r = render('proposal', d, out, ['--final'], T);
+    const p2 = r.code === 0 ? text(out).split('\f')[1] : '';
+    r.code === 0 && p2.includes('Prepared by ' + det.FOUNDER_NAME) && p2.includes(d.brand_name) && !/\[[A-Z]/.test(p2) ? ok('a finished proposal (--final) prints the brand\'s name and the founder\'s on the mock page, and no [PLACEHOLDER] at all') : bad('mock page of a finished proposal', r.out.slice(0, 300) + ' | ' + (p2.match(/\[[A-Z][^\]]*\]/g) || []).join(', '));
+  }
 }
 
 // ---------- 5. words: no claims, no soft ladder words, in any PDF ----------
@@ -163,6 +232,19 @@ const copyRoot = (dir) => { fs.mkdirSync(dir, { recursive: true }); for (const d
   }
   leaks.length ? bad('documents follow a rename in brand.json', leaks.join('\n')) : ok('rename: with BRAND_NAME "Dropp", all five documents print "Dropp" and never "Desk Drop" (images in tests/rename-documents/)');
 
+  // ---------- 7b. the legal files D restates: versions in step with HANDOFF.md ----------
+  {
+    const H = fs.readFileSync(path.join(ROOT, 'HANDOFF.md'), 'utf8');
+    const stale = [];
+    for (const f of ['01-name-check-log.md', '02-email-footer-and-checklist.md', '03-office-participation-agreement.md', '10-brand-campaign-agreement.md', '13-survey-privacy-notice.md']) {
+      const v = (/Version (\d+\.\d+)/.exec(fs.readFileSync(path.resolve(ROOT, '../desk-drop-legal-pack', f), 'utf8')) || [])[1];
+      const row = H.split('\n').find((l) => l.includes('desk-drop-legal-pack/' + f));
+      const cited = row && (/\(v(\d+\.\d+); rechecked (\d{4}-\d{2}-\d{2})\)/.exec(row) || []);
+      if (!cited || cited[1] !== v) stale.push(`${f}: legal pack is v${v}, HANDOFF cites ${cited && cited[1] ? 'v' + cited[1] : 'nothing'}`);
+    }
+    stale.length ? bad('legal files changed since D last rechecked them: recheck the restated terms, then update the version and date in HANDOFF.md', stale.join('\n')) : ok('every legal file D restates is at the version HANDOFF.md says was rechecked (01, 02, 03, 10, 13)');
+  }
+
   // ---------- 8. signature and avatar ----------
   const sig = fs.readFileSync(path.join(ROOT, 'signature/signature.html'), 'utf8');
   const out = fs.readFileSync(path.join(ROOT, 'signature/signature-outreach.html'), 'utf8');
@@ -171,6 +253,8 @@ const copyRoot = (dir) => { fs.mkdirSync(dir, { recursive: true }); for (const d
   const fb = (/###\s*Footer B[\s\S]*?```text\s*\n([\s\S]*?)\n```/.exec(legal) || [])[1];
   ['[PHONE]', '[WEBSITE]', '[POSTAL ADDRESS]'].every((k) => sig.includes(k) && txt.includes(k)) ? ok('signature (HTML and text) carries [PHONE], [WEBSITE] and [POSTAL ADDRESS]') : bad('signature placeholders');
   fb && out.includes(fb.trim().replace(/"/g, '&quot;').replace(/'/g, "'")) || (fb && out.includes(fb.trim())) ? ok('outreach signature carries the legal pack\'s Footer B line verbatim') : bad('Footer B line missing or changed');
+  const fbjs = fs.readFileSync(path.join(ROOT, 'system/signature-footer.js'), 'utf8');
+  fb && fbjs.includes(JSON.stringify(fb.trim()).slice(1, -1)) ? ok('details.html\'s copy of Footer B (system/signature-footer.js) matches the legal pack') : bad('system/signature-footer.js is stale: run node render/build-signature.js');
   const body = sig.slice(sig.indexOf('<table'), sig.lastIndexOf('</table>') + 8);
   body.length < 10000 && !/<style|class=/.test(body) ? ok(`signature HTML is ${body.length} characters (Gmail limit 10,000), inline styles only`) : bad('signature size or style sheet');
   const want = ['cobalt', 'paper', 'ink'].flatMap((v) => [1024, 512, 400, 320, 160, 80, 40].map((s) => [v, s]));

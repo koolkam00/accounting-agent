@@ -56,7 +56,7 @@ def main():
             F.append(feat(pt(x.lat, x.lon), {"layer": layer, **{k: x[k] for k in (
                 "company_id", "company_name", "building_id", "street_address", "floor", "headcount_band", "headcount_scope",
                 "confidence", "candidate_status", "lease_status", "move_in_date", "in_coworking", "coworking_id",
-                "address_source_url", "address_source_date")}}))
+                "address_source_url", "address_source_date", "hq_city", "hq_in_nyc")}}))
     for _, x in w.iterrows():
         F.append(feat(pt(x.lat, x.lon), {"layer": "coworking", **{k: x[k] for k in (
             "coworking_id", "operator", "location_name", "street_address", "pantry_control", "status", "confidence",
@@ -82,10 +82,13 @@ def main():
     pub_r = r[r.public_map == "Y"]
     PF = [{"type": "Feature", "geometry": bfeat["geometry"], "properties": {"kind": "boundary", "name": "Flatiron, NoMad and Union Square"}}]
     for _, x in pub_r.iterrows():
+        # public wording only (review round 1, R1-13): the store's format, never research hedges
         PF.append(feat(pt(x.lat, x.lon), {"kind": "retailer", "retailer_id": x.retailer_id, "name": x.retailer_name,
                                            "address": x.street_address.split(",")[0], "buy_path_tier": x.buy_path_tier,
-                                           "shelf_set": x.shelf_set, "inside_boundary": x.inside_boundary,
-                                           "blocks_outside": x.blocks_outside, "as_of": "2026-10-24"}))
+                                           "shelf_set": x.public_description, "inside_boundary": x.inside_boundary,
+                                           "blocks_outside": x.blocks_outside,
+                                           "walk_minutes_from_cluster_edge": int(x.walk_minutes_from_cluster_edge),
+                                           "as_of": "2026-10-24"}))
     json.dump({"type": "FeatureCollection", "name": "cluster-1-public", "features": PF},
               open(os.path.join(ROOT, "map-public.geojson"), "w"), indent=1)
 
@@ -182,7 +185,9 @@ def write_kml_layers(bfeat, b, c, w, r, route, line, walk, pub_r):
     open(os.path.join(K, "6-private-walk.kml"), "w").write(doc("Verification walk (PRIVATE)", styles, pms, priv_note))
     # public
     styles = [BND_STYLE] + [icon_style("tier-" + k, v, 1.1, "shopping") for k, v in TIER_COLOR.items() if k in "AB"]
-    pms = [boundary_pm(bfeat)] + [placemark(x.retailer_name, f"{esc(x.street_address.split(',')[0])}<br>{esc(x.shelf_set)}", "tier-" + x.buy_path_tier, point_xml(x.lat, x.lon)) for x in pub_r.itertuples()]
+    pms = [boundary_pm(bfeat)] + [placemark(x.retailer_name, f"{esc(x.street_address.split(',')[0])}<br>{esc(x.public_description)}<br>"
+                                            + ("Inside the cluster" if x.inside_boundary == "Y" else f"About {esc(x.walk_minutes_from_cluster_edge)} min walk from the cluster edge"),
+                                            "tier-" + x.buy_path_tier, point_xml(x.lat, x.lon)) for x in pub_r.itertuples()]
     open(os.path.join(ROOT, "map-public.kml"), "w").write(doc("Cluster 1: boundary and nearby stores (public)", styles, pms))
     # one combined private KML (Google Earth); My Maps imports one layer per file, so use kml/ for My Maps
     parts = []
@@ -207,9 +212,13 @@ def write_html(F):
 
 def write_route_sheet(route, line):
     S = json.load(open(os.path.join(OUT, "stats.json")))["route"]
-    tot = (f"Total {S['total_minutes']:.0f} min: {S['stop_minutes']} at stops + {S['walking_minutes']} walking ({S['metres']} m). "
-           f"Finishes about {S['end']}: over the 3-hour window by about {round(S['total_minutes'] - 180)} min. "
-           f"With 12-minute stops: {S['at_12_min_stops']:.0f} min. With nine stops: {S['nine_stops']:.0f} min.")
+    over = round(S["total_minutes"] - 180)
+    fit = (f"fits the 3-hour window with about {-over} min spare." if over < 0 else
+           "uses the whole 3-hour window, with no slack." if over == 0 else
+           f"over the 3-hour window by about {over} min, which is inside the model's error.")
+    tot = (f"Total {S['total_minutes']:.0f} min: {S['stop_minutes']} at stops + {S['walking_minutes']} walking ({S['metres']} m, sidewalk to sidewalk). "
+           f"Finishes about {S['end']}: {fit} With 12-minute stops: {S['at_12_min_stops']:.0f} min. "
+           f"Legs where a car is faster: {S['car_faster_legs']}.")
     page = open(os.path.join(HERE, "route_sheet_template.html")).read()
     rows = route[["stop", "company_name", "street_address", "floor", "lobby_type", "arrive_est", "leg_minutes_est", "lat", "lon"]].to_dict("records")
     page = (page.replace("__BRAND_NAME__", BRAND_NAME).replace("__ROUTE__", json.dumps(rows)).replace("__LINE__", json.dumps(line))

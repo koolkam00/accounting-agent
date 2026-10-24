@@ -1,0 +1,35 @@
+{
+  "ready": true,
+  "errors": [],
+  "warnings": [],
+  "sample": false,
+  "placeholders": [],
+  "fit": [
+    {
+      "arrangement": "wide-roster",
+      "map_in": 0.95,
+      "tight": true,
+      "tried": [
+        {
+          "name": "standard",
+          "over_in": 0.82
+        },
+        {
+          "name": "terms-right",
+          "over_in": 0.1
+        },
+        {
+          "name": "send-right",
+          "over_in": 0.86
+        },
+        {
+          "name": "wide-roster",
+          "over_in": 0
+        }
+      ]
+    }
+  ],
+  "console_errors": [],
+  "template": "templates/proposal/proposal.html",
+  "records": 1
+}

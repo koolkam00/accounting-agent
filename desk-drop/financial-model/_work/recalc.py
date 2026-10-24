@@ -58,7 +58,7 @@ def report(wb, quiet=False):
         if ck[f"A{r}"].value is None:
             break
         rows.append((ck[f"A{r}"].value, ck[f"B{r}"].value, ck[f"C{r}"].value, ck[f"D{r}"].value, ck[f"E{r}"].value))
-    fails = [x for x in rows if x[4] != 1]
+    fails = [x for x in rows if x[4] not in (1, "info")]   # an 'info' row is not a check (review R3-03)
     errs = find_errors(wb)
     if not quiet:
         print(f"checks: {len(rows)} total, {len(fails)} failing")

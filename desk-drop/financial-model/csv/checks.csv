@@ -16,20 +16,25 @@ num,area,check,value,pass,note
 15,Integrity,Break-even per-brand contribution follows Inputs: engine row equals the shortcut at today's price and brands per drop,0,1,Review R1-03: the break-even lines no longer read the fixed plan row.
 16,Integrity,Per-drop cash inside the six months adds up to the cash flow's receipts and direct costs,0,1,Feeds the Dashboard's week-26 cash with and without the decision-window drops.
 17,Schedule,"Rows failing the schedule rules (Tue/Wed, blackouts, counts)",0,1,"See Schedule, Row check."
-18,Schedule,Drop dates out of order,0,1,
-19,Schedule,New founding brands beyond the founding cap,0,1,Founding tier: first three brands only.
-20,Schedule,Founding-rate renewals beyond the two-campaign lock,0,1,
-21,Schedule,Gate 2 drop exists on Schedule,0,1,
-22,Data,Hours_Log: invalid activity keys,0,1,
-23,Data,Hours_Log: drop_ids not on Schedule,0,1,
-24,Data,Toggl_Import: rows with zero hours or a bad activity,0,1,
-25,Data,Pipeline: rows with a bad event or side,0,1,
-26,Data,Actuals_Campaigns: rows whose drop_id is not on Schedule,0,1,
-27,Data,Actuals_DropCosts: rows whose drop_id is not on Schedule,0,1,
-28,Data,"Actuals_Campaigns: header row differs from HANDOFF, or something is pasted in the blank buffer columns",0,1,Paste exactly the HANDOFF columns in order; extra fields go in a separate file.
-29,Data,"Actuals_DropCosts: header row differs from HANDOFF, or something is pasted in the blank buffer columns",0,1,
-30,Data,"Hours_Log: header row differs from HANDOFF, or something is pasted in the blank buffer columns",0,1,
-31,Data,"Pipeline: header row differs from HANDOFF, or something is pasted in the blank buffer columns",0,1,
-32,Plan,Plan scenario rows 1 to 6 reproduce,0,1,Expected only at plan defaults.
-33,Plan,Plan hour table reproduces cell by cell,0,1,Expected only at plan defaults.
-34,Plan,Reconciliation rows within tolerance (the two documented differences excluded),0,1,Row 10 (processing contrast) and row 25 (transport lump) differ by design.
+18,Info,Drop rows out of date order (information only; not counted),0,info,"Fine: an added drop takes the next spare drop_id, and every total, the cash flow and the Dashboard's next drop read dates, not row order. The Dashboard's drop table lists rows in Schedule order."
+19,Schedule,Week 1 moved but no gate date and not campaign zero's date moved with it,0,1,"The gate dates on Inputs and the drop dates on Schedule are typed CONTRACTS dates. Move them with week 1, or the gate labels ('end of week 3') no longer hold."
+20,Schedule,New founding brands beyond the founding cap,0,1,Founding tier: first three brands only.
+21,Schedule,Founding-rate renewals beyond the two-campaign lock,0,1,
+22,Schedule,Gate 2 drop exists on Schedule,0,1,
+23,Data,Hours_Log: invalid activity keys,0,1,
+24,Data,Hours_Log: drop_ids not on Schedule,0,1,
+25,Data,Toggl_Import: rows with zero hours or a bad activity,0,1,
+26,Data,Pipeline: rows with a bad event or side,0,1,
+27,Data,Actuals_Campaigns: rows whose drop_id is not on Schedule,0,1,
+28,Data,Actuals_DropCosts: rows whose drop_id is not on Schedule,0,1,
+29,Data,"Actuals_Campaigns: header row differs from HANDOFF, or something is pasted in the blank buffer columns",0,1,Paste exactly the HANDOFF columns in order; extra fields go in a separate file.
+30,Data,"Actuals_DropCosts: header row differs from HANDOFF, or something is pasted in the blank buffer columns",0,1,
+31,Data,"Hours_Log: header row differs from HANDOFF, or something is pasted in the blank buffer columns",0,1,
+32,Data,"Pipeline: header row differs from HANDOFF, or something is pasted in the blank buffer columns",0,1,
+33,Data,"Actuals_Campaigns: dates or numbers stored as text (columns C, G to U, X to Z)",0,1,"Text drops out of the cash flow and the gates with no error. Fix: README tab, 'Dates and amounts must be real dates and numbers'."
+34,Data,"Actuals_DropCosts: dates or numbers stored as text (columns B, D to H)",0,1,
+35,Data,Hours_Log: dates or hours stored as text (columns A and E),0,1,
+36,Data,Pipeline: dates or value_number stored as text (columns A and F),0,1,
+37,Plan,Plan scenario rows 1 to 6 reproduce,0,1,Expected only at plan defaults.
+38,Plan,Plan hour table reproduces cell by cell,0,1,Expected only at plan defaults.
+39,Plan,Reconciliation rows within tolerance (the two documented differences excluded),0,1,Row 10 (processing contrast) and row 25 (transport lump) differ by design.

@@ -11,37 +11,43 @@
  "company_rows_outside": 6,
  "candidates": 172,
  "candidates_by_conf": {
-  "medium": 89,
-  "high": 60,
-  "low": 23
+  "medium": 92,
+  "high": 56,
+  "low": 24
  },
  "candidates_by_band": {
   "unknown": 95,
   "251-500": 27,
-  "40-75": 18,
   "151-250": 17,
-  "76-150": 15
+  "40-75": 17,
+  "76-150": 15,
+  "under-40": 1
  },
  "candidates_conf_band": {
   "151-250": {
-   "high": 11,
-   "low": 1,
-   "medium": 5
+   "high": 8,
+   "low": 2,
+   "medium": 7
   },
   "251-500": {
-   "high": 15,
+   "high": 14,
    "low": 1,
-   "medium": 11
+   "medium": 12
   },
   "40-75": {
    "high": 2,
    "low": 3,
-   "medium": 13
+   "medium": 12
   },
   "76-150": {
    "high": 7,
    "low": 1,
    "medium": 7
+  },
+  "under-40": {
+   "high": 0,
+   "low": 0,
+   "medium": 1
   },
   "unknown": {
    "high": 25,
@@ -50,14 +56,14 @@
   }
  },
  "candidates_by_lease": {
-  "occupied": 92,
-  "occupancy-unconfirmed": 44,
+  "occupied": 91,
+  "occupancy-unconfirmed": 45,
   "signed-not-occupied": 36
  },
  "candidates_scope": {
-  "unknown": 94,
-  "whole-company": 76,
-  "nyc-office": 2
+  "unknown": 95,
+  "whole-company": 74,
+  "nyc-office": 3
  },
  "status_counts": {
   "candidate": 172,
@@ -85,17 +91,17 @@
  "coworking": 32,
  "coworking_inside": 24,
  "coworking_by_conf": {
-  "high": 20,
+  "high": 19,
   "medium": 7,
-  "low": 5
+  "low": 6
  },
  "coworking_pantry": {
   "operator": 25,
   "unknown": 7
  },
  "coworking_status": {
-  "open": 25,
-  "unverified": 5,
+  "open": 24,
+  "unverified": 6,
   "open-unverified": 1,
   "possibly-closed": 1
  },
@@ -111,136 +117,212 @@
   "medium": 5,
   "low": 2
  },
- "retailers_public": 16,
+ "retailers_public": 14,
  "retailers_max_blocks": 7,
  "cand_bldg_to_tierA_blocks": {
-  "max": 11.0,
-  "median": 6.3,
-  "share_within_5": 0.35
+  "max": 10.2,
+  "median": 5.4,
+  "share_within_5": 0.39
  },
  "cand_bldg_to_public_store_blocks": {
-  "max": 8.3,
-  "median": 4.1,
-  "share_within_3": 0.18
+  "max": 7.7,
+  "median": 3.4,
+  "share_within_3": 0.45
  },
  "route": {
   "stops": 10,
   "stop_minutes": 150,
-  "walking_minutes": 33.2,
-  "total_minutes": 183.2,
-  "end": "11:03",
-  "metres": 1896,
+  "walking_minutes": 31.3,
+  "total_minutes": 181.3,
+  "end": "11:01",
+  "metres": 1755,
   "car_faster_legs": 0,
-  "longest_leg_min": 5.9,
+  "longest_leg_min": 7.4,
   "lobby": {
    "unknown": 8,
    "security desk": 2
   },
   "bands": {
-   "251-500": 6,
+   "251-500": 5,
    "76-150": 2,
-   "151-250": 2
+   "151-250": 2,
+   "40-75": 1
   },
-  "at_12_min_stops": 153.2,
-  "nine_stops": 163.1
+  "at_12_min_stops": 151.3,
+  "nine_stops": 162.2,
+  "over_minutes": 1,
+  "variants": {
+   "no_security_minimum": {
+    "total_minutes": 180.0,
+    "end": "11:00",
+    "stops": "Actively AI (30 West 21st Street); CompStak (675 Avenue of the Americas); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); Carbyne (45 West 27th Street); Primary Wave (1165 Broadway); Seedtag (15 West 27th Street); Activate Consulting (11 East 26th Street); Butterfly Network (11 East 26th Street)"
+   },
+   "no_band_rule": {
+    "total_minutes": 178.1,
+    "end": "10:58",
+    "stops": "Aterian (37 East 18th Street); Valon (860 Broadway); Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); CompStak (675 Avenue of the Americas); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); TripleLift (53 West 23rd Street); Foursquare (50 West 23rd Street)"
+   },
+   "high_or_medium": {
+    "total_minutes": 171.8,
+    "end": "10:52",
+    "stops": "Actively AI (30 West 21st Street); Instant (53 West 21st Street); CompStak (675 Avenue of the Americas); PlayPlay (53 West 21st Street); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); TripleLift (53 West 23rd Street); BMF (We Are BMF) (50 West 23rd Street); Foursquare (50 West 23rd Street)"
+   },
+   "high_or_medium_no_security_minimum": {
+    "total_minutes": 171.8,
+    "end": "10:52",
+    "stops": "Morning Brew (22 West 19th Street); Warp (156 Fifth Avenue); Actively AI (30 West 21st Street); Instant (53 West 21st Street); CompStak (675 Avenue of the Americas); PlayPlay (53 West 21st Street); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); TripleLift (53 West 23rd Street)"
+   }
+  },
+  "stop_list": [
+   "1. Valon, 860 Broadway (unknown; 251-500)",
+   "2. Dashlane, 44 West 18th Street (unknown; 251-500)",
+   "3. Global Trading Systems (GTS), 625 Avenue of the Americas (unknown; 251-500)",
+   "4. Actively AI, 30 West 21st Street (unknown; 40-75)",
+   "5. CompStak, 675 Avenue of the Americas (unknown; 76-150)",
+   "6. Empathy, 56 West 22nd Street (unknown; 151-250)",
+   "7. BrainPOP, 71 West 23rd Street (unknown; 151-250)",
+   "8. Inspiren, 61 West 23rd Street (unknown; 76-150)",
+   "9. TripleLift, 53 West 23rd Street (security desk; 251-500)",
+   "10. Foursquare, 50 West 23rd Street (security desk; 251-500)"
+  ]
  },
+ "candidates_occupied_banded": 44,
+ "candidates_banded": 76,
+ "candidates_banded_hq": {
+  "Y": 43,
+  "N": 17,
+  "unknown": 16
+ },
+ "candidates_hq": {
+  "unknown": 112,
+  "Y": 43,
+  "N": 17
+ },
+ "candidates_under40_founder_call": [
+  "Normal Computing"
+ ],
+ "near_classes": {
+  "over-1,000 (1,001 to 4,999)": 42,
+  "not-near (5,000 or more)": 28,
+  "just-over-500 (501 to 1,000)": 22,
+  "outside-line": 6
+ },
+ "near_nyc_may_fit": 7,
+ "pins_moved_frontage": {
+  "companies": 25,
+  "near_miss": 28,
+  "buildings": 13,
+  "coworking": 0,
+  "retailers": 3
+ },
+ "pins_published_coordinate": 3,
+ "public_walk_minutes": {
+  "Eataly NYC Flatiron": 0,
+  "Fairway Market Chelsea": 0,
+  "Whole Foods Market NoMad": 0,
+  "Whole Foods Market Union Square": 0,
+  "Westside Market NYC (84 Third Ave)": 1,
+  "Westside Market NYC (180 Third Ave)": 2,
+  "Westside Market NYC (170 West 23rd St)": 3,
+  "Westside Market NYC (77 Seventh Ave)": 3,
+  "Whole Foods Market Chelsea": 3,
+  "Eden Gourmet Marketplace Gramercy Park": 4,
+  "Citarella Greenwich Village": 4,
+  "Wegmans Astor Place": 5,
+  "LifeThyme Natural Market": 5,
+  "Fairway Market Kips Bay": 8
+ },
+ "coworking_high_with_second": 19,
+ "coworking_high": 19,
  "walk": {
-  "sessions": 11,
-  "total_minutes": 865,
+  "sessions": 10,
+  "total_minutes": 806,
   "stops": 117,
   "table": [
    {
     "session": "1",
     "phase": "core (inside the boundary)",
-    "stops": 10,
-    "minutes": "74.5",
+    "stops": 12,
+    "minutes": "80.3",
     "start": "14 St-Union Sq (L), about 1 min walk",
-    "end": "14 St-Union Sq (N Q R W), about 3 min walk"
+    "end": "14 St (F M), about 5 min walk"
    },
    {
     "session": "10",
     "phase": "outer retailers (within ten blocks)",
-    "stops": 5,
-    "minutes": "80.0",
-    "start": "23 St (1), about 2 min walk",
-    "end": "33 St (6), about 9 min walk"
-   },
-   {
-    "session": "11",
-    "phase": "outer retailers (within ten blocks)",
     "stops": 7,
-    "minutes": "82.5",
+    "minutes": "79.7",
     "start": "28 St (6), about 9 min walk",
     "end": "Astor Pl (6), about 1 min walk"
    },
    {
     "session": "2",
     "phase": "core (inside the boundary)",
-    "stops": 13,
-    "minutes": "82.0",
-    "start": "14 St-Union Sq (4 5 6), about 4 min walk",
-    "end": "14 St (F M), about 4 min walk"
+    "stops": 14,
+    "minutes": "82.7",
+    "start": "14 St (F M), about 4 min walk",
+    "end": "23 St (R W), about 4 min walk"
    },
    {
     "session": "3",
     "phase": "core (inside the boundary)",
-    "stops": 13,
-    "minutes": "78.7",
-    "start": "18 St (1), about 4 min walk",
-    "end": "23 St-Baruch College (6), about 2 min walk"
+    "stops": 11,
+    "minutes": "78.6",
+    "start": "28 St (6), about 4 min walk",
+    "end": "23 St-Baruch College (6), about 3 min walk"
    },
    {
     "session": "4",
     "phase": "core (inside the boundary)",
-    "stops": 12,
-    "minutes": "78.8",
-    "start": "23 St-Baruch College (6), about 1 min walk",
-    "end": "28 St (6), about 2 min walk"
+    "stops": 16,
+    "minutes": "80.5",
+    "start": "28 St (6), about 3 min walk",
+    "end": "28 St (R W), about 3 min walk"
    },
    {
     "session": "5",
     "phase": "core (inside the boundary)",
-    "stops": 12,
-    "minutes": "80.9",
-    "start": "28 St (6), about 2 min walk",
-    "end": "23 St-Baruch College (6), about 2 min walk"
+    "stops": 13,
+    "minutes": "79.4",
+    "start": "28 St (R W), about 4 min walk",
+    "end": "23 St (R W), about 4 min walk"
    },
    {
     "session": "6",
     "phase": "core (inside the boundary)",
-    "stops": 13,
-    "minutes": "77.6",
-    "start": "23 St (R W), about 4 min walk",
+    "stops": 17,
+    "minutes": "82.0",
+    "start": "23 St (R W), about 2 min walk",
     "end": "23 St (F M), about 4 min walk"
    },
    {
     "session": "7",
     "phase": "core (inside the boundary)",
-    "stops": 14,
-    "minutes": "77.4",
-    "start": "23 St (F M), about 1 min walk",
-    "end": "28 St (R W), about 1 min walk"
+    "stops": 15,
+    "minutes": "82.0",
+    "start": "23 St (F M), about 2 min walk",
+    "end": "28 St (R W), about 2 min walk"
    },
    {
     "session": "8",
-    "phase": "core (inside the boundary)",
-    "stops": 11,
-    "minutes": "67.1",
-    "start": "28 St (R W), about 2 min walk",
-    "end": "23 St (F M), about 2 min walk"
+    "phase": "outer retailers (within ten blocks)",
+    "stops": 7,
+    "minutes": "82.4",
+    "start": "W 4 St-Wash Sq (A C E), about 3 min walk",
+    "end": "23 St (C E), about 1 min walk"
    },
    {
     "session": "9",
     "phase": "outer retailers (within ten blocks)",
-    "stops": 7,
-    "minutes": "85.4",
-    "start": "W 4 St-Wash Sq (A C E), about 3 min walk",
-    "end": "23 St (C E), about 1 min walk"
+    "stops": 5,
+    "minutes": "78.6",
+    "start": "23 St (1), about 2 min walk",
+    "end": "33 St (6), about 9 min walk"
    }
   ],
-  "core_sessions": 8,
+  "core_sessions": 7,
   "outer_sessions": 3,
-  "core_minutes": 617,
-  "outer_minutes": 248
+  "core_minutes": 566,
+  "outer_minutes": 241
  }
 }

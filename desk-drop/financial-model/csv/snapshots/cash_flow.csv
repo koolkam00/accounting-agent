@@ -22,26 +22,26 @@ Direct drop costs
 ,Storage,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-150,0,0,0,-150,0,0,0,-150,0,0,0,-450
 ,Phone,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 ,Total overhead,-60,0,0,0,-60,0,-1200,0,-60,0,0,0,0,-60,-150,0,0,-60,-150,0,0,-60,-150,0,0,0,-2010
-,Startup outlays (Inputs section 11),-100,0,0,-900,0,-2000,-700,0,0,0,0,-50,0,0,0,0,0,0,0,0,-25,0,0,0,0,0,-3775
-,Net cash flow,-160,0,0,-900,-60,-2000,-736,0,-60,0,-40,-170,0,2122.5,-230,4065,-80,1822.5,-150,2182.5,-105,4305,-230,2182.5,0,0,11759
-,"Cumulative net cash flow, before founder cash",-160,-160,-160,-1060,-1120,-3120,-3856,-3856,-3916,-3916,-3956,-4126,-4126,-2003.5,-2233.5,1831.5,1751.5,3574,3424,5606.5,5501.5,9806.5,9576.5,11759,11759,11759,11759
+,Startup outlays (Inputs section 11),-100,0,0,-900,0,-2000,-700,0,0,0,0,-50,-350,0,0,0,0,0,0,0,-25,0,0,0,0,0,-4125
+,Net cash flow,-160,0,0,-900,-60,-2000,-736,0,-60,0,-40,-170,-350,2122.5,-230,4065,-80,1822.5,-150,2182.5,-105,4305,-230,2182.5,0,0,11409
+,"Cumulative net cash flow, before founder cash",-160,-160,-160,-1060,-1120,-3120,-3856,-3856,-3916,-3916,-3956,-4126,-4476,-2353.5,-2583.5,1481.5,1401.5,3224,3074,5256.5,5151.5,9456.5,9226.5,11409,11409,11409,11409
 ,Founder cash in,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-,Cash balance with founder cash,-160,-160,-160,-1060,-1120,-3120,-3856,-3856,-3916,-3916,-3956,-4126,-4126,-2003.5,-2233.5,1831.5,1751.5,3574,3424,5606.5,5501.5,9806.5,9576.5,11759,11759,11759,11759
+,Cash balance with founder cash,-160,-160,-160,-1060,-1120,-3120,-3856,-3856,-3916,-3916,-3956,-4126,-4476,-2353.5,-2583.5,1481.5,1401.5,3224,3074,5256.5,5151.5,9456.5,9226.5,11409,11409,11409,11409
 ,Actual bank balance at week end (optional; type it)
 ,Variance: actual less the model balance with founder cash
 
 Lowest point and capital
-,Lowest cumulative net cash flow (before founder cash),-4126
-,Week of the lowest point,12
-,That week starts,2027-01-11
-,"Peak cash need (the lowest point, as a positive number)",4126
+,Lowest cumulative net cash flow (before founder cash),-4476
+,Week of the lowest point,13
+,That week starts,2027-01-18
+,"Peak cash need (the lowest point, as a positive number)",4476
 ,Reserve held back (plan),1000
-,Capital to commit: peak need plus reserve,5126
+,Capital to commit: peak need plus reserve,5476
 ,"Plan capital figure, high end (Capital tab)",6510
-,Gap: plan capital figure minus capital to commit (positive = headroom),1384
+,Gap: plan capital figure minus capital to commit (positive = headroom),1034
 ,Founder cash committed (Inputs),not set
-,Lowest cash balance with founder cash,-4126
-,Cumulative net cash at the end of week 26,11759
+,Lowest cash balance with founder cash,-4476
+,Cumulative net cash at the end of week 26,11409
 ,Latest week with an actual bank balance typed (row 30)
 ,Variance that week (actual less model)
 
@@ -63,8 +63,8 @@ Lowest point and capital
 ,Storage,0,0,0,0,-150,-150,-150,-450
 ,Phone,0,0,0,0,0,0,0,0
 ,Total overhead,-60,-60,-1260,-60,-210,-210,-150,-2010
-,Startup outlays (Inputs section 11),-100,-900,-2700,-50,0,-25,0,-3775
-,Net cash flow,-160,-960,-2796,1912.5,5577.5,6232.5,1952.5,11759
+,Startup outlays (Inputs section 11),-100,-900,-2700,-400,0,-25,0,-4125
+,Net cash flow,-160,-960,-2796,1562.5,5577.5,6232.5,1952.5,11409
 
 ,Check: monthly six-month net less weekly six-month net,0
 ,"Overhead allocated to drops in the six months (a view, not paid)",700

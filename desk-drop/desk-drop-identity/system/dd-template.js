@@ -1,5 +1,5 @@
 /*
-  dd-template.js: shared runtime for every print template in this folder (v1.1, 2026-10-24).
+  dd-template.js: shared runtime for every print template in this folder (v1.2, 2026-10-24).
 
   A template page calls DD.init({ fields, render, fit, ... }) once. This file then:
     1. reads the data: window.__DD_DATA__ (set by render/render.js) or the inline
