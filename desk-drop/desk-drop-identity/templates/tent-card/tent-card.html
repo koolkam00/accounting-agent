@@ -121,6 +121,7 @@
   'use strict';
   const B = DD.brand();
   const MODE = (new URLSearchParams(location.search).get('mode')) || window.__DD_MODE__ || 'home'; // home | pro
+  if (MODE === 'pro') { const st = document.createElement('style'); st.textContent = '@page { size: 7.25in 10.25in; margin: 0; }'; document.head.appendChild(st); }
 
   // ---- limits (inches -> px at 96/in). Change only with the usage guide's rules. ----
   const IN = 96;

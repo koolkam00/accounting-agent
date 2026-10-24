@@ -188,7 +188,7 @@
       office.style.fontSize = '100px';
       let px = Math.min(OFFICE_MAX, Math.floor(100 * box.clientWidth / office.scrollWidth));
       office.style.fontStretch = '100%';
-      if (px < OFFICE_MAX * .75) { office.style.fontStretch = '80%'; office.style.fontSize = '100px'; px = Math.min(OFFICE_MAX, Math.floor(100 * box.clientWidth / office.scrollWidth)); }
+      if (px < OFFICE_MAX * .75) { office.style.fontStretch = '87.5%'; office.style.fontSize = '100px'; px = Math.min(OFFICE_MAX, Math.floor(100 * box.clientWidth / office.scrollWidth)); }
       if (px < OFFICE_MIN) { DD.warn(start + k, 'Office name is long; it was set at the smallest size. Use the short name people say.'); px = OFFICE_MIN; office.style.whiteSpace = 'normal'; }
       office.style.fontSize = px + 'px';
       const brand = lab.querySelector('.brand');
