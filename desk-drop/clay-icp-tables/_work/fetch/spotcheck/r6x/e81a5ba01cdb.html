@@ -1,0 +1,2529 @@
+<!doctype html>
+<html class="js" lang="en">
+  <head><script data-source-attribution="shopify.exit_interstitial">(()=>{var s=Function.prototype.bind.bind(Function.prototype.call),yt=(l,r)=>{for(let f=l;f;f=Object.getPrototypeOf(f)){let y=Object.getOwnPropertyDescriptor(f,r);if(y)return y}throw new TypeError(`${r} is not defined`)},u=(l,r)=>s(yt(l,r).get),B=(l,r)=>s(yt(l,r).set);var Se=s(String.prototype.endsWith),k=s(RegExp.prototype.exec),Re=/^_(self|top|parent)$/i,xe=/(^|\s)noreferrer(\s|$)/i,ht=/^(no-referrer(-when-downgrade)?|same-origin|(strict-)?origin(-when-cross-origin)?|unsafe-url)$/i,Pe=/^(never|default|always|origin-when-crossorigin)$/i,Et=/^(no-referrer|same-origin|never)$/i,mt=l=>{let r=`.${l}`;return f=>f===l||Se(f,r)},wt=(l,r,f)=>l!==void 0&&(l.protocol==="https:"||l.protocol==="http:")&&l.origin!==r&&!f(l.hostname),bt=(l,r,f)=>l!==null&&k(xe,l)!==null?!0:r!==null&&k(ht,r)!==null?k(Et,r)!==null:f,_t=(l,r)=>k(ht,l)!==null||k(Pe,l)!==null?k(Et,l)!==null:r,A=(l,{metaKey:r,ctrlKey:f,shiftKey:y,button:S})=>l&&k(Re,l)===null?l:r||f||y||S===1?"_blank":"";var Le="http://www.w3.org/2000/svg",Oe="http://www.w3.org/1999/xlink",G=["rel","referrerpolicy","download","ping","hreflang","type"];function kt(l){let r=window;if(r.top!==r)return;let f=document,y=r.navigation,S=location.origin,v=URL,q=u(v.prototype,"href"),vt=u(v.prototype,"origin"),Nt=u(v.prototype,"protocol"),St=u(v.prototype,"hostname"),Y=s(Event.prototype.preventDefault),Rt=s(Event.prototype.stopPropagation),j=s(Event.prototype.stopImmediatePropagation),V=s(Event.prototype.composedPath),xt=u(Event.prototype,"type"),Pt=u(Event.prototype,"cancelable"),X=u(Event.prototype,"defaultPrevented"),Lt=u(Event.prototype,"bubbles"),Ot=u(Event.prototype,"currentTarget"),At=u(Event.prototype,"eventPhase"),{CAPTURING_PHASE:It}=Event,z=u(Event.prototype,"cancelBubble"),Tt=B(Event.prototype,"cancelBubble"),Wt=u(MouseEvent.prototype,"button"),Mt=u(MouseEvent.prototype,"metaKey"),Ct=u(MouseEvent.prototype,"ctrlKey"),Dt=u(MouseEvent.prototype,"shiftKey"),Ft=y&&u(NavigateEvent.prototype,"destination"),Ht=y&&u(NavigationDestination.prototype,"url"),J=y&&u(NavigateEvent.prototype,"navigationType"),$t=y&&u(NavigateEvent.prototype,"formData"),Q=y&&"sourceElement"in NavigateEvent.prototype?u(NavigateEvent.prototype,"sourceElement"):void 0,m=s(Element.prototype.getAttribute),Kt=s(Element.prototype.getAttributeNS),I=s(Element.prototype.setAttribute),Ut=u(Element.prototype,"localName"),Bt=u(Element.prototype,"namespaceURI"),Gt=s(Document.prototype.querySelector),qt=s(Document.prototype.querySelectorAll),Yt=u(NodeList.prototype,"length"),jt=s(NodeList.prototype.item),T=u(Node.prototype,"baseURI"),Vt=s(Document.prototype.createElement),Xt=s(HTMLElement.prototype.click),zt=s(r.open),Jt=s(location.assign),Qt=s(location.replace),Zt=encodeURIComponent,te=s(String.prototype.startsWith),Z=s(r.setTimeout),ee=s(r.addEventListener),ne=s(r.removeEventListener),tt=s(EventTarget.prototype.addEventListener),et=s(EventTarget.prototype.removeEventListener),nt=Object.defineProperties,ot=t=>{let e=[],n=[HTMLElement.prototype,SVGElement.prototype,Document.prototype,r];for(let o=0;o<n.length;o+=1)try{e[e.length]={get:u(n[o],t),set:B(n[o],t)}}catch{}return e},oe={click:ot("onclick"),auxclick:ot("onauxclick")},rt=WeakMap,re=WeakSet,st=s(WeakMap.prototype.get),se=s(WeakMap.prototype.set),ce=s(WeakMap.prototype.delete),ie=s(WeakSet.prototype.add),ae=s(WeakSet.prototype.has),le=mt(l.site),ct=q(new v(l.exitPath,S)),ue=`${ct}?`,P=(t,e)=>{try{let n=new v(t,e);return{href:q(n),origin:vt(n),protocol:Nt(n),hostname:St(n)}}catch{return}},pe=(t,e,n)=>{let o=n?"&noreferrer=1":"";return`${ct}?q=${Zt(t.href)}&trigger=${e}${o}`},it=()=>{let t=qt(f,'meta[name="referrer" i][content]'),e=!1;for(let n=0;n<Yt(t);n+=1)e=_t(m(jt(t,n),"content"),e);return e},at=(t,e,{target:n,noReferrer:o,replaces:i})=>{let d=pe(t,e,o);if(n){zt(r,d,n,"noopener");return}(i?Qt:Jt)(location,d)},W=t=>wt(t,S,le),L=0,M,C=!1,fe=t=>{if(L>0){M=t;return}t()},de=t=>{if(L-=1,t&&(C=!0),L>0)return;let e=C?void 0:M;M=void 0,C=!1,e&&e()},ge=t=>t!==void 0&&te(t.href,ue),lt=t=>{try{return Ut(t)}catch{return}},ut=t=>bt(m(t,"rel"),m(t,"referrerpolicy"),it()),ye=t=>{let e=Q?Q(t):null,n=e===null?void 0:lt(e);return n==="a"||n==="area"?ut(e):it()},he=t=>{let e=P(Ht(Ft(t)));if(ge(e)){j(t);return}if(!Pt(t)||J(t)==="traverse"||!W(e)||$t(t)!==null)return;Y(t);let n={target:"",noReferrer:ye(t),replaces:J(t)==="replace"};fe(()=>at(e,"navigate",n))},R=t=>{let e=m(t,"href");return e===null&&Bt(t)===Le?Kt(t,Oe,"href"):e},Ee=t=>{let e=V(t);for(let n=0;n<e.length;n+=1){let o=e[n],i=lt(o);if(i==="a"||i==="area"){let d=R(o);if(d!==null)return{node:o,href:d}}}},D=t=>{let e=m(t,"target");if(e!==null)return e;let n=Gt(f,"base[target]");return n?m(n,"target"):""},me=t=>{try{return{metaKey:Mt(t),ctrlKey:Ct(t),shiftKey:Dt(t),button:Wt(t)}}catch{return}},pt=new re,we=t=>{let e=!1,n=()=>{e=!0},o=()=>e||ae(pt,t);return nt(t,{__proto__:null,preventDefault:{__proto__:null,configurable:!0,value:n},defaultPrevented:{__proto__:null,configurable:!0,get:o},returnValue:{__proto__:null,configurable:!0,get:()=>!o(),set:i=>{i||n()}}}),o},be={click:new rt,auxclick:new rt},_e=(t,e)=>{let n=oe[t],o=be[t],i=[],d=p=>{for(let a=0;a<i.length;a+=1)if(i[a]===p)return!0;return!1},w=(p,a,E)=>{let g=s(E);function O(_){let x=g(this,_);return x===!1&&typeof _=="object"&&_!==null&&ie(pt,_),x}return{target:p,accessor:a,handler:E,wrapper:O,inFlight:0}},b=()=>{for(let p=0;p<e.length;p+=1)for(let a=0;a<n.length;a+=1){let E;try{E=n[a].get(e[p])}catch{continue}if(typeof E=="function"){let g=st(o,e[p]);(!g||g.wrapper!==E)&&(g=w(e[p],n[a],E),n[a].set(e[p],g.wrapper),se(o,e[p],g)),d(g)||(g.inFlight+=1,i[i.length]=g)}break}};return b(),{wrap:b,unwrap:()=>{for(let p=0;p<i.length;p+=1){let a=i[p];a.inFlight-=1,!(a.inFlight>0)&&(st(o,a.target)===a&&ce(o,a.target),a.accessor.get(a.target)===a.wrapper&&a.accessor.set(a.target,a.handler))}}}},ft=(t,e,n)=>{let o=R(t),i=o===null?void 0:P(o,T(f));if(!W(i))return;let d={target:A(D(t),n),noReferrer:ut(t),replaces:!1};return{inWindow:d.target==="",go:()=>at(i,e,d)}},dt=t=>{let e=R(t);if(e===null||m(t,"download")===null)return!1;let n=P(e,T(f));return n!==void 0&&(n.origin===S||n.protocol==="blob:"||n.protocol==="data:")},ke=(t,e)=>R(t)!==null&&!dt(t)&&A(D(t),e)==="",ve=(t,e)=>{let n=R(t);if(n===null)return!1;let o=Vt(f,"a"),i=A(D(t),e);I(o,"href",n),I(o,"target",i||"_self");for(let d=0;d<G.length;d+=1){let w=m(t,G[d]);w!==null&&I(o,G[d],w)}return Xt(o),i===""&&!dt(t)},Ne=(t,e,n,o)=>{L+=1;let i=V(t),d=i.length-1,w=0,b=!1,F=!1,p=c=>{F||(F=!0,de(c))},a=c=>{if(b)return;b=!0;let N=X(t),h=N?void 0:ft(n,e,o),U;!N&&(h||c)&&(Y(t),U=we(t)),Z(r,()=>{if(!U){p(!X(t)&&ke(n,o));return}if(U()){p(!1);return}if(c&&(h=ft(n,e,o),!h)){p(ve(n,o));return}h.go(),p(h.inWindow)},0)},E=(c,N)=>{for(let h=0;h<i.length;h+=1)if(i[h]===c)return N===It?d-h:i.length+h;return-1},g=()=>{E(Ot(t),At(t))<=w&&a(!0)},O=c=>{c===t&&a(!1)},_=_e(e,i),x=c=>N=>{if(N===t){if(w=c,z(t)){a(!1);return}_.wrap()}},H=[],$=[],K=Lt(t);if(K){for(let c=0;c<d;c+=1)H[c]=x(d-c),$[c]=x(i.length+c),tt(i[c],e,H[c],!0),tt(i[c],e,$[c],!1);ee(r,e,O,!1)}if(Z(r,()=>{if(b||p(!1),b=!0,_.unwrap(),!!K){for(let c=0;c<d;c+=1)et(i[c],e,H[c],!0),et(i[c],e,$[c],!1);ne(r,e,O,!1)}},0),!K){a(!0);return}nt(t,{__proto__:null,stopPropagation:{__proto__:null,configurable:!0,value:()=>{g(),Rt(t)}},stopImmediatePropagation:{__proto__:null,configurable:!0,value:()=>{a(!0),j(t)}},cancelBubble:{__proto__:null,configurable:!0,get:()=>z(t),set:c=>{c&&g(),Tt(t,c)}}})},gt=t=>{let e=xt(t),n=me(t);if(!n||e==="auxclick"&&n.button!==1)return;let o=Ee(t);!o||!W(P(o.href,T(f)))||Ne(t,e,o.node,n)};y?.addEventListener("navigate",he,!0),r.addEventListener("click",gt,!0),r.addEventListener("auxclick",gt,!0)}kt({"site":"firehook.com","exitPath":"\/url"});})();
+//# sourceURL=exit-interstitial.js
+</script>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no, user-scalable=no">
+    <meta name="theme-color" content="">
+    <link rel="canonical" href="https://firehook.com/pages/faq"><link rel="icon" type="image/png" href="//firehook.com/cdn/shop/files/favicon.png?crop=center&height=32&v=1745471286&width=32"><link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin><title>
+      FAQ’s
+ &ndash; Firehook</title>
+
+    
+
+    
+
+<meta property="og:site_name" content="Firehook">
+<meta property="og:url" content="https://firehook.com/pages/faq">
+<meta property="og:title" content="FAQ’s">
+<meta property="og:type" content="website">
+<meta property="og:description" content="Artisan Baked Crackers with a craveable crunch — made in small batches from simple, quality ingredients. "><meta property="og:image" content="http://firehook.com/cdn/shop/files/logo.svg?height=628&pad_color=ffffff&v=1743678389&width=1200">
+  <meta property="og:image:secure_url" content="https://firehook.com/cdn/shop/files/logo.svg?height=628&pad_color=ffffff&v=1743678389&width=1200">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="628"><meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FAQ’s">
+<meta name="twitter:description" content="Artisan Baked Crackers with a craveable crunch — made in small batches from simple, quality ingredients. ">
+
+
+    <script src="//firehook.com/cdn/shop/t/1/assets/constants.js?v=132983761750457495441743676674" defer="defer"></script>
+    <script src="//firehook.com/cdn/shop/t/1/assets/pubsub.js?v=25310214064522200911743676676" defer="defer"></script>
+    <script src="//firehook.com/cdn/shop/t/1/assets/global.js?v=184345515105158409801743676674" defer="defer"></script>
+    <script src="//firehook.com/cdn/shop/t/1/assets/details-disclosure.js?v=13653116266235556501743676674" defer="defer"></script>
+    <script src="//firehook.com/cdn/shop/t/1/assets/details-modal.js?v=25581673532751508451743676674" defer="defer"></script>
+    <script src="//firehook.com/cdn/shop/t/1/assets/search-form.js?v=133129549252120666541743676676" defer="defer"></script><script src="//firehook.com/cdn/shop/t/1/assets/animations.js?v=88693664871331136111743676674" defer="defer"></script><script>window.performance && window.performance.mark && window.performance.mark('shopify.content_for_header.start');</script><meta name="google-site-verification" content="lHqc6pHQwbEunanijIuFbmfnW2XpX-qcCrxlVuy0ZJY">
+<meta id="shopify-digital-wallet" name="shopify-digital-wallet" content="/63161565295/digital_wallets/dialog">
+<link rel="ucp" href="/.well-known/ucp" version="2026-08-25"><script async="async" src="/checkouts/internal/preloads.js?locale=en-US"></script>
+<script id="shopify-features" type="application/json">{"accessToken":"16ecc5c4b781554830b2218894926561","betas":["rich-media-storefront-analytics"],"domain":"firehook.com","predictiveSearch":true,"shopId":63161565295,"locale":"en"}</script>
+<script>var Shopify = Shopify || {};
+Shopify.shop = "fire-hook.myshopify.com";
+Shopify.locale = "en";
+Shopify.currency = {"active":"USD","rate":"1.0"};
+Shopify.country = "US";
+Shopify.theme = {"name":"Dawn","id":139228905583,"schema_name":"Dawn","schema_version":"15.3.0","theme_store_id":887,"role":"main"};
+Shopify.theme.handle = "null";
+Shopify.theme.style = {"id":null,"handle":null};
+Shopify.cdnHost = "firehook.com/cdn";
+Shopify.routes = Shopify.routes || {};
+Shopify.routes.root = "/";
+Shopify.shopJsCdnBaseUrl = "https://cdn.shopify.com/shopifycloud/shop-js";
+Shopify.SignInWithShop = Shopify.SignInWithShop || {};
+Shopify.SignInWithShop.User = Shopify.SignInWithShop.User || {};
+Shopify.SignInWithShop.User.recognized = false;</script>
+<script type="module">!function(o){(o.Shopify=o.Shopify||{}).modules=!0}(window);</script>
+<script>!function(o){function n(){var o=[];function n(){o.push(Array.prototype.slice.apply(arguments))}return n.q=o,n}var t=o.Shopify=o.Shopify||{};t.loadFeatures=n(),t.autoloadFeatures=n()}(window);</script>
+<script>
+  window.Shopify = window.Shopify || {};
+  window.Shopify.SignInWithShop = window.Shopify.SignInWithShop || {};
+  window.Shopify.SignInWithShop.assetMetrics = { sampleRate: 0.25 };
+  window.Shopify.SignInWithShop.eligible = true;
+</script>
+<script id="shop-js-analytics" type="application/json">{"pageType":"page"}</script>
+<script defer="defer" async type="module" src="https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/loader.init-shop-cart-sync.en.esm.js"></script>
+<script type="module">
+  await import("https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/loader.init-shop-cart-sync.en.esm.js");
+
+  window.Shopify.SignInWithShop?.initShopCartSync?.({"fedCMEnabled":true,"windoidEnabled":true,"backendHost":"ZmlyZWhvb2suY29t"});
+
+</script>
+<script>
+  window.Shopify = window.Shopify || {};
+  if (!window.Shopify.featureAssets) window.Shopify.featureAssets = {};
+  window.Shopify.featureAssets['shop-js'] = {"avatar":["modules/v2/loader.avatar.en.esm.js"],"checkout-modal":["modules/v2/loader.checkout-modal.en.esm.js"],"init-customer-accounts-sign-up":["modules/v2/loader.init-customer-accounts-sign-up.en.esm.js"],"init-customer-accounts":["modules/v2/loader.init-customer-accounts.en.esm.js"],"init-fed-cm":["modules/v2/loader.init-fed-cm.en.esm.js"],"init-shop-cart-sync":["modules/v2/loader.init-shop-cart-sync.en.esm.js"],"init-shop-email-lookup-coordinator":["modules/v2/loader.init-shop-email-lookup-coordinator.en.esm.js"],"init-shop-for-new-customer-accounts":["modules/v2/loader.init-shop-for-new-customer-accounts.en.esm.js"],"init-shop-user-recognition":["modules/v2/loader.init-shop-user-recognition.en.esm.js"],"init-windoid":["modules/v2/loader.init-windoid.en.esm.js"],"lead-capture":["modules/v2/loader.lead-capture.en.esm.js"],"listener":["modules/v2/loader.listener.en.esm.js"],"pay-button":["modules/v2/loader.pay-button.en.esm.js"],"payment-terms":["modules/v2/loader.payment-terms.en.esm.js"],"shop-button":["modules/v2/loader.shop-button.en.esm.js"],"shop-cart-sync":["modules/v2/loader.shop-cart-sync.en.esm.js"],"shop-cash-offers":["modules/v2/loader.shop-cash-offers.en.esm.js"],"shop-follow-button":["modules/v2/loader.shop-follow-button.en.esm.js"],"shop-login-button":["modules/v2/loader.shop-login-button.en.esm.js"],"shop-login":["modules/v2/loader.shop-login.en.esm.js"],"shop-toast-manager":["modules/v2/loader.shop-toast-manager.en.esm.js"],"shop-user-recognition":["modules/v2/loader.shop-user-recognition.en.esm.js"]};
+</script>
+<script>(function() {
+  var isLoaded = false;
+  function asyncLoad() {
+    if (isLoaded) return;
+    isLoaded = true;
+    var urls = ["https:\/\/cdn.nfcube.com\/instafeed-39a66ce9742f635584e70bdc27362345.js?shop=fire-hook.myshopify.com"];
+    for (var i = 0; i < urls.length; i++) {
+      var s = document.createElement('script');
+      s.type = 'text/javascript';
+      s.async = true;
+      s.src = urls[i];
+      var x = document.getElementsByTagName('script')[0];
+      x.parentNode.insertBefore(s, x);
+    }
+  };
+  if(window.attachEvent) {
+    window.attachEvent('onload', asyncLoad);
+  } else {
+    window.addEventListener('load', asyncLoad, false);
+  }
+})();</script>
+<script id="__st">var __st={"a":63161565295,"offset":-14400,"reqid":"3bd45da1-2d27-4a2d-a563-3d9222aeb698-1792832136","pageurl":"firehook.com\/pages\/faq","s":"pages-102261686383","u":"806b3fbacfd2","p":"page","rtyp":"page","rid":102261686383};</script>
+<script>window.ShopifyPaypalV4VisibilityTracking = true;</script>
+<script id="captcha-bootstrap">!function(){'use strict';const t='contact',e='account',n='new_comment',o=[[t,t],['blogs',n],['comments',n],[t,'customer']],c=[[e,'customer_login'],[e,'guest_login'],[e,'recover_customer_password'],[e,'create_customer']],r=t=>t.map((([t,e])=>`form[action*='/${t}']:not([data-nocaptcha='true']) input[name='form_type'][value='${e}']`)).join(','),a=t=>()=>t?[...document.querySelectorAll(t)].map((t=>t.form)):[];function s(){const t=[...o],e=r(t);return a(e)}const i='password',u='form_key',d=['recaptcha-v3-token','g-recaptcha-response','h-captcha-response',i],f=()=>{try{return window.sessionStorage}catch{return}},m='__shopify_v',_=t=>t.elements[u];function p(t,e,n=!1){try{const o=window.sessionStorage,c=JSON.parse(o.getItem(e)),{data:r}=function(t){const{data:e,action:n}=t;return t[m]||n?{data:e,action:n}:{data:t,action:n}}(c);for(const[e,n]of Object.entries(r))t.elements[e]&&(t.elements[e].value=n);n&&o.removeItem(e)}catch(o){console.error('form repopulation failed',{error:o})}}const l='form_type',E='cptcha';function T(t){t.dataset[E]=!0}const w=window,h=w.document,L='Shopify',v='ce_forms',y='captcha';let A=!1;((t,e)=>{const n=(g='f06e6c50-85a8-45c8-87d0-21a2b65856fe',I='https://cdn.shopify.com/shopifycloud/storefront-forms-hcaptcha/ce_storefront_forms_captcha_hcaptcha.v1.5.3.iife.js',D={infoText:'Protected by hCaptcha',privacyText:'Privacy',termsText:'Terms'},(t,e,n)=>{const o=w[L][v],c=o.bindForm;if(c)return c(t,g,e,D).then(n);var r;o.q.push([[t,g,e,D],n]),r=I,A||(h.body.append(Object.assign(h.createElement('script'),{id:'captcha-provider',async:!0,src:r})),A=!0)});var g,I,D;w[L]=w[L]||{},w[L][v]=w[L][v]||{},w[L][v].q=[],w[L][y]=w[L][y]||{},w[L][y].protect=function(t,e){n(t,void 0,e),T(t)},Object.freeze(w[L][y]),function(t,e,n,w,h,L){const[v,y,A,g]=function(t,e,n){const i=e?o:[],u=t?c:[],d=[...i,...u],f=r(d),m=r(i),_=r(d.filter((([t,e])=>n.includes(e))));return[a(f),a(m),a(_),s()]}(w,h,L),I=t=>{const e=t.target;return e instanceof HTMLFormElement?e:e&&e.form},D=t=>v().includes(t);t.addEventListener('submit',(t=>{const e=I(t);if(!e)return;const n=D(e)&&!e.dataset.hcaptchaBound&&!e.dataset.recaptchaBound,o=_(e),c=g().includes(e)&&(!o||!o.value);(n||c)&&t.preventDefault(),c&&!n&&(function(t){try{if(!f())return;!function(t){const e=f();if(!e)return;const n=_(t);if(!n)return;const o=n.value;o&&e.removeItem(o)}(t);const e=Array.from(Array(32),(()=>Math.random().toString(36)[2])).join('');!function(t,e){_(t)||t.append(Object.assign(document.createElement('input'),{type:'hidden',name:u})),t.elements[u].value=e}(t,e),function(t,e){const n=f();if(!n)return;const o=[...t.querySelectorAll(`input[type='${i}']`)].map((({name:t})=>t)),c=[...d,...o],r={};for(const[a,s]of new FormData(t).entries())c.includes(a)||(r[a]=s);n.setItem(e,JSON.stringify({[m]:1,action:t.action,data:r}))}(t,e)}catch(e){console.error('failed to persist form',e)}}(e),e.submit())}));const S=(t,e)=>{t&&!t.dataset[E]&&(n(t,e.some((e=>e===t))),T(t))};for(const o of['focusin','change'])t.addEventListener(o,(t=>{const e=I(t);D(e)&&S(e,y())}));const B=e.get('form_key'),M=e.get(l),P=B&&M;t.addEventListener('DOMContentLoaded',(()=>{const t=y();if(P)for(const e of t)e.elements[l].value===M&&p(e,B);[...new Set([...A(),...v().filter((t=>'true'===t.dataset.shopifyCaptcha))])].forEach((e=>S(e,t)))}))}(h,new URLSearchParams(w.location.search),n,t,e,['guest_login'])})(!0,!0)}();</script>
+<script integrity="sha256-FYHzja/5XSmzkjz6zHj7s4rACJGFuVoYZdumgoO2Ecs=" data-source-attribution="shopify.loadfeatures" defer="defer" src="//firehook.com/cdn/shopifycloud/storefront/assets/storefront/load_feature-ed94c51f.js" crossorigin="anonymous"></script>
+<script>(function () {var userAgent = navigator.userAgent;var platform = navigator.platform;var maxTouchPoints = navigator.maxTouchPoints || 0;var isIOS = /iPad|iPhone|iPod/.test(platform) || (platform === 'MacIntel' && maxTouchPoints > 1);var isMacSafari = platform.indexOf('Mac') === 0 && /Safari/.test(userAgent) && !/Chrome|Chromium|CriOS|FxiOS|Edg|OPR|Android/.test(userAgent);var isAppleSafari = isIOS || isMacSafari;if (isAppleSafari) {fetch('/sf_private_access_tokens' + location.search).catch(function () {});}function browserMajorVersion(pattern) {var match = userAgent.match(pattern);return match ? parseInt(match[1], 10) : null;}function shouldLoadAutosizesPolyfill() {if (!window.PerformanceObserver?.supportedEntryTypes?.includes('paint')) {return false;}var chromeVersion = browserMajorVersion(/Chrome\/(\d+)/);if (chromeVersion !== null) {return chromeVersion < 126;}var firefoxVersion = browserMajorVersion(/Firefox\/(\d+)/);if (firefoxVersion !== null) {return firefoxVersion < 150;}var safariVersion = isAppleSafari ? browserMajorVersion(/Version\/(\d+).*Safari\//) : null;if (safariVersion !== null) {return safariVersion < 27;}return true;}if (shouldLoadAutosizesPolyfill()) {var autosizesScript = document.createElement('script');autosizesScript.async = true;autosizesScript.crossOrigin = 'anonymous';autosizesScript.src = "//firehook.com/cdn/shopifycloud/storefront/assets/storefront/autosizes-84416378.js";(document.head || document.documentElement).appendChild(autosizesScript);}window.ShopifyAnalytics = window.ShopifyAnalytics || {};window.ShopifyAnalytics.performance = window.ShopifyAnalytics.performance || {};(function () {var LONG_FRAME_THRESHOLD = 50;var longAnimationFrames = [];var activeRafId = null;function collectLongFrames() {var previousTime = null;function rafMonitor(now) {if (activeRafId === null) {return;}var delta = now - previousTime;if (delta > LONG_FRAME_THRESHOLD) {longAnimationFrames.push({startTime: previousTime,endTime: now,});}previousTime = now;activeRafId = requestAnimationFrame(rafMonitor);}previousTime = performance.now();activeRafId = requestAnimationFrame(rafMonitor);}if (!window.PerformanceObserver?.supportedEntryTypes?.includes('long-animation-frame')) {collectLongFrames();var timeoutId = setTimeout(function () {cancelAnimationFrame(activeRafId);}, 10000);window.ShopifyAnalytics.performance.getLongAnimationFrames = function (stopCollection) {if (stopCollection === undefined) {stopCollection = false;}if (stopCollection) {clearTimeout(timeoutId);cancelAnimationFrame(activeRafId);}return longAnimationFrames;};}})();})();</script><script id="shopify-origin-trials" async="async" integrity="sha256-qJbe/jEZBHtr5W/BlA2cKAz3vkXu6vJQyLjgvgCC86g=" src="//cdn.shopify.com/shopifycloud/storefront/assets/storefront/origin_trials-318ab40a.js" crossorigin="anonymous" onload="window.__shopifyOriginTrialsDone = true" onerror="window.__shopifyOriginTrialsDone = true"></script>
+<script>(()=>{var d="shopify:webmcp_adapter_loaded",n=Symbol.for("shopify.webmcp_adapter_loading");function s(c,a,{win:r=window,doc:o=document}={}){function p(){try{return r.localStorage.getItem(d)==="true"}catch{return!1}}function l(){try{r.localStorage.setItem(d,"true")}catch{}}function u(){return typeof(o.modelContext||r.navigator?.modelContext)?.registerTool=="function"}function f(){if(r[n]||!u())return;let t=o.head||o.getElementsByTagName("head")[0];if(!t)return;let e=o.createElement("script");e.type="module",e.crossOrigin="anonymous",a&&(e.integrity=a),e.src=c,e.addEventListener("load",l,{once:!0}),e.addEventListener("error",()=>{r[n]=!1},{once:!0}),t.appendChild(e),r[n]=!0}function _(t){let e=o.getElementById("shopify-origin-trials");if(!e||r.__shopifyOriginTrialsDone){t();return}e.addEventListener("load",t,{once:!0}),e.addEventListener("error",t,{once:!0})}function i(){_(()=>r.setTimeout(f,0))}function m(){o.addEventListener("DOMContentLoaded",i,{once:!0})}p()?i():m()}s("\/\/firehook.com\/cdn\/shopifycloud\/storefront\/assets\/storefront\/webmcp-23c12384.js","sha256-r8Pww6V2udgtSdaVbcRtdZ4Kg+gXP7aLPZOtQSJPrbM=");})();
+</script>
+<script data-source-attribution="shopify.dynamic_checkout.dynamic.init">var Shopify=Shopify||{};Shopify.PaymentButton=Shopify.PaymentButton||{isStorefrontPortableWallets:!0,init:function(){window.Shopify.PaymentButton.init=function(){};var t=document.createElement("script");t.src="https://firehook.com/cdn/shopifycloud/portable-wallets/latest/portable-wallets.en.js",t.type="module",document.head.appendChild(t)}};
+</script>
+<script data-source-attribution="shopify.dynamic_checkout.buyer_consent">
+  function portableWalletsHideBuyerConsent(e){var t=document.getElementById("shopify-buyer-consent"),n=document.getElementById("shopify-subscription-policy-button");t&&n&&(t.classList.add("hidden"),t.setAttribute("aria-hidden","true"),n.removeEventListener("click",e))}function portableWalletsShowBuyerConsent(e){var t=document.getElementById("shopify-buyer-consent"),n=document.getElementById("shopify-subscription-policy-button");t&&n&&(t.classList.remove("hidden"),t.removeAttribute("aria-hidden"),n.addEventListener("click",e))}window.Shopify?.PaymentButton&&(window.Shopify.PaymentButton.hideBuyerConsent=portableWalletsHideBuyerConsent,window.Shopify.PaymentButton.showBuyerConsent=portableWalletsShowBuyerConsent);
+</script>
+<script data-source-attribution="shopify.dynamic_checkout.cart.bootstrap">document.addEventListener("DOMContentLoaded",(function(){function t(){return document.querySelector("shopify-accelerated-checkout-cart, shopify-accelerated-checkout")}if(t())Shopify.PaymentButton.init();else{new MutationObserver((function(e,n){t()&&(Shopify.PaymentButton.init(),n.disconnect())})).observe(document.body,{childList:!0,subtree:!0})}}));
+</script>
+<script id='scb4127' type='text/javascript' async='' src='https://firehook.com/cdn/shopifycloud/privacy-banner/privacy-banner.js'></script><script id="sections-script" data-sections="header" defer="defer" src="//firehook.com/cdn/shop/t/1/compiled_assets/scripts.js?v=90487813905515327061743676694"></script>
+<script id="shopify-cfh-end">window.performance && window.performance.mark && window.performance.mark('shopify.content_for_header.end');</script>
+
+
+    <style data-shopify>
+      @font-face {
+  font-family: Assistant;
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("//firehook.com/cdn/fonts/assistant/assistant_n4.9120912a469cad1cc292572851508ca49d12e768.woff2") format("woff2"),
+       url("//firehook.com/cdn/fonts/assistant/assistant_n4.6e9875ce64e0fefcd3f4446b7ec9036b3ddd2985.woff") format("woff");
+}
+
+      @font-face {
+  font-family: Assistant;
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("//firehook.com/cdn/fonts/assistant/assistant_n7.bf44452348ec8b8efa3aa3068825305886b1c83c.woff2") format("woff2"),
+       url("//firehook.com/cdn/fonts/assistant/assistant_n7.0c887fee83f6b3bda822f1150b912c72da0f7b64.woff") format("woff");
+}
+
+      
+      
+      @font-face {
+  font-family: Assistant;
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("//firehook.com/cdn/fonts/assistant/assistant_n4.9120912a469cad1cc292572851508ca49d12e768.woff2") format("woff2"),
+       url("//firehook.com/cdn/fonts/assistant/assistant_n4.6e9875ce64e0fefcd3f4446b7ec9036b3ddd2985.woff") format("woff");
+}
+
+
+      
+        :root,
+        .color-scheme-1 {
+          --color-background: 255,250,232;
+        
+          --gradient-background: #fffae8;
+        
+
+        
+
+        --color-foreground: 16,19,21;
+        --color-background-contrast: 255,222,104;
+        --color-shadow: 18,18,18;
+        --color-button: 227,82,5;
+        --color-button-text: 255,255,255;
+        --color-secondary-button: 255,250,232;
+        --color-secondary-button-text: 18,18,18;
+        --color-link: 18,18,18;
+        --color-badge-foreground: 16,19,21;
+        --color-badge-background: 255,250,232;
+        --color-badge-border: 16,19,21;
+        --payment-terms-background-color: rgb(255 250 232);
+
+        --main-heading-text-color: ,,;
+      }
+      
+        
+        .color-scheme-2 {
+          --color-background: 243,243,243;
+        
+          --gradient-background: #f3f3f3;
+        
+
+        
+
+        --color-foreground: 18,18,18;
+        --color-background-contrast: 179,179,179;
+        --color-shadow: 18,18,18;
+        --color-button: 18,18,18;
+        --color-button-text: 243,243,243;
+        --color-secondary-button: 243,243,243;
+        --color-secondary-button-text: 18,18,18;
+        --color-link: 18,18,18;
+        --color-badge-foreground: 18,18,18;
+        --color-badge-background: 243,243,243;
+        --color-badge-border: 18,18,18;
+        --payment-terms-background-color: rgb(243 243 243);
+
+        --main-heading-text-color: ,,;
+      }
+      
+        
+        .color-scheme-3 {
+          --color-background: 36,40,51;
+        
+          --gradient-background: #242833;
+        
+
+        
+
+        --color-foreground: 255,250,232;
+        --color-background-contrast: 47,52,66;
+        --color-shadow: 18,18,18;
+        --color-button: 16,19,21;
+        --color-button-text: 255,250,232;
+        --color-secondary-button: 36,40,51;
+        --color-secondary-button-text: 255,255,255;
+        --color-link: 255,255,255;
+        --color-badge-foreground: 255,250,232;
+        --color-badge-background: 36,40,51;
+        --color-badge-border: 255,250,232;
+        --payment-terms-background-color: rgb(36 40 51);
+
+        --main-heading-text-color: ,,;
+      }
+      
+        
+        .color-scheme-4 {
+          --color-background: 18,18,18;
+        
+          --gradient-background: #121212;
+        
+
+        
+
+        --color-foreground: 255,255,255;
+        --color-background-contrast: 146,146,146;
+        --color-shadow: 18,18,18;
+        --color-button: 255,255,255;
+        --color-button-text: 18,18,18;
+        --color-secondary-button: 18,18,18;
+        --color-secondary-button-text: 255,255,255;
+        --color-link: 255,255,255;
+        --color-badge-foreground: 255,255,255;
+        --color-badge-background: 18,18,18;
+        --color-badge-border: 255,255,255;
+        --payment-terms-background-color: rgb(18 18 18);
+
+        --main-heading-text-color: ,,;
+      }
+      
+        
+        .color-scheme-5 {
+          --color-background: 51,79,180;
+        
+          --gradient-background: #334fb4;
+        
+
+        
+
+        --color-foreground: 255,255,255;
+        --color-background-contrast: 23,35,81;
+        --color-shadow: 18,18,18;
+        --color-button: 255,255,255;
+        --color-button-text: 51,79,180;
+        --color-secondary-button: 51,79,180;
+        --color-secondary-button-text: 255,255,255;
+        --color-link: 255,255,255;
+        --color-badge-foreground: 255,255,255;
+        --color-badge-background: 51,79,180;
+        --color-badge-border: 255,255,255;
+        --payment-terms-background-color: rgb(51 79 180);
+
+        --main-heading-text-color: ,,;
+      }
+      
+        
+        .color-scheme-134f84b4-4910-48c0-8ad1-5d0dd60ffbfa {
+          --color-background: 227,82,5;
+        
+          --gradient-background: #e35205;
+        
+
+        
+
+        --color-foreground: 255,250,232;
+        --color-background-contrast: 102,37,2;
+        --color-shadow: 227,82,5;
+        --color-button: 18,18,18;
+        --color-button-text: 255,255,255;
+        --color-secondary-button: 227,82,5;
+        --color-secondary-button-text: 18,18,18;
+        --color-link: 18,18,18;
+        --color-badge-foreground: 255,250,232;
+        --color-badge-background: 227,82,5;
+        --color-badge-border: 255,250,232;
+        --payment-terms-background-color: rgb(227 82 5);
+
+        --main-heading-text-color: ,,;
+      }
+      
+        
+        .color-scheme-94987d14-a536-481b-a490-9722d8a85819 {
+          --color-background: 255,250,232;
+        
+          --gradient-background: #fffae8;
+        
+
+        
+
+        --color-foreground: 227,82,5;
+        --color-background-contrast: 255,222,104;
+        --color-shadow: 18,18,18;
+        --color-button: 18,18,18;
+        --color-button-text: 255,255,255;
+        --color-secondary-button: 255,250,232;
+        --color-secondary-button-text: 18,18,18;
+        --color-link: 18,18,18;
+        --color-badge-foreground: 227,82,5;
+        --color-badge-background: 255,250,232;
+        --color-badge-border: 227,82,5;
+        --payment-terms-background-color: rgb(255 250 232);
+
+        --main-heading-text-color: ,,;
+      }
+      
+        
+        .color-scheme-aa5eed0e-a612-4d13-9c5f-fdac743be6cd {
+          --color-background: 0,0,0;
+        
+          --gradient-background: rgba(0,0,0,0);
+        
+
+        
+
+        --color-foreground: 227,82,5;
+        --color-background-contrast: 128,128,128;
+        --color-shadow: 18,18,18;
+        --color-button: 227,82,5;
+        --color-button-text: 255,255,255;
+        --color-secondary-button: 0,0,0;
+        --color-secondary-button-text: 255,250,232;
+        --color-link: 255,250,232;
+        --color-badge-foreground: 227,82,5;
+        --color-badge-background: 0,0,0;
+        --color-badge-border: 227,82,5;
+        --payment-terms-background-color: rgb(0 0 0);
+
+        --main-heading-text-color: ,,;
+      }
+      
+        
+        .color-scheme-46dcccb4-cab9-4c4c-a2d9-2d99cbb5a3ce {
+          --color-background: 255,250,232;
+        
+          --gradient-background: #fffae8;
+        
+
+        
+
+        --color-foreground: 227,82,5;
+        --color-background-contrast: 255,222,104;
+        --color-shadow: 18,18,18;
+        --color-button: 18,18,18;
+        --color-button-text: 255,255,255;
+        --color-secondary-button: 255,250,232;
+        --color-secondary-button-text: 18,18,18;
+        --color-link: 18,18,18;
+        --color-badge-foreground: 227,82,5;
+        --color-badge-background: 255,250,232;
+        --color-badge-border: 227,82,5;
+        --payment-terms-background-color: rgb(255 250 232);
+
+        --main-heading-text-color: ,,;
+      }
+      
+        
+        .color-scheme-81586186-6d92-4641-8c6f-44a19efcd1aa {
+          --color-background: 255,255,255;
+        
+          --gradient-background: #ffffff;
+        
+
+        
+
+        --color-foreground: 227,82,5;
+        --color-background-contrast: 191,191,191;
+        --color-shadow: 18,18,18;
+        --color-button: 18,18,18;
+        --color-button-text: 255,255,255;
+        --color-secondary-button: 255,255,255;
+        --color-secondary-button-text: 18,18,18;
+        --color-link: 18,18,18;
+        --color-badge-foreground: 227,82,5;
+        --color-badge-background: 255,255,255;
+        --color-badge-border: 227,82,5;
+        --payment-terms-background-color: rgb(255 255 255);
+
+        --main-heading-text-color: ,,;
+      }
+      
+        
+        .color-scheme-8373abd9-9701-44a2-9b31-e6aa0b43d749 {
+          --color-background: 255,250,232;
+        
+          --gradient-background: #fffae8;
+        
+
+        
+
+        --color-foreground: 16,19,21;
+        --color-background-contrast: 255,222,104;
+        --color-shadow: 18,18,18;
+        --color-button: 227,82,5;
+        --color-button-text: 255,255,255;
+        --color-secondary-button: 255,250,232;
+        --color-secondary-button-text: 18,18,18;
+        --color-link: 18,18,18;
+        --color-badge-foreground: 16,19,21;
+        --color-badge-background: 255,250,232;
+        --color-badge-border: 16,19,21;
+        --payment-terms-background-color: rgb(255 250 232);
+
+        --main-heading-text-color: 227,82,5;
+      }
+      
+        
+        .color-scheme-78ed419d-b589-44a4-94d7-76b332e5be65 {
+          --color-background: 255,250,232;
+        
+          --gradient-background: #fffae8;
+        
+
+        
+
+        --color-foreground: 227,82,5;
+        --color-background-contrast: 255,222,104;
+        --color-shadow: 227,82,5;
+        --color-button: 227,82,5;
+        --color-button-text: 255,255,255;
+        --color-secondary-button: 255,250,232;
+        --color-secondary-button-text: 227,82,5;
+        --color-link: 227,82,5;
+        --color-badge-foreground: 227,82,5;
+        --color-badge-background: 255,250,232;
+        --color-badge-border: 227,82,5;
+        --payment-terms-background-color: rgb(255 250 232);
+
+        --main-heading-text-color: 227,82,5;
+      }
+      
+        
+        .color-scheme-2ae57c1e-0994-4efc-bcd9-745acadb6ea3 {
+          --color-background: 235,224,208;
+        
+          --gradient-background: #ebe0d0;
+        
+
+        
+
+        --color-foreground: 227,82,5;
+        --color-background-contrast: 197,165,119;
+        --color-shadow: 18,18,18;
+        --color-button: 227,82,5;
+        --color-button-text: 255,255,255;
+        --color-secondary-button: 235,224,208;
+        --color-secondary-button-text: 18,18,18;
+        --color-link: 18,18,18;
+        --color-badge-foreground: 227,82,5;
+        --color-badge-background: 235,224,208;
+        --color-badge-border: 227,82,5;
+        --payment-terms-background-color: rgb(235 224 208);
+
+        --main-heading-text-color: 227,82,5;
+      }
+      
+        
+        .color-scheme-f57f5867-6d76-40f7-a0ce-b9132b9b99cc {
+          --color-background: 255,250,232;
+        
+          --gradient-background: #fffae8;
+        
+
+        
+
+        --color-foreground: 27,68,137;
+        --color-background-contrast: 255,222,104;
+        --color-shadow: 18,18,18;
+        --color-button: 18,18,18;
+        --color-button-text: 255,255,255;
+        --color-secondary-button: 255,250,232;
+        --color-secondary-button-text: 18,18,18;
+        --color-link: 18,18,18;
+        --color-badge-foreground: 27,68,137;
+        --color-badge-background: 255,250,232;
+        --color-badge-border: 27,68,137;
+        --payment-terms-background-color: rgb(255 250 232);
+
+        --main-heading-text-color: ,,;
+      }
+      
+        
+        .color-scheme-76a0f5ce-0eb3-40a6-a7c0-559ac6347a01 {
+          --color-background: 255,250,232;
+        
+          --gradient-background: #fffae8;
+        
+
+        
+
+        --color-foreground: 59,59,59;
+        --color-background-contrast: 255,222,104;
+        --color-shadow: 18,18,18;
+        --color-button: 227,82,5;
+        --color-button-text: 255,255,255;
+        --color-secondary-button: 255,250,232;
+        --color-secondary-button-text: 18,18,18;
+        --color-link: 18,18,18;
+        --color-badge-foreground: 59,59,59;
+        --color-badge-background: 255,250,232;
+        --color-badge-border: 59,59,59;
+        --payment-terms-background-color: rgb(255 250 232);
+
+        --main-heading-text-color: ,,;
+      }
+      
+        
+        .color-scheme-f6819546-1c23-45eb-b5ce-e3caf85a7e5d {
+          --color-background: 255,255,255;
+        
+          --gradient-background: #ffffff;
+        
+
+        
+
+        --color-foreground: 227,82,5;
+        --color-background-contrast: 191,191,191;
+        --color-shadow: 18,18,18;
+        --color-button: 227,82,5;
+        --color-button-text: 255,255,255;
+        --color-secondary-button: 255,255,255;
+        --color-secondary-button-text: 18,18,18;
+        --color-link: 18,18,18;
+        --color-badge-foreground: 227,82,5;
+        --color-badge-background: 255,255,255;
+        --color-badge-border: 227,82,5;
+        --payment-terms-background-color: rgb(255 255 255);
+
+        --main-heading-text-color: ,,;
+      }
+      
+        
+        .color-scheme-d785b577-4fb0-46df-b8cc-4247446a9aaa {
+          --color-background: 0,0,0;
+        
+          --gradient-background: rgba(0,0,0,0);
+        
+
+        
+
+        --color-foreground: 227,82,5;
+        --color-background-contrast: 128,128,128;
+        --color-shadow: 227,82,5;
+        --color-button: 227,82,5;
+        --color-button-text: 255,255,255;
+        --color-secondary-button: 0,0,0;
+        --color-secondary-button-text: 227,82,5;
+        --color-link: 227,82,5;
+        --color-badge-foreground: 227,82,5;
+        --color-badge-background: 0,0,0;
+        --color-badge-border: 227,82,5;
+        --payment-terms-background-color: rgb(0 0 0);
+
+        --main-heading-text-color: ,,;
+      }
+      
+
+      body, .color-scheme-1, .color-scheme-2, .color-scheme-3, .color-scheme-4, .color-scheme-5, .color-scheme-134f84b4-4910-48c0-8ad1-5d0dd60ffbfa, .color-scheme-94987d14-a536-481b-a490-9722d8a85819, .color-scheme-aa5eed0e-a612-4d13-9c5f-fdac743be6cd, .color-scheme-46dcccb4-cab9-4c4c-a2d9-2d99cbb5a3ce, .color-scheme-81586186-6d92-4641-8c6f-44a19efcd1aa, .color-scheme-8373abd9-9701-44a2-9b31-e6aa0b43d749, .color-scheme-78ed419d-b589-44a4-94d7-76b332e5be65, .color-scheme-2ae57c1e-0994-4efc-bcd9-745acadb6ea3, .color-scheme-f57f5867-6d76-40f7-a0ce-b9132b9b99cc, .color-scheme-76a0f5ce-0eb3-40a6-a7c0-559ac6347a01, .color-scheme-f6819546-1c23-45eb-b5ce-e3caf85a7e5d, .color-scheme-d785b577-4fb0-46df-b8cc-4247446a9aaa {
+        color: rgba(var(--color-foreground));
+        background-color: rgb(var(--color-background));
+      }
+
+      :root {
+        --font-body-family: Assistant, sans-serif;
+        --font-body-style: normal;
+        --font-body-weight: 400;
+        --font-body-weight-bold: 700;
+
+        --font-heading-family: Assistant, sans-serif;
+        --font-heading-style: normal;
+        --font-heading-weight: 400;
+
+        --font-body-scale: 1.0;
+        --font-heading-scale: 1.0;
+
+        --media-padding: px;
+        --media-border-opacity: 0.05;
+        --media-border-width: 0px;
+        --media-radius: 0px;
+        --media-shadow-opacity: 0.0;
+        --media-shadow-horizontal-offset: 0px;
+        --media-shadow-vertical-offset: 4px;
+        --media-shadow-blur-radius: 5px;
+        --media-shadow-visible: 0;
+
+        --page-width: 160rem;
+        --page-width-margin: 0rem;
+
+        --product-card-image-padding: 0.0rem;
+        --product-card-corner-radius: 1.6rem;
+        --product-card-text-alignment: center;
+        --product-card-border-width: 0.2rem;
+        --product-card-border-opacity: 1.0;
+        --product-card-shadow-opacity: 1.0;
+        --product-card-shadow-visible: 1;
+        --product-card-shadow-horizontal-offset: 0.8rem;
+        --product-card-shadow-vertical-offset: 0.6rem;
+        --product-card-shadow-blur-radius: 0.0rem;
+
+        --collection-card-image-padding: 0.0rem;
+        --collection-card-corner-radius: 0.0rem;
+        --collection-card-text-alignment: center;
+        --collection-card-border-width: 0.0rem;
+        --collection-card-border-opacity: 0.1;
+        --collection-card-shadow-opacity: 0.0;
+        --collection-card-shadow-visible: 0;
+        --collection-card-shadow-horizontal-offset: 0.0rem;
+        --collection-card-shadow-vertical-offset: 0.4rem;
+        --collection-card-shadow-blur-radius: 0.5rem;
+
+        --blog-card-image-padding: 0.0rem;
+        --blog-card-corner-radius: 0.0rem;
+        --blog-card-text-alignment: center;
+        --blog-card-border-width: 0.0rem;
+        --blog-card-border-opacity: 1.0;
+        --blog-card-shadow-opacity: 0.0;
+        --blog-card-shadow-visible: 0;
+        --blog-card-shadow-horizontal-offset: 0.8rem;
+        --blog-card-shadow-vertical-offset: 0.6rem;
+        --blog-card-shadow-blur-radius: 0.0rem;
+
+        --badge-corner-radius: 4.0rem;
+
+        --popup-border-width: 1px;
+        --popup-border-opacity: 0.1;
+        --popup-corner-radius: 0px;
+        --popup-shadow-opacity: 0.05;
+        --popup-shadow-horizontal-offset: 0px;
+        --popup-shadow-vertical-offset: 4px;
+        --popup-shadow-blur-radius: 5px;
+
+        --drawer-border-width: 1px;
+        --drawer-border-opacity: 0.1;
+        --drawer-shadow-opacity: 0.0;
+        --drawer-shadow-horizontal-offset: 0px;
+        --drawer-shadow-vertical-offset: 4px;
+        --drawer-shadow-blur-radius: 5px;
+
+        --spacing-sections-desktop: 0px;
+        --spacing-sections-mobile: 0px;
+
+        --grid-desktop-vertical-spacing: 40px;
+        --grid-desktop-horizontal-spacing: 40px;
+        --grid-mobile-vertical-spacing: 20px;
+        --grid-mobile-horizontal-spacing: 20px;
+
+        --text-boxes-border-opacity: 0.1;
+        --text-boxes-border-width: 0px;
+        --text-boxes-radius: 0px;
+        --text-boxes-shadow-opacity: 0.0;
+        --text-boxes-shadow-visible: 0;
+        --text-boxes-shadow-horizontal-offset: 0px;
+        --text-boxes-shadow-vertical-offset: 4px;
+        --text-boxes-shadow-blur-radius: 5px;
+
+        --buttons-radius: 6px;
+        --buttons-radius-outset: 7px;
+        --buttons-border-width: 1px;
+        --buttons-border-opacity: 1.0;
+        --buttons-shadow-opacity: 0.0;
+        --buttons-shadow-visible: 0;
+        --buttons-shadow-horizontal-offset: 0px;
+        --buttons-shadow-vertical-offset: 4px;
+        --buttons-shadow-blur-radius: 5px;
+        --buttons-border-offset: 0.3px;
+
+        --inputs-radius: 8px;
+        --inputs-border-width: 2px;
+        --inputs-border-opacity: 1.0;
+        --inputs-shadow-opacity: 0.0;
+        --inputs-shadow-horizontal-offset: 0px;
+        --inputs-margin-offset: 0px;
+        --inputs-shadow-vertical-offset: 4px;
+        --inputs-shadow-blur-radius: 5px;
+        --inputs-radius-outset: 10px;
+
+        --variant-pills-radius: 40px;
+        --variant-pills-border-width: 1px;
+        --variant-pills-border-opacity: 0.55;
+        --variant-pills-shadow-opacity: 0.0;
+        --variant-pills-shadow-horizontal-offset: 0px;
+        --variant-pills-shadow-vertical-offset: 4px;
+        --variant-pills-shadow-blur-radius: 5px;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: inherit;
+      }
+
+      html {
+        box-sizing: border-box;
+        font-size: calc(var(--font-body-scale) * 62.5%);
+        height: 100%;
+      }
+
+      body {
+        display: grid;
+        grid-template-rows: auto auto 1fr auto;
+        grid-template-columns: 100%;
+        min-height: 100%;
+        margin: 0;
+        font-size: 1.5rem;
+        letter-spacing: 0.06rem;
+        letter-spacing: normal;
+        line-height: calc(1 + 0.8 / var(--font-body-scale));
+        font-family: var(--font-body-family);
+        font-style: var(--font-body-style);
+        font-weight: var(--font-body-weight);
+      }
+
+      @media screen and (min-width: 750px) {
+        body {
+          font-size: 1.6rem;
+        }
+      }
+    </style>
+
+    <link href="//firehook.com/cdn/shop/t/1/assets/base.css?v=38616208222660449121746678269" rel="stylesheet" type="text/css" media="all" />
+    <link rel="stylesheet" href="//firehook.com/cdn/shop/t/1/assets/component-cart-items.css?v=123238115697927560811743676674" media="print" onload="this.media='all'">
+    <script src="//firehook.com/cdn/shop/t/1/assets/jquery.min.js?v=60938658743091704111743829473"></script>
+    <link href="//firehook.com/cdn/shop/t/1/assets/swiper.min.css?v=62323790987964928671743829533" rel="stylesheet" type="text/css" media="all" />
+    <script src="//firehook.com/cdn/shop/t/1/assets/swiper-bundle.min.js?v=15562385832275440411743829560" defer="defer"></script>
+
+    
+      <style data-shopify>
+        @font-face {
+          font-family: 'Merel-Bold';
+          src: url("//firehook.com/cdn/shop/files/merel-bold.eot?v=18178661310776423033");
+          src: url("//firehook.com/cdn/shop/files/merel-bold.eot?%23iefix&v=4784") format('embedded-opentype'),
+            url("//firehook.com/cdn/shop/files/merel-bold.woff2?v=8277653630863327645") format('woff2'),
+            url("//firehook.com/cdn/shop/files/merel-bold.woff?v=17219238511287989495") format('woff');
+          font-weight: normal;
+          font-style: normal;
+          font-display: swap;
+        }
+
+        @font-face {
+          font-family: 'Merel-Medium';
+          src: url("//firehook.com/cdn/shop/files/merel-medium.eot?v=7214132609006633283");
+          src: url("//firehook.com/cdn/shop/files/merel-medium.eot?%23iefix&v=4784") format('embedded-opentype'),
+               url("//firehook.com/cdn/shop/files/merel-medium.woff2?v=4482013022755924696") format('woff2'),
+               url("//firehook.com/cdn/shop/files/merel-medium.woff?v=12124632435142708559") format('woff');
+          font-weight: normal;
+          font-style: normal;
+          font-display: swap;
+        }
+
+        @font-face {
+          font-family: 'Merel';
+          src: url("//firehook.com/cdn/shop/files/merel-regular.eot?v=4450733617594224271");
+          src: url("//firehook.com/cdn/shop/files/merel-regular.eot?%23iefix&v=4784") format('embedded-opentype'),
+               url("//firehook.com/cdn/shop/files/merel-regular.woff2?v=10822297270350027946") format('woff2'),
+               url("//firehook.com/cdn/shop/files/merel-regular.woff?v=1758171749902571165") format('woff');
+          font-weight: normal;
+          font-style: normal;
+          font-display: swap;
+        }
+
+        @font-face {
+          font-family: 'Merel-Black';
+          src: url("//firehook.com/cdn/shop/files/merelw00-black.eot?v=969524399542908889");
+          src: url("//firehook.com/cdn/shop/files/merelw00-black.eot?%23iefix&v=4784") format('embedded-opentype'),
+               url("//firehook.com/cdn/shop/files/merelw00-black.woff2?v=13028424292124979737") format('woff2'),
+               url("//firehook.com/cdn/shop/files/merelw00-black.woff?v=16291242150793282313") format('woff');
+          font-weight: normal;
+          font-style: normal;
+          font-display: swap;
+        }
+
+        @font-face {
+          font-family: 'Angelus Medieval';
+          src: url("//firehook.com/cdn/shop/files/AngelusMedieval.eot?v=13484201950507563595");
+          src: url("//firehook.com/cdn/shop/files/AngelusMedieval.eot?%23iefix&v=4784") format('embedded-opentype'),
+              url("//firehook.com/cdn/shop/files/AngelusMedieval.woff2?v=1811479128654047929") format('woff2'),
+              url("//firehook.com/cdn/shop/files/AngelusMedieval.woff?v=2014327649099250726") format('woff');
+          font-weight: 500;
+          font-style: normal;
+          font-display: swap;
+        }
+
+        
+        :root {
+          --font-heading-family: 'Merel-Black';
+          --font-heading-Bold-family: 'Merel-Bold';
+          --font-heading-weight: 400;
+          --font-medium-family: 'Merel-Medium';
+          --font-body-family: 'Merel';
+          --font-body-weight: 400;
+          --font-product-family: 'Angelus Medieval';
+        }
+      </style>
+    
+
+      <link rel="preload" as="font" href="//firehook.com/cdn/fonts/assistant/assistant_n4.9120912a469cad1cc292572851508ca49d12e768.woff2" type="font/woff2" crossorigin>
+      
+
+      <link rel="preload" as="font" href="//firehook.com/cdn/fonts/assistant/assistant_n4.9120912a469cad1cc292572851508ca49d12e768.woff2" type="font/woff2" crossorigin>
+      
+<link
+        rel="stylesheet"
+        href="//firehook.com/cdn/shop/t/1/assets/component-predictive-search.css?v=75053921938039593901745636929"
+        media="print"
+        onload="this.media='all'"
+      ><script>
+      if (Shopify.designMode) {
+        document.documentElement.classList.add('shopify-design-mode');
+      }
+    </script>
+  <!-- BEGIN app block: shopify://apps/hulk-form-builder/blocks/app-embed/b6b8dd14-356b-4725-a4ed-77232212b3c3 --><!-- BEGIN app snippet: hulkapps-formbuilder-theme-ext --><style id="hulk-fb-spinner-css">
+  .pxFormGenerator.hulk-fb-is-loading {
+    position: relative;
+    min-height: 180px;
+  }
+  .pxFormGenerator .hulk-fb-spinner {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.92);
+    transition: opacity 0.2s ease;
+  }
+  .pxFormGenerator:not(.hulk-fb-is-loading) .hulk-fb-spinner {
+    display: none;
+  }
+  .pxFormGenerator .hulk-fb-spinner__ring {
+    box-sizing: border-box;
+    width: 28px;
+    height: 28px;
+    border: 2px solid #d4d4d4;
+    border-top-color: #333;
+    border-radius: 50%;
+    animation: hulk-fb-spin 0.7s linear infinite;
+  }
+  .pxFormGenerator .hulk-fb-spinner__label {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    line-height: 1.3;
+    color: #666;
+  }
+  @keyframes hulk-fb-spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+
+<script type="text/javascript">
+  
+  if (typeof window.formbuilder_customer != "object") {
+        window.formbuilder_customer = {}
+  }
+
+  
+
+  window.hulkFormBuilder = {form_data: {},
+    shop_domain: "fire-hook.myshopify.com",
+    shop_data: {"shop_sEcdtvmGx-EpM73Ec5S18A":{"shop_uuid":"sEcdtvmGx-EpM73Ec5S18A","shop_timezone":"America\/New_York","shop_id":135886,"shop_is_after_submit_enabled":false,"shop_shopify_plan":"Basic","shop_shopify_domain":"fire-hook.myshopify.com","shop_created_at":"2025-05-06T23:55:52.350-05:00","is_skip_metafield":false,"shop_deleted":false,"shop_disabled":false}},
+    settings_data: {"shop_settings":{"shop_customise_msgs":[],"default_customise_msgs":{"is_required":"is required","thank_you":"Thank you! The form was submitted successfully.","processing":"Processing...","valid_data":"Please provide valid data","valid_email":"Provide valid email format","valid_tags":"HTML Tags are not allowed","valid_phone":"Provide valid phone number","valid_captcha":"Please provide a valid CAPTCHA response.","valid_url":"Provide valid URL","only_number_alloud":"Provide valid number in","number_less":"must be less than","number_more":"must be more than","image_must_less":"Image must be less than 20MB","image_number":"Images allowed","image_extension":"Invalid extension! Please provide image file","error_image_upload":"Error in image upload. Please try again.","error_file_upload":"Error in file upload. Please try again.","your_response":"Your response","error_form_submit":"Error occur.Please try again after sometime.","email_submitted":"Form with this email is already submitted","invalid_email_by_zerobounce":"The email address you entered appears to be invalid. Please check it and try again.","download_file":"Download file","card_details_invalid":"Your card details are invalid","card_details":"Card details","please_enter_card_details":"Please enter card details","card_number":"Card number","exp_mm":"Exp MM","exp_yy":"Exp YY","crd_cvc":"CVV","payment_value":"Payment amount","please_enter_payment_amount":"Please enter a payment amount.","address1":"Address line 1","address2":"Address line 2","city":"City","province":"Province","zipcode":"Zip code","country":"Country","blocked_domain":"This form does not accept addresses from","file_must_less":"File must be less than 20MB","file_extension":"Invalid extension! Please provide file","only_file_number_alloud":"files allowed","previous":"Previous","next":"Next","must_have_a_input":"Please enter at least one field.","please_enter_required_data":"Please enter required data","atleast_one_special_char":"Include at least one special character","atleast_one_lowercase_char":"Include at least one lowercase character","atleast_one_uppercase_char":"Include at least one uppercase character","atleast_one_number":"Include at least one number","must_have_8_chars":"Must have 8 characters long","be_between_8_and_12_chars":"Be between 8 and 12 characters long","please_select":"Please Select","phone_submitted":"Form with this phone number is already submitted","user_res_parse_error":"Error while submitting the form","valid_same_values":"values must be the same","product_choice_clear_selection":"Clear Selection","picture_choice_clear_selection":"Clear Selection","remove_all_for_file_image_upload":"Remove All","invalid_file_type_for_image_upload":"You can't upload files of this type.","invalid_file_type_for_signature_upload":"You can't upload files of this type.","max_files_exceeded_for_file_upload":"You can not upload any more files.","max_files_exceeded_for_image_upload":"You can not upload any more files.","file_already_exist":"File already uploaded","max_limit_exceed":"You have added the maximum number of text fields.","cancel_upload_for_file_upload":"Cancel upload","cancel_upload_for_image_upload":"Cancel upload","cancel_upload_for_signature_upload":"Cancel upload"},"shop_blocked_domains":[]}},
+    features_data: {"shop_plan_features":{"shop_plan_features":["unlimited-forms","full-design-customization","export-form-submissions","multiple-recipients-for-form-submissions","multiple-admin-notifications","enable-captcha","unlimited-file-uploads","save-submitted-form-data","set-auto-response-message","conditional-logic","form-banner","save-as-draft-facility","include-user-response-in-admin-email","disable-form-submission","forms-limit","submissions-visibility-limit","file-upload"]}},
+    shop: null,
+    shop_id: null,
+    plan_features: null,
+    validateDoubleQuotes: false,
+    assets: {
+      searchableDropdown: "https://cdn.shopify.com/extensions/01a16343-3e4e-7b05-ad2c-e3a6661c5cf6/form-builder-by-hulkapps-80/assets/searchable-dropdown.js",
+      extraFunctions: "https://cdn.shopify.com/extensions/01a16343-3e4e-7b05-ad2c-e3a6661c5cf6/form-builder-by-hulkapps-80/assets/extra-functions.js",
+      extraStyles: "https://cdn.shopify.com/extensions/01a16343-3e4e-7b05-ad2c-e3a6661c5cf6/form-builder-by-hulkapps-80/assets/extra-styles.css",
+      bootstrapStyles: "https://cdn.shopify.com/extensions/01a16343-3e4e-7b05-ad2c-e3a6661c5cf6/form-builder-by-hulkapps-80/assets/theme-app-extension-bootstrap.css",
+    },
+    translations: {
+      htmlTagNotAllowed: "HTML Tags are not allowed",
+      sqlQueryNotAllowed: "SQL Queries are not allowed",
+      doubleQuoteNotAllowed: "Double quotes are not allowed",
+      
+      maxTextFieldsReached: "You have added the maximum number of text fields.",
+      
+
+      
+      zerobounceApiErrorMsg: "We couldn\u0026#39;t verify your email due to a technical issue. Please try again later.",
+    }
+
+  }
+
+  
+
+  window.FbThemeAppExtSettingsHash = {}</script>
+<!-- END app snippet --><!-- END app block --><script src="https://cdn.shopify.com/extensions/01a16343-3e4e-7b05-ad2c-e3a6661c5cf6/form-builder-by-hulkapps-80/assets/form-builder-script.js" type="text/javascript" defer="defer"></script>
+<script src="https://cdn.shopify.com/extensions/019d43d1-bbad-7de5-bd49-ea6de5e8ca58/accessibly-app-30/assets/acc-main.js" type="text/javascript" defer="defer"></script>
+<link href="https://monorail-edge.shopifysvc.com" rel="dns-prefetch">
+<script>(function(){if ("sendBeacon" in navigator && "performance" in window) {try {var session_token_from_headers = performance.getEntriesByType('navigation')[0].serverTiming.find(x => x.name == '_s').description;} catch {var session_token_from_headers = undefined;}var session_cookie_matches = document.cookie.match(/_shopify_s=([^;]*)/);var session_token_from_cookie = session_cookie_matches && session_cookie_matches.length === 2 ? session_cookie_matches[1] : "";var session_token = session_token_from_headers || session_token_from_cookie || "";function handle_abandonment_event(e) {var entries = performance.getEntries().filter(function(entry) {return /monorail-edge.shopifysvc.com/.test(entry.name);});if (!window.abandonment_tracked && entries.length === 0) {window.abandonment_tracked = true;var currentMs = Date.now();var navigation_start = performance.timing.navigationStart;var payload = {shop_id: 63161565295,url: window.location.href,navigation_start,duration: currentMs - navigation_start,session_token,page_type: "page"};window.navigator.sendBeacon("https://monorail-edge.shopifysvc.com/v1/produce", JSON.stringify({schema_id: "online_store_buyer_site_abandonment/1.1",payload: payload,metadata: {event_created_at_ms: currentMs,event_sent_at_ms: currentMs}}));}}window.addEventListener('pagehide', handle_abandonment_event);}}());</script>
+<script>
+  window.__TREKKIE_SHIM_QUEUE = window.__TREKKIE_SHIM_QUEUE || [];
+</script>
+<script>(function(){var wpmLoader=function(){"use strict";var e=/Googlebot|Storebot-Google|bingbot|Baiduspider|YandexBot|DuckDuckBot|Slurp|facebookexternalhit|Twitterbot|LinkedInBot|Applebot|AdsBot-Google|Mediapartners-Google|APIs-Google|PetalBot|SemrushBot|AhrefsBot|MJ12bot|DotBot|Acunetix|PerplexityBot|Perplexity-User/i,t=/bytedance/i;function i(){try{var e=document.cookie;if(!e||"string"!=typeof e)return;for(var t=0,i=e.split(";");t<i.length;t++){var n=i[t],r=n.indexOf("=");if(-1!==r){var o=n.slice(0,r).trim();if(o){var a=void 0;try{a=decodeURIComponent(o)}catch(e){a=o}if("_shopify_s"===a){var d=n.slice(r+1).trim();try{return decodeURIComponent(d)}catch(e){return d}}}}}return}catch(e){return}}function n(e){try{"undefined"!=typeof console&&"function"==typeof console.warn&&console.warn(e)}catch(e){}}function r(e,t){return"string"==typeof e&&e.length>0&&e.length<=t?e:void 0}function o(e){var t;switch(null==(t=null==e?void 0:e.navigation)?void 0:t.type){case 0:return"navigate";case 1:return"reload";case 2:return"back_forward";default:return}}function a(){var e,t,i;try{var n=null==(i=null==(t=null==(e=self.ShopifyAnalytics)?void 0:e.lib)?void 0:t.trekkie)?void 0:i.state;return"awaiting-consent"===n||"initialized"===n?n:void 0}catch(e){return}}return function(d,s,u,l){var c=arguments.length>4&&void 0!==arguments[4]?arguments[4]:{};try{var p=c.trekkieShim;!0!==p&&"true"!==p||null!=window.__TREKKIE_SHIM_QUEUE||(window.__TREKKIE_SHIM_QUEUE=[])}catch(e){}var f,v,h,y,g=(v=(f={modern:/Edge?\/(1{2}[4-9]|1[2-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|Firefox\/(1{2}[4-9]|1[2-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|Chrom(ium|e)\/(9{2}|\d{3,})\.\d+(\.\d+|)|(Maci|X1{2}).+ Version\/(15\.\d+|(1[6-9]|[2-9]\d|\d{3,})\.\d+)([,.]\d+|)( \(\w+\)|)( Mobile\/\w+|) Safari\/|Chrome.+OPR\/(9{2}|\d{3,})\.\d+\.\d+|(CPU[ +]OS|iPhone[ +]OS|CPU[ +]iPhone|CPU IPhone OS|CPU iPad OS)[ +]+(15[._]\d+|(1[6-9]|[2-9]\d|\d{3,})[._]\d+)([._]\d+|)|Android:?[ /-](14[89]|1[5-9]\d|[2-9]\d{2}|\d{4,})(\.\d+|)(\.\d+|)|Android.+Firefox\/(15\d|1[6-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|Android.+Chrom(ium|e)\/(14[89]|1[5-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|SamsungBrowser\/([2-9]\d|\d{3,})\.\d+/,legacy:/Edge?\/(1[6-9]|[2-9]\d|\d{3,})\.\d+(\.\d+|)|Firefox\/(5[4-9]|[6-9]\d|\d{3,})\.\d+(\.\d+|)|Chrom(ium|e)\/(5[1-9]|[6-9]\d|\d{3,})\.\d+(\.\d+|)([\d.]+$|.*Safari\/(?![\d.]+ Edge\/[\d.]+$))|(Maci|X1{2}).+ Version\/(10\.\d+|(1[1-9]|[2-9]\d|\d{3,})\.\d+)([,.]\d+|)( \(\w+\)|)( Mobile\/\w+|) Safari\/|Chrome.+OPR\/(3[89]|[4-9]\d|\d{3,})\.\d+\.\d+|(CPU[ +]OS|iPhone[ +]OS|CPU[ +]iPhone|CPU IPhone OS|CPU iPad OS)[ +]+(10[._]\d+|(1[1-9]|[2-9]\d|\d{3,})[._]\d+)([._]\d+|)|Android:?[ /-](14[89]|1[5-9]\d|[2-9]\d{2}|\d{4,})(\.\d+|)(\.\d+|)|Mobile Safari.+OPR\/([89]\d|\d{3,})\.\d+\.\d+|Android.+Firefox\/(15\d|1[6-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|Android.+Chrom(ium|e)\/(14[89]|1[5-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|Android.+(UC? ?Browser|UCWEB|U3)[ /]?(15\.([5-9]|\d{2,})|(1[6-9]|[2-9]\d|\d{3,})\.\d+)\.\d+|SamsungBrowser\/(5\.\d+|([6-9]|\d{2,})\.\d+)|Android.+MQ{2}Browser\/(14(\.(9|\d{2,})|)|(1[5-9]|[2-9]\d|\d{3,})(\.\d+|))(\.\d+|)|K[Aa][Ii]OS\/(3\.\d+|([4-9]|\d{2,})\.\d+)(\.\d+|)/}).modern,h=f.legacy,(y=navigator.userAgent).match(e)?"bot":y.match(v)?"modern":y.match(h)?"legacy":y.match(t)?"bot":"unknown"),m=function(e){var t,i,n=r(e,128);try{var a=window.performance,d=null==(t=null==a?void 0:a.getEntriesByType)?void 0:t.call(a,"navigation")[0];if(!d)return{requestId:n,navigationType:o(a)};var s="type"in d?r(d.type,64):void 0,u="serverTiming"in d&&Array.isArray(d.serverTiming)?d.serverTiming:[];return{requestId:null!=n?n:r(null==(i=u.find(function(e){return"requestID"===e.name}))?void 0:i.description,128),navigationType:s}}catch(e){return{requestId:n}}}(c.requestId),w=function(e){var t=e.version,r=e.browserTarget,o=e.surface,a=e.shopId,d=e.monorailEndpoint,s=window.location.href;return{emit:function(e){var u=e.status,l=e.errorMsg,c=e.failureReason,p=e.useKeepaliveFallback,f=void 0!==p&&p,v=e.navigationType,h=e.pagehidePersisted,y=e.requestId,g=e.trekkieState;if(d){var m,w;try{var b=(new Date).getTime();m=JSON.stringify({metadata:{event_sent_at_ms:b},events:[{schema_id:"web_pixels_manager_load/3.3",payload:{version:t,bundle_target:r,page_url:s,status:u,surface:o,error_msg:l,failure_reason:c,navigation_type:v,pagehide_persisted:h,request_id:y,trekkie_state:g,shop_id:a,visit_token:i()},metadata:{event_created_at_ms:b}}]})}catch(e){return}try{if("function"==typeof window.navigator.sendBeacon&&-1===(w=window.navigator.userAgent).indexOf("iPhone; CPU iPhone OS 12_")&&-1===w.indexOf("iPad; CPU OS 12_")&&-1===w.indexOf("iPod touch; CPU iPhone OS 12_")&&window.navigator.sendBeacon.bind(window.navigator)(d,m))return}catch(e){}if(f)try{"function"==typeof window.fetch&&window.fetch(d,{method:"POST",headers:{"Content-Type":"text/plain"},body:m,keepalive:!0}).catch(function(){})}catch(e){}else try{var _=new XMLHttpRequest;_.open("POST",d,!0),_.setRequestHeader("Content-Type","text/plain"),_.send(m)}catch(e){n("[Web Pixels Manager] Got an unhandled error while logging to Monorail.")}}else n("[Web Pixels Manager] No Monorail endpoint provided, skipping logging.")}}}({version:u,browserTarget:g,surface:d.surface,shopId:d.shopId,monorailEndpoint:d.monorailEndpoint});if(Boolean(null==(_=null==(b=window.Shopify)?void 0:b.analytics)?void 0:_.replayQueue))w.emit({status:"setup-skipped",errorMsg:"replay queue already initialized."});else{var b,_;w.emit({status:"setup-started"}),window.Shopify=window.Shopify||{};var S=window.Shopify;S.analytics=S.analytics||{};var P=S.analytics;P.replayQueue=[],P.publish=function(e,t,i){return P.replayQueue.push([e,t,i]),!0};try{self.performance.mark("wpm:start")}catch(e){}var k,C="modern"===g?"modern":"legacy",E=(null!=l?l:{modern:"",legacy:""})[C],I=[(k={baseUrl:s,hashVersion:u,buildTarget:C}).baseUrl,"/wpm","/b",k.hashVersion,"modern"===k.buildTarget?"m":"l",".js"].join(""),O=!1,T=!1;try{c.browserTarget=g,function(){O=!0;try{window.addEventListener("pagehide",M)}catch(e){O=!1}}(),R(function(){try{R(x)}catch(e){D(e)}}),w.emit({status:"loading",requestId:m.requestId,navigationType:m.navigationType,trekkieState:a()})}catch(e){D(e)}}function U(){var e;if(q(),!function(){var e,t;return Boolean(null==(t=null==(e=window.Shopify)?void 0:e.analytics)?void 0:t.initialized)}()){var t,i,n;try{if("function"!=typeof(null==(e=window.webPixelsManager)?void 0:e.init))return void A();if(!(null!==(n=i=t=window.webPixelsManager.init(d))&&"function"!=typeof n&&Object(n)===n&&"publish"in i&&"function"==typeof i.publish&&"publishCustomEvent"in i&&"function"==typeof i.publishCustomEvent&&"visitor"in i&&"function"==typeof i.visitor))return void A()}catch(e){return void A(e)}var r=window.Shopify.analytics;r.replayQueue.forEach(function(e){var i=e[0],n=e[1],r=e[2];t.publishCustomEvent(i,n,r)}),r.replayQueue=[],r.publish=t.publishCustomEvent,r.visitor=t.visitor,r.initialized=!0}}function A(e){B("manager_api_unavailable",void 0===e?void 0:Q(e))}function x(){B("script_load_failed","".concat(I," has failed to load"))}function B(e,t){T||(T=!0,q(),w.emit({status:"failed",errorMsg:t,failureReason:e,requestId:m.requestId,navigationType:m.navigationType,trekkieState:a()}))}function M(e){O&&(q(),w.emit({status:"pagehide-while-loading",useKeepaliveFallback:!0,pagehidePersisted:e.persisted,requestId:m.requestId,navigationType:m.navigationType,trekkieState:a()}))}function q(){O=!1;try{window.removeEventListener("pagehide",M)}catch(e){}}function R(e){var t;!function(e){var t=e.src,i=e.async,n=void 0===i||i,r=e.onload,o=e.onerror,a=e.sri,d=e.scriptDataAttributes,s=void 0===d?{}:d,u=document.createElement("script"),l=document.querySelector("head"),c=document.querySelector("body");if(u.async=n,u.src=t,a&&(u.integrity=a,u.crossOrigin="anonymous"),s)for(var p in s)if(Object.prototype.hasOwnProperty.call(s,p))try{u.dataset[p]=String(s[p])}catch(e){}if(r&&u.addEventListener("load",r),o&&u.addEventListener("error",o),l)l.appendChild(u);else{if(!c)throw new Error("Did not find a head or body element to append the script");c.appendChild(u)}}({src:I,async:!0,onload:U,onerror:e,sri:(t=E,"string"==typeof t&&/^sha384-[A-Za-z0-9+/=]+$/.test(t)?E:""),scriptDataAttributes:c})}function D(e){B("script_append_failed",Q(e))}function Q(e){return e instanceof Error?e.message:"Unknown error"}}}();wpmLoader({shopId: 63161565295,storefrontBaseUrl: "https://firehook.com",extensionsBaseUrl: "https://extensions.shopifycdn.com/cdn/shopifycloud/web-pixels-manager",monorailEndpoint: "https://firehook.com/.well-known/shopify/monorail/unstable/produce_batch",surface: "storefront-renderer",enabledBetaFlags: ["7b21cf0b","4c64608a"],webPixelsConfigList: [{"id":"774045807","configuration":"{\"config\":\"{\\\"google_tag_ids\\\":[\\\"G-2JR5VRYQPQ\\\",\\\"GT-NGB7PB29\\\"],\\\"target_country\\\":\\\"ZZ\\\",\\\"gtag_events\\\":[{\\\"type\\\":\\\"search\\\",\\\"action_label\\\":\\\"G-2JR5VRYQPQ\\\"},{\\\"type\\\":\\\"begin_checkout\\\",\\\"action_label\\\":\\\"G-2JR5VRYQPQ\\\"},{\\\"type\\\":\\\"remove_from_cart\\\",\\\"action_label\\\":\\\"G-2JR5VRYQPQ\\\"},{\\\"type\\\":\\\"view_item\\\",\\\"action_label\\\":[\\\"G-2JR5VRYQPQ\\\",\\\"MC-73WY4BCVD7\\\"]},{\\\"type\\\":\\\"purchase\\\",\\\"action_label\\\":[\\\"G-2JR5VRYQPQ\\\",\\\"MC-73WY4BCVD7\\\"]},{\\\"type\\\":\\\"add_shipping_info\\\",\\\"action_label\\\":\\\"G-2JR5VRYQPQ\\\"},{\\\"type\\\":\\\"page_view\\\",\\\"action_label\\\":[\\\"G-2JR5VRYQPQ\\\",\\\"MC-73WY4BCVD7\\\"]},{\\\"type\\\":\\\"view_item_list\\\",\\\"action_label\\\":\\\"G-2JR5VRYQPQ\\\"},{\\\"type\\\":\\\"add_payment_info\\\",\\\"action_label\\\":\\\"G-2JR5VRYQPQ\\\"},{\\\"type\\\":\\\"add_to_cart\\\",\\\"action_label\\\":\\\"G-2JR5VRYQPQ\\\"},{\\\"type\\\":\\\"view_cart\\\",\\\"action_label\\\":\\\"G-2JR5VRYQPQ\\\"}],\\\"enable_monitoring_mode\\\":false}\"}","eventPayloadVersion":"v1","runtimeContext":"OPEN","scriptVersion":"a3321ca85cf5aaf6b57585fcd8d67b3a","type":"APP","apiClientId":1780363,"privacyPurposes":[],"dataSharingAdjustments":{"protectedCustomerApprovalScopes":["read_customer_address","read_customer_email","read_customer_name","read_customer_personal_data","read_customer_phone"],"dataSharingControls":["share_all_events"]},"dataSharingState":"optimized","enabledFlags":["9a3ed68a"]},{"id":"shopify-app-pixel","configuration":"{}","eventPayloadVersion":"v1","runtimeContext":"STRICT","scriptVersion":"0530","apiClientId":"shopify-pixel","type":"APP","privacyPurposes":["ANALYTICS","MARKETING"]},{"id":"shopify-custom-pixel","eventPayloadVersion":"v1","runtimeContext":"LAX","scriptVersion":"0530","apiClientId":"shopify-pixel","type":"CUSTOM","privacyPurposes":["ANALYTICS","MARKETING"]}],isMerchantRequest: false,initData: {"shop":{"name":"Firehook","paymentSettings":{"currencyCode":"USD"},"myshopifyDomain":"fire-hook.myshopify.com","countryCode":"US","storefrontUrl":"https:\/\/firehook.com"},"customer":null,"cart":null,"checkout":null,"productVariants":[],"products":[],"purchasingCompany":null},},"https://firehook.com/cdn","fcc46ef0w9d3a45bbp8938e2eamdcca70d4",{"modern":"","legacy":""},{"trekkieShim":true,"agentContext":true,"apiClientId":"580111","facebookCapiEnabled":"false","themeId":"139228905583","themeStoreId":"887","themePublished":"true","eventMetadataId":"9146a96d-46f9-46f4-bc6e-2251a4165920","pageType":"page","resourceId":"102261686383","shopId":"63161565295","storefrontBaseUrl":"https:\/\/firehook.com","extensionBaseUrl":"https:\/\/extensions.shopifycdn.com\/cdn\/shopifycloud\/web-pixels-manager","surface":"storefront-renderer","enabledBetaFlags":"[\"7b21cf0b\", \"4c64608a\"]","isMerchantRequest":"false","hashVersion":"fcc46ef0w9d3a45bbp8938e2eamdcca70d4","publish":"custom","events":"[[\"page_viewed\",{}]]"});})();</script><script>
+  window.ShopifyAnalytics = window.ShopifyAnalytics || {};
+  window.ShopifyAnalytics.meta = window.ShopifyAnalytics.meta || {};
+  window.ShopifyAnalytics.meta.currency = 'USD';
+  var meta = {"page":{"pageType":"page","resourceType":"page","resourceId":102261686383,"requestId":"3bd45da1-2d27-4a2d-a563-3d9222aeb698-1792832136"}};
+  for (var attr in meta) {
+    window.ShopifyAnalytics.meta[attr] = meta[attr];
+  }
+</script>
+<script class="analytics">
+  (function () {
+    var customDocumentWrite = function(content) {
+      var jquery = null;
+
+      if (window.jQuery) {
+        jquery = window.jQuery;
+      } else if (window.Checkout && window.Checkout.$) {
+        jquery = window.Checkout.$;
+      }
+
+      if (jquery) {
+        jquery('body').append(content);
+      }
+    };
+
+    var hasLoggedConversion = function(token) {
+      if (token) {
+        return document.cookie.indexOf('loggedConversion=' + token) !== -1;
+      }
+      return false;
+    }
+
+    var setCookieIfConversion = function(token) {
+      if (token) {
+        var twoMonthsFromNow = new Date(Date.now());
+        twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
+
+        document.cookie = 'loggedConversion=' + token + '; expires=' + twoMonthsFromNow;
+      }
+    }
+
+    var trekkie = window.ShopifyAnalytics.lib = window.trekkie = window.trekkie || [];
+    window.ShopifyAnalytics.lib.trekkie = window.trekkie;
+    if (trekkie.integrations) {
+      return;
+    }
+    trekkie.methods = [
+      'identify',
+      'page',
+      'ready',
+      'track',
+      'trackForm',
+      'trackLink'
+    ];
+    trekkie.factory = function(method) {
+      return function() {
+        var args = Array.prototype.slice.call(arguments);
+        args.unshift(method);
+        trekkie.push(args);
+        if (method == 'track' || method == 'page') {
+          var pageUrl;
+          try {
+            pageUrl = window.location.href;
+          } catch (e) {}
+          var pageReferrer;
+          try {
+            pageReferrer = document.referrer;
+          } catch (e) {}
+          try {
+            if (window.__TREKKIE_SHIM_QUEUE == null) {
+              window.__TREKKIE_SHIM_QUEUE = [];
+            }
+            window.__TREKKIE_SHIM_QUEUE.push({
+              from: 'trekkie-stub',
+              method: method,
+              args: args.slice(1),
+              pageContext: {
+                url: pageUrl,
+                referrer: pageReferrer
+              }
+            });
+          } catch (e) {
+            // no-op
+          }
+        }
+        return trekkie;
+      };
+    };
+    for (var i = 0; i < trekkie.methods.length; i++) {
+      var key = trekkie.methods[i];
+      trekkie[key] = trekkie.factory(key);
+    }
+    trekkie.load = function(config) {
+      trekkie.config = config || {};
+      trekkie.config.initialDocumentCookie = document.cookie;
+      var first = document.getElementsByTagName('script')[0];
+var script = document.createElement('script');
+script.type = 'text/javascript';
+script.onerror = function(e) {
+  var scriptFallback = document.createElement('script');
+  scriptFallback.type = 'text/javascript';
+  scriptFallback.onerror = function(error) {
+          var Monorail = {
+      produce: function produce(monorailDomain, schemaId, payload) {
+        var currentMs = new Date().getTime();
+        var event = {
+          schema_id: schemaId,
+          payload: payload,
+          metadata: {
+            event_created_at_ms: currentMs,
+            event_sent_at_ms: currentMs
+          }
+        };
+        return Monorail.sendRequest("https://" + monorailDomain + "/v1/produce", JSON.stringify(event));
+      },
+      sendRequest: function sendRequest(endpointUrl, payload) {
+        // Try the sendBeacon API
+        if (window && window.navigator && typeof window.navigator.sendBeacon === 'function' && typeof window.Blob === 'function' && !Monorail.isIos12()) {
+          var blobData = new window.Blob([payload], {
+            type: 'text/plain'
+          });
+
+          if (window.navigator.sendBeacon(endpointUrl, blobData)) {
+            return true;
+          } // sendBeacon was not successful
+
+        } // XHR beacon
+
+        var xhr = new XMLHttpRequest();
+
+        try {
+          xhr.open('POST', endpointUrl);
+          xhr.setRequestHeader('Content-Type', 'text/plain');
+          xhr.send(payload);
+        } catch (e) {
+          console.log(e);
+        }
+
+        return false;
+      },
+      isIos12: function isIos12() {
+        return window.navigator.userAgent.lastIndexOf('iPhone; CPU iPhone OS 12_') !== -1 || window.navigator.userAgent.lastIndexOf('iPad; CPU OS 12_') !== -1;
+      }
+    };
+    Monorail.produce('monorail-edge.shopifysvc.com',
+      'trekkie_storefront_load_errors/1.1',
+      {shop_id: 63161565295,
+      theme_id: 139228905583,
+      app_name: "storefront",
+      context_url: window.location.href,
+      source_url: "//firehook.com/cdn/s/trekkie.storefront.6efba1340ec6769622eb0d10b5cb070d43fb8d55.min.js"});
+
+  };
+  scriptFallback.async = true;
+  scriptFallback.src = '//firehook.com/cdn/s/trekkie.storefront.6efba1340ec6769622eb0d10b5cb070d43fb8d55.min.js';
+  first.parentNode.insertBefore(scriptFallback, first);
+};
+script.async = true;
+script.src = '//firehook.com/cdn/s/trekkie.storefront.6efba1340ec6769622eb0d10b5cb070d43fb8d55.min.js';
+first.parentNode.insertBefore(script, first);
+
+    };
+    trekkie.load(
+      {"Trekkie":{"appName":"storefront","development":false,"defaultAttributes":{"shopId":63161565295,"isMerchantRequest":null,"themeId":139228905583,"themeCityHash":"684235830080248600","contentLanguage":"en","currency":"USD","eventMetadataId":"9146a96d-46f9-46f4-bc6e-2251a4165920"},"isServerSideCookieWritingEnabled":true,"monorailRegion":"shop_domain","enabledBetaFlags":["7b21cf0b","4c64608a"]},"Session Attribution":{},"S2S":{"facebookCapiEnabled":false,"source":"trekkie-storefront-renderer","apiClientId":580111}}
+    );
+
+    var loaded = false;
+    trekkie.ready(function() {
+      if (loaded) return;
+      loaded = true;
+
+      window.ShopifyAnalytics.lib = window.trekkie;
+
+      var originalDocumentWrite = document.write;
+      document.write = customDocumentWrite;
+      try { window.ShopifyAnalytics.merchantGoogleAnalytics.call(this); } catch(error) {};
+      document.write = originalDocumentWrite;
+
+      var match = window.location.pathname.match(/checkouts\/(.+)\/(thank_you|post_purchase)/)
+      var token = match? match[1]: undefined;
+      if (!hasLoggedConversion(token)) {
+        setCookieIfConversion(token);
+        
+      }
+    });
+
+    window.ShopifyAnalytics.lib.page(null,{"pageType":"page","resourceType":"page","resourceId":102261686383,"requestId":"3bd45da1-2d27-4a2d-a563-3d9222aeb698-1792832136","shopifyEmitted":true});
+
+    var eventsListenerScript = document.createElement('script');
+    eventsListenerScript.async = true;
+    eventsListenerScript.src = "//firehook.com/cdn/shopifycloud/storefront/assets/shop_events_listener-4e26a9ce.js";
+    document.getElementsByTagName('head')[0].appendChild(eventsListenerScript);
+})();</script>
+<script
+  defer
+  src="https://firehook.com/cdn/shopifycloud/perf-kit/shopify-perf-kit-3.11.0.min.js"
+  data-application="storefront-renderer"
+  data-shop-id="63161565295"
+  data-render-region="gcp-us-east1"
+  data-page-type="page"
+  data-theme-instance-id="139228905583"
+  data-theme-name="Dawn"
+  data-theme-version="15.3.0"
+  data-monorail-region="shop_domain"
+  data-resource-timing-sampling-rate="10"
+  data-shs="true"
+  data-shs-beacon="true"
+  data-shs-export-with-fetch="true"
+  data-shs-logs-sample-rate="1"
+  data-shs-beacon-endpoint="https://firehook.com/api/collect"
+></script>
+<meta name="shopify-y" content="00000000-0000-0000-5000-000000000000" data-expiration="1824389736000"><meta name="shopify-s" content="00000000-0000-0000-5000-000000000000" data-expiration="1792833936000">
+</head>
+
+  <body class="gradient">
+    <a class="skip-to-content-link button visually-hidden" href="#MainContent">
+      Skip to content
+    </a><!-- BEGIN sections: header-group -->
+<div id="shopify-section-sections--17581940179055__header" class="shopify-section shopify-section-group-header-group section-header"><link rel="stylesheet" href="//firehook.com/cdn/shop/t/1/assets/component-list-menu.css?v=116871704639594629371745320435" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="//firehook.com/cdn/shop/t/1/assets/component-search.css?v=165164710990765432851743676674" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="//firehook.com/cdn/shop/t/1/assets/component-menu-drawer.css?v=152905051894355778021745386848" media="print" onload="this.media='all'">
+<link
+  rel="stylesheet"
+  href="//firehook.com/cdn/shop/t/1/assets/component-cart-notification.css?v=54116361853792938221743676674"
+  media="print"
+  onload="this.media='all'"
+><link rel="stylesheet" href="//firehook.com/cdn/shop/t/1/assets/component-price.css?v=70172745017360139101743676674" media="print" onload="this.media='all'"><style>
+  header-drawer {
+    justify-self: start;
+    /* margin-left: -1.2rem; */
+  }@media screen and (min-width: 1171px) {
+      header-drawer {
+        display: none;
+      }
+    }.menu-drawer-container {
+    display: flex;
+  }
+
+  .list-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .list-menu--inline {
+    display: inline-flex;
+    flex-wrap: wrap;
+  }
+
+  summary.list-menu__item {
+    padding-right: 2.7rem;
+  }
+
+  summary.list-menu__item span {
+    padding-right: 2rem;
+  }
+
+  .list-menu__item {
+    display: flex;
+    align-items: center;
+    line-height: calc(1 + 0.3 / var(--font-body-scale));
+  }
+
+  .list-menu__item--link {
+    text-decoration: none;
+    padding-bottom: 1rem;
+    padding-top: 1rem;
+    line-height: calc(1 + 0.8 / var(--font-body-scale));
+  }
+
+  @media screen and (max-width: 1480px) {
+    summary.list-menu__item span {
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media screen and (max-width: 1280px) {
+    summary.list-menu__item span {
+      padding-right: 1.6rem;
+    }
+  }
+  
+
+  @media screen and (min-width: 750px) {
+    .list-menu__item--link {
+      padding-bottom: 0.5rem;
+      padding-top: 0.5rem;
+    }
+  }
+</style><style data-shopify>.header {
+    padding: 12px 1.5rem 12px 1.5rem;
+  }
+
+  .section-header {
+    position: sticky; /* This is for fixing a Safari z-index issue. PR #2147 */
+    margin-bottom: 0px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-header {
+      margin-bottom: 0px;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .header {
+      padding-top: 24px;
+      padding-bottom: 24px;
+    }
+    .header.full-width {
+        padding-left: 5rem;
+        padding-right: 5rem;
+    }
+
+    @media screen and (max-width: 1703px) {
+      .header.full-width {
+        padding-left: 3.5rem;
+        padding-right: 3.5rem;
+      }
+    }
+
+    @media screen and (max-width: 1600px) {
+      .header.full-width {
+        padding-left: 3rem;
+        padding-right: 3rem;
+      }
+    }
+    @media screen and (max-width: 1380px) {
+      .header.full-width {
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
+      }
+    }
+    @media screen and (max-width: 1280px) {
+      .header.full-width {
+        padding-left: 2rem;
+        padding-right: 2rem;
+      }
+    }
+  }</style><script src="//firehook.com/cdn/shop/t/1/assets/cart-notification.js?v=133508293167896966491743676674" defer="defer"></script>
+
+<sticky-header
+  
+    data-sticky-type="on-scroll-up"
+  
+  class="header-wrapper color-scheme-134f84b4-4910-48c0-8ad1-5d0dd60ffbfa gradient"
+><header class="header header--center-split header--mobile-center  full-width  header--has-menu header--has-social header--has-account">
+
+<header-drawer data-breakpoint="tablet">
+  <details id="Details-menu-drawer-container" class="menu-drawer-container">
+    <summary
+      class="header__icon header__icon--menu header__icon--summary link focus-inset"
+      aria-label="Menu"
+    >
+      <span><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-hamburger" viewBox="0 0 18 16"><path fill="currentColor" d="M1 .5a.5.5 0 1 0 0 1h15.71a.5.5 0 0 0 0-1zM.5 8a.5.5 0 0 1 .5-.5h15.71a.5.5 0 0 1 0 1H1A.5.5 0 0 1 .5 8m0 7a.5.5 0 0 1 .5-.5h15.71a.5.5 0 0 1 0 1H1a.5.5 0 0 1-.5-.5"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-close" viewBox="0 0 18 17"><path fill="currentColor" d="M.865 15.978a.5.5 0 0 0 .707.707l7.433-7.431 7.579 7.282a.501.501 0 0 0 .846-.37.5.5 0 0 0-.153-.351L9.712 8.546l7.417-7.416a.5.5 0 1 0-.707-.708L8.991 7.853 1.413.573a.5.5 0 1 0-.693.72l7.563 7.268z"/></svg>
+</span>
+    </summary>
+    <div id="menu-drawer" class="gradient menu-drawer motion-reduce color-scheme-78ed419d-b589-44a4-94d7-76b332e5be65">
+      <div class="menu-drawer__inner-container">
+        <div class="menu-drawer__navigation-container">
+          <nav class="menu-drawer__navigation">
+            <ul class="menu-drawer__menu has-submenu list-menu" role="list"><li><a
+                      id="HeaderDrawer-home"
+                      href="/"
+                      class="menu-drawer__menu-item list-menu__item link link--text focus-inset"
+                      
+                    >
+                      Home
+                    </a></li><li><details id="Details-menu-drawer-menu-item-2">
+                      <summary
+                        id="HeaderDrawer-our-crackers"
+                        class="menu-drawer__menu-item list-menu__item link link--text focus-inset"
+                      >
+                        Our Crackers
+                        <span class="svg-wrapper"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"/></svg>
+</span>
+                        <span class="svg-wrapper"><svg class="icon icon-caret" viewBox="0 0 10 6"><path fill="currentColor" fill-rule="evenodd" d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708" clip-rule="evenodd"/></svg>
+</span>
+                      </summary>
+                      <div
+                        id="link-our-crackers"
+                        class="menu-drawer__submenu has-submenu gradient motion-reduce"
+                        tabindex="-1"
+                      >
+                        <div class="menu-drawer__inner-submenu">
+                          <button class="menu-drawer__close-button link link--text focus-inset" aria-expanded="true">
+                            <span class="svg-wrapper"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"/></svg>
+</span>
+                            Our Crackers
+                          </button>
+                          <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1"><li><a
+                                    id="HeaderDrawer-our-crackers-signature-crackers"
+                                    href="/collections/all"
+                                    class="menu-drawer__menu-item link link--text list-menu__item focus-inset"
+                                    
+                                  
+                                  >
+                                    Signature Crackers
+                                  </a></li><li><a
+                                    id="HeaderDrawer-our-crackers-limited-edition-crackers"
+                                    href="https://fire-hook.myshopify.com/collections/all#limited_edition_crackers"
+                                    class="menu-drawer__menu-item link link--text list-menu__item focus-inset"
+                                    
+                                  
+                                  >
+                                    Limited Edition Crackers
+                                  </a></li></ul>
+                        </div>
+                      </div>
+                    </details></li><li><details id="Details-menu-drawer-menu-item-3">
+                      <summary
+                        id="HeaderDrawer-shop"
+                        class="menu-drawer__menu-item list-menu__item link link--text focus-inset"
+                      >
+                        Shop
+                        <span class="svg-wrapper"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"/></svg>
+</span>
+                        <span class="svg-wrapper"><svg class="icon icon-caret" viewBox="0 0 10 6"><path fill="currentColor" fill-rule="evenodd" d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708" clip-rule="evenodd"/></svg>
+</span>
+                      </summary>
+                      <div
+                        id="link-shop"
+                        class="menu-drawer__submenu has-submenu gradient motion-reduce"
+                        tabindex="-1"
+                      >
+                        <div class="menu-drawer__inner-submenu">
+                          <button class="menu-drawer__close-button link link--text focus-inset" aria-expanded="true">
+                            <span class="svg-wrapper"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"/></svg>
+</span>
+                            Shop
+                          </button>
+                          <ul class="menu-drawer__menu list-menu" role="list" tabindex="-1"><li><a
+                                    id="HeaderDrawer-shop-amazon"
+                                    href="https://www.amazon.com/stores/Firehook/page/BF55393F-F178-4104-AD13-C8AA8446E2B8?lp_asin=B078K6Y1BQ&ref_=ast_bln&store_ref=bl_ast_dp_brandlogo_sto"
+                                    class="menu-drawer__menu-item link link--text list-menu__item focus-inset"
+                                    
+                                  
+                                    target="_blank"
+                                  
+                                  >
+                                    Amazon
+                                  </a></li><li><a
+                                    id="HeaderDrawer-shop-instacart"
+                                    href="https://www.instacart.com/store/brands/firehook/everyday"
+                                    class="menu-drawer__menu-item link link--text list-menu__item focus-inset"
+                                    
+                                  
+                                    target="_blank"
+                                  
+                                  >
+                                    Instacart
+                                  </a></li><li><a
+                                    id="HeaderDrawer-shop-store-locator"
+                                    href="/pages/storelocator"
+                                    class="menu-drawer__menu-item link link--text list-menu__item focus-inset"
+                                    
+                                  
+                                  >
+                                    Store Locator
+                                  </a></li></ul>
+                        </div>
+                      </div>
+                    </details></li><li><a
+                      id="HeaderDrawer-recipes-inspiration"
+                      href="/blogs/recipes-pairings"
+                      class="menu-drawer__menu-item list-menu__item link link--text focus-inset"
+                      
+                    >
+                      RECIPES &amp; INSPIRATION
+                    </a></li><li><a
+                      id="HeaderDrawer-our-story"
+                      href="/#our-story"
+                      class="menu-drawer__menu-item list-menu__item link link--text focus-inset"
+                      
+                    >
+                      Our Story
+                    </a></li><li><a
+                      id="HeaderDrawer-wholesale"
+                      href="https://firehook.online/"
+                      class="menu-drawer__menu-item list-menu__item link link--text focus-inset"
+                      
+                    >
+                      WHOLESALE
+                    </a></li></ul>
+          </nav>
+          <div class="menu-drawer__utility-links">
+            
+<div class="menu-drawer__localization header-localization">
+</div><ul class="list list-social list-unstyled" role="list"><li class="list-social__item">
+                  <a href="https://www.instagram.com/firehook" class="list-social__link link">
+                    <span class="svg-wrapper"><svg class="icon icon-instagram" viewBox="0 0 20 20"><path fill="currentColor" fill-rule="evenodd" d="M13.23 3.492c-.84-.037-1.096-.046-3.23-.046-2.144 0-2.39.01-3.238.055-.776.027-1.195.164-1.487.273a2.4 2.4 0 0 0-.912.593 2.5 2.5 0 0 0-.602.922c-.11.282-.238.702-.274 1.486-.046.84-.046 1.095-.046 3.23s.01 2.39.046 3.229c.004.51.097 1.016.274 1.495.145.365.319.639.602.913.282.282.538.456.92.602.474.176.974.268 1.479.273.848.046 1.103.046 3.238.046s2.39-.01 3.23-.046c.784-.036 1.203-.164 1.486-.273.374-.146.648-.329.921-.602.283-.283.447-.548.602-.922.177-.476.27-.979.274-1.486.037-.84.046-1.095.046-3.23s-.01-2.39-.055-3.229c-.027-.784-.164-1.204-.274-1.495a2.4 2.4 0 0 0-.593-.913 2.6 2.6 0 0 0-.92-.602c-.284-.11-.703-.237-1.488-.273ZM6.697 2.05c.857-.036 1.131-.045 3.302-.045a63 63 0 0 1 3.302.045c.664.014 1.321.14 1.943.374a4 4 0 0 1 1.414.922c.41.397.728.88.93 1.414.23.622.354 1.279.365 1.942C18 7.56 18 7.824 18 10.005c0 2.17-.01 2.444-.046 3.292-.036.858-.173 1.442-.374 1.943-.2.53-.474.976-.92 1.423a3.9 3.9 0 0 1-1.415.922c-.51.191-1.095.337-1.943.374-.857.036-1.122.045-3.302.045-2.171 0-2.445-.009-3.302-.055-.849-.027-1.432-.164-1.943-.364a4.15 4.15 0 0 1-1.414-.922 4.1 4.1 0 0 1-.93-1.423c-.183-.51-.329-1.085-.365-1.943C2.009 12.45 2 12.167 2 10.004c0-2.161 0-2.435.055-3.302.027-.848.164-1.432.365-1.942a4.4 4.4 0 0 1 .92-1.414 4.2 4.2 0 0 1 1.415-.93c.51-.183 1.094-.33 1.943-.366Zm.427 4.806a4.105 4.105 0 1 1 5.805 5.805 4.105 4.105 0 0 1-5.805-5.805m1.882 5.371a2.668 2.668 0 1 0 2.042-4.93 2.668 2.668 0 0 0-2.042 4.93m5.922-5.942a.958.958 0 1 1-1.355-1.355.958.958 0 0 1 1.355 1.355" clip-rule="evenodd"/></svg>
+</span>
+                    <span class="visually-hidden">Instagram</span>
+                  </a>
+                </li><li class="list-social__item">
+                  <a href="https://www.facebook.com/firehook" class="list-social__link link">
+                    <span class="svg-wrapper"><svg class="icon icon-facebook" viewBox="0 0 20 20"><path fill="currentColor" d="M18 10.049C18 5.603 14.419 2 10 2s-8 3.603-8 8.049C2 14.067 4.925 17.396 8.75 18v-5.624H6.719v-2.328h2.03V8.275c0-2.017 1.195-3.132 3.023-3.132.874 0 1.79.158 1.79.158v1.98h-1.009c-.994 0-1.303.621-1.303 1.258v1.51h2.219l-.355 2.326H11.25V18c3.825-.604 6.75-3.933 6.75-7.951"/></svg>
+</span>
+                    <span class="visually-hidden">Facebook</span>
+                  </a>
+                </li></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </details>
+</header-drawer>
+<a href="/" class="header__heading-link link link--text focus-inset"><div class="header__heading-logo-wrapper">
+            
+            <img src="//firehook.com/cdn/shop/files/logo.svg?v=1743678389&amp;width=600" alt="Firehook" srcset="//firehook.com/cdn/shop/files/logo.svg?v=1743678389&amp;width=320 320w, //firehook.com/cdn/shop/files/logo.svg?v=1743678389&amp;width=480 480w" width="320" height="76.93989071038251" loading="eager" class="header__heading-logo motion-reduce" sizes="(max-width: 640px) 50vw, 320px">
+          </div></a>
+
+      
+        
+
+
+
+<nav class="header__inline-menu Hello">
+  <ul class="list-menu list-menu--inline" role="list"><li><a
+            id="HeaderMenu-home"
+            href="/"
+            class="header__menu-item list-menu__item link link--text focus-inset"
+            
+          >
+            <span
+            >Home</span>
+          </a></li><li><header-menu>
+            <details id="Details-HeaderMenu-2">
+              <summary
+                id="HeaderMenu-our-crackers"
+                class="header__menu-item list-menu__item link focus-inset"
+              >
+                
+                <span
+                >
+                  <a href="/collections/all">Our Crackers</a>
+                </span><svg class="icon icon-caret" viewBox="0 0 10 6"><path fill="currentColor" fill-rule="evenodd" d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708" clip-rule="evenodd"/></svg>
+</summary>
+              <ul
+                id="HeaderMenu-MenuList-2"
+                class="header__submenu list-menu list-menu--disclosure color-scheme-78ed419d-b589-44a4-94d7-76b332e5be65 gradient caption-large motion-reduce global-settings-popup"
+                role="list"
+                tabindex="-1"
+              ><li><a
+                        id="HeaderMenu-our-crackers-signature-crackers"
+                        href="/collections/all"
+                        class="header__menu-item list-menu__item link link--text focus-inset caption-large"
+                        
+                      
+                      >
+                        Signature Crackers
+                      </a></li><li><a
+                        id="HeaderMenu-our-crackers-limited-edition-crackers"
+                        href="https://fire-hook.myshopify.com/collections/all#limited_edition_crackers"
+                        class="header__menu-item list-menu__item link link--text focus-inset caption-large"
+                        
+                      
+                      >
+                        Limited Edition Crackers
+                      </a></li></ul>
+            </details>
+          </header-menu></li><li><header-menu>
+            <details id="Details-HeaderMenu-3">
+              <summary
+                id="HeaderMenu-shop"
+                class="header__menu-item list-menu__item link focus-inset"
+              >
+                
+                <span
+                >
+                  <a href="/collections/all">Shop</a>
+                </span><svg class="icon icon-caret" viewBox="0 0 10 6"><path fill="currentColor" fill-rule="evenodd" d="M9.354.646a.5.5 0 0 0-.708 0L5 4.293 1.354.646a.5.5 0 0 0-.708.708l4 4a.5.5 0 0 0 .708 0l4-4a.5.5 0 0 0 0-.708" clip-rule="evenodd"/></svg>
+</summary>
+              <ul
+                id="HeaderMenu-MenuList-3"
+                class="header__submenu list-menu list-menu--disclosure color-scheme-78ed419d-b589-44a4-94d7-76b332e5be65 gradient caption-large motion-reduce global-settings-popup"
+                role="list"
+                tabindex="-1"
+              ><li><a
+                        id="HeaderMenu-shop-amazon"
+                        href="https://www.amazon.com/stores/Firehook/page/BF55393F-F178-4104-AD13-C8AA8446E2B8?lp_asin=B078K6Y1BQ&ref_=ast_bln&store_ref=bl_ast_dp_brandlogo_sto"
+                        class="header__menu-item list-menu__item link link--text focus-inset caption-large"
+                        
+                      
+                        target="_blank"
+                      
+                      >
+                        Amazon
+                      </a></li><li><a
+                        id="HeaderMenu-shop-instacart"
+                        href="https://www.instacart.com/store/brands/firehook/everyday"
+                        class="header__menu-item list-menu__item link link--text focus-inset caption-large"
+                        
+                      
+                        target="_blank"
+                      
+                      >
+                        Instacart
+                      </a></li><li><a
+                        id="HeaderMenu-shop-store-locator"
+                        href="/pages/storelocator"
+                        class="header__menu-item list-menu__item link link--text focus-inset caption-large"
+                        
+                      
+                      >
+                        Store Locator
+                      </a></li></ul>
+            </details>
+          </header-menu></li><li><a
+            id="HeaderMenu-recipes-inspiration"
+            href="/blogs/recipes-pairings"
+            class="header__menu-item list-menu__item link link--text focus-inset"
+            
+          >
+            <span
+            >RECIPES &amp; INSPIRATION</span>
+          </a></li></ul>
+</nav>
+
+      
+    
+    
+<div class="header__icons header__icons--localization header-localization">
+          
+            
+
+
+
+<nav class="header__inline-menu Hello">
+  <ul class="list-menu list-menu--inline" role="list"><li><a
+            id="HeaderMenu-our-story"
+            href="/#our-story"
+            class="header__menu-item list-menu__item link link--text focus-inset"
+            
+          >
+            <span
+            >Our Story</span>
+          </a></li><li><a
+            id="HeaderMenu-wholesale"
+            href="https://firehook.online/"
+            class="header__menu-item list-menu__item link link--text focus-inset"
+            
+          >
+            <span
+            >WHOLESALE</span>
+          </a></li></ul>
+</nav>
+
+          
+        
+      
+
+
+<details-modal class="header__search">
+  <details>
+    <summary
+      class="header__icon header__icon--search header__icon--summary link focus-inset modal__toggle"
+      aria-haspopup="dialog"
+      aria-label="Search"
+    >
+      <span>
+        <span class="svg-wrapper"><svg class="icon icon-search" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M24.5002 24.5002L19.4334 19.4334M19.4334 19.4334C20.3001 18.5667 20.9876 17.5378 21.4567 16.4054C21.9257 15.273 22.1671 14.0593 22.1671 12.8336C22.1671 11.6079 21.9257 10.3942 21.4567 9.26177C20.9876 8.12937 20.3001 7.10044 19.4334 6.23374C18.5667 5.36704 17.5378 4.67953 16.4054 4.21048C15.273 3.74142 14.0593 3.5 12.8336 3.5C11.6079 3.5 10.3942 3.74142 9.26177 4.21048C8.12937 4.67953 7.10044 5.36704 6.23374 6.23374C4.48336 7.98413 3.5 10.3582 3.5 12.8336C3.5 15.309 4.48336 17.683 6.23374 19.4334C7.98412 21.1838 10.3582 22.1672 12.8336 22.1672C15.309 22.1672 17.683 21.1838 19.4334 19.4334Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg></span>
+        <span class="svg-wrapper header__icon-close"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-close" viewBox="0 0 18 17"><path fill="currentColor" d="M.865 15.978a.5.5 0 0 0 .707.707l7.433-7.431 7.579 7.282a.501.501 0 0 0 .846-.37.5.5 0 0 0-.153-.351L9.712 8.546l7.417-7.416a.5.5 0 1 0-.707-.708L8.991 7.853 1.413.573a.5.5 0 1 0-.693.72l7.563 7.268z"/></svg>
+</span>
+      </span>
+    </summary>
+    <div
+      class="search-modal modal__content gradient"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Search"
+    >
+      <div class="modal-overlay"></div>
+      <div
+        class="search-modal__content search-modal__content-bottom"
+        tabindex="-1"
+      ><predictive-search class="search-modal__form" data-loading-text="Loading..."><form action="/search" method="get" role="search" class="search search-modal__form">
+          <div class="field">
+            <input
+              class="search__input field__input"
+              id="Search-In-Modal"
+              type="search"
+              name="q"
+              value=""
+              placeholder="Search"role="combobox"
+                aria-expanded="false"
+                aria-owns="predictive-search-results"
+                aria-controls="predictive-search-results"
+                aria-haspopup="listbox"
+                aria-autocomplete="list"
+                autocorrect="off"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false">
+            <label class="field__label" for="Search-In-Modal">Search</label>
+            <input type="hidden" name="options[prefix]" value="last">
+            <button
+              type="reset"
+              class="reset__button field__button hidden"
+              aria-label="Clear search term"
+            >
+              <span class="svg-wrapper"><svg fill="none" stroke="currentColor" class="icon icon-close" viewBox="0 0 18 18"><circle cx="9" cy="9" r="8.5" stroke-opacity=".2"/><path stroke-linecap="round" stroke-linejoin="round" d="M11.83 11.83 6.172 6.17M6.229 11.885l5.544-5.77"/></svg>
+</span>
+            </button>
+            <button class="search__button field__button" aria-label="Search">
+              <span class="svg-wrapper"><svg class="icon icon-search" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M24.5002 24.5002L19.4334 19.4334M19.4334 19.4334C20.3001 18.5667 20.9876 17.5378 21.4567 16.4054C21.9257 15.273 22.1671 14.0593 22.1671 12.8336C22.1671 11.6079 21.9257 10.3942 21.4567 9.26177C20.9876 8.12937 20.3001 7.10044 19.4334 6.23374C18.5667 5.36704 17.5378 4.67953 16.4054 4.21048C15.273 3.74142 14.0593 3.5 12.8336 3.5C11.6079 3.5 10.3942 3.74142 9.26177 4.21048C8.12937 4.67953 7.10044 5.36704 6.23374 6.23374C4.48336 7.98413 3.5 10.3582 3.5 12.8336C3.5 15.309 4.48336 17.683 6.23374 19.4334C7.98412 21.1838 10.3582 22.1672 12.8336 22.1672C15.309 22.1672 17.683 21.1838 19.4334 19.4334Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg></span>
+            </button>
+          </div><div class="predictive-search predictive-search--header color-scheme-78ed419d-b589-44a4-94d7-76b332e5be65 gradient" tabindex="-1" data-predictive-search>
+
+<div class="predictive-search__loading-state">
+  <svg xmlns="http://www.w3.org/2000/svg" class="spinner" viewBox="0 0 66 66"><circle stroke-width="6" cx="33" cy="33" r="30" fill="none" class="path"/></svg>
+
+</div>
+</div>
+
+            <span class="predictive-search-status visually-hidden" role="status" aria-hidden="true"></span></form></predictive-search><button
+          type="button"
+          class="search-modal__close-button modal__close-button link link--text focus-inset"
+          aria-label="Close"
+        >
+          <span class="svg-wrapper"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-close" viewBox="0 0 18 17"><path fill="currentColor" d="M.865 15.978a.5.5 0 0 0 .707.707l7.433-7.431 7.579 7.282a.501.501 0 0 0 .846-.37.5.5 0 0 0-.153-.351L9.712 8.546l7.417-7.416a.5.5 0 1 0-.707-.708L8.991 7.853 1.413.573a.5.5 0 1 0-.693.72l7.563 7.268z"/></svg>
+</span>
+        </button>
+      </div>
+    </div>
+  </details>
+</details-modal>
+
+
+      
+      <a href="/pages/contact" class="header__icon">
+        <span class="svg-wrapper"><svg class="icon icon-mail" width="28" height="21" viewBox="0 0 28 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M3.5 1.75C2.98958 1.75 2.57031 1.91406 2.24219 2.24219C1.91406 2.57031 1.75 2.98958 1.75 3.5V5.6875L12.4688 13.5078C13.4896 14.2005 14.5104 14.2005 15.5312 13.5078L26.25 5.6875V3.5C26.25 2.98958 26.0859 2.57031 25.7578 2.24219C25.4297 1.91406 25.0104 1.75 24.5 1.75H3.5ZM1.75 7.875V17.5V7.875V17.5C1.75 18.0104 1.91406 18.4297 2.24219 18.7578C2.57031 19.0859 2.98958 19.25 3.5 19.25H24.5C25.0104 19.25 25.4297 19.0859 25.7578 18.7578C26.0859 18.4297 26.25 18.0104 26.25 17.5V7.875L16.5703 14.9297C15.8047 15.513 14.9479 15.8047 14 15.8047C13.0521 15.8047 12.1953 15.513 11.4297 14.9297L1.75 7.875ZM0 3.5C0.0364583 2.51562 0.382812 1.69531 1.03906 1.03906C1.69531 0.382812 2.51562 0.0364583 3.5 0H24.5C25.4844 0.0364583 26.3047 0.382812 26.9609 1.03906C27.6172 1.69531 27.9635 2.51562 28 3.5V17.5C27.9635 18.4844 27.6172 19.3047 26.9609 19.9609C26.3047 20.6172 25.4844 20.9635 24.5 21H3.5C2.51562 20.9635 1.69531 20.6172 1.03906 19.9609C0.382812 19.3047 0.0364583 18.4844 0 17.5V3.5Z" fill="currentColor"/>
+</svg>
+</span>
+      </a>
+      
+</div>
+  </header>
+</sticky-header>
+
+<cart-notification>
+  <div class="cart-notification-wrapper page-width">
+    <div
+      id="cart-notification"
+      class="cart-notification focus-inset color-scheme-134f84b4-4910-48c0-8ad1-5d0dd60ffbfa gradient"
+      aria-modal="true"
+      aria-label="Item added to your cart"
+      role="dialog"
+      tabindex="-1"
+    >
+      <div class="cart-notification__header">
+        <h2 class="cart-notification__heading caption-large text-body"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-checkmark" viewBox="0 0 12 9"><path fill="currentColor" fill-rule="evenodd" d="M11.35.643a.5.5 0 0 1 .006.707l-6.77 6.886a.5.5 0 0 1-.719-.006L.638 4.845a.5.5 0 1 1 .724-.69l2.872 3.011 6.41-6.517a.5.5 0 0 1 .707-.006z" clip-rule="evenodd"/></svg>
+Item added to your cart
+        </h2>
+        <button
+          type="button"
+          class="cart-notification__close modal__close-button link link--text focus-inset"
+          aria-label="Close"
+        >
+          <span class="svg-wrapper"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-close" viewBox="0 0 18 17"><path fill="currentColor" d="M.865 15.978a.5.5 0 0 0 .707.707l7.433-7.431 7.579 7.282a.501.501 0 0 0 .846-.37.5.5 0 0 0-.153-.351L9.712 8.546l7.417-7.416a.5.5 0 1 0-.707-.708L8.991 7.853 1.413.573a.5.5 0 1 0-.693.72l7.563 7.268z"/></svg>
+</span>
+        </button>
+      </div>
+      <div id="cart-notification-product" class="cart-notification-product"></div>
+      <div class="cart-notification__links">
+        <a
+          href="/cart"
+          id="cart-notification-button"
+          class="button button--secondary button--full-width"
+        >View cart</a>
+        <form action="/cart" method="post" id="cart-notification-form">
+          <button class="button button--primary button--full-width" name="checkout">
+            Check out
+          </button>
+        </form>
+        <button type="button" class="link button-label">Continue shopping</button>
+      </div>
+    </div>
+  </div>
+</cart-notification>
+<style data-shopify>
+  .cart-notification {
+    display: none;
+  }
+</style>
+
+
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "Organization",
+    "name": "Firehook",
+    
+      "logo": "https:\/\/firehook.com\/cdn\/shop\/files\/logo.svg?v=1743678389\u0026width=500",
+    
+    "sameAs": [
+      "",
+      "https:\/\/www.facebook.com\/firehook",
+      "",
+      "https:\/\/www.instagram.com\/firehook",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
+    "url": "https:\/\/firehook.com\/pages\/faq"
+  }
+</script><!-- <script>
+  $(document).ready(function() {
+  	$(".header__inline-menu .list-menu li a").click(function() { 
+       event.preventDefault();
+      var anchor = $(this);
+      $('html, body').animate({ scrollTop: $(anchor.attr('href')).offset().top - 150 }, 1000); 
+    });
+  });
+</script> -->
+
+  
+  
+<script>
+  /* Mega menu hover script start */
+  if ($(window).width() >= 990) {
+    let items = document.querySelector(".header__inline-menu").querySelectorAll("details");
+    items.forEach(item => {
+      item.addEventListener("mouseover", () => {
+        item.setAttribute("open", true);
+        item.querySelector("ul").addEventListener("mouseleave", () => {
+          item.removeAttribute("open");
+        });
+        item.addEventListener("mouseleave", () => {
+          item.removeAttribute("open");
+        });
+      });
+    });
+  }
+  /* Mega menu hover script end */
+</script>
+
+</div>
+<!-- END sections: header-group -->
+
+    <main id="MainContent" class="content-for-layout focus-none" role="main" tabindex="-1">
+      <section id="shopify-section-template--17621269708911__rich_text_QJJ8Rc" class="shopify-section section"><link href="//firehook.com/cdn/shop/t/1/assets/section-rich-text.css?v=11151358645245643041776754880" rel="stylesheet" type="text/css" media="all" />
+<style data-shopify>.section-template--17621269708911__rich_text_QJJ8Rc-padding {
+    padding-top: 20px;
+    padding-bottom: 0px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-template--17621269708911__rich_text_QJJ8Rc-padding {
+      padding-top: 40px;
+      padding-bottom: 0px;
+    }
+  }</style><div class=" faq_page isolate">
+  <div class="rich-text content-container color-scheme-46dcccb4-cab9-4c4c-a2d9-2d99cbb5a3ce gradient rich-text--full-width content-container--full-width section-template--17621269708911__rich_text_QJJ8Rc-padding">
+    <div class="rich-text__wrapper rich-text__wrapper--center page-width">
+      <div class="rich-text__blocks center"><h2
+                class="rich-text__heading rte inline-richtext h1 scroll-trigger animate--slide-in"
+                
+                
+                  data-cascade
+                  style="--animation-order: 1;"
+                
+              >
+                FAQ’s
+                
+              </h2></div>
+    </div>
+  </div>
+</div>
+
+
+</section><section id="shopify-section-template--17621269708911__collapsible_content_UqyxLR" class="shopify-section section"><link href="//firehook.com/cdn/shop/t/1/assets/component-accordion.css?v=41809732933142035061745042475" rel="stylesheet" type="text/css" media="all" />
+<link href="//firehook.com/cdn/shop/t/1/assets/collapsible-content.css?v=145886856279133135951744366082" rel="stylesheet" type="text/css" media="all" />
+<style data-shopify>.section-template--17621269708911__collapsible_content_UqyxLR-padding {
+    padding-top: 18px;
+    padding-bottom: 24px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-template--17621269708911__collapsible_content_UqyxLR-padding {
+      padding-top: 36px;
+      padding-bottom: 48px;
+    }
+  }</style><div class="color-scheme-8373abd9-9701-44a2-9b31-e6aa0b43d749 gradient">
+  <div class="collapsible-content collapsible-none-layout isolate content-container content-container--full-width">
+    <div class="collapsible-content__wrapper section-template--17621269708911__collapsible_content_UqyxLR-padding">
+      <div class="collapsible-content-wrapper-narrow">
+        <div
+          class="collapsible-content__header scroll-trigger animate--slide-in"
+          style="text-align: left;"
+        >
+<h2 class="collapsible-content__heading inline-richtext h2">
+              <strong>GENERAL QUESTIONS</strong>
+            </h2>
+        </div>
+        <div class="grid grid--1-col grid--2-col-tablet collapsible-content__grid collapsible-content__grid--reverse scroll-trigger animate--slide-in">
+          <div class="grid__item"><div
+                class="accordion"
+                
+              >
+                <details
+                  id="Details-collapsible_row_w7qBDj-template--17621269708911__collapsible_content_UqyxLR"
+                  
+                    open
+                  
+                >
+                  <summary id="Summary-collapsible_row_w7qBDj-template--17621269708911__collapsible_content_UqyxLR">
+                    
+                    <h3 class="accordion__title inline-richtext h4">
+                      Where are Firehook crackers made?
+                    </h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"/></svg>
+
+                  </summary>
+                  <div
+                    class="accordion__content rte"
+                    id="CollapsibleAccordion-collapsible_row_w7qBDj-template--17621269708911__collapsible_content_UqyxLR"
+                    role="region"
+                    aria-labelledby="Summary-collapsible_row_w7qBDj-template--17621269708911__collapsible_content_UqyxLR"
+                  >
+                    <p>All Firehook crackers are baked in small batches in our own facility in Chantilly, Virginia.</p>
+                    
+                  </div>
+                </details>
+              </div><div
+                class="accordion"
+                
+              >
+                <details
+                  id="Details-collapsible_row_4PBebc-template--17621269708911__collapsible_content_UqyxLR"
+                  
+                >
+                  <summary id="Summary-collapsible_row_4PBebc-template--17621269708911__collapsible_content_UqyxLR">
+                    
+                    <h3 class="accordion__title inline-richtext h4">
+                      Where can I find Firehook at a store near me?
+                    </h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"/></svg>
+
+                  </summary>
+                  <div
+                    class="accordion__content rte"
+                    id="CollapsibleAccordion-collapsible_row_4PBebc-template--17621269708911__collapsible_content_UqyxLR"
+                    role="region"
+                    aria-labelledby="Summary-collapsible_row_4PBebc-template--17621269708911__collapsible_content_UqyxLR"
+                  >
+                    <p><a href="/pages/store-locator" title="Store Locator">Click here</a> to find a retailer near you or to purchase online. You can find our crackers in the Deli or Specialty section of your local grocery store or check with your store manager.</p><p>Use <a href="https://www.instacart.com/store/brands/firehook/everyday" target="_blank" title="https://www.instacart.com/store/brands/firehook/everyday">Instacart</a> to help you find Firehook in stock at a store near you or <a href="https://www.amazon.com/s?srs=20325727011" target="_blank" title="https://www.amazon.com/s?srs=20325727011">click here</a> to order from Amazon Prime.</p><p>If you need any help locating our products near you, please reach out to us at <a href="mailto:info@firehook.com"><span style="text-decoration:underline">info@firehook.com </span></a>or call us toll free at 1-888-580-0745.</p>
+                    
+                  </div>
+                </details>
+              </div><div
+                class="accordion"
+                
+              >
+                <details
+                  id="Details-collapsible_row_xQYkVf-template--17621269708911__collapsible_content_UqyxLR"
+                  
+                >
+                  <summary id="Summary-collapsible_row_xQYkVf-template--17621269708911__collapsible_content_UqyxLR">
+                    
+                    <h3 class="accordion__title inline-richtext h4">
+                      Can I buy Firehook online?
+                    </h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"/></svg>
+
+                  </summary>
+                  <div
+                    class="accordion__content rte"
+                    id="CollapsibleAccordion-collapsible_row_xQYkVf-template--17621269708911__collapsible_content_UqyxLR"
+                    role="region"
+                    aria-labelledby="Summary-collapsible_row_xQYkVf-template--17621269708911__collapsible_content_UqyxLR"
+                  >
+                    <p>Yes! You can purchase on our <a href="https://www.amazon.com/s?srs=20325727011" target="_blank" title="https://www.amazon.com/s?srs=20325727011">Amazon</a> store or on <a href="https://www.instacart.com/store/brands/firehook-crackers" target="_blank" title="https://www.instacart.com/store/brands/firehook/everyday">Instacart</a>.</p>
+                    
+                  </div>
+                </details>
+              </div><div
+                class="accordion"
+                
+              >
+                <details
+                  id="Details-collapsible_row_d39mXk-template--17621269708911__collapsible_content_UqyxLR"
+                  
+                >
+                  <summary id="Summary-collapsible_row_d39mXk-template--17621269708911__collapsible_content_UqyxLR">
+                    
+                    <h3 class="accordion__title inline-richtext h4">
+                      How do I keep my Firehook crackers fresh?
+                    </h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"/></svg>
+
+                  </summary>
+                  <div
+                    class="accordion__content rte"
+                    id="CollapsibleAccordion-collapsible_row_d39mXk-template--17621269708911__collapsible_content_UqyxLR"
+                    role="region"
+                    aria-labelledby="Summary-collapsible_row_d39mXk-template--17621269708911__collapsible_content_UqyxLR"
+                  >
+                    <p>Our transparent package is resealable, ensuring that your crackers stay fresh even after you open the container. Please make sure to close the package tightly after each use.</p>
+                    
+                  </div>
+                </details>
+              </div><div
+                class="accordion"
+                
+              >
+                <details
+                  id="Details-collapsible_row_7qE6ey-template--17621269708911__collapsible_content_UqyxLR"
+                  
+                >
+                  <summary id="Summary-collapsible_row_7qE6ey-template--17621269708911__collapsible_content_UqyxLR">
+                    
+                    <h3 class="accordion__title inline-richtext h4">
+                      Are your plastic packages recyclable?
+                    </h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"/></svg>
+
+                  </summary>
+                  <div
+                    class="accordion__content rte"
+                    id="CollapsibleAccordion-collapsible_row_7qE6ey-template--17621269708911__collapsible_content_UqyxLR"
+                    role="region"
+                    aria-labelledby="Summary-collapsible_row_7qE6ey-template--17621269708911__collapsible_content_UqyxLR"
+                  >
+                    <p>Firehook’s plastic containers are 100% recyclable, making it easy for you to recycle and more efficient for municipalities to collect for recycling. The containers are made with 10% post-consumer recycled material and a grade of PET plastic with the lowest carbon footprint on the market today. Our labels are made from the only material currently available that is fully recyclable with a plastic pack.</p>
+                    
+                  </div>
+                </details>
+              </div><div
+                class="accordion"
+                
+              >
+                <details
+                  id="Details-collapsible_row_K8U3aB-template--17621269708911__collapsible_content_UqyxLR"
+                  
+                >
+                  <summary id="Summary-collapsible_row_K8U3aB-template--17621269708911__collapsible_content_UqyxLR">
+                    
+                    <h3 class="accordion__title inline-richtext h4">
+                      Do you offer products for wholesale purchase?
+                    </h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"/></svg>
+
+                  </summary>
+                  <div
+                    class="accordion__content rte"
+                    id="CollapsibleAccordion-collapsible_row_K8U3aB-template--17621269708911__collapsible_content_UqyxLR"
+                    role="region"
+                    aria-labelledby="Summary-collapsible_row_K8U3aB-template--17621269708911__collapsible_content_UqyxLR"
+                  >
+                    <p>Yes, learn more about our wholesale program at <a href="http://wholesale.firehook.com/"><span style="text-decoration:underline">wholesale.firehook.com</span></a></p>
+                    
+                  </div>
+                </details>
+              </div><div
+                class="accordion"
+                
+              >
+                <details
+                  id="Details-collapsible_row_QcxbxV-template--17621269708911__collapsible_content_UqyxLR"
+                  
+                >
+                  <summary id="Summary-collapsible_row_QcxbxV-template--17621269708911__collapsible_content_UqyxLR">
+                    
+                    <h3 class="accordion__title inline-richtext h4">
+                      What is your Privacy Policy?
+                    </h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"/></svg>
+
+                  </summary>
+                  <div
+                    class="accordion__content rte"
+                    id="CollapsibleAccordion-collapsible_row_QcxbxV-template--17621269708911__collapsible_content_UqyxLR"
+                    role="region"
+                    aria-labelledby="Summary-collapsible_row_QcxbxV-template--17621269708911__collapsible_content_UqyxLR"
+                  >
+                    <p><a href="/policies/privacy-policy" title="Privacy Policy">Click here</a> to view our Privacy Policy. </p>
+                    
+                  </div>
+                </details>
+              </div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</section><section id="shopify-section-template--17621269708911__collapsible_content_y8eYtD" class="shopify-section section"><link href="//firehook.com/cdn/shop/t/1/assets/component-accordion.css?v=41809732933142035061745042475" rel="stylesheet" type="text/css" media="all" />
+<link href="//firehook.com/cdn/shop/t/1/assets/collapsible-content.css?v=145886856279133135951744366082" rel="stylesheet" type="text/css" media="all" />
+<style data-shopify>.section-template--17621269708911__collapsible_content_y8eYtD-padding {
+    padding-top: 24px;
+    padding-bottom: 22px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-template--17621269708911__collapsible_content_y8eYtD-padding {
+      padding-top: 48px;
+      padding-bottom: 44px;
+    }
+  }</style><div class="color-scheme-8373abd9-9701-44a2-9b31-e6aa0b43d749 gradient">
+  <div class="collapsible-content collapsible-none-layout isolate content-container content-container--full-width">
+    <div class="collapsible-content__wrapper section-template--17621269708911__collapsible_content_y8eYtD-padding">
+      <div class="collapsible-content-wrapper-narrow">
+        <div
+          class="collapsible-content__header scroll-trigger animate--slide-in"
+          style="text-align: left;"
+        >
+<h2 class="collapsible-content__heading inline-richtext h2">
+              <strong>PRODUCT QUESTIONS</strong>
+            </h2>
+        </div>
+        <div class="grid grid--1-col grid--2-col-tablet collapsible-content__grid collapsible-content__grid--reverse scroll-trigger animate--slide-in">
+          <div class="grid__item"><div
+                class="accordion"
+                
+              >
+                <details
+                  id="Details-collapsible_row_rEDCjK-template--17621269708911__collapsible_content_y8eYtD"
+                  
+                >
+                  <summary id="Summary-collapsible_row_rEDCjK-template--17621269708911__collapsible_content_y8eYtD">
+                    
+                    <h3 class="accordion__title inline-richtext h4">
+                      Are Firehook crackers certified organic?
+                    </h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"/></svg>
+
+                  </summary>
+                  <div
+                    class="accordion__content rte"
+                    id="CollapsibleAccordion-collapsible_row_rEDCjK-template--17621269708911__collapsible_content_y8eYtD"
+                    role="region"
+                    aria-labelledby="Summary-collapsible_row_rEDCjK-template--17621269708911__collapsible_content_y8eYtD"
+                  >
+                    <p>Our signature line of crackers is certified USDA Organic and Non-GMO Project verified. Certification on our limited-edition crackers may vary but adhere to strict ingredient sourcing guidelines.</p>
+                    
+                  </div>
+                </details>
+              </div><div
+                class="accordion"
+                
+              >
+                <details
+                  id="Details-collapsible_row_L4zCPg-template--17621269708911__collapsible_content_y8eYtD"
+                  
+                >
+                  <summary id="Summary-collapsible_row_L4zCPg-template--17621269708911__collapsible_content_y8eYtD">
+                    
+                    <h3 class="accordion__title inline-richtext h4">
+                      Are Firehook crackers Kosher?
+                    </h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"/></svg>
+
+                  </summary>
+                  <div
+                    class="accordion__content rte"
+                    id="CollapsibleAccordion-collapsible_row_L4zCPg-template--17621269708911__collapsible_content_y8eYtD"
+                    role="region"
+                    aria-labelledby="Summary-collapsible_row_L4zCPg-template--17621269708911__collapsible_content_y8eYtD"
+                  >
+                    <p>Our signature line of crackers is OK Kosher certified. Certification on our limited-edition crackers may vary but adhere to strict ingredient sourcing guidelines.</p>
+                    
+                  </div>
+                </details>
+              </div><div
+                class="accordion"
+                
+              >
+                <details
+                  id="Details-collapsible_row_HGEgd3-template--17621269708911__collapsible_content_y8eYtD"
+                  
+                >
+                  <summary id="Summary-collapsible_row_HGEgd3-template--17621269708911__collapsible_content_y8eYtD">
+                    
+                    <h3 class="accordion__title inline-richtext h4">
+                      Are Firehook crackers gluten free?
+                    </h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"/></svg>
+
+                  </summary>
+                  <div
+                    class="accordion__content rte"
+                    id="CollapsibleAccordion-collapsible_row_HGEgd3-template--17621269708911__collapsible_content_y8eYtD"
+                    role="region"
+                    aria-labelledby="Summary-collapsible_row_HGEgd3-template--17621269708911__collapsible_content_y8eYtD"
+                  >
+                    <p>Firehook crackers are not gluten free.</p>
+                    
+                  </div>
+                </details>
+              </div><div
+                class="accordion"
+                
+              >
+                <details
+                  id="Details-collapsible_row_GYz3Wc-template--17621269708911__collapsible_content_y8eYtD"
+                  
+                >
+                  <summary id="Summary-collapsible_row_GYz3Wc-template--17621269708911__collapsible_content_y8eYtD">
+                    
+                    <h3 class="accordion__title inline-richtext h4">
+                      Are Firehook crackers seed oil free?
+                    </h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"/></svg>
+
+                  </summary>
+                  <div
+                    class="accordion__content rte"
+                    id="CollapsibleAccordion-collapsible_row_GYz3Wc-template--17621269708911__collapsible_content_y8eYtD"
+                    role="region"
+                    aria-labelledby="Summary-collapsible_row_GYz3Wc-template--17621269708911__collapsible_content_y8eYtD"
+                  >
+                    <p>Yes, all varieties are made <span style="text-decoration:underline">without added seed oils</span>. Our signature line of crackers is made with organic olive oil and some select flavors are made with organic avocado oil. </p>
+                    
+                  </div>
+                </details>
+              </div><div
+                class="accordion"
+                
+              >
+                <details
+                  id="Details-collapsible_row_x7qa6x-template--17621269708911__collapsible_content_y8eYtD"
+                  
+                >
+                  <summary id="Summary-collapsible_row_x7qa6x-template--17621269708911__collapsible_content_y8eYtD">
+                    
+                    <h3 class="accordion__title inline-richtext h4">
+                      Does Firehook use peanuts, tree nuts, soy, wheat or other allergens in your products?
+                    </h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"/></svg>
+
+                  </summary>
+                  <div
+                    class="accordion__content rte"
+                    id="CollapsibleAccordion-collapsible_row_x7qa6x-template--17621269708911__collapsible_content_y8eYtD"
+                    role="region"
+                    aria-labelledby="Summary-collapsible_row_x7qa6x-template--17621269708911__collapsible_content_y8eYtD"
+                  >
+                    <p>All of our products are baked with wheat, and some flavors include sesame, milk or soy.  If you have allergen-specific questions, please check our label, call us toll-free at 1-888-580-0745 or email us at <a href="mailto:info@firehook.com"><span style="text-decoration:underline">info@firehook.com</span></a>.</p>
+                    
+                  </div>
+                </details>
+              </div><div
+                class="accordion"
+                
+              >
+                <details
+                  id="Details-collapsible_row_A3Ttbt-template--17621269708911__collapsible_content_y8eYtD"
+                  
+                >
+                  <summary id="Summary-collapsible_row_A3Ttbt-template--17621269708911__collapsible_content_y8eYtD">
+                    
+                    <h3 class="accordion__title inline-richtext h4">
+                      What is the shelf life of Firehook crackers?
+                    </h3>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-plus" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M1 4.51a.5.5 0 0 0 0 1h3.5l.01 3.5a.5.5 0 0 0 1-.01V5.5l3.5-.01a.5.5 0 0 0-.01-1H5.5L5.49.99a.5.5 0 0 0-1 .01v3.5l-3.5.01z" clip-rule="evenodd"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-minus" viewBox="0 0 10 2"><path fill="currentColor" fill-rule="evenodd" d="M.5 1C.5.7.7.5 1 .5h8a.5.5 0 1 1 0 1H1A.5.5 0 0 1 .5 1" clip-rule="evenodd"/></svg>
+
+                  </summary>
+                  <div
+                    class="accordion__content rte"
+                    id="CollapsibleAccordion-collapsible_row_A3Ttbt-template--17621269708911__collapsible_content_y8eYtD"
+                    role="region"
+                    aria-labelledby="Summary-collapsible_row_A3Ttbt-template--17621269708911__collapsible_content_y8eYtD"
+                  >
+                    <p>Our signature line of crackers has a six-month shelf life. Please check the “best by” information on each package.</p>
+                    
+                  </div>
+                </details>
+              </div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</section><section id="shopify-section-template--17621269708911__rich_text_AjkAUq" class="shopify-section section"><link href="//firehook.com/cdn/shop/t/1/assets/section-rich-text.css?v=11151358645245643041776754880" rel="stylesheet" type="text/css" media="all" />
+<style data-shopify>.section-template--17621269708911__rich_text_AjkAUq-padding {
+    padding-top: 20px;
+    padding-bottom: 26px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-template--17621269708911__rich_text_AjkAUq-padding {
+      padding-top: 40px;
+      padding-bottom: 52px;
+    }
+  }</style><div class="  isolate">
+  <div class="rich-text content-container color-scheme-78ed419d-b589-44a4-94d7-76b332e5be65 gradient rich-text--full-width content-container--full-width section-template--17621269708911__rich_text_AjkAUq-padding">
+    <div class="rich-text__wrapper rich-text__wrapper--center page-width">
+      <div class="rich-text__blocks center"><div
+                class="rich-text__text rte scroll-trigger animate--slide-in"
+                
+                
+                  data-cascade
+                  style="--animation-order: 1;"
+                
+              >
+                <p><strong>Didn’t find your answer?<br/>Don’t hesitate to </strong><a href="/pages/contact" title="Contact"><strong>contact us</strong></a>!</p>
+              </div></div>
+    </div>
+  </div>
+</div>
+
+
+</section>
+    </main>
+
+    <!-- BEGIN sections: footer-group -->
+<div id="shopify-section-sections--17581940047983__footer" class="shopify-section shopify-section-group-footer-group">
+<link href="//firehook.com/cdn/shop/t/1/assets/section-footer.css?v=153853252793565635971746505533" rel="stylesheet" type="text/css" media="all" />
+<link href="//firehook.com/cdn/shop/t/1/assets/component-newsletter.css?v=122421331161632851901744374374" rel="stylesheet" type="text/css" media="all" />
+<link href="//firehook.com/cdn/shop/t/1/assets/component-list-menu.css?v=116871704639594629371745320435" rel="stylesheet" type="text/css" media="all" />
+<link href="//firehook.com/cdn/shop/t/1/assets/component-list-payment.css?v=69253961410771838501743676674" rel="stylesheet" type="text/css" media="all" />
+<link href="//firehook.com/cdn/shop/t/1/assets/component-list-social.css?v=35792976012981934991743676674" rel="stylesheet" type="text/css" media="all" />
+<style data-shopify>.footer {
+    margin-top: 0px;
+  }
+
+  .section-sections--17581940047983__footer-padding {
+    padding-top: 50px;
+    padding-bottom: 15px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .footer {
+      margin-top: 0px;
+    }
+
+    .section-sections--17581940047983__footer-padding {
+      padding-top: 100px;
+      padding-bottom: 20px;
+    }
+  }</style><footer class="footer color-scheme-134f84b4-4910-48c0-8ad1-5d0dd60ffbfa gradient section-sections--17581940047983__footer-padding"><div class="footer__content-top  full-width"><div
+            class="footer__blocks-wrapper grid grid--1-col grid--2-col grid--4-col-tablet grid--5-col-desktop scroll-trigger animate--slide-in"
+            
+              data-cascade
+            
+          ><div
+                class="footer-block grid__item  footer-block--image   scroll-trigger animate--slide-in"
+                
+                
+                  data-cascade
+                  style="--animation-order: 1;"
+                
+              ><div class="footer-block__brand-info"><div
+                          class="footer-block__image-wrapper"
+                          style="max-width: min(100%, 320px);"
+                        >
+                          <a href="/">
+                          <img src="//firehook.com/cdn/shop/files/footer_logo.png?v=1744864286&amp;width=1100" alt="" srcset="//firehook.com/cdn/shop/files/footer_logo.png?v=1744864286&amp;width=50 50w, //firehook.com/cdn/shop/files/footer_logo.png?v=1744864286&amp;width=100 100w, //firehook.com/cdn/shop/files/footer_logo.png?v=1744864286&amp;width=150 150w, //firehook.com/cdn/shop/files/footer_logo.png?v=1744864286&amp;width=200 200w, //firehook.com/cdn/shop/files/footer_logo.png?v=1744864286&amp;width=300 300w, //firehook.com/cdn/shop/files/footer_logo.png?v=1744864286&amp;width=400 400w, //firehook.com/cdn/shop/files/footer_logo.png?v=1744864286&amp;width=550 550w, //firehook.com/cdn/shop/files/footer_logo.png?v=1744864286&amp;width=800 800w, //firehook.com/cdn/shop/files/footer_logo.png?v=1744864286&amp;width=1100 1100w" width="320" height="105.72746331236897" loading="lazy">
+                          </a>
+                        </div><div class="rte"><p></p></div><div class="social_icon" style="max-width: min(100%, 320px);">
+
+<ul class="list-unstyled list-social footer__list-social" role="list"><li class="list-social__item">
+      <a href="https://www.instagram.com/firehook" class="link list-social__link" target="_blank" >
+        <span class="svg-wrapper"><svg class="icon icon-instagram" viewBox="0 0 20 20"><path fill="currentColor" fill-rule="evenodd" d="M13.23 3.492c-.84-.037-1.096-.046-3.23-.046-2.144 0-2.39.01-3.238.055-.776.027-1.195.164-1.487.273a2.4 2.4 0 0 0-.912.593 2.5 2.5 0 0 0-.602.922c-.11.282-.238.702-.274 1.486-.046.84-.046 1.095-.046 3.23s.01 2.39.046 3.229c.004.51.097 1.016.274 1.495.145.365.319.639.602.913.282.282.538.456.92.602.474.176.974.268 1.479.273.848.046 1.103.046 3.238.046s2.39-.01 3.23-.046c.784-.036 1.203-.164 1.486-.273.374-.146.648-.329.921-.602.283-.283.447-.548.602-.922.177-.476.27-.979.274-1.486.037-.84.046-1.095.046-3.23s-.01-2.39-.055-3.229c-.027-.784-.164-1.204-.274-1.495a2.4 2.4 0 0 0-.593-.913 2.6 2.6 0 0 0-.92-.602c-.284-.11-.703-.237-1.488-.273ZM6.697 2.05c.857-.036 1.131-.045 3.302-.045a63 63 0 0 1 3.302.045c.664.014 1.321.14 1.943.374a4 4 0 0 1 1.414.922c.41.397.728.88.93 1.414.23.622.354 1.279.365 1.942C18 7.56 18 7.824 18 10.005c0 2.17-.01 2.444-.046 3.292-.036.858-.173 1.442-.374 1.943-.2.53-.474.976-.92 1.423a3.9 3.9 0 0 1-1.415.922c-.51.191-1.095.337-1.943.374-.857.036-1.122.045-3.302.045-2.171 0-2.445-.009-3.302-.055-.849-.027-1.432-.164-1.943-.364a4.15 4.15 0 0 1-1.414-.922 4.1 4.1 0 0 1-.93-1.423c-.183-.51-.329-1.085-.365-1.943C2.009 12.45 2 12.167 2 10.004c0-2.161 0-2.435.055-3.302.027-.848.164-1.432.365-1.942a4.4 4.4 0 0 1 .92-1.414 4.2 4.2 0 0 1 1.415-.93c.51-.183 1.094-.33 1.943-.366Zm.427 4.806a4.105 4.105 0 1 1 5.805 5.805 4.105 4.105 0 0 1-5.805-5.805m1.882 5.371a2.668 2.668 0 1 0 2.042-4.93 2.668 2.668 0 0 0-2.042 4.93m5.922-5.942a.958.958 0 1 1-1.355-1.355.958.958 0 0 1 1.355 1.355" clip-rule="evenodd"/></svg>
+</span>
+        <span class="visually-hidden">Instagram</span>
+      </a>
+    </li><li class="list-social__item">
+      <a href="https://www.facebook.com/firehook" class="link list-social__link" target="_blank">
+        <span class="svg-wrapper"><svg class="icon icon-facebook" viewBox="0 0 20 20"><path fill="currentColor" d="M18 10.049C18 5.603 14.419 2 10 2s-8 3.603-8 8.049C2 14.067 4.925 17.396 8.75 18v-5.624H6.719v-2.328h2.03V8.275c0-2.017 1.195-3.132 3.023-3.132.874 0 1.79.158 1.79.158v1.98h-1.009c-.994 0-1.303.621-1.303 1.258v1.51h2.219l-.355 2.326H11.25V18c3.825-.604 6.75-3.933 6.75-7.951"/></svg>
+</span>
+        <span class="visually-hidden">Facebook</span>
+      </a>
+    </li></ul>
+</div></div></div><div
+                class="footer-block grid__item footer-block--menu    scroll-trigger animate--slide-in"
+                
+                
+                  data-cascade
+                  style="--animation-order: 2;"
+                
+              ><ul class="footer-block__details-content list-unstyled"><li>
+                            <a
+                              href="/collections/all"
+                              class="link link--text list-menu__item list-menu__item--link"
+                            >
+                              Shop
+                            </a>
+                          </li><li>
+                            <a
+                              href="/pages/storelocator"
+                              class="link link--text list-menu__item list-menu__item--link"
+                            >
+                              Store Locator
+                            </a>
+                          </li><li>
+                            <a
+                              href="/blogs/recipes-pairings"
+                              class="link link--text list-menu__item list-menu__item--link"
+                            >
+                              Recipes &amp; Inspiration
+                            </a>
+                          </li></ul></div><div
+                class="footer-block grid__item footer-block--menu    scroll-trigger animate--slide-in"
+                
+                
+                  data-cascade
+                  style="--animation-order: 3;"
+                
+              ><ul class="footer-block__details-content list-unstyled"><li>
+                            <a
+                              href="/#our-story"
+                              class="link link--text list-menu__item list-menu__item--link"
+                            >
+                              Our Story
+                            </a>
+                          </li><li>
+                            <a
+                              href="/pages/faq"
+                              class="link link--text list-menu__item list-menu__item--link list-menu__item--active"
+                            >
+                              FAQ
+                            </a>
+                          </li><li>
+                            <a
+                              href="/pages/contact"
+                              class="link link--text list-menu__item list-menu__item--link"
+                            >
+                              Contact Us
+                            </a>
+                          </li></ul></div><div
+                class="footer-block grid__item footer-block--menu    scroll-trigger animate--slide-in"
+                
+                
+                  data-cascade
+                  style="--animation-order: 4;"
+                
+              ><ul class="footer-block__details-content list-unstyled"><li>
+                            <a
+                              href="https://firehook.online/"
+                              class="link link--text list-menu__item list-menu__item--link"
+                            >
+                              Wholesale
+                            </a>
+                          </li><li>
+                            <a
+                              href="https://recruiting.paylocity.com/recruiting/jobs/All/c7f4d69a-47e7-42ff-8dff-04837a56f475/Firehook-of-Virginia-Inc"
+                              class="link link--text list-menu__item list-menu__item--link"
+                            >
+                              Careers
+                            </a>
+                          </li></ul></div><div
+                class="footer-block grid__item   footer-block-newsletter  scroll-trigger animate--slide-in"
+                
+                
+                  data-cascade
+                  style="--animation-order: 5;"
+                
+              >
+                  <div
+                    class="footer-block--newsletter scroll-trigger animate--slide-in"
+                    
+                      data-cascade
+                    
+                  >
+                      <div class="footer-block__newsletter"><h2 class="footer-block__heading inline-richtext">STAY IN TOUCH!</h2><form method="post" action="/contact#ContactFooter" id="ContactFooter" accept-charset="UTF-8" class="footer__newsletter newsletter-form"><input type="hidden" name="form_type" value="customer" /><input type="hidden" name="utf8" value="✓" /><input type="hidden" name="contact[tags]" value="newsletter">
+                          <div class="newsletter-form__field-wrapper">
+                            <div class="field">
+                              <input
+                                id="NewsletterForm--sections--17581940047983__footer"
+                                type="email"
+                                name="contact[email]"
+                                class="field__input"
+                                value=""
+                                aria-required="true"
+                                autocorrect="off"
+                                autocapitalize="off"
+                                autocomplete="email"
+                                
+                                placeholder="Enter Your Email"
+                                required
+                              >
+                              <label class="field__label" for="NewsletterForm--sections--17581940047983__footer">
+                                Enter Your Email
+                              </label>
+                              <button
+                                type="submit"
+                                class="newsletter-form__button field__button"
+                                name="commit"
+                                id="Subscribe"
+                                aria-label="Subscribe"
+                              >
+                                <span class="svg-wrapper"><svg xmlns="http://www.w3.org/2000/svg" fill="none" class="icon icon-arrow" viewBox="0 0 14 10"><path fill="currentColor" fill-rule="evenodd" d="M8.537.808a.5.5 0 0 1 .817-.162l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L11.793 5.5H1a.5.5 0 0 1 0-1h10.793L8.646 1.354a.5.5 0 0 1-.109-.546" clip-rule="evenodd"/></svg>
+</span>
+                              </button>
+                            </div></div></form></div></div></div></div></div><div
+    class="footer__content-bottom scroll-trigger animate--slide-in"
+    
+      data-cascade
+    
+  >
+    <div class="footer__content-bottom-wrapper  full-width">
+      <div class="footer__column footer__localization isolate"></div>
+      <div class="footer__column footer__column--info"></div>
+    </div>
+    <div class="footer__content-bottom-wrapper  full-width">
+      <div class="footer__copyright caption">
+        <div class="copyright_text">
+          <span class="copyright__content rte"><p>Copyright © 2025 Firehook of Virginia, Inc. All Rights Reserved.</p></span>
+          
+        </div><ul class="policies list-unstyled"><li>
+                  <small class="copyright__content"
+                    ><a href="/policies/privacy-policy">Privacy policy</a></small
+                  >
+                </li><li>
+                  <small class="copyright__content"
+                    ><a href="#shopifyReshowConsentBanner">Cookie preferences</a></small
+                  >
+                </li></ul></div>
+    </div>
+  </div>
+</footer>
+
+<!-- <script>
+  $(document).ready(function() {
+  	$(".header__inline-menu .list-menu li a").click(function() { 
+       event.preventDefault();
+      var anchor = $(this);
+      $('html, body').animate({ scrollTop: $(anchor.attr('href')).offset().top - 150 }, 1000); 
+    });
+  });
+</script> -->
+
+
+</div>
+<!-- END sections: footer-group -->
+
+    <ul hidden>
+      <li id="a11y-refresh-page-message">Choosing a selection results in a full page refresh.</li>
+      <li id="a11y-new-window-message">Opens in a new window.</li>
+    </ul>
+
+    <script>
+      window.shopUrl = 'https://firehook.com';
+      window.routes = {
+        cart_add_url: '/cart/add',
+        cart_change_url: '/cart/change',
+        cart_update_url: '/cart/update',
+        cart_url: '/cart',
+        predictive_search_url: '/search/suggest',
+      };
+
+      window.cartStrings = {
+        error: `There was an error while updating your cart. Please try again.`,
+        quantityError: `You can only add [quantity] of this item to your cart.`,
+      };
+
+      window.variantStrings = {
+        addToCart: `Add to cart`,
+        soldOut: `Sold out`,
+        unavailable: `Unavailable`,
+        unavailable_with_option: `[value] - Unavailable`,
+      };
+
+      window.quickOrderListStrings = {
+        itemsAdded: `[quantity] items added`,
+        itemAdded: `[quantity] item added`,
+        itemsRemoved: `[quantity] items removed`,
+        itemRemoved: `[quantity] item removed`,
+        viewCart: `View cart`,
+        each: `[money]/ea`,
+        min_error: `This item has a minimum of [min]`,
+        max_error: `This item has a maximum of [max]`,
+        step_error: `You can only add this item in increments of [step]`,
+      };
+
+      window.accessibilityStrings = {
+        imageAvailable: `Image [index] is now available in gallery view`,
+        shareSuccess: `Link copied to clipboard`,
+        pauseSlideshow: `Pause slideshow`,
+        playSlideshow: `Play slideshow`,
+        recipientFormExpanded: `Gift card recipient form expanded`,
+        recipientFormCollapsed: `Gift card recipient form collapsed`,
+        countrySelectorSearchCount: `[count] countries/regions found`,
+      };
+    </script><script src="//firehook.com/cdn/shop/t/1/assets/predictive-search.js?v=57209189334897115771743676676" defer="defer"></script><div id="shopify-block-AeHhSMHRscDBnTDlvW__15885745614559378752" class="shopify-block shopify-app-block"><div id="accessibly-config" style="display:none">
+    {"themeColor":"#e35205","iconColor":"#e35205","showLogo":true,"topBottomPosition":10,"rightLeftPosition":10,"iconSize":"small","iconCustomSize":64,"position":"bottom-right"}
+</div>
+
+
+</div><div id="shopify-block-AbEtVT3JpQ3FrR3lIN__5028733920296764920" class="shopify-block shopify-app-block"><input type="hidden" value="" id="poptin-s-product-id">
+<input id="poptin-page-type" type="hidden" value="page">
+<input id="poptin-product-collections" type="hidden" value="">
+
+
+
+<script src="https://cdn.popt.in/pixel.js" id="pixel-script-poptin-shopify" defer></script>
+
+
+</div><script src="https://cdn.shopify.com/storefront/standard-actions.js" type="module" data-source-attribution="shopify.standard_actions"></script>
+</body>
+</html>

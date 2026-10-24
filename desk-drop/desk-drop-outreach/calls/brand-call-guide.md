@@ -1,6 +1,6 @@
 # Brand call guide
 
-Version 1.0 · 2026-10-24 · workstream E, part B · `desk-drop-outreach/calls/`
+Version 1.3 · 2026-10-24 · Outreach engine (workstream E) · `desk-drop-outreach/calls/`
 
 **What it is for.** Running a 20 to 30 minute discovery conversation with a founder or marketing lead at an emerging snack or drink brand, and coming away with what Gate 0 needs: the number they would pay, named before they hear $1,500, and whether the person saying it controls the budget. The seven questions are the plan's (Phase 0, "Brand conversation guide"), word for word and in the plan's order. Section 6 adds the seven qualification checks for the qualifying calls of weeks 4 to 7.
 
@@ -12,7 +12,7 @@ Version 1.0 · 2026-10-24 · workstream E, part B · `desk-drop-outreach/calls/`
 
 ## 1. Before the call (2 minutes)
 
-- Open their Clay brands row and a new row on **Brand_Log** in `tracking/conversation-tracker.xlsx`. Paste the `row_id`, brand, name and title.
+- Open their Clay brands row and the **Note_Brand** tab of `tracking/conversation-tracker.xlsx` (works on a phone). Paste the `row_id`, brand, name and title.
 - Read `nearest_stocked_retailer` and its `nearest_retailer_grade`. Never say you saw them on a shelf unless the grade is `seen_on_shelf`, which only you set after seeing it. `store_selector` means "the store's own site lists you"; `brand_claim` means "your store locator lists it".
 - If B has made a map for them, have it open (`cluster-1-flatiron/brand-maps/<slug>.png`).
 - Read `why_now` and open `why_now_url` if you plan to mention it.
@@ -44,26 +44,27 @@ In question 4 you may name their own nearest store in place of Whole Foods Union
 4. Only then say the price: **"For reference, the standard price I'm testing is $1,500 for ten offices. How does that land?"** Set `price_1500_mentioned` = Y and write the answer in `wtp_after_usd` and `wtp_after_verbatim`.
 5. If they still refuse to name a number before hearing a price, say the $1,500 line, leave `wtp_before_usd` blank and write "declined to name a number" in `wtp_before_verbatim`.
 
-**The founding price is not volunteered in discovery.** If they ask whether there is anything smaller or cheaper, the true answer: "The first three brands get five offices for $600, paid up front, and keep $120 an office for their next two campaigns." Note in `notes` that they asked; it is a buying signal.
+**The founding price is not volunteered in discovery.** If they ask whether there is anything smaller or cheaper, the true answer: "The first three brands get five offices for $600, paid up front, and keep $120 an office for their next two campaigns. In return, if it runs as promised, they write a short note on how it went that we can publish with a case study from their report." (The founding term: plan, price table; desk-drop-legal-pack/10 section 3.) Note in `notes` that they asked; it is a buying signal.
 
 **What counts for Gate 0.** A brand counts toward the 3 of 15 when the higher of its two numbers is $500 or more and `controls_budget` = Y (the same rule the financial model uses). The scorecard also shows a strict read: $500 or more named before $1,500 was mentioned.
 
 ## 4. The close (2 minutes)
 
 1. **Referral:** "Who else should I be talking to?" Brand and title, business contacts only. Ask whether you may say they suggested it (goes in the new Clay row's `referrer_ok_to_name`).
-2. **Permission to come back:** in weeks 1 to 3, "Can I come back to you once five offices have signed up?" Set Clay `next_action` = `recontact` and `next_action_date` = Mon 2026-11-16 (the Monday after Gate 0, derived, founder to confirm).
+2. **Permission to come back:** in weeks 1 to 3, "Can I send you the details once the first offices have said yes, probably the week of November 16?" Send step 0 of `messages/11-brand-post-call-conversion.md` the same day. In Clay, `next_action_date` = Mon 2026-11-16 (the Monday after Gate 0, derived, founder to confirm), with `next_action` = `send_proposal` if they named $500 or more and control the budget, else `recontact`. The proposal itself waits for `brand_selling_on = Y` (`messages/04-slot-state.csv`).
 3. **Ask before you ever quote them:** "If I share what founders are telling me, may I quote something you said, without your name or your brand?" `quote_ok_to_share` = Y only on a clear yes.
 4. **After the call,** mark `shortlist` = Y if this is one of the brands you would pursue first (the plan's Gate 0 deliverable is a shortlist of 6).
-5. **One-pager, if they ask for something in writing:** the discovery one-pager (`desk-drop-identity/pdf/discovery-one-pager-BLANK.pdf`, once your details are filled). No proposal before Gate 0.
+5. **One-pager, if they ask for something in writing:** the discovery one-pager (`desk-drop-identity/pdf/discovery-one-pager-BLANK.pdf`, once your details are filled, and only once it counts as ready: it names the business, so it waits for `name_decided = Y` or D's name-free version, `messages/04-slot-state.csv`). Until then: "I can explain it better in 20 minutes than in a document", or a short email in your own words. No proposal before Gate 0.
 
 ## 5. Their questions, answered truthfully
 
 | They ask | Say | Never say |
 | --- | --- | --- |
-| "Which offices?" | Weeks 1 to 3: "None has signed yet. I'm talking to about fifteen office managers around Flatiron this month." Later, the `[ROSTER LINE]` from `messages/04-slot-table.csv`, which counts only signed offices and their own Tuesday numbers. Company names only after signature (plan, "The proposal") | A count, an industry list or a headcount the tracker does not show |
+| "Which offices?" | Weeks 1 to 3: "None has signed yet. I'm asking about fifteen office managers around Flatiron this month." Later, the `[ROSTER LINE]` from `messages/04-slot-table.csv`, which counts only signed offices and their own Tuesday numbers. Company names only after signature (plan, "The proposal") | A count, an industry list or a headcount the tracker does not show |
 | "What results have other brands had?" | "None yet. The first campaign is planned for [DROP DATE: Tue 2027-01-12]. I'd rather tell you that than make up a number." | Any number at all |
 | "Do you guarantee sales?" | "No. You get placement photos from each office, depletion counts, what employees said in their own words, scans and code redemptions, and a recommendation. Not a sales guarantee." (plan objection 4) | "Lift", "conversions", "ROI", "new customers" |
-| "Can we do a free trial first?" | "No. The founding price is the trial." (plan objection 3; only if they ask) | "Maybe for you" |
+| "Can we do a free trial first?" | "No. The founding price is the trial." (plan objection 3; only if they ask). If they ask what it involves: the $600 and, if it runs as promised, a short note we can publish with a case study | "Maybe for you" |
+| "Who are you with?" | Before `name_decided = Y`: "It's a small New York business I'm setting up. The working name is {BRAND_NAME}, and it may change. It isn't formed yet." After: "{BRAND_NAME}, a small New York business; it isn't formed yet" until `llc_formed = Y` | A company, partner or client that does not exist |
 | "We can seed offices ourselves." | Discovery: write it down, code it `seed_ourselves`, and ask "what would you need to make that work?" Do not argue in weeks 1 to 3. The answer for later is in `messages/09-reply-playbook.md`, J | |
 | "Can we pick the offices?" | "The offices approve each brand, and the campaign has a fixed number of them. You'd see them by neighborhood, industry and Tuesday headcount before you pay." | Promising a specific company |
 | "Do we get the employees' emails?" | "No. The survey is anonymous. If you want, the survey can carry an unticked box for your newsletter under your own privacy policy, and only people who tick it are passed on." | Any other data |
@@ -77,8 +78,8 @@ On a call with a brand that named $500 or more and controls the budget, run the 
 | 1 | "Is it individually packaged, sealed and shelf-stable, with at least 60 days of shelf life left on the drop date?" | `qual_q1_sealed_shelf_stable_60d` |
 | 2 | "Does the label show ingredients and all nine major allergens, sesame included?" | `qual_q2_labeled_ingredients_allergens` |
 | 3 | "Which store within about ten blocks of here stocks you, or can you issue a discount code online?" | `qual_q3_buy_path_near_cluster` |
-| 4 | "Could you ship 275 units, 250 plus a reserve, to one Manhattan address within ten business days?" | `qual_q4_can_ship_275_in_10bd` |
-| 5 | "Do you carry product liability insurance, and could you send a certificate naming us as additional insured?" | `qual_q5_product_liability_insurance` |
+| 4 | "Could you ship 275 units, 250 to place plus a 10% reserve, to one Manhattan address within ten business days?" | `qual_q4_can_ship_275_in_10bd` |
+| 5 | "Do you carry product liability insurance of at least $1 million per occurrence, and could you add us as additional insured until 12 months after the campaign?" | `qual_q5_product_liability_insurance` (Y only if both; less cover, or no additional insured, is N) |
 | 6 | "Could you approve $600 yourself, without a committee?" | `qual_q6_contact_can_approve_600` |
 | 7 | "Why New York, and why now?" (a new store, a launch, a local push) | `qual_q7_why_now` (their words) |
 | Excluded | Check yourself: no alcohol, cannabis, CBD or THC, no Supplement Facts panel, nothing refrigerated or needing preparation, no health claim on the pack ("supports gut health" is a health claim; "10g protein" is not, but note it for review) | `qual_not_excluded` |
@@ -94,8 +95,12 @@ All seven Y plus `qual_not_excluded` = Y makes the brand "qualified on a call" o
 
 ## Changelog
 
-Round numbers are part B's rounds; a round that did not change this file is not listed.
+Rounds 1 to 6 are the build rounds of the calls, sending, tracking and handoff files; a round that did not change this file is not listed. "Merge" is the step that joined them with the message files.
 
 - Round 1 (2026-10-24): plan questions kept verbatim and in order; added prep, opening, probes, column map, the anchor rule, Gate 0 rule, close, truthful answers, the seven-check add-on.
 - Round 3 (2026-10-24): critique as a CPG founder pitched by every sampling vendor: "I'm not selling anything" followed by a price question would be seen through, so the opening now says plainly that a price question is coming and that their number comes first; `shortlist` added for the plan's 6 brands.
 - Round 4 (2026-10-24): the close asks permission before anyone is quoted (`quote_ok_to_share`), which the Startup CPG posts require.
+- Round 5 (2026-10-24): read-through: prep points to the Note_Brand tab.
+- Merge (2026-10-24): the close asks to send details "once the first offices have said yes" (it said "once five offices have signed up", which is not when brand selling opens) and sets `next_action` by the Gate 0 rule, matching `messages/11` step 0.
+- Review round 1 (2026-10-24): the founding answer and the free-trial answer state the founding term (a short note and a case study if it runs as promised); "who are you with?" gives the working name as one that may change until the name is decided; the card's close now matches the guide.
+- Review round 2 (2026-10-24): check 5 asks for the cover the agreement needs ($1 million per occurrence, additional insured until 12 months after the campaign), so a brand with less cover no longer passes the call; check 4 names the 10% reserve; "I'm asking about fifteen office managers", as the written copy says since round 1.

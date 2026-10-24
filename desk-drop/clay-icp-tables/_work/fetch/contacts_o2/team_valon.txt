@@ -1,0 +1,113 @@
+===== team_valon.html 112
+About | Valon
+About
+Platform
+Life at Valon
+Careers
+Blog
+Log in
+Join our team
+About
+Platform
+Life at Valon
+Careers
+Blog
+Join our team
+Log in
+Valon raises
+$150M
+Series D at a
+$2.3B
+valuation
+Read the announcement
+Built the Hard Way
+We take on problems other people leave alone: systems that are too old, too complex, and too regulated to rebuild. We started with mortgage servicing, the place where every dollar, decision, and regulatory obligation has to be right. More than $200B in mortgages already run on ValonOS.
+Andrew Wang
+CEO & Co-Founder
+Linda Du
+President, COO & Co-Founder
+Brian McGrath
+Executive Chair
+Jonathan Hsu
+Co-Founder
+Hongxia Zhong
+Head of Engineering
+Marisa Rackson
+Head of People
+Jake Mintz
+Chief Product Officer
+Ariel Brito
+Chief of Staff
+Our Investors
+The problem we started with
+An industry running on systems older than the internet.
+Mortgage servicing is everything that happens after you get a mortgage: payments, escrow, defaults, foreclosures, reporting. It touches 50 million homeowners and $12–13 trillion in loans.
+100+ disconnected tools
+A single loan bounces between green-text mainframes, spreadsheets, and paper, none of them talking to each other.
+Manual by default
+After 2008, the industry met tighter regulation by adding people, not rebuilding.
+Everyone pays
+Homeowners wait on hold for answers they rarely get, and some lose homes they could have kept. Servicers absorb the cost.
+What we built
+The operating business was our lab. ValonOS is the company.
+We built ValonOS by operating a servicer. For six years, we ran a licensed servicer and turned every hard problem (payments, escrow, defaults, reporting, audits, and customer operations) into a product decision. Now we’re bringing that system to more major servicers and expanding into other complex, regulated work.
+We sold the servicing business so we could put everything into the platform, which is the part enterprises actually need. With records, workflows, and decisions connected, teams can see what happened on a loan and what needs attention next.
+That is how we deliver better outcomes for homeowners: problems surface sooner and more families keep their homes.
+System of Record
+Workflows
+Task Management
+ValonOS: The unified platform
+$
+npm install @valon/os
+Installing ValonOS...
+✓
+AI agents configured
+✓
+Workflows ready
+✓
+Database connected
+✓
+Compliance checks passed
+Why it’s different
+We built the whole thing.
+Most companies pick a narrow feature and expand later. We built the entire operating system from day one. In a regulated industry, it’s the only way to actually fix it.
+ValonOS stores what happened on a loan and why: the exception, the precedent, and the compliance context. That record is what the agents run on. Exceptions live in the system, in the file, with an audit trail.
+Why now
+The model is proven. Now we scale ValonOS to more servicers.
+The question is no longer whether this work can be rebuilt. It is how quickly more of it can move onto systems built for the modern age.
+We’re still early, but the proof is real. The next phase is implementation at scale, without compromising correctness, service, or control.
+$200B+
+in mortgages running on ValonOS
+Top 10
+Built and operated a top 10 US mortgage servicer
+60%+
+operating margins in the servicing business we built and ran, vs. near-zero for the industry
+5x
+more loans per employee than incumbents
+90%+
+customer satisfaction vs. an industry average of around 77%
+$200M+
+in contracted ARR in the first six months of being in the market
+How we work
+Everyone is
+a builder.
+Our teams build tools around problems they work on every day. Nicolebot helps teammates turn company knowledge into reviewed work. DeploymentOS helps teams manage enterprise deployments from commitment through go-live. Both grew out of work Valon teams own directly.
+Nicolebot
+Company-wide agent that turns institutional knowledge into reviewed work, so teams move faster without losing the audit trail. 21,000+ threads tagged, 2,000+ pull requests opened.
+DeploymentOS
+Internal system for running enterprise deployments end to end, from commitment through go live. Our COO built it herself.
+Customers
+Major servicers committed to ValonOS
+Careers at Valon
+If you’re energized by solving the hardest problems, moving fast without breaking trust, and finding joy in cracking what others will not touch, come work at Valon.
+See open positions
+About
+Platform
+Life at Valon
+Careers
+Blog
+x.com
+LinkedIn
+YouTube
+©
+2026 Valon Technologies, Inc. All rights reserved.

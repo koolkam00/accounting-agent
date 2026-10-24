@@ -1,0 +1,1997 @@
+<!doctype html>
+<html
+   class="no-js scroll-smooth"
+   lang="en" dir="ltr">
+   <head><script data-source-attribution="shopify.exit_interstitial">(()=>{var s=Function.prototype.bind.bind(Function.prototype.call),yt=(l,r)=>{for(let f=l;f;f=Object.getPrototypeOf(f)){let y=Object.getOwnPropertyDescriptor(f,r);if(y)return y}throw new TypeError(`${r} is not defined`)},u=(l,r)=>s(yt(l,r).get),B=(l,r)=>s(yt(l,r).set);var Se=s(String.prototype.endsWith),k=s(RegExp.prototype.exec),Re=/^_(self|top|parent)$/i,xe=/(^|\s)noreferrer(\s|$)/i,ht=/^(no-referrer(-when-downgrade)?|same-origin|(strict-)?origin(-when-cross-origin)?|unsafe-url)$/i,Pe=/^(never|default|always|origin-when-crossorigin)$/i,Et=/^(no-referrer|same-origin|never)$/i,mt=l=>{let r=`.${l}`;return f=>f===l||Se(f,r)},wt=(l,r,f)=>l!==void 0&&(l.protocol==="https:"||l.protocol==="http:")&&l.origin!==r&&!f(l.hostname),bt=(l,r,f)=>l!==null&&k(xe,l)!==null?!0:r!==null&&k(ht,r)!==null?k(Et,r)!==null:f,_t=(l,r)=>k(ht,l)!==null||k(Pe,l)!==null?k(Et,l)!==null:r,A=(l,{metaKey:r,ctrlKey:f,shiftKey:y,button:S})=>l&&k(Re,l)===null?l:r||f||y||S===1?"_blank":"";var Le="http://www.w3.org/2000/svg",Oe="http://www.w3.org/1999/xlink",G=["rel","referrerpolicy","download","ping","hreflang","type"];function kt(l){let r=window;if(r.top!==r)return;let f=document,y=r.navigation,S=location.origin,v=URL,q=u(v.prototype,"href"),vt=u(v.prototype,"origin"),Nt=u(v.prototype,"protocol"),St=u(v.prototype,"hostname"),Y=s(Event.prototype.preventDefault),Rt=s(Event.prototype.stopPropagation),j=s(Event.prototype.stopImmediatePropagation),V=s(Event.prototype.composedPath),xt=u(Event.prototype,"type"),Pt=u(Event.prototype,"cancelable"),X=u(Event.prototype,"defaultPrevented"),Lt=u(Event.prototype,"bubbles"),Ot=u(Event.prototype,"currentTarget"),At=u(Event.prototype,"eventPhase"),{CAPTURING_PHASE:It}=Event,z=u(Event.prototype,"cancelBubble"),Tt=B(Event.prototype,"cancelBubble"),Wt=u(MouseEvent.prototype,"button"),Mt=u(MouseEvent.prototype,"metaKey"),Ct=u(MouseEvent.prototype,"ctrlKey"),Dt=u(MouseEvent.prototype,"shiftKey"),Ft=y&&u(NavigateEvent.prototype,"destination"),Ht=y&&u(NavigationDestination.prototype,"url"),J=y&&u(NavigateEvent.prototype,"navigationType"),$t=y&&u(NavigateEvent.prototype,"formData"),Q=y&&"sourceElement"in NavigateEvent.prototype?u(NavigateEvent.prototype,"sourceElement"):void 0,m=s(Element.prototype.getAttribute),Kt=s(Element.prototype.getAttributeNS),I=s(Element.prototype.setAttribute),Ut=u(Element.prototype,"localName"),Bt=u(Element.prototype,"namespaceURI"),Gt=s(Document.prototype.querySelector),qt=s(Document.prototype.querySelectorAll),Yt=u(NodeList.prototype,"length"),jt=s(NodeList.prototype.item),T=u(Node.prototype,"baseURI"),Vt=s(Document.prototype.createElement),Xt=s(HTMLElement.prototype.click),zt=s(r.open),Jt=s(location.assign),Qt=s(location.replace),Zt=encodeURIComponent,te=s(String.prototype.startsWith),Z=s(r.setTimeout),ee=s(r.addEventListener),ne=s(r.removeEventListener),tt=s(EventTarget.prototype.addEventListener),et=s(EventTarget.prototype.removeEventListener),nt=Object.defineProperties,ot=t=>{let e=[],n=[HTMLElement.prototype,SVGElement.prototype,Document.prototype,r];for(let o=0;o<n.length;o+=1)try{e[e.length]={get:u(n[o],t),set:B(n[o],t)}}catch{}return e},oe={click:ot("onclick"),auxclick:ot("onauxclick")},rt=WeakMap,re=WeakSet,st=s(WeakMap.prototype.get),se=s(WeakMap.prototype.set),ce=s(WeakMap.prototype.delete),ie=s(WeakSet.prototype.add),ae=s(WeakSet.prototype.has),le=mt(l.site),ct=q(new v(l.exitPath,S)),ue=`${ct}?`,P=(t,e)=>{try{let n=new v(t,e);return{href:q(n),origin:vt(n),protocol:Nt(n),hostname:St(n)}}catch{return}},pe=(t,e,n)=>{let o=n?"&noreferrer=1":"";return`${ct}?q=${Zt(t.href)}&trigger=${e}${o}`},it=()=>{let t=qt(f,'meta[name="referrer" i][content]'),e=!1;for(let n=0;n<Yt(t);n+=1)e=_t(m(jt(t,n),"content"),e);return e},at=(t,e,{target:n,noReferrer:o,replaces:i})=>{let d=pe(t,e,o);if(n){zt(r,d,n,"noopener");return}(i?Qt:Jt)(location,d)},W=t=>wt(t,S,le),L=0,M,C=!1,fe=t=>{if(L>0){M=t;return}t()},de=t=>{if(L-=1,t&&(C=!0),L>0)return;let e=C?void 0:M;M=void 0,C=!1,e&&e()},ge=t=>t!==void 0&&te(t.href,ue),lt=t=>{try{return Ut(t)}catch{return}},ut=t=>bt(m(t,"rel"),m(t,"referrerpolicy"),it()),ye=t=>{let e=Q?Q(t):null,n=e===null?void 0:lt(e);return n==="a"||n==="area"?ut(e):it()},he=t=>{let e=P(Ht(Ft(t)));if(ge(e)){j(t);return}if(!Pt(t)||J(t)==="traverse"||!W(e)||$t(t)!==null)return;Y(t);let n={target:"",noReferrer:ye(t),replaces:J(t)==="replace"};fe(()=>at(e,"navigate",n))},R=t=>{let e=m(t,"href");return e===null&&Bt(t)===Le?Kt(t,Oe,"href"):e},Ee=t=>{let e=V(t);for(let n=0;n<e.length;n+=1){let o=e[n],i=lt(o);if(i==="a"||i==="area"){let d=R(o);if(d!==null)return{node:o,href:d}}}},D=t=>{let e=m(t,"target");if(e!==null)return e;let n=Gt(f,"base[target]");return n?m(n,"target"):""},me=t=>{try{return{metaKey:Mt(t),ctrlKey:Ct(t),shiftKey:Dt(t),button:Wt(t)}}catch{return}},pt=new re,we=t=>{let e=!1,n=()=>{e=!0},o=()=>e||ae(pt,t);return nt(t,{__proto__:null,preventDefault:{__proto__:null,configurable:!0,value:n},defaultPrevented:{__proto__:null,configurable:!0,get:o},returnValue:{__proto__:null,configurable:!0,get:()=>!o(),set:i=>{i||n()}}}),o},be={click:new rt,auxclick:new rt},_e=(t,e)=>{let n=oe[t],o=be[t],i=[],d=p=>{for(let a=0;a<i.length;a+=1)if(i[a]===p)return!0;return!1},w=(p,a,E)=>{let g=s(E);function O(_){let x=g(this,_);return x===!1&&typeof _=="object"&&_!==null&&ie(pt,_),x}return{target:p,accessor:a,handler:E,wrapper:O,inFlight:0}},b=()=>{for(let p=0;p<e.length;p+=1)for(let a=0;a<n.length;a+=1){let E;try{E=n[a].get(e[p])}catch{continue}if(typeof E=="function"){let g=st(o,e[p]);(!g||g.wrapper!==E)&&(g=w(e[p],n[a],E),n[a].set(e[p],g.wrapper),se(o,e[p],g)),d(g)||(g.inFlight+=1,i[i.length]=g)}break}};return b(),{wrap:b,unwrap:()=>{for(let p=0;p<i.length;p+=1){let a=i[p];a.inFlight-=1,!(a.inFlight>0)&&(st(o,a.target)===a&&ce(o,a.target),a.accessor.get(a.target)===a.wrapper&&a.accessor.set(a.target,a.handler))}}}},ft=(t,e,n)=>{let o=R(t),i=o===null?void 0:P(o,T(f));if(!W(i))return;let d={target:A(D(t),n),noReferrer:ut(t),replaces:!1};return{inWindow:d.target==="",go:()=>at(i,e,d)}},dt=t=>{let e=R(t);if(e===null||m(t,"download")===null)return!1;let n=P(e,T(f));return n!==void 0&&(n.origin===S||n.protocol==="blob:"||n.protocol==="data:")},ke=(t,e)=>R(t)!==null&&!dt(t)&&A(D(t),e)==="",ve=(t,e)=>{let n=R(t);if(n===null)return!1;let o=Vt(f,"a"),i=A(D(t),e);I(o,"href",n),I(o,"target",i||"_self");for(let d=0;d<G.length;d+=1){let w=m(t,G[d]);w!==null&&I(o,G[d],w)}return Xt(o),i===""&&!dt(t)},Ne=(t,e,n,o)=>{L+=1;let i=V(t),d=i.length-1,w=0,b=!1,F=!1,p=c=>{F||(F=!0,de(c))},a=c=>{if(b)return;b=!0;let N=X(t),h=N?void 0:ft(n,e,o),U;!N&&(h||c)&&(Y(t),U=we(t)),Z(r,()=>{if(!U){p(!X(t)&&ke(n,o));return}if(U()){p(!1);return}if(c&&(h=ft(n,e,o),!h)){p(ve(n,o));return}h.go(),p(h.inWindow)},0)},E=(c,N)=>{for(let h=0;h<i.length;h+=1)if(i[h]===c)return N===It?d-h:i.length+h;return-1},g=()=>{E(Ot(t),At(t))<=w&&a(!0)},O=c=>{c===t&&a(!1)},_=_e(e,i),x=c=>N=>{if(N===t){if(w=c,z(t)){a(!1);return}_.wrap()}},H=[],$=[],K=Lt(t);if(K){for(let c=0;c<d;c+=1)H[c]=x(d-c),$[c]=x(i.length+c),tt(i[c],e,H[c],!0),tt(i[c],e,$[c],!1);ee(r,e,O,!1)}if(Z(r,()=>{if(b||p(!1),b=!0,_.unwrap(),!!K){for(let c=0;c<d;c+=1)et(i[c],e,H[c],!0),et(i[c],e,$[c],!1);ne(r,e,O,!1)}},0),!K){a(!0);return}nt(t,{__proto__:null,stopPropagation:{__proto__:null,configurable:!0,value:()=>{g(),Rt(t)}},stopImmediatePropagation:{__proto__:null,configurable:!0,value:()=>{a(!0),j(t)}},cancelBubble:{__proto__:null,configurable:!0,get:()=>z(t),set:c=>{c&&g(),Tt(t,c)}}})},gt=t=>{let e=xt(t),n=me(t);if(!n||e==="auxclick"&&n.button!==1)return;let o=Ee(t);!o||!W(P(o.href,T(f)))||Ne(t,e,o.node,n)};y?.addEventListener("navigate",he,!0),r.addEventListener("click",gt,!0),r.addEventListener("auxclick",gt,!0)}kt({"site":"springandmulberry.com","exitPath":"\/url"});})();
+//# sourceURL=exit-interstitial.js
+</script>
+
+      <meta
+         charset="utf-8">
+      <meta
+         content="IE=edge,chrome=1"
+         http-equiv="X-UA-Compatible">
+      <meta
+         content="width=device-width,initial-scale=1"
+         name="viewport">
+     
+
+     
+
+      <link
+         crossorigin
+         href="https://cdn.shopify.com"
+         rel="preconnect"><link
+            crossorigin
+            href="https://fonts.shopifycdn.com"
+            rel="preconnect"><link
+         rel="preload"
+         href="//springandmulberry.com/cdn/shop/t/127/assets/base.css?v=145551593684598845001790651624" as="style">
+      <link
+         rel="preload"
+         href="//springandmulberry.com/cdn/shop/t/127/assets/base.js?v=109972679087674411981776781382" as="script">
+
+<link rel="canonical" href="https://springandmulberry.com/pages/founders">
+
+<title>
+  Founders
+ &ndash; Spring &amp; Mulberry</title><meta name="description" content="A trip to Dubai and a cancer diagnosis inspired the brand.">
+
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Organization",
+  "name":"Spring \u0026amp; Mulberry",
+"email":"orders@springandmulberry.com",
+"telephone":"000-000-0000",
+  "url":"https:\/\/springandmulberry.com\/pages\/founders\/pages\/founders",
+  "sameAs": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "description":"A trip to Dubai and a cancer diagnosis inspired the brand."}
+</script>
+<link rel="shortcut icon" href="//springandmulberry.com/cdn/shop/files/SPRING_MULBERRY_FAVICON-01_914c5ee5-88a5-4d9e-acb7-845bc4e26758_16x16.png?v=1647626359" sizes="16x16">
+<link rel="shortcut icon" href="//springandmulberry.com/cdn/shop/files/SPRING_MULBERRY_FAVICON-01_914c5ee5-88a5-4d9e-acb7-845bc4e26758_32x32.png?v=1647626359" sizes="32x32">
+<link rel="shortcut icon" href="//springandmulberry.com/cdn/shop/files/SPRING_MULBERRY_FAVICON-01_914c5ee5-88a5-4d9e-acb7-845bc4e26758_48x48.png?v=1647626359" sizes="48x48">
+<link rel="shortcut icon" href="//springandmulberry.com/cdn/shop/files/SPRING_MULBERRY_FAVICON-01_914c5ee5-88a5-4d9e-acb7-845bc4e26758_96x96.png?v=1647626359" sizes="96x96">
+<link rel="apple-touch-icon" href="//springandmulberry.com/cdn/shop/files/SPRING_MULBERRY_FAVICON-01_914c5ee5-88a5-4d9e-acb7-845bc4e26758_180x180.png?v=1647626359" sizes="180x180">
+<link rel="apple-touch-icon" href="//springandmulberry.com/cdn/shop/files/SPRING_MULBERRY_FAVICON-01_914c5ee5-88a5-4d9e-acb7-845bc4e26758_192x192.png?v=1647626359" sizes="192x192">
+
+
+
+
+<meta property="og:site_name" content="Spring &amp; Mulberry">
+<meta property="og:url" content="https://springandmulberry.com/pages/founders">
+<meta property="og:title" content="Founders">
+<meta property="og:type" content="website">
+<meta property="og:description" content="A trip to Dubai and a cancer diagnosis inspired the brand."><meta property="og:image" content="http://springandmulberry.com/cdn/shop/files/SPRINGANDMULBERRYHEADER-01.png?v=1647472585">
+<meta property="og:image:secure_url" content="https://springandmulberry.com/cdn/shop/files/SPRINGANDMULBERRYHEADER-01.png?v=1647472585">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="628"><meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Founders">
+<meta name="twitter:description" content="A trip to Dubai and a cancer diagnosis inspired the brand.">
+
+
+
+
+<style>
+
+  @import url("https://use.typekit.net/edi5oxb.css");
+
+  :root {
+    --theme-color-primary: #244451;
+    --theme-color-secondary: #CF9FC9;
+    --theme-color-accent-primary: #244451;
+    --theme-color-accent-secondary: #ffd5b8;
+  }
+
+
+
+  @font-face {
+    font-family: "nexus";
+    src: url("//springandmulberry.com/cdn/shop/t/127/assets/NexusTypewriter-Regular.woff2?v=153406352207906631641776781384") format("woff2"),
+    url("//springandmulberry.com/cdn/shop/t/127/assets/NexusTypewriter-Regular.woff?v=27953591018421886421776781384") format("woff");
+    font-style: normal;
+    font-weight: normal;
+  }
+
+  @font-face {
+    font-family: "nexus";
+    src: url("//springandmulberry.com/cdn/shop/t/127/assets/NexusTypewriter-Bold.woff2?v=22542973144453448401776781384") format("woff2"),
+    url("//springandmulberry.com/cdn/shop/t/127/assets/NexusTypewriter-Bold.woff?v=183376852281091150611776781383") format("woff");
+    font-style: normal;
+    font-weight: bold;
+  }
+
+  @font-face {
+    font-family: "clifton";
+    src: url("//springandmulberry.com/cdn/shop/t/127/assets/Clifton-Regular.woff2?v=149228399216105665431776781383") format("woff2"),
+    url("//springandmulberry.com/cdn/shop/t/127/assets/Clifton-Regular.woff?v=146007278002373829381776781382") format("woff");
+    font-style: normal;
+    font-weight: normal;
+  }
+
+  @font-face {
+    font-family: "clifton";
+    src: url("//springandmulberry.com/cdn/shop/t/127/assets/Clifton-Italic.woff2?v=145694547924685539191776781382") format("woff2"),
+    url("//springandmulberry.com/cdn/shop/t/127/assets/Clifton-Italic.woff?v=71978653325206863491776781382") format("woff");
+    font-style: italic;
+    font-weight: normal;
+  }
+
+  @font-face {
+    font-family: "bricktext";
+    src: url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Text%20Pro%20Light.woff2?v=29587") format("woff2"),
+    url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Text%20Pro%20Light.woff?v=7387046769037759991776781385") format("woff");
+    font-style: normal;
+    font-weight: normal;
+  }
+
+  @font-face {
+    font-family: "bricktext";
+    src: url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Text%20Pro%20Light.woff2?v=29587") format("woff2"),
+    url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Text%20Pro%20Light.woff?v=7387046769037759991776781385") format("woff");
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  @font-face {
+    font-family: "bricktext";
+    src: url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Text%20Pro%20Light.woff2?v=29587") format("woff2"),
+    url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Text%20Pro%20Light.woff?v=7387046769037759991776781385") format("woff");
+    font-style: normal;
+    font-weight: 300;
+  }
+
+  @font-face {
+    font-family: "bricktext";
+    src: url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Text%20Pro%20Light.woff2?v=29587") format("woff2"),
+    url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Text%20Pro%20Light.woff?v=7387046769037759991776781385") format("woff");
+    font-style: normal;
+    font-weight: 200;
+  }
+
+  @font-face {
+    font-family: "bricktext";
+    src: url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Text%20Pro%20Black.woff2?v=153923845364170212391776781384") format("woff2"),
+    url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Text%20Pro%20Black.woff?v=29587") format("woff");
+    font-style: normal;
+    font-weight: 700;
+  }
+
+  @font-face {
+    font-family: "brickdisplay";
+    src: url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Display%20Pro%20Regular.woff2?v=29587") format("woff2"),
+    url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Display%20Pro%20Regular.woff?v=29587") format("woff");
+    font-style: normal;
+    font-weight: normal;
+  }
+
+  @font-face {
+    font-family: "brickdisplay";
+    src: url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Display%20Pro%20Regular.woff2?v=29587") format("woff2"),
+    url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Display%20Pro%20Regular.woff?v=29587") format("woff");
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  @font-face {
+    font-family: "brickdisplay";
+    src: url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Display%20Pro%20Light.woff2?v=29587") format("woff2"),
+    url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Display%20Pro%20Light.woff?v=125019739607511091901776781383") format("woff");
+    font-style: normal;
+    font-weight: 300;
+  }
+
+  @font-face {
+    font-family: "brickdisplay";
+    src: url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Display%20Pro%20ExtraLight.woff2?v=48404256939930858201776781383") format("woff2"),
+    url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Display%20Pro%20ExtraLight.woff?v=79304078249146121651776781382") format("woff");
+    font-style: normal;
+    font-weight: 200;
+  }
+
+  @font-face {
+    font-family: "brickdisplay";
+    src: url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Display%20Pro%20Black.woff2?v=130046897846820312411776781382") format("woff2"),
+    url("//springandmulberry.com/cdn/shop/t/127/assets/Brick%20Display%20Pro%20Black.woff?v=84158158161756307531776781382") format("woff");
+    font-style: normal;
+    font-weight: bold;
+  }
+</style>
+
+
+<script>
+  window.routes = {
+    cart: '/cart',
+    cartAdd: '/cart/add',
+    cartChange: '/cart/change',
+    cartUpdate: '/cart/update',
+    predictiveSearch: '/search/suggest',
+    recommendations: '/recommendations/products',
+  };
+
+  window.cartStrings = {
+    error: `There was an error while updating your cart. Please try again.`,
+    quantityError: `You can only add [quantity] of this item to your cart.`
+  };
+
+  document.documentElement.className = document.documentElement.className.replace('no-js', 'has-js');
+</script>
+
+
+  <script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "BreadcrumbList",
+  "itemListElement": [{
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Translation missing: en.general.breadcrumb.home",
+      "item": "https://springandmulberry.com"
+    },{
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Founders",
+          "item": "https://springandmulberry.com/pages/founders"
+        }]
+  }
+  </script>
+<link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+   />
+      <link href="//springandmulberry.com/cdn/shop/t/127/assets/base.css?v=145551593684598845001790651624" rel="stylesheet" type="text/css" media="all" />
+      <link href="//springandmulberry.com/cdn/shop/t/127/assets/vendors.css?v=137678147670503951221776781384" rel="stylesheet" type="text/css" media="all" />
+      <link href="//springandmulberry.com/cdn/shop/t/127/assets/header-compact.css?v=57540072785472175181791022102" rel="stylesheet" type="text/css" media="all" />
+      <script
+         src="//springandmulberry.com/cdn/shop/t/127/assets/component-top-bar.js?v=9728484828165274111776781380" defer="defer"></script>
+      <script
+         src="//springandmulberry.com/cdn/shop/t/127/assets/base.js?v=109972679087674411981776781382" defer="defer"></script>
+
+      <!-- Start vendor third party libaries -->
+      <script
+         src="//springandmulberry.com/cdn/shop/t/127/assets/vendors.js?v=58417812648967581851776781384" defer="defer"></script>
+      <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+      <!-- End vendor third party libaries -->
+
+          <!-- Header hook for plugins -->
+      <script>window.performance && window.performance.mark && window.performance.mark('shopify.content_for_header.start');</script><meta name="facebook-domain-verification" content="l25moz3k22r5w471dkg5rr1i38ydng">
+<meta name="google-site-verification" content="BsZX20Uam6NJWxx7h4qqYReAAzw18MVzd8TiXbSbBcU">
+<meta id="shopify-digital-wallet" name="shopify-digital-wallet" content="/24649171010/digital_wallets/dialog">
+<meta id="in-context-paypal-metadata" data-shop-id="24649171010" data-venmo-supported="false" data-environment="production" data-locale="en_US" data-paypal-v4="true" data-currency="USD">
+<link rel="ucp" href="/.well-known/ucp" version="2026-08-25"><script async="async" src="/checkouts/internal/preloads.js?locale=en-US&default_configuration_id=997261475"></script>
+<link rel="preconnect" href="https://shop.app" crossorigin="anonymous">
+<script async="async" src="https://shop.app/checkouts/internal/preloads.js?locale=en-US&default_configuration_id=997261475&shop_id=24649171010" crossorigin="anonymous"></script>
+<script id="apple-pay-shop-capabilities" type="application/json">{"shopId":24649171010,"countryCode":"US","currencyCode":"USD","merchantCapabilities":["supports3DS"],"merchantId":"gid:\/\/shopify\/Shop\/24649171010","merchantName":"Spring \u0026 Mulberry","requiredBillingContactFields":["postalAddress","email"],"requiredShippingContactFields":["postalAddress","email"],"shippingType":"shipping","supportedNetworks":["visa","masterCard","amex","discover","elo","jcb"],"total":{"type":"pending","label":"Spring \u0026 Mulberry","amount":"1.00"},"shopifyPaymentsEnabled":true,"supportsSubscriptions":true}</script>
+<script id="shopify-features" type="application/json">{"accessToken":"38f5fb5b113b482b3d53a45a00673911","betas":["rich-media-storefront-analytics"],"domain":"springandmulberry.com","predictiveSearch":true,"shopId":24649171010,"locale":"en"}</script>
+<script>var Shopify = Shopify || {};
+Shopify.shop = "springandmulberry.myshopify.com";
+Shopify.locale = "en";
+Shopify.currency = {"active":"USD","rate":"1.0"};
+Shopify.country = "US";
+Shopify.theme = {"name":"Spring \u0026 Mulberry | Envision | Production","id":154274267299,"schema_name":"Spring\u0026Mulberry","schema_version":"1.3","theme_store_id":null,"role":"main"};
+Shopify.theme.handle = "null";
+Shopify.theme.style = {"id":null,"handle":null};
+Shopify.cdnHost = "springandmulberry.com/cdn";
+Shopify.routes = Shopify.routes || {};
+Shopify.routes.root = "/";
+Shopify.shopJsCdnBaseUrl = "https://cdn.shopify.com/shopifycloud/shop-js";
+Shopify.SignInWithShop = Shopify.SignInWithShop || {};
+Shopify.SignInWithShop.User = Shopify.SignInWithShop.User || {};
+Shopify.SignInWithShop.User.recognized = false;</script>
+<script type="module">!function(o){(o.Shopify=o.Shopify||{}).modules=!0}(window);</script>
+<script>!function(o){function n(){var o=[];function n(){o.push(Array.prototype.slice.apply(arguments))}return n.q=o,n}var t=o.Shopify=o.Shopify||{};t.loadFeatures=n(),t.autoloadFeatures=n()}(window);</script>
+<script>
+  window.ShopifyPay = window.ShopifyPay || {};
+  window.ShopifyPay.apiHost = "shop.app\/pay";
+  window.ShopifyPay.redirectState = null;
+</script>
+<script>
+  window.Shopify = window.Shopify || {};
+  window.Shopify.SignInWithShop = window.Shopify.SignInWithShop || {};
+  window.Shopify.SignInWithShop.assetMetrics = { sampleRate: 0.25 };
+  window.Shopify.SignInWithShop.eligible = true;
+</script>
+<script id="shop-js-analytics" type="application/json">{"pageType":"page"}</script>
+<script defer="defer" async type="module" src="https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/loader.init-shop-cart-sync.en.esm.js"></script>
+<script type="module">
+  await import("https://cdn.shopify.com/shopifycloud/shop-js/modules/v2/loader.init-shop-cart-sync.en.esm.js");
+
+  window.Shopify.SignInWithShop?.initShopCartSync?.({"fedCMEnabled":true,"windoidEnabled":true,"backendHost":"c3ByaW5nYW5kbXVsYmVycnkuY29t"});
+
+</script>
+<script>
+  window.Shopify = window.Shopify || {};
+  if (!window.Shopify.featureAssets) window.Shopify.featureAssets = {};
+  window.Shopify.featureAssets['shop-js'] = {"avatar":["modules/v2/loader.avatar.en.esm.js"],"checkout-modal":["modules/v2/loader.checkout-modal.en.esm.js"],"init-customer-accounts-sign-up":["modules/v2/loader.init-customer-accounts-sign-up.en.esm.js"],"init-customer-accounts":["modules/v2/loader.init-customer-accounts.en.esm.js"],"init-fed-cm":["modules/v2/loader.init-fed-cm.en.esm.js"],"init-shop-cart-sync":["modules/v2/loader.init-shop-cart-sync.en.esm.js"],"init-shop-email-lookup-coordinator":["modules/v2/loader.init-shop-email-lookup-coordinator.en.esm.js"],"init-shop-for-new-customer-accounts":["modules/v2/loader.init-shop-for-new-customer-accounts.en.esm.js"],"init-shop-user-recognition":["modules/v2/loader.init-shop-user-recognition.en.esm.js"],"init-windoid":["modules/v2/loader.init-windoid.en.esm.js"],"lead-capture":["modules/v2/loader.lead-capture.en.esm.js"],"listener":["modules/v2/loader.listener.en.esm.js"],"pay-button":["modules/v2/loader.pay-button.en.esm.js"],"payment-terms":["modules/v2/loader.payment-terms.en.esm.js"],"shop-button":["modules/v2/loader.shop-button.en.esm.js"],"shop-cart-sync":["modules/v2/loader.shop-cart-sync.en.esm.js"],"shop-cash-offers":["modules/v2/loader.shop-cash-offers.en.esm.js"],"shop-follow-button":["modules/v2/loader.shop-follow-button.en.esm.js"],"shop-login-button":["modules/v2/loader.shop-login-button.en.esm.js"],"shop-login":["modules/v2/loader.shop-login.en.esm.js"],"shop-toast-manager":["modules/v2/loader.shop-toast-manager.en.esm.js"],"shop-user-recognition":["modules/v2/loader.shop-user-recognition.en.esm.js"]};
+</script>
+<script>(function() {
+  var isLoaded = false;
+  function asyncLoad() {
+    if (isLoaded) return;
+    isLoaded = true;
+    var urls = ["https:\/\/instafeed.nfcube.com\/cdn\/d0491a76d38f120318a2127f0d411612.js?shop=springandmulberry.myshopify.com","https:\/\/static.shareasale.com\/json\/shopify\/deduplication.js?shop=springandmulberry.myshopify.com","https:\/\/static.shareasale.com\/json\/shopify\/shareasale-tracking.js?sasmid=126357\u0026ssmtid=19038\u0026shop=springandmulberry.myshopify.com","https:\/\/cdn-app.sealsubscriptions.com\/shopify\/public\/js\/sealsubscriptions.js?shop=springandmulberry.myshopify.com","https:\/\/cdn-bundler.nice-team.net\/app\/js\/bundler.js?shop=springandmulberry.myshopify.com","https:\/\/shopify-widget.route.com\/shopify.widget.js?shop=springandmulberry.myshopify.com","https:\/\/cdn.hextom.com\/js\/freeshippingbar.js?shop=springandmulberry.myshopify.com","https:\/\/app.shiptection.com\/assets\/shiptection-v3.bundle.js?shop=springandmulberry.myshopify.com"];
+    for (var i = 0; i < urls.length; i++) {
+      var s = document.createElement('script');
+      s.type = 'text/javascript';
+      s.async = true;
+      s.src = urls[i];
+      var x = document.getElementsByTagName('script')[0];
+      x.parentNode.insertBefore(s, x);
+    }
+  };
+  if(window.attachEvent) {
+    window.attachEvent('onload', asyncLoad);
+  } else {
+    window.addEventListener('load', asyncLoad, false);
+  }
+})();</script>
+<script id="__st">var __st={"a":24649171010,"offset":-14400,"reqid":"9c1a6281-788e-4bd6-a2eb-7637dba495dd-1792831344","pageurl":"springandmulberry.com\/pages\/founders","s":"pages-87744774307","u":"3f529cfc91c5","p":"page","rtyp":"page","rid":87744774307};</script>
+<script>window.ShopifyPaypalV4VisibilityTracking = true;</script>
+<script id="captcha-bootstrap">!function(){'use strict';const t='contact',e='account',n='new_comment',o=[[t,t],['blogs',n],['comments',n],[t,'customer']],c=[[e,'customer_login'],[e,'guest_login'],[e,'recover_customer_password'],[e,'create_customer']],r=t=>t.map((([t,e])=>`form[action*='/${t}']:not([data-nocaptcha='true']) input[name='form_type'][value='${e}']`)).join(','),a=t=>()=>t?[...document.querySelectorAll(t)].map((t=>t.form)):[];function s(){const t=[...o],e=r(t);return a(e)}const i='password',u='form_key',d=['recaptcha-v3-token','g-recaptcha-response','h-captcha-response',i],f=()=>{try{return window.sessionStorage}catch{return}},m='__shopify_v',_=t=>t.elements[u];function p(t,e,n=!1){try{const o=window.sessionStorage,c=JSON.parse(o.getItem(e)),{data:r}=function(t){const{data:e,action:n}=t;return t[m]||n?{data:e,action:n}:{data:t,action:n}}(c);for(const[e,n]of Object.entries(r))t.elements[e]&&(t.elements[e].value=n);n&&o.removeItem(e)}catch(o){console.error('form repopulation failed',{error:o})}}const l='form_type',E='cptcha';function T(t){t.dataset[E]=!0}const w=window,h=w.document,L='Shopify',v='ce_forms',y='captcha';let A=!1;((t,e)=>{const n=(g='f06e6c50-85a8-45c8-87d0-21a2b65856fe',I='https://cdn.shopify.com/shopifycloud/storefront-forms-hcaptcha/ce_storefront_forms_captcha_hcaptcha.v1.5.3.iife.js',D={infoText:'Protected by hCaptcha',privacyText:'Privacy',termsText:'Terms'},(t,e,n)=>{const o=w[L][v],c=o.bindForm;if(c)return c(t,g,e,D).then(n);var r;o.q.push([[t,g,e,D],n]),r=I,A||(h.body.append(Object.assign(h.createElement('script'),{id:'captcha-provider',async:!0,src:r})),A=!0)});var g,I,D;w[L]=w[L]||{},w[L][v]=w[L][v]||{},w[L][v].q=[],w[L][y]=w[L][y]||{},w[L][y].protect=function(t,e){n(t,void 0,e),T(t)},Object.freeze(w[L][y]),function(t,e,n,w,h,L){const[v,y,A,g]=function(t,e,n){const i=e?o:[],u=t?c:[],d=[...i,...u],f=r(d),m=r(i),_=r(d.filter((([t,e])=>n.includes(e))));return[a(f),a(m),a(_),s()]}(w,h,L),I=t=>{const e=t.target;return e instanceof HTMLFormElement?e:e&&e.form},D=t=>v().includes(t);t.addEventListener('submit',(t=>{const e=I(t);if(!e)return;const n=D(e)&&!e.dataset.hcaptchaBound&&!e.dataset.recaptchaBound,o=_(e),c=g().includes(e)&&(!o||!o.value);(n||c)&&t.preventDefault(),c&&!n&&(function(t){try{if(!f())return;!function(t){const e=f();if(!e)return;const n=_(t);if(!n)return;const o=n.value;o&&e.removeItem(o)}(t);const e=Array.from(Array(32),(()=>Math.random().toString(36)[2])).join('');!function(t,e){_(t)||t.append(Object.assign(document.createElement('input'),{type:'hidden',name:u})),t.elements[u].value=e}(t,e),function(t,e){const n=f();if(!n)return;const o=[...t.querySelectorAll(`input[type='${i}']`)].map((({name:t})=>t)),c=[...d,...o],r={};for(const[a,s]of new FormData(t).entries())c.includes(a)||(r[a]=s);n.setItem(e,JSON.stringify({[m]:1,action:t.action,data:r}))}(t,e)}catch(e){console.error('failed to persist form',e)}}(e),e.submit())}));const S=(t,e)=>{t&&!t.dataset[E]&&(n(t,e.some((e=>e===t))),T(t))};for(const o of['focusin','change'])t.addEventListener(o,(t=>{const e=I(t);D(e)&&S(e,y())}));const B=e.get('form_key'),M=e.get(l),P=B&&M;t.addEventListener('DOMContentLoaded',(()=>{const t=y();if(P)for(const e of t)e.elements[l].value===M&&p(e,B);[...new Set([...A(),...v().filter((t=>'true'===t.dataset.shopifyCaptcha))])].forEach((e=>S(e,t)))}))}(h,new URLSearchParams(w.location.search),n,t,e,['guest_login'])})(!0,!0)}();</script>
+<script integrity="sha256-FYHzja/5XSmzkjz6zHj7s4rACJGFuVoYZdumgoO2Ecs=" data-source-attribution="shopify.loadfeatures" defer="defer" src="//springandmulberry.com/cdn/shopifycloud/storefront/assets/storefront/load_feature-ed94c51f.js" crossorigin="anonymous"></script>
+<script>(function () {var userAgent = navigator.userAgent;var platform = navigator.platform;var maxTouchPoints = navigator.maxTouchPoints || 0;var isIOS = /iPad|iPhone|iPod/.test(platform) || (platform === 'MacIntel' && maxTouchPoints > 1);var isMacSafari = platform.indexOf('Mac') === 0 && /Safari/.test(userAgent) && !/Chrome|Chromium|CriOS|FxiOS|Edg|OPR|Android/.test(userAgent);var isAppleSafari = isIOS || isMacSafari;if (isAppleSafari) {fetch('/sf_private_access_tokens' + location.search).catch(function () {});}function browserMajorVersion(pattern) {var match = userAgent.match(pattern);return match ? parseInt(match[1], 10) : null;}function shouldLoadAutosizesPolyfill() {if (!window.PerformanceObserver?.supportedEntryTypes?.includes('paint')) {return false;}var chromeVersion = browserMajorVersion(/Chrome\/(\d+)/);if (chromeVersion !== null) {return chromeVersion < 126;}var firefoxVersion = browserMajorVersion(/Firefox\/(\d+)/);if (firefoxVersion !== null) {return firefoxVersion < 150;}var safariVersion = isAppleSafari ? browserMajorVersion(/Version\/(\d+).*Safari\//) : null;if (safariVersion !== null) {return safariVersion < 27;}return true;}if (shouldLoadAutosizesPolyfill()) {var autosizesScript = document.createElement('script');autosizesScript.async = true;autosizesScript.crossOrigin = 'anonymous';autosizesScript.src = "//springandmulberry.com/cdn/shopifycloud/storefront/assets/storefront/autosizes-84416378.js";(document.head || document.documentElement).appendChild(autosizesScript);}window.ShopifyAnalytics = window.ShopifyAnalytics || {};window.ShopifyAnalytics.performance = window.ShopifyAnalytics.performance || {};(function () {var LONG_FRAME_THRESHOLD = 50;var longAnimationFrames = [];var activeRafId = null;function collectLongFrames() {var previousTime = null;function rafMonitor(now) {if (activeRafId === null) {return;}var delta = now - previousTime;if (delta > LONG_FRAME_THRESHOLD) {longAnimationFrames.push({startTime: previousTime,endTime: now,});}previousTime = now;activeRafId = requestAnimationFrame(rafMonitor);}previousTime = performance.now();activeRafId = requestAnimationFrame(rafMonitor);}if (!window.PerformanceObserver?.supportedEntryTypes?.includes('long-animation-frame')) {collectLongFrames();var timeoutId = setTimeout(function () {cancelAnimationFrame(activeRafId);}, 10000);window.ShopifyAnalytics.performance.getLongAnimationFrames = function (stopCollection) {if (stopCollection === undefined) {stopCollection = false;}if (stopCollection) {clearTimeout(timeoutId);cancelAnimationFrame(activeRafId);}return longAnimationFrames;};}})();})();</script><script crossorigin="anonymous" defer="defer" src="//springandmulberry.com/cdn/shopifycloud/storefront/assets/shopify_pay/storefront-f0e26bdf.js?v=20250812"></script>
+<script id="shopify-origin-trials" async="async" integrity="sha256-qJbe/jEZBHtr5W/BlA2cKAz3vkXu6vJQyLjgvgCC86g=" src="//cdn.shopify.com/shopifycloud/storefront/assets/storefront/origin_trials-318ab40a.js" crossorigin="anonymous" onload="window.__shopifyOriginTrialsDone = true" onerror="window.__shopifyOriginTrialsDone = true"></script>
+<script>(()=>{var d="shopify:webmcp_adapter_loaded",n=Symbol.for("shopify.webmcp_adapter_loading");function s(c,a,{win:r=window,doc:o=document}={}){function p(){try{return r.localStorage.getItem(d)==="true"}catch{return!1}}function l(){try{r.localStorage.setItem(d,"true")}catch{}}function u(){return typeof(o.modelContext||r.navigator?.modelContext)?.registerTool=="function"}function f(){if(r[n]||!u())return;let t=o.head||o.getElementsByTagName("head")[0];if(!t)return;let e=o.createElement("script");e.type="module",e.crossOrigin="anonymous",a&&(e.integrity=a),e.src=c,e.addEventListener("load",l,{once:!0}),e.addEventListener("error",()=>{r[n]=!1},{once:!0}),t.appendChild(e),r[n]=!0}function _(t){let e=o.getElementById("shopify-origin-trials");if(!e||r.__shopifyOriginTrialsDone){t();return}e.addEventListener("load",t,{once:!0}),e.addEventListener("error",t,{once:!0})}function i(){_(()=>r.setTimeout(f,0))}function m(){o.addEventListener("DOMContentLoaded",i,{once:!0})}p()?i():m()}s("\/\/springandmulberry.com\/cdn\/shopifycloud\/storefront\/assets\/storefront\/webmcp-23c12384.js","sha256-r8Pww6V2udgtSdaVbcRtdZ4Kg+gXP7aLPZOtQSJPrbM=");})();
+</script>
+<script data-source-attribution="shopify.dynamic_checkout.dynamic.init">var Shopify=Shopify||{};Shopify.PaymentButton=Shopify.PaymentButton||{isStorefrontPortableWallets:!0,init:function(){window.Shopify.PaymentButton.init=function(){};var t=document.createElement("script");t.src="https://springandmulberry.com/cdn/shopifycloud/portable-wallets/latest/portable-wallets.en.js",t.type="module",document.head.appendChild(t)}};
+</script>
+<script data-source-attribution="shopify.dynamic_checkout.buyer_consent">
+  function portableWalletsHideBuyerConsent(e){var t=document.getElementById("shopify-buyer-consent"),n=document.getElementById("shopify-subscription-policy-button");t&&n&&(t.classList.add("hidden"),t.setAttribute("aria-hidden","true"),n.removeEventListener("click",e))}function portableWalletsShowBuyerConsent(e){var t=document.getElementById("shopify-buyer-consent"),n=document.getElementById("shopify-subscription-policy-button");t&&n&&(t.classList.remove("hidden"),t.removeAttribute("aria-hidden"),n.addEventListener("click",e))}window.Shopify?.PaymentButton&&(window.Shopify.PaymentButton.hideBuyerConsent=portableWalletsHideBuyerConsent,window.Shopify.PaymentButton.showBuyerConsent=portableWalletsShowBuyerConsent);
+</script>
+<script data-source-attribution="shopify.dynamic_checkout.cart.bootstrap">document.addEventListener("DOMContentLoaded",(function(){function t(){return document.querySelector("shopify-accelerated-checkout-cart, shopify-accelerated-checkout")}if(t())Shopify.PaymentButton.init();else{new MutationObserver((function(e,n){t()&&(Shopify.PaymentButton.init(),n.disconnect())})).observe(document.body,{childList:!0,subtree:!0})}}));
+</script>
+<link id="shopify-accelerated-checkout-styles" rel="stylesheet" media="screen" href="https://springandmulberry.com/cdn/shopifycloud/portable-wallets/latest/accelerated-checkout-backwards-compat.css" crossorigin="anonymous">
+<style id="shopify-accelerated-checkout-cart">
+        #shopify-buyer-consent {
+  margin-top: 1em;
+  display: inline-block;
+  width: 100%;
+}
+
+#shopify-buyer-consent.hidden {
+  display: none;
+}
+
+#shopify-subscription-policy-button {
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: underline;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+#shopify-subscription-policy-button::before {
+  box-shadow: none;
+}
+
+      </style>
+
+<script id="shopify-cfh-end">window.performance && window.performance.mark && window.performance.mark('shopify.content_for_header.end');</script>
+
+
+     <!-- Google Tag Manager -->
+
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+
+})(window,document,'script','dataLayer','GTM-WVKBRWP');</script>
+
+<!-- End Google Tag Manager -->
+
+     <!-- Google Optimize -->
+     <script src="https://www.googleoptimize.com/optimize.js?id=OPT-NDSPBG4"></script>
+     <!-- End Google Optimize -->
+
+
+
+   <!-- Hotjar Tracking Code for Site 5019436 (name missing) -->
+<script>
+    (function(h,o,t,j,a,r){
+        h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+        h._hjSettings={hjid:5019436,hjsv:6};
+        a=o.getElementsByTagName('head')[0];
+        r=o.createElement('script');r.async=1;
+        r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+        a.appendChild(r);
+    })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+</script>
+   
+
+
+
+   <script src="//springandmulberry.com/cdn/shop/t/127/assets/custom.js?v=175087799351876672221784154382" defer="defer"></script>
+   <!-- BEGIN app block: shopify://apps/klaviyo-email-marketing-sms/blocks/klaviyo-onsite-embed/2632fe16-c075-4321-a88b-50b567f42507 -->
+
+
+
+
+
+
+
+
+
+
+
+
+  <script async src="https://static.klaviyo.com/onsite/js/VDHMWE/klaviyo.js?company_id=VDHMWE"></script>
+  <script>!function(){if(!window.klaviyo){window._klOnsite=window._klOnsite||[];try{window.klaviyo=new Proxy({},{get:function(n,i){return"push"===i?function(){var n;(n=window._klOnsite).push.apply(n,arguments)}:function(){for(var n=arguments.length,o=new Array(n),w=0;w<n;w++)o[w]=arguments[w];var t="function"==typeof o[o.length-1]?o.pop():void 0,e=new Promise((function(n){window._klOnsite.push([i].concat(o,[function(i){t&&t(i),n(i)}]))}));return e}}})}catch(n){window.klaviyo=window.klaviyo||[],window.klaviyo.push=function(){var n;(n=window._klOnsite).push.apply(n,arguments)}}}}();</script>
+
+  
+
+
+
+
+  <script>
+    window.klaviyoReviewsProductDesignMode = false
+  </script>
+
+
+
+
+
+
+
+<!-- END app block --><!-- BEGIN app block: shopify://apps/pagefly-ai-page-builder/blocks/app-embed/83e179f7-59a0-4589-8c66-c0dddf959200 -->
+
+<!-- BEGIN app snippet: pagefly-cro-ab-testing-main -->
+
+
+
+
+
+
+
+<script>
+  ;(function () {
+    const url = new URL(window.location)
+    const viewParam = url.searchParams.get('view')
+    if (viewParam && viewParam.includes('variant-pf-')) {
+      url.searchParams.set('pf_v', viewParam)
+      url.searchParams.delete('view')
+      window.history.replaceState({}, '', url)
+    }
+  })()
+</script>
+
+
+
+<script type='module'>
+  
+  window.PAGEFLY_CRO = window.PAGEFLY_CRO || {}
+
+  window.PAGEFLY_CRO['data_debug'] = {
+    original_template_suffix: "founders",
+    allow_ab_test: false,
+    ab_test_start_time: 0,
+    ab_test_end_time: 0,
+    today_date_time: 1792831345000,
+  }
+  window.PAGEFLY_CRO['GA4'] = { enabled: false}
+</script>
+
+<!-- END app snippet -->
+
+
+
+
+
+
+
+
+  <script src='https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-helper.js' defer='defer'></script>
+
+  <script src='https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-general-helper.js' defer='defer'></script>
+
+  <script src='https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-snap-slider.js' defer='defer'></script>
+
+  <script src='https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-slideshow-v3.js' defer='defer'></script>
+
+  <script src='https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-slideshow-v4.js' defer='defer'></script>
+
+  <script src='https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-glider.js' defer='defer'></script>
+
+  <script src='https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-slideshow-v1-v2.js' defer='defer'></script>
+
+  <script src='https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-product-media.js' defer='defer'></script>
+
+  <script src='https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-product.js' defer='defer'></script>
+
+
+<script id='pagefly-helper-data' type='application/json'>
+  {
+    "page_optimization": {
+      "assets_prefetching": false
+    },
+    "elements_asset_mapper": {
+      "Accordion": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-accordion.js",
+      "Accordion3": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-accordion3.js",
+      "CountDown": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-countdown.js",
+      "GMap1": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-gmap.js",
+      "GMap2": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-gmap.js",
+      "GMapBasicV2": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-gmap.js",
+      "GMapAdvancedV2": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-gmap.js",
+      "HTML.Video": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-htmlvideo.js",
+      "HTML.Video2": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-htmlvideo2.js",
+      "HTML.Video3": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-htmlvideo2.js",
+      "BackgroundVideo": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-htmlvideo2.js",
+      "Instagram": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-instagram.js",
+      "Instagram2": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-instagram.js",
+      "Insta3": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-instagram3.js",
+      "Tabs": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-tab.js",
+      "Tabs3": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-tab3.js",
+      "ProductBox": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-cart.js",
+      "FBPageBox2": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-facebook.js",
+      "FBLikeButton2": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-facebook.js",
+      "TwitterFeed2": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-twitter.js",
+      "Paragraph4": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-paragraph4.js",
+
+      "AliReviews": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "BackInStock": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "GloboBackInStock": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "GrowaveWishlist": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "InfiniteOptionsShopPad": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "InkybayProductPersonalizer": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "LimeSpot": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "Loox": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "Opinew": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "Powr": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "ProductReviews": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "PushOwl": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "ReCharge": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "Rivyo": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "TrackingMore": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "Vitals": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js",
+      "Wiser": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-3rd-elements.js"
+    },
+    "custom_elements_mapper": {
+      "pf-click-action-element": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-click-action-element.js",
+      "pf-dialog-element": "https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-dialog-element.js"
+    }
+  }
+</script>
+
+<script id='pagefly-heatmap-config' type='application/json'>
+  {}
+</script>
+<script>
+  (function () {
+    var el = document.getElementById('pagefly-heatmap-config')
+    if (!el) { window.__pagefly_heatmap_config__ = {}; return }
+    try {
+      window.__pagefly_heatmap_config__ = JSON.parse(el.textContent || '{}') || {}
+    } catch (e) {
+      window.__pagefly_heatmap_config__ = {}
+    }
+  })()
+</script>
+<script>
+  // Heatmap overlay loader. Three gates, all of them cheap, none of them trusting the URL:
+  // the visitor must have arrived on a pf_heatmap link, the SERVER must have published an
+  // overlay path in the metafield, and this page must already be one the merchant enabled
+  // tracking for. The last gate is what stops a crafted link pulling the asset onto an
+  // arbitrary storefront page. Everything else is decided inside the asset, and by the server.
+  (function () {
+    var cfg = window.__pagefly_heatmap_config__ || {}
+    var id = (window.__pagefly_page_setting__ || {}).pageId
+    if (!/[#&]pf_heatmap=/.test(window.location.hash || '')) return
+    if (!cfg.overlay_data_path || !Array.isArray(cfg.enabled_page_ids)) return
+    if (!id || cfg.enabled_page_ids.indexOf(id) === -1) return
+    var s = document.createElement('script')
+    s.src = 'https://cdn.shopify.com/extensions/01a167ba-7527-7e76-9216-f8a4d41469bf/pagefly-ai-page-builder-380/assets/pagefly-heatmap-overlay.js'
+    s.defer = true
+    document.head.appendChild(s)
+  })()
+</script>
+
+<!-- BEGIN app snippet: pf-ai-schema -->
+<!-- END app snippet -->
+
+
+<!-- END app block --><!-- BEGIN app block: shopify://apps/rebuy-personalization-engine/blocks/rebuy-global-embed/a26ae9b9-933b-40bf-bbc6-bf1220bbc4dc -->
+<script>
+  window.Rebuy = window.Rebuy || {};
+  window.Rebuy.customer = window.Rebuy.customer || {};
+  
+  window.Rebuy.market = window.Rebuy.market || {};
+  
+  window.Rebuy.market.country = "US";
+  
+  
+  window.Rebuy.market.locale = "en";
+  
+</script>
+
+
+<link rel="preconnect" href="https://cdn.rebuyengine.com">
+  <link rel="preconnect" href="https://rebuyengine.com" crossorigin>
+  <link rel="preconnect" href="https://cached.rebuyengine.com" crossorigin>
+  <script async src="https://cdn.rebuyengine.com/onsite/js/rebuy.js?shop=springandmulberry.myshopify.com"></script>
+
+
+<!-- END app block --><!-- BEGIN app block: shopify://apps/rebuy-personalization-engine/blocks/rebuy-ab-testing-embed/a26ae9b9-933b-40bf-bbc6-bf1220bbc4dc -->
+
+
+
+
+
+
+<!-- END app block --><script src="https://cdn.shopify.com/extensions/01a16a40-dc3c-7de4-9502-eee6295050dc/2026-10-23-19-32-21-UTC--1af38a8/assets/smile-loader.js" type="text/javascript" defer="defer"></script>
+<script src="https://cdn.shopify.com/extensions/01a15d7e-2ae0-714d-b96e-f7747db5415b/sea-survey-168/assets/avada-survey.js" type="text/javascript" defer="defer"></script>
+<link href="https://monorail-edge.shopifysvc.com" rel="dns-prefetch">
+<script>(function(){if ("sendBeacon" in navigator && "performance" in window) {try {var session_token_from_headers = performance.getEntriesByType('navigation')[0].serverTiming.find(x => x.name == '_s').description;} catch {var session_token_from_headers = undefined;}var session_cookie_matches = document.cookie.match(/_shopify_s=([^;]*)/);var session_token_from_cookie = session_cookie_matches && session_cookie_matches.length === 2 ? session_cookie_matches[1] : "";var session_token = session_token_from_headers || session_token_from_cookie || "";function handle_abandonment_event(e) {var entries = performance.getEntries().filter(function(entry) {return /monorail-edge.shopifysvc.com/.test(entry.name);});if (!window.abandonment_tracked && entries.length === 0) {window.abandonment_tracked = true;var currentMs = Date.now();var navigation_start = performance.timing.navigationStart;var payload = {shop_id: 24649171010,url: window.location.href,navigation_start,duration: currentMs - navigation_start,session_token,page_type: "page"};window.navigator.sendBeacon("https://monorail-edge.shopifysvc.com/v1/produce", JSON.stringify({schema_id: "online_store_buyer_site_abandonment/1.1",payload: payload,metadata: {event_created_at_ms: currentMs,event_sent_at_ms: currentMs}}));}}window.addEventListener('pagehide', handle_abandonment_event);}}());</script>
+<script>
+  window.__TREKKIE_SHIM_QUEUE = window.__TREKKIE_SHIM_QUEUE || [];
+</script>
+<script>(function(){var wpmLoader=function(){"use strict";var e=/Googlebot|Storebot-Google|bingbot|Baiduspider|YandexBot|DuckDuckBot|Slurp|facebookexternalhit|Twitterbot|LinkedInBot|Applebot|AdsBot-Google|Mediapartners-Google|APIs-Google|PetalBot|SemrushBot|AhrefsBot|MJ12bot|DotBot|Acunetix|PerplexityBot|Perplexity-User/i,t=/bytedance/i;function i(){try{var e=document.cookie;if(!e||"string"!=typeof e)return;for(var t=0,i=e.split(";");t<i.length;t++){var n=i[t],r=n.indexOf("=");if(-1!==r){var o=n.slice(0,r).trim();if(o){var a=void 0;try{a=decodeURIComponent(o)}catch(e){a=o}if("_shopify_s"===a){var d=n.slice(r+1).trim();try{return decodeURIComponent(d)}catch(e){return d}}}}}return}catch(e){return}}function n(e){try{"undefined"!=typeof console&&"function"==typeof console.warn&&console.warn(e)}catch(e){}}function r(e,t){return"string"==typeof e&&e.length>0&&e.length<=t?e:void 0}function o(e){var t;switch(null==(t=null==e?void 0:e.navigation)?void 0:t.type){case 0:return"navigate";case 1:return"reload";case 2:return"back_forward";default:return}}function a(){var e,t,i;try{var n=null==(i=null==(t=null==(e=self.ShopifyAnalytics)?void 0:e.lib)?void 0:t.trekkie)?void 0:i.state;return"awaiting-consent"===n||"initialized"===n?n:void 0}catch(e){return}}return function(d,s,u,l){var c=arguments.length>4&&void 0!==arguments[4]?arguments[4]:{};try{var p=c.trekkieShim;!0!==p&&"true"!==p||null!=window.__TREKKIE_SHIM_QUEUE||(window.__TREKKIE_SHIM_QUEUE=[])}catch(e){}var f,v,h,y,g=(v=(f={modern:/Edge?\/(1{2}[4-9]|1[2-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|Firefox\/(1{2}[4-9]|1[2-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|Chrom(ium|e)\/(9{2}|\d{3,})\.\d+(\.\d+|)|(Maci|X1{2}).+ Version\/(15\.\d+|(1[6-9]|[2-9]\d|\d{3,})\.\d+)([,.]\d+|)( \(\w+\)|)( Mobile\/\w+|) Safari\/|Chrome.+OPR\/(9{2}|\d{3,})\.\d+\.\d+|(CPU[ +]OS|iPhone[ +]OS|CPU[ +]iPhone|CPU IPhone OS|CPU iPad OS)[ +]+(15[._]\d+|(1[6-9]|[2-9]\d|\d{3,})[._]\d+)([._]\d+|)|Android:?[ /-](14[89]|1[5-9]\d|[2-9]\d{2}|\d{4,})(\.\d+|)(\.\d+|)|Android.+Firefox\/(15\d|1[6-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|Android.+Chrom(ium|e)\/(14[89]|1[5-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|SamsungBrowser\/([2-9]\d|\d{3,})\.\d+/,legacy:/Edge?\/(1[6-9]|[2-9]\d|\d{3,})\.\d+(\.\d+|)|Firefox\/(5[4-9]|[6-9]\d|\d{3,})\.\d+(\.\d+|)|Chrom(ium|e)\/(5[1-9]|[6-9]\d|\d{3,})\.\d+(\.\d+|)([\d.]+$|.*Safari\/(?![\d.]+ Edge\/[\d.]+$))|(Maci|X1{2}).+ Version\/(10\.\d+|(1[1-9]|[2-9]\d|\d{3,})\.\d+)([,.]\d+|)( \(\w+\)|)( Mobile\/\w+|) Safari\/|Chrome.+OPR\/(3[89]|[4-9]\d|\d{3,})\.\d+\.\d+|(CPU[ +]OS|iPhone[ +]OS|CPU[ +]iPhone|CPU IPhone OS|CPU iPad OS)[ +]+(10[._]\d+|(1[1-9]|[2-9]\d|\d{3,})[._]\d+)([._]\d+|)|Android:?[ /-](14[89]|1[5-9]\d|[2-9]\d{2}|\d{4,})(\.\d+|)(\.\d+|)|Mobile Safari.+OPR\/([89]\d|\d{3,})\.\d+\.\d+|Android.+Firefox\/(15\d|1[6-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|Android.+Chrom(ium|e)\/(14[89]|1[5-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|Android.+(UC? ?Browser|UCWEB|U3)[ /]?(15\.([5-9]|\d{2,})|(1[6-9]|[2-9]\d|\d{3,})\.\d+)\.\d+|SamsungBrowser\/(5\.\d+|([6-9]|\d{2,})\.\d+)|Android.+MQ{2}Browser\/(14(\.(9|\d{2,})|)|(1[5-9]|[2-9]\d|\d{3,})(\.\d+|))(\.\d+|)|K[Aa][Ii]OS\/(3\.\d+|([4-9]|\d{2,})\.\d+)(\.\d+|)/}).modern,h=f.legacy,(y=navigator.userAgent).match(e)?"bot":y.match(v)?"modern":y.match(h)?"legacy":y.match(t)?"bot":"unknown"),m=function(e){var t,i,n=r(e,128);try{var a=window.performance,d=null==(t=null==a?void 0:a.getEntriesByType)?void 0:t.call(a,"navigation")[0];if(!d)return{requestId:n,navigationType:o(a)};var s="type"in d?r(d.type,64):void 0,u="serverTiming"in d&&Array.isArray(d.serverTiming)?d.serverTiming:[];return{requestId:null!=n?n:r(null==(i=u.find(function(e){return"requestID"===e.name}))?void 0:i.description,128),navigationType:s}}catch(e){return{requestId:n}}}(c.requestId),w=function(e){var t=e.version,r=e.browserTarget,o=e.surface,a=e.shopId,d=e.monorailEndpoint,s=window.location.href;return{emit:function(e){var u=e.status,l=e.errorMsg,c=e.failureReason,p=e.useKeepaliveFallback,f=void 0!==p&&p,v=e.navigationType,h=e.pagehidePersisted,y=e.requestId,g=e.trekkieState;if(d){var m,w;try{var b=(new Date).getTime();m=JSON.stringify({metadata:{event_sent_at_ms:b},events:[{schema_id:"web_pixels_manager_load/3.3",payload:{version:t,bundle_target:r,page_url:s,status:u,surface:o,error_msg:l,failure_reason:c,navigation_type:v,pagehide_persisted:h,request_id:y,trekkie_state:g,shop_id:a,visit_token:i()},metadata:{event_created_at_ms:b}}]})}catch(e){return}try{if("function"==typeof window.navigator.sendBeacon&&-1===(w=window.navigator.userAgent).indexOf("iPhone; CPU iPhone OS 12_")&&-1===w.indexOf("iPad; CPU OS 12_")&&-1===w.indexOf("iPod touch; CPU iPhone OS 12_")&&window.navigator.sendBeacon.bind(window.navigator)(d,m))return}catch(e){}if(f)try{"function"==typeof window.fetch&&window.fetch(d,{method:"POST",headers:{"Content-Type":"text/plain"},body:m,keepalive:!0}).catch(function(){})}catch(e){}else try{var _=new XMLHttpRequest;_.open("POST",d,!0),_.setRequestHeader("Content-Type","text/plain"),_.send(m)}catch(e){n("[Web Pixels Manager] Got an unhandled error while logging to Monorail.")}}else n("[Web Pixels Manager] No Monorail endpoint provided, skipping logging.")}}}({version:u,browserTarget:g,surface:d.surface,shopId:d.shopId,monorailEndpoint:d.monorailEndpoint});if(Boolean(null==(_=null==(b=window.Shopify)?void 0:b.analytics)?void 0:_.replayQueue))w.emit({status:"setup-skipped",errorMsg:"replay queue already initialized."});else{var b,_;w.emit({status:"setup-started"}),window.Shopify=window.Shopify||{};var S=window.Shopify;S.analytics=S.analytics||{};var P=S.analytics;P.replayQueue=[],P.publish=function(e,t,i){return P.replayQueue.push([e,t,i]),!0};try{self.performance.mark("wpm:start")}catch(e){}var k,C="modern"===g?"modern":"legacy",E=(null!=l?l:{modern:"",legacy:""})[C],I=[(k={baseUrl:s,hashVersion:u,buildTarget:C}).baseUrl,"/wpm","/b",k.hashVersion,"modern"===k.buildTarget?"m":"l",".js"].join(""),O=!1,T=!1;try{c.browserTarget=g,function(){O=!0;try{window.addEventListener("pagehide",M)}catch(e){O=!1}}(),R(function(){try{R(x)}catch(e){D(e)}}),w.emit({status:"loading",requestId:m.requestId,navigationType:m.navigationType,trekkieState:a()})}catch(e){D(e)}}function U(){var e;if(q(),!function(){var e,t;return Boolean(null==(t=null==(e=window.Shopify)?void 0:e.analytics)?void 0:t.initialized)}()){var t,i,n;try{if("function"!=typeof(null==(e=window.webPixelsManager)?void 0:e.init))return void A();if(!(null!==(n=i=t=window.webPixelsManager.init(d))&&"function"!=typeof n&&Object(n)===n&&"publish"in i&&"function"==typeof i.publish&&"publishCustomEvent"in i&&"function"==typeof i.publishCustomEvent&&"visitor"in i&&"function"==typeof i.visitor))return void A()}catch(e){return void A(e)}var r=window.Shopify.analytics;r.replayQueue.forEach(function(e){var i=e[0],n=e[1],r=e[2];t.publishCustomEvent(i,n,r)}),r.replayQueue=[],r.publish=t.publishCustomEvent,r.visitor=t.visitor,r.initialized=!0}}function A(e){B("manager_api_unavailable",void 0===e?void 0:Q(e))}function x(){B("script_load_failed","".concat(I," has failed to load"))}function B(e,t){T||(T=!0,q(),w.emit({status:"failed",errorMsg:t,failureReason:e,requestId:m.requestId,navigationType:m.navigationType,trekkieState:a()}))}function M(e){O&&(q(),w.emit({status:"pagehide-while-loading",useKeepaliveFallback:!0,pagehidePersisted:e.persisted,requestId:m.requestId,navigationType:m.navigationType,trekkieState:a()}))}function q(){O=!1;try{window.removeEventListener("pagehide",M)}catch(e){}}function R(e){var t;!function(e){var t=e.src,i=e.async,n=void 0===i||i,r=e.onload,o=e.onerror,a=e.sri,d=e.scriptDataAttributes,s=void 0===d?{}:d,u=document.createElement("script"),l=document.querySelector("head"),c=document.querySelector("body");if(u.async=n,u.src=t,a&&(u.integrity=a,u.crossOrigin="anonymous"),s)for(var p in s)if(Object.prototype.hasOwnProperty.call(s,p))try{u.dataset[p]=String(s[p])}catch(e){}if(r&&u.addEventListener("load",r),o&&u.addEventListener("error",o),l)l.appendChild(u);else{if(!c)throw new Error("Did not find a head or body element to append the script");c.appendChild(u)}}({src:I,async:!0,onload:U,onerror:e,sri:(t=E,"string"==typeof t&&/^sha384-[A-Za-z0-9+/=]+$/.test(t)?E:""),scriptDataAttributes:c})}function D(e){B("script_append_failed",Q(e))}function Q(e){return e instanceof Error?e.message:"Unknown error"}}}();wpmLoader({shopId: 24649171010,storefrontBaseUrl: "https://springandmulberry.com",extensionsBaseUrl: "https://extensions.shopifycdn.com/cdn/shopifycloud/web-pixels-manager",monorailEndpoint: "https://springandmulberry.com/.well-known/shopify/monorail/unstable/produce_batch",surface: "storefront-renderer",enabledBetaFlags: ["7b21cf0b","4c64608a"],webPixelsConfigList: [{"id":"2728755363","configuration":"{\"accountID\":\"496217\"}","eventPayloadVersion":"v1","runtimeContext":"STRICT","scriptVersion":"6beb2e80c5918031073c477e306feacf","type":"APP","apiClientId":219313,"privacyPurposes":["ANALYTICS"],"dataSharingAdjustments":{"protectedCustomerApprovalScopes":["read_customer_email","read_customer_name","read_customer_personal_data","read_customer_phone"],"dataSharingControls":["share_all_events"]},"dataSharingState":"unrestricted"},{"id":"2364244131","configuration":"{\"pixel_id\":\"1726142147828112\",\"pixel_type\":\"facebook_pixel\"}","eventPayloadVersion":"v1","runtimeContext":"OPEN","scriptVersion":"bd2f978c17a94bbb8a74d43de2165dc5","type":"APP","apiClientId":2329312,"privacyPurposes":["ANALYTICS","MARKETING","SALE_OF_DATA"],"dataSharingAdjustments":{"protectedCustomerApprovalScopes":["read_customer_address","read_customer_email","read_customer_name","read_customer_personal_data","read_customer_phone"],"dataSharingControls":["share_all_events"]},"dataSharingState":"optimized","enabledFlags":["9a3ed68a"]},{"id":"2219376803","configuration":"{}","eventPayloadVersion":"v1","runtimeContext":"STRICT","scriptVersion":"9bce1c0cdfc09538057898e4ff134fa2","type":"APP","apiClientId":30400643073,"privacyPurposes":["ANALYTICS"],"dataSharingAdjustments":{"protectedCustomerApprovalScopes":["read_customer_address","read_customer_email","read_customer_name","read_customer_personal_data","read_customer_phone"],"dataSharingControls":["share_all_events"]},"dataSharingState":"unrestricted"},{"id":"2004943011","configuration":"{\"accountID\":\"VDHMWE\",\"webPixelConfig\":\"eyJlbmFibGVBZGRlZFRvQ2FydEV2ZW50cyI6IHRydWV9\"}","eventPayloadVersion":"v1","runtimeContext":"STRICT","scriptVersion":"4c4194a6a2cf840fee9d3ac22e1d2dbd","type":"APP","apiClientId":123074,"privacyPurposes":["ANALYTICS","MARKETING"],"dataSharingAdjustments":{"protectedCustomerApprovalScopes":["read_customer_address","read_customer_email","read_customer_name","read_customer_personal_data","read_customer_phone"],"dataSharingControls":["share_all_events"]},"dataSharingState":"optimized","enabledFlags":["9a3ed68a"]},{"id":"1267892387","configuration":"{\"masterTagID\":\"19038\",\"merchantID\":\"126357\",\"appPath\":\"https:\/\/daedalus.shareasale.com\",\"storeID\":\"NaN\",\"xTypeMode\":\"NaN\",\"xTypeValue\":\"NaN\",\"channelDedup\":\"NaN\"}","eventPayloadVersion":"v1","runtimeContext":"STRICT","scriptVersion":"f300cca684872f2df140f714437af558","type":"APP","apiClientId":4929191,"privacyPurposes":["ANALYTICS","MARKETING"],"dataSharingAdjustments":{"protectedCustomerApprovalScopes":["read_customer_personal_data"],"dataSharingControls":["share_all_events"]},"dataSharingState":"optimized"},{"id":"678199459","configuration":"{\"config\":\"{\\\"google_tag_ids\\\":[\\\"G-LBZNDV9XDZ\\\",\\\"AW-10899832710\\\",\\\"GT-T9W75HF\\\"],\\\"target_country\\\":\\\"US\\\",\\\"gtag_events\\\":[{\\\"type\\\":\\\"search\\\",\\\"action_label\\\":[\\\"G-LBZNDV9XDZ\\\",\\\"AW-10899832710\\\/21sXCM6SobwDEIb_uM0o\\\",\\\"G-G9CG3B9J9Q\\\"]},{\\\"type\\\":\\\"begin_checkout\\\",\\\"action_label\\\":[\\\"G-LBZNDV9XDZ\\\",\\\"AW-10899832710\\\/qWznCMuSobwDEIb_uM0o\\\",\\\"G-G9CG3B9J9Q\\\"]},{\\\"type\\\":\\\"remove_from_cart\\\",\\\"action_label\\\":\\\"G-LBZNDV9XDZ\\\"},{\\\"type\\\":\\\"view_item\\\",\\\"action_label\\\":[\\\"G-LBZNDV9XDZ\\\",\\\"AW-10899832710\\\/il4XCMWSobwDEIb_uM0o\\\",\\\"MC-6Z6G2EW15L\\\",\\\"G-G9CG3B9J9Q\\\"]},{\\\"type\\\":\\\"purchase\\\",\\\"action_label\\\":[\\\"G-LBZNDV9XDZ\\\",\\\"AW-10899832710\\\/aX1fCIaSobwDEIb_uM0o\\\",\\\"MC-6Z6G2EW15L\\\",\\\"G-G9CG3B9J9Q\\\"]},{\\\"type\\\":\\\"add_shipping_info\\\",\\\"action_label\\\":\\\"G-LBZNDV9XDZ\\\"},{\\\"type\\\":\\\"page_view\\\",\\\"action_label\\\":[\\\"G-LBZNDV9XDZ\\\",\\\"AW-10899832710\\\/9faUCIOSobwDEIb_uM0o\\\",\\\"MC-6Z6G2EW15L\\\",\\\"G-G9CG3B9J9Q\\\"]},{\\\"type\\\":\\\"view_item_list\\\",\\\"action_label\\\":\\\"G-LBZNDV9XDZ\\\"},{\\\"type\\\":\\\"add_payment_info\\\",\\\"action_label\\\":[\\\"G-LBZNDV9XDZ\\\",\\\"AW-10899832710\\\/fNXeCNGSobwDEIb_uM0o\\\",\\\"G-G9CG3B9J9Q\\\"]},{\\\"type\\\":\\\"add_to_cart\\\",\\\"action_label\\\":[\\\"G-LBZNDV9XDZ\\\",\\\"AW-10899832710\\\/8LnGCMiSobwDEIb_uM0o\\\",\\\"G-G9CG3B9J9Q\\\"]},{\\\"type\\\":\\\"view_cart\\\",\\\"action_label\\\":\\\"G-LBZNDV9XDZ\\\"}],\\\"enable_monitoring_mode\\\":false}\"}","eventPayloadVersion":"v1","runtimeContext":"OPEN","scriptVersion":"a3321ca85cf5aaf6b57585fcd8d67b3a","type":"APP","apiClientId":1780363,"privacyPurposes":[],"dataSharingAdjustments":{"protectedCustomerApprovalScopes":["read_customer_address","read_customer_email","read_customer_name","read_customer_personal_data","read_customer_phone"],"dataSharingControls":["share_all_events"]},"dataSharingState":"optimized","enabledFlags":["9a3ed68a"]},{"id":"100499619","configuration":"{\"tagID\":\"2613838813748\"}","eventPayloadVersion":"v1","runtimeContext":"STRICT","scriptVersion":"7ae565e198624b39e0856d352b9a6b4c","type":"APP","apiClientId":3009811,"privacyPurposes":["ANALYTICS","MARKETING","SALE_OF_DATA"],"dataSharingAdjustments":{"protectedCustomerApprovalScopes":["read_customer_address","read_customer_email","read_customer_name","read_customer_personal_data","read_customer_phone"],"dataSharingControls":["share_all_events"]},"dataSharingState":"optimized"},{"id":"38699171","configuration":"{\"myshopifyDomain\":\"springandmulberry.myshopify.com\"}","eventPayloadVersion":"v1","runtimeContext":"STRICT","scriptVersion":"23b97d18e2aa74363140dc29c9284e87","type":"APP","apiClientId":2775569,"privacyPurposes":["ANALYTICS","MARKETING","SALE_OF_DATA"],"dataSharingAdjustments":{"protectedCustomerApprovalScopes":["read_customer_address","read_customer_email","read_customer_name","read_customer_phone","read_customer_personal_data"],"dataSharingControls":["share_all_events"]},"dataSharingState":"optimized"},{"id":"30769315","eventPayloadVersion":"1","runtimeContext":"LAX","scriptVersion":"3","type":"CUSTOM","privacyPurposes":["ANALYTICS","MARKETING","SALE_OF_DATA"],"name":"Purchase Pixel"},{"id":"208175267","eventPayloadVersion":"1","runtimeContext":"LAX","scriptVersion":"1","type":"CUSTOM","privacyPurposes":["ANALYTICS","MARKETING","SALE_OF_DATA"],"name":"Enhanced Conversion Google Ads"},{"id":"shopify-app-pixel","configuration":"{}","eventPayloadVersion":"v1","runtimeContext":"STRICT","scriptVersion":"0530","apiClientId":"shopify-pixel","type":"APP","privacyPurposes":["ANALYTICS","MARKETING"]},{"id":"shopify-custom-pixel","eventPayloadVersion":"v1","runtimeContext":"LAX","scriptVersion":"0530","apiClientId":"shopify-pixel","type":"CUSTOM","privacyPurposes":["ANALYTICS","MARKETING"]}],isMerchantRequest: false,initData: {"shop":{"name":"Spring \u0026 Mulberry","paymentSettings":{"currencyCode":"USD"},"myshopifyDomain":"springandmulberry.myshopify.com","countryCode":"US","storefrontUrl":"https:\/\/springandmulberry.com"},"customer":null,"cart":null,"checkout":null,"productVariants":[],"products":[],"purchasingCompany":null},},"https://springandmulberry.com/cdn","fcc46ef0w9d3a45bbp8938e2eamdcca70d4",{"modern":"","legacy":""},{"trekkieShim":true,"agentContext":true,"apiClientId":"580111","facebookCapiEnabled":"true","themeId":"154274267299","themePublished":"true","eventMetadataId":"c223a53d-088b-4048-99d0-87f99a769f01","pageType":"page","resourceId":"87744774307","shopId":"24649171010","storefrontBaseUrl":"https:\/\/springandmulberry.com","extensionBaseUrl":"https:\/\/extensions.shopifycdn.com\/cdn\/shopifycloud\/web-pixels-manager","surface":"storefront-renderer","enabledBetaFlags":"[\"7b21cf0b\", \"4c64608a\"]","isMerchantRequest":"false","hashVersion":"fcc46ef0w9d3a45bbp8938e2eamdcca70d4","publish":"custom","events":"[[\"page_viewed\",{}]]"});})();</script><script>
+  window.ShopifyAnalytics = window.ShopifyAnalytics || {};
+  window.ShopifyAnalytics.meta = window.ShopifyAnalytics.meta || {};
+  window.ShopifyAnalytics.meta.currency = 'USD';
+  var meta = {"page":{"pageType":"page","resourceType":"page","resourceId":87744774307,"requestId":"9c1a6281-788e-4bd6-a2eb-7637dba495dd-1792831344"}};
+  for (var attr in meta) {
+    window.ShopifyAnalytics.meta[attr] = meta[attr];
+  }
+</script>
+<script class="analytics">
+  (function () {
+    var customDocumentWrite = function(content) {
+      var jquery = null;
+
+      if (window.jQuery) {
+        jquery = window.jQuery;
+      } else if (window.Checkout && window.Checkout.$) {
+        jquery = window.Checkout.$;
+      }
+
+      if (jquery) {
+        jquery('body').append(content);
+      }
+    };
+
+    var hasLoggedConversion = function(token) {
+      if (token) {
+        return document.cookie.indexOf('loggedConversion=' + token) !== -1;
+      }
+      return false;
+    }
+
+    var setCookieIfConversion = function(token) {
+      if (token) {
+        var twoMonthsFromNow = new Date(Date.now());
+        twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
+
+        document.cookie = 'loggedConversion=' + token + '; expires=' + twoMonthsFromNow;
+      }
+    }
+
+    var trekkie = window.ShopifyAnalytics.lib = window.trekkie = window.trekkie || [];
+    window.ShopifyAnalytics.lib.trekkie = window.trekkie;
+    if (trekkie.integrations) {
+      return;
+    }
+    trekkie.methods = [
+      'identify',
+      'page',
+      'ready',
+      'track',
+      'trackForm',
+      'trackLink'
+    ];
+    trekkie.factory = function(method) {
+      return function() {
+        var args = Array.prototype.slice.call(arguments);
+        args.unshift(method);
+        trekkie.push(args);
+        if (method == 'track' || method == 'page') {
+          var pageUrl;
+          try {
+            pageUrl = window.location.href;
+          } catch (e) {}
+          var pageReferrer;
+          try {
+            pageReferrer = document.referrer;
+          } catch (e) {}
+          try {
+            if (window.__TREKKIE_SHIM_QUEUE == null) {
+              window.__TREKKIE_SHIM_QUEUE = [];
+            }
+            window.__TREKKIE_SHIM_QUEUE.push({
+              from: 'trekkie-stub',
+              method: method,
+              args: args.slice(1),
+              pageContext: {
+                url: pageUrl,
+                referrer: pageReferrer
+              }
+            });
+          } catch (e) {
+            // no-op
+          }
+        }
+        return trekkie;
+      };
+    };
+    for (var i = 0; i < trekkie.methods.length; i++) {
+      var key = trekkie.methods[i];
+      trekkie[key] = trekkie.factory(key);
+    }
+    trekkie.load = function(config) {
+      trekkie.config = config || {};
+      trekkie.config.initialDocumentCookie = document.cookie;
+      var first = document.getElementsByTagName('script')[0];
+var script = document.createElement('script');
+script.type = 'text/javascript';
+script.onerror = function(e) {
+  var scriptFallback = document.createElement('script');
+  scriptFallback.type = 'text/javascript';
+  scriptFallback.onerror = function(error) {
+          var Monorail = {
+      produce: function produce(monorailDomain, schemaId, payload) {
+        var currentMs = new Date().getTime();
+        var event = {
+          schema_id: schemaId,
+          payload: payload,
+          metadata: {
+            event_created_at_ms: currentMs,
+            event_sent_at_ms: currentMs
+          }
+        };
+        return Monorail.sendRequest("https://" + monorailDomain + "/v1/produce", JSON.stringify(event));
+      },
+      sendRequest: function sendRequest(endpointUrl, payload) {
+        // Try the sendBeacon API
+        if (window && window.navigator && typeof window.navigator.sendBeacon === 'function' && typeof window.Blob === 'function' && !Monorail.isIos12()) {
+          var blobData = new window.Blob([payload], {
+            type: 'text/plain'
+          });
+
+          if (window.navigator.sendBeacon(endpointUrl, blobData)) {
+            return true;
+          } // sendBeacon was not successful
+
+        } // XHR beacon
+
+        var xhr = new XMLHttpRequest();
+
+        try {
+          xhr.open('POST', endpointUrl);
+          xhr.setRequestHeader('Content-Type', 'text/plain');
+          xhr.send(payload);
+        } catch (e) {
+          console.log(e);
+        }
+
+        return false;
+      },
+      isIos12: function isIos12() {
+        return window.navigator.userAgent.lastIndexOf('iPhone; CPU iPhone OS 12_') !== -1 || window.navigator.userAgent.lastIndexOf('iPad; CPU OS 12_') !== -1;
+      }
+    };
+    Monorail.produce('monorail-edge.shopifysvc.com',
+      'trekkie_storefront_load_errors/1.1',
+      {shop_id: 24649171010,
+      theme_id: 154274267299,
+      app_name: "storefront",
+      context_url: window.location.href,
+      source_url: "//springandmulberry.com/cdn/s/trekkie.storefront.6efba1340ec6769622eb0d10b5cb070d43fb8d55.min.js"});
+
+  };
+  scriptFallback.async = true;
+  scriptFallback.src = '//springandmulberry.com/cdn/s/trekkie.storefront.6efba1340ec6769622eb0d10b5cb070d43fb8d55.min.js';
+  first.parentNode.insertBefore(scriptFallback, first);
+};
+script.async = true;
+script.src = '//springandmulberry.com/cdn/s/trekkie.storefront.6efba1340ec6769622eb0d10b5cb070d43fb8d55.min.js';
+first.parentNode.insertBefore(script, first);
+
+    };
+    trekkie.load(
+      {"Trekkie":{"appName":"storefront","development":false,"defaultAttributes":{"shopId":24649171010,"isMerchantRequest":null,"themeId":154274267299,"themeCityHash":"16073852250127182228","contentLanguage":"en","currency":"USD","eventMetadataId":"c223a53d-088b-4048-99d0-87f99a769f01"},"isServerSideCookieWritingEnabled":true,"monorailRegion":"shop_domain","enabledBetaFlags":["7b21cf0b","4c64608a"]},"Session Attribution":{},"S2S":{"facebookCapiEnabled":true,"source":"trekkie-storefront-renderer","apiClientId":580111}}
+    );
+
+    var loaded = false;
+    trekkie.ready(function() {
+      if (loaded) return;
+      loaded = true;
+
+      window.ShopifyAnalytics.lib = window.trekkie;
+
+      var originalDocumentWrite = document.write;
+      document.write = customDocumentWrite;
+      try { window.ShopifyAnalytics.merchantGoogleAnalytics.call(this); } catch(error) {};
+      document.write = originalDocumentWrite;
+
+      var match = window.location.pathname.match(/checkouts\/(.+)\/(thank_you|post_purchase)/)
+      var token = match? match[1]: undefined;
+      if (!hasLoggedConversion(token)) {
+        setCookieIfConversion(token);
+        
+      }
+    });
+
+    window.ShopifyAnalytics.lib.page(null,{"pageType":"page","resourceType":"page","resourceId":87744774307,"requestId":"9c1a6281-788e-4bd6-a2eb-7637dba495dd-1792831344","shopifyEmitted":true});
+
+    var eventsListenerScript = document.createElement('script');
+    eventsListenerScript.async = true;
+    eventsListenerScript.src = "//springandmulberry.com/cdn/shopifycloud/storefront/assets/shop_events_listener-4e26a9ce.js";
+    document.getElementsByTagName('head')[0].appendChild(eventsListenerScript);
+})();</script>
+  <script>
+  if (!window.ga || (window.ga && typeof window.ga !== 'function')) {
+    window.ga = function ga() {
+      (window.ga.q = window.ga.q || []).push(arguments);
+      if (window.Shopify && window.Shopify.analytics && typeof window.Shopify.analytics.publish === 'function') {
+        window.Shopify.analytics.publish("ga_stub_called", {}, {sendTo: "google_osp_migration"});
+      }
+      console.error("Shopify's Google Analytics stub called with:", Array.from(arguments), "\nSee https://help.shopify.com/manual/promoting-marketing/pixels/pixel-migration#google for more information.");
+    };
+    if (window.Shopify && window.Shopify.analytics && typeof window.Shopify.analytics.publish === 'function') {
+      window.Shopify.analytics.publish("ga_stub_initialized", {}, {sendTo: "google_osp_migration"});
+    }
+  }
+</script>
+<script
+  defer
+  src="https://springandmulberry.com/cdn/shopifycloud/perf-kit/shopify-perf-kit-3.11.0.min.js"
+  data-application="storefront-renderer"
+  data-shop-id="24649171010"
+  data-render-region="gcp-us-east1"
+  data-page-type="page"
+  data-theme-instance-id="154274267299"
+  data-theme-name="Spring&Mulberry"
+  data-theme-version="1.3"
+  data-monorail-region="shop_domain"
+  data-resource-timing-sampling-rate="10"
+  data-shs="true"
+  data-shs-beacon="true"
+  data-shs-export-with-fetch="true"
+  data-shs-logs-sample-rate="1"
+  data-shs-beacon-endpoint="https://springandmulberry.com/api/collect"
+></script>
+<meta name="shopify-y" content="83daae04-2d0f-4b62-b558-348e6a1a73e7" data-expiration="1824388945000"><meta name="shopify-s" content="23d910bd-532a-4208-9a7d-689a95c57900" data-expiration="1792833145000">
+</head>
+   <body
+      :class="{'overflow-hidden': mobileNavOpen, 'via-accent' : long, 'via-[#c591ac]' : !long }"
+
+      class="font-base text-primary bg-gradient-to-b from-secondary to-secondary via-accent md:bg-gradient-to-b md:from-secondary md:to-secondary h-full template-page"
+      x-data="{
+         template: 'page',
+         newsletterOpen: false,
+         mobileNavOpen: false,
+         cartOpen: false,
+         cartCount: 0,
+         navStatus: true,
+         long: true
+      }"
+      x-on:updatecartstatus.window="cartOpen = $event.detail.cartOpen"
+      x-on:updatecartcount.window="cartCount = $event.detail.cartTotal"
+      x-on:updatelong.window="long = $event.detail.long"
+      x-on:updatenavstatus.window="navStatus = $event.detail.navStatus">
+
+
+
+     <!-- Google Tag Manager (noscript) -->
+
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVKBRWP"
+
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+<!-- End Google Tag Manager (noscript) -->
+
+      
+      <div
+         class="hidden"
+         tabindex="-1">
+         <a
+            class="c-button -small"
+            href="#main-content"
+            role="button">Skip to main content</a>
+         <button
+            class="c-button -small"
+            onclick="this.blur();"
+            type="button">Close</button>
+      </div><section id="shopify-section-header" class="shopify-section"><header
+  class="fixed top-0 z-50 w-full "
+  id="header"
+  style="transform: translate3d(0,0,0);"
+  role="banner"
+>
+
+   <div
+      id="top-bar"
+      x-show="active"
+      class="relative flex w-full bg-accent text-secondary text-center px-[45px] min-h-[34px] items-center justify-center font-mono uppercase text-sm"
+      x-data="topBar()"
+      aria-label="Announcement bar">
+      <span class="header-announcement__text">A spooky good treat! 20% off pure dark minis now  through halloween</span>
+      <button aria-label="Close banner"
+         class="w-[15px] absolute right-[10px]" @click="close()"><svg
+   aria-hidden="true"
+   class="fill-current"
+   fill="none"
+   viewbox="0 0 19 18"
+   xmlns="http://www.w3.org/2000/svg">
+   <path
+      clip-rule="evenodd"
+      d="M0.999985 17L18 7.7486e-07L18.7071 0.707108L1.70709 17.7071L0.999985 17Z"
+      fill-rule="evenodd"/>
+   <path
+      clip-rule="evenodd"
+      d="M0.999985 17L18 7.7486e-07L18.7071 0.707108L1.70709 17.7071L0.999985 17Z"
+      fill-rule="evenodd"/>
+   <path
+      clip-rule="evenodd"
+      d="M0.999985 17L18 7.7486e-07L18.7071 0.707108L1.70709 17.7071L0.999985 17Z"
+      fill-rule="evenodd"/>
+   <path
+      clip-rule="evenodd"
+      d="M1.00001 1.63432e-06L18 17L17.2929 17.7071L0.292906 0.707108L1.00001 1.63432e-06Z"
+      fill-rule="evenodd"/>
+   <path
+      clip-rule="evenodd"
+      d="M1.00001 1.63432e-06L18 17L17.2929 17.7071L0.292906 0.707108L1.00001 1.63432e-06Z"
+      fill-rule="evenodd"/>
+   <path
+      clip-rule="evenodd"
+      d="M1.00001 1.63432e-06L18 17L17.2929 17.7071L0.292906 0.707108L1.00001 1.63432e-06Z"
+      fill-rule="evenodd"/>
+</svg></button>
+   </div>
+
+<nav
+    class="px-[15px] md:px-sides pb-2.5 pt-10 w-full flex items-end justify-between text--[2.9vw] md:text-base leading-none uppercase font-button text-accent relative tracking-widest font-bold"
+  >
+    <div
+      id="nav-row"
+      class="w-1/2"
+    >
+      <div
+        class="hidden md:flex"
+      >
+        
+<a
+            href="/collections/bars"
+            title="Shop Chocolate"
+            class="inline-block mr-16 last:mr-0  after:h-[1px] after:w-0 after:bg-accent after:absolute relative after:bottom-0 after:left-0 after:transition-all after:duration-700 hover:after:w-full"
+          >Shop Chocolate</a>
+        
+<a
+            href="/collections/gifts"
+            title="Gifts & Merch"
+            class="inline-block mr-16 last:mr-0  after:h-[1px] after:w-0 after:bg-accent after:absolute relative after:bottom-0 after:left-0 after:transition-all after:duration-700 hover:after:w-full"
+          >Gifts & Merch</a>
+        
+<a
+            href="/pages/the-mulberry-club"
+            title="Rewards"
+            class="inline-block mr-16 last:mr-0  after:h-[1px] after:w-0 after:bg-accent after:absolute relative after:bottom-0 after:left-0 after:transition-all after:duration-700 hover:after:w-full"
+          >Rewards</a>
+        
+      </div>
+      <div
+        class=" md:hidden"
+      >
+        <button
+          @click="mobileNavOpen = !mobileNavOpen"
+          class="font-bold tracking-widest uppercase"
+        >
+          <span
+            :class="mobileNavOpen ? 'hidden' : 'block'"
+            >Menu</span
+          >
+          <span
+            :class="mobileNavOpen ? 'block' : 'hidden'"
+            class=" w-[3.8vw]"
+            x-cloak
+          ><svg
+   class="fill-current"
+   fill="none"
+   viewbox="0 0 31 30"
+   xmlns="http://www.w3.org/2000/svg">
+   <path
+      clip-rule="evenodd"
+      d="M1 29L30 -1.78814e-07L30.7071 0.707107L1.70711 29.7071L1 29Z"
+      fill-rule="evenodd"/>
+   <path
+      clip-rule="evenodd"
+      d="M1 29L30 -1.78814e-07L30.7071 0.707107L1.70711 29.7071L1 29Z"
+      fill-rule="evenodd"/>
+   <path
+      clip-rule="evenodd"
+      d="M1 29L30 -1.78814e-07L30.7071 0.707107L1.70711 29.7071L1 29Z"
+      fill-rule="evenodd"/>
+   <path
+      clip-rule="evenodd"
+      d="M0.999999 2.04506e-06L30 29L29.2929 29.7071L0.292893 0.707109L0.999999 2.04506e-06Z"
+      fill-rule="evenodd"/>
+   <path
+      clip-rule="evenodd"
+      d="M0.999999 2.04506e-06L30 29L29.2929 29.7071L0.292893 0.707109L0.999999 2.04506e-06Z"
+      fill-rule="evenodd"/>
+   <path
+      clip-rule="evenodd"
+      d="M0.999999 2.04506e-06L30 29L29.2929 29.7071L0.292893 0.707109L0.999999 2.04506e-06Z"
+      fill-rule="evenodd"/>
+</svg>
+</span>
+        </button>
+      </div>
+    </div>
+
+   <div id="logo" class="absolute w-[146px] text-accent z-50 left-1/2">
+      <a href="/" title="Spring &amp; Mulberry" aria-label="Spring &amp; Mulberry Logo" class="block w-full"><svg
+   aria-hidden="true"
+   class="fill-current"
+   fill="none"
+   viewbox="0 0 146 45"
+   xmlns="http://www.w3.org/2000/svg">
+   <path
+      d="M14.3959 4.13149C14.3959 5.47876 13.5392 6.45753 12.0385 6.76364L11.9468 6.73245C11.0569 2.72378 9.28112 0.797437 6.95303 0.797437C5.02304 0.797437 3.70581 1.92829 3.70581 3.64211C3.70581 9.51862 15.1316 8.11091 15.1316 15.2723C15.1316 19.0353 11.7614 21.8507 7.62628 21.8507C2.94279 21.8507 0 19.9224 0 17.1986C0 15.7305 1.10257 14.5977 2.97206 14.3228L3.06378 14.354C3.9517 18.7916 5.69825 20.9636 8.42443 20.9636C10.4461 20.9636 11.7009 19.6787 11.7009 17.8109C11.7009 11.599 0.368825 13.2212 0.368825 5.96815C0.368825 2.48006 3.33894 -5.93688e-06 7.87217 -5.93688e-06C11.9156 -5.93688e-06 14.3959 1.80545 14.3959 4.13149ZM23.4175 0.337298C29.7577 0.337298 32.6049 2.23439 32.6049 6.12218C32.6049 10.589 28.5322 12.7318 23.8448 12.7318C23.0982 12.7374 22.3519 12.6964 21.6104 12.609C21.6397 15.5765 21.7626 18.5459 21.9168 21.5154H16.9855C17.3757 14.4456 17.4441 7.37586 16.8937 0.337298H23.4175ZM21.8856 0.978764C21.6709 4.31672 21.5792 7.65272 21.6104 10.9868C22.5397 11.679 23.6672 12.0543 24.8264 12.0572C27.0315 12.0572 28.1653 10.3141 28.1653 7.71317C28.1653 3.42374 26.0187 1.07235 22.1002 0.978764H21.8856ZM38.9003 11.4469C38.9003 14.8122 39.0232 18.1482 39.2067 21.5154H34.2753C34.6656 14.4456 34.7339 7.37586 34.1836 0.337298H41.2889C47.2623 0.337298 49.8343 2.14276 49.8343 5.29549C49.8343 7.68197 47.6877 9.45623 44.8737 10.437L43.3418 10.9868C47.2018 11.3767 48.6107 12.9755 49.284 15.945C49.9885 19.1269 50.4178 20.5054 50.8159 21.5154H45.7304L44.8425 16.487C44.1068 12.3925 43.3106 11.4391 40.1258 11.4391L38.9003 11.4469ZM39.1462 1.07235C38.992 4.07105 38.9003 7.06975 38.9003 10.0996C39.6653 10.6202 40.3697 10.8347 41.4372 10.8347C43.6423 10.8347 45.2347 9.08968 45.2347 6.45753C45.2347 3.12153 43.2833 1.22443 39.7511 1.1016L39.1462 1.07235ZM52.8668 21.5154C53.2571 14.4456 53.3254 7.37586 52.7751 0.337298H57.7982C57.3688 7.39014 57.3688 14.4625 57.7982 21.5154H52.8668ZM60.8678 0.337298H66.4119C69.5772 5.94692 73.0435 11.3816 76.7956 16.6176C76.6726 11.1096 75.4783 5.63279 73.6733 0.337298H77.9294C77.501 7.39017 77.501 14.4625 77.9294 21.5154H73.8996C70.2543 15.2099 66.2733 9.12088 62.0777 3.15272C62.1987 9.02924 63.4242 16.1282 65.4147 21.5154H60.8522C61.3723 14.4656 61.3723 7.3871 60.8522 0.337298H60.8678ZM79.5588 11.3241C79.5588 4.68327 83.9691 -5.93688e-06 90.7387 -5.93688e-06C95.272 -5.93688e-06 98.4567 2.05112 98.4567 5.20385C98.4567 6.85528 97.2624 7.836 95.7618 8.20255L95.6388 8.14016C94.4133 3.00064 92.4228 0.826682 89.6654 0.826682C86.5431 0.826682 84.3965 3.76494 84.3965 9.39579C84.3965 16.6098 87.8564 20.9948 92.2374 20.9948C92.7961 20.9964 93.3525 20.9243 93.8923 20.7803C94.0347 17.6985 93.963 14.6105 93.6776 11.5386H98.6694C98.4236 14.3486 98.4236 17.1748 98.6694 19.9848C96.1891 21.1547 93.5859 21.8507 90.8636 21.8507C84.0765 21.8507 79.5432 17.5964 79.5432 11.3241H79.5588ZM140.228 21.5154C139.125 19.8932 138.022 18.3626 136.949 16.8925L136.522 17.7192C135.082 20.5347 133.458 21.8507 131.101 21.8507C128.006 21.8507 126.107 19.6475 126.107 17.1382C126.107 14.8122 127.149 13.4045 129.354 11.7823L131.36 10.2478L131.329 10.2186C129.828 8.65879 128.94 7.03466 128.94 5.38323C128.94 1.95558 131.696 -0.00390625 135.38 -0.00390625C138.871 -0.00390625 140.464 1.64947 140.464 3.7006C140.464 5.41442 139.453 6.70125 137.585 8.01732L135.747 9.3022C136.85 10.7411 137.894 12.1176 138.934 13.3967L139.79 11.56C140.649 9.7253 141.72 8.44042 143.436 8.44042C144.693 8.44042 145.672 9.26711 145.672 10.5227C145.651 11.3286 145.322 12.0957 144.753 12.6675L144.661 12.6967C144.076 11.9616 143.528 11.6263 142.394 11.6263C141.26 11.6263 140.189 12.3302 139.24 13.771C141.445 16.526 143.619 19.0041 146.008 21.5154H140.228ZM136.627 16.487C135.091 14.4364 133.448 12.4677 131.706 10.589C130.328 11.6906 129.471 13.0691 129.471 14.7517C129.471 16.8633 130.849 18.6688 132.962 18.6688C134.697 18.6688 135.71 17.9337 136.627 16.487ZM135.495 8.95905C136.666 7.94908 137.24 6.44973 137.271 4.82755C137.302 2.40987 136.077 0.69605 134.301 0.69605C133.044 0.69605 132.248 1.61438 132.248 3.02209C132.248 4.0925 132.586 4.98158 133.809 6.6954C134.393 7.49869 134.943 8.23374 135.495 8.96685V8.95905ZM6.7091 23.4866C8.2022 27.9997 10.0454 32.3895 12.222 36.6161C13.9869 32.3503 15.44 27.9623 16.5698 23.4866H22.0827C22.2056 30.5563 22.6037 37.6261 23.3687 44.6646H18.3788C18.3526 38.6316 18.0047 32.6042 17.3367 26.6081C14.9774 31.7184 12.7723 36.8598 10.8969 42.1846H9.22062C7.35113 36.7994 5.17721 31.5663 2.78082 26.3917C2.38077 35.4209 2.53494 38.2656 4.80058 44.6627H0.763019C1.52799 37.6241 1.93389 30.5544 2.04903 23.4846L6.7091 23.4866ZM33.3269 45C28.2727 45 24.9962 42.399 24.9962 36.5537C24.9962 32.1785 25.3631 27.8637 24.9962 23.4905H30.0192C29.867 27.8052 29.7441 32.0693 29.7441 36.3743C29.7441 41.0537 31.3365 43.6878 35.1047 43.6878C38.6271 43.6878 40.28 41.0869 40.28 36.8949C40.28 33.2528 39.1091 28.5695 36.5722 23.4905H41.1972C40.8303 27.8676 41.1972 32.1824 41.1972 36.5537C41.1991 42.3698 38.4124 45 33.3269 45ZM48.3531 23.4866C47.8945 30.3107 47.9628 37.1971 48.3219 44.0524C52.0902 44.0212 54.0807 42.7968 56.8381 39.6148H56.8986V44.6646H43.4179C43.8082 37.5949 43.8765 30.5251 43.3262 23.4866H48.3531ZM64.9249 23.4866C69.8562 23.4866 74.2919 24.557 74.2919 28.0158C74.2919 30.6168 71.755 31.9328 68.8707 32.7283L67.5535 33.0968C72.0243 33.4634 75.0568 35.0232 75.0568 38.2987C75.0568 42.7363 70.6465 44.6646 65.1044 44.6646H58.2743C58.6646 37.5949 58.7329 30.5251 58.1826 23.4866H64.9249ZM62.8681 33.6447C62.8681 36.735 62.9598 39.8273 63.1139 42.9177C64.0897 43.5299 65.2274 43.8925 66.7573 43.8925C68.779 43.8925 70.3733 42.5765 70.3733 39.7006C70.3733 35.9357 68.137 33.7929 64.1541 33.672L62.8681 33.6447ZM63.1744 24.1573C62.991 27.0663 62.8993 29.974 62.8993 32.8804H65.0459C67.495 32.8804 69.4562 31.6852 69.4562 28.9322C69.4562 26.1792 67.4657 24.3113 64.1872 24.1885L63.1744 24.1573ZM76.4443 23.4846H90.7777V27.3412C87.6554 25.2296 85.1732 24.2801 81.4361 24.1573C81.2527 27.2184 81.161 30.2775 81.1298 33.3386C84.5311 33.3074 86.3675 33.1865 89.5835 32.0537V35.4209C86.3675 34.2511 84.5311 34.1048 81.161 34.0737C81.161 37.3882 81.2527 40.7145 81.4361 44.0173C85.6025 43.9861 88.0535 42.8845 91.1154 40.0379V44.6607H76.5399C76.938 37.5949 76.9985 30.5251 76.4482 23.4866L76.4443 23.4846ZM98.2128 34.5981C98.2128 37.9634 98.3357 41.2994 98.5192 44.6666H93.5917C93.982 37.5968 94.0503 30.5271 93.5 23.4885H100.605C106.579 23.4885 109.151 25.294 109.151 28.4467C109.151 30.8332 107.004 32.6074 104.19 33.5882L102.658 34.138C106.516 34.5279 107.927 36.1267 108.6 39.0962C109.305 42.2782 109.732 43.6566 110.132 44.6666H105.047L104.159 39.646C103.423 35.5516 102.627 34.5981 99.4422 34.5981H98.2128ZM98.4567 24.2236C98.3045 27.2223 98.2128 30.221 98.2128 33.2509C98.9778 33.7714 99.6822 33.9859 100.75 33.9859C102.955 33.9859 104.547 32.2409 104.547 29.6087C104.547 26.2727 102.596 24.3756 99.0636 24.2528L98.4567 24.2236ZM116.318 34.5981C116.318 37.9634 116.441 41.2994 116.625 44.6666H111.697C112.088 37.5968 112.156 30.5271 111.606 23.4885H118.711C124.684 23.4885 127.256 25.294 127.256 28.4467C127.256 30.8332 125.11 32.6074 122.294 33.5882L120.762 34.138C124.622 34.5279 126.031 36.1267 126.704 39.0962C127.41 42.2782 127.838 43.6566 128.236 44.6666H123.152L122.264 39.646C121.529 35.5516 120.733 34.5981 117.548 34.5981H116.318ZM116.562 24.2236C116.41 27.2223 116.318 30.221 116.318 33.2509C117.083 33.7714 117.788 33.9859 118.855 33.9859C121.062 33.9859 122.655 32.2409 122.655 29.6087C122.655 26.2727 120.703 24.3756 117.171 24.2528L116.562 24.2236ZM132.703 23.4885C134.485 27.382 136.522 31.1544 138.799 34.7814C141.096 30.3438 143.528 26.805 140.208 23.4885H145.996C143.547 27.4679 141.248 31.537 139.197 35.729C139.039 38.7064 139.049 41.6904 139.228 44.6666H134.33C134.474 41.893 134.464 39.1136 134.299 36.3412C132.181 31.9275 129.816 27.6359 127.217 23.4866L132.703 23.4885Z"/>
+
+</svg></a>
+   </div>
+<div
+      class="flex justify-end items-center w-1/2 text-right "
+    >
+      
+        <a
+          href="/pages/about"
+          title="About"
+          class="hidden md:inline-block mr-12 last:mr-0  after:h-[1px] after:w-0 after:bg-accent after:absolute relative after:bottom-0 after:left-0 after:transition-all after:duration-700 hover:after:w-full"
+        >About</a>
+      
+        <a
+          href="/blogs/recipes"
+          title="Recipes"
+          class="hidden md:inline-block mr-12 last:mr-0  after:h-[1px] after:w-0 after:bg-accent after:absolute relative after:bottom-0 after:left-0 after:transition-all after:duration-700 hover:after:w-full"
+        >Recipes</a>
+      
+
+      <a
+        @click.prevent="cartOpen = true"
+        class="block after:h-[1px] after:w-0 after:bg-accent after:absolute relative after:bottom-0 after:left-0   after:duration-700 after:transition-all hover:after:w-full "
+        data-cart-opener
+        href="/cart"
+        title="Cart"
+      >
+        Cart
+
+        (<span
+          class="font-bold text-red"
+          id="cart-count"
+          x-text="cartCount"
+        >0</span>)
+      </a>
+
+      <a
+        class="hidden md:block ml-12"
+        href="https://springandmulberry.com/customer_authentication/redirect?locale=en&region_country=US"
+        aria-label="Log in"
+      >
+        <div aria-hidden="true"><img src="//springandmulberry.com/cdn/shop/files/admin-portal-icon.png?v=1755711208&amp;width=18" alt="" srcset="//springandmulberry.com/cdn/shop/files/admin-portal-icon.png?v=1755711208&amp;width=18 18w" width="18" height="18"></div>
+      </a>
+    </div>
+  </nav>
+</header>
+<script>
+  (function () {
+    if (window.springMulberryHeaderLayout) {
+      window.springMulberryHeaderLayout.refresh();
+      return;
+    }
+
+    var header = null;
+    var observer = null;
+
+    function updateOffsets() {
+      if (!header || !header.isConnected || !document.body) return;
+      var bar = header.querySelector('#top-bar');
+      var values = {
+        '--header-height': header.offsetHeight + 'px',
+        '--topbar-height': (bar ? bar.offsetHeight : 0) + 'px'
+      };
+      Object.keys(values).forEach(function (name) {
+        if (document.body.style.getPropertyValue(name) !== values[name]) {
+          document.body.style.setProperty(name, values[name]);
+        }
+      });
+    }
+
+    function bindHeader() {
+      var nextHeader = document.getElementById('header');
+      if (nextHeader === header) {
+        updateOffsets();
+        return;
+      }
+      if (observer) observer.disconnect();
+      observer = null;
+      header = nextHeader;
+      updateOffsets();
+      if (header && typeof ResizeObserver === 'function') {
+        observer = new ResizeObserver(updateOffsets);
+        observer.observe(header);
+      }
+    }
+
+    window.springMulberryHeaderLayout = { refresh: bindHeader };
+    window.addEventListener('resize', updateOffsets);
+    document.addEventListener('shopify:section:load', bindHeader);
+    document.addEventListener('shopify:section:unload', function (event) {
+      if (header && event.target.contains(header)) {
+        if (observer) observer.disconnect();
+        observer = null;
+        header = null;
+      }
+    });
+    bindHeader();
+  })();
+</script>
+<nav
+  :class="mobileNavOpen ? 'flex' : 'hidden'"
+  class=" fixed z-[100] w-full h-[calc(var(--window-height)-var(--header-height))] top-[var(--header-height)] bg-primary text-accent pt-12  items-center flex-col"
+  id="mobile-nav"
+  x-cloak
+>
+  <ul
+    class="flex flex-col items-center"
+  >
+    
+<li
+        class="mb-8"
+      >
+        <a
+          href="/collections/bars"
+          title="Chocolate"
+          class="text-2xl font-bold uppercase font-button"
+        >Chocolate</a>
+      </li>
+      
+    
+<li
+        class="mb-8"
+      >
+        <a
+          href="/collections/gifts"
+          title="Gifts & Merch"
+          class="text-2xl font-bold uppercase font-button"
+        >Gifts & Merch</a>
+      </li>
+      
+        <li class="mb-8">
+          <a href="/pages/the-mulberry-club" title="Rewards" class="text-2xl font-bold uppercase font-button">Rewards</a>
+        </li>
+        
+      
+    
+<li
+        class="mb-8"
+      >
+        <a
+          href="/a/subscriptions/login"
+          title="Subscriptions"
+          class="text-2xl font-bold uppercase font-button"
+        >Subscriptions</a>
+      </li>
+      
+    
+<li
+        class="mb-8"
+      >
+        <a
+          href="/pages/corporate-gifting"
+          title="Corporate Gifting"
+          class="text-2xl font-bold uppercase font-button"
+        >Corporate Gifting</a>
+      </li>
+      
+    
+<li
+        class="mb-8"
+      >
+        <a
+          href="/pages/about"
+          title="About"
+          class="text-2xl font-bold uppercase font-button"
+        >About</a>
+      </li>
+      
+    
+<li
+        class="mb-8"
+      >
+        <a
+          href="/blogs/recipes"
+          title="Recipes"
+          class="text-2xl font-bold uppercase font-button"
+        >Recipes</a>
+      </li>
+      
+    
+<li
+        class="mb-8"
+      >
+        <a
+          href="/pages/store-locator"
+          title="Find Us in Store"
+          class="text-2xl font-bold uppercase font-button"
+        >Find Us in Store</a>
+      </li>
+      
+    
+    
+    <li class="mobile-account-item">
+      <a
+        class="mobile-account-link font-button font-bold uppercase"
+        href="https://springandmulberry.com/customer_authentication/redirect?locale=en&region_country=US"
+      >
+        Login
+      </a>
+    </li>
+  </ul>
+
+  <div
+    class="bottom-10 w-[10vw] absolute"
+  ><svg class="fill-current" aria-hidden="true" viewBox="0 0 46 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+   <path fill-rule="evenodd" clip-rule="evenodd" d="M45.073 31.6993C44.9513 32.3282 44.7556 32.9403 44.4901 33.5227C44.8752 33.5958 45.2727 33.5643 45.6416 33.4316C45.4992 33.6959 45.2779 33.9089 45.0088 34.0406C44.7397 34.1722 44.4364 34.216 44.1413 34.1657C43.8298 34.6771 43.4432 35.1381 42.9945 35.5333C43.3954 35.7045 43.8432 35.7299 44.2607 35.6053C44.017 35.8828 43.6938 36.0779 43.3354 36.1638C42.977 36.2497 42.6009 36.2222 42.2586 36.0852C41.7322 36.4149 41.1693 36.6822 40.5815 36.8817C41.1644 37.1265 41.7378 37.6255 42.2395 37.5823C41.8397 37.8104 41.3731 37.8911 40.9203 37.8105C40.4676 37.7299 40.057 37.4931 39.7596 37.1409C39.108 37.3192 38.4456 37.4554 37.7767 37.5487C38.4026 37.8606 38.8518 38.4461 39.2914 38.5996C38.3023 38.9787 37.1077 38.3837 36.9023 37.6399C36.2906 37.7071 35.6743 37.7599 35.0483 37.8079C35.6504 38.2877 36.2094 39.1898 36.6729 39.3194C35.4592 39.6361 34.15 38.6284 34.0688 37.8798H33.7869C33.2517 37.9134 32.7165 37.947 32.1909 37.9902C32.7595 38.4701 33.1466 39.4778 33.7343 39.8329C32.4251 40.0584 31.0728 39.1131 31.1158 38.0862C30.423 38.1534 29.754 38.2493 29.1137 38.3693C29.9786 38.8923 30.6523 40.2455 31.2353 40.5286C29.7636 41.1285 27.9861 39.852 27.7328 38.7148C27.1652 38.8881 26.6187 39.1247 26.1035 39.4202C27.4796 40.0776 28.0864 41.997 28.8318 42.0882C27.1833 42.3713 25.4871 41.3732 25.1717 40.1112C24.654 40.5812 24.2377 41.1528 23.9485 41.7907L24.0202 48H21.9798L22.0515 41.7907C21.7641 41.153 21.3494 40.5814 20.8331 40.1112C20.5464 41.426 18.8262 42.4241 17.2016 42.1602C17.9422 42.069 18.5491 40.1496 19.9252 39.4922C19.41 39.1967 18.8635 38.9601 18.2958 38.7868C18.0474 39.924 16.2699 41.186 14.7934 40.6006C15.3811 40.3175 16.0501 38.9643 16.9197 38.4413C16.2794 38.3213 15.6105 38.2253 14.9176 38.1582C14.9559 39.185 13.6084 40.1304 12.2944 39.9048C12.8678 39.5497 13.2739 38.5516 13.8425 38.0622C13.3121 38.019 12.7818 37.9854 12.2418 37.9518H11.9647C11.8834 38.7052 10.5742 39.7129 9.35577 39.3914C9.83359 39.2618 10.3783 38.3357 10.9804 37.8798C10.3592 37.8319 9.73803 37.7791 9.13119 37.7119C8.92095 38.4317 7.72639 39.0267 6.74208 38.6716C7.1769 38.518 7.63083 37.9326 8.252 37.6207C7.58318 37.5265 6.9209 37.3902 6.26903 37.2128C5.97164 37.5651 5.56111 37.8019 5.10833 37.8825C4.65555 37.9631 4.18896 37.8824 3.78913 37.6543C4.29084 37.6975 4.86423 37.1744 5.44718 36.9537C4.85977 36.7466 4.2985 36.4712 3.7748 36.1332C3.43264 36.2709 3.05637 36.2987 2.69781 36.2128C2.33926 36.1269 2.01605 35.9314 1.77273 35.6533C2.18868 35.778 2.63496 35.7525 3.03418 35.5813C2.58695 35.186 2.20192 34.7249 1.89218 34.2137C1.59679 34.2685 1.29169 34.2268 1.02166 34.0947C0.751625 33.9625 0.530883 33.7469 0.391818 33.4796C0.75914 33.6121 1.15508 33.6436 1.53859 33.5707C1.26711 32.9739 1.07127 32.3451 0.955646 31.6993C0.53994 31.4114 0.305807 30.9699 0 30.7396C0.223944 30.6849 0.458588 30.6937 0.677888 30.7648C0.897188 30.836 1.09257 30.9668 1.24234 31.1427C1.44303 30.7636 1.98775 30.4757 2.09287 30.0966C2.37478 30.4133 2.22188 31.0563 1.89696 31.4258C1.98353 31.8604 2.10989 32.2861 2.27443 32.6974C2.45263 32.3969 2.59078 32.0743 2.68536 31.7377C2.8335 32.0016 2.90692 32.3012 2.89765 32.604C2.88839 32.9068 2.79679 33.2013 2.6328 33.4556C2.9423 34.0031 3.34686 34.4907 3.82736 34.8951C3.82736 34.3145 3.99938 33.6427 3.87037 33.2636C4.15861 33.5129 4.36623 33.8428 4.46668 34.2113C4.56712 34.5797 4.55581 34.9699 4.4342 35.3318C4.88637 35.6098 5.36695 35.8382 5.86766 36.0132C5.70234 35.4706 5.70234 34.8907 5.86766 34.3481C6.12231 34.5977 6.32423 34.8964 6.46133 35.2262C6.59844 35.556 6.66792 35.9101 6.66563 36.2675C7.24958 36.4186 7.84139 36.5371 8.43835 36.6226C8.28323 36.0982 8.04788 35.6012 7.74073 35.1495C8.15914 35.1871 8.55271 35.3653 8.85788 35.6552C9.16306 35.9452 9.36203 36.3299 9.42267 36.7474C9.9865 36.8098 10.5694 36.8577 11.1572 36.9009C10.9947 36.2915 10.923 35.5333 10.5981 35.0487C11.2002 35.0487 11.9217 36.114 12.0841 36.9681H12.3039C12.7818 37.0017 13.2596 37.0305 13.7374 37.0689C13.4316 36.3587 13.5128 35.3366 13.1115 34.7512C13.6302 34.9015 14.0865 35.2165 14.4121 35.649C14.7377 36.0815 14.915 36.6083 14.9176 37.1505C15.5006 37.208 16.074 37.28 16.633 37.376C16.2316 36.4163 16.3177 35.255 15.988 34.8232C16.5798 34.9816 17.0926 35.3535 17.4285 35.8679C17.7644 36.3822 17.8997 37.0029 17.8085 37.6111C18.3347 37.7357 18.852 37.896 19.3566 38.091C19.1177 37.1313 19.1511 35.8021 18.5634 35.0535C20.3457 35.5813 21.4304 37.5871 20.8235 38.8923C21.2961 39.2107 21.7195 39.5971 22.0802 40.0392L22.1758 31.7425C21.7914 31.3287 21.324 31.0016 20.8044 30.7828C20.3552 32.0256 18.8214 32.7742 17.2781 32.3087C17.9853 31.7425 18.5586 30.7492 19.5095 30.2885C18.8788 30.0918 18.1812 29.9142 17.4453 29.7463C17.1347 31.2386 15.2903 31.6033 13.8569 30.8403C14.7838 30.7348 15.5818 29.8327 16.4371 29.5063H16.3702C15.6009 29.3336 14.8029 29.1561 14.005 28.9497C13.7627 29.4152 13.363 29.7787 12.8778 29.9748C12.3926 30.1709 11.8537 30.1869 11.3578 30.0198C11.7879 29.6743 12.3135 29.0361 12.8295 28.6234C12.3087 28.4699 11.7927 28.2923 11.2862 28.1004C10.5217 29.0121 9.08341 29.0601 8.01309 28.1723C8.5387 28.0236 9.16942 27.6397 9.80014 27.4238C9.26863 27.1483 8.76184 26.8272 8.28545 26.4641C7.71684 26.9967 6.53183 26.9439 5.81988 26.2193C6.2977 26.1378 6.90931 25.8163 7.47792 25.7395C7.02792 25.2735 6.64222 24.749 6.33115 24.1799C5.89031 24.1654 5.4633 24.0218 5.10255 23.7669C4.7418 23.5121 4.46301 23.1569 4.30041 22.7452C4.69222 22.8651 5.25605 22.8747 5.78166 22.9707C5.53141 22.2578 5.37089 21.5163 5.30384 20.7634C4.66355 20.4515 3.95637 19.6549 4.23351 18.8439C4.51547 19.2121 4.86003 19.5272 5.25128 19.7749C5.25164 19.0493 5.30112 18.3247 5.3994 17.6059C5.06492 16.9437 5.28472 16.3727 5.17482 15.8113C5.40606 15.9054 5.60529 16.0646 5.74855 16.2698C5.89181 16.4749 5.973 16.7173 5.98234 16.9677C6.24992 16.6558 6.75164 16.4879 6.89976 16.1136C6.94633 16.3704 6.92246 16.6352 6.83072 16.8794C6.73897 17.1237 6.58281 17.3384 6.37894 17.5004C6.27048 18.2086 6.21457 18.9239 6.2117 19.6405C6.55095 19.3334 6.96188 19.0743 7.22468 18.8008C7.2863 19.201 7.22841 19.6107 7.05832 19.9779C6.88823 20.3452 6.61356 20.6536 6.26903 20.8641C6.34343 21.5441 6.50401 22.2117 6.74686 22.8507C6.91409 22.3085 7.27724 21.8478 7.37758 21.3584C7.62111 21.7167 7.73242 22.1491 7.69229 22.581C7.65216 23.0129 7.46311 23.4172 7.15778 23.7241C7.44036 24.2238 7.78563 24.685 8.18511 25.0965C8.22333 24.511 8.46224 23.8297 8.49569 23.3642C8.8245 23.6647 9.04844 24.0634 9.13447 24.5014C9.2205 24.9395 9.16407 25.3937 8.97351 25.7971C9.53037 26.2166 10.1312 26.5739 10.7653 26.8623C10.3544 26.0706 10.5408 24.8613 10.3879 24.084C10.6814 24.2047 10.948 24.3828 11.1723 24.6081C11.3965 24.8333 11.5738 25.1011 11.6939 25.3959C11.814 25.6907 11.8745 26.0066 11.8717 26.3251C11.869 26.6436 11.8031 26.9584 11.678 27.251C12.3891 27.5164 13.1131 27.7454 13.8473 27.9372C13.5558 27.1982 13.6848 26.0802 13.5272 25.418C14.7647 25.8978 15.3763 27.251 15.0084 28.2299C15.5101 28.3499 16.0071 28.4603 16.4992 28.5706L16.7047 28.6186C16.3224 27.8316 16.4658 26.9391 16.8289 25.9794C17.4166 26.7568 18.1764 27.5437 17.8992 28.8921C18.444 29.0217 18.9648 29.1513 19.4569 29.3C19.0795 28.3403 19.3614 27.0399 19.1894 26.1761C20.7662 26.8575 21.3491 28.2539 20.7996 29.7655C21.27 29.9552 21.7173 30.1983 22.1328 30.4901L22.1996 24.7798C21.7715 23.8191 21.1668 22.9482 20.4174 22.2125C19.3184 23.1099 17.6556 22.8939 16.6378 21.5887C17.4023 21.5455 18.2863 21.0801 19.1655 21.1089C18.659 20.6962 18.1238 20.2979 17.5791 19.8948C16.7429 20.6914 14.9654 20.629 13.9668 19.4726C14.6739 19.3958 15.5961 19.0599 16.4371 19.0455C15.9115 18.6424 15.4002 18.2249 14.9176 17.7835C14.6542 17.9144 14.3673 17.991 14.0739 18.0087C13.7805 18.0263 13.4866 17.9847 13.2095 17.8863C12.9324 17.7879 12.6777 17.6346 12.4606 17.4356C12.2436 17.2366 12.0684 16.9959 11.9456 16.7278C12.5524 16.819 13.3217 16.627 14.0098 16.771C13.5832 16.2841 13.2114 15.7514 12.9012 15.1826C12.5149 15.1885 12.1368 15.0707 11.8215 14.8464C11.5063 14.6221 11.2703 14.3029 11.1476 13.935C11.5512 14.1312 12.0016 14.2093 12.4473 14.1606C12.2463 13.5941 12.11 13.0065 12.0411 12.4091C11.7754 12.3492 11.5412 12.1923 11.384 11.9689C11.2269 11.7455 11.1579 11.4714 11.1906 11.1998C11.4104 11.339 11.7067 11.4494 11.979 11.5981C11.9631 11.0372 11.9887 10.4758 12.0555 9.91862C11.8473 9.72648 11.704 9.47381 11.6458 9.19593C11.5875 8.91805 11.6172 8.62883 11.7306 8.36869C11.8309 8.84855 12.3422 9.11247 12.5954 9.51555C12.805 9.1983 13.0331 8.89385 13.2787 8.60382C13.3857 8.83488 13.417 9.09408 13.3681 9.34413C13.3191 9.59419 13.1925 9.82221 13.0063 9.9954C12.9551 10.4221 12.9311 10.8516 12.9347 11.2814C13.1497 11.0991 13.3743 10.9359 13.5415 10.768C13.5854 11.0362 13.5566 11.3114 13.4583 11.5646C13.3599 11.8179 13.1956 12.0399 12.9824 12.2075C13.0387 12.7288 13.1525 13.2422 13.3217 13.7383C13.4181 13.3419 13.5575 12.9573 13.7374 12.5914C13.9826 12.8778 14.1175 13.243 14.1175 13.6207C14.1175 13.9984 13.9826 14.3636 13.7374 14.65C13.9913 15.1352 14.2956 15.592 14.6453 16.0128C14.6883 15.3074 14.9176 14.5252 14.975 13.9494C15.3975 14.2988 15.681 14.7889 15.7739 15.3305C15.8669 15.8721 15.7631 16.4293 15.4815 16.9005C15.9717 17.3603 16.4852 17.7944 17.02 18.2009C16.9118 17.808 16.9049 17.3939 17.0002 16.9976C17.0956 16.6013 17.2898 16.236 17.5648 15.936C17.8511 16.3817 18.0416 16.8825 18.1239 17.4064C18.2062 17.9304 18.1785 18.4658 18.0426 18.9783L18.0904 19.0119C18.5969 19.3862 19.1081 19.7605 19.6051 20.154C19.4856 19.295 19.7914 18.3161 19.7197 17.5723C20.0361 17.7346 20.3169 17.9589 20.5456 18.2318C20.7743 18.5048 20.9462 18.821 21.0513 19.1618C21.1564 19.5026 21.1925 19.861 21.1575 20.216C21.1225 20.571 21.017 20.9154 20.8474 21.2288C21.3796 21.7255 21.8599 22.2753 22.2809 22.8699L22.3669 15.8065C21.6948 15.597 21.1132 15.1652 20.7167 14.5814C20.3202 13.9976 20.1322 13.2962 20.1832 12.5914C20.6611 13.268 21.6979 13.5895 22.3812 14.2517L22.4099 12.1452C21.8792 11.8101 21.4596 11.3242 21.2044 10.7492C20.9492 10.1743 20.8698 9.53608 20.9764 8.91573C21.3109 9.42917 21.9321 9.76507 22.4099 10.3169L22.4386 7.94641C21.9549 7.77153 21.5533 7.42206 21.3122 6.9661C21.071 6.51014 21.0075 5.98035 21.1341 5.47996C21.33 5.88783 21.9942 6.20934 22.4529 6.64121L22.4768 4.61622C21.7792 4.25153 21.1532 3.6565 21.287 2.69679C21.459 3.06148 22.0276 3.17665 22.4863 3.56533L22.5102 1.83305C22.2958 1.56891 22.1889 1.23301 22.2111 0.892935C22.2332 0.552856 22.3828 0.233821 22.6297 0C22.8213 0.4323 22.981 0.878169 23.1075 1.334C23.3799 0.959711 23.872 0.767772 24.1539 0.489455C24.1954 0.768852 24.154 1.05432 24.0351 1.31029C23.9161 1.56627 23.7248 1.78145 23.485 1.92902V3.68529C23.915 3.31581 24.5171 3.08068 24.6604 2.6824C24.7773 3.11872 24.7217 3.58351 24.5053 3.97965C24.289 4.3758 23.9285 4.67264 23.4993 4.80816L23.5232 6.6508C24.001 6.24293 24.5744 5.89743 24.7942 5.47516C24.9371 5.9953 24.8888 6.54973 24.658 7.03701C24.4273 7.52429 24.0295 7.91185 23.5375 8.12876L23.5662 10.552C24.0202 10.0722 24.627 9.72188 24.8802 9.19884C25.0549 9.74254 25.0185 10.3325 24.7784 10.8504C24.5383 11.3683 24.1121 11.7759 23.5853 11.9916V14.1606C24.1683 13.5751 24.9328 13.0857 25.2195 12.3947C25.6973 14.0358 25.2195 15.365 23.6044 15.8976L23.6857 22.8651C24.1068 22.2707 24.5871 21.7208 25.1191 21.224C24.9493 20.9085 24.8445 20.5618 24.8111 20.2047C24.7777 19.8475 24.8163 19.4873 24.9247 19.1455C25.0331 18.8037 25.209 18.4874 25.4419 18.2155C25.6748 17.9435 25.96 17.7215 26.2803 17.5627C26.2134 18.3065 26.5144 19.2854 26.3997 20.1444C26.8775 19.7509 27.4031 19.3766 27.9096 19.0023L27.9574 18.9687C27.8236 18.456 27.797 17.9209 27.8792 17.3973C27.9614 16.8737 28.1508 16.3729 28.4352 15.9264C28.7102 16.2264 28.9044 16.5917 28.9998 16.988C29.0951 17.3843 29.0882 17.7984 28.9799 18.1913C29.5173 17.786 30.0325 17.3519 30.5233 16.8909C30.2429 16.417 30.1426 15.8572 30.2409 15.3148C30.3393 14.7724 30.6297 14.284 31.0585 13.9398C31.1158 14.5156 31.3452 15.2978 31.3882 16.0032C31.7395 15.5836 32.0439 15.1266 32.296 14.6404C32.0508 14.354 31.916 13.9888 31.916 13.6111C31.916 13.2334 32.0508 12.8682 32.296 12.5818C32.4767 12.9469 32.6145 13.3317 32.707 13.7287C32.8762 13.2326 32.9899 12.7192 33.0462 12.1979C32.8339 12.0297 32.6701 11.8075 32.5718 11.5545C32.4736 11.3014 32.4443 11.0266 32.4872 10.7584C32.6544 10.9263 32.879 11.0895 33.0988 11.2718C33.0984 10.8436 33.0728 10.4158 33.0223 9.9906C32.837 9.81582 32.7111 9.58701 32.6622 9.33647C32.6133 9.08593 32.644 8.8263 32.75 8.59422C32.997 8.88307 33.2252 9.18761 33.4333 9.50595C33.6865 9.10287 34.1978 8.81495 34.2981 8.35909C34.4137 8.61883 34.4445 8.90863 34.3862 9.18702C34.3278 9.46541 34.1833 9.71813 33.9732 9.90903C34.0438 10.4659 34.071 11.0274 34.0544 11.5885C34.3268 11.4398 34.6183 11.3294 34.8381 11.1902C34.8716 11.4652 34.8014 11.7428 34.6414 11.9684C34.4813 12.194 34.2429 12.3512 33.9732 12.4091C33.9009 13.0026 33.7598 13.5855 33.5527 14.1462C33.9984 14.1949 34.4488 14.1168 34.8524 13.9206C34.7304 14.289 34.4945 14.6086 34.1791 14.833C33.8637 15.0574 33.4853 15.1748 33.0988 15.1683C32.797 15.7409 32.4332 16.2784 32.0141 16.771C32.707 16.627 33.4715 16.819 34.0831 16.7278C33.9576 16.9999 33.7782 17.2435 33.5558 17.4437C33.3334 17.6439 33.0727 17.7964 32.7897 17.8921C32.5066 17.9877 32.2071 18.0245 31.9095 18C31.6118 17.9756 31.3223 17.8904 31.0585 17.7499C30.5807 18.1913 30.0598 18.6088 29.539 19.0119C30.3752 19.0119 31.2974 19.3622 32.0046 19.439C31.0059 20.5954 29.2332 20.6578 28.397 19.8612C27.8523 20.2643 27.3171 20.6626 26.8059 21.0753C27.6851 21.0753 28.569 21.5551 29.3335 21.5551C28.3206 22.8603 26.6577 23.0763 25.5587 22.1789C24.8062 22.912 24.2012 23.7836 23.7765 24.7462L23.8386 30.4565C24.2551 30.1638 24.7041 29.9206 25.1765 29.7319C24.627 28.2203 25.2052 26.824 26.7867 26.1426C26.6099 27.0063 26.8966 28.3259 26.5144 29.2664C26.9922 29.1177 27.5321 28.9881 28.0769 28.8585C27.7997 27.5101 28.5547 26.7232 29.1472 25.9458C29.5103 26.9055 29.6537 27.7981 29.2714 28.585L29.4769 28.537C29.9547 28.4267 30.466 28.3163 30.9629 28.1963C30.595 27.2366 31.2114 25.8642 32.4442 25.3844C32.2865 26.0466 32.4155 27.1647 32.1288 27.9036C32.8614 27.7118 33.5838 27.4828 34.2933 27.2174C34.1683 26.9245 34.1027 26.6094 34.1003 26.2907C34.0979 25.972 34.1587 25.656 34.2793 25.3611C34.3998 25.0663 34.5777 24.7985 34.8024 24.5735C35.0272 24.3484 35.2943 24.1706 35.5882 24.0504C35.4306 24.8278 35.6217 26.037 35.206 26.8288C35.8421 26.5413 36.4447 26.184 37.0026 25.7635C36.8128 25.3599 36.7568 24.9059 36.8428 24.4681C36.9288 24.0302 37.1523 23.6315 37.4804 23.3306C37.5139 23.8105 37.7576 24.4775 37.791 25.0629C38.1934 24.6539 38.539 24.1923 38.8183 23.6905C38.5154 23.3821 38.3283 22.9777 38.2891 22.5463C38.2499 22.1149 38.361 21.6832 38.6033 21.3248C38.7036 21.8047 39.0811 22.2845 39.234 22.8172C39.4769 22.1781 39.6375 21.5105 39.7119 20.8306C39.3682 20.6191 39.0943 20.3105 38.9243 19.9435C38.7543 19.5765 38.6959 19.1674 38.7562 18.7672C39.019 19.0407 39.4299 19.2998 39.7692 19.6069C39.7681 18.8905 39.7137 18.1751 39.6067 17.4668C39.4029 17.3048 39.2467 17.0901 39.1549 16.8459C39.0632 16.6016 39.0393 16.3368 39.0859 16.08C39.234 16.4303 39.731 16.6222 39.9985 16.9341C40.0079 16.6837 40.0891 16.4414 40.2323 16.2362C40.3756 16.031 40.5748 15.8718 40.8061 15.7777C40.6962 16.3391 40.9207 16.9101 40.5815 17.5723C40.6821 18.2909 40.7316 19.0157 40.7296 19.7413C41.1223 19.4938 41.4685 19.1786 41.7522 18.8104C42.0245 19.6357 41.3221 20.4323 40.6818 20.7298C40.6179 21.481 40.4655 22.2219 40.2279 22.9371C40.7439 22.8411 41.3126 22.8316 41.7091 22.7116C41.5419 23.1122 41.2642 23.4565 40.9086 23.7039C40.5531 23.9512 40.1345 24.0915 39.7023 24.108C39.3912 24.677 39.0055 25.2015 38.5555 25.6675C39.1241 25.7491 39.7453 26.0706 40.2136 26.1474C39.5064 26.8719 38.3023 26.9247 37.7528 26.3921C37.2755 26.7564 36.767 27.0775 36.2333 27.3518C36.8688 27.5677 37.4948 27.9516 38.0251 28.1004C36.95 28.9977 35.5166 28.9401 34.7473 28.0284C34.2456 28.2203 33.7295 28.3979 33.2039 28.5514C33.7438 28.9641 34.2456 29.6023 34.6756 29.9478C34.1845 30.1234 33.6472 30.118 33.1597 29.9326C32.6721 29.7471 32.2661 29.3936 32.0141 28.9353C31.2162 29.1417 30.4182 29.3192 29.625 29.492H29.5629C30.4182 29.8183 31.2162 30.7204 32.1431 30.826C30.7097 31.5889 28.8414 31.2242 28.5308 29.7271C27.7902 29.895 27.0973 30.0726 26.4618 30.2693C27.4175 30.7492 27.9909 31.7089 28.698 32.2895C27.1499 32.7694 25.6161 32.0064 25.1669 30.7636C24.6494 30.9836 24.1838 31.3106 23.8004 31.7233L23.8959 40.02C24.256 39.5791 24.6777 39.1928 25.1478 38.8731C24.5219 37.5919 25.6256 35.5861 27.4127 35.0343C26.8202 35.7829 26.8584 37.1073 26.6147 38.0718C27.121 37.8768 27.6398 37.7165 28.1677 37.5919C28.0752 36.9842 28.2093 36.3636 28.5444 35.8491C28.8795 35.3346 29.3919 34.9624 29.9834 34.804C29.6585 35.2358 29.7397 36.4115 29.3383 37.3568C29.8974 37.2608 30.4708 37.1888 31.0537 37.1313C31.0566 36.5885 31.2346 36.0612 31.5611 35.6286C31.8877 35.196 32.345 34.8814 32.8647 34.732C32.4585 35.3174 32.5445 36.3395 32.2339 37.0497L33.6913 36.9489H33.9159C34.0783 36.0996 34.7998 35.0535 35.4019 35.0295C35.077 35.5093 35.0053 36.2723 34.8381 36.8817C35.4306 36.8386 36.0087 36.7906 36.5773 36.7282C36.637 36.3111 36.835 35.9265 37.1393 35.6365C37.4437 35.3465 37.8366 35.1681 38.2545 35.1303C37.9511 35.5835 37.7175 36.0802 37.5616 36.6034C38.1571 36.5184 38.7474 36.3998 39.3296 36.2483C39.3284 35.8911 39.3984 35.5373 39.5354 35.2076C39.6724 34.878 39.8738 34.5792 40.1276 34.3289C40.2949 34.8712 40.2949 35.4517 40.1276 35.994C40.6284 35.8193 41.109 35.5909 41.561 35.3126C41.44 34.9502 41.4294 34.5597 41.5307 34.1913C41.632 33.8228 41.8406 33.4931 42.1296 33.2444C41.9958 33.6235 42.1296 34.2953 42.1679 34.8759C42.6493 34.4724 43.054 33.9847 43.3624 33.4364C43.1992 33.1816 43.1084 32.8869 43.1 32.5841C43.0916 32.2813 43.1658 31.982 43.3146 31.7185C43.4092 32.0551 43.5474 32.3777 43.7256 32.6782C43.8901 32.2669 44.0165 31.8412 44.103 31.4066C43.7781 31.0179 43.6252 30.3941 43.9024 30.0774C44.0075 30.4565 44.5522 30.7444 44.7529 31.1235C44.9041 30.948 45.1003 30.8177 45.3202 30.7466C45.5402 30.6755 45.7753 30.6664 46 30.7204C45.7181 30.9699 45.484 31.4114 45.073 31.6993Z" />
+   </svg>
+</div>
+</nav>
+
+
+</section><section id="shopify-section-newsletter" class="shopify-section"><div
+   :class="newsletterOpen ? 'flex' : 'hidden'"
+   class="fixed w-full h-screen top-0 z-[100]  items-center justify-center bg-[rgba(183,129,169,0.8)] text-accent"
+   x-cloak>
+   <button
+      @click.prevent="newsletterOpen = !newsletterOpen"
+      class="absolute top-0 left-0 z-10 w-full h-full"></button>
+   <div
+      class="w-[91%] max-w-[694px] relative rounded-[10px] flex flex-col justify-center items-center overflow-hidden border-secondary md:border-[14px]">
+      <div
+         class="absolute top-0 left-0 z-0 w-full h-full"></div>
+
+      <button
+         @click.prevent="newsletterOpen = !newsletterOpen"
+         class="w-[21px] absolute z-30 md:top-27px md:left-[35px] top-[34px]"><svg
+   aria-hidden="true"
+   class="fill-current"
+   fill="none"
+   viewbox="0 0 19 18"
+   xmlns="http://www.w3.org/2000/svg">
+   <path
+      clip-rule="evenodd"
+      d="M0.999985 17L18 7.7486e-07L18.7071 0.707108L1.70709 17.7071L0.999985 17Z"
+      fill-rule="evenodd"/>
+   <path
+      clip-rule="evenodd"
+      d="M0.999985 17L18 7.7486e-07L18.7071 0.707108L1.70709 17.7071L0.999985 17Z"
+      fill-rule="evenodd"/>
+   <path
+      clip-rule="evenodd"
+      d="M0.999985 17L18 7.7486e-07L18.7071 0.707108L1.70709 17.7071L0.999985 17Z"
+      fill-rule="evenodd"/>
+   <path
+      clip-rule="evenodd"
+      d="M1.00001 1.63432e-06L18 17L17.2929 17.7071L0.292906 0.707108L1.00001 1.63432e-06Z"
+      fill-rule="evenodd"/>
+   <path
+      clip-rule="evenodd"
+      d="M1.00001 1.63432e-06L18 17L17.2929 17.7071L0.292906 0.707108L1.00001 1.63432e-06Z"
+      fill-rule="evenodd"/>
+   <path
+      clip-rule="evenodd"
+      d="M1.00001 1.63432e-06L18 17L17.2929 17.7071L0.292906 0.707108L1.00001 1.63432e-06Z"
+      fill-rule="evenodd"/>
+</svg></button>
+
+      <div
+         class="relative z-20 pt-32 pb-16 text-center">
+         <div
+            class="text-[28px] md:text-[48px] md:px-[65px] leading-snug font-display italic mb-6">
+            Sign up for more sweetness.
+         </div>
+         <div
+            class="uppercase font-mono text-[12px] md:text-[20px] mb-10">
+            
+         </div>
+         <form
+            action=""
+            class="mx-[47px] md:mx-[100px] flex items-center relative">
+            <input
+               class="w-full text-[12px] bg-transparent pr-[125px] rounded-[10px] p-3 border border-accent placeholder:text-secondary font-mono text-accent"
+               placeholder="EMAIL"
+               type="email">
+
+            <button
+               class="absolute right-[14px] w-24 text-accent"
+               type="submit"><svg
+   aria-hidden="true"
+   class="fill-current"
+   fill="none"
+   viewbox="0 0 57 8"
+   xmlns="http://www.w3.org/2000/svg">
+   <path
+      clip-rule="evenodd"
+      d="M53.1716 0.464471L56.3536 3.64645C56.5488 3.84171 56.5488 4.1583 56.3536 4.35356L53.1716 7.53554C52.9763 7.7308 52.6597 7.7308 52.4645 7.53554C52.2692 7.34028 52.2692 7.02369 52.4645 6.82843L54.7929 4.5L-3.656e-07 4.5L-2.78178e-07 3.5L54.7929 3.5L52.4645 1.17158C52.2692 0.976315 52.2692 0.659733 52.4645 0.464471C52.6597 0.269208 52.9763 0.269208 53.1716 0.464471Z"
+      fill-rule="evenodd"/>
+</svg>
+</button>
+         </form>
+      </div>
+   </div>
+</div>
+
+
+</section>
+
+     <main
+         class="min-h-[calc(100vh-var(--header-height))] "
+         id="main-content"
+         role="main"
+         tabindex="-1">
+         
+
+         <section id="shopify-section-template--21013626388643__founders-content" class="shopify-section"><div class="mx-auto mb-24 md:w-10/12 md:mb-0">
+   <div class="px-[15px] pt-[var(--header-height)] md:pt-40 md:grid md:grid-cols-12 md:items-center md:px-[4vw]">
+      <div class="rounded-[10px] overflow-hidden mb-6 md:col-span-6">
+
+
+
+
+  
+    <img src="//springandmulberry.com/cdn/shop/files/FOUNDER_PHOTO.jpg?v=1646859484&amp;width=2000" alt="Founders Kathryn and Sarah stand in a kitchen with their three small children on the floor and in their arms. They are both tall and Caucasian with brown hair. Sarah is on the left wearing a ikat print dress Kathryn wears boyfriend jeans and a lavender sweater. She has one hand on her hip and one hand on the counter. In the background are grey-stained natural wood cabinets and stone countertops with open shelving that features cookbooks, bowls of citrus fruits, jars of beans, and a floral oil painting." srcset="//springandmulberry.com/cdn/shop/files/FOUNDER_PHOTO.jpg?v=1646859484&amp;width=352 352w, //springandmulberry.com/cdn/shop/files/FOUNDER_PHOTO.jpg?v=1646859484&amp;width=832 832w, //springandmulberry.com/cdn/shop/files/FOUNDER_PHOTO.jpg?v=1646859484&amp;width=1200 1200w, //springandmulberry.com/cdn/shop/files/FOUNDER_PHOTO.jpg?v=1646859484&amp;width=1920 1920w" class="w-full">
+  
+
+</div>
+      <div class="md:col-span-5 md:col-start-8">
+         <div class="font-mono tracking-wider text-[3.865vw] mb-6 uppercase md:text-[1.389vw]">
+            HOW IT ALL BEGAN
+         </div>
+
+         
+            <div class="mb-8">
+               <div class="font-light text-[3.865vw] md:text-[1.250vw] mb-1">
+                  A trip to Dubai on the way to visit my husband’s family in India awakened me to the pleasure and beauty of dates, no longer relegated to the bulk bins of American grocery. Fast-forward a few years later and a cancer diagnosis led me to quit refined sugar and explore the healing power of foods. With nothing to satisfy my sweet tooth, I started experimenting with dates, fruits, nuts, and cacao, discovering a depth of flavor and range of sweetness that are the foundation of our products today.
+               </div>
+               <div class="w-28">
+
+
+
+
+  
+    <img src="//springandmulberry.com/cdn/shop/files/Kathryn_signature.png?v=1646856864&amp;width=2000" alt="" srcset="//springandmulberry.com/cdn/shop/files/Kathryn_signature.png?v=1646856864&amp;width=352 352w, //springandmulberry.com/cdn/shop/files/Kathryn_signature.png?v=1646856864&amp;width=832 832w, //springandmulberry.com/cdn/shop/files/Kathryn_signature.png?v=1646856864&amp;width=1200 1200w, //springandmulberry.com/cdn/shop/files/Kathryn_signature.png?v=1646856864&amp;width=1920 1920w" class="h-full">
+  
+
+</div>
+
+            </div>
+         
+            <div class="mb-8">
+               <div class="font-light text-[3.865vw] md:text-[1.250vw] mb-1">
+                  Growing up in Alaska, nature was all around me, but produce came only from the lower 48. In fact, most fruit came in a can. It was a trip to Georgia in my early teens where I first discovered the pleasure of a ripe peach, just picked from the orchard. That began my journey to eat as close to the earth as possible, nourishing my friends and family with whole, pristine ingredients. Spring & Mulberry is a continuation of my desire to add sweetness to life.
+               </div>
+               <div class="w-28">
+
+
+
+
+  
+    <img src="//springandmulberry.com/cdn/shop/files/Sarah_signature_b49b8f9a-9c63-41b0-b284-b52bd6ad5d79.png?v=1646856845&amp;width=2000" alt="" srcset="//springandmulberry.com/cdn/shop/files/Sarah_signature_b49b8f9a-9c63-41b0-b284-b52bd6ad5d79.png?v=1646856845&amp;width=352 352w, //springandmulberry.com/cdn/shop/files/Sarah_signature_b49b8f9a-9c63-41b0-b284-b52bd6ad5d79.png?v=1646856845&amp;width=832 832w, //springandmulberry.com/cdn/shop/files/Sarah_signature_b49b8f9a-9c63-41b0-b284-b52bd6ad5d79.png?v=1646856845&amp;width=1200 1200w, //springandmulberry.com/cdn/shop/files/Sarah_signature_b49b8f9a-9c63-41b0-b284-b52bd6ad5d79.png?v=1646856845&amp;width=1920 1920w" class="h-full">
+  
+
+</div>
+
+            </div>
+         
+      </div>
+
+
+
+   </div>
+</div>
+
+</section><section id="shopify-section-template--21013626388643__founders-footer" class="shopify-section"><script
+   src="//springandmulberry.com/cdn/shop/t/127/assets/component-quote-slider.js?v=167682217002414115941776781378" defer></script>
+
+
+<div class="md:px-[4vw] md:pt-36 md:mb-32 mb-20">
+   <div
+   class="px-[15px] pt-16 pb-8 md:pb-16 text-accent flex relative flex-col justify-center items-center w-full md:rounded-[10px] md:overflow-hidden">
+
+   <div
+      class="absolute top-0 z-0 w-full h-full">
+
+
+
+
+  
+    <img src="//springandmulberry.com/cdn/shop/files/SpringMulberry_Launch_20222228_deeec302-b0ff-4b55-a5a5-496eb6d9a5eb.jpg?v=1647447757&amp;width=2000" alt="" srcset="//springandmulberry.com/cdn/shop/files/SpringMulberry_Launch_20222228_deeec302-b0ff-4b55-a5a5-496eb6d9a5eb.jpg?v=1647447757&amp;width=352 352w, //springandmulberry.com/cdn/shop/files/SpringMulberry_Launch_20222228_deeec302-b0ff-4b55-a5a5-496eb6d9a5eb.jpg?v=1647447757&amp;width=832 832w, //springandmulberry.com/cdn/shop/files/SpringMulberry_Launch_20222228_deeec302-b0ff-4b55-a5a5-496eb6d9a5eb.jpg?v=1647447757&amp;width=1200 1200w, //springandmulberry.com/cdn/shop/files/SpringMulberry_Launch_20222228_deeec302-b0ff-4b55-a5a5-496eb6d9a5eb.jpg?v=1647447757&amp;width=1920 1920w" class="w-full h-full object-cover">
+  
+
+</div>
+
+   <div
+      class="w-[8vw] md:w-[3vw] mb-10 relative z-10"><svg
+   aria-hidden="true"
+   class="fill-current"
+   fill="none"
+   viewbox="0 0 28 35"
+   xmlns="http://www.w3.org/2000/svg">
+   <path
+      d="M27.7173 25.1373C26.0702 25.1553 17.5604 25.2948 14.5792 25.3421V25.3285L27.8491 21.7999C27.8491 21.7999 28.1016 21.6559 27.9534 21.5276C27.8051 21.3993 27.7091 21.4083 27.7091 21.4083C26.0153 21.7099 16.9482 23.1569 14.5957 23.5327V23.3729L26.6961 18.4468C26.6961 18.4468 26.9212 18.2757 26.7538 18.1632C26.5863 18.0507 26.4792 18.0732 26.4792 18.0732C24.92 18.5458 17.1459 21.0753 14.5929 21.8989C14.5929 21.7796 14.5929 21.6626 14.5929 21.5524C17.0306 20.4271 26.4408 15.3997 26.4408 15.3997C26.4408 15.3997 26.6796 15.2084 26.493 15.0847C26.3063 14.9609 26.18 15.0599 26.18 15.0599C26.18 15.0599 17.3957 18.8856 14.5957 20.1864V20.0356C16.8796 18.5998 24.6263 12.2491 24.6263 12.2491C24.6263 12.2491 24.813 12.0241 24.5989 11.9318C24.3847 11.8396 24.2859 11.9588 24.2859 11.9588C24.2859 11.9588 17.0553 16.6847 14.5682 18.386V18.3343C15.82 17.0515 21.3651 11.358 21.5847 11.0564C21.829 10.7121 23.0863 9.45862 23.0863 9.45862C23.0863 9.45862 23.1961 9.22232 22.9847 9.18407C22.7734 9.14581 22.7102 9.19982 22.7102 9.19982C21.3377 10.3903 20.053 11.3715 19.5533 11.772C18.8588 12.3324 15.9627 15.0509 14.5435 16.3899C14.5435 16.2189 14.5627 15.9578 14.5984 15.9781C14.6341 15.9983 20.6377 7.82931 20.8134 7.46025C20.989 7.09118 22.0404 5.71168 22.0404 5.71168C22.0404 5.71168 22.109 5.46638 21.8949 5.45288C21.6808 5.43938 21.6204 5.50014 21.6204 5.50014C20.4592 6.82788 19.342 7.94184 18.9137 8.39642C18.2796 9.07155 15.5839 12.4269 14.4969 13.7862C14.4969 13.6331 14.4969 13.4801 14.4969 13.3361C15.6937 11.2725 18.911 5.70942 19.0263 5.39887C19.1718 5.01854 20.0447 3.56252 20.0447 3.56252C20.0447 3.56252 20.0832 3.31273 19.869 3.31723C19.6549 3.32173 19.5945 3.38475 19.5945 3.38475C18.5953 4.79801 17.6153 5.99522 17.2392 6.48131C16.7616 7.10018 15.3012 9.06254 14.4337 10.2305V10.0212C15.0404 8.49319 16.9235 3.74481 16.9784 3.49501C17.0416 3.19571 17.5275 2.02099 17.5275 2.02099C17.5275 2.02099 17.5275 1.82745 17.3655 1.84771C17.2035 1.86796 17.1679 1.92198 17.1679 1.92198C16.5777 3.07419 15.9765 4.05987 15.7514 4.45819C15.5016 4.89702 14.8565 6.01773 14.3788 6.85939C14.3788 6.56834 14.3733 6.28478 14.3624 6.00873V6.01998L15.8859 0.907036C15.9068 0.864643 15.9064 0.817205 15.8848 0.775052C15.8632 0.7329 15.8221 0.69945 15.7706 0.681995C15.5757 0.616732 15.5455 0.835021 15.5455 0.835021C15.3671 1.2851 14.6698 2.8604 14.2773 3.74706C14.2443 2.26629 14.2251 1.25585 14.2251 1.08932C14.2224 0.757582 14.1968 0.426236 14.1482 0.096885C14.1482 0.00686832 14 0.000118719 13.9561 0.000118719C13.9192 -0.00108313 13.8826 0.00686302 13.8513 0.0229196C13.82 0.0389761 13.7953 0.0623969 13.7804 0.090134C13.7612 0.137393 13.7282 1.47414 13.6898 3.49501C13.2478 2.59485 12.5918 1.2446 12.438 0.835021C12.404 0.81867 12.3663 0.808058 12.3272 0.803807C12.288 0.799557 12.2483 0.801756 12.2102 0.81027C12.0922 0.844026 12.1306 1.05107 12.1306 1.05107L13.6514 5.48213C13.6514 5.91421 13.6514 6.36204 13.6294 6.82113C13.1435 5.98172 12.5067 4.87902 12.2569 4.44244C12.0318 4.04411 11.4333 3.05843 10.8404 1.90622C10.8404 1.90622 10.8239 1.78244 10.6427 1.83195C10.598 1.84465 10.5588 1.86785 10.53 1.89865C10.5012 1.92946 10.4841 1.96652 10.4808 2.00524C10.4808 2.00524 10.9667 3.17995 11.0298 3.47926C11.0847 3.73131 12.9706 8.48869 13.5745 10.0055V10.2148C12.7071 9.04904 11.2439 7.08443 10.7663 6.46331C10.3902 5.97722 9.41019 4.78 8.41097 3.36674C8.41097 3.36674 8.35332 3.30148 8.13646 3.29923C7.91959 3.29698 7.96077 3.54452 7.96077 3.54452C7.96077 3.54452 8.83372 5.00054 8.97921 5.38086C9.0945 5.69367 12.3447 11.313 13.5251 13.3496C13.5251 13.4621 13.5251 13.5746 13.5251 13.6849C12.3173 12.1771 9.95646 9.24032 9.36626 8.61921C8.93528 8.16913 7.81802 7.04392 6.65959 5.72068C6.65959 5.72068 6.59645 5.66217 6.38508 5.67567C6.17371 5.68917 6.23959 5.93446 6.23959 5.93446C6.23959 5.93446 7.27998 7.31397 7.46665 7.68304C7.6341 8.0116 12.4847 14.5806 13.5059 15.9511L13.5059 16.4147C12.1004 15.0869 9.16038 12.3279 8.46038 11.763C7.96077 11.3625 6.67057 10.3813 5.30351 9.19082C5.30351 9.19082 5.22939 9.13906 5.029 9.17506C4.82861 9.21107 4.92743 9.44961 4.92743 9.44961C4.92743 9.44961 6.18469 10.7031 6.429 11.0474C6.65136 11.3557 12.331 17.182 13.4894 18.3725V18.4085C11.0463 16.7275 3.72782 11.9498 3.72782 11.9498C3.72782 11.9498 3.629 11.8306 3.41488 11.9228C3.20076 12.0151 3.38743 12.2401 3.38743 12.2401C3.38743 12.2401 11.2082 18.6853 13.4427 20.0693V20.2111C10.6976 18.9306 1.81174 15.0622 1.81174 15.0622C1.81174 15.0622 1.68821 14.9631 1.49879 15.0869C1.30938 15.2107 1.55095 15.402 1.55095 15.402C1.55095 15.402 11.0325 20.4744 13.4263 21.5681C13.4263 21.6851 13.4263 21.7931 13.4263 21.9079C10.9035 21.0888 3.07997 18.548 1.51801 18.0822C1.51801 18.0822 1.42468 18.062 1.2435 18.1722C1.06232 18.2825 1.30115 18.4558 1.30115 18.4558L13.3988 23.3797C13.3988 23.4382 13.3988 23.4922 13.3988 23.5395C11.0353 23.1637 1.98193 21.7189 0.290948 21.4173C0.290948 21.4173 0.19487 21.4061 0.0466342 21.5366C-0.101601 21.6671 0.15095 21.8089 0.15095 21.8089L13.311 25.3083V25.3488C10.242 25.2993 1.90782 25.1643 0.288205 25.1463C0.288205 25.1463 0.192126 25.1463 0.0795762 25.3038C-0.032973 25.4613 0.131734 25.7134 0.131734 25.7134L13.171 26.9961C12.8718 30.3312 12.4051 34.9513 12.5204 34.9513C12.8349 34.944 13.1496 34.956 13.462 34.9873C13.7674 35.0079 14.0745 35.0034 14.3788 34.9738C14.4612 34.9738 14.5271 30.9073 14.5682 27.0231L27.8792 25.7134C27.8792 25.7134 28.0467 25.4546 27.9314 25.3038C27.8161 25.153 27.7173 25.1373 27.7173 25.1373Z"/>
+</svg></div>
+
+   <div
+      class="relative z-10 w-full testimonial-slides">
+      <div
+         class="swiper">
+         <div
+            class="swiper-wrapper">
+            
+               <div
+                  class="swiper-slide">
+                  <div
+                     class="text-center md:px-[15.4vw]">
+                     <div
+                        class="md:text-[2.64vw] text-[6.763vw] italic leading-tight font-display mb-12">
+                        &OpenCurlyDoubleQuote;A trip to Dubai on the way to visit my husband’s family in India awakened me to the pleasure and beauty of dates.&CloseCurlyDoubleQuote;
+                     </div>
+                     <div
+                        class="md:text-[0.972vw] text-[3.38vw] font-mono">&mdash;
+                        KATHRYN</div>
+                  </div>
+               </div>
+            
+               <div
+                  class="swiper-slide">
+                  <div
+                     class="text-center md:px-[15.4vw]">
+                     <div
+                        class="md:text-[2.64vw] text-[6.763vw] italic leading-tight font-display mb-12">
+                        &OpenCurlyDoubleQuote;It was a trip to Georgia in my early teens where I first discovered the pleasure of a ripe peach, just picked from the orchard.&CloseCurlyDoubleQuote;
+                     </div>
+                     <div
+                        class="md:text-[0.972vw] text-[3.38vw] font-mono">&mdash;
+                        SARAH</div>
+                  </div>
+               </div>
+            
+         </div>
+      </div>
+   </div>
+
+</div>
+</div>
+
+
+</section>
+
+         
+      </main><footer id="shopify-section-footer" class="shopify-section"><div
+   class="bg-primary pb-2 md:pb-10 pt-4 md:pt-10 px-[15px] md:px-[4vw] text-accent"
+   id="footer">
+
+
+   <div
+      class="border-accent border rounded-[10px] pt-8 pb-6 mb-6 md:mb-10">
+      <div
+         class="md:w-10/12 mx-auto px-[20px] md:flex"><div
+   class="md:w-1/2">
+   <div
+      class="font-display italic text-[4.165vw] md:text-[22px] mb-2.5 tracking-wide">
+      Sign up for more sweetness
+   </div>
+   <div
+      class="md:w-4/5 ">
+      <form
+         id="footer-subscribe"
+         action=""
+         class="relative flex items-center">
+         <input
+            required
+            class="p-2 min-h-[44px] font-mono w-full text-xs tracking-wide bg-transparent border border-accent placeholder:text-secondary text-accent rounded-[3px]"
+            placeholder="EMAIL"
+            id="footer-email"
+            type="email">
+         <button
+            aria-label="Subscribe to email updates"
+            class="w-[56px] h-11 absolute right-2 flex items-center justify-center"
+            style="top: 50%; transform: translateY(-50%);"
+            type="submit"><svg
+   aria-hidden="true"
+   class="fill-current"
+   fill="none"
+   viewbox="0 0 57 8"
+   xmlns="http://www.w3.org/2000/svg">
+   <path
+      clip-rule="evenodd"
+      d="M53.1716 0.464471L56.3536 3.64645C56.5488 3.84171 56.5488 4.1583 56.3536 4.35356L53.1716 7.53554C52.9763 7.7308 52.6597 7.7308 52.4645 7.53554C52.2692 7.34028 52.2692 7.02369 52.4645 6.82843L54.7929 4.5L-3.656e-07 4.5L-2.78178e-07 3.5L54.7929 3.5L52.4645 1.17158C52.2692 0.976315 52.2692 0.659733 52.4645 0.464471C52.6597 0.269208 52.9763 0.269208 53.1716 0.464471Z"
+      fill-rule="evenodd"/>
+</svg>
+</button>
+      </form>
+
+      <p id="footer-message" tabindex="-1" class="hidden mt-2 text-sm font-bold tracking-widest uppercase font-button" role="status">Thanks for subscribing!</p>
+
+      <div class="text-[10px] font-button tracking-widest uppercase mt-7 hidden md:block">
+         *These Statements Have Not Been Evaluated By The FDA. This Product Is Not Meant To Cure, Treat, Prevent Or Diagnose A Disease.
+      </div>
+   </div>
+</div>
+<div
+   class="md:w-10/12 md:mx-auto md:px-[20px] md:flex md:justify-evenly">
+
+   <div
+      class="hidden w-full md:flex md:justify-evenly">
+      
+<div
+            class="">
+            <div
+               class="font-display italic tracking-wide text-[22px] mb-2.5">
+               Company
+            </div>
+            <ul
+               class="list-none">
+               
+                  <li
+                     class="mb-2">
+                     <a
+                        href="https://springandmulberry.com/pages/about" title="About Us" class="text-xs md:text-[15px] font-bold tracking-widest uppercase font-button link-line after:bottom-[0px] after:bg-primary">About Us</a>
+                  </li>
+               
+                  <li
+                     class="mb-2">
+                     <a
+                        href="/pages/founders" title="Our Story" class="text-xs md:text-[15px] font-bold tracking-widest uppercase font-button link-line after:bottom-[0px] after:bg-primary">Our Story</a>
+                  </li>
+               
+                  <li
+                     class="mb-2">
+                     <a
+                        href="/blogs/recipes" title="Recipes" class="text-xs md:text-[15px] font-bold tracking-widest uppercase font-button link-line after:bottom-[0px] after:bg-primary">Recipes</a>
+                  </li>
+               
+                  <li
+                     class="mb-2">
+                     <a
+                        href="/pages/store-locator" title="Find Us in Store" class="text-xs md:text-[15px] font-bold tracking-widest uppercase font-button link-line after:bottom-[0px] after:bg-primary">Find Us in Store</a>
+                  </li>
+               
+                  <li
+                     class="mb-2">
+                     <a
+                        href="https://www.instagram.com/spring.mulberry/" title="Instagram" class="text-xs md:text-[15px] font-bold tracking-widest uppercase font-button link-line after:bottom-[0px] after:bg-primary">Instagram</a>
+                  </li>
+               
+                  <li
+                     class="mb-2">
+                     <a
+                        href="https://www.tiktok.com/@spring.mulberry" title="Tik Tok" class="text-xs md:text-[15px] font-bold tracking-widest uppercase font-button link-line after:bottom-[0px] after:bg-primary">Tik Tok</a>
+                  </li>
+               
+            </ul>
+         </div>
+      
+<div
+            class="">
+            <div
+               class="font-display italic tracking-wide text-[22px] mb-2.5">
+               Questions
+            </div>
+            <ul
+               class="list-none">
+               
+                  <li
+                     class="mb-2">
+                     <a
+                        href="/pages/faq" title="FAQs" class="text-xs md:text-[15px] font-bold tracking-widest uppercase font-button link-line after:bottom-[0px] after:bg-primary">FAQs</a>
+                  </li>
+               
+                  <li
+                     class="mb-2">
+                     <a
+                        href="/pages/contact" title="Contact Us" class="text-xs md:text-[15px] font-bold tracking-widest uppercase font-button link-line after:bottom-[0px] after:bg-primary">Contact Us</a>
+                  </li>
+               
+                  <li
+                     class="mb-2">
+                     <a
+                        href="https://springandmulberry.com/a/subscriptions/login" title="Subscription" class="text-xs md:text-[15px] font-bold tracking-widest uppercase font-button link-line after:bottom-[0px] after:bg-primary">Subscription</a>
+                  </li>
+               
+                  <li
+                     class="mb-2">
+                     <a
+                        href="/pages/corporate-gifting" title="Corporate Gifting" class="text-xs md:text-[15px] font-bold tracking-widest uppercase font-button link-line after:bottom-[0px] after:bg-primary">Corporate Gifting</a>
+                  </li>
+               
+                  <li
+                     class="mb-2">
+                     <a
+                        href="/pages/becomeastockist" title="Become a Stockist" class="text-xs md:text-[15px] font-bold tracking-widest uppercase font-button link-line after:bottom-[0px] after:bg-primary">Become a Stockist</a>
+                  </li>
+               
+                  <li
+                     class="mb-2">
+                     <a
+                        href="/pages/recall" title="Voluntary Recall" class="text-xs md:text-[15px] font-bold tracking-widest uppercase font-button link-line after:bottom-[0px] after:bg-primary">Voluntary Recall</a>
+                  </li>
+               
+            </ul>
+         </div>
+      
+<div
+            class="">
+            <div
+               class="font-display italic tracking-wide text-[22px] mb-2.5">
+               Site
+            </div>
+            <ul
+               class="list-none">
+               
+                  <li
+                     class="mb-2">
+                     <a
+                        href="/pages/accessibility" title="Accessibility" class="text-xs md:text-[15px] font-bold tracking-widest uppercase font-button link-line after:bottom-[0px] after:bg-primary">Accessibility</a>
+                  </li>
+               
+                  <li
+                     class="mb-2">
+                     <a
+                        href="/pages/terms" title="Terms" class="text-xs md:text-[15px] font-bold tracking-widest uppercase font-button link-line after:bottom-[0px] after:bg-primary">Terms</a>
+                  </li>
+               
+                  <li
+                     class="mb-2">
+                     <a
+                        href="/pages/privacy-policy" title="Privacy" class="text-xs md:text-[15px] font-bold tracking-widest uppercase font-button link-line after:bottom-[0px] after:bg-primary">Privacy</a>
+                  </li>
+               
+            </ul>
+         </div>
+      
+   </div>
+
+
+   <div
+      class="mt-10 md:hidden">
+      
+<details
+            class="py-5 text-xs border-b appearance-none border-accent first-of-type:border-t detail focus:outline-none">
+            <summary
+               class="relative block text-[3.38vw] font-display italic md:text-2xl tracking-wide appearance-none cursor-pointer font-base font-extralight focus:outline-none">
+               Company
+            </summary>
+            <div
+               class="pt-4 md:pb-10 text-[2.42vw]md:text-[16px] leading-relaxed max-w-[65ch]">
+               <ul
+                  class="list-none">
+                  
+                     <li
+                        class="mb-2">
+                        <a
+                           href="https://springandmulberry.com/pages/about" title="About Us" class="tracking-widest uppercase font-button">About Us</a>
+                     </li>
+                  
+                     <li
+                        class="mb-2">
+                        <a
+                           href="/pages/founders" title="Our Story" class="tracking-widest uppercase font-button">Our Story</a>
+                     </li>
+                  
+                     <li
+                        class="mb-2">
+                        <a
+                           href="/blogs/recipes" title="Recipes" class="tracking-widest uppercase font-button">Recipes</a>
+                     </li>
+                  
+                     <li
+                        class="mb-2">
+                        <a
+                           href="/pages/store-locator" title="Find Us in Store" class="tracking-widest uppercase font-button">Find Us in Store</a>
+                     </li>
+                  
+                     <li
+                        class="mb-2">
+                        <a
+                           href="https://www.instagram.com/spring.mulberry/" title="Instagram" class="tracking-widest uppercase font-button">Instagram</a>
+                     </li>
+                  
+                     <li
+                        class="mb-2">
+                        <a
+                           href="https://www.tiktok.com/@spring.mulberry" title="Tik Tok" class="tracking-widest uppercase font-button">Tik Tok</a>
+                     </li>
+                  
+               </ul>
+
+
+            </div>
+         </details>
+      
+<details
+            class="py-5 text-xs border-b appearance-none border-accent first-of-type:border-t detail focus:outline-none">
+            <summary
+               class="relative block text-[3.38vw] font-display italic md:text-2xl tracking-wide appearance-none cursor-pointer font-base font-extralight focus:outline-none">
+               Questions
+            </summary>
+            <div
+               class="pt-4 md:pb-10 text-[2.42vw]md:text-[16px] leading-relaxed max-w-[65ch]">
+               <ul
+                  class="list-none">
+                  
+                     <li
+                        class="mb-2">
+                        <a
+                           href="/pages/faq" title="FAQs" class="tracking-widest uppercase font-button">FAQs</a>
+                     </li>
+                  
+                     <li
+                        class="mb-2">
+                        <a
+                           href="/pages/contact" title="Contact Us" class="tracking-widest uppercase font-button">Contact Us</a>
+                     </li>
+                  
+                     <li
+                        class="mb-2">
+                        <a
+                           href="https://springandmulberry.com/a/subscriptions/login" title="Subscription" class="tracking-widest uppercase font-button">Subscription</a>
+                     </li>
+                  
+                     <li
+                        class="mb-2">
+                        <a
+                           href="/pages/corporate-gifting" title="Corporate Gifting" class="tracking-widest uppercase font-button">Corporate Gifting</a>
+                     </li>
+                  
+                     <li
+                        class="mb-2">
+                        <a
+                           href="/pages/becomeastockist" title="Become a Stockist" class="tracking-widest uppercase font-button">Become a Stockist</a>
+                     </li>
+                  
+                     <li
+                        class="mb-2">
+                        <a
+                           href="/pages/recall" title="Voluntary Recall" class="tracking-widest uppercase font-button">Voluntary Recall</a>
+                     </li>
+                  
+               </ul>
+
+
+            </div>
+         </details>
+      
+<details
+            class="py-5 text-xs border-b appearance-none border-accent first-of-type:border-t detail focus:outline-none">
+            <summary
+               class="relative block text-[3.38vw] font-display italic md:text-2xl tracking-wide appearance-none cursor-pointer font-base font-extralight focus:outline-none">
+               Site
+            </summary>
+            <div
+               class="pt-4 md:pb-10 text-[2.42vw]md:text-[16px] leading-relaxed max-w-[65ch]">
+               <ul
+                  class="list-none">
+                  
+                     <li
+                        class="mb-2">
+                        <a
+                           href="/pages/accessibility" title="Accessibility" class="tracking-widest uppercase font-button">Accessibility</a>
+                     </li>
+                  
+                     <li
+                        class="mb-2">
+                        <a
+                           href="/pages/terms" title="Terms" class="tracking-widest uppercase font-button">Terms</a>
+                     </li>
+                  
+                     <li
+                        class="mb-2">
+                        <a
+                           href="/pages/privacy-policy" title="Privacy" class="tracking-widest uppercase font-button">Privacy</a>
+                     </li>
+                  
+               </ul>
+
+
+            </div>
+         </details>
+      
+   </div>
+</div></div><div
+   class="mx-auto px-[20px] md:w-10/12 ">
+   <div
+      class="pb-6 mt-6 text-[10px] font-bold tracking-widest font-button uppercase">
+      ©
+      Spring &amp; Mulberry
+      2026
+   </div>
+</div></div><div
+   class="text-center">
+   <div
+      class="w-full mb-4 md:mb-8"
+      aria-label="Spring & Mulberry"
+      role="img"><svg
+   class="fill-current"
+   fill="none"
+   viewbox="0 0 146 45"
+   xmlns="http://www.w3.org/2000/svg">
+   <path
+      d="M14.3959 4.13149C14.3959 5.47876 13.5392 6.45753 12.0385 6.76364L11.9468 6.73245C11.0569 2.72378 9.28112 0.797437 6.95303 0.797437C5.02304 0.797437 3.70581 1.92829 3.70581 3.64211C3.70581 9.51862 15.1316 8.11091 15.1316 15.2723C15.1316 19.0353 11.7614 21.8507 7.62628 21.8507C2.94279 21.8507 0 19.9224 0 17.1986C0 15.7305 1.10257 14.5977 2.97206 14.3228L3.06378 14.354C3.9517 18.7916 5.69825 20.9636 8.42443 20.9636C10.4461 20.9636 11.7009 19.6787 11.7009 17.8109C11.7009 11.599 0.368825 13.2212 0.368825 5.96815C0.368825 2.48006 3.33894 -5.93688e-06 7.87217 -5.93688e-06C11.9156 -5.93688e-06 14.3959 1.80545 14.3959 4.13149ZM23.4175 0.337298C29.7577 0.337298 32.6049 2.23439 32.6049 6.12218C32.6049 10.589 28.5322 12.7318 23.8448 12.7318C23.0982 12.7374 22.3519 12.6964 21.6104 12.609C21.6397 15.5765 21.7626 18.5459 21.9168 21.5154H16.9855C17.3757 14.4456 17.4441 7.37586 16.8937 0.337298H23.4175ZM21.8856 0.978764C21.6709 4.31672 21.5792 7.65272 21.6104 10.9868C22.5397 11.679 23.6672 12.0543 24.8264 12.0572C27.0315 12.0572 28.1653 10.3141 28.1653 7.71317C28.1653 3.42374 26.0187 1.07235 22.1002 0.978764H21.8856ZM38.9003 11.4469C38.9003 14.8122 39.0232 18.1482 39.2067 21.5154H34.2753C34.6656 14.4456 34.7339 7.37586 34.1836 0.337298H41.2889C47.2623 0.337298 49.8343 2.14276 49.8343 5.29549C49.8343 7.68197 47.6877 9.45623 44.8737 10.437L43.3418 10.9868C47.2018 11.3767 48.6107 12.9755 49.284 15.945C49.9885 19.1269 50.4178 20.5054 50.8159 21.5154H45.7304L44.8425 16.487C44.1068 12.3925 43.3106 11.4391 40.1258 11.4391L38.9003 11.4469ZM39.1462 1.07235C38.992 4.07105 38.9003 7.06975 38.9003 10.0996C39.6653 10.6202 40.3697 10.8347 41.4372 10.8347C43.6423 10.8347 45.2347 9.08968 45.2347 6.45753C45.2347 3.12153 43.2833 1.22443 39.7511 1.1016L39.1462 1.07235ZM52.8668 21.5154C53.2571 14.4456 53.3254 7.37586 52.7751 0.337298H57.7982C57.3688 7.39014 57.3688 14.4625 57.7982 21.5154H52.8668ZM60.8678 0.337298H66.4119C69.5772 5.94692 73.0435 11.3816 76.7956 16.6176C76.6726 11.1096 75.4783 5.63279 73.6733 0.337298H77.9294C77.501 7.39017 77.501 14.4625 77.9294 21.5154H73.8996C70.2543 15.2099 66.2733 9.12088 62.0777 3.15272C62.1987 9.02924 63.4242 16.1282 65.4147 21.5154H60.8522C61.3723 14.4656 61.3723 7.3871 60.8522 0.337298H60.8678ZM79.5588 11.3241C79.5588 4.68327 83.9691 -5.93688e-06 90.7387 -5.93688e-06C95.272 -5.93688e-06 98.4567 2.05112 98.4567 5.20385C98.4567 6.85528 97.2624 7.836 95.7618 8.20255L95.6388 8.14016C94.4133 3.00064 92.4228 0.826682 89.6654 0.826682C86.5431 0.826682 84.3965 3.76494 84.3965 9.39579C84.3965 16.6098 87.8564 20.9948 92.2374 20.9948C92.7961 20.9964 93.3525 20.9243 93.8923 20.7803C94.0347 17.6985 93.963 14.6105 93.6776 11.5386H98.6694C98.4236 14.3486 98.4236 17.1748 98.6694 19.9848C96.1891 21.1547 93.5859 21.8507 90.8636 21.8507C84.0765 21.8507 79.5432 17.5964 79.5432 11.3241H79.5588ZM140.228 21.5154C139.125 19.8932 138.022 18.3626 136.949 16.8925L136.522 17.7192C135.082 20.5347 133.458 21.8507 131.101 21.8507C128.006 21.8507 126.107 19.6475 126.107 17.1382C126.107 14.8122 127.149 13.4045 129.354 11.7823L131.36 10.2478L131.329 10.2186C129.828 8.65879 128.94 7.03466 128.94 5.38323C128.94 1.95558 131.696 -0.00390625 135.38 -0.00390625C138.871 -0.00390625 140.464 1.64947 140.464 3.7006C140.464 5.41442 139.453 6.70125 137.585 8.01732L135.747 9.3022C136.85 10.7411 137.894 12.1176 138.934 13.3967L139.79 11.56C140.649 9.7253 141.72 8.44042 143.436 8.44042C144.693 8.44042 145.672 9.26711 145.672 10.5227C145.651 11.3286 145.322 12.0957 144.753 12.6675L144.661 12.6967C144.076 11.9616 143.528 11.6263 142.394 11.6263C141.26 11.6263 140.189 12.3302 139.24 13.771C141.445 16.526 143.619 19.0041 146.008 21.5154H140.228ZM136.627 16.487C135.091 14.4364 133.448 12.4677 131.706 10.589C130.328 11.6906 129.471 13.0691 129.471 14.7517C129.471 16.8633 130.849 18.6688 132.962 18.6688C134.697 18.6688 135.71 17.9337 136.627 16.487ZM135.495 8.95905C136.666 7.94908 137.24 6.44973 137.271 4.82755C137.302 2.40987 136.077 0.69605 134.301 0.69605C133.044 0.69605 132.248 1.61438 132.248 3.02209C132.248 4.0925 132.586 4.98158 133.809 6.6954C134.393 7.49869 134.943 8.23374 135.495 8.96685V8.95905ZM6.7091 23.4866C8.2022 27.9997 10.0454 32.3895 12.222 36.6161C13.9869 32.3503 15.44 27.9623 16.5698 23.4866H22.0827C22.2056 30.5563 22.6037 37.6261 23.3687 44.6646H18.3788C18.3526 38.6316 18.0047 32.6042 17.3367 26.6081C14.9774 31.7184 12.7723 36.8598 10.8969 42.1846H9.22062C7.35113 36.7994 5.17721 31.5663 2.78082 26.3917C2.38077 35.4209 2.53494 38.2656 4.80058 44.6627H0.763019C1.52799 37.6241 1.93389 30.5544 2.04903 23.4846L6.7091 23.4866ZM33.3269 45C28.2727 45 24.9962 42.399 24.9962 36.5537C24.9962 32.1785 25.3631 27.8637 24.9962 23.4905H30.0192C29.867 27.8052 29.7441 32.0693 29.7441 36.3743C29.7441 41.0537 31.3365 43.6878 35.1047 43.6878C38.6271 43.6878 40.28 41.0869 40.28 36.8949C40.28 33.2528 39.1091 28.5695 36.5722 23.4905H41.1972C40.8303 27.8676 41.1972 32.1824 41.1972 36.5537C41.1991 42.3698 38.4124 45 33.3269 45ZM48.3531 23.4866C47.8945 30.3107 47.9628 37.1971 48.3219 44.0524C52.0902 44.0212 54.0807 42.7968 56.8381 39.6148H56.8986V44.6646H43.4179C43.8082 37.5949 43.8765 30.5251 43.3262 23.4866H48.3531ZM64.9249 23.4866C69.8562 23.4866 74.2919 24.557 74.2919 28.0158C74.2919 30.6168 71.755 31.9328 68.8707 32.7283L67.5535 33.0968C72.0243 33.4634 75.0568 35.0232 75.0568 38.2987C75.0568 42.7363 70.6465 44.6646 65.1044 44.6646H58.2743C58.6646 37.5949 58.7329 30.5251 58.1826 23.4866H64.9249ZM62.8681 33.6447C62.8681 36.735 62.9598 39.8273 63.1139 42.9177C64.0897 43.5299 65.2274 43.8925 66.7573 43.8925C68.779 43.8925 70.3733 42.5765 70.3733 39.7006C70.3733 35.9357 68.137 33.7929 64.1541 33.672L62.8681 33.6447ZM63.1744 24.1573C62.991 27.0663 62.8993 29.974 62.8993 32.8804H65.0459C67.495 32.8804 69.4562 31.6852 69.4562 28.9322C69.4562 26.1792 67.4657 24.3113 64.1872 24.1885L63.1744 24.1573ZM76.4443 23.4846H90.7777V27.3412C87.6554 25.2296 85.1732 24.2801 81.4361 24.1573C81.2527 27.2184 81.161 30.2775 81.1298 33.3386C84.5311 33.3074 86.3675 33.1865 89.5835 32.0537V35.4209C86.3675 34.2511 84.5311 34.1048 81.161 34.0737C81.161 37.3882 81.2527 40.7145 81.4361 44.0173C85.6025 43.9861 88.0535 42.8845 91.1154 40.0379V44.6607H76.5399C76.938 37.5949 76.9985 30.5251 76.4482 23.4866L76.4443 23.4846ZM98.2128 34.5981C98.2128 37.9634 98.3357 41.2994 98.5192 44.6666H93.5917C93.982 37.5968 94.0503 30.5271 93.5 23.4885H100.605C106.579 23.4885 109.151 25.294 109.151 28.4467C109.151 30.8332 107.004 32.6074 104.19 33.5882L102.658 34.138C106.516 34.5279 107.927 36.1267 108.6 39.0962C109.305 42.2782 109.732 43.6566 110.132 44.6666H105.047L104.159 39.646C103.423 35.5516 102.627 34.5981 99.4422 34.5981H98.2128ZM98.4567 24.2236C98.3045 27.2223 98.2128 30.221 98.2128 33.2509C98.9778 33.7714 99.6822 33.9859 100.75 33.9859C102.955 33.9859 104.547 32.2409 104.547 29.6087C104.547 26.2727 102.596 24.3756 99.0636 24.2528L98.4567 24.2236ZM116.318 34.5981C116.318 37.9634 116.441 41.2994 116.625 44.6666H111.697C112.088 37.5968 112.156 30.5271 111.606 23.4885H118.711C124.684 23.4885 127.256 25.294 127.256 28.4467C127.256 30.8332 125.11 32.6074 122.294 33.5882L120.762 34.138C124.622 34.5279 126.031 36.1267 126.704 39.0962C127.41 42.2782 127.838 43.6566 128.236 44.6666H123.152L122.264 39.646C121.529 35.5516 120.733 34.5981 117.548 34.5981H116.318ZM116.562 24.2236C116.41 27.2223 116.318 30.221 116.318 33.2509C117.083 33.7714 117.788 33.9859 118.855 33.9859C121.062 33.9859 122.655 32.2409 122.655 29.6087C122.655 26.2727 120.703 24.3756 117.171 24.2528L116.562 24.2236ZM132.703 23.4885C134.485 27.382 136.522 31.1544 138.799 34.7814C141.096 30.3438 143.528 26.805 140.208 23.4885H145.996C143.547 27.4679 141.248 31.537 139.197 35.729C139.039 38.7064 139.049 41.6904 139.228 44.6666H134.33C134.474 41.893 134.464 39.1136 134.299 36.3412C132.181 31.9275 129.816 27.6359 127.217 23.4866L132.703 23.4885Z"/>
+
+</svg></div>
+
+   <div
+      class="text-[5.072vw] md:text-4xl italic font-display text-accent">
+      There's More Sweetness To Be Had
+   </div>
+
+</div></div>
+
+
+</footer><ul
+         hidden>
+         <li
+            id="a11y-refresh-page-message">Refresh the page</li>
+      </ul>
+   <script defer src="https://static.shopmy.us/Affiliates/sms_aff_clicktrack.js"></script>
+   <script async src="https://cdn.rebuyengine.com/onsite/js/rebuy.js?shop=springandmulberry.myshopify.com"></script>
+   <div id="shopify-block-AT0owZzZkT3YxaUxyM__17824471530847535147" class="shopify-block shopify-app-block"><div id='widget-config' style="opacity:0; font-size: 1px;">{"statementLink":"","footerHtml":" ","consistentHelpData":[{"title":"Contact Email","description":"hello@springandmulberry.com"}],"hideMobile":false,"hideTrigger":false,"disableBgProcess":false,"language":"en","position":"right","leadColor":"#244451","triggerColor":"#244451","triggerRadius":"0","triggerPositionX":"right","triggerPositionY":"bottom","triggerIcon":"people","triggerSize":"medium","triggerOffsetX":0,"triggerOffsetY":0,"mobile":{"triggerSize":"small","triggerPositionX":"right","triggerPositionY":"bottom","triggerOffsetX":10,"triggerOffsetY":10,"triggerRadius":"50%"}}</div>
+<div id='widget-status' style="opacity:0; font-size: 1px;"></div>
+<script>
+    (
+        function () {
+            const s = document.createElement('script');
+            const h = document.querySelector('head') || document.body;
+            const widgetConfigEle = document.getElementById('widget-config');
+            const widgetConfig = JSON.parse(widgetConfigEle.innerHTML);
+
+            if (widgetConfig.footerHtml === '') {
+                widgetConfig.footerHtml = ' ';
+            }
+            
+            widgetConfigEle.style.display = 'none';
+
+            const widgetStatusEle = document.getElementById('widget-status');
+            const widgetStatus = widgetStatusEle.innerHTML;
+            widgetStatusEle.style.display = 'none';
+            s.src = 'https://acsbapp.com/apps/app/dist/js/app.js';
+            s.async = true;
+            s.onload = function () {
+                acsbJS.init(widgetConfig);
+            };
+            if (widgetStatus === '' || widgetStatus === 'true') {
+                h.appendChild(s);
+            }
+        })();
+</script>
+
+</div><div id="shopify-block-AVElYbHJnemxjbVVrN__10840395464443086010" class="shopify-block shopify-app-block">
+
+
+<script>
+  console.log("[Alia app extension] v1.0.5");
+
+  const BACKEND_URL = "https://backend.alia-prod.com";
+
+  window.ALIA_SHOPIFY_EXTENSION_INFO = {
+    customerID: "",
+    country: "US",
+    market: "us",
+    language: "en"
+  }
+
+  if (document.readyState !== "loading") {
+    initAlia();
+  } else {
+    document.addEventListener("DOMContentLoaded", () => initAlia(), { once: true });
+  }
+
+  async function initAlia() {
+    const url = BACKEND_URL + "/public/launcher.js?shopifyUrl=springandmulberry.myshopify.com";
+    const script = document.createElement("script");
+    script.src = url;
+    script.async = true;
+    document.head.appendChild(script);
+  }
+</script>
+
+</div><div id="shopify-block-AR2FMSW9nNERWcU9kV__6174324309569838175" class="shopify-block shopify-app-block">
+
+
+<div class="smile-shopify-init"
+  data-channel-key="channel_Nnmc2jX161gOiQ9x9QETL75u"
+  
+></div>
+</div><div id="shopify-block-AWU9qK05LWVIrYm9vV__14876220180117712452" class="shopify-block shopify-app-block">
+  <!-- BEGIN app snippet: app-data --><script>
+    try {
+      if (!window.AVADA_SURVEY) {
+        window.AVADA_SURVEY = {
+          // Slim survey/quiz arrays — enough for Tier 0 wrapper gating
+          // (`surveys.length > 0` + `_disabled` check) and for early channel
+          // routing decisions. Full content lazy-loaded via #avada-full-data.
+          surveys: [
+              {
+                "id": "DPN8YLr6HMNDseuvkm0V",
+                "surveyType": null,
+                "isActive": true,
+                "channels": {
+                  "siteWidget":          { "enabled": false },
+                  "exitIntent":          { "enabled": false },
+                  "surveyForm":          { "enabled": false },
+                  "embedSurvey":         { "enabled": false },
+                  "dedicatedPageSurvey": { "enabled": true },
+                  "postPurchasePage":    { "enabled": true },
+                  "postPurchaseEmail":   { "enabled": false }
+                }
+              }
+          ],
+          quizzes: [
+          ],
+          // Settings: shopId + language detection needed eagerly (wrapper /
+          // targeting). Full settings (channel colors, design configs) lazy.
+          settings: {
+            shopId: "blx7rZOon56cRwYaxesZ",
+            detectLanguage: "shop",
+            translationSettings: {},
+            moneyWithCurrencyFormat: "${{amount}} USD"
+          },
+          // Targeting context — small, needed before mount.
+          page: "page",
+          product: {
+            id: null,
+            variants: null,
+            selectedVariant: null,
+            hasOnlyDefaultVariant: null
+          },
+          collection: {
+            id: null
+          },
+          customer: {
+            tags: null,
+            email: null,
+            name: null,
+            id: null,
+            acceptsMarketing: null,token: ""
+          }
+        };
+      }
+    } catch (e) {
+      console.error('Avada Survey Error:', e);
+    }
+  </script>
+
+  <script type="application/json" id="avada-full-data">
+    {
+      "surveys":             [{"shopId":"blx7rZOon56cRwYaxesZ","discount":{"enabled":false,"code":"","displayOn":"email","limitOnePerEmail":false,"card":{"heading":"Earn your discount code","description":"Enter your preferred shopping email to receive the coupon.","placeholder":"Enter your email","buttonText":"Get coupon"},"email":{"subject":"Thank you for taking the survey for {{shop.name}}. Here is your coupon reward.","fromName":"","fromEmail":"survey@seagroup.com","sendType":"default","body":"\n\u003ch2 style=\"font-size: 20px; font-weight: bold; margin: 0 0 24px 0; color: #000;\"\u003eCongratulations! Here is you coupon reward\u003c\/h2\u003e\n\u003cp\u003eHi {{customer.displayName}},\u003c\/p\u003e\n\u003cbr\u003e\n\u003cp\u003eWe truly appreciate you taking the time to complete our survey—your insights mean a lot to us.\u003c\/p\u003e\n\u003cp\u003eAs a thank-you, enjoy a special reward to use on your next purchase.\u003c\/p\u003e\n\u003cbr\u003e\n\u003cp\u003eYour coupon code is:\u003c\/p\u003e\n\u003cbr\u003e\n\u003cdiv style=\"padding: 16px;word-break: break-word; background-color: #f6f6f7; border-radius: 8px; text-align: center;\"\u003e\n  \u003cspan style=\"font-size: 20px; font-weight: bold; color: #202223; letter-spacing: 4px;\"\u003e{{discount.code}}\u003c\/span\u003e\n\u003c\/div\u003e\n\u003cbr\u003e\n\u003cp\u003eWarm regards,\u003c\/p\u003e\n\u003cp\u003e{{shop.name}}.\u003c\/p\u003e"},"banner":{"heading":"Earn DISCOUNT CODE","description":"Finish this survey and earn discount for your next purchase!","text":{"color":"#FFFFFF"},"background":{"type":"solid","color":"#1C1C1C","colorSolid":"#1C1C1C","gradientStart":"#1C1C1C","gradientEnd":"#637381","gradientDirection":70,"image":{"url":""}}},"template":"\n \u003cdiv class=\"Avada-Email\"\u003e\n   \u003cdiv class=\"Avada-Email__Content\"\u003e\n      {{email.content}}\n    \u003c\/div\u003e\n  \u003c\/div\u003e\n"},"name":"Post-Purchase Survey","isActive":true,"totalResponses":0,"createdAt":"2025-08-13T13:28:21.216Z","thankYou":{"type":"thank_you","thankYouType":"default","heading":"Thank you for completing our survey!","description":"If you have any questions, please reach out to us at hello@springandmulberry.com","link":"samplelink.shopify.com","enableButton":false,"buttonText":"Discover more","buttonLink":""},"channels":{"postPurchaseEmail":{"type":"postPurchaseEmail","userTargeting":{"type":"all_users","userTags":[],"enabledUserTag":false,"enabledNewUser":false,"enabledReturningUser":false,"enabledProductPurchased":false,"productPurchased":[]},"emailSetting":{"fromType":"default"},"headerLogo":{"url":"","sizePercentage":88},"content":{"subject":"","body":"\u003ch1\u003eThank you for your visiting!\u003c\/h1\u003e\u003cp\u003eDear {{customer.displayName}},\u003c\/p\u003e\u003cp\u003e\u003cbr\u003e\u003c\/p\u003e\u003cp\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003eAt {{shop.name}}, we value your feedback. That's why we would like to invite you to participate in a short survey about your recent experience.\u003c\/span\u003e\u003c\/p\u003e\u003cp\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003e\u003cbr\u003e\u003c\/span\u003e\u003c\/p\u003e\u003cp\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003ePlease click the button below to complete the survey, and it will only take a few minutes to complete.\u003cbr\u003eWe appreciate your time and effort in providing us with this valuable feedback.\u003c\/span\u003e\u003c\/span\u003e\u003c\/p\u003e\u003cp\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003e\u003cbr\u003e\u003c\/span\u003e\u003c\/span\u003e\u003c\/p\u003e\u003cp\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003eYou could explore more products in our store for the next season here: {{shop.url}}.\u003c\/span\u003e\u003c\/span\u003e\u003c\/span\u003e\u003c\/p\u003e\u003cp\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003e\u003cbr\u003e\u003c\/span\u003e\u003c\/span\u003e\u003c\/span\u003e\u003c\/p\u003e\u003cp\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003e\u003cspan style=\"white-space:pre-wrap;\"\u003eWarm regards,\u003cbr\u003e{{shop.name}}.\u003c\/span\u003e\u003c\/span\u003e\u003c\/span\u003e\u003c\/span\u003e\u003c\/p\u003e"},"text":{"primaryColor":"#1C1C1C","secondaryColor":"#585858"},"background":{"outerBackground":"#F5F5F5","innerBackground":"#FFFFFF"},"button":{"color":"#FFFFFF","backgroundColor":"#1C1C1C","backgroundHover":"#333333","text":"Start your survey"},"enabledCustomCss":false,"customCss":"","enabled":false},"exitIntent":{"type":"exitIntent","enabled":false,"enableEmptyCart":false,"enableHasProducts":false,"widgetRecurrence":"only_once","position":"center","button":{"color":"#FFFFFF","backgroundColor":"#1C1C1C","backgroundHover":"#1C1C1CE6"},"section":{"primaryTextColor":"#1C1C1C","secondaryTextColor":"#585858","accentColor":"#1C1C1C","backgroundColor":"#FFFFFF"}},"embedSurvey":{"type":"embedSurvey","embedType":"block","button":{"color":"#FFFFFF","backgroundColor":"#1C1C1C","backgroundHover":"#1C1C1CE6"},"section":{"primaryTextColor":"#1C1C1C","secondaryTextColor":"#585858","accentColor":"#1C1C1C","backgroundColor":"#FFFFFF"},"enabled":false},"dedicatedPageSurvey":{"type":"dedicatedPageSurvey","link":"","enabledHeaderLogo":false,"headerLogo":{"url":"","alignment":"center"},"button":{"color":"#FFFFFF","backgroundColor":"#244451","backgroundHover":"#244451"},"section":{"primaryTextColor":"#244451","secondaryTextColor":"#585858","accentColor":"#1C1C1C","backgroundColor":"#FFFFFF"},"background":{"type":"solid","colorSolid":"#FFFFFF","gradientStart":"#FFFFFF","gradientEnd":"#000000","gradientDirection":70,"image":{"url":""}},"enabled":true},"siteWidget":{"type":"siteWidget","position":"left","button":{"color":"#FFFFFF","backgroundColor":"#1C1C1C","backgroundHover":"#1C1C1CE6"},"section":{"primaryTextColor":"#1C1C1C","secondaryTextColor":"#585858","accentColor":"#1C1C1C","backgroundColor":"#FFFFFF"},"pageTargeting":{"type":"specific_page","enabledExcludePages":false,"pages":[],"productPageType":"all_product_pages","specificProducts":[],"collectionPageType":"all_collection_pages","specificCollections":[]},"timing":"10_seconds_after_page_load","userTargeting":{"type":"all_users","enabledUserTag":true,"enabledNewUser":false,"enabledReturningUser":false,"userTags":[]},"widgetRecurrence":"every_time_survey_not_completed","enabled":false},"postPurchasePage":{"type":"postPurchasePage","userTargeting":{"type":"all_users","enabledUserTag":false,"enabledNewUser":false,"enabledReturningUser":false,"userTags":[],"enabledProductPurchased":false,"productPurchased":[]},"enabled":true}},"channelTypes":["dedicatedPageSurvey","postPurchasePage"],"questions":[{"type":"multiple","heading":"What brought you to our site today?","description":"Check all that apply.","image":{"url":"","alignment":"center","sizePercentage":"100"},"skippable":false,"position":0,"answers":[{"content":"Looked Yummy","id":"answer_1755091669812","position":0},{"id":"answer_1755091815598","content":"Heard Good Things","position":1},{"content":"Love Dark Chocolate","id":"answer_1755091669813","position":2},{"id":"answer_1755110908816","content":"Looking for a Treat without Refined Sugar","position":3},{"content":"Looking for a Treat with Clean Ingredients","id":"answer_1755091669814","position":4},{"id":"answer_1755110916972","content":"Looking for Chocolate Safe for Heavy Metals","position":5},{"id":"answer_1755091809510","content":"Sending a Gift","position":6},{"id":"answer_1755091822134","content":"Other","position":7}],"enabledCustomAnswer":true,"showWhen":"when_customer_select_answers","showCustomAnswerWhen":["answer_1755091822134"],"customAnswerPlaceholder":"Please add more information","id":"question_1755091669812","chosen":false,"selected":false},{"type":"multiple","heading":"How long did you know about us before making your first purchase?","description":"","image":{"url":"","alignment":"center","sizePercentage":"100"},"skippable":false,"position":0,"answers":[{"id":"answer_1755091850301","content":"Less than 1 day"},{"id":"answer_1755091862253","content":"Less than 1 week"},{"id":"answer_1755092011242","content":"Less than 1 month"},{"id":"answer_1755092017837","content":"1 - 3 months"},{"id":"answer_1755092024729","content":"3 - 12 months"},{"id":"answer_1755092028767","content":"More than 1 year"}],"enabledCustomAnswer":false,"showWhen":"always_show","showCustomAnswerWhen":[],"customAnswerPlaceholder":"Please add more information","id":"question_1755091669813","chosen":false,"selected":false},{"type":"multiple","heading":"How did you first hear about us?","description":"You may check more than one answer.","image":{"url":"","alignment":"center","sizePercentage":"100"},"skippable":false,"position":2,"answers":[{"id":"answer_1755092038945","content":"Friends or Family","position":0},{"id":"answer_1755110700622","content":"At a Store","position":1},{"id":"answer_1755092073431","content":"Website Ad","position":2},{"id":"answer_1755092077698","content":"Social Media Ad","position":3},{"id":"answer_1755110723695","content":"Via an Influencer","position":4},{"id":"answer_1755092038947","content":"Google Search","position":5},{"id":"answer_1755092038946","content":"Press or Article","position":6},{"id":"answer_1755092069573","content":"Amazon","position":7},{"id":"answer_1755092085981","content":"YouTube","position":8},{"id":"answer_1755092088884","content":"Other","position":9}],"enabledCustomAnswer":true,"showWhen":"when_customer_select_answers","showCustomAnswerWhen":["answer_1755092088884"],"customAnswerPlaceholder":"Please add more information","id":"question_1755092038945","chosen":false,"selected":false},{"type":"short_answer","heading":"What else would you like to see from us?","description":"New products, new flavors, new retailers, or website improvements - please share any ideas that come to mind. Thank you!","image":{"url":"","alignment":"center","sizePercentage":"100"},"skippable":false,"position":3,"placeholder":"Please add more information","id":"question_1755092101141","chosen":false,"selected":false}],"updatedAt":"2025-10-08T17:10:18.598Z","id":"DPN8YLr6HMNDseuvkm0V","hasResponse":true,"updateStatus":true}],
+      "quizzes":             null,
+      "logics":              [{"surveyId":"DPN8YLr6HMNDseuvkm0V","logics":[]}],
+      "buttonTranslation":   null,
+      "settings":            {"shopId":"blx7rZOon56cRwYaxesZ"},
+      "segments":            null,
+      "abTests":             null,
+      "customerSubmissions": null,
+      "customerQuizResults": null
+    }
+  </script><!-- END app snippet -->
+
+
+
+</div><script src="https://cdn.shopify.com/storefront/standard-actions.js" type="module" data-source-attribution="shopify.standard_actions"></script>
+</body>
+</html>

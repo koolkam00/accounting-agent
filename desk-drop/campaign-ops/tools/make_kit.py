@@ -98,25 +98,8 @@ def kit(tr, drop_id, out, final=False):
 
 
 def release_text(tr, cid, lad):
-    """The same release rule as the sheet's ship_release column, recomputed."""
-    c = lad["campaign"]
-    paid = sum(TR._n(r["paid_amount_usd"]) for r in tr.rows["invoices"] if TR._s(r["campaign_id"]) == cid
-               and TR._s(r["invoice_type"]) in ("founding_full", "standard_deposit") and TR._d(r.get("paid_date")))
-    price = c["price_usd"] or 0
-    due = price if TR._s(c["tier"]) == "founding" else TR.xround(price * TR._n(tr.config["deposit_share"]), 2)
-    b = tr.brands.get(TR._s(c["brand_id"]), {})
-    why = []
-    if not due or paid < due:
-        why.append("payment (%s of %s)" % (int(paid), int(due or 0)))
-    if not TR._d(c.get("agreement_signed_date")):
-        why.append("agreement")
-    if not (TR._d(c.get("coi_received_date")) and TR._s(b.get("coi_check_ok")) == "Y"):
-        why.append("certificate")
-    if lad["drop_date"] is None:
-        why.append("drop date")
-    if lad["offices_approved"] < TR._n(c.get("offices_contracted")):
-        why.append("approvals (%d of %d)" % (lad["offices_approved"], TR._n(c.get("offices_contracted"))))
-    return "RELEASED" if not why else "HOLD: " + " ".join(why)
+    """The same release rule as the sheet's ship_release column, recomputed (tools/tracker.py, release_status)."""
+    return tr.release_status(cid, lad)
 
 
 def post_text(tr, office, items):
@@ -185,6 +168,7 @@ def main(argv):
         print(__doc__)
         return 1
     tr = TR.Tracker(argv[1])
+    common.require_same_name(tr)
     drop_id, out = argv[2], argv[3]
     final = "--final" in argv
     os.makedirs(os.path.join(out, "posts"), exist_ok=True)
@@ -232,7 +216,7 @@ def checklist(tr, drop_id, T, camps, rows, order, out, warnings, fit, cards):
             note = "front face carries the ingredient list: <b>this side faces the room</b>" if f.get("ingredients_on_front_face") else ""
             body.append("<tr><td>%s</td><td>%s<br><span class='small muted'>%s</span></td><td>%s</td><td>%d</td><td>%d%s</td><td>1 + 1 spare %s</td><td><span class='chk'></span></td></tr>" % (
                 order.index(oid) + 1, common.E(TR._s(tr.office(oid).get("company"))), common.E(oid), common.E(brand), units, n_cases,
-                (" of %d" % upc) if n_cases > 1 else "", note))
+                (" (%d a case)" % upc) if n_cases > 1 else "", note))
     body.append("</table>")
     body.append("<h2>Reserve (stays with you, never left at an office)</h2><table><tr><th>Brand</th><th>Reserve units</th><th>Bagged and labeled</th></tr>")
     for cid in camps:
@@ -242,7 +226,7 @@ def checklist(tr, drop_id, T, camps, rows, order, out, warnings, fit, cards):
     body.append("</table>")
     body.append("<h2>Before you leave (plan appendix J)</h2><ul>" + "".join("<li><span class='chk'></span>%s</li>" % common.E(x) for x in [
         "Cases labeled per office; counts match this sheet",
-        "Tent cards: one per office per brand, plus one spare each; every QR test-scanned (qr-check.txt says OK)",
+        "Tent cards: print cards.pdf twice (one to place, one spare per office and brand); qr-check.txt says OK on every line; test-scan one card per brand",
         "Allergen line on each card checked word for word against the package in your hand",
         "Reserve units bagged, labeled RESERVE, per brand",
         "Route sheet printed: receiving windows and owner phone numbers",

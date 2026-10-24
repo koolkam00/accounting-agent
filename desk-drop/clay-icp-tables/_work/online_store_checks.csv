@@ -1,0 +1,9 @@
+brand,online_store,online_store_url,basis,source_url,opened
+Stellar Snacks,Y,https://stellarsnacks.com/collections/all,"Shopify store: products.json lists 21 products, 20 variants available",https://stellarsnacks.com/products.json,2026-10-24
+Thunderbird,Y,https://www.thunderbirdbar.com/collections/all,"Shopify storefront with product pages; homepage banner 'Free Shipping with TRYUS at checkout' (a working discount-code field)",https://www.thunderbirdbar.com,2026-10-24
+MODA Mocktails,Y,https://modamocktails.com/shop,"WooCommerce shop page with add-to-cart buttons",https://modamocktails.com/shop,2026-10-24
+Hank's Gourmet Beverages,Y,https://hanksbeverages.com/products/hanks-root-beer,"WooCommerce product page with add-to-cart",https://hanksbeverages.com/products/hanks-root-beer,2026-10-24
+Bakery on Main,Y,https://www.amazon.com/stores/UncleCrumbles/page/CCAA198D-5DEE,"Amazon storefront linked from the brand homepage (Amazon only; Amazon page not opened; discount code via Amazon promotions, founder to confirm)",https://bakeryonmain.com,2026-10-24
+Smolbol (Mismi Foods),Y,https://www.amazon.com/smolbol,"Brand homepage links an Amazon store and has a cart (Amazon page not opened; founder to confirm discount-code ability)",https://www.smolbol.com,2026-10-24
+Guinness Steak Cuts (Sidari Artisan Brands),Y,https://www.amazon.com/Guinness-Steak-Original-Flavor-Ounce/dp,"Brand homepage 'BUY NOW' buttons go to Amazon (Amazon only; Amazon page not opened; founder to confirm discount-code ability)",https://guinnesssteakcuts.com,2026-10-24
+Maine Root,unknown,,"Brand 'Buy Online' path /collections/maine-root returns 404 (re-checked)",https://www.maineroot.com/collections/maine-root,2026-10-24

@@ -1,0 +1,96 @@
+# Handoff: workstream F (operations and measurement)
+
+Version 1.1 · 2026-10-24 · folder `campaign-ops/`. Paths are relative to `desk-drop/`. Deviations from CONTRACTS are marked **Deviation** and listed again at the end.
+
+The tracker (`campaign-ops/tracker/campaign-tracker.xlsx`, imported into Google Sheets) is the system of record for running campaigns: invoices and payments, the ship release, approvals, stock, photos, counts, survey answers, link totals, redemptions, issues, hours and direct costs. Every tool in `campaign-ops/tools/` reads a downloaded copy of it; nothing is typed twice.
+
+## What F consumes
+
+| From | File | How F uses it | Status 2026-10-24 |
+| --- | --- | --- | --- |
+| C, website | `website/apps-script/Code.gs`, `website/HANDOFF.md` | The tracker's `office_intake` and `brand_intake` tabs carry exactly the CONTRACTS 6.3 headers in row 1, so the website's script can be bound to the tracker itself (runbook step 7): website rows then land in the tracker. `ensureHeader_` in Code.gs only checks a matching header and never rewrites it; `nextRow_` finds the next row from column A, so F's formula tabs never interfere (F adds no columns to these two tabs). `tools/tracker.py` strips one leading apostrophe from `'= '+ '- '@` values, as C asks | Used |
+| C | `website/site/survey-privacy.html` at `https://[DOMAIN]/survey-privacy` | `[PRIVACY URL]` in every survey and sign-up form (config `survey_privacy_url`) | Used (URL slot until the domain exists) |
+| D, identity | `desk-drop-identity/templates/tent-card`, `case-label`, `report` (v1.3/1.4), `render/render.js` | `tools/make_kit.py` writes the tent-card and case-label JSON exactly as their FIELDS.md say and renders them with D's command; `tools/make_report.py` writes the report JSON and renders it. Layouts are D's, unchanged | Used |
+| D | `desk-drop-identity/system/dd-report.js` (`R.LIMITATIONS`) | Read at build time into the Sheets `report` tab, so the fixed paragraph cannot drift | Used |
+| D | `desk-drop-identity/brand.json` (`BRAND_NAME`) | Seeds the tracker's one `company_name` cell when the file is built; F's code holds no name | Used |
+| D | `desk-drop-identity/templates/report/samples/photos/` | Stand-in SAMPLE photos for the dry runs only | Used |
+| G, legal | `03-office-participation-agreement.md`, `10-brand-campaign-agreement.md` (v0.8) | The 15 operating promises in G's HANDOFF ("To F") are built into the SOP steps, the tracker's checks and the message templates (table below) | Used |
+| G | `13-survey-privacy-notice.md` (v0.6) | Part A word for word on every survey; Part B's question and checkbox word for word on the sign-up form; Part D's eleven settings in `forms/survey-form.md` | Used |
+| G | `11-coi-request-brand-product-liability.md`, `12-coi-request-own-carrier-building.md` | SOP steps `coi_check` (brands' `coi_check_ok`, renewal diary when the policy ends before 12 months after the window) and `building_coi` (offices' `building_coi_status`, at least 10 business days before a first drop) | Used |
+| G | `07-food-safety-call-script-and-log.md` | Storage default: sealed cases at your home (config `receiving_address`). Any other storage place adds FDA registration (follow-up 7). An answer of `unclear`, or none by Fri 2026-12-11, means brands ship direct for campaign zero: set the drop's `delivery_model` to `direct-ship`; the SOP and route sheet switch with it | Used |
+| H, financial model | `financial-model/HANDOFF.md` sections 1 and 2, `handoff-templates/*.csv`, the workbook | Exports in exactly H's columns and order (26, 9 and 6), nothing else; drop IDs from H's Schedule (DRP-001 = campaign zero) | Used. Both dry runs' exports loaded into a copy of the workbook and recalculated (`tests/test_h_import.py`, `_work/h-import/h-import-log.md`): every H check passes, Drop_Actuals equals the CSVs, H's file unchanged |
+| E, outreach | `desk-drop-outreach/handoff/signed_offices.csv`, `paid_brands.csv` (CONTRACTS 6.4) | Imported into `in_signed_offices` / `in_paid_brands` and read **by column name**, so E's column order and extra columns do no harm. `offices` fills from E's rows by `office_id`. `paid_brands` is checked against the tracker (dashboard), not copied | Present (published 07:53 on 2026-10-24, header-only, with `SAMPLE-` copies). E carries every requested column (36 and 77 columns). `tests/test_e_handoff.py` pastes E's own SAMPLE copies (5 offices, 1 brand at 09:12 on 2026-10-24) into a fresh tracker and reads whatever IDs they hold: 0 formula errors, every office row fills by name, the dashboard's two "not on the tracker" checks read 0 with the IDs typed and the row count without |
+| B, cluster map | `cluster-1-flatiron/buildings.csv` | `building_id`, lobby type and certificate notes when adding an office; coordinates from `_shared/geocode.py` | Used by hand (runbook step 13) |
+
+### How the agreements' promises are kept (G's list, "To F")
+
+| # | Promise | Where it is built |
+| --- | --- | --- |
+| 1 | Placement within one business day; placement photo from that day; later photo day 3 or 5; top-ups | approvals: `placed_within_1bd` (photo dated by T+1), `later_photo_day`; SOP `day3`; inventory `topped_up` |
+| 2 | Card text to the brand before printing; allergen statement verbatim | campaigns `card_proof_sent_date` (check from T-3); D's card checks the statement; kit checklist line "checked word for word against the package" |
+| 3 | Arrival checks; nothing under 60 days on the drop day placed | inventory `best_by_ok` (best-by at least drop day + 60), check until rejected |
+| 4 | Storage conditions; units never opened | SOP step `receive`; route sheet rules |
+| 5 | A placed unit never moves to another office | inventory: collected leftovers go to a separate `leftover` pile that can only be returned, given back to its office or disposed |
+| 6 | Complaint: remove, tell the brand the same day; recall within one business day | issues checks (`complaint_or_reaction`, `recall_or_pull`); SOP section 4 |
+| 7 | Placement confirmation by T+1; office not placed is refunded or credited | `make_messages.py placement_confirmation`; credit-note invoice rows; SOP `placement_confirm` |
+| 8 | Unused product as elected; return-label deadline | campaigns `unused_product_election`; SOP `close`, `return_deadline` (T+14); stock must reach zero (check) |
+| 9 | No cancellation from the drop day | not a tracker rule; the agreement governs |
+| 10 | Explicit yes for an office's first three drops, then five business days' notice | approvals: `office_drop_number`, `approval_mode`, `approved` |
+| 11 | Building certificates before the first delivery | offices `building_coi_status`; stops check |
+| 12 | Photos show only the shelf; offices named only if they agreed | photos `no_people_or_screens` (N = never used); reports use letters unless config `report_office_names` = names_if_public and the office ticked "publicly" |
+| 13 | Seven days' notice; offices store nothing beyond the drop | offices `status`, `left_date`; leftovers released or collected at T+4 |
+| 14 | No ship date before the pre-ship payment | campaigns `ship_release` (payment, agreement, certificate, approvals) |
+| 15 | Product standard at qualification | brands `qualified`; D's claims check on the card |
+
+## What F feeds
+
+### To H (financial model): `campaign-ops/exports/`
+
+Exactly the layout in `financial-model/HANDOFF.md` section 2, which wins over CONTRACTS 6.5:
+
+- `campaign_actuals.csv`: `campaign_id, drop_id, drop_date, delivery_model, tier, brand_id, offices, units_received, units_delivered, units_placed, units_placed_within_1bd, units_topped_up, units_depleted_day5, survey_responses, survey_tried_yes, qr_scans, code_redemptions_day30, revenue_usd, invoice_paid_date, processing_fee_usd, report_delivered_date, brand_would_buy_again, renewed, deposit_usd, deposit_paid_date, survey_responses_min_office`
+- `drop_costs.csv`: `drop_id, drop_date, delivery_model, offices, brands, kit_cost_usd, transport_cost_usd, other_direct_cost_usd, notes`
+- `hours_log.csv`: `date, drop_id, campaign_id, activity, hours, note`
+
+Made by `python3 tools/export_actuals.py tracker.xlsx exports/` (runbook step 21). Definitions: `offices` = offices that approved; `units_delivered` = drop-day handover only (top-ups separate, as H's Gate 2 needs); `units_placed_within_1bd` = units in a usable placement photo dated by T+1; `units_depleted_day5` blank until every office has a day-5 count; `qr_scans` = QR links only, close minus baseline; `revenue_usd` = invoiced net of credit notes (the per-office refund), before sales tax; `invoice_paid_date` = the founding payment or the standard balance; `deposit_usd`/`deposit_paid_date` = the standard first half; `processing_fee_usd` = 0 for bank transfers; `renewed` = `pending` until you set Y or N. Dates `YYYY-MM-DD`, numbers plain, blank where unknown. SAMPLE rows are refused into the live `exports/` files; the dry runs write theirs to `exports/SAMPLE-zero/` and `exports/SAMPLE-standard/` (same layout, plus `pipeline_paid_events.csv`). SAMPLE drop IDs (`SAMPLE-DRP-001`) are not on H's Schedule, so a SAMPLE file pasted into the real model by mistake is flagged "not on Schedule" and moves nothing (tested).
+
+**Loaded into a copy of the workbook (2026-10-24, `tests/test_h_import.py`).** H's workbook is copied to `campaign-ops/_work/h-import/`, the SAMPLE files pasted at A4 of Actuals_Campaigns, Actuals_DropCosts, Hours_Log and Pipeline (SAMPLE drop IDs mapped to DRP-001 and DRP-002 in the copy only), Actuals in = Y, recalculated in LibreOffice. Result: 0 formula errors and every H check passing, including the 13 paste checks (headers, text, drop_id on Schedule). Drop_Actuals equals the CSVs for revenue, card fees, direct costs, founder hours, the Gate 2 placed share, campaigns under five responses per office, late reports and brands that would buy again. The gates move as expected: Gate 1 "brands paid in full" 0 to 2 (pass); Gate 2 placed 89.6% (pass), one campaign under five per office (miss, as the SAMPLE story intends), reports on time, one brand would buy again; Gate 3 per-hour actual for the standard run, with "1 standard run without actuals" until DRP-003 is in; renewal rate 50% (zero), 67% (standard). The workbook file's SHA-256 is the same before and after.
+
+**One definition to know.** Revenue, direct costs and hours are the same number in both places. *Contribution* differs on purpose: the tracker's dashboard shows contribution **before overhead** (revenue net of credit notes, less direct costs and card fees); H's Drop_Actuals also subtracts its planned overhead allocation (SAMPLE campaign zero: $928 in the tracker, $848 in H, the $80 allocation; standard run: $3,760 and $3,605). Both are labelled. **Not modeled by H, said here once:** a refund paid after the founding payment is netted into `revenue_usd` on the founding payment's date (H books refunds nowhere; H's REPORT, "Not modeled").
+
+### To E (outreach engine)
+
+- **`[SHIP-TO ADDRESS]`** in E's `messages/11` step 10 is the tracker's config `receiving_address`: a street address that takes parcels (the founder's home by default, sealed cases only; legal pack file 07). F's ship-release email (template 02) gives it to each brand once payment lands; it is not printed anywhere public. For direct-ship drops the brand gets each office's address instead, and the reserve goes to `receiving_address`.
+
+- **Fields F needs in `signed_offices.csv`** (CONTRACTS 6.4 plus requests, read by name): every `office_intake` column; `office_id`, `clay_row_id`, `agreement_signed_date`, `agreement_file`, `founding_roster_named`, `budget_probe_verbatim`, `budget_probe_date`, `budget_probe_monthly_usd`; **requested:** `industry` (from Clay or B; the report prints it), `pantry_owner_phone` and `pantry_owner_email` (the agreement's top table; the route sheet needs the owner's own phone when the owner is not the contact), `public_naming_ok` (Y if the office ticked "publicly" in section 6), `agreement_version`, `building_id`.
+- **Fields F reads in `paid_brands.csv`** (6.4, read by name, checked against the tracker): every `brand_intake` column, `brand_id`, `clay_row_id`, `tier`, `price_usd`, `offices_count`, `payment_terms`, `agreement_signed_date`, `unused_product_election`, `discount_code`, `landing_url`, `retailer_line`, `card_sentences`, `allergen_line_verbatim`; **requested:** `campaign_id` (blank if not yet assigned), `newsletter_option`, `brand_privacy_url`, `brand_legal_name`, `billing_address`, `billing_email`, `agreement_version`, `coi_policy_end_date`, `may_contain_verbatim`, `allergen_source`, `code_site`. The 6.4 columns `invoice_id`, `invoice_date`, `payment_received_date`, `coi_received_date`, `allergen_sheet_received_date`, `logo_received_date` and `office_approvals` are recorded in F's tracker; E may leave them blank (**Deviation**, below).
+- **Brand `paid` events for the pipeline log:** `export_actuals.py ... --pipeline` writes `pipeline_paid_events.csv` in the CONTRACTS 6.6 columns (one row per payment received, `value_number` = USD received, `org_id` = the Clay `row_id` from `in_paid_brands` when present, else the `brand_id`), so payments need not be typed into E's log twice.
+- **Debrief answers for E's log:** the office debrief sheet asks the budget question again at an office's drops 1, 4, 7 and so on (about once a quarter at a monthly pace), with the intake answer beside it (`budget_probe` event); on other drops it says when it is next due; each brand debrief records `yes / maybe / no` for "would you do it again" (`renewal_answer`).
+- The founder-side intake forms (`forms/office-intake-form.md`, `forms/brand-qualification-form.md`) are the forms to send before the website is public.
+
+### To C (website)
+
+- The survey forms link to `https://[DOMAIN]/survey-privacy`. Because each campaign's own form names the brand and links the brand's privacy policy, the hosted page can carry generic wording for `[BRAND]` and `[BRAND PRIVACY POLICY URL]` (C's question to G; F supports C's recommended default).
+- Short links use `go.[DOMAIN]`, a DNS record pointing at the link tool, not at the website. Fallback only: `tools/make_links.py` writes Cloudflare Pages `_redirects` lines (`redirects-<drop>.txt`) that could be served from a Pages project on `go.[DOMAIN]` (no click counts).
+
+### To G (legal)
+
+- Processors to name in file 13 (open point 2): Google (Forms, Sheets, Drive, Gmail) and Short.io (links; Bitly only if bought). **E-signature** (G's HANDOFF asks F for it): offices sign by an "I agree" email reply (file 03 section 10); brands through Dropbox Sign's free plan (3 requests every 30 days; help.dropbox.com/plans/dropbox-sign-free-plan, opened 2026-10-24), or a signed PDF by email when the quota runs out (file 10 section 14). Dropbox Sign handles only the brand contact's and the founder's details, never employees', so it does not belong in the survey notice; it belongs in the agreements' privacy line if the attorney wants one (runbook step 12a).
+- **Consented emails** (this workstream's decision, `forms/survey-form.md` Part 3): kept only in a separate per-campaign sign-up form that is never linked to a spreadsheet and has no office or card code; passed once at T+5 as an alphabetical list; unticked ones deleted at T+5; everything, including the sent email, deleted 30 days after passing on. Suggested change to Part C: "we cannot find yours to change or delete it unless you gave an email address" no longer applies, because an email is never joined to answers.
+- Retention defaults implemented as calendar steps and tracker checks: D7, D8 (seven days, 30 days, 12 months). Question for the attorney hour: Google Sheets version history keeps deleted rows and tabs until the file is deleted.
+- **Added in this round, for file 13 and file 03:** (1) office summaries break a brand's answers down only where an office gave three or more, and show no rating or would-buy split drawn from fewer than three people (config `office_summary_min_answers`), and the tool removes likely names from quoted comments before a summary is drafted; file 13's "Who sees what" could say so. (2) A departed office's people (names, emails, phones) are cleared 365 days after it leaves (config `contacts_keep_days_after_leaving`, a dashboard check); the participation agreement and file 13 are silent on this, so it is a default to confirm. (3) The printed route sheet carries owners' names and phones; a courier or backup returns it and keeps no copy, and the founder shreds it once counted.
+
+### To D (identity)
+
+- No change needed for F. Office letters in the report now run over the offices that took the brand (an office that declined gets no letter), so the roster never skips a letter. Three suggestions, D's call: (1) an optional one-line roster note field would let the report say, for example, "One office declined this brand; it was not billed"; (2) the fixed limitations paragraph could add "the survey has no login, so one person could answer twice"; (3) `qr_display` is filled with the short link without `https://` (D's default), so the printed text matches the QR.
+- D's templates treat a `[DOMAIN]` placeholder in `qr_url` as unfilled and print no QR. That is right for real cards; the dry runs use the reserved `go.example.com` so their cards carry decodable QR codes.
+
+## Deviations from CONTRACTS
+
+1. **Exports follow H, not 6.5 alone:** three optional columns at the end of `campaign_actuals.csv` (`deposit_usd`, `deposit_paid_date`, `survey_responses_min_office`) and exactly H's columns, as 6.5 says H's layout wins.
+2. **Founder-side intake rows** live in their own tabs (`office_intake_founder`, `brand_intake_founder`, formulas over the Google Form tabs), not in the website's tabs: the website's script owns `office_intake`/`brand_intake`. Both pairs carry exactly the 6.3 columns; `source = founder`; `form_version` = `office-gform-1.0`, `brand-gform-1.0` (founding wording) or `brand-gform-2.0`.
+3. **`paid_brands.csv` is checked, not copied:** F's tracker records invoices, payments, certificates, card text and approvals itself (the founder issues the invoice at the brand's yes, before E's `paid` status exists).
+4. **Two links per office per campaign** (QR and post), where the plan names one; "scanned" counts only the QR link.
+5. **`placed_within_1bd` counts from the drop day (T+1), in every delivery model,** matching D's report check, H's Gate 2 and the agreement's refund rule; a late carrier delivery counts against us.
+6. **A consolidation point** other than the founder's home is filed as the `courier` model (CONTRACTS has three models; the plan names a consolidation point under direct-ship).
+7. No other deviations: folder, file names without the company name, ladder words, SAMPLE marking, `company_name` config cell, placeholders.

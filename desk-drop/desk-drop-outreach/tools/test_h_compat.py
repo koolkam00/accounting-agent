@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Paste exports/pipeline_log.csv into a temporary copy of the financial model and check H's own checks.
+"""Paste exports/SAMPLE-pipeline_log.csv into a temporary copy of the financial model and check H's own checks.
 
     python3 tools/test_h_compat.py        # never writes inside financial-model/
+
+The live exports/pipeline_log.csv ships header-only (review round 1, R1-18); its header is checked too.
 
 Pass: H's Pipeline header check, text check and event/side check read 0, and H's Gate 0 and Gate 1 counts
 equal the tracker Scorecard's (Gate 0 column, Gate 1 column) for the same rows.
@@ -13,6 +15,7 @@ import os
 import shutil
 import subprocess
 import sys
+sys.dont_write_bytecode = True   # no __pycache__ in the deliverable folder (review round 3, R3-11)
 import tempfile
 
 import openpyxl
@@ -31,10 +34,14 @@ def main():
     tmp = tempfile.mkdtemp(prefix="ddh_")
     wb = openpyxl.load_workbook(H)
     ws = wb["Pipeline"]
-    rows = list(csv.reader(open(os.path.join(ROOT, "exports", "pipeline_log.csv"), encoding="utf-8")))
+    rows = list(csv.reader(open(os.path.join(ROOT, "exports", "SAMPLE-pipeline_log.csv"), encoding="utf-8")))
+    live = list(csv.reader(open(os.path.join(ROOT, "exports", "pipeline_log.csv"), encoding="utf-8")))
     out = []
     ok = [ws.cell(row=4, column=j).value for j in range(1, 10)] == rows[0]
     out.append(f"{'ok  ' if ok else 'FAIL'} header identical to H's Pipeline row 4")
+    good = live == [rows[0]]
+    ok &= good
+    out.append(f"{'ok  ' if good else 'FAIL'} live exports/pipeline_log.csv is header-only, same header")
     for i, r in enumerate(rows[1:], start=5):
         for j, v in enumerate(r, start=1):
             val = None if v == "" else (dt.date.fromisoformat(v) if j == 1 else (float(v) if j == 6 else v))

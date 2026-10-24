@@ -67,13 +67,43 @@ ISSUE_TYPES = ["late_arrival", "short_shipment", "damaged_or_short_dated", "owne
 OUTCOMES = ["handed_to_owner", "front_desk_agreed", "placed_by_us", "carrier_delivered", "owner_absent_return",
             "declined", "building_refused", "not_delivered"]
 
-N = {  # data rows per tab (formulas are filled this far)
-    "drops": 40, "brands": 60, "offices": 100, "campaigns": 100, "approvals": 400, "stops": 300,
-    "inventory": 1500, "counts": 1200, "photos": 1200, "scans": 2000, "redemptions": 300, "issues": 300,
-    "hours": 3000, "costs": 600, "invoices": 300, "office_form": 300, "brand_form": 300,
-    "in_signed_offices": 150, "in_paid_brands": 150, "office_intake": 1000, "brand_intake": 1000,
-    "responses_rows": 3000,
+# Data rows per tab (formulas are filled this far). Two sizes (review round 1, R1-13):
+#   six-months (the default): plan volume to the six-month decision (about 6 drops, 16 campaigns, 160 office rows,
+#                             1,100 link readings) with about half again as headroom; lighter in Google Sheets on a phone
+#   full:                     the original size, for a longer run. Rebuild with: python3 tools/build_tracker.py --size full
+# The dashboard line "Tabs over 90% full" warns before a tab runs out (rows below the last formula row are not counted).
+SIZES = {
+    "six-months": {
+        "drops": 20, "brands": 40, "offices": 60, "campaigns": 50, "approvals": 250, "stops": 150,
+        "inventory": 800, "counts": 700, "photos": 700, "scans": 1600, "redemptions": 120, "issues": 120,
+        "hours": 1500, "costs": 300, "invoices": 150, "office_form": 80, "brand_form": 80,
+        "in_signed_offices": 80, "in_paid_brands": 80, "office_intake": 400, "brand_intake": 400,
+        "responses_rows": 500, "survey_frozen": 250,
+    },
+    "full": {
+        "drops": 40, "brands": 60, "offices": 100, "campaigns": 100, "approvals": 400, "stops": 300,
+        "inventory": 1500, "counts": 1200, "photos": 1200, "scans": 2000, "redemptions": 300, "issues": 300,
+        "hours": 3000, "costs": 600, "invoices": 300, "office_form": 150, "brand_form": 150,
+        "in_signed_offices": 150, "in_paid_brands": 150, "office_intake": 1000, "brand_intake": 1000,
+        "responses_rows": 1000, "survey_frozen": 400,
+    },
 }
+SIZE = os.environ.get("OPS_TRACKER_SIZE", "six-months")
+N = dict(SIZES[SIZE])
+
+
+def set_size(name):
+    """Switch the row counts (build_tracker.py --size) and redefine the tabs."""
+    global SIZE
+    SIZE = name
+    N.clear()
+    N.update(SIZES[name])
+    N["links"] = 2 * N["approvals"]
+    N["office_intake_founder"] = N["office_form"]
+    N["brand_intake_founder"] = N["brand_form"]
+    define()
+
+
 N["links"] = 2 * N["approvals"]
 N["office_intake_founder"] = N["office_form"]
 N["brand_intake_founder"] = N["brand_form"]
@@ -173,7 +203,10 @@ CONFIG = [
     ("today_override", "", "Leave empty. A date here replaces TODAY() everywhere (used by the dry runs)."),
     ("invoice_prefix", "INV-", ""),
     ("bank_details", "[BANK NAME] · Account name [ACCOUNT NAME] · Routing [ROUTING NUMBER] · Account [ACCOUNT NUMBER]", "Printed on invoices. Business account only (legal pack file 04)."),
-    ("sales_tax_note", "Prices do not include sales tax; if tax applies it is shown on the invoice (accountant to confirm, legal pack file 09).", ""),
+    ("sales_tax_note", "Prices do not include sales tax. If any applies, it is shown above.", "Printed on invoices. Confirm with the accountant before the first invoice (legal pack file 09)."),
+    # Added in stage 2 (R5) at the end, so no earlier row moves.
+    ("office_summary_min_answers", 5, "An office summary breaks a brand's answers down (rating, would buy, comments) only where the office gave at least this many answers, and shows no rating or would-buy split from fewer people; below it, the count only, so no one's answer can be picked out (file 13, D9). 5 = the office's own commitment (review round 1 raised it from 3)."),
+    ("contacts_keep_days_after_leaving", 365, "An office that left: clear its people's names, emails and phones (in_signed_offices, office_intake, office_form) this many days after left_date. Company, address and campaign counts stay."),
 ]
 CFG_ROW = {k: i + 2 for i, (k, v, n) in enumerate(CONFIG)}
 
@@ -259,6 +292,10 @@ def define():
         ("revenue_usd", "A", d(fmt=MONEY)), ("kit_cost_usd", "A", d(fmt=MONEY)), ("transport_cost_usd", "A", d(fmt=MONEY)),
         ("other_direct_cost_usd", "A", d(fmt=MONEY)), ("direct_cost_usd", "A", d(fmt=MONEY)), ("cost_per_stop_usd", "A", d(fmt=MONEY)),
         ("hours", "A", d(fmt="0.0")), ("contribution_usd", "A", d(fmt=MONEY)), ("contribution_per_hour_usd", "A", d(fmt=MONEY)),
+        ("gate2_placed_share", "A", d(fmt="0%", help="Gate 2: units placed within one business day over units delivered, all brands on the drop (80% to pass).")),
+        ("gate2_min_responses", "A", d(width=8, help="Gate 2: the fewest responses at any office for any brand on the drop (5 to pass).")),
+        ("gate2_reports_late", "A", d(width=8, help="Gate 2: reports delivered after T+7, or still missing after it.")),
+        ("gate2_buy_again_yes", "A", d(width=8, help="Gate 2: brands that said yes on the debrief call (1 to pass).")),
     ]), N["drops"], "One row per drop (one route on one morning, one to three brands).", color="DDEBF7", group="Plan"))
 
     add(Tab("brands", _cols([
@@ -280,6 +317,7 @@ def define():
         ("q7_why_now", "A", d(width=22)), ("excluded_category_confirmed", "A"),
         ("checks_yes", "A", d(width=8, help="Of the seven checks, how many are a plain yes (q7 counts when written).")),
         ("qualified", "A", d(width=10)), ("campaigns", "A", d(width=8)), ("founding_rank", "A", d(width=8, help="1, 2, 3 = the order founding brands first paid. The founding tier closes after 3.")),
+        ("e_payment_check", "A", d(width=34, help="E's paid_brands.csv (in_paid_brands) against the invoices tab: payment 1 = the pre-ship payment, payment 2 = the standard balance, on the campaign E's row names. Empty = they agree, or E has no row for this brand.")),
     ]), N["brands"], "Paying customers: one row per brand, with the seven checks.", color="DDEBF7", group="Customers"))
 
     add(Tab("offices", _cols([
@@ -333,6 +371,8 @@ def define():
         ("coi_received_date", "I", d(fmt=DATE)), ("allergen_sheet_received_date", "I", d(fmt=DATE)),
         ("logo_received_date", "I", d(fmt=DATE)), ("logo_file", "I", d(width=16)),
         ("card_proof_sent_date", "I", d(fmt=DATE, help="Card text sent to the brand before printing (brand agreement section 1).")),
+        ("ship_email_sent_date", "I", d(fmt=DATE, help="The day you sent the ship-date email (template 02), or its latest revision.")),
+        ("ship_email_units", "I", d(width=8, help="units_to_ship as written in that email. If the route changes before the product arrives, the checks ask for a revised email.")),
         ("survey_form_url", "I", d(width=20)),
         ("survey_prefill_template", "I", d(width=30, help="The pre-filled link with the literal text CARDCODE typed into the Card code field (forms/survey-form.md, step 9).")),
         ("newsletter_form_url", "I", d(width=20)),
@@ -355,7 +395,7 @@ def define():
     camp_auto = [
         ("brand_name", 18), ("category", 12), ("drop_date", 11), ("delivery_model", 10), ("price_expected_usd", 10),
         ("price_usd", 10), ("payment_terms", 30), ("cancel_by", 11), ("ship_by_requested", 11),
-        ("offices_on_route", 8), ("offices_approved", 8), ("approvals_pending", 8), ("units_allocated", 8), ("reserve_planned", 8),
+        ("offices_on_route", 8), ("offices_approved", 8), ("offices_on_drop", 8), ("approvals_pending", 8), ("units_allocated", 8), ("reserve_planned", 8),
         ("units_to_ship", 8), ("pre_ship_paid_usd", 9), ("pre_ship_due_usd", 9), ("ship_release", 36),
         ("units_received", 8), ("units_rejected", 8), ("reserve_on_hand", 8), ("leftover_on_hand", 8),
         ("units_delivered", 8), ("units_placed", 8), ("units_placed_within_1bd", 8), ("placed_share_1bd", 8),
@@ -391,7 +431,9 @@ def define():
         ("units_override", "I", d(width=8, help="Only to change the headcount-based number.")),
         ("drop_id", "A"), ("drop_date", "A", d(fmt=DATE)), ("brand_name", "A", d(width=16)), ("company", "A", d(width=18)),
         ("office_seq", "A", d(width=6)), ("office_label", "A", d(width=6)), ("office_drop_number", "A", d(width=7)),
-        ("approval_mode", "A", d(width=9)), ("approved", "A", d(width=9)), ("fit_check", "A", d(width=24)),
+        ("approval_mode", "A", d(width=9)), ("approved", "A", d(width=9)),
+        ("on_drop", "A", d(width=7, help="Y = approved and not turned away at the door. N = the office said no, or the stop's outcome is declined, building_refused or not_delivered with no units delivered for this brand. Every count of offices on a drop (the financial model's offices, Gate 2, depletion, photos, letters) uses on_drop = Y.")),
+        ("fit_check", "A", d(width=24)),
         ("units_allocated", "A", d(width=8)), ("card_code", "A", d(width=24)),
         ("units_delivered", "A", d(width=8)), ("delivered_at", "A", d(fmt="yyyy-mm-dd hh:mm", width=15)),
         ("delivered_count_source", "A", d(width=12)),
@@ -406,6 +448,7 @@ def define():
         ("rating_n", "A", d(width=6)), ("rating_sum", "A", d(width=6)), ("buy_yes", "A", d(width=6)),
         ("buy_maybe", "A", d(width=6)), ("buy_no", "A", d(width=6)), ("comments", "A", d(width=6)),
         ("seq_key", "A", d(width=12)), ("window_end", "A", d(fmt=DATE)), ("resp_min_key", "A", d(width=8)),
+        ("survey_frozen", "A", d(width=7, help="Y = this office's survey numbers come from the survey_frozen tab (the raw answers were deleted after 12 months).")),
     ]), N["approvals"], "One row per office per campaign: the office's yes, its units, and its whole ladder.", color="E2EFDA", group="Campaign"))
 
     add(Tab("stops", _cols([
@@ -415,7 +458,7 @@ def define():
         ("slack_post_sent_date", "I", d(fmt=DATE, help="T-3: window and pre-written Slack post sent to the owner.")),
         ("confirm_text_sent_date", "I", d(fmt=DATE, help="T-1: confirmation text to the owner.")),
         ("kit_mailed_date", "I", d(fmt=DATE, help="Direct-ship only: tent cards and Slack post mailed ahead.")),
-        ("carrier_tracking", "I", d(width=18, help="Direct-ship only: the brand's tracking number for this office.")),
+        ("carrier_tracking", "I", d(width=18, help="Direct-ship only: each brand's tracking number for this office, separated by semicolons.")),
         ("arrival_time", "I", d(fmt=TIME, width=8)), ("departure_time", "I", d(fmt=TIME, width=8)),
         ("handed_to_role", "I", d(dv=dv_list(["pantry owner", "front desk", "other staff", "carrier"]))),
         ("outcome", "I", d(dv=dv_list(OUTCOMES))), ("notes", "I", d(width=24)),
@@ -488,7 +531,7 @@ def define():
     add(Tab("issues", _cols([
         ("issue_id", "I"), ("date", "I", d(fmt=DATE)), ("time", "I", d(fmt=TIME, width=8)), ("drop_id", "I"),
         ("campaign_id", "I"), ("office_id", "I"), ("issue_type", "I", d(dv=dv_list(ISSUE_TYPES))),
-        ("what_happened", "I", d(width=34, help="Facts and times. No employee names or health details.")),
+        ("what_happened", "I", d(width=34, help="Facts and times. No employee names, and no one's health details (office staff included).")),
         ("action_taken", "I", d(width=30)), ("brand_told_date", "I", d(fmt=DATE)), ("office_told_date", "I", d(fmt=DATE)),
         ("closed_date", "I", d(fmt=DATE)), ("note", "I", d(width=20)),
         ("days_open", "A", d(width=7)), ("checks", "A", d(width=34)),
@@ -518,6 +561,18 @@ def define():
         ("brand_name", "A", d(width=16)), ("due_date", "A", d(fmt=DATE)), ("total_usd", "A", d(fmt=MONEY)),
         ("status", "A", d(width=10)), ("releases_ship", "A", d(width=7)), ("checks", "A", d(width=30)),
     ]), N["invoices"], "Invoices by bank transfer. The payment-received date releases the ship date.", color="FFF2CC", group="Money"))
+
+    # Frozen survey totals (review round 1, R1-12): before the 12-month deletion of a campaign's survey tab,
+    # tools/freeze_survey.py writes one row per office here, so the record and every later export keep their numbers.
+    add(Tab("survey_frozen", _cols([
+        ("campaign_id", "I"), ("office_id", "I"),
+        ("survey_responses", "I", d(width=8)), ("tried_yes", "I", d(width=7)), ("tried_no_didnt_see", "I", d(width=7)),
+        ("tried_no_not_for_me", "I", d(width=7)), ("tried_no_gone", "I", d(width=7)), ("rating_n", "I", d(width=7)),
+        ("rating_sum", "I", d(width=7)), ("buy_yes", "I", d(width=7)), ("buy_maybe", "I", d(width=7)), ("buy_no", "I", d(width=7)),
+        ("comments", "I", d(width=7)), ("frozen_date", "I", d(fmt=DATE)), ("note", "I", d(width=24)),
+        ("key", "A", d(width=24)),
+    ]), N["survey_frozen"], "Survey totals frozen before a campaign's raw answers are deleted (12 months; file 13, D8). Import the CSV from tools/freeze_survey.py (File > Import > Append rows). Never type here by hand.",
+        color="EDEDED", group="Measure"))
 
     # Intake: exactly CONTRACTS 6.3, header in row 1 (the website's Apps Script writes here when bound to this file).
     add(Tab("office_intake", _cols([(c, "P") for c in OFFICE_INTAKE_COLS]), N["office_intake"],

@@ -9,6 +9,8 @@ Date held: ______  ·  With: {brand_contact_name}, {brand_contact_title}  ·  No
 | --- | --- | --- | --- | --- | --- | --- |
 | {delivered} | {placed} ({placed_1bd}) | {depleted} | {responses} | {scans} | {redemptions} | not measured |
 
+Offices: {roster_note}
+
 Do not add the rungs together, and do not call any of them sales, conversions or lift. If asked "did it work?", answer with the rung they mean.
 
 ## The five questions (plan, appendix K)

@@ -3,12 +3,15 @@
 section 2 asks for (it wins over CONTRACTS 6.5): three files, these columns, this order, nothing else.
 
   python3 tools/export_actuals.py TRACKER.xlsx [OUT_DIR]      # default OUT_DIR: exports/
-  python3 tools/export_actuals.py TRACKER.xlsx OUT_DIR --pipeline   # also brand payment events for E
 
-Writes campaign_actuals.csv, drop_costs.csv, hours_log.csv (and pipeline_paid_events.csv with
---pipeline: CONTRACTS 6.6 columns, event = paid, one row per payment received).
+Writes campaign_actuals.csv, drop_costs.csv, hours_log.csv. Brand payment ("paid") events for the financial model's
+Pipeline come only from the outreach workstream's pipeline_log.csv (payment_1/2 on its paid_brands row); the old
+--pipeline output here was withdrawn in review round 1 (R1-06) because it counted every payment twice. The tracker's
+dashboard compares E's payments with the invoices tab instead (brands, e_payment_check).
+offices = offices on the drop: approved and not turned away at the door (R1-02).
 Dates YYYY-MM-DD, numbers plain, blank where not yet known. Every value is recomputed from the
-tracker's rows (tools/tracker.py); nothing is typed. SAMPLE rows are refused into exports/.
+tracker's rows (tools/tracker.py); nothing is typed. SAMPLE rows are refused into the live exports/ files;
+the dry runs write theirs to exports/SAMPLE-<scenario>/ (and dry-run/<scenario>/exports/).
 """
 import csv
 import os
@@ -44,7 +47,7 @@ def campaign_rows(tr):
         out.append({
             "campaign_id": cid, "drop_id": TR._s(c["drop_id"]), "drop_date": day(lad["drop_date"]),
             "delivery_model": c["delivery_model"], "tier": TR._s(c["tier"]), "brand_id": TR._s(c["brand_id"]),
-            "offices": num(lad["offices_approved"]), "units_received": num(lad["units_received"]),
+            "offices": num(lad["offices_on_drop"]), "units_received": num(lad["units_received"]),
             "units_delivered": num(lad["units_delivered"]), "units_placed": num(lad["units_placed"]),
             "units_placed_within_1bd": num(lad["units_placed_within_1bd"]), "units_topped_up": num(lad["units_topped_up"]),
             "units_depleted_day5": num(lad["units_depleted_day5"]), "survey_responses": num(lad["survey_responses"]),
@@ -81,23 +84,6 @@ def hours_rows(tr):
             for r in tr.rows["hours"] if TR._d(r["date"])]
 
 
-def paid_events(tr):
-    out = []
-    for r in tr.rows["invoices"]:
-        if not TR._d(r.get("paid_date")) or TR._n(r.get("paid_amount_usd")) <= 0:
-            continue
-        c = tr.campaigns.get(TR._s(r["campaign_id"]))
-        if not c:
-            continue
-        b = tr.brand(TR._s(c["brand_id"]))
-        e_row = tr._paste("in_paid_brands", "brand_id").get(TR._s(c["brand_id"]), {})
-        org = TR._s(e_row.get("clay_row_id")) or TR._s(c["brand_id"])
-        out.append({"date": day(r["paid_date"]), "side": "brand", "org_id": org, "org_name": TR._s(b.get("brand_name")),
-                    "event": "paid", "value_number": num(TR._n(r["paid_amount_usd"])), "value_text": "",
-                    "controls_budget": "Y", "notes": "%s %s %s" % (TR._s(r["invoice_id"]), TR._s(c["brand_id"]), TR._s(r["invoice_type"]))})
-    return out
-
-
 def write(path, cols, rows):
     with open(path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=cols, extrasaction="raise")
@@ -110,19 +96,23 @@ def main(argv):
     if len(argv) < 2:
         print(__doc__)
         return 1
+    if "--pipeline" in argv:
+        print("REFUSED: --pipeline was withdrawn (review round 1, R1-06). Brand payments reach the financial model once, through "
+              "desk-drop-outreach/exports/pipeline_log.csv; the tracker's dashboard checks E's payments against the invoices tab.")
+        return 1
     tr = TR.Tracker(argv[1])
     out = argv[2] if len(argv) > 2 and not argv[2].startswith("--") else os.path.join(common.ROOT, "exports")
     os.makedirs(out, exist_ok=True)
     cr, dr, hr = campaign_rows(tr), drop_rows(tr), hours_rows(tr)
-    if os.path.abspath(out) == os.path.abspath(os.path.join(common.ROOT, "exports")):
-        if any(common.is_sample(*r.values()) for r in cr + dr + hr):
-            raise SystemExit("REFUSED: SAMPLE rows never go into exports/. Write them elsewhere (dry-run/).")
+    live = os.path.abspath(os.path.join(common.ROOT, "exports"))
+    sample_rows = any(common.is_sample(*r.values()) for r in cr + dr + hr)
+    if os.path.abspath(out) == live and sample_rows:
+        raise SystemExit("REFUSED: SAMPLE rows never go into the live exports/ files. Write them to exports/SAMPLE-<name>/ or dry-run/.")
+    if os.path.dirname(os.path.abspath(out)) == live and os.path.basename(out.rstrip("/")).startswith("SAMPLE") and not sample_rows and (cr or dr or hr):
+        raise SystemExit("REFUSED: real rows never go into a SAMPLE folder. Write them to exports/.")
     write(os.path.join(out, "campaign_actuals.csv"), T.H_CAMPAIGN_ACTUALS, cr)
     write(os.path.join(out, "drop_costs.csv"), T.H_DROP_COSTS, dr)
     write(os.path.join(out, "hours_log.csv"), T.H_HOURS, hr)
-    if "--pipeline" in argv:
-        write(os.path.join(out, "pipeline_paid_events.csv"),
-              ["date", "side", "org_id", "org_name", "event", "value_number", "value_text", "controls_budget", "notes"], paid_events(tr))
     print("exports: %d campaigns, %d drops, %d hour rows -> %s" % (len(cr), len(dr), len(hr), out))
     return 0
 

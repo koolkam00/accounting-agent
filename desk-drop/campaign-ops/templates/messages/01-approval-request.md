@@ -1,15 +1,12 @@
-when: at the brand's signature, at least five business days before T, and before T-10 for an office's first three drops
+when: at each brand's signature, one email per office per drop; before T-10, and at least five business days before T
 to: {pantry_owner_name} <{owner_email}>
-subject: OK to bring {brand_name} on {drop_date_long}?
+subject: OK to bring {brand_names} on {drop_date_long}?
 ---
 Hi {pantry_owner_first},
 
-For the {drop_date_long} drop, may we bring {brand_name}: {product_sku}?
+For the {drop_date_long} drop, in your window ({receiving_window}), may we bring:
 
-- Category: {category_label}
-- Allergens, word for word from the package: {allergen_line}{may_contain_line}
-- About {units} units for your pantry, delivered {receiving_window}.
-
+{brand_blocks}
 {approval_line}
 
 Thanks,

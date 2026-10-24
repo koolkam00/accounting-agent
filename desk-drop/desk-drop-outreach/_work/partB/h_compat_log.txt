@@ -1,16 +1,16 @@
-run 2026-10-24T06:31:38
 ok   header identical to H's Pipeline row 4
+ok   live exports/pipeline_log.csv is header-only, same header
 ok   H check 'Pipeline: rows with a bad event or side...' = 0
 ok   H check 'Pipeline: header row differs from HANDOFF, or something is p...' = 0
 ok   H check 'Pipeline: dates or value_number stored as text (columns A an...' = 0
 ok   H pl_g0_office_conv = 13; tracker D8 = 13
-ok   H pl_g0_office_yes = 6; tracker D9 = 6
-ok   H pl_g0_brand_conv = 13; tracker D22 = 13
-ok   H pl_g0_brand_yes = 6; tracker D23 = 6
-ok   H pl_g1_signed = 1; tracker D94 = 1
-ok   H pl_g1_headcount = 62; tracker D95 = 62
-ok   H pl_g1_paid = 1; tracker D96 = 1
-ok   H pl_med_office = 75; tracker E14 = 75
-ok   H pl_med_brand = 500; tracker E27 = 500
-ok   H pl_med_brand_after = 850; tracker E29 = 850
+ok   H pl_g0_office_yes = 5; tracker D9 = 5
+ok   H pl_g0_brand_conv = 13; tracker D25 = 13
+ok   H pl_g0_brand_yes = 6; tracker D26 = 6
+ok   H pl_g1_signed = 5; tracker D105 = 5
+ok   H pl_g1_headcount = 362; tracker D106 = 362
+ok   H pl_g1_paid = 1; tracker D107 = 1
+ok   H pl_med_office = 75; tracker E17 = 75
+ok   H pl_med_brand = 500; tracker E31 = 500
+ok   H pl_med_brand_after = 850; tracker E33 = 850
 RESULT: pass

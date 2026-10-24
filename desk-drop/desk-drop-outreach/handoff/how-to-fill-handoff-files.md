@@ -1,16 +1,16 @@
 # How to fill the handoff files
 
-Version 1.0 · 2026-10-24 · workstream E, part B · `desk-drop-outreach/handoff/` and `desk-drop-outreach/exports/`
+Version 1.3 · 2026-10-24 · Outreach engine (workstream E) · `desk-drop-outreach/handoff/` and `desk-drop-outreach/exports/`
 
 **What they are for.** Three files carry outreach results to the two workstreams that act on them:
 
 | File | Read by | One row per | Schema |
 | --- | --- | --- | --- |
-| `handoff/signed_offices.csv` | Operations (F, `campaign-ops/`) | Signed office | CONTRACTS 6.4: every `office_intake` column (6.3), then the 6.4 columns, then two additions |
+| `handoff/signed_offices.csv` | Operations (F, `campaign-ops/`) | Signed office | CONTRACTS 6.4: every `office_intake` column (6.3), then the 6.4 columns, then additions for the legal pack and operations (section 5) |
 | `handoff/paid_brands.csv` | Operations (F) | Paid brand | CONTRACTS 6.4: every `brand_intake` column (6.3), then the 6.4 columns, then additions for payments, the legal pack, the tent card and the founder's own qualification checks |
 | `exports/pipeline_log.csv` | Financial model (H, `financial-model/`) | Pipeline event | `financial-model/HANDOFF.md` section 3: exactly nine columns, in date order |
 
-**SAMPLE rows.** As shipped, each file holds SAMPLE rows only (one signed office, one paid brand, 210 pipeline events), so the format can be seen. Every SAMPLE value starts with SAMPLE: illustrative placeholders, not results. **Replace each file the first time you have a real row; never paste the SAMPLE pipeline file into the financial model.** The tracker ignores SAMPLE rows while Config `include_sample` = N, so a real download never carries them.
+**SAMPLE rows.** The three live files ship **header-only**: nothing in them can be pasted by mistake into operations' tracker or the financial model, and a CSV cannot carry a SAMPLE banner. To see the format filled, open the SAMPLE copies beside them: `handoff/SAMPLE-signed_offices.csv` (five signed offices), `handoff/SAMPLE-paid_brands.csv` (one paid brand, approved by all five after they signed, as the gate requires) and `exports/SAMPLE-pipeline_log.csv` (214 pipeline events). Every SAMPLE value starts with SAMPLE: illustrative placeholders, not results. **Never paste a SAMPLE- file anywhere.** The tracker ignores SAMPLE rows while Config `include_sample` = N, so a real download never carries them.
 
 **Where you fill them.** Not in the CSV files. Each file is a download of one tab of `tracking/conversation-tracker.xlsx` (in Google Sheets): `signed_offices`, `paid_brands` and `pipeline_log`. You type in the first two; the third is built for you.
 
@@ -25,10 +25,10 @@ Version 1.0 · 2026-10-24 · workstream E, part B · `desk-drop-outreach/handoff
 2. Copy its 21 cells, `submitted_at` to `source`, and paste them into the next empty row of the **signed_offices** tab at column A. They land in the right columns because the order is the same.
 3. Type the rest:
    - `office_id`: the next O-### (O-001, O-002, ...). Never reuse one.
-   - `clay_row_id`: the office contact's Clay `row_id`, the same one used on Office_Log. This is the key that joins everything (it becomes `org_id` in the pipeline).
+   - `clay_row_id`: the office contact's Clay `row_id`, the same one used on Office_Log. This is the key that joins everything (the pipeline turns it into the organisation's `org_id`, below).
    - `agreement_signed_date`, `agreement_file` (the signed PDF's file name), `founding_roster_named` (Y only if the office ticked the roster box in section 6 of the agreement), `public_naming_ok` (Y only if it ticked "publicly"), `agreement_version` (for example 0.8), `owner_can_say_yes_alone`.
    - From the agreement's top table: `pantry_owner_phone` and `pantry_owner_email` (business contacts). From Clay or `cluster-1-flatiron/companies.csv`: `industry` and `building_id`.
-   - `budget_probe_verbatim`, `budget_probe_date`, `budget_probe_monthly_usd` fill themselves from Office_Log (the first budget-probe answer for that `clay_row_id`). If the office never had a logged conversation, ask the probe word for word at delivery of the agreement (`calls/office-call-guide.md`, question 6) and type the three cells; `budget_probe_monthly_usd` is a number only if they named one (0 for "no budget"), else blank.
+   - `budget_probe_verbatim`, `budget_probe_date`, `budget_probe_monthly_usd` fill themselves from Office_Log (the organisation's first budget-probe answer, whichever of its contacts gave it). If the office never had a logged conversation, ask the probe word for word at delivery of the agreement (`calls/office-call-guide.md`, question 6) and type the three cells; `budget_probe_monthly_usd` is a number only if they named one (0 for "no budget"), else blank.
 4. In Clay, set the office's `status` to `signed` the same day.
 5. File > Download > Comma-separated values (current sheet), saved as `desk-drop-outreach/handoff/signed_offices.csv`, replacing the file.
 
@@ -40,7 +40,7 @@ Version 1.0 · 2026-10-24 · workstream E, part B · `desk-drop-outreach/handoff
 1. Copy the brand's 27 `brand_intake` cells, `submitted_at` to `source`, into the next empty row of **paid_brands** at column A.
 2. Type at payment: `brand_id` (next BR-###), `clay_row_id` (as on Brand_Log), `tier`, `price_usd` (600 founding, 1500 standard, plus 150 per extra office), `offices_count`, `payment_terms` (as in the signed agreement), `agreement_signed_date`, `invoice_id`, `invoice_date`, `payment_1_usd`, `payment_1_date`, `agreement_version`, `unused_product_election` (as elected in the agreement), and from the agreement's Part 1 `brand_legal_name`, `billing_address`, `billing_email`. `payment_received_date` fills itself from `payment_1_date`. `campaign_id` waits for operations to assign the CMP-###.
 3. Type as each arrives (the request is `messages/11-brand-post-call-conversion.md`, step 8): `coi_received_date` and `coi_policy_end_date` (checked against `desk-drop-legal-pack/11-coi-request-brand-product-liability.md`), `allergen_sheet_received_date`, `logo_received_date`, `card_sentences`, `allergen_line_verbatim` and `may_contain_verbatim` (word for word from the package), `allergen_source`, `retailer_line`, `discount_code`, `code_site` (where the code works, without https://), `landing_url`, `newsletter_option` and `brand_privacy_url`. Two-flavor campaigns only: `flavor_name`, `flavor_name_2` and the `_2` allergen columns.
-4. **Your own qualification checks, before any ship date.** The `q1` to `q7` intake columns are the brand's own answers. The `verified_` columns are yours: Y only when you have seen the evidence (a unit or a spec sheet with a best-by date that leaves 60 days at the drop; the label; the store's own site or your own visit; the shipping confirmation in writing; the certificate; the signer's authority; the why-now). `verified_not_excluded` = Y only after checking the excluded list (CONTRACTS section 4). Put the evidence in `verified_notes` and the date in `verified_date`. Operations will not confirm a ship date until every `verified_` column is Y.
+4. **Your own qualification checks, before any ship date.** The `q1` to `q7` intake columns are the brand's own answers. The `verified_` columns are yours: Y only when you have seen the evidence (a unit or a spec sheet with a best-by date that leaves 60 days at the drop; the label; the store's own site or your own visit; the shipping confirmation in writing; the certificate; the signer's authority; the why-now). `verified_not_excluded` = Y only after checking the excluded list (CONTRACTS section 4). Put the evidence in `verified_notes` and the date in `verified_date`. Do not confirm a ship date until every `verified_` column is Y: the plan qualifies a brand only when all seven are true (Phase 2, "Brand qualification checklist").
 5. `office_approvals`: the `office_id`s that said yes to this brand, separated by semicolons (each office approves explicitly for its first three drops, `messages/10`, step 7).
 6. Standard brands: when the balance lands, `payment_2_usd` and `payment_2_date`.
 7. In Clay, set the brand's `status` to `paid` the day the first payment lands.
@@ -56,7 +56,7 @@ What each event row comes from:
 | --- | --- | --- | --- | --- | --- | --- |
 | `outreach_sent` | each touch (1, 2, 3) on a Clay row | the touch date | blank | blank | blank | `touch_1; <sequence>; <channel>` |
 | `conversation` | each Office_Log or Brand_Log row | `call_date` | blank | blank | blank | the call type |
-| `yes_in_principle` (office) | each office conversation with Y **and** a pantry owner **and** a receiving window (the financial model's rule) | `call_date` | blank | blank | blank | owner title and window |
+| `yes_in_principle` (office) | each office conversation with Y **and** a pantry owner **and** a receiving window (the financial model's rule), **while the yes stands**: one dated on or before Gate 0 only if the office's latest answer on Gate 0 day was still Y, a later one only if its latest answer on the as-of date is Y (review round 2; a later N or maybe withdraws it) | `call_date` | blank | blank | blank | owner title and window |
 | `yes_in_principle` (brand) | each brand conversation with Y | `call_date` | blank | blank | Y/N | blank |
 | `budget_probe` (office) | each office conversation with a probe answer | `call_date` | USD a month, low end; 0 for no budget; blank if no number | the answer, verbatim | blank | the high end if a range |
 | `budget_probe` (brand, before $1,500) | each brand conversation with a before-answer | `call_date` | USD per campaign; blank if no number | verbatim | Y/N | blank, or `before_1500; <unit note>` |
@@ -66,7 +66,7 @@ What each event row comes from:
 | `renewal_answer` | each `later_events` row of that type | its date | USD committed if yes, else blank | `yes`, `maybe` or `no` | blank | its notes |
 | `opt_out` | each `later_events` row of that type: **a signed office or a paid brand leaving the roster** | its date | blank | the reason | blank | its notes |
 
-`org_id` is always the Clay `row_id` (for signed and paid rows, the `clay_row_id` you typed), so one organization keeps one id from its first touch to its last, as the financial model asks.
+`org_id` is the Clay `row_id` of the organisation's first conversation in the logs (review round 3): every row of one organisation (`calc_org` on the logs: the typed `org_key`, else A's `company_group` when it links rows, else the company name) gets that one id, and so do its signed, paid, later and outreach rows, found through the `clay_row_id` or the Clay row's `row_id`. Two contacts at one company are therefore one `org_id`, as the financial model asks ("one organization must keep one ID from its first event to its last"). A Clay row with no log row keeps its own `row_id`; for `outreach_sent`, which the model only counts, that is harmless.
 
 **Two rules that matter for the financial model.**
 - **An outreach unsubscribe is not a pipeline `opt_out`.** The financial model counts active offices as signed offices minus office `opt_out` events (`financial-model/_work/build_model.py`, Pipeline summary, "Active offices, to date (signed less opted out)"). Exporting every "no thanks" from cold email would push that number down, even below zero. So unsubscribes live only in Clay (`do_not_contact`, `opt_out_date`), and `opt_out` in this file means a signed office or paid brand that left. Log those on the tracker's `later_events` tab.
@@ -83,7 +83,7 @@ What each event row comes from:
 | `row_id` | whatever the Clay tables use (CONTRACTS 6.2) | By the Clay table when a contact is added | Changed or reused |
 | `office_id` | O-### | At signing, next number | Reused, even if an office leaves |
 | `brand_id` | BR-### | At first payment, next number. A brand keeps it for every later campaign (the financial model counts renewals by it) | A second id for the same brand |
-| `org_id` (pipeline) | the Clay `row_id` | Automatically | Typed by hand |
+| `org_id` (pipeline) | the Clay `row_id` of the organisation's first conversation | Automatically | Typed by hand |
 
 One row per office on `signed_offices` and one per brand on `paid_brands`; the Scorecard flags a duplicate `clay_row_id`. A brand's second campaign is a renewal answer on `later_events` and a new campaign row on operations' side, not a second `paid_brands` row.
 
@@ -234,7 +234,12 @@ Generated from `tools/build_tracker.py`; the same text is on the tracker's Dicti
 
 ## Changelog
 
-Round numbers are part B's rounds; a round that did not change this file is not listed.
+Rounds 1 to 6 are the build rounds of the calls, sending, tracking and handoff files; a round that did not change this file is not listed. "Merge" is the step that joined them with the message files.
 
 - Round 1 (2026-10-24): fill steps for both handoff tabs and the pipeline export; event table checked against `tools/test_tracker.py` (every row of the SAMPLE export matches an independent computation); `opt_out` narrowed to roster exits after reading the financial model's active-office formula; column tables generated from the builder.
 - Round 2 (2026-10-24): the SAMPLE export pasted into a scratch copy of the financial model passes H's own header, text and event checks, and H's Gate 0 and Gate 1 counts and medians equal the tracker's (`tools/test_h_compat.py`); added the ten columns operations requests (`campaign-ops/tools/trackerdef.py`, read 2026-10-24).
+- Round 3 (2026-10-24): read-through: the schema line now says the additions are for the legal pack and operations; a claim about how operations' tool gates ship dates (not checked) replaced by the plan's own rule.
+- Merge (2026-10-24): header line unified with the rest of the folder; no content change.
+- Review round 1 (2026-10-24): the live handoff and pipeline files ship header-only; the SAMPLE rows moved to `SAMPLE-` files beside them, so a premature paste cannot put fake counts into Gate 0 or Gate 1.
+- Review round 2 (2026-10-24): an office's `yes_in_principle` event is exported only while its yes stands (a withdrawn yes is left out); the SAMPLE files hold five signed offices that all approve the paid brand before its agreement.
+- Review round 3 (2026-10-24): the pipeline `org_id` is the organisation's first `row_id`, so two contacts at one company are one organisation for the financial model; the signed office's budget probe is the organisation's first answer.

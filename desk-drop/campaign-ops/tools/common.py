@@ -94,8 +94,32 @@ def render(html_path, pdf_path=None, png_path=None, landscape=False, width=None)
         return {"ok": False, "errors": [r.stderr[-500:]]}
 
 
+TEXT_BANNER = "SAMPLE. Test data only: illustrative placeholders, not results. Never send or print for use."
+
+
 def write(path, text):
+    """Write a generated file. A text draft (.md, .txt) built on SAMPLE rows starts with the SAMPLE banner line
+    (CONTRACTS section 2; review round 1, R1-10). Every SAMPLE ID and text starts with SAMPLE, so a draft that holds
+    the word SAMPLE was built on sample data; a real draft never does."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
+    if path.endswith((".md", ".txt")) and "SAMPLE" in text and not text.startswith(TEXT_BANNER):
+        text = TEXT_BANNER + "\n\n" + text
     with open(path, "w", encoding="utf-8") as f:
         f.write(text)
     return path
+
+
+def brand_name():
+    """BRAND_NAME from desk-drop-identity/brand.json: the name the printed pieces (cards, labels, report) carry."""
+    return json.load(open(os.path.join(IDENTITY, "brand.json"), encoding="utf-8"))["BRAND_NAME"]
+
+
+def require_same_name(tr):
+    """A rename must reach both places the same day: the tracker's company_name (config!B2), which the text documents
+    print, and desk-drop-identity/brand.json, which the printed pieces print. Refuse (exit 2) while they differ, so a
+    kit can never carry two names (review round 1, R1-04)."""
+    want = brand_name()
+    if (tr.company_name or "").strip() != want.strip():
+        print("REFUSED: the name differs. The tracker's company_name (config!B2) says %r; desk-drop-identity/brand.json "
+              "(BRAND_NAME) says %r. Change config!B2 and brand.json together (README, Rename), then run this again." % (tr.company_name, want))
+        sys.exit(2)

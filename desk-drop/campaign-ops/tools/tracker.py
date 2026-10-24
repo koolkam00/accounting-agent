@@ -243,10 +243,12 @@ class Tracker:
         resp = self.response_rows(cid) or []
         inwin = [x for x in resp if T0 and _d(x["ts"]) and T0 <= _d(x["ts"]) <= win_end] if T0 else []
         scans = self.rows["scans"]
+        did = _s(c["drop_id"])
+        stop_out = {_s(x["office_id"]): _s(x.get("outcome")) for x in self.rows["stops"] if _s(x["drop_id"]) == did}
+        frozen = {_s(x["office_id"]): x for x in self.rows.get("survey_frozen", []) if _s(x["campaign_id"]) == cid}
         offices = []
         seq = 0
         for a in self.approvals_for(cid):
-            seq += 1
             oid = _s(a["office_id"])
             o = self.office(oid)
             n_drop = self.office_drop_number(oid, T0)
@@ -264,6 +266,12 @@ class Tracker:
             dts = [dt.datetime.combine(_d(r["date"]), _t(r["time"]) or dt.time(0)) for r in dl if _d(r["date"])]
             delivered_at = max(dts) if dts else None
             dsrc = _s(dl[0]["count_source"]) if dl else ""
+            # On the drop (review round 1, R1-02): approved, and not turned away at the door.
+            refused = stop_out.get(oid) in REFUSED
+            on_drop = "N" if approved == "N" else ("pending" if approved != "Y" else ("N" if (refused and delivered == 0) else "Y"))
+            # Letters run over offices that took the brand (the sheet's office_seq does the same).
+            if on_drop != "N":
+                seq += 1
             usable = lambda r: _s(r["no_people_or_screens"]) == "Y" and (_s(r["photo_type"]) == "later" or _s(r["card_visible"]) == "Y")
             pp = [r for r in mine(phs, photo_type="placement") if usable(r)]
             pp0 = pp[0] if pp else None
@@ -301,13 +309,14 @@ class Tracker:
                     return None
                 return max(close) - (max(base) if base else 0)
 
-            label = chr(64 + seq)
-            if _s(self.config.get("report_office_names")) == "names_if_public" and _s(o.get("public_naming_ok")) == "Y":
+            label = chr(64 + seq) if on_drop != "N" else ""
+            if label and _s(self.config.get("report_office_names")) == "names_if_public" and _s(o.get("public_naming_ok")) == "Y":
                 label = _s(o.get("company"))
             offices.append({
-                "office_id": oid, "company": _s(o.get("company")), "seq": seq, "office_label": label,
+                "office_id": oid, "company": _s(o.get("company")), "seq": seq if on_drop != "N" else "", "office_label": label,
                 "industry": _s(o.get("industry")), "headcount_band": o["headcount_band"], "tuesday_headcount": o["tuesday_headcount"],
-                "office_drop_number": n_drop, "approval_mode": mode, "approved": approved,
+                "office_drop_number": n_drop, "approval_mode": mode, "approved": approved, "on_drop": on_drop,
+                "stop_outcome": stop_out.get(oid, ""), "turned_away": approved == "Y" and on_drop == "N",
                 "units_allocated": units_alloc, "card_code": code,
                 "units_delivered": delivered, "delivered_at": delivered_at, "delivered_count_source": dsrc,
                 "placement_photo_file": _s(pp0["file_name"]) if pp0 else "", "placement_photo_date": pdate,
@@ -323,9 +332,17 @@ class Tracker:
                 "buy_yes": count(lambda x: x["buy"] == "Yes"), "buy_maybe": count(lambda x: x["buy"] == "Maybe"),
                 "buy_no": count(lambda x: x["buy"] == "No"), "comments": count(lambda x: x["comment"].strip() != ""),
                 "qr_scans": delta(qslug), "post_link_opens": delta(pslug), "qr_slug": qslug, "post_slug": pslug,
+                "survey_frozen": "Y" if oid in frozen else "",
             })
+            if oid in frozen and T0:
+                # The raw answers were deleted after 12 months: the frozen totals stand in (R1-12).
+                fz = frozen[oid]
+                for k in FROZEN_COLS:
+                    offices[-1][k] = int(_n(fz.get(k)))
         tot = lambda k: sum((o[k] or 0) for o in offices)
         approved = [o for o in offices if o["approved"] == "Y"]
+        ondrop = [o for o in offices if o["on_drop"] == "Y"]
+        deleted = _d(c.get("answers_deleted_date")) is not None
         rn = tot("rating_n")
         inv_rows = [r for r in self.rows["invoices"] if _s(r["campaign_id"]) == cid]
         reds = [r for r in self.rows["redemptions"] if _s(r["campaign_id"]) == cid and _d(r["as_of_date"])]
@@ -336,10 +353,11 @@ class Tracker:
         red30 = sum(_n(r["redemptions_to_date"]) for r in d30 if _d(r["as_of_date"]) == d30d) if d30d else None
         paid_dates = lambda types: [_d(r["paid_date"]) for r in inv_rows if _s(r["invoice_type"]) in types and _d(r["paid_date"])]
         deposit_rows = [r for r in inv_rows if _s(r["invoice_type"]) == "standard_deposit" and _d(r["paid_date"])]
-        depleted_all = [o["units_depleted_day5"] for o in offices]
+        depleted_all = [o["units_depleted_day5"] for o in ondrop]
         camp = {
             "campaign": c, "offices": offices, "drop_date": T0, "window_end": win_end,
-            "offices_on_route": len(offices), "offices_approved": len(approved),
+            "offices_on_route": len(offices), "offices_approved": len(approved), "offices_on_drop": len(ondrop),
+            "turned_away": [o for o in offices if o["turned_away"]],
             "units_allocated": sum(o["units_allocated"] or 0 for o in approved),
             "units_received": sum(_n(r["qty"]) for r in inv if _s(r["movement"]) == "received"),
             "units_rejected": sum(_n(r["qty"]) for r in inv if _s(r["movement"]) == "rejected"),
@@ -348,15 +366,15 @@ class Tracker:
             "units_topped_up": tot("units_topped_up"),
             "units_depleted_day5": None if any(x is None for x in depleted_all) else sum(depleted_all),
             "survey_responses": tot("survey_responses"),
-            "survey_responses_min_office": min((o["survey_responses"] for o in offices), default=None),
+            "survey_responses_min_office": min((o["survey_responses"] for o in ondrop), default=None),
             "survey_tried_yes": tot("tried_yes"), "tried_no_didnt_see": tot("tried_no_didnt_see"),
             "tried_no_not_for_me": tot("tried_no_not_for_me"), "tried_no_gone": tot("tried_no_gone"),
             "survey_rating_n": rn, "survey_rating_avg": xround(tot("rating_sum") / rn, 1) if rn else None,
             "survey_buy_yes": tot("buy_yes"), "survey_buy_maybe": tot("buy_maybe"), "survey_buy_no": tot("buy_no"),
             "comments_total": tot("comments"),
             "responses_in_window": len(inwin), "responses_total": len(resp),
-            "responses_outside_window": len(resp) - len(inwin),
-            "responses_unmatched_code": len(inwin) - tot("survey_responses"),
+            "responses_outside_window": None if deleted else len(resp) - len(inwin),
+            "responses_unmatched_code": None if deleted else len(inwin) - tot("survey_responses"),
             "qr_scans": sum(o["qr_scans"] or 0 for o in offices), "post_link_opens": sum(o["post_link_opens"] or 0 for o in offices),
             "code_redemptions_to_date": red_to_date, "code_redemptions_as_of": asof, "code_redemptions_day30": red30,
             "revenue_usd": round(sum(_n(r["amount_usd"]) for r in inv_rows), 2),
@@ -367,7 +385,7 @@ class Tracker:
             "reserve_on_hand": sum(reserve_delta(r) for r in inv), "leftover_on_hand": sum(leftover_delta(r) for r in inv),
         }
         camp["placed_share_1bd"] = (camp["units_placed_within_1bd"] / camp["units_delivered"]) if camp["units_delivered"] else None
-        camp["photo_compliance"] = (sum(1 for o in offices if o["both_photos"] == "Y") / len(offices)) if offices else None
+        camp["photo_compliance"] = (sum(1 for o in ondrop if o["both_photos"] == "Y") / len(ondrop)) if ondrop else None
         camp.update(self.money(cid, c, camp))
         return camp
 
@@ -391,6 +409,46 @@ class Tracker:
                 "contribution_usd": xround(contribution, 2), "contribution_per_hour_usd": xround(contribution / hours, 2) if hours else None,
                 "cost_share": share}
 
+    def brand_qualified(self, bid):
+        """The brands tab's qualified column, recomputed: all seven checks a plain yes and not an excluded product."""
+        if bid not in self.brands:
+            return False, "brand_id not on brands"
+        b = self.brand(bid)
+        qs = ["q1_sealed_shelf_stable_60d", "q2_labeled_ingredients_allergens", "q3_buy_path_near_cluster",
+              "q4_can_ship_275_in_10bd", "q5_product_liability_insurance", "q6_contact_can_approve_600"]
+        fails = [str(i + 1) for i, q in enumerate(qs) if _s(b.get(q)) != "Y"]
+        if not _s(b.get("q7_why_now")).strip():
+            fails.append("7")
+        ok = not fails and _s(b.get("excluded_category_confirmed")) == "Y"
+        return ok, ("Y (as answered)" if ok else "N: check " + " ".join(fails) + (" excluded?" if _s(b.get("excluded_category_confirmed")) != "Y" else ""))
+
+    def release_status(self, cid, lad=None):
+        """The sheet's ship_release rule, recomputed: RELEASED, or HOLD with the reasons."""
+        lad = lad or self.ladder(cid)
+        c = lad["campaign"]
+        paid = sum(_n(r["paid_amount_usd"]) for r in self.rows["invoices"] if _s(r["campaign_id"]) == cid
+                   and _s(r["invoice_type"]) in ("founding_full", "standard_deposit") and _d(r.get("paid_date")))
+        price = c["price_usd"] or 0
+        due = price if _s(c["tier"]) == "founding" else xround(price * _n(self.config["deposit_share"]), 2)
+        b = self.brands.get(_s(c["brand_id"]), {})
+        why = []
+        if not due or paid < due:
+            why.append("payment (%s of %s)" % (int(paid), int(due or 0)))
+        if not _d(c.get("agreement_signed_date")):
+            why.append("agreement")
+        if not (_d(c.get("coi_received_date")) and _s(b.get("coi_check_ok")) == "Y"):
+            why.append("certificate")
+        if not self.brand_qualified(_s(c["brand_id"]))[0]:
+            why.append("qualification")
+        if lad["drop_date"] is None:
+            why.append("drop date")
+        pending = sum(1 for o in lad["offices"] if o["approved"] == "pending")
+        if pending:
+            why.append("approvals (%d pending)" % pending)
+        if lad["offices_approved"] == 0:
+            why.append("no office approved")
+        return "RELEASED" if not why else "HOLD: " + " ".join(why)
+
     def _approved(self, cid, a):
         c = self.campaigns[cid]
         T0 = self.drop_date(_s(c["drop_id"]))
@@ -411,7 +469,13 @@ class Tracker:
         stops = [s for s in self.rows["stops"] if _s(s["drop_id"]) == did]
         direct = by("kit") + by("transport") + by("other_direct")
         contrib = rev - fee - direct
-        return {"revenue_usd": rev, "kit_cost_usd": by("kit"), "transport_cost_usd": by("transport"),
+        lads = [self.ladder(x) for x in camps]
+        dl = sum(l["units_delivered"] for l in lads)
+        resp = [o["survey_responses"] for l in lads for o in l["offices"] if o["on_drop"] == "Y"]
+        g2 = {"gate2_placed_share": (sum(l["units_placed_within_1bd"] for l in lads) / dl) if dl else None,
+              "gate2_min_responses": min(resp) if resp else None,
+              "gate2_buy_again_yes": sum(1 for x in camps if _s(self.campaigns[x].get("brand_would_buy_again")) == "yes")}
+        return {**g2, "revenue_usd": rev, "kit_cost_usd": by("kit"), "transport_cost_usd": by("transport"),
                 "other_direct_cost_usd": by("other_direct"), "direct_cost_usd": round(direct, 2), "stops": len(stops),
                 "cost_per_stop_usd": xround(direct / len(stops), 2) if stops else None, "hours": hours,
                 "contribution_usd": xround(contrib, 2), "contribution_per_hour_usd": xround(contrib / hours, 2) if hours else None,
@@ -465,6 +529,9 @@ def slug(cid, oid, kind):
 
 
 PILE = ("returned_to_brand", "given_to_roster_office", "released_to_office", "disposed")
+REFUSED = ("declined", "building_refused", "not_delivered")   # stop outcomes that leave an office off the drop
+FROZEN_COLS = ("survey_responses", "tried_yes", "tried_no_didnt_see", "tried_no_not_for_me", "tried_no_gone", "rating_n",
+               "rating_sum", "buy_yes", "buy_maybe", "buy_no", "comments")
 
 
 def reserve_delta(r):
@@ -492,7 +559,7 @@ def leftover_delta(r):
 
 
 # ------------------------------------------------------------ comparison with the sheet's formulas
-APPROVAL_COMPARE = ["approved", "units_allocated", "units_delivered", "units_placed", "placed_within_1bd", "units_topped_up",
+APPROVAL_COMPARE = ["approved", "on_drop", "survey_frozen", "units_allocated", "units_delivered", "units_placed", "placed_within_1bd", "units_topped_up",
                     "units_depleted_day5", "survey_responses", "tried_yes", "rating_n", "buy_yes", "buy_maybe", "buy_no",
                     "comments", "qr_scans", "post_link_opens", "both_photos", "later_photo_day", "office_label",
                     "placement_photo_file", "later_photo_file", "placement_lag_hours"]
@@ -501,8 +568,8 @@ CAMPAIGN_COMPARE = ["units_received", "units_delivered", "units_placed", "units_
                     "survey_rating_n", "survey_rating_avg", "survey_buy_yes", "survey_buy_maybe", "survey_buy_no",
                     "comments_total", "qr_scans", "post_link_opens", "code_redemptions_to_date", "code_redemptions_day30",
                     "revenue_usd", "deposit_usd", "processing_fee_usd", "direct_cost_usd", "shared_cost_usd",
-                    "contribution_usd", "contribution_per_hour_usd", "reserve_on_hand", "leftover_on_hand",
-                    "responses_outside_window", "responses_unmatched_code", "offices_approved", "units_allocated"]
+                    "contribution_usd", "contribution_per_hour_usd", "reserve_on_hand", "leftover_on_hand", "photo_compliance",
+                    "responses_outside_window", "responses_unmatched_code", "offices_approved", "offices_on_drop", "units_allocated"]
 
 
 def _eq(a, b):
@@ -529,6 +596,10 @@ def compare(tr):
         for k in CAMPAIGN_COMPARE:
             if not _eq(lad.get(k), cc.get(k)):
                 bad.append("campaigns %s %s: python=%r sheet=%r" % (cid, k, lad.get(k), cc.get(k)))
+        # The ship release: the same verdict both ways (the kit and the ship-date email use the Python one).
+        py_rel, sh_rel = tr.release_status(cid, lad), _s(cc.get("ship_release"))
+        if py_rel.startswith("RELEASED") != sh_rel.startswith("RELEASED"):
+            bad.append("campaigns %s ship_release: python=%r sheet=%r" % (cid, py_rel, sh_rel))
         byo = {o["office_id"]: o for o in lad["offices"]}
         for r, acc in ap_cache:
             if _s(r["campaign_id"]) != cid:
@@ -541,7 +612,8 @@ def compare(tr):
     for did in tr.drops:
         m = tr.drop_money(did)
         for k in ("revenue_usd", "kit_cost_usd", "transport_cost_usd", "other_direct_cost_usd", "direct_cost_usd",
-                  "cost_per_stop_usd", "hours", "contribution_usd", "contribution_per_hour_usd"):
+                  "cost_per_stop_usd", "hours", "contribution_usd", "contribution_per_hour_usd", "gate2_placed_share",
+                  "gate2_min_responses", "gate2_buy_again_yes"):
             if not _eq(m.get(k), dcache[did].get(k)):
                 bad.append("drops %s %s: python=%r sheet=%r" % (did, k, m.get(k), dcache[did].get(k)))
     return bad

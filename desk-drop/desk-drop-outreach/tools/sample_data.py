@@ -9,7 +9,7 @@ import datetime as dt
 D = dt.date
 AS_OF = D(2026, 12, 11)   # Gate 1 day; fixed so the test does not depend on the day it runs
 START = D(2026, 10, 26)   # week 1 Monday; no outreach before this
-DOMAIN_EMAIL_FROM = D(2026, 11, 2)   # week 2 Monday: first cold email from the new domain (sending guide)
+DOMAIN_EMAIL_FROM = D(2026, 11, 9)   # week 3 Monday: the earliest first cold email from the new domain (sending guide, review round 1)
 HOLIDAYS = {D(2026, 11, 11)}
 
 
@@ -34,14 +34,17 @@ _o = [
     ("SAMPLE-O-005", D(2026, 11, 3), "maybe", "N", "", 150, "SAMPLE: zero, it would come out of my budget", 0, 0, "Y", None, ["needs_approval", "building_receiving"], 7, "phone", "linkedin"),
     ("SAMPLE-O-006", D(2026, 11, 4), "Y", "Y", "SAMPLE Tue 8-10am", 55, "SAMPLE: fifty dollars, maybe", 50, 50, "Y", 300, ["allergy_policy"], 11, "in-person", "walk-in"),
     ("SAMPLE-O-007", D(2026, 11, 5), "N", "Y", "", 200, "SAMPLE: wouldn't want to say", None, None, "Y", 2500, ["commitments_too_much"], 6, "video", "linkedin"),
-    ("SAMPLE-O-008", D(2026, 11, 9), "Y", "Y", "SAMPLE Wed 9-12", 70, "SAMPLE: we would not pay", 0, 0, "Y", 600, ["allergy_policy", "needs_approval"], 10, "phone", "email"),
+    ("SAMPLE-O-008", D(2026, 11, 9), "Y", "Y", "SAMPLE Wed 9-12", 70, "SAMPLE: we would not pay", 0, 0, "Y", 600, ["allergy_policy", "needs_approval"], 10, "phone", "warm-intro"),
     ("SAMPLE-O-009", D(2026, 11, 10), "N", "N", "", 35, "", None, None, "N", None, ["existing_vendor"], 5, "phone", "linkedin"),
     ("SAMPLE-O-010", D(2026, 11, 10), "Y", "Y", "SAMPLE Tue 10-11", 110, "SAMPLE: $200 to $400 if the team votes on it", 200, 400, "Y", 1200, [], 9, "video", "warm-intro"),
-    ("SAMPLE-O-011", D(2026, 11, 12), "Y", "N", "SAMPLE Tue 9-11", 80, "", None, None, "N", None, ["needs_approval"], 8, "phone", "email"),
-    ("SAMPLE-O-012", D(2026, 11, 12), "maybe", "Y", "", 95, "SAMPLE: a hundred a month, tops", 100, 100, "Y", 900, ["building_receiving"], 13, "video", "email"),
+    ("SAMPLE-O-011", D(2026, 11, 12), "Y", "N", "SAMPLE Tue 9-11", 80, "", None, None, "N", None, ["needs_approval"], 8, "phone", "linkedin"),
+    ("SAMPLE-O-012", D(2026, 11, 12), "maybe", "Y", "", 95, "SAMPLE: a hundred a month, tops", 100, 100, "Y", 900, ["building_receiving"], 13, "video", "linkedin"),
     ("SAMPLE-O-013", D(2026, 11, 13), "Y", "Y", "SAMPLE Tue 9am", 65, "", None, None, "N", None, [], 9, "in-person", "walk-in"),
     ("SAMPLE-O-001", D(2026, 11, 6), "Y", "Y", "SAMPLE Tue-Wed 9-11am", 62, "SAMPLE: $150 a month", 150, 150, "Y", 800, ["allergy_policy"], 6, "phone", "warm-intro"),
     ("SAMPLE-O-014", D(2026, 11, 16), "Y", "Y", "SAMPLE Wed 8-9am", 75, "", None, None, "N", None, ["needs_approval"], 9, "video", "email"),
+    # review round 2 (R2-02): a withdrawn yes. O-004 said yes with an owner and a window on 11-02, then no on 11-12;
+    # it must not count for Gate 0 on 11-13, and the pipeline export must not carry its yes
+    ("SAMPLE-O-004", D(2026, 11, 12), "N", "Y", "", 90, "", None, None, "N", None, ["needs_approval"], 8, "phone", "linkedin"),
 ]
 
 OFFICE_LOG = []
@@ -103,7 +106,7 @@ for (rid, d, wb, wbv, ctl, men, wa, wav, objs, nm) in _b:
     BRAND_LOG.append({
         "row_id": rid, "company": f"SAMPLE Brand {n:02d}", "contact_name": f"SAMPLE Contact B{n:02d}",
         "contact_title": "Founder" if n % 2 else "Head of Marketing", "source": "SAMPLE Clay brands table",
-        "channel": ("email" if d >= D(2026, 11, 6) else "warm-intro") if n % 3 else "linkedin", "call_date": d, "call_type": "video",
+        "channel": ("email" if d >= D(2026, 11, 16) else "warm-intro") if n % 3 else "linkedin", "call_date": d, "call_type": "video",
         "q1_trial_now_verbatim": "SAMPLE: demos at two stores", "q2_sampling_budget_quarter_low_usd": 1000 * (n % 5),
         "q2_sampling_budget_quarter_high_usd": 1000 * (n % 5) + 500, "q2_budget_verbatim": "SAMPLE: a few thousand a quarter",
         "budget_approver": "SAMPLE: me" if ctl == "Y" else "SAMPLE: my cofounder", "controls_budget": ctl,
@@ -133,7 +136,8 @@ CLAY_HEADERS = ["SAMPLE_extra_enrichment", "company", "row_id", "first_name", "l
                 "nearest_retailer_grade", "why_now", "why_now_url", "why_now_date", "known_to_founder", "startup_cpg_member",
                 "status", "do_not_contact", "source_url", "found_date",
                 "touch_1_date", "sequence", "touch_2_date", "touch_3_date", "last_reply_date", "reply_type", "call_date",
-                "call_notes", "yes_in_principle", "next_action", "next_action_date", "opt_out_date", "referral_from"]
+                "call_notes", "yes_in_principle", "next_action", "next_action_date", "opt_out_date", "referral_from",
+                "company_group"]      # A's group key: the row_id for a row on its own (review round 3)
 
 
 def _clay_rows(side, log):
@@ -155,7 +159,8 @@ def _clay_rows(side, log):
                     "row_id": rid, "first_name": "SAMPLE", "last_name": f"Contact {letter}{n:02d}", "title": "Office Manager" if side == "office" else "Founder",
                     "email_status": "verified", "channel": "email" if n % 4 else "linkedin", "score": 100 - n,
                     "score_reason": "SAMPLE: score reason", "do_not_contact": "N", "status": "contacted",
-                    "sequence": f"{side}-discovery-{'A' if n % 2 else 'B'}", "touch_1_date": t1, "found_date": D(2026, 10, 22)})
+                    "sequence": f"{side}-discovery-{'A' if n % 2 else 'B'}", "touch_1_date": t1, "found_date": D(2026, 10, 22),
+                    "company_group": rid})
         if row["channel"] == "email" and t1 < DOMAIN_EMAIL_FROM:
             row["channel"] = "linkedin"
         if n % 5 != 0:
@@ -171,9 +176,11 @@ def _clay_rows(side, log):
             row["last_reply_date"] = min(add_bd(row["touch_1_date"], 1), first["call_date"])
             row["reply_type"] = "yes"
             row["call_date"] = last["call_date"]
-            any_yes = any(c["yes_in_principle"] == "Y" for c in calls)
-            row["yes_in_principle"] = "Y" if any_yes else "N"
-            row["status"] = "yes_in_principle" if any_yes else "call_done"
+            # Clay's yes_in_principle follows the latest answer (review round 2, R2-02)
+            answered = [c for c in calls if c["yes_in_principle"] in ("Y", "N", "maybe")]
+            standing = bool(answered) and answered[-1]["yes_in_principle"] == "Y"
+            row["yes_in_principle"] = "Y" if standing else "N"
+            row["status"] = "yes_in_principle" if standing else "call_done"
             row["call_notes"] = f"SAMPLE: see tracker {last['call_date'].isoformat()}"
             row["channel"] = first["channel"]
         else:
@@ -186,7 +193,7 @@ def _clay_rows(side, log):
             elif rt == "no":
                 row["status"] = "no"
             elif rt == "not_now":
-                row["status"], row["next_action"], row["next_action_date"] = "not_now", "recontact", D(2027, 1, 18)
+                row["status"], row["next_action"], row["next_action_date"] = "not_now", "recontact", D(2027, 1, 19)
             elif rt == "maybe":
                 row["status"] = "replied"
             elif rt == "bounce":
@@ -212,7 +219,8 @@ _set(CLAY_OFFICES, "SAMPLE-O-004", status="replied")                    # logged
 _set(CLAY_OFFICES, "SAMPLE-O-006", yes_in_principle="")                 # Clay yes_in_principle not copied
 _set(CLAY_OFFICES, "SAMPLE-O-020", status="call_done", reply_type="yes", last_reply_date=D(2026, 11, 3))  # no tracker row
 _set(CLAY_OFFICES, "SAMPLE-O-030", do_not_contact="Y")                  # flag Y but status contacted
-_set(CLAY_OFFICES, "SAMPLE-O-001", status="signed")                     # matches signed_offices
+for _rid in ("SAMPLE-O-001", "SAMPLE-O-006", "SAMPLE-O-008", "SAMPLE-O-010", "SAMPLE-O-013"):
+    _set(CLAY_OFFICES, _rid, status="signed")                           # match signed_offices (five, review round 2)
 _set(CLAY_BRANDS, "SAMPLE-B-009", status="call_booked")                 # logged call, Clay still says call_booked
 _set(CLAY_BRANDS, "SAMPLE-B-021", status="paid")                        # no paid_brands row
 _set(CLAY_BRANDS, "SAMPLE-B-001", status="paid")                        # matches paid_brands
@@ -234,6 +242,22 @@ SIGNED_OFFICES = [{
     "public_naming_ok": "N", "building_id": "SAMPLE-B-B-001",
 }]
 SIGNED_OFFICES[0]["office_id"] = "SAMPLE-O-101"
+# review round 2 (R2-16): the SAMPLE data obeys the gate it illustrates. Five offices sign before any brand agreement
+# (the paid brand's agreement is Tue 2026-12-01), and all five approve the brand (office_approvals).
+for _k, (_rid, _signed, _hc, _win) in enumerate((("SAMPLE-O-006", D(2026, 11, 23), 55, "SAMPLE Tue 8-10am"),
+                                                  ("SAMPLE-O-008", D(2026, 11, 24), 70, "SAMPLE Wed 9-12"),
+                                                  ("SAMPLE-O-010", D(2026, 11, 25), 110, "SAMPLE Tue 10-11"),
+                                                  ("SAMPLE-O-013", D(2026, 11, 30), 65, "SAMPLE Tue 9am")), start=2):
+    _n = int(_rid[-2:])
+    _row = dict(SIGNED_OFFICES[0])
+    _row.update({"submitted_at": f"{(_signed - dt.timedelta(days=3)).isoformat()} 11:0{_k}", "company": f"SAMPLE Office {_n:02d}",
+                 "contact_name": f"SAMPLE Contact O{_n:02d}", "contact_email": f"SAMPLE-contact@SAMPLE-office-{_n:02d}.example",
+                 "office_address": f"SAMPLE {_n} Example Street, New York, NY", "floor_suite": f"SAMPLE Floor {_k + 2}",
+                 "tuesday_headcount": _hc, "pantry_owner_name": f"SAMPLE Owner O{_n:02d}", "receiving_window": _win,
+                 "office_id": f"SAMPLE-O-10{_k}", "clay_row_id": _rid, "agreement_signed_date": _signed,
+                 "agreement_file": f"SAMPLE-participation-agreement-office-{_n:02d}.pdf",
+                 "pantry_owner_email": f"SAMPLE-owner@SAMPLE-office-{_n:02d}.example", "building_id": f"SAMPLE-B-B-00{_k}"})
+    SIGNED_OFFICES.append(_row)
 
 PAID_BRANDS = [{
     "submitted_at": "2026-11-25 15:40", "form_version": "brand-1.0", "brand_name": "SAMPLE Brand 01",
@@ -255,7 +279,7 @@ PAID_BRANDS = [{
     "card_sentences": "SAMPLE: two sentences from the brand about who makes it and why.",
     "allergen_line_verbatim": "SAMPLE: Contains: almonds, milk.", "retailer_line": "SAMPLE: Find it at SAMPLE Store, SAMPLE street",
     "discount_code": "SAMPLECODE10", "landing_url": "https://SAMPLE-brand-01.example/office",
-    "unused_product_election": "release", "office_approvals": "SAMPLE-O-101",
+    "unused_product_election": "release", "office_approvals": "SAMPLE-O-101;SAMPLE-O-102;SAMPLE-O-103;SAMPLE-O-104;SAMPLE-O-105",
     "payment_1_usd": 600, "payment_1_date": D(2026, 12, 3), "payment_2_usd": None, "payment_2_date": None,
     "agreement_version": "0.8", "coi_policy_end_date": D(2027, 9, 30), "newsletter_option": "N",
     "brand_privacy_url": "https://SAMPLE-brand-01.example/privacy", "allergen_source": "contains_statement",

@@ -39,6 +39,9 @@ def destination(template, card_code, cid, oid, kind):
         medium="qr" if kind == "q" else "post", campaign=cid.lower(), office=oid.lower())
 
 
+SKIPPED = []
+
+
 def links_for_drop(tr, drop_id):
     out = []
     domain = TR._s(tr.config.get("short_link_domain"))
@@ -46,8 +49,13 @@ def links_for_drop(tr, drop_id):
         if TR._s(c["drop_id"]) != drop_id:
             continue
         tpl = TR._s(c.get("survey_prefill_template"))
+        # Links only for offices that said yes: a declined office gets no card and no post (approvals close at T-10).
+        yes = {o["office_id"] for o in tr.ladder(cid)["offices"] if o["approved"] == "Y"}
         for a in tr.approvals_for(cid):
             oid = TR._s(a["office_id"])
+            if oid not in yes:
+                SKIPPED.append("%s %s" % (cid, oid))
+                continue
             code = "%s.%s" % (cid, oid)
             for kind in ("q", "p"):
                 sl = TR.slug(cid, oid, kind)
@@ -69,6 +77,7 @@ def main(argv):
         print(__doc__)
         return 1
     tr = TR.Tracker(argv[1])
+    common.require_same_name(tr)
     drop_id, out = argv[2], argv[3]
     os.makedirs(os.path.join(out, "qr"), exist_ok=True)
     rows = links_for_drop(tr, drop_id)
@@ -86,6 +95,8 @@ def main(argv):
             w.writerow([r["slug"], r["destination_url"], "%s %s %s" % (r["campaign_id"], r["office_id"], r["link_type"]),
                         "%s;%s" % (r["campaign_id"].lower(), r["link_type"])])
     with open(os.path.join(out, "redirects-%s.txt" % drop_id), "w", encoding="utf-8") as f:
+        if common.is_sample(drop_id):
+            f.write("# " + common.TEXT_BANNER + "\n")
         f.write("# Cloudflare Pages _redirects lines (fallback when no link tool is used). 302 so a destination can change.\n")
         for r in rows:
             f.write("/%s %s 302\n" % (r["slug"], r["destination_url"]))
@@ -109,10 +120,13 @@ def main(argv):
                         common.E(r["slug"]), common.E(r["company"]), common.E(r["office_id"]), common.E(r["brand_name"]),
                         common.E(r["card_code"]), common.E(r["short_url"]), common.E(p["short_url"])))
     body.append("</table>")
+    if SKIPPED:
+        body.append("<p class='small muted'>No links for offices that said no: %s.</p>" % common.E(", ".join(SKIPPED)))
     hp = os.path.join(out, "links-%s.html" % drop_id)
     common.write(hp, common.page("Links " + drop_id, "".join(body), out, sample=sample))
     res = common.render(hp, os.path.join(out, "links-%s.pdf" % drop_id))
-    print("links: %d (%d QR) -> %s %s" % (len(rows), len(cards), out, "" if res.get("ok") else res))
+    print("links: %d (%d QR)%s -> %s %s" % (len(rows), len(cards), "; none for %d declined" % len(SKIPPED) if SKIPPED else "",
+                                             out, "" if res.get("ok") else res))
     return 0
 
 

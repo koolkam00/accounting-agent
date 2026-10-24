@@ -1,6 +1,6 @@
 # Office call guide
 
-Version 1.0 · 2026-10-24 · workstream E, part B · `desk-drop-outreach/calls/`
+Version 1.3 · 2026-10-24 · Outreach engine (workstream E) · `desk-drop-outreach/calls/`
 
 **What it is for.** Running a 20-minute discovery conversation with the person who runs an office pantry, and coming away with the numbers Gate 0 needs: a yes in principle, the pantry owner's name and a receiving window. The seven questions are the plan's (Phase 0, "Office conversation guide"), word for word and in the plan's order. Everything else here is the wrapping: what to have open, what to listen for, which tracker column each answer goes in, and how to answer their questions truthfully.
 
@@ -22,9 +22,9 @@ Version 1.0 · 2026-10-24 · workstream E, part B · `desk-drop-outreach/calls/`
 
 Say who you are and what this is, then ask permission to take notes.
 
-> "Thanks for making the time. I'm [FOUNDER NAME]. I'm looking at whether it would help offices around here to get vetted emerging snack and drink brands for free, in exchange for a shelf photo and a three-question team survey. Before I build anything I want to understand how pantries actually work. I'm not selling anything today. Is it OK if I ask about seven questions and take notes? It'll take 20 minutes."
+> "Thanks for making the time. I'm [FOUNDER NAME]. I'm looking at whether it would help offices around here to get vetted emerging snack and drink brands for free, in exchange for two shelf photos and a three-question team survey. Before I build anything I want to understand how pantries actually work. I'm not selling anything today. Is it OK if I ask about seven questions and take notes? It'll take 20 minutes."
 
-If they ask "who are you with?": the honest answer on the day. Until the company is formed, "I'm setting up a small New York business called {BRAND_NAME}; it isn't formed yet, and nothing would arrive before it's formed and insured." (`{BRAND_NAME}` is the working name, kept in one place in `desk-drop-legal-pack/02-email-footer-and-checklist.md` and `messages/`.)
+If they ask "who are you with?": the honest answer on the day. Until the name is decided (`name_decided = N`), "It's a small New York business I'm setting up. The working name is {BRAND_NAME}, and it may change. It isn't formed yet, and nothing would arrive before it's formed and insured." Once the name is decided and until the company is formed, "I'm setting up a small New York business called {BRAND_NAME}; it isn't formed yet, and nothing would arrive before it's formed and insured." (`{BRAND_NAME}` is the working name, kept in one place: `desk-drop-identity/brand.json`.)
 
 ## 3. The seven questions (plan wording, plan order)
 
@@ -58,10 +58,11 @@ The probe is asked once, at intake (plan, "The budget probe"). If you are speaki
 ## 5. The close (3 minutes)
 
 1. **If they sounded positive, get the two Gate 0 facts.** "If we did a first drop, who would receive it, and what's a good window on a Tuesday or Wednesday morning?" Write the name, title and window. Do not propose a date in weeks 1 to 3.
-2. **Ask the plan's closing question:** "Can I send you a one-pager?" In weeks 1 to 3 that is the discovery one-pager (`desk-drop-identity/pdf/discovery-one-pager-BLANK.pdf`, once your details are filled in). From Gate 0, the office one-pager with a proposed first-drop week (`messages/10-office-post-call-conversion.md`, step 1, sends it the same day).
+2. **Ask the plan's closing question:** "Can I send you a one-pager?" In weeks 1 to 3 that is the discovery one-pager (`desk-drop-identity/pdf/discovery-one-pager-BLANK.pdf`, once your details are filled in, and only once it counts as ready: it names the business, so it waits for `name_decided = Y` or D's name-free version; until then step 0 goes without it). From Gate 0, the office one-pager with a proposed first-drop week (`messages/10-office-post-call-conversion.md`, step 1, sends it the same day).
 3. **Ask before you ever quote them:** "When I share what office managers are telling me, with other founders, may I quote something you said, without your name or your company?" Write Y in `quote_ok_to_share` only on a clear yes.
 4. **Thank them and stop on time.**
-5. After the call, mark `shortlist` = Y if this is one of the offices you would pursue first (the plan's Gate 0 deliverable is a shortlist of 8). Anyone you knew before this call is `channel` = warm-intro; the plan wants five of the fifteen office conversations from your own network.
+5. **The same day,** send step 0 of `messages/10-office-post-call-conversion.md` (thanks, the discovery one-pager if it is ready, and "may I write again in the week of November 16?"). In Clay: `next_action = send_one_pager`, `next_action_date` = Mon 2026-11-16 once they say yes to it. From Gate 0, step 1 goes the same day instead.
+6. After the call, mark `shortlist` = Y if this is one of the offices you would pursue first (the plan's Gate 0 deliverable is a shortlist of 8). Anyone you knew before this call is `channel` = warm-intro; the plan wants five of the fifteen office conversations from your own network.
 
 ## 6. Their questions, answered truthfully
 
@@ -72,7 +73,7 @@ Say only what is true on the day. Progress claims (offices signed, brands lined 
 | "Which brands?" | "None yet. I'm talking to emerging New York brands this month. You'd see each one before it came, and you could veto any." | A brand name you have not qualified |
 | "When would it start?" | Weeks 1 to 3: "The first drop is planned for [DROP DATE: Tue 2027-01-12], and only once five offices and the first brands have signed." After that, the slot in `messages/04-slot-table.csv` | A firm date before `drop_date_confirmed = Y` |
 | "What does it cost us?" | "Nothing. No fees in either direction. We ask for the shelf placement the day it arrives, two photos, one survey post, help reaching five survey responses (nobody has to answer), your Tuesday headcount, and a ten-minute chat afterwards." | "Free forever" |
-| "Who else is doing it?" | Weeks 1 to 3: "You'd be one of the first. I'm talking to about fifteen office managers around here." | "Lots of offices nearby" |
+| "Who else is doing it?" | Weeks 1 to 3: "You'd be one of the first. I'm asking about fifteen office managers around here this month." | "Lots of offices nearby" |
 | "Is it safe? Allergens?" | "Only sealed, shelf-stable, commercially labeled products, and the card repeats the allergen line from the package word for word." | Any health claim about a product |
 | "Do you collect our employees' details?" | "No. The survey is anonymous. Nobody signs in." | Anything about collecting emails (the optional brand-newsletter box is the brand's, opt-in, and only if a brand chooses it) |
 | "Are you insured?" | Before insurance is bound: "We will carry general liability insurance before your first drop." After `gl_bound = Y`: "We carry general liability insurance." | "Fully insured" before it is bound |
@@ -101,9 +102,12 @@ The scorecard counts a conversation once per office (distinct Clay `row_id`). Lo
 
 ## Changelog
 
-Round numbers are part B's rounds; a round that did not change this file is not listed.
+Rounds 1 to 6 are the build rounds of the calls, sending, tracking and handoff files; a round that did not change this file is not listed. "Merge" is the step that joined them with the message files.
 
 - Round 1 (2026-10-24): plan questions kept verbatim and in order; added prep, opening, probes, column map, Gate 0 rule, close, truthful answers, walk-in version.
 - Round 3 (2026-10-24): critique as an office manager who deletes forty vendor emails a day: the budget probe right after "it's free" reads like a bait and switch, so it now gets one line of framing before it (the probe itself is unchanged); `shortlist` added to the close for the plan's 8 offices; `channel` = warm-intro is now defined as "anyone you knew before", which the Scorecard counts against the plan's five warm conversations.
 - Round 4 (2026-10-24): `uses_snack_service`, `q3_brands_reach_out` and `other_approver` added so the Startup CPG post numbers (`messages/12-startup-cpg-posts.md`) are counts, not guesses; the close now asks permission before anyone is quoted (`quote_ok_to_share`).
 - Round 5 (2026-10-24): read-through: "Not before January" removed (it would be false if the stretch drop on Tue 2026-12-08 happens); the answer to "what does it cost us?" now lists every office commitment in the plan (it left out the five responses and the Tuesday headcount); prep points to the Note_Office tab.
+- Merge (2026-10-24): the working name lives in `desk-drop-identity/brand.json`; the opening says two shelf photos, as the agreement and the emails do; the close sends step 0 of `messages/10` the same day and sets the Clay next action.
+- Review round 1 (2026-10-24): "who are you with?" gives the working name as one that may change until `name_decided = Y` (the name decision is Wed 2026-11-18, derived).
+- Review round 2 (2026-10-24): "I'm asking about fifteen office managers around here this month", as the written copy says since round 1 ("talking to" implied conversations already held).

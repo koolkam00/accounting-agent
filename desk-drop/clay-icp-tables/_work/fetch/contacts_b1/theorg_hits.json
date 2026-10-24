@@ -1,0 +1,322 @@
+[
+ {
+  "rank": "1",
+  "company": "The Matzo Project",
+  "slug": "the-matzo-project",
+  "match": true,
+  "exts": "matzoproject.com",
+  "web": "https://matzoproject.com",
+  "n": 1,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/3832b8366f22.html"
+ },
+ {
+  "rank": "3",
+  "company": "The Lucky Ox",
+  "slug": "the-lucky-ox",
+  "match": true,
+  "exts": "luckyox.co",
+  "web": "https://www.luckyox.co/",
+  "n": 2,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/a7bfc532a373.html"
+ },
+ {
+  "rank": "4",
+  "company": "Harken Sweets",
+  "slug": "harken-sweets",
+  "match": true,
+  "exts": "harkensweets.com",
+  "web": "https://www.harkensweets.com",
+  "n": 2,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/66f81e8be85f.html"
+ },
+ {
+  "rank": "5",
+  "company": "Eleni's New York",
+  "slug": "elenis",
+  "match": true,
+  "exts": "elenis.com",
+  "web": "https://elenis.com",
+  "n": 2,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/fc84d64b19a9.html"
+ },
+ {
+  "rank": "6",
+  "company": "Beyond Good",
+  "slug": "beyond-good",
+  "match": true,
+  "exts": "beyondgood.com;madecasse.com",
+  "web": "https://beyondgood.com/",
+  "n": 18,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/5215f3f9271b.html"
+ },
+ {
+  "rank": "10",
+  "company": "Simply Gum",
+  "slug": "simply-gum",
+  "match": true,
+  "exts": "simplygum.com",
+  "web": "https://www.simplygum.com",
+  "n": 7,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/10d27f40a23d.html"
+ },
+ {
+  "rank": "11",
+  "company": "Mezcla",
+  "slug": "mezcla",
+  "match": true,
+  "exts": "eatmezcla.com",
+  "web": "https://eatmezcla.com",
+  "n": 25,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/c6bc5f2ac891.html"
+ },
+ {
+  "rank": "13",
+  "company": "Raaka Chocolate",
+  "slug": "raaka-chocolate",
+  "match": true,
+  "exts": "raakachocolate.com",
+  "web": "https://www.raakachocolate.com/",
+  "n": 10,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/fdb9208ea693.html"
+ },
+ {
+  "rank": "15",
+  "company": "BjornQorn",
+  "slug": "bjornqorn",
+  "match": true,
+  "exts": "bjornqorn.com",
+  "web": "https://bjornqorn.com",
+  "n": 1,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/80d90d110d6a.html"
+ },
+ {
+  "rank": "17",
+  "company": "Fruition Chocolate Works",
+  "slug": "fruition-chocolate-works",
+  "match": true,
+  "exts": "fruitionchocolateworks.com",
+  "web": "https://www.fruitionchocolateworks.com",
+  "n": 0,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/6942c71bf07e.html"
+ },
+ {
+  "rank": "18",
+  "company": "B-SIDES",
+  "slug": "b-sides",
+  "match": false,
+  "exts": "bsides.app",
+  "web": "https://www.bsides.app",
+  "n": 1,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/4d122fcde40c.html"
+ },
+ {
+  "rank": "21",
+  "company": "Treat House",
+  "slug": "treat-house",
+  "match": true,
+  "exts": "treathouse.com",
+  "web": "https://treathouse.com",
+  "n": 0,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/de2f48f78c7d.html"
+ },
+ {
+  "rank": "22",
+  "company": "Magic Spoon",
+  "slug": "magic-spoon",
+  "match": true,
+  "exts": "magicspoon.com",
+  "web": "http://magicspoon.com",
+  "n": 27,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/36cb62446975.html"
+ },
+ {
+  "rank": "25",
+  "company": "Figa Foods",
+  "slug": "figa-foods",
+  "match": true,
+  "exts": "figafoods.com",
+  "web": "https://figafoods.com",
+  "n": 0,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/5439564cb49d.html"
+ },
+ {
+  "rank": "27",
+  "company": "Daily Crunch",
+  "slug": "daily-crunch",
+  "match": true,
+  "exts": "dailycrunchsnacks.com",
+  "web": "https://www.dailycrunchsnacks.com",
+  "n": 1,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/7204186666f1.html"
+ },
+ {
+  "rank": "28",
+  "company": "Blue Stripes",
+  "slug": "blue-stripes",
+  "match": true,
+  "exts": "bluestripes.com",
+  "web": "https://www.bluestripes.com/",
+  "n": 2,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/0da8170119ed.html"
+ },
+ {
+  "rank": "30",
+  "company": "Go Raw",
+  "slug": "go-raw",
+  "match": true,
+  "exts": "goraw.com",
+  "web": "https://goraw.com/",
+  "n": 13,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/13a85678cffc.html"
+ },
+ {
+  "rank": "32",
+  "company": "Moshi",
+  "slug": "moshi",
+  "match": false,
+  "exts": "moshi.co",
+  "web": "http://moshi.mx/",
+  "n": 0,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/75255e26a139.html"
+ },
+ {
+  "rank": "33",
+  "company": "Explorer Cold Brew",
+  "slug": "explorer-cold-brew",
+  "match": true,
+  "exts": "explorercoldbrew.com",
+  "web": "http://explorercoldbrew.com",
+  "n": 5,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/d043b30b9cc0.html"
+ },
+ {
+  "rank": "34",
+  "company": "Biena",
+  "slug": "biena",
+  "match": false,
+  "exts": "biena.com",
+  "web": "https://biena.com/",
+  "n": 11,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/dc211a425020.html"
+ },
+ {
+  "rank": "36",
+  "company": "Gigantic (Candy Deluxe)",
+  "slug": "gigantic",
+  "match": false,
+  "exts": "gigantic.company",
+  "web": "https://www.gigantic.company",
+  "n": 4,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/45713483b504.html"
+ },
+ {
+  "rank": "37",
+  "company": "Firehook",
+  "slug": "firehook",
+  "match": true,
+  "exts": "firehook.com",
+  "web": "https://www.firehook.com",
+  "n": 13,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/3aee3eaf4ee5.html"
+ },
+ {
+  "rank": "38",
+  "company": "Reelie (formerly Artisan Tropic)",
+  "slug": "reelie",
+  "match": true,
+  "exts": "reelie.com",
+  "web": "https://www.reelie.com",
+  "n": 0,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/1c1361ef6aff.html"
+ },
+ {
+  "rank": "40",
+  "company": "Mayana Chocolate",
+  "slug": "mayana-chocolate",
+  "match": true,
+  "exts": "mayanachocolate.com",
+  "web": "https://www.mayanachocolate.com",
+  "n": 1,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/7b45cffd8a83.html"
+ },
+ {
+  "rank": "44",
+  "company": "LesserEvil",
+  "slug": "lesserevil",
+  "match": true,
+  "exts": "lesserevil.com",
+  "web": "https://lesserevil.com",
+  "n": 26,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/b226ba7a80ec.html"
+ },
+ {
+  "rank": "45",
+  "company": "JONI",
+  "slug": "joni",
+  "match": false,
+  "exts": "getjoni.com",
+  "web": "https://www.getjoni.com",
+  "n": 7,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/a0a345f1ce3a.html"
+ },
+ {
+  "rank": "46",
+  "company": "Nantucket Crisps",
+  "slug": "nantucket-crisps",
+  "match": true,
+  "exts": "nantucketcrisps.com",
+  "web": "https://nantucketcrisps.com/",
+  "n": 1,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/eef8ab53549b.html"
+ },
+ {
+  "rank": "50",
+  "company": "Joyride",
+  "slug": "joyride",
+  "match": false,
+  "exts": "joyride.city",
+  "web": "http://joyride.city",
+  "n": 15,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/5dd5b4eef9f8.html"
+ },
+ {
+  "rank": "51",
+  "company": "Solely",
+  "slug": "solely-inc",
+  "match": true,
+  "exts": "solely.com",
+  "web": "https://www.solely.com",
+  "n": 27,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/daf3a3707936.html"
+ },
+ {
+  "rank": "54",
+  "company": "Goodio",
+  "slug": "goodio",
+  "match": true,
+  "exts": "goodiochocolate.com",
+  "web": "https://goodiochocolate.com",
+  "n": 2,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/1f7c01461bae.html"
+ },
+ {
+  "rank": "58",
+  "company": "OOSO Sparkling Tea",
+  "slug": "ooso-sparkling-tea",
+  "match": true,
+  "exts": "drinkooso.com",
+  "web": "https://drinkooso.com",
+  "n": 1,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/035180c9fd6f.html"
+ },
+ {
+  "rank": "59",
+  "company": "GoMacro",
+  "slug": "gomacro",
+  "match": true,
+  "exts": "gomacro.com",
+  "web": "https://gomacro.com/",
+  "n": 30,
+  "file": "/home/user/accounting-agent/desk-drop/clay-icp-tables/_work/contacts_b1_tools/../fetch/contacts_b1/theorg/79c50e480ed8.html"
+ }
+]

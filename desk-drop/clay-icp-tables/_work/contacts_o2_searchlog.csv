@@ -1,0 +1,42 @@
+n,date,tool,query_or_url,company,result
+1,2026-10-24,WebSearch,"Alpine Investors office manager OR EA OR workplace New York",Alpine Investors,3 names in snippets; confirmed 3 on alpineinvestors.com
+2,2026-10-24,WebSearch,TripleLift office manager OR workplace experience New York,TripleLift,job post only
+3,2026-10-24,WebSearch,site:linkedin.com/in TripleLift employee experience,TripleLift,no profiles
+4,2026-10-24,WebSearch,Orbital office manager OR people operations New York,Orbital,office lead job + VP people job
+5,2026-10-24,WebSearch,Orbital Head of Operations OR Chief of Staff New York,Orbital,head of ops London
+6,2026-10-24,WebSearch,site:linkedin.com/in Office Lead Orbital New York,Orbital,no holder
+7,2026-10-24,WebSearch,prepared911 office manager OR people ops OR chief of staff,Prepared 911,nothing relevant
+8,2026-10-24,WebSearch,Axon New York office workplace Prepared Carbyne 27th Street,Prepared 911,nothing relevant
+9,2026-10-24,WebSearch,Actively AI chief of staff OR office manager OR people ops,Actively AI,job posts only
+10,2026-10-24,WebSearch,site:linkedin.com/in Actively AI chief of staff,Actively AI,no profiles (site:linkedin.com/in returns no profiles in this engine)
+11,2026-10-24,WebSearch,Activate consulting New York office manager OR EA OR talent,Activate Consulting,firm profile only
+12,2026-10-24,WebSearch,Green Mountain Energy New York office manager OR facilities Madison Square,Green Mountain Energy,nothing
+13,2026-10-24,WebSearch,Order.co New York office manager OR people ops OR chief of staff,Order.co,office manager job (removed 2026-07-31)
+14,2026-10-24,WebSearch,Order.co Director of People Operations OR People Ops Manager,Order.co,no names
+15,2026-10-24,WebSearch,Baseten New York office manager OR workplace OR people ops,Baseten,job posts only
+16,2026-10-24,WebSearch,Office Manager Baseten New York linkedin.com/in,Baseten,engine strips linkedin operators; no profiles
+17,2026-10-24,WebSearch,Baseten Office Manager OR Workplace (theorg.com only),Baseten,People Ops person in SF only
+18,2026-10-24,WebSearch,Stash Office Manager OR Workplace OR People Ops New York (theorg.com only),Stash,HR staff outside NY only
+19,2026-10-24,WebSearch,Foursquare Executive & Office Operations EA to the CEO New York,Foursquare,corroborated theorg; own page snippet
+20,2026-10-24,WebSearch,HUMAN Security New York office manager OR workplace experience,HUMAN Security,nothing
+21,2026-10-24,WebSearch,Rockwell Group New York office manager OR studio manager OR facilities,Rockwell Group,nothing; staff tab bot-protected
+22,2026-10-24,WebSearch,Rakuten 215 Park Avenue South office manager OR workplace,Rakuten USA,snippet contact was Toronto; NY office address confirmed
+23,2026-10-24,WebSearch,Reaktor New York office manager OR people 30 West 21st,Reaktor,nothing
+24,2026-10-24,WebSearch,Christie's IREG Manhattan 156 Fifth office manager OR managing director,Christie's IREG,managing director + team leader in press
+25,2026-10-24,WebSearch,Radar Labs New York office manager OR people ops OR chief of staff,Radar,engineering jobs only
+26,2026-10-24,WebSearch,PlayPlay New York office manager OR workplace OR people,PlayPlay,nothing NY
+27,2026-10-24,WebSearch,Fenwick New York 902 Broadway office administrator OR facilities,Fenwick & West,nothing
+28,2026-10-24,WebSearch,Seedtag New York office manager OR people OR HR 27th Street,Seedtag,lease only
+29,2026-10-24,WebSearch,PMG New York 387 Park Avenue South office manager OR workplace,PMG Worldwide,NY managing director (2022); address conflict
+30,2026-10-24,WebSearch,Optiver New York 360 Park Avenue South office manager OR facilities,Optiver,coordinator job (closed)
+31,2026-10-24,WebSearch,Order.co Office Manager OR People Ops OR EA OR Chief of Staff (theorg.com only),Order.co,VP People + Chief of Staff in NY
+32,2026-10-24,WebSearch,TripleLift office manager OR employee experience (theorg.com only),TripleLift,nothing
+33,2026-10-24,WebSearch,Orbital real estate legal AI office OR ops OR people NY (theorg.com only),Orbital,London staff only
+34,2026-10-24,WebSearch,Actively AI chief of staff OR ops (theorg.com only),Actively AI,nothing
+35,2026-10-24,WebSearch,HUMAN Security Chief People Officer,HUMAN Security,not corroborated
+36,2026-10-24,WebSearch,Order.co VP of People OR Head of People,Order.co,current posting reports to SVP of People
+37,2026-10-24,WebSearch,Prepared 911 Chief of Staff Axon acquisition New York,Prepared 911,acquisition confirmed (2025-09-23); CoS not corroborated
+38,2026-10-24,WebSearch,Baseten office coordinator OR manager OR WX OR EA New York (theorg.com only),Baseten,nothing usable
+39,2026-10-24,WebSearch,Office Manager OR Coordinator NY at Seedtag OR Optiver OR Reaktor OR Radar OR PlayPlay (theorg.com only),several,nothing usable
+40,2026-10-24,WebSearch,Rockwell Group office manager OR HR New York (theorg.com only),Rockwell Group,other Rockwells only
+41,2026-10-24,WebSearch,Fenwick office administrator OR facilities New York (theorg.com only),Fenwick & West,nothing

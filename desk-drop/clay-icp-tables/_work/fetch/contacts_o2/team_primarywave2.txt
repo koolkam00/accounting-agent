@@ -1,0 +1,1217 @@
+===== team_primarywave2.html 1216
+About | Primary Wave Music
+{ scrolled = isHomePage ? document.getElementById('top').classList.contains('logo-arrived') : window.scrollY > 50 })"
+@loadcheckout.window="
+cart = $event.detail.cart;
+cartCount = $event.detail.cartCount;
+cartTotalPrice = $event.detail.cartTotalPrice;
+checkoutUrl = $event.detail.checkoutUrl;
+"
+>
+Skip to content
+About
+Artists
+What We Do
+Our Team
+Store
+News
+Search
+{ if(value) setTimeout(() => $el.focus(), 300) })"
+>
+Search
+About
+Artists
+What We Do
+Our Team
+Store
+News
+Search
+Email
+0 ? cartCount + ' items in cart' : 'Open cart'"
+class="relative z-30 cursor-pointer"
+>
+Cart
+0"
+x-text="cartCount"
+class="absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-[10px] font-semibold flex items-center justify-center"
+aria-hidden="true"
+x-cloak
+>
+Who We Are
+Primary Wave Music is the world’s leading independent publisher for legendary music.
+We honor legacy by partnering with musicians and estates to protect the integrity of their artistry and amplify it authentically. We exclusively acquire the catalogs of those who have shaped and influenced history.
+Through creative leadership, global partnerships, strategic execution, licensing, and IP management, we deliver a bespoke, fully integrated model built around the distinct vision of each artist. Every initiative combines creative ambition with business expertise to generate lasting value.
+Our team operates as a creative force, uniting specialized expertise and a shared vision. Each discipline works in concert to evolve and advance legacies to timelessly resonate and shape contemporary culture.
+Our mission is to keep iconic music in the present and extend its influence into the future.  Because legends aren't defined by a moment in time, but by their ability to transcend it.
+250+
+Artists & Songwriters
+1,000+
+Top 10 Singles
+400+
+No. 1 Hits
+100,000
+Copyrights
+$7.5B
+In Assets
+Our Team
+Our team brings together experienced, forward-thinking leaders with a shared commitment to the music. We work closely with our artists and partners, combining creative insight and strategic expertise to build lasting value, honor legacy, and shape what comes next.
+See the Team
+Our Team
+See the Team
+Our team brings together experienced, forward-thinking leaders with a shared commitment to the music. We work closely with our artists and partners, combining creative insight and strategic expertise to build lasting value, honor legacy, and shape what comes next.
+Larry Mestel
+Founder & CEO
+Larry Mestel
+Explore
+Close
+Larry Mestel
+Founder & CEO
+Lawrence Mestel, Founder & CEO of Primary Wave Music, has been working in the music and entertainment industry for over 30 years. In 2006, Mestel took his extensive experience working at multiple record labels and founded Primary Wave Music, a pioneer in acquiring legendary music catalogs and the largest independent music publishing company in the world. Primary Wave  controls over 100,000 songs from the catalogs of legendary artists such as Bob Marley, Prince, Stevie Nicks, James Brown, Axl Rose (Guns N’ Roses), Pete Townshend (The Who), The Notorious B.I.G., Frankie Valli & the Four Seasons, The Doors, Smokey Robinson, Whitney Houston, Burt Bacharach, Bing Crosby, Luther Vandross, Olivia Newton-John, Andre 3000 (Outkast), Ray Charles, Isaac Hayes, Aerosmith, Def Leppard, America, War, Traveling Wilburys (Bob Dylan), Sarah McLachlan, Sly & The Family Stone, Boston, Gin Blossoms, Spin Doctors, Alice Cooper, Paul Anka, Boy George and Culture Club, Allee Willis, Toto, Chuck Mangione, Paul Rodgers (Bad Company, Free), Air Supply, Huey Lewis and the News, Alice In Chains, Devo, Donny Hathaway, Robert Palmer, Foreigner, Donna Summer, Harry Chapin, Dave Brubeck, INXS, Lou Adler, Jackson Browne, Chris Isaak, Sun Records, The Cars, Neil Sedaka, Moby, Crowded House, Village People, Stone Temple Pilots, Melissa Etheridge, CeeLo Green, and many more, including the recent $1.5 billion acquisition of Kobalt – the leading independent music administrator. The songs represented by Primary Wave include over 1000 Top 10 singles, and over 500 #1 hits. Originally founded on music publishing, Mestel strategically and successfully built the company into a full-service music and entertainment powerhouse offering in-house marketing, branding, digital marketing, publicity, sync & licensing, TV & Film development, estate management, and immersive experiences.
+Mestel was one of the producers behind the critically acclaimed Kurt Cobain documentary film, Kurt Cobain: Montage of Heck and he was part of the team who produced the Whitney Houston biopic, I Wanna Dance With Somebody distributed by Sony Pictures. Mestel and Primary Wave are also producers for the Allee Willis documentary, The World According to Allee Willis, and the Luther Vandross documentary, Luther: Never Too Much, the Def Leppard documentary, Long Live Def Leppard, as well as co-producing the Rocky Horror Picture Show at The Sphere.
+In 2019, and again in 2026, Goldman Sachs honored Larry Mestel as one of the “100 most intriguing entrepreneurs” at the annual Goldman Sachs Builders & Inventors summit.  From 2020 through 2025, Mestel landed on Billboard Magazine’s “Power List” being recognized for his leadership in the music industry. In 2024 and 2025, Mestel was once again featured on the Billboard Power 100, making the magazine’s “Leaderboard” which recognized the top 40 leaders across the music industry. He has also appeared on the Variety 500 three times and has been featured in top press outlets such as New York Times, Los Angeles Times, Wall Street Journal, The Hollywood Reporter, Entrepreneur, Fast Company, New York Post, Forbes, Billboard Magazine, and HITS Magazine. In 2006, Larry was named the recipient of City of Hope’s most prestigious philanthropic honor, the Spirit of Life Award for the Music, Film and Entertainment Industry.
+Prior to founding Primary Wave Music, Larry Mestel was Chief Operating Officer and General Manager of Virgin Records. From 2000 – 2004, Mestel was Executive Vice President and General Manager at Arista Records. Mestel also held the position of Chief Operating Officer for Island Entertainment Group, which included Island Records, Island Music Publishing and Island Pictures.
+Justin Shukat
+President
+Justin Shukat
+Explore
+Close
+Justin Shukat
+President
+Justin Shukat is a partner and President of Primary Wave Music Publishing since 2006. He oversees all areas of Primary Wave’s creative team including synch and A&R while working alongside all partner companies to ensure that all businesses are focused and delivering. He has been responsible for new writer signings and multiple catalog acquisitions and is now focused on working across the music industry to inspire and facilitate recordings that derive from the timeless music aggregated within the Primary Wave music IP portfolio. Given the income potential of a new current hit, this is a highly impactful, efficient and profitable initiative.
+Justin’s music career began at a young age, as he was lucky enough to grow up learning, listening, and experiencing from his father and mentor, the legendary entertainment attorney Peter Shukat. His musical journey started with working with the Montreux Jazz Festival in the mid 90’s followed by various positions at Walter Yetnikoff’s Velvel Records. Shukat then moved on to senior marketing positions at both Arista and Epic Records. In 2005 he re-connected with Larry Mestel who had a vision and plan during a transitional time in the music business to launch a new company focused on acquiring and working legacy catalogs and together they started Primary Wave. Justin has been recognized by Billboard Magazine as an industry Power Player (2023 & 2022) as well as being included in the 40 Under 40 in 2013. Mr. Shukat received a BA in Marketing from the Martin J. Whitman School of Management at Syracuse University in 1996.
+Adam Lowenberg
+Chief Marketing Officer
+Adam Lowenberg
+Explore
+Close
+Adam Lowenberg
+Chief Marketing Officer
+“I wonder where you are, I wonder if you think about me”
+“Your Wildest Dreams”                 –                 The Moody Blues
+Adam brings 17 years of music industry experience to Primary Wave. He is responsible for all marketing related activities within the organization. Most recently, Mr. Lowenberg was Sr. VP of Marketing for Island Def Jam. He also served as Sr. VP of Marketing at Virgin Records and VP of Marketing at Arista Records. Adam’s career has been punctuated by the multi-platinum success of such global superstars as Avril Lavigne, Dido, Sarah McLachlan, Pink, Rihanna and Bon Jovi.
+Ramon Villa
+Chief Operating Officer
+Ramon Villa
+Explore
+Close
+Ramon Villa
+Chief Operating Officer
+“Our hearts were ringing
+In the key that our souls were singing
+As we danced in the night, remember
+How the stars stole the night away, oh yeah”
+“September”                 –                 Allee Willis
+Ramon Villa wears many hats in managing the financial and operational functions for Primary Wave Music. His 30 years of experience within entertainment, including the first half of his career working closely with Island records founder, Chris Blackwell, he has immersed himself across many platforms including records, publishing, television, film, distribution, talent management, branding, and marketing. Since the early days of Primary Wave, Ramon has been involved in building the publishing catalog and the various marketing and management arms surrounding it. His work and leadership has been recognized by several music industry trade publications including Billboard, Hits, and others. As Chief Operating Officer and “Chief Aesthitic Officer”, Ramon sees that the ops, numbers and the vibe all stay in check.
+Jane Reisman
+Chief Financial Officer
+Jane Reisman
+Explore
+Close
+Jane Reisman
+Chief Financial Officer
+“Show the world all the love in your heart / Then people gonna treat you better / You’re gonna find, yes you will / That you’re beautiful, as you feel”
+“Beautiful”                 –                 Carole King / Gerry Goffin Publishing
+Jane Reisman comes to Primary Wave with 25 years of finance & accounting leadership, most recently as founder and CEO of JPR Consulting, an outsourced CFO firm providing services to small and medium-sized businesses in media & entertainment, tech and wellness.  As CFO of Primary Wave, Jane will oversee all financial functions including business planning, accounting, royalty processing, fund administration, reporting, audit & tax.  She lends strategic fiscal leadership focused on improving transparency and enhancing efficiencies to support growth.
+Jane has always had a passion for the music business since her early years when she earned her CPA license with Ernst & Young, working with clients in all facets of the music business, including publishing, concert promotion and music labels.  Later she spent 12 years with Sony Music, ultimately rising to Head of Finance for Epic Records, where she worked with artists including Shakira, Jennifer Lopez, Pearl Jam, The Fray and Sara Bareilles.  She has been CFO for organizations and startups involved in music technology (Dubset Media, Pulselocker, IODA), documentary film production (The Representation Project), nonprofits (Fundly, SFAI) and tech and wellness (Carrot Fertility, AngelList).  Ms. Reisman earned a BS in Economics from the Wharton School of Business at the University of Pennsylvania.
+Natalia Nastaskin
+Chief Content Officer
+Natalia Nastaskin
+Explore
+Close
+Natalia Nastaskin
+Chief Content Officer
+A proven music industry executive, dealmaker and counsel with a stellar track record of guiding careers, developing businesses and acquiring and integrating companies over a 20+ year tenure in the music business.
+Natalia founded her New York City-based eponymously-named law practice just after graduating law school. Over a 13-year span, she built it into a multi-million dollar enterprise, representing domestic and international artists, songwriters, talent buyers, nightclub venues, independent record companies and publishers. One of her clients, the then-largest independent global talent agency – The Agency Group – recruited her to be its CEO and General Counsel in 2013.
+For three years (2013-2015), Natalia was the sole woman heading a major talent agency. During her tenure as CEO of TAG-US, she focused on diversification of the company’s services to its clients and played a key role in the acquisition of The Bobby Roberts Company in Nashville and NYC’s EDM-focused independent, Bond Music Group. She founded The Agency Group’s brand partnerships division, opened its Miami office and established a private/corporate booking division. She struck joint ventures with Primary Wave Music for artist services, with Bandsintown for tour marketing and promotion, and with Modern Works Music for publishing and administration services.
+Natalia ran point on the sale of TAG to UTA in 2015. Through successful integration, key hires, acquisitions, and artist signings, Natalia guided the ascent of UTA Music into a top talent representation powerhouse.
+Community and Culture are themes which are weaved throughout Natalia’s approach to business, and never have those themes been more important than over the past year. She led the launch of UTA’s La Femme Majeure initiative – a networking event for women in music focused on professional growth and progressing career trajectories – which had its first global edition during the Covid-19 crisis with 3 panelists and over 400 music women in attendance via Zoom. And, she spearheaded the formation of Justice Now – a social justice and racial equity task-force within UTA Music, the mission of which is: strengthening our music community through education, mentorship, empowerment and fearless imagination.
+At Primary Wave, Natalia is responsible for development of unique and diversified content strategies for the company’s legendary and iconic artists and song catalogues.
+Recognized as a power player in the industry, Natalia has been featured multiple times on Billboard’s annual Women In Music and Power 100 lists, on Pollstar’s Impact 50 list, and on Variety’s Women’s Impact lists. She has been honored by TJ Martell Foundation as a Woman of Influence, and she presently serves on the advisory boards for MIDEM and Save The Music, and on the Executive Committee of She Is The Music. In 2019, Natalia was the keynote speaker at the Australian Music Prize.
+Rob Dippold
+Chief Digital Strategy Officer
+Rob Dippold
+Explore
+Close
+Rob Dippold
+Chief Digital Strategy Officer
+“Generals gathered in their masses…”
+“War Pigs”                 –                 Black Sabbath
+Rob Dippold is a partner and the President of Digital Strategy, having joined Primary Wave in 2010 to create the digital strategy division. He manages the Digital division and is charged with developing overall digital strategy, leading a diverse and creative marketing team, developing creative digital campaigns, cultivating strategic partnerships, as well as building e-commerce, direct to fan and WEB3 initiatives for roster of music icons and legends.
+Rob began his music career in marketing and rose to General Manager at Ruffhouse Records, a pioneering Sony Music record label which has sold over 100 million albums worldwide with artists Lauryn Hill, The Fugees, Cypress Hill, Wyclef Jean, Kris Kross, DMX and others. He has extensive history working in the music industry from recorded music to marketing agencies, talent management, publishing and merchandising. Rob served at Warner Music Group’s distribution arm, W.E.A. Corp. developing retail and account-based marketing initiatives for W.M.G. artists including Linkin Park, Metallica, Missy Elliot, T.I., Sean Paul and others. Dippold became Partner & General Manager of Trustkill Records, an independent industry-leading entertainment company partnered with Sony and Universal Music. Trustkill was instrumental in launching and breaking influential bands in the metal and hardcore rock scene including Bullet For My Valentine, Eighteen Visions, Poison The Well amongst others. Under the Trustkill brand, Rob was actively involved in the digital & mobile technology space including developing and launching “MobileThreat” the first ever mobile content destination platform dedicated to the metal & punk music genres, as well as other lifestyle branded websites and virtual reality communities.
+Rob has been recognized and featured in numerous music industry media outlets and events over the years including Billboard Magazine’s “Digital Power Players”, Music Business Worldwide, Variety, CoinDesk, Canadian Music Week, Music Business Association amongst others. His work on Def Leppard’s 30th Anniversary of Hysteria album and 2022’s Diamond Star Halo’s album was named “Best Music Marketing Campaigns” by Music Ally’s Sandbox and recently he was instrumental in setting the record for the highest-selling NFT on the Tezo’s blockchain for Whitney Houston’s digital collectible collection. Rob graduated from Penn State University with a B.S. in Marketing and Management.
+Amy Ortner
+Chief Business Affairs Officer & General Counsel
+Amy Ortner
+Explore
+Close
+Amy Ortner
+Chief Business Affairs Officer & General Counsel
+“When my soul was in the lost-and-found / you came along to claim it”
+“You Make Me Feel Like A Natural Woman”                 –                 Carole King
+As Chief Business Affairs Officer & General Counsel of Primary Wave Music and a member of the Executive Team, Amy leads the company’s Business and Legal Affairs department, overseeing acquisitions and all of Primary Wave’s day-to-day legal and business matters, from content development, digital, marketing, and branding, to finance matters and rights enforcement.   Amy also contributes to strategic and operational planning, with responsibility for related legal matters.
+Amy joined Primary Wave in 2021 after 22 years in private law practice, including a 20-year tenure in Loeb & Loeb LLP’s music and entertainment group.  Throughout her career, she represented a broad array of domestic and international entertainment clients, including major and independent music publishers and recorded music companies, entrepreneurs, private equity funds, and closely held family businesses, often in connection with the sale or acquisition of significant music enterprises and assets (among them, Warner Music Group, The Rodgers & Hammerstein Organization, BMG Music Publishing, Arc Music Corp., PULSE, Criterion Music Corporation, the music publishing catalogs of Sony Pictures Entertainment, Lionsgate, and Saban Capital Group, various songwriter catalogs, and music booking and personal management firms).  She also served as music industry counsel with respect to investments, financings, and securities offerings.  Additional areas of focus included ventures with talent (including high-profile branded entertainment transactions), personal management agreements, and content licensing.  Prior to becoming a lawyer, Amy worked in business affairs at BMG Entertainment.  Amy received her A.B. from Washington University in St. Louis, and her J.D. from Fordham University School of Law.  She is admitted to the New York and California bars and is based in Los Angeles.
+Agnes Kacicki
+Head of Corporate Development
+Agnes Kacicki
+Explore
+Close
+Agnes Kacicki
+Head of Corporate Development
+“Learning to love yourself, it is the greatest love of all.”
+“Greatest Love of All”                 –                 Whitney Houston
+Agnes joins Primary Wave Music from RBC Capital Markets where she was a Director in the Investment Banking division. She specialized in advisory and capital raising activities across entertainment, specifically for content production & distribution companies and across the music publishing and recorded music sector. Her execution experience includes debt and equity financings, buy-side and sell-side mandates, and initial public offerings. Agnes holds a Bachelor of Mathematics from University of Waterloo and a Bachelor of Business administration with a major in Finance from Wilfrid Laurier University.
+Jeff Straughn
+Chief Branding Officer
+Jeff Straughn
+Explore
+Close
+Jeff Straughn
+Chief Branding Officer
+“Regrets, I’ve had a few, but then again, too few to mention”
+“My Way”                 –                 Paul Anka
+With over thirty years of core marketing experience, Jeff Straughn worked for global advertising agencies before transitioning to sports, entertainment and music where he ran the partnership group at global powerhouse Octagon.
+By the early 2000s, Straughn had leveraged his brand experience and was hired by and reported directly to Mr, Shawn “Jay-Z” Carter and Mr. Antonio “LA” Reid. Straughn was quickly challenged to build a new strategic marketing department for Island Records and Def Jam Recordings (IDJ) that would help generate new income in support of their artists and new releases. Straughn was a senior member of the leadership team at IDJ where he quickly became a trendsetter in how brands and artists work together, creating disruptive and creative concepts supporting the artist and their new work.
+In 2008, Straughn met his current partner and the founder of Primary Wave, Larry Mestel. Collectively, they built the blueprint for Primary Wave’s brand strategy. The goal was simple: build a team to support both artist management clients as well as the growing and diverse music publishing catalog. Additionally, Straughn and Mestel set up a branding agency known as Brand Synergy Group to serve as a consultant for third-party brands in the entertainment/music space.
+Since joining Primary Wave, Straughn has developed and executed a multitude of brand partnerships through a combination of traditional endorsements, private performances, and a breakthrough of new intellectual properties that leverage Primary Wave’s copyrights and/or the artist brand ID. Each of these opportunities result in equity that is co-owned by Primary Wave and the other parties.
+Straughn seeks innovative programs to deliver a win for the brand, the artist and Primary Wave. “We look at all sides of the equation as we develop each concept” says Straughn, “no two programs are ever the same.” Primary Wave believes that any and all partnerships must be results driven and are measured against a set of KPIs that are mutually beneficial for all parties. As a result, Straughn has established a long-standing list of brand partners that continues to expand and evolve as the company grows.
+Additionally, for over 12 years, Straughn has leveraged his vast marketing and experiential skills to raise the Primary Wave brand profile. Each year, Straughn has built a premium VIP Primary Wave branded hospitality event during the Grammy’s. In 2019, Straughn raised the bar again by producing a full week activation and rebranding an elite hotel in West Hollywood to One Love Hotel in an effort to celebrate 75 years of Bob Marley, a marquee catalog co-owned by Primary Wave and the Marley family.
+Straughn currently resides in Austin, Texas, where he moved in 2018 after spending his entire career in the northeast.
+Straughn is married to a lovely wife and has two children currently in college. When not at work, he finds his passion in the kitchen, cooking and exploring new varietals to build on his wine collection.
+Bill Cisneros
+President, Primary Wave IP Investment Management
+Bill Cisneros
+Explore
+Close
+Bill Cisneros
+President, Primary Wave IP Investment Management
+“One Love, One Heart”
+“One Love”                 –                 Bob Marley
+Marty Silverstone
+President, Global Sync
+Marty Silverstone
+Explore
+Close
+Marty Silverstone
+President, Global Sync
+“I’ve got sunshine on a cloudy day / when it’s cold outside I got the month of May”
+“My Girl”                 –                 The Temptations
+Marty Silverstone is President, Global Sync at Primary Wave, and also serves on the company’s senior executive team. He’s responsible for all sync strategy and operations, and has been with Primary Wave since 2010, based in the company’s Los Angeles office.
+A seasoned executive with over 20 years experience across the North American and international sync markets, Marty has been dedicated to driving meaningful licensing opportunities, consistently securing major placements for both established and developing artist and songwriter clients.
+At Primary Wave, he leads the company’s sync strategy of creatively re-imagining classic catalog for visual media, while overseeing a team of sync creatives in Los Angeles, New York and the U.K., responsible for creating licensing opportunities for Primary Wave artists.
+Marty and the team’s “Legends Re-Imagined” approach to cover recordings and re-mixes is at the core of Primary Wave’s sync vision. With these re-imagined arrangements, the team delivers new, strategic placements in film/TV, advertising, video games and other media for a roster of catalogs which includes James Brown, Prince, Whitney Houston, Stevie Nicks, Bob Marley, Ray Charles, the legendary Sun Records catalog, and many other iconic artists.
+Over the course of his career working at the intersection of music, advertising and film/tv, Marty has collaborated with talented creatives across various media, landing advertising syncs with brands such as Google, Pepsi, Mercedes, and memorable Super Bowl ads with Budweiser, Pringles and Nissan. Marty and the team’s work has also been recognized by industry peers, including multiple Clio Music Award wins.
+Of the many film and TV projects in which he’s placed music over the years– being a big comedy fan– a few personal highlights include working closely with Judd Apatow and his team on the music for “This is 40,” as well as artfully securing an opportunity for Primary Wave writer Foy Vance which led to an Emmy Award win for his original song co-written with Ed Sheeran and Max Martin– “A Beautiful Game,” from Apple TV+’s “Ted Lasso.”
+The sync biz is all about our community, and Marty has proudly co-hosted the popular Los Angeles-based sync industry mixer “The Happiest Hour” for over two decades, and more recently, he also founded Primary Wave’s annual “Out-of-Towners Brunch” – a partnership event with the Guild of Music Supervisors.
+He has served as a juror for The Clio Awards as well as the AICP, and has twice been recognized on Billboard Magazine’s list of Top Branding Power Players.
+Originally from Montreal, he has a Bachelor of Arts degree from Queen’s University in Canada, where he conducted research and published papers on the Psychology of Popular Music. He’s also an alumnus of Berklee College of Music, where he remains a regular guest speaker.
+Alexandria (Lexi) Todd
+Deputy Chief Operating Officer
+Alexandria (Lexi) Todd
+Explore
+Close
+Alexandria (Lexi) Todd
+Deputy Chief Operating Officer
+“Rock on, gold dust woman, take your silver spoon, dig your grave”
+“Gold Dust Woman”                 –                 Stevie Nicks
+Initially joining the company as a legal intern, over the course of her time at Primary Wave Lexi became an integral part of the business affairs team—most recently serving as VP, Business & Legal Affairs before her recent promotion to Deputy COO. As Deputy COO, Lexi runs point on certain complex music acquisitions while helping to oversee the overall investment process and strategy for Primary Wave’s pipeline of legendary catalogs, as well as various other management and operational roles across Primary Wave’s many divisions.
+Lexi is a member of the Recording Academy, the Copyright Society, the advisory board to the Brooklyn Law School Entertainment and Sports Law Blog, and Primary Wave’s internal DEI Task Force.  Lexi was named an executive honoree in Billboard Music’s 2025 “Women In Music” awards, was featured in Variety Magazine’s 2022 “Hollywood’s New Leaders” list, Billboard Magazine’s 2021 “40 Under 40, List of Trailblazing Young Music Executives,” and numerous industry conferences and educational panels, including for Mondo, SXSW, Music Forward, Save the Music, Carnegie Hall and Harvard Law School.
+As a lifelong singer, songwriter, performer, and producer, Lexi’s balance between artistry and industry provides her with a unique set of tools that she uses to navigate the ever-changing landscape of the music industry with both respect for creators and passion for progress.
+Lexi earned her J.D. from Brooklyn Law School, and her B.A. degree in Political Science from Monmouth University, with minors in Philosophy and Spanish.
+Samantha Rhulen
+Senior Vice President, Business & Legal Affairs
+Samantha Rhulen
+Explore
+Close
+Samantha Rhulen
+Senior Vice President, Business & Legal Affairs
+“I looked out this morning and the sun was gone, turned on some music to start my day, I lost myself in a familiar song, I closed my eyes and I slipped away”
+“More Than a Feeling”                 –                 Tom Scholz, Boston
+Sam joins Primary Wave with a mission to utilize her many contacts from the past 15 years working as an attorney in the music industry to create business opportunities for the company.  Sam also provides legal support to the executive team for acquisitions and other high level matters.
+Prior to joining Primary Wave, Sam was Senior Counsel at Ritholz Levy LLP where her clients were primarily musicians, songwriters, producers, independent record labels and start-up businesses. She is experienced in structuring, negotiating and drafting a wide variety of agreements, including recording, publishing, management, branding, appearance and live performance. She was previously a Director of Business & Legal Affairs for Atlantic Records and was also a Staff Attorney at the Legal Aid Society where she represented low-income tenants in housing matters in Harlem. Educated at Fordham University School of Law, J.D. Notes Editor, Urban Law Journal. Bucknell University, B.A., cum laude.
+Catie Monck
+Sr. Vice President, Publicity
+Catie Monck
+Explore
+Close
+Catie Monck
+Sr. Vice President, Publicity
+“Tonight the light of love is in your eyes”
+“Will You Love Me Tomorrow”                 –                 The Shirelles, Gerry Goffin and Carole King
+Catie began her public relations career in 1998 with an internship at Epic Records.  From there she went on to work with the teams at Shore Fire Media, d.baron media, Miles Copeland’s label Ark 21, O&M Company, Concord Music Group and Wind up Records. In 2014, she launched i see you publicity and joined Primary Wave in 2016. Throughout her 16 years in the industry, Catie has worked with an incredible group of artists and actors across all genres of music and entertainment. Her work was instrumental in the success of publicity campaigns for the likes of Phil Ramone, Paula Abdul, Wayne Brady, Randy Jackson, Creed, Evanescence, Bayside, Christian Scott, Enrique Iglesias, Blondie, Chick Corea, Bela Fleck, Civil Twilight, Emily Osment, Kawehi, Lee Pace, Kate Moennig, Staceyann Chin, Nona Hendryx, Luscious Jackson, and more.
+Camille Hackney
+Partner, Head of Brand Partnerships
+Camille Hackney
+Explore
+Close
+Camille Hackney
+Partner, Head of Brand Partnerships
+“Stay far from timid, only make moves when your heart's in it / And live the phrase 'Sky's The Limit.'”
+“Sky's The Limit”                 –                 The Notorious B.I.G
+Camille Hackney is an accomplished executive with a distinguished, decades-long career in the music industry. Before her role at Primary Wave, she served in a dual role as Chief Partnerships Officer, Brand Partnerships & Commercial Licensing at Atlantic Records and Head of the Global Brand
+Partnerships Council for Warner Music Group in New York City. In this capacity, she was directly responsible for architecting and executing strategic partnerships, successfully pairing Atlantic’s renowned artists with top-tier brands to generate impactful campaigns and significant revenue streams for artists and the label. Her portfolio of secured deals with a diverse array of Mag 7, Fortune 500, and various start-up companies are extensive, featuring collaborations with American Express, Pepsi, Google, Stellantis, Apple, Citibank, Starbucks, AT&T, Puma, LVMH, Samsung, SC Johnson, and all major sports leagues (NBA, NFL, NHL, NCAA). She also cultivated strong relationships throughout the advertising and marketing agency ecosystem.
+As the Head of Warner Music Group’s Global Brand Partnerships Council, Ms. Hackney oversaw a worldwide team, driving global deals for hundreds of artists across WMG’s diverse labels and international licensees. A dedicated advocate for social justice, Ms. Hackney proudly served as President of the Warner Music Group Blavatnik Family Foundation Social Justice Fund (WMGBFFSJF). Under her guidance, this 501(c)(3) organization, supported by a $100 million, ten-year funding commitment, made critical, long-term investments in organizations globally. She championed initiatives focused on education, arts and culture, and criminal justice reform, actively working to build more just and equitable communities and effect real change for underserved populations.
+Ms. Hackney has been profiled and has received industry accolades from esteemed publications such as Billboard, Variety, Fast Company, Ad Age, Ebony Magazine, and organizations such as Cannes Lions, The Advertising Club of New York, and the YMCA of Greater New York. Her insights have also been featured as a speaker at prominent industry events presented by Advertising Age, Adweek, Billboard, PTTOW!, and The Clios. She contributed her deep expertise through her service on the Board of the Recording Industry Association of America (RIAA). She continues to serve on the Board of Trustees at The Trinity School in Manhattan and the Dean’s Advisory Council at Princeton University.
+Ms. Hackney’s career foundation was built on analyst roles at HBO (marketing research) and Merrill Lynch (now Bank of America, municipal finance), preceding her highly impactful work at Warner Music Group, Elektra Entertainment Group, and East/West Records. Academically, she earned her M.B.A. from Harvard Business School and an A.B. in Economics from Princeton
+University. Beyond her professional achievements, Ms. Hackney finds deep satisfaction in mentoring young executive talent, a commitment she has pursued formally through programs at WMG, Howard University, and The Ad Club of New York, and informally throughout her career.
+Global Partners
+Nas Nuvens
+Nas Nuvens
+Nas Nuvens Catalog has become one of the most successful music companies in the country. Much like Primary Wave, Nas Nuvens Catalog partners with their artists acquiring partial stakes in their music catalogs with a focus on legendary and iconic music.
+Learn More
+Times Music
+Times Music
+Times Music, based in Mumbai, India, is a leading music entertainment company encompassing a record label, music publishing, and talent management. Established in 1998, the company has evolved into a full-stack music business powerhouse across South-Asian genres and cultures.
+Learn More
+RUN
+RUN
+RUN provides financing to artists, labels, and rightsholders ranging from short-term advances to full catalog acquisitions. Their platform leverages deep historical data and machine learning models to value music rights with precision.
+Learn More
+Pops Music
+Pops Music
+Home to a vast catalog of Vietnamese and regional repertoire, POPS Music has spent nearly two decades supporting both legendary artists and the next generation of emerging talent across Southeast Asia, building one of the region’s most influential music landscapes.
+Learn More
+Timeline
+2026
+2025
+2024
+2023
+2022
+2021
+2020
+2018 – 2019
+2017
+2016
+2015
+2014
+2013
+2012
+2011
+2010
+2009
+2008
+2007
+2006
+20th Anniversary of Culture, Catalogs & Legacy
+Read More
+Continuing Legacy Acquisitions & Cultural Impact
+Read More
+New Publishing Rights & Global Brand Expansion
+Read More
+Major Catalog Expansion & Global Market Growth
+Read More
+Strategic Capitalization & Global Platform Expansion
+Read More
+Iconic Catalog Expansion & Content Platform Growth
+Read More
+Strategic Investment, Portfolio Expansion & Cultural Activation Amid Global Disruption
+Read More
+Transformational Growth & Landmark Partnerships
+Read More
+Publishing Expansion
+Read More
+Launch of Institutional Fund & Acquisition Acceleration
+Read More
+Media Integration, Office Expansion & Documentary Production Growth
+Read More
+Expansion of Management Roster, Brand Partnerships & Sync Breakthroughs
+Read More
+Expansion of Management, Brand Partnerships & Live/Media Activations
+Read More
+Digital Growth & Creative Content Development
+Read More
+Opened London office
+Read More
+Strategic Diversification & Service Expansion
+Read More
+Headquarters Expansion & Marketing Innovation
+Read More
+Catalog Expansion & Brand Activation
+Read More
+Iconic Catalog Growth & Industry Leadership
+Read More
+Foundation of a New Music Model & First Landmark Acquisitions
+Read More
+2026
+2025
+2024
+2023
+2022
+2021
+2020
+2018 – 2019
+2017
+2016
+2015
+2014
+2013
+2012
+2011
+2010
+2009
+2008
+2007
+2006
+2026
+20th Anniversary of Culture, Catalogs & Legacy
+In 2026, Primary Wave celebrated two decades of music rights leadership, cultural impact, and brand innovation. The year marked the company’s 20th Anniversary, highlighted by milestone acquisitions, major catalog expansions, high-profile activations, and a star-studded Pre-Grammy celebration. Primary Wave continued to strengthen its global footprint, opening a new New York office while maintaining a strong commitment to estate partnerships, marketing, and content development across multiple platforms.
+20th Anniversary Pre-Grammy Event
+On January 31, 2026, Primary Wave hosted its 20th Anniversary Pre-Grammy Event at the Waldorf Astoria Beverly Hills, with VENU serving as presenting sponsor. The evening featured live performances by:
+John Mellencamp
+,
+Pete Townshend
+,
+Joe Elliott
+&
+Phil Collen
+(Def Leppard),
+Leo Sayer
+and
+Trombone Shorty
+.
+DJ sets were performed by
+CeeLo Green
+and
+Grandmaster Flash
+, with additional guests from
+Faith Evans
+,
+Danny Elfman
+,
+Mark Mothersbaugh
+,
+and other prominent artists and executives. Sponsors for the evening included: VENU, ASCAP, Borghetti, Fernet-Branca, FIJI Water, Justin Wines, and Morgan Stanley Global Sports & Entertainment.
+Catalog & Estate Acquisitions
+Throughout 2026, the company continues aggressive catalog growth, completing partnerships and acquisitions with acclaimed songwriters and artists including
+Britney Spears
+,
+Foreigner
+,
+Eartha Kitt
+,
+Gilberto Gil
+,
+Harry Chapin
+,
+Kool and the Gang
+, Multi Music,
+Alan Wilder
+(Depeche Mode), and
+Robert Palmer
+.
+In July, Primary Wave Music completed its acquisition of
+Kobalt
+, one of the world’s premier independent music publishing and technology platforms. The transaction includes an investment from Brookfield, a strategic partner to Primary Wave. The acquisition creates a scaled, independent alternative to traditional publishing models, combining Kobalt’s best-in-class royalty platform, amra’s global digital collection capabilities, and Primary Wave’s proven ability to grow the value of legendary music IP through creative marketing and other initiatives.
+Primary Wave has made strategic investments in two companies:
+RUN
+, a music financing platform that positions itself as “a data-driven investment company supporting the creator generation,” and
+POPS Music
+, a leading Vietnam-based music company that claims to be home to the largest catalog of Vietnamese and Indonesian music. As part of the POPS Music deal, Primary Wave will invest capital and provide additional resources to support further Southeast Asian catalog acquisitions, accelerating IP growth across the region.
+Company growth:
+Primary Wave opens a new New York City office at 1165 Broadway, further expanding the company’s presence and growth in the East Coast market.
+Marketing, Branding & Content Development Highlights
+Music from Prince (Purple Rain, When Doves Cry), Fleetwood Mac (Landslide), and Moby (When It’s Cold I’d Like to Die) was featured in the highly anticipated season finale of
+Stranger Things
+.
+Rock & Roll Hall of Fame
+Nominees campaign for Luther Vandross, INXS, and Melissa Etheridge
+City of Hope®
+announced that Larry Mestel, Founder and CEO of Primary Wave Music, will receive the 2026 Spirit of Life® Award for the Music, Film and Entertainment Industry. He will be honored at a gala on October 27, 2026, at the Pacific Design Center in Los Angeles.
+2025
+Continuing Legacy Acquisitions & Cultural Impact
+In 2025, Primary Wave further expanded its legacy catalog footprint while executing high-profile estate partnerships and cultural activations. Despite unprecedented challenges, including the Southern California wildfires impacting Grammy Week, the company demonstrated leadership in philanthropy, investor relations, and brand storytelling. Strategic acquisitions, estate management, and innovative marketing reinforced Primary Wave’s status as a global leader in music rights, legacy preservation, and multi-platform content development.
+Catalog & Estate Acquisitions
+Primary Wave continued its aggressive catalog expansion, acquiring stakes and partnerships with:
+Axl Rose
+(Guns ‘n’ Roses),
+Chuck Mangione
+,
+Deep Purple
+,
+Itzhak Perlman
+,
+Jill Scott
+,
+Slade
+,
+Jimmy Webb
+,
+Queen
+(acquired John Reid’s share of royalties),
+Pat Metheny
+,
+Lucinda Williams
+,
+Peter Green
+(of Fleetwood Mac),
+Pattie LaBelle
+,
+The Cars
+,
+Dave Brubeck
+,
+Thin Lizzy
+.
+The company also expanded estate partnerships with
+The Notorious B.I.G.
+estate, encompassing publishing, master recordings, film and television rights, name and likeness, brand management, and archival materials.
+Additional estate partnerships and acquisitions included influential artists such as
+Lou Adler and the Rocky Horror Picture Show
+catalog.
+Investor Relations & Events
+The planned 2025 Pre-Grammy event on February 1 was canceled due to Southern California wildfires. Primary Wave redirected its efforts and resources to wildfire relief funds, demonstrating a commitment to community support and social responsibility.
+During Grammy Week, Primary Wave hosted an exclusive partner dinner at the Waldorf Astoria Beverly Hills, featuring live performances by
+Neil Sedaka
+,
+Melissa Etheridge
+,
+Eric Benet
+,
+Paul Anka
+, and
+CeeLo Green
+.
+Marketing, Branding & Content Development Highlights
+Alice Cooper x WhistlePig
+collaboration for Dry January.
+Olivia Newton-John x Weight Watchers campaign:
+Livin’ Physical
+.
+Induction of Bad Company and Outkast into the
+Rock & Roll Hall of Fame
+.
+The Voice of Whitney
+: A Symphonic Celebration sold out at Town Hall- Luther Vandross’s album recognized by the Grammy Hall of Fame.
+James Brown charts a new song on Billboard for the first time since 1993 with 310babii collaboration,
+“Bad.”
+Jim Peterik
+awarded Spotify 1 Billion Streams plaque
+for “Eye of the Tiger.”
+Release of
+SLY LIVES!
+documentary examining the life and legacy of Sly & The Family Stone.
+Bob Marley Hope Road
+immersive experience set to open Summer 2025 at Mandalay Bay to premiere DEVO documentary in Summer 2025.
+The Brooklyn Nets celebrated The Notorious B.I.G. Night on November 11, 2025, at Barclays Center, debuting their 2025-26 City Edition
+“Brooklyn Camo” uniforms
+. The event included a halftime performance by Lil’ Kim, a custom Biggie-themed court, and exclusive bobblehead giveaways to honor the rapper’s legacy.
+Kings Hawaiian x Bing Crosby
+duet release of “Mela Kaleki Maka.”
+Release of
+Lainey Wilson x Bing Crosby
+duet.
+Bing Crosby’s Ultimate Christmas
+hits #1 on Billboard’s Top Streaming Albums Chart.
+2024
+New Publishing Rights & Global Brand Expansion
+In 2024, Primary Wave solidified its leadership as a global music rights and brand powerhouse. The company expanded its publishing and master rights portfolio, deepened estate partnerships, and launched a series of landmark cultural and consumer activations spanning live events, immersive experiences, media, and product collaborations. From strategic catalog acquisitions to innovative global brand integrations, 2024 marked a year of both legacy preservation and forward-looking creative growth.
+Catalog Partnerships & Acquisitions
+Primary Wave continued its aggressive publishing and master rights expansion, securing catalogs and partnerships with:
+Jackson Browne
+,
+Neil Sedaka
+,
+Spin Doctors
+,
+Moby
+,
+Neil Finn
+,
+Steve Porcaro
+,
+Keith Forsey
+,
+Jon Landau
+(associated with Bruce Springsteen), Nuno Bettencourt and Pat Badger of
+Extreme
+and
+Ric Ocasek
+.
+The company also expanded estate partnerships with
+Village People
+, encompassing publishing, master recordings, film and television rights, name and likeness, brand management, and archival materials.
+In 2024, Mestel was once again featured on the Billboard Power 100, making the magazine’s “Leaderboard” which recognized the top 40 leaders across the music industry
+Marketing, Branding & Content Development Highlights:
+James Brown:
+Say It Loud
+and exhibit premiering at the Apollo Theater.
+Release of James Brown’s previously unreleased anthem,
+“We Got To Change.”
+Partnership with the Bing Crosby Estate, Adidas, and Malbon Golf to introduce
+The Crosby Collection
+.
+Announcement of the Bob Marley
+Hope Road immersive
+experience in Las Vegas.
+Airbnb partnership
+with Prince celebrating the 40th anniversary of Purple Rain.
+Launch of Whitney Houston custom
+slot machines
+in Las Vegas, Atlantic City, and global markets.
+Creation of limited-edition
+Mattel Barbie doll
+honoring Stevie Nicks.
+Limited-edition
+Bing Crosby golf apparel line
+with Adidas and Malbon.
+Announcement of Melissa Etheridge:
+I’m Not Broken
+.
+Announcement of Luther Vandross:
+Never Too Much documentary
+with CNN and OWN.
+Partnership with Middletown to rename a street
+“Van Zandt Way”
+in honor of Steven Van Zandt.
+Global
+theatrical release
+of Whitney Houston – The Concert for a New South Africa.
+Holiday duet release
+of “White Christmas (with V of BTS)” featuring V and Bing Crosby.
+Re-release of Narragansett’s Bing Crosby “White Christmas” Edition
+Beer
+for the 2024 holiday season.
+2023
+Major Catalog Expansion & Global Market Growth
+In 2023, Primary Wave accelerated its global growth strategy through major catalog acquisitions, international expansion, and large-scale content activations.
+The company formed a landmark partnership with Times Music to expand into emerging markets, creating a $100+ million joint venture focused on acquisitions and label investments across India and the broader Indo-Pacific region.
+Primary Wave also entered into a partnership with Brazil’s
+Nas Nuvens Catalog
+to accelerate acquisition growth and marketing initiatives in Brazil and other Latin American territories.
+To support this expansion, David Loiterton joined Primary Wave as President, Indo-Pacific, strengthening the company’s leadership presence across key international territories.
+Primary Wave also completed the acquisition of the legendary
+Robby Krieger and Ray Manzarek (The Doors)
+, including sound recordings, publishing interests, trademarks, and merchandise rights — marking one of the most comprehensive and culturally significant transactions in the company’s history.
+Primary Wave continued its aggressive acquisition strategy in 2023, completing partnerships and/or acquiring interests in catalogs including:
+Steven Van Zandt
+,
+Russ Ballard
+,
+Joey Tempest
+,
+John Mellencamp
+(master recording rights acquisition), an interest in
+Black Sabbath
+,
+Kool & the Gang
+,
+Derek Dick
+(Marillion),
+Passion Pit
+,
+Isaac Hayes
+,
+Dennis DeYoung
+and
+Eddie Rabbitt
+.
+Further expanding its U.S. footprint, Primary Wave opened a new Los Angeles office located at 2690 N. Beachwood Drive, reinforcing its commitment to West Coast creative and industry partnerships.
+Whitney Houston 60 – Grammy Week Residency
+In February 2023, Primary Wave co-presented a multi-day “Whitney Houston 60” Grammy Week residency at the W Hollywood in partnership with Sony.
+Often referred to as the “Whitney Houston Hotel,” the immersive residency ran throughout Grammy Week and celebrated what would have been Whitney Houston’s 60th birthday. Sponsors included MAC Cosmetics, ProFlowers, and City National Bank.
+The activation featured:
+Sony’s 360 Reality Audio immersive listening lounge highlighting Houston’s recordings.
+A curated memorabilia exhibit showcasing iconic photographs, stage costumes, and career artifacts.
+A pop-up retail boutique offering exclusive Whitney Houston branded merchandise.
+Artist showcases and live performances from contemporary performers honoring her music.
+The residency became one of the most talked-about destinations of Grammy Week, blending immersive technology, legacy storytelling, and brand partnership at scale.
+Marketing, Branding & Content Development Highlights
+Primary Wave continued to drive innovative brand partnerships and content extensions, including:
+Whitney Houston x Sony
+360 Reality Audio global partnership activation.
+Melissa Etheridge’s
+My Window
+limited Broadway engagement.
+Boyz II Men x Chili’s national partnership, including an in-ad performance and release of their cover of
+“Baby Back Ribs.”
+Launch of the Bing Crosby
+“White Christmas” beer
+collaboration with Narragansett Beer for the 2023 holiday season and beyond.
+Expansion of Sun Diner
+to two locations in Nashville and Gatlinburg, Tennessee.
+Luther Vandross x Waterford Crystal
+limited-edition collection launch.
+2022
+Strategic Capitalization & Global Platform Expansion
+In 2022, Primary Wave entered a new era of global scale and long-term capital growth through a landmark strategic minority investment from
+Brookfield Asset Management
+of approximately $2 billion. The transaction created a long-term music rights capital vehicle and included a minority stake in Primary Wave, significantly expanding the company’s acquisition capacity and global reach.
+As part of the transaction,
+Creative Artists Agency (CAA)
+joined as a strategic partner and minority investor, bringing its film, television, theatrical, and branding divisions into alignment with Primary Wave’s catalog marketing and content initiatives — further strengthening the company’s ability to activate copyrights across entertainment platforms worldwide.
+That same year, the
+Whitney Houston biopic, I Wanna Dance with Somebody
+— produced by TriStar Pictures and co-executive produced by Primary Wave — was released theatrically on a global scale, introducing her story and music to a new generation of audiences.
+Primary Wave continued its aggressive catalog growth strategy in 2022, completing partnerships and acquisitions with an exceptional group of artists and songwriters including
+Paul Rodgers
+and
+Simon Kirke
+of Bad Company and Free,
+Joey Ramone
+,
+Regent Music and Jewel Music
+,
+Even Stevens
+,
+Julian Casablancas
+of The Strokes,
+Tom Whitlock
+,
+Shannon Rubicam and George Merrill
+,
+Huey Lewis
+,
+Henry Mancini
+,
+Layne Staley and Mike Starr
+of Alice in Chains,
+Brian Wilson
+,
+Martina McBride
+, and an interest in the
+Traveling Wilburys
+catalog featuring Bob Dylan
+and fellow legendary collaborators.
+In a notable pop culture moment, Primary Wave was referenced as part of a “Musicians Selling Music” clue on Jeopardy! on May 31, 2022 — a reflection of the growing mainstream awareness of music rights transactions.
+Marketing & Branding Highlights:
+Primary Wave continued to drive cultural and commercial relevance through innovative partnerships and media integrations, including:
+Launch of the
+Whitney Houston x Scent Beauty
+fragrance partnership.
+MAC Cosmetics limited-edition
+Whitney Houston collections.
+Peloton branded ride
+and festival integration for Thievery Corporation.
+KT Tunstall’s New Year’s Eve performance
+in Times Square, televised live.
+Valentine’s Day
+“Love Letters”
+EP collaboration between Air Supply and Edible Arrangements.
+Celebrated
+Sun Records 70th Anniversary
+with event at Gibson Guitars on October 26, 2022 with special guests including Jerry Philips, Paul Rodgers, Ian Hunter, Chris Isaak, amongst others.
+Ray Charles’
+“What’d I Say”
+featured in Nissan’s 2022 Super Bowl commercial.
+Bing Crosby’s “Winter Wonderland”
+activation launched within Decentraland, expanding into Web3 and virtual engagement.
+Collectively, 2022 marked a defining year of expansion for Primary Wave — pairing large-scale institutional investment with global content releases, premier catalog acquisitions, and innovative brand activations across traditional and emerging platforms.
+2021
+Iconic Catalog Expansion & Content Platform Growth
+In 2021, Primary Wave executed one of the most culturally significant acquisitions in its history with the purchase of Sun Records — the legendary label known as “Where Rock ’n’ Roll Began.” The acquisition included master recordings and publishing associated with pioneers such as
+Johnny Cash
+,
+Jerry Lee Lewis
+,
+Carl Perkins
+,
+Roy Orbison
+,
+Merle Haggard
+and many more — cementing Primary Wave’s stewardship of foundational American music heritage.
+Strategically, Primary Wave formed its
+Content Development Division
+, signaling a focused expansion into film, television, and long-form storytelling designed to activate its growing portfolio across multimedia platforms.
+Throughout 2021, the company continued aggressive catalog growth, completing partnerships and acquisitions with acclaimed songwriters and artists including
+Steve Kipner
+,
+Dan Wilson
+,
+Jon Lind
+,
+Wilson Phillips
+,
+Chris Isaak
+,
+The Waterboys
+,
+Jeff Porcaro
+,
+André 3000
+of Outkast,
+Boyz II Men
+,
+Sturken & Rogers
+(Rihanna),
+Mark Morrison
+, and
+Patrick Leonard
+— broadening the company’s cross-genre, multi-generational catalog footprint.
+Primary Wave also expanded its estate partnership strategy with landmark agreements involving
+Prince
+,
+Bing Crosby
+,
+Luther Vandross
+,
+Teddy Pendergrass
+, and
+James Brown
+, encompassing publishing, master recordings, film and television rights, name, likeness, brand rights, and archival materials — reinforcing Primary Wave’s leadership in full-spectrum legacy management.
+In recognition of his continued impact on the industry, Larry Mestel was named to the Variety 500 list. He was also featured across leading global media outlets including The New York Times, Los Angeles Times, The Wall Street Journal, The Hollywood Reporter, Entrepreneur, Fast Company, New York Post, Forbes, Billboard, and HITS Magazine.
+Marketing & Branding Highlights:
+Primary Wave continued to unlock commercial and cultural value through innovative brand partnerships and award-winning campaigns, including:
+Clio Bronze Award for the Burt Bacharach / American Red Cross campaign
+“What the World Needs Now.”
+Clio Music
+Honorable Mention for the Marley 75 Grammy Week activation.
+Securing a partnership between
+Boy George and Waze
+.
+Brand alignment deal between
+Alice Cooper and Cooper Tire & Rubber Company
+.
+Launch of the official Styx
+“Renegade”
+beer in partnership with Voodoo Brewery and Styx.
+Placement of Smokey Robinson’s “
+Cruisin”
+in an Allstate national commercial.
+Launch of the Alice Cooper
+“Poison”
+hot sauce-infused burger at Rock & Brews.
+Brand integrations with Benjamin Moore and Chime in the Whitney Houston x Clean Bandit
+“How Will I Know”
+music video.
+In celebration of the
+40th anniversary of Olivia Newton-John’s “Physical,”
+partnerships with Crunch Fitness and ThirdLove in support of the Olivia Newton-John Foundation — setting a Guinness World Records title for the most people performing lateral leg lifts simultaneously.
+Secured a global partnership between
+MAC Cosmetics and Whitney Houston
+.
+2020
+Strategic Investment, Portfolio Expansion & Cultural Activation Amid Global Disruption
+In 2020, Primary Wave continued its aggressive growth strategy while expanding into new media and brand verticals. The company was named
+Indie Publisher of the Year
+by the Association of Independent Music Publishers (AIMP – Los Angeles Chapter), recognizing its leadership and innovation within the independent publishing sector.
+That same year, Primary Wave announced an investment in
+Lava Media Group
+, signaling a strategic expansion into podcasts and emerging audio platforms. The company further deepened its presence in the podcast space by taking an equity interest in Audio Up, reinforcing its commitment to original content creation and next-generation media distribution.
+Throughout 2020, Primary Wave completed an extraordinary series of partnerships and catalog acquisitions, including deals with
+Ray Charles
+,
+Godsmack
+,
+Jim Brickman
+,
+Nicky Chinn
+,
+Donny Hathaway
+,
+Burt Bacharach
+,
+War
+,
+Air Supply
+,
+Justin Hayward
+,
+Olivia Newton-John
+,
+Stevie Nicks
+,
+Devo
+,
+Disturbed
+,
+Leo Sayer
+,
+Bell Biv DeVoe
+(management),
+Allee Willis
+and
+Frankie Valli & The Four Seasons
+— further diversifying the company’s portfolio across genres and generations.
+In January, Primary Wave transformed 1 Hotel West Hollywood into the “One Love Hotel” for its annual Pre-Grammy celebration, honoring Bob Marley’s 75th birthday with three days of performances, panel discussions, a Power Lunch, and an industry-wide celebration — one of the final major live music gatherings before global shutdowns.
+In recognition of his leadership, Larry Mestel was named to Billboard’s prestigious “Power List” in 2020 (and again in 2022 & 2023), underscoring his continued influence in shaping the modern music business landscape.
+Marketing & Branding Highlights:
+Primary Wave continued to unlock new cultural relevance for its catalog through strategic brand activations and cross-platform campaigns, including:
+Announcement of the
+Whitney Houston biopic I Wanna Dance with Somebody
+, with Primary Wave as producer.
+Launch of the
+SiriusXM Bob Marley branded channel
+on SiriusXM.
+Induction of
+Whitney Houston into the Rock and Roll Hall of Fame
+.
+Launch of the
+Smokey Robinson x Shinola
+product collaboration.
+Launch of the
+Oakley “Bob Marley One Love” sunglasses
+campaign.
+The
+American Red Cross multi-media campaign features
+Burt Bacharach’s iconic “What the World Needs Now (Is Love),” with a newly recorded version performed by Smokey Robinson, Tori Kelly, Sam Fischer, and Leona Lewis.
+Multiple
+GMA Dove Award nominations
+for Gaither Music Group.
+Launch of
+“Hotbox,”
+a cannabis-culture party game created by Cypress Hill and Fitz Games.
+Creation and launch of an
+Alice Cooper lyric-inspired hot sauce
+brand with Alice Cooper.
+Despite global disruption, 2020 reflected Primary Wave’s ability to expand strategically, diversify into new media, activate culturally resonant campaigns, and continue building one of the most dynamic portfolios in the music industry.
+2018 – 2019
+Transformational Growth & Landmark Partnerships
+In 2018, Primary Wave surpassed the $1 billion mark in assets and cash under management with the formation of
+Primary Wave Music IP Music Fund 2, LP.
+This milestone signaled a new phase of institutional growth and reinforced the company’s position as a leading independent music publishing company in the world.
+That same year, Primary Wave acquired an 80% interest in
+Chris Blackwell’s Blue Mountain Music, adding the legendary
+Bob Marley
+catalog
+and associated works to its portfolio. The acquisition marked one of the most culturally significant reggae publishing deals in recent history.
+Between 2018 and 2019, the company completed a series of high-profile catalog acquisitions and partnerships, including:
+Count Basie
+,
+Tom Hamilton
+(Aerosmith),
+Pete Waterman
+,
+David Rose
+,
+Kenny Loggins
+,
+Counting Crows
+,
+Paul Anka
+,
+Boston
+,
+Tommy Shaw
+,
+Sly & The Family Stone
+,
+Culture Club
+.
+Primary Wave also established landmark estate partnerships with
+Whitney Houston
+and
+Prince
+, encompassing publishing, master recordings, name, image, likeness, and life rights — further solidifying the company’s leadership in legacy artist stewardship and long-term brand management.
+With the acquisition of
+Gaither Music Group
+, Primary Wave officially launched its Master Recordings Division, expanding beyond publishing into a fully integrated music rights platform.
+In 2019, Goldman Sachs honored Larry Mestel as one of the “100 Most Intriguing Entrepreneurs” at its annual Builders & Inventors Summit, recognizing his leadership and vision in building one of the world’s leading independent music companies. Also Larry was featured in Variety’s 500 Entertainment Leaders and Icons. An honor that he was also received in 2021, 2022, and 2023.
+Marketing & Branding Highlights:
+Facilitated the recording and release of
+“Higher Love”
+, Whitney Houston’s collaboration with
+Kygo
+, marking her first
+Hot 100 entry in 10 years
+. The song reached
+#1 on two Billboard Dance charts
+and
+#2 on the U.K. Official Singles Chart.
+Featured
+Smokey Robinson’s
+music in a new
+Netflix
+Motown
+animated series.
+Placed
+Bobby Hebb’s
+“Sunny”
+in a national ad campaign for
+Indeed.com.
+Facilitated the recording and release of
+“Do You Hear What I Hear”
+, Whitney Houston’s collaboration with
+Pentatonix
+for the
+2019 Holiday season
+.
+2017
+Publishing Expansion
+Catalog Growth & Strategic Stakes
+In 2017, Primary Wave continued expanding its publishing portfolio through high-profile partnerships and acquisitions, including
+CeeLo Green
+,
+the Glenn Gould estate
+,
+Dave Mason
+,
+Alice Cooper
+,
+Holly Knight
+,
+Tom Cochrane
+, and a strategic stake in Rough Trade Publishing.
+These additions further diversified the company’s catalog across rock, pop, classical, and independent music sectors.
+Marketing & Branding Highlights
+Created and launched Smokey Robinson’s official holiday,
+“Father Daughter Day,”
+celebrated annually on the second Sunday of October
+Four Foy Vance compositions
+featured on Ed Sheeran’s multi-platinum album
+Launched the annual
+Melissa Etheridge cruise
+in partnership with Norwegian Cruise Line
+Smokey Robinson’s
+“My Girl”
+featured in Amazon Alexa’s Super Bowl commercial
+Foy Vance’s
+“Upbeat Feelgood”
+placed in a national advertising campaign for Quake
+2016
+Launch of Institutional Fund & Acquisition Acceleration
+Formation of Primary Wave IP Investment Management
+In 2016, Primary Wave formed its asset management arm,
+Primary Wave IP Investment Management
+, securing its first institutional investment of approximately $300 million.
+This marked a transformational shift — positioning the company to scale catalog acquisitions with long-term institutional backing.
+Major Catalog Acquisitions Begin Scaling
+With new capital in place, Primary Wave launched an aggressive acquisition campaign, adding major cultural figures to its portfolio, including
+Smokey Robinson
+,
+Steve Cropper
+, and
+Larry Smith
+(Kurtis Blow’s “The Brakes”).
+Marketing & Sync Highlights
+CeeLo Green’s
+“Music To My Soul”
+featured in the trailer for Universal Pictures’ Almost Christmas
+L.P’s
+“Muddy Waters”
+placed in the season finale of Netflix’s Orange Is the New Black
+2015
+Media Integration, Office Expansion & Documentary Production Growth
+In 2015, Primary Wave advanced its evolution into a fully integrated music, media, and entertainment company, marked by a strategic expansion of its physical footprint and a deeper role in film and documentary production. The year underscored the company’s growing influence in media storytelling and its ability to extend music catalog narratives into premium visual content.
+Corporate Expansion & Infrastructure Growth:
+Primary Wave expanded its West Coast presence to support growing media, branding, and entertainment initiatives. The company opened a new Los Angeles office at 10850 Wilshire Blvd, strengthening its footprint in the entertainment capital of the world and enhancing its ability to collaborate directly with film, television, and media partners.
+Media Production & Documentary Integration:
+2015 marked a significant step forward in Primary Wave’s involvement in high-profile media production and storytelling. Primary Wave’s Larry Mestel served as co-producer of the critically acclaimed documentary Kurt Cobain: Montage of Heck, expanding its role from music rights management into premium documentary filmmaking and legacy artist storytelling.
+2014
+Expansion of Management Roster, Brand Partnerships & Sync Breakthroughs
+In 2014, Primary Wave continued to strengthen its talent management division and expand its presence across brand partnerships, live activations, and sync-driven cultural moments. The year highlighted the company’s ability to elevate both legacy and contemporary artists through high-profile commercial campaigns, television exposure, and breakthrough sync placements that drove renewed global visibility.
+Talent Management & Roster Expansion:
+The company strengthened its talent management division with the signing of multi-platinum hip hop group
+Cypress Hill
+, further deepening its presence in hip hop culture and catalog-driven legacy acts.
+Brand Partnerships & Experiential Marketing:
+Primary Wave expanded its integration of artists into major corporate branding initiatives, blending music, technology, and live performance.
+Melissa Etheridge partnered with Deloitte Digital
+on a major branded initiative, which included a high-profile Times Square New Year’s Eve performance, showcasing the company’s ability to connect artists with global stage moments and enterprise-level brand storytelling.
+Sync, Media & Cultural Breakthroughs:
+The year also delivered a significant sync placement that reinforced the power of songwriting within film and television culture.
+Foy Vance’s
+“Make It Rain” was recorded by Ed Sheeran
+and featured in the acclaimed FX series Sons of Anarchy, highlighting Primary Wave’s growing influence in premium sync placements and cross-media exposure.
+2013
+Expansion of Management, Brand Partnerships & Live/Media Activations
+In 2013, Primary Wave continued to expand its integrated music and entertainment platform, strengthening its management division, deepening brand partnerships, and amplifying artist visibility across live performance, television, and global marketing campaigns. The year highlighted the company’s growing ability to connect legacy and contemporary artists with major consumer brands and high-profile media platforms.
+Catalog Partnerships, Management & Talent Expansion:
+The Matrix production team and Goodie Mob joined/expanded collaboration within the company’s ecosystem, reinforcing Primary Wave’s commitment to hit-driven production talent and influential hip-hop legacy acts.
+Melissa Etheridge
+signed to Primary Wave’s Talent Management division, strengthening the company’s presence in legacy rock and adult contemporary artist representation.
+Marketing, Branding & National Campaign Integration:
+Primary Wave significantly scaled its brand partnership initiatives, executing national campaigns that integrated artists directly with major consumer-facing companies.
+Goodie Mob activated major national brand campaigns in partnership with AT&T, Samsung, and JetBlue, demonstrating the company’s ability to align catalog and contemporary relevance with Fortune 500 marketing platforms.
+2013 was marked by high-profile media exposure and live entertainment activations that elevated artist visibility across multiple platforms. CeeLo Green delivered a standout year, including a Grammy performance alongside Gwyneth Paltrow, reinforcing his crossover appeal in mainstream entertainment. He continued to serve as a judge on NBC’s The Voice and also entered a strategic partnership with TyKu Sake, extending his brand into lifestyle consumer products. His Las Vegas residency “Loberace” at Planet Hollywood further demonstrated Primary Wave’s ability to support large-scale live entertainment ventures and residency-based revenue models.
+2012
+Digital Growth & Creative Content Development
+In 2012, Primary Wave focused on expanding its digital marketing, branding, and content development capabilities while continuing to grow its songwriter roster. Through the continued evolution of its digital agency and Brand Marketing Group, the company strengthened artist partnerships, enhanced catalog monetization strategies, and laid the foundation for future growth across media, branding, and entertainment.
+Catalog Partnerships & Acquisitions:
+Primary Wave expanded its songwriter roster with the signing of acclaimed songwriter and producer
+Gregg Alexander
+and
+Foy Vance
+, further strengthening the company’s portfolio of hit-making creators.
+Marketing, Branding & Content Development Highlights:
+The company continued to explore innovative ways to extend artist brands beyond traditional music channels. A notable achievement was the development and production of “
+Space Ducks: An Infinite Comic Book of Musical Greatness
+,” the first-ever graphic novel series created around the work of cult-favorite songwriter and artist Daniel Johnston.
+The project was showcased during South by Southwest as part of a special event hosted by BrooklynVegan, demonstrating Primary Wave’s commitment to creating new intellectual property and expanding artist legacies through innovative storytelling and multimedia experiences.
+Through strategic investments in digital marketing, branding, and original content creation, 2012 served as an important building year that positioned Primary Wave for its next phase of growth and diversification.
+2011
+Opened London office
+In 2011, Primary Wave expanded its national footprint by establishing a permanent presence on the West Coast while continuing to grow its portfolio of artist partnerships, catalog acquisitions, and brand marketing capabilities. The company further strengthened its reputation as an integrated entertainment platform through talent management, public relations services, and high-profile brand collaborations connecting artists with global consumer brands.
+Catalog Partnerships & Acquisitions:
+Primary Wave continued its acquisition and partnership strategy with a diverse range of music and entertainment properties, including the music catalog of
+Hammer Film Productions
+, as well as partnerships with
+The Boxer Rebellion
+,
+The Constellations
+and
+Eric Benét
+. These additions further broadened the company’s portfolio across film, alternative rock, and emerging artist properties.
+Company Growth & Expansion:
+As part of its continued national expansion, Primary Wave established its Los Angeles office at 9165 W. Sunset Boulevard, creating a strategic West Coast hub for artist management, licensing, film and television opportunities, and brand partnerships.
+The company also launched an in-house Public Relations Department, providing artists and estates with dedicated communications, media relations, and brand-building support. This addition further expanded Primary Wave’s full-service capabilities and reinforced its commitment to long-term artist development.
+The Talent Management Division continued to grow with the signing of Grammy-nominated R&B artist Eric Benét, adding another high-profile client to the company’s expanding management roster.
+Marketing, Branding & Content Development Highlights
+Primary Wave continued to build its reputation as an innovator in music-driven marketing and brand partnerships.
+Highlights included:
+Securing a national advertising campaign with Citibank featuring
+“Into the Wild”
+by LP.
+Developing a national campaign with
+7UP featuring CeeLo Green
+.
+Through its Brand Marketing division, facilitating a
+global partnership between Rihanna and NIVEA
+in celebration of NIVEA’s 100th anniversary. The campaign united two internationally recognized brands in one of the year’s most notable celebrity marketing collaborations.
+Through strategic expansion, enhanced artist services, and innovative brand partnerships, 2011 further established Primary Wave as a leading entertainment company operating at the intersection of music, media, and consumer marketing.
+2010
+Strategic Diversification & Service Expansion
+In 2010, Primary Wave broadened its business beyond traditional music publishing, establishing new divisions focused on branding, digital marketing and talent management. These strategic initiatives laid the foundation for the company’s evolution into a full-service entertainment and brand management platform, capable of driving value across publishing, recordings, touring, sponsorships, and digital media.
+Catalog Partnerships & Songwriter Acquisitions
+Primary Wave continued to grow its roster of acclaimed songwriters and creators through partnerships with legendary composer and songwriter
+Marvin Hamlisch
+, songwriter and producer
+L.P.
+, songwriter
+Barrett Yeretsian
+, and
+Albert Hammond Jr.
+. These additions further diversified the company’s catalog across pop, rock, film, and theatrical music.
+Company Growth & Expansion
+As part of its long-term vision to become a fully integrated entertainment company, Primary Wave established its Talent Management Division, signing
+CeeLo Green
+as one of its first major management clients.
+The company also launched internal Brand Partnerships and Digital Marketing Agencies, creating dedicated teams focused on sponsorships, consumer marketing, social media, and digital audience development. This strategic investment became a defining pillar of the Primary Wave business model, helping artists and catalogs extend their reach beyond traditional music channels and into broader culture.
+Marketing, Branding & Content Development Highlights
+Primary Wave continued to pioneer innovative music marketing initiatives and brand integrations that connected artists with new audiences.
+Highlights included:
+Securing a high-profile integration for Def Leppard on the television series
+The Celebrity Apprentice
+, introducing the band’s music and brand to millions of viewers.
+Launching the multi-year
+“Rock Yourself to Sleep”
+tour in partnership with Motel 6, creating a national promotional platform that blended live music, consumer engagement, and brand sponsorship opportunities.
+Through strategic diversification, expanded artist services, and innovative marketing initiatives, 2010 marked a pivotal year in Primary Wave’s transformation from a music publisher into a broader entertainment, branding, and cultural marketing company.
+2009
+Headquarters Expansion & Marketing Innovation
+In 2009, Primary Wave continued to expand its portfolio of iconic artists while investing in the infrastructure and marketing capabilities that would become core to the company’s growth strategy. Through new partnerships, a larger New York headquarters, and innovative brand integrations, Primary Wave further demonstrated its ability to transform music assets into culturally relevant consumer experiences.
+Catalog Partnerships & Acquisitions
+Primary Wave expanded its roster through strategic partnerships with acclaimed artists and songwriters, including
+Def Leppard
+,
+Steven Curtis Chapman
+,
+Tennessee Ernie Ford
+,
+Katrina and The Waves
+,
+Mac Davis
+,
+Reggie Watts
+,
+John Forte
+, Delfina,
+Airbourne Toxic Event
+,
+Anberlin
+,
+Saving Abe
+l,
+Taddy Porter
+and
+Gregg Allman
+. These additions further diversified the company’s growing portfolio across rock, country, and contemporary Christian music.
+Company Growth & Expansion
+As the company continued its rapid growth, Primary Wave relocated its New York headquarters to
+116 East 16th Street
+, expanding its operational footprint and supporting the increasing scale of its acquisition, marketing, and licensing activities.
+Marketing, Branding & Content Development Highlights
+Primary Wave continued to pioneer innovative marketing and brand integration strategies that extended the reach of its catalogs beyond traditional music channels.
+Highlights included:
+Launching a
+multi-state lottery promotion
+inspired by Aerosmith’s iconic hit “Dream On,” creating a unique consumer activation that connected music and gaming audiences.
+Creating and launching
+J-Stache
+, an animated comedy series featuring the music of Daryl Hall & John Oates. The series premiered on
+Funny Or Die
+, representing one of the company’s earliest efforts to leverage music catalogs through original digital content and emerging online entertainment platforms.
+Through continued artist partnerships, corporate growth, and innovative marketing initiatives, 2009 reinforced Primary Wave’s reputation as a forward-thinking music company focused on maximizing the cultural and commercial value of iconic catalogs.
+2008
+Catalog Expansion & Brand Activation
+In 2008, Primary Wave continued its rapid growth through the acquisition and management of iconic songwriter and artist catalogs, including partnerships with
+Steven Tyler
+(Aerosmith),
+Graham Parker
+, Chicago
+as well as entering into a co-publishing venture with Grammy Award-winning producer
+Matt Serletic
+and his company,
+Emblem Music Group
+.
+The company further strengthened its reputation for innovative catalog marketing through a series of high-profile brand partnerships and sync campaigns. Highlights included the development of a
+limited-edition
+Converse Chuck Taylor sneaker
+inspired by the lyrics of
+Kurt Cobain
+, the release of
+Guitar Hero: Aerosmith
+—the first title in the franchise dedicated to a single artist—and a national advertising campaign featuring Shwayze’s “Buzzin'” for Pontiac.
+Together, these initiatives reinforced Primary Wave’s strategy of transforming classic music assets into culturally relevant brands through innovative marketing, licensing, and consumer partnerships.
+2007
+Iconic Catalog Growth & Industry Leadership
+In 2007, Primary Wave significantly expanded its publishing portfolio through strategic investments in both living legends and iconic estates. Major songwriter and artist partnerships included
+John Oates
+,
+Julian Lennon
+(including publishing interests in songs by The Beatles),
+Maurice White
+,
+Daniel Johnston
+,
+Holly Knight
+,
+Six Degrees Records
+,
+Justin Furstenfeld
+(Blue October) and
+Lamont Dozier
+, further establishing Primary Wave as a leader in heritage catalog acquisition and management.
+During this period, the company helped pioneer the modern active catalog marketing model, leveraging sync licensing, brand partnerships, advertising, film, and television placements to introduce classic songs to new generations of fans.
+Primary Wave also expanded its corporate footprint by opening a new New York office at 275 Madison Avenue and launched what would become a signature industry tradition by hosting its first annual Pre-Grammy Party at the SLS Hotel in Beverly Hills.
+2006
+Foundation of a New Music Model & First Landmark Acquisitions
+Primary Wave Music Publishing is founded in April 2006 by industry veteran Larry Mestel with a transformative vision: artist-centric partnerships over traditional catalog ownership. From the outset, the company focused on actively revitalizing legacy music through modern marketing, sync, licensing, and cultural storytelling — redefining what music publishing could be.
+The company completes its first landmark acquisition, securing 50% of Kurt Cobain’s publishing share of the Nirvana catalog. The deal establishes Primary Wave’s core acquisition strategy and sets the tone for a culture-first, value-creation approach to iconic music.
+Acquires the MGM/United Artists publishing catalog, expanding the company’s footprint into film and classic entertainment music assets.
+Justin Shukat joins Primary Wave as Partner.
+Contact Us
+info@primarywave.com
+212.661.6990
+1165 Broadway, 5th Floor New York, NY 10001
+Name
+Email
+Message
+Consent
+(Required)
+I accept the Terms
+CAPTCHA
+Send Message
+Join Our Newsletter
+Email
+Subscribe
+By subscribing you agree to with our Privacy Policy and provide consent to receive updates from our company.
+Artists
+About
+What We Do
+News
+Careers
+Contact
+Privacy Policy
+Terms of Service
+© 2026 Primary Wave. All rights reserved.
+Your Cart
+Your cart is currently empty.
+Continue Shopping
+0">
+1 ? lineItem.quantity - 1 : 1)"
+:aria-label="'Decrease quantity of ' + lineItem.title"
+>
+Remove
+Total:
+Checkout
+×
+Loading…

@@ -71,6 +71,13 @@ def drops():
     setf(t, "contribution_usd", 'IF({A}="","",{rev}-SUMIFS({fee},{d},{A})-{dc})'.format(
         A=A, rev=c(t, "revenue_usd"), fee=R("campaigns", "processing_fee_usd"), d=R("campaigns", "drop_id"), dc=c(t, "direct_cost_usd")))
     setf(t, "contribution_per_hour_usd", 'IF(OR({A}="",N({h})=0),"",ROUND({cu}/{h},2))'.format(A=A, h=c(t, "hours"), cu=c(t, "contribution_usd")))
+    cp = lambda col: R("campaigns", col)
+    setf(t, "gate2_placed_share", 'IF(OR({A}="",SUMIFS({d},{dr},{A})=0),"",SUMIFS({w},{dr},{A})/SUMIFS({d},{dr},{A}))'.format(
+        A=A, d=cp("units_delivered"), w=cp("units_placed_within_1bd"), dr=cp("drop_id")))
+    setf(t, "gate2_min_responses", 'IF(OR({A}="",COUNTIFS({ad},{A},{aa},"Y")=0),"",SUMPRODUCT(MIN({k}+({ad}<>{A})*1000000)))'.format(
+        A=A, ad=R("approvals", "drop_id"), aa=R("approvals", "on_drop"), k=R("approvals", "resp_min_key")))
+    setf(t, "gate2_reports_late", 'IF(OR({A}="",{t7}=""),"",COUNTIFS({dr},{A},{g},"late"))'.format(A=A, t7=c(t, "t_plus_7"), dr=cp("drop_id"), g=cp("gate2_report_on_time")))
+    setf(t, "gate2_buy_again_yes", 'IF({A}="","",COUNTIFS({dr},{A},{b},"yes"))'.format(A=A, dr=cp("drop_id"), b=cp("brand_would_buy_again")))
 
 
 def brands():
@@ -96,6 +103,29 @@ def brands():
                                                                   ti=R("campaigns", "tier"), lo=R("campaigns", "founding_lock"))
     setf(t, "founding_rank", 'IF(OR({A}="",{fd}=0),"",COUNTIFS({ti},"founding",{lo},"<>Y",{sd},"<="&{fd},{sd},">0"))'.format(
         A=A, fd=fd, ti=R("campaigns", "tier"), lo=R("campaigns", "founding_lock"), sd=R("campaigns", "agreement_signed_date")))
+    # Review round 1 (R1-06): payments reach the financial model once, through E's pipeline_log (payment_1/2 on E's
+    # paid_brands row). The invoices tab here releases the ship date. This column says when the two disagree.
+    pb = T.TABS["in_paid_brands"]
+    area = "in_paid_brands!$A$2:$BZ$%d" % pb.last()
+    hdr = "in_paid_brands!$A$1:$BZ$1"
+    exists = 'IFERROR(COUNTIF(INDEX({ar},0,MATCH("brand_id",{h},0)),{A}),0)>0'.format(ar=area, h=hdr, A=A)
+    e = lambda f: hdr_lookup("in_paid_brands", "brand_id", A, f)
+    ecid = e("campaign_id")
+    nv = lambda x: 'IFERROR(VALUE(%s&""),0)' % x
+    dv = lambda x: 'IF(ISNUMBER(%s),%s,IFERROR(DATEVALUE(%s),0))' % (x, x, x)
+    iv = lambda col: R("invoices", col)
+    fpre = 'SUMIFS({pa},{c},{e},{rs},"Y")'.format(pa=iv("paid_amount_usd"), c=iv("campaign_id"), e=ecid, rs=iv("releases_ship"))
+    fpre_d = 'N(SUMPRODUCT(MAX(({c}={e})*({rs}="Y")*{pd})))'.format(c=iv("campaign_id"), e=ecid, rs=iv("releases_ship"), pd=iv("paid_date"))
+    fbal = 'SUMIFS({pa},{c},{e},{ty},"standard_balance")'.format(pa=iv("paid_amount_usd"), c=iv("campaign_id"), e=ecid, ty=iv("invoice_type"))
+    fbal_d = 'N(SUMPRODUCT(MAX(({c}={e})*({ty}="standard_balance")*{pd})))'.format(c=iv("campaign_id"), e=ecid, ty=iv("invoice_type"), pd=iv("paid_date"))
+    day = lambda x: 'IF(N({x})=0,"none",TEXT({x},"yyyy-mm-dd"))'.format(x=x)
+    p1, d1, p2, d2 = nv(e("payment_1_usd")), dv(e("payment_1_date")), nv(e("payment_2_usd")), dv(e("payment_2_date"))
+    setf(t, "e_payment_check", (
+        'IF(OR({A}="",NOT({ex})),"",IF({ecid}="","E\'s paid_brands row has no campaign_id: type the CMP-### there; ",'
+        'IF(OR(ABS({p1}-{fpre})>0.005,{d1}<>{fpre_d}),"payment 1 differs: E "&{p1}&" on "&{d1t}&", invoices "&{fpre}&" on "&{fpred}&"; ","")&'
+        'IF(OR(ABS({p2}-{fbal})>0.005,{d2}<>{fbal_d}),"payment 2 differs: E "&{p2}&" on "&{d2t}&", invoices "&{fbal}&" on "&{fbald}&"; ","")))').format(
+        A=A, ex=exists, ecid=ecid, p1=p1, d1=d1, p2=p2, d2=d2, fpre=fpre, fpre_d=fpre_d, fbal=fbal, fbal_d=fbal_d,
+        d1t=day(d1), d2t=day(d2), fpred=day(fpre_d), fbald=day(fbal_d)))
 
 
 def offices():
@@ -112,7 +142,7 @@ def offices():
         ic=c(t, "pantry_owner_is_contact"), cp=c(t, "contact_phone")))
     h = c(t, "tuesday_headcount")
     setf(t, "headcount_band", 'IF({A}="","",IF({h}="","unknown",IF({h}<40,"under-40",IF({h}<=75,"40-75",IF({h}<=150,"76-150",IF({h}<=250,"151-250",IF({h}<=500,"251-500","over-500")))))))'.format(A=A, h=h))
-    setf(t, "size_check", 'IF({A}="","",IF({h}="","no Tuesday headcount",IF({h}<30,"below the hard floor of 30",IF({h}<40,"30 to 39: founder\'s call",IF({h}>250,"over 250: outside the plan","OK")))))'.format(A=A, h=h))
+    setf(t, "size_check", 'IF({A}="","",IF({co}="","not on in_signed_offices: paste the outreach file",IF({h}="","no Tuesday headcount",IF({h}<30,"below the hard floor of 30",IF({h}<40,"30 to 39: founder\'s call",IF({h}>250,"over 250: outside the plan","OK"))))))'.format(A=A, h=h, co=c(t, "company")))
     setf(t, "default_units", 'IF(OR({A}="",{h}=""),"",MIN({mx},MAX({mn},MROUND({b}+{p}*{h},{rd}))))'.format(
         A=A, h=h, mx=cfg("units_max"), mn=cfg("units_min"), b=cfg("units_base"), p=cfg("units_per_person"), rd=cfg("units_round")))
     setf(t, "drops_so_far", 'IF({A}="","",COUNTIFS({so},{A},{sd},"<="&{td}))'.format(A=A, so=R("stops", "office_id"), sd=R("stops", "drop_date"), td=TODAY))
@@ -132,8 +162,12 @@ def approvals():
     setf(t, "brand_name", g("brand_name"))
     setf(t, "company", 'IF({B}="","",{v})'.format(B=B, v=lk("offices", "office_id", B, "company")))
     L = T.TABS[t].letter("campaign_id")
-    setf(t, "office_seq", 'IF({A}="","",COUNTIF(${L}${f}:${L}{{r}},{A}))'.format(A=A, L=L, f=T.TABS[t].first()))
-    setf(t, "office_label", 'IF({A}="","",IF(AND({mode}="names_if_public",{pub}="Y"),{co},CHAR(64+{seq})))'.format(
+    # Letters run over the offices that took the brand: not those that said no (stage 2, R5), nor those that turned it
+    # away at the door (review round 1, R1-02), so a report never skips a letter.
+    OD = T.TABS[t].letter("on_drop")
+    setf(t, "office_seq", 'IF({A}="","",IF({od}="N","",COUNTIFS(${L}${f}:${L}{{r}},{A},${OD}${f}:${OD}{{r}},"<>N")))'.format(
+        A=A, L=L, f=T.TABS[t].first(), od=c(t, "on_drop"), OD=OD))
+    setf(t, "office_label", 'IF(OR({A}="",{seq}=""),"",IF(AND({mode}="names_if_public",{pub}="Y"),{co},CHAR(64+{seq})))'.format(
         A=A, mode=cfg("report_office_names"), pub=lk("offices", "office_id", B, "public_naming_ok"), co=c(t, "company"), seq=c(t, "office_seq")))
     dd = c(t, "drop_date")
     setf(t, "office_drop_number", 'IF(OR({A}="",{dd}=""),"",COUNTIFS({so},{B},{sd},"<"&{dd},{oc},"<>not_delivered")+1)'.format(
@@ -141,8 +175,15 @@ def approvals():
     setf(t, "approval_mode", 'IF({A}="","",IF(N({n})<={x},"explicit","opt-out"))'.format(A=A, n=c(t, "office_drop_number"), x=cfg("approvals_explicit_drops")))
     rep, ask = c(t, "reply"), c(t, "asked_date")
     setf(t, "approved", ('IF({A}="","",IF({m}="explicit",IF({rep}="yes","Y",IF({rep}="no","N","pending")),'
-                         'IF({rep}="no","N",IF(AND({ask}<>"",{dd}<>"",{ask}<=WORKDAY({dd},-5,{H})),"Y","pending"))))').format(
+                         'IF({rep}="no","N",IF(AND({ask}<>"",{dd}<>"",{ask}<=WORKDAY(N({dd}),-5,{H})),"Y","pending"))))').format(
         A=A, m=c(t, "approval_mode"), rep=rep, ask=ask, dd=dd, H=HOL))
+    # On the drop: approved, and not turned away at the door (stop outcome declined, building_refused or not_delivered
+    # with no units delivered for this brand). Review round 1, R1-02.
+    st = lambda col: R("stops", col)
+    refused = "+".join('COUNTIFS({sd},{did},{so},{B},{oc},"{x}")'.format(sd=st("drop_id"), did=c(t, "drop_id"), so=st("office_id"), B=B, oc=st("outcome"), x=x)
+                       for x in ("declined", "building_refused", "not_delivered"))
+    setf(t, "on_drop", 'IF({A}="","",IF({ap}="N","N",IF({ap}<>"Y","pending",IF(AND(({rf})>0,N({ud})=0),"N","Y"))))'.format(
+        A=A, ap=c(t, "approved"), rf=refused, ud=c(t, "units_delivered")))
     cat = lk("campaigns", "campaign_id", A, "category")
     cw = lk("offices", "office_id", B, "categories_wanted")
     vet = lk("offices", "office_id", B, "vetoes")
@@ -164,7 +205,7 @@ def approvals():
     setf(t, "placed_count", 'IF({A}="","",IF(COUNTIFS({c},{A},{o},{B},{ty},"placed")=0,"",SUMIFS({u},{c},{A},{o},{B},{ty},"placed")))'.format(
         A=A, B=B, c=cnt("campaign_id"), o=cnt("office_id"), ty=cnt("count_type"), u=cnt("units")))
     setf(t, "units_placed", 'IF({A}="","",IF({pd}="",0,N({pc})))'.format(A=A, pd=c(t, "placement_photo_date"), pc=c(t, "placed_count")))
-    setf(t, "placed_within_1bd", 'IF({A}="","",IF(OR({pd}="",{dd}=""),"N",IF({pd}<=WORKDAY({dd},1,{H}),"Y","N")))'.format(A=A, pd=c(t, "placement_photo_date"), dd=dd, H=HOL))
+    setf(t, "placed_within_1bd", 'IF({A}="","",IF(OR({pd}="",{dd}=""),"N",IF({pd}<=WORKDAY(N({dd}),1,{H}),"Y","N")))'.format(A=A, pd=c(t, "placement_photo_date"), dd=dd, H=HOL))
     ptime = lk("photos", "key", pk, "taken_time")
     setf(t, "placement_lag_hours", 'IF(OR({A}="",{da}="",{pd}=""),"",ROUND(({pd}+N({pt})-{da})*24,1))'.format(A=A, da=c(t, "delivered_at"), pd=c(t, "placement_photo_date"), pt=ptime))
     setf(t, "units_topped_up", 'IF({A}="","",SUMIFS({q},{c},{A},{o},{B},{m},"topped_up"))'.format(A=A, B=B, q=inv("qty"), c=inv("campaign_id"), o=inv("office_id"), m=inv("movement")))
@@ -180,34 +221,41 @@ def approvals():
     setf(t, "later_photo_day", 'IF(OR({A}="",{ld}="",{dd}=""),"",NETWORKDAYS({dd},{ld},{H}))'.format(A=A, ld=c(t, "later_photo_date"), dd=dd, H=HOL))
     setf(t, "both_photos", 'IF({A}="","",IF(AND({p}<>"",{l}<>""),"Y","N"))'.format(A=A, p=c(t, "placement_photo_file"), l=c(t, "later_photo_file")))
     setf(t, "window_end", 'IF({A}="","",{v})'.format(A=A, v=lk("drops", "drop_id", c(t, "drop_id"), "t_plus_4")))
-    setf(t, "resp_min_key", 'IF({A}="",1000000,N({sr}))'.format(A=A, sr=c(t, "survey_responses")))
+    setf(t, "resp_min_key", 'IF(OR({A}="",{od}<>"Y"),1000000,N({sr}))'.format(A=A, od=c(t, "on_drop"), sr=c(t, "survey_responses")))
+    # Frozen survey totals (R1-12): once a campaign's raw answers are deleted, its numbers come from survey_frozen.
+    fk = R("survey_frozen", "key")
+    setf(t, "survey_frozen", 'IF({A}="","",IF(COUNTIF({fk},{A}&"|"&{B})>0,"Y",""))'.format(A=A, B=B, fk=fk))
+    frz = lambda col, live: 'IF({fz}="Y",SUMIFS({v},{fk},{A}&"|"&{B}),{live})'.format(fz=c(t, "survey_frozen"), v=R("survey_frozen", col), fk=fk, A=A, B=B, live=live)
     setf(t, "seq_key", 'IF({A}="","",{A}&"|"&{s})'.format(A=A, s=c(t, "office_seq")))
     we = c(t, "window_end")
     base = '{rb},{cc},{ra},">="&{dd},{ra},"<"&({we}+1)'.format(rb=resp_rng("B", A), cc=c(t, "card_code"), ra=resp_rng("A", A), dd=dd, we=we)
-    guard = lambda x: 'IF(OR({A}="",{dd}=""),"",IFERROR({x},0))'.format(A=A, dd=dd, x=x)
-    setf(t, "survey_responses", guard("COUNTIFS(%s)" % base))
-    setf(t, "tried_yes", guard('COUNTIFS(%s,%s,"Yes")' % (base, resp_rng("C", A))))
+    guard0 = lambda x: 'IF(OR({A}="",{dd}=""),"",IFERROR({x},0))'.format(A=A, dd=dd, x=x)
+    gs = lambda col, x: 'IF(OR({A}="",{dd}=""),"",{f})'.format(A=A, dd=dd, f=frz(col, "IFERROR(%s,0)" % x))
+    setf(t, "survey_responses", gs("survey_responses", "COUNTIFS(%s)" % base))
+    setf(t, "tried_yes", gs("tried_yes", 'COUNTIFS(%s,%s,"Yes")' % (base, resp_rng("C", A))))
     for col, rc, val in (("tried_no_didnt_see", "F", "Didn't see it"), ("tried_no_not_for_me", "F", "Not for me"),
                          ("tried_no_gone", "F", "Gone by the time I looked"), ("buy_yes", "E", "Yes"),
                          ("buy_maybe", "E", "Maybe"), ("buy_no", "E", "No")):
-        setf(t, col, guard('COUNTIFS(%s,%s,"%s")' % (base, resp_rng(rc, A), val)))
-    setf(t, "rating_n", guard('COUNTIFS(%s,%s,">=1")' % (base, resp_rng("D", A))))
-    setf(t, "rating_sum", guard('SUMIFS(%s,%s)' % (resp_rng("D", A), base)))
-    setf(t, "comments", guard('COUNTIFS(%s,%s,"<>")' % (base, resp_rng("G", A))))
+        setf(t, col, gs(col, 'COUNTIFS(%s,%s,"%s")' % (base, resp_rng(rc, A), val)))
+    setf(t, "rating_n", gs("rating_n", 'COUNTIFS(%s,%s,">=1")' % (base, resp_rng("D", A))))
+    setf(t, "rating_sum", gs("rating_sum", 'SUMIFS(%s,%s)' % (resp_rng("D", A), base)))
+    setf(t, "comments", gs("comments", 'COUNTIFS(%s,%s,"<>")' % (base, resp_rng("G", A))))
+    guard = guard0
     setf(t, "qr_scans", _scan_delta(t, A, B, "q"))
     setf(t, "post_link_opens", _scan_delta(t, A, B, "p"))
     # Extra per-office survey columns, hidden at the right (the campaign totals add these up).
-    checks = ('IF({A}="","",IF({ap}="pending","approval pending; ","")&'
-              'IF(AND({ud}>0,{pd}="",OR({dd}="",{td}<=WORKDAY({dd},4,{H}))),"no usable placement photo yet; ","")&IF(AND({pd}<>"",{pc}=""),"log the placed count; ","")&'
+    checks = ('IF({A}="","",IF(COUNTIF({ofr},{B})=0,"office_id not on offices; ","")&IF(COUNTIF({cpr},{A})=0,"campaign_id not on campaigns; ","")&'
+              'IF({ap}="pending","approval pending; ","")&'
+              'IF(AND({ud}>0,{pd}="",OR({dd}="",{td}<=WORKDAY(N({dd}),4,{H}))),"no usable placement photo yet; ","")&IF(AND({pd}<>"",{pc}=""),"log the placed count; ","")&'
               'IF(N({up})>N({ud}),"placed more than delivered; ","")&'
               'IF(AND({r5}<>"",N({r5})>N({up})+N({tu})),"day-5 count above placed plus top-ups; ","")&'
-              'IF(AND({ud}>0,{dd}<>"",{td}>WORKDAY({dd},4,{H}),{r5}=""),"day-5 count missing; ","")&'
-              'IF(AND({ud}>0,{dd}<>"",{td}>WORKDAY({dd},4,{H}),{qs}=""),"no close link reading; ","")&{fit}&'
-              'IF({ap}="N","info: office said no; ","")&'
-              'IF(AND({ud}>0,{pd}="",{dd}<>"",{td}>WORKDAY({dd},4,{H})),"info: no usable placement photo, so nothing counts as placed; ","")&'
-              'IF(AND({ud}>0,{dd}<>"",{td}>WORKDAY({dd},4,{H}),N({sr})<{mr}),"info: under "&{mr}&" responses; ","")&'
+              'IF(AND({ud}>0,{dd}<>"",{td}>WORKDAY(N({dd}),4,{H}),{r5}=""),"day-5 count missing; ","")&'
+              'IF(AND({ud}>0,{dd}<>"",{td}>WORKDAY(N({dd}),4,{H}),{qs}=""),"no close link reading; ","")&{fit}&'
+              'IF({ap}="N","info: office said no; ","")&IF(AND({ap}="Y",{od}="N"),"info: turned away at the door, so not on the drop (no letter, not in the report or Gate 2; the credit check is on campaigns); ","")&'
+              'IF(AND({ud}>0,{pd}="",{dd}<>"",{td}>WORKDAY(N({dd}),4,{H})),"info: no usable placement photo, so nothing counts as placed; ","")&'
+              'IF(AND({ud}>0,{dd}<>"",{td}>WORKDAY(N({dd}),4,{H}),N({sr})<{mr}),"info: under "&{mr}&" responses; ","")&'
               'IF({dcs}="packing_list","info: delivered count not verified; ",""))').format(
-        A=A, fit=c(t, "fit_check"), ap=c(t, "approved"), ud=c(t, "units_delivered"), pd=c(t, "placement_photo_date"), pc=c(t, "placed_count"),
+        A=A, B=B, ofr=R("offices", "office_id"), cpr=R("campaigns", "campaign_id"), fit=c(t, "fit_check"), ap=c(t, "approved"), od=c(t, "on_drop"), ud=c(t, "units_delivered"), pd=c(t, "placement_photo_date"), pc=c(t, "placed_count"),
         up=c(t, "units_placed"), r5=c(t, "remaining_day5"), tu=c(t, "units_topped_up"), dd=dd, td=TODAY, H=HOL,
         sr=c(t, "survey_responses"), mr=cfg("min_responses_per_office"), qs=c(t, "qr_scans"), dcs=c(t, "delivered_count_source"))
     setf(t, "checks", checks)
@@ -253,22 +301,25 @@ def campaigns():
     ap = lambda col: R("approvals", col)
     setf(t, "offices_on_route", guard('COUNTIF({r},{A})'.format(r=ap("campaign_id"), A=A)))
     setf(t, "offices_approved", guard('COUNTIFS({r},{A},{a},"Y")'.format(r=ap("campaign_id"), A=A, a=ap("approved"))))
+    setf(t, "offices_on_drop", guard('COUNTIFS({r},{A},{a},"Y")'.format(r=ap("campaign_id"), A=A, a=ap("on_drop"))))
     setf(t, "approvals_pending", guard('COUNTIFS({r},{A},{a},"pending")'.format(r=ap("campaign_id"), A=A, a=ap("approved"))))
     setf(t, "units_allocated", guard('SUMIFS({u},{r},{A},{a},"Y")'.format(u=ap("units_allocated"), r=ap("campaign_id"), A=A, a=ap("approved"))))
     setf(t, "reserve_planned", guard('ROUNDUP({u}*{s},0)'.format(u=c(t, "units_allocated"), s=cfg("reserve_share"))))
     setf(t, "units_to_ship", guard('{u}+{r}'.format(u=c(t, "units_allocated"), r=c(t, "reserve_planned"))))
     iv = lambda col: R("invoices", col)
-    setf(t, "pre_ship_paid_usd", guard('SUMIFS({p},{c},{A},{rs},"Y")'.format(p=iv("paid_amount_usd"), c=iv("campaign_id"), A=A, rs=iv("releases_ship"))))
+    setf(t, "pre_ship_paid_usd", guard('SUMIFS({p},{c},{A},{rs},"Y",{pd},">0")'.format(p=iv("paid_amount_usd"), c=iv("campaign_id"), A=A, rs=iv("releases_ship"), pd=iv("paid_date"))))
     setf(t, "pre_ship_due_usd", guard('IF({p}="","",IF({tier}="founding",{p},ROUND({p}*{ds},2)))'.format(p=c(t, "price_usd"), tier=tier, ds=cfg("deposit_share"))))
     paid_on = maxdate('({c}={A})*({rs}="Y")*N(+{pd})'.format(c=iv("campaign_id"), A=A, rs=iv("releases_ship"), pd=iv("paid_date"))).replace("N(+", "(")
     coi_ok = 'AND({cr}<>"",{ck}="Y")'.format(cr=c(t, "coi_received_date"), ck=lk("brands", "brand_id", bid, "coi_check_ok"))
+    # Review round 1 (R1-07): the brand must be on brands and pass the seven checks before anything ships.
+    qual_ok = 'LEFT({q},1)="Y"'.format(q=lk("brands", "brand_id", bid, "qualified"))
     setf(t, "ship_release", guard(
-        ('IF(AND(N({paid})>=N({due}),N({due})>0,{sig}<>"",{coi},{dd}<>"",{oa}>=N({oc}),N({oc})>0),'
+        ('IF(AND(N({paid})>=N({due}),N({due})>0,{sig}<>"",{coi},{qok},{dd}<>"",{pend}=0,{oa}>0),'
          '"RELEASED "&TEXT(MAX({paidon},{sig},{crd},{apd}),"yyyy-mm-dd")&": ship by "&TEXT({sbr},"ddd yyyy-mm-dd")&" (latest "&TEXT({cb},"ddd yyyy-mm-dd")&")",'
          '"HOLD: "&IF(N({paid})<N({due}),"payment ("&TEXT(N({paid}),"0")&" of "&TEXT(N({due}),"0")&") ","")&IF({sig}="","agreement ","")&'
-         'IF(NOT({coi}),"certificate ","")&IF({dd}="","drop date ","")&IF({oa}<N({oc}),"approvals ("&{oa}&" of "&N({oc})&") ",""))').format(
-            paid=c(t, "pre_ship_paid_usd"), due=c(t, "pre_ship_due_usd"), sig=c(t, "agreement_signed_date"), coi=coi_ok,
-            dd=c(t, "drop_date"), oa=c(t, "offices_approved"), oc=c(t, "offices_contracted"), paidon=paid_on,
+         'IF(NOT({coi}),"certificate ","")&IF(NOT({qok}),"qualification ","")&IF({dd}="","drop date ","")&IF({pend}>0,"approvals ("&{pend}&" pending) ","")&IF({oa}=0,"no office approved ",""))').format(
+            paid=c(t, "pre_ship_paid_usd"), due=c(t, "pre_ship_due_usd"), sig=c(t, "agreement_signed_date"), coi=coi_ok, qok=qual_ok,
+            dd=c(t, "drop_date"), oa=c(t, "offices_approved"), oc=c(t, "offices_contracted"), paidon=paid_on, pend=c(t, "approvals_pending"),
             sbr=c(t, "ship_by_requested"), cb=c(t, "cancel_by"), crd=c(t, "coi_received_date"),
             apd='SUMPRODUCT(MAX(({ac}={A})*({aa}="Y")*({ard}+({ard}=0)*{aad})))'.format(ac=ap("campaign_id"), A=A, aa=ap("approved"), ard=ap("reply_date"), aad=ap("asked_date")))))
     inv = lambda col: R("inventory", col)
@@ -281,10 +332,11 @@ def campaigns():
         setf(t, col, guard('SUMIFS({v},{r},{A})'.format(v=ap(col), r=ap("campaign_id"), A=A)))
     setf(t, "units_placed_within_1bd", guard('SUMIFS({v},{r},{A},{w},"Y")'.format(v=ap("units_placed"), r=ap("campaign_id"), A=A, w=ap("placed_within_1bd"))))
     setf(t, "placed_share_1bd", guard('IF(N({d})=0,"",{w}/{d})'.format(d=c(t, "units_delivered"), w=c(t, "units_placed_within_1bd"))))
-    setf(t, "units_depleted_day5", guard('IF(COUNTIFS({r},{A},{v},"")>0,"",SUMIFS({v},{r},{A}))'.format(v=ap("units_depleted_day5"), r=ap("campaign_id"), A=A)))
-    setf(t, "survey_responses_min_office", guard('IF({n}=0,"",SUMPRODUCT(MIN({v}+({r}<>{A})*1000000)))'.format(
-        n=c(t, "offices_on_route"), r=ap("campaign_id"), A=A, v=ap("resp_min_key"))))
-    setf(t, "offices_under_5", guard('COUNTIFS({r},{A},{v},"<"&{m})'.format(r=ap("campaign_id"), A=A, v=ap("survey_responses"), m=cfg("min_responses_per_office"))))
+    # Offices on the drop only (R1-02): an office that turned the brand away at the door has no day-5 count to wait for.
+    setf(t, "units_depleted_day5", guard('IF(COUNTIFS({r},{A},{a},"Y",{v},"")>0,"",SUMIFS({v},{r},{A},{a},"Y"))'.format(v=ap("units_depleted_day5"), r=ap("campaign_id"), A=A, a=ap("on_drop"))))
+    setf(t, "survey_responses_min_office", guard('IF(N({n})=0,"",SUMPRODUCT(MIN({v}+({r}<>{A})*1000000)))'.format(
+        n=c(t, "offices_on_drop"), r=ap("campaign_id"), A=A, v=ap("resp_min_key"))))
+    setf(t, "offices_under_5", guard('COUNTIFS({r},{A},{a},"Y",{v},"<"&{m})'.format(r=ap("campaign_id"), A=A, a=ap("on_drop"), v=ap("survey_responses"), m=cfg("min_responses_per_office"))))
     setf(t, "survey_tried_yes", guard('SUMIFS({v},{r},{A})'.format(v=ap("tried_yes"), r=ap("campaign_id"), A=A)))
     setf(t, "survey_rating_n", guard('SUMIFS({v},{r},{A})'.format(v=ap("rating_n"), r=ap("campaign_id"), A=A)))
     setf(t, "survey_rating_avg", guard('IF(N({n})=0,"",ROUND(SUMIFS({s},{r},{A})/{n},1))'.format(n=c(t, "survey_rating_n"), s=ap("rating_sum"), r=ap("campaign_id"), A=A)))
@@ -294,8 +346,10 @@ def campaigns():
     dd, we = c(t, "drop_date"), lk("drops", "drop_id", did, "t_plus_4")
     tot = 'IFERROR(COUNT({ra}),0)'.format(ra=ra)
     inw = 'IFERROR(COUNTIFS({ra},">="&{dd},{ra},"<"&({we}+1)),0)'.format(ra=ra, dd=dd, we=we)
-    setf(t, "responses_outside_window", guard('IF({dd}="","",{tot}-{inw})'.format(dd=dd, tot=tot, inw=inw)))
-    setf(t, "responses_unmatched_code", guard('IF({dd}="","",{inw}-N({sr}))'.format(dd=dd, inw=inw, sr=c(t, "survey_responses"))))
+    # After the 12-month deletion (answers_deleted_date) these two cannot be known any more: blank.
+    adl = c(t, "answers_deleted_date")
+    setf(t, "responses_outside_window", guard('IF(OR({dd}="",{adl}<>""),"",{tot}-{inw})'.format(dd=dd, adl=adl, tot=tot, inw=inw)))
+    setf(t, "responses_unmatched_code", guard('IF(OR({dd}="",{adl}<>""),"",{inw}-N({sr}))'.format(dd=dd, adl=adl, inw=inw, sr=c(t, "survey_responses"))))
     rd = lambda col: R("redemptions", col)
     asof = maxdate('({c}={A})*{d}'.format(c=rd("campaign_id"), A=A, d=rd("as_of_date")))
     setf(t, "code_redemptions_as_of", guard(asof))
@@ -318,7 +372,7 @@ def campaigns():
     setf(t, "hours_shared", guard('ROUND({s}*{x},2)'.format(s=share, x=shared_h)))
     setf(t, "contribution_usd", guard('{r}-{f}-{d}-{s}'.format(r=c(t, "revenue_usd"), f=c(t, "processing_fee_usd"), d=c(t, "direct_cost_usd"), s=c(t, "shared_cost_usd"))))
     setf(t, "contribution_per_hour_usd", guard('IF(N({a})+N({b})=0,"",ROUND({cu}/({a}+{b}),2))'.format(a=c(t, "hours_direct"), b=c(t, "hours_shared"), cu=c(t, "contribution_usd"))))
-    setf(t, "photo_compliance", guard('IF(N({n})=0,"",COUNTIFS({r},{A},{b},"Y")/{n})'.format(n=c(t, "offices_on_route"), r=ap("campaign_id"), A=A, b=ap("both_photos"))))
+    setf(t, "photo_compliance", guard('IF(N({n})=0,"",COUNTIFS({r},{A},{a},"Y",{b},"Y")/{n})'.format(n=c(t, "offices_on_drop"), r=ap("campaign_id"), A=A, a=ap("on_drop"), b=ap("both_photos"))))
     setf(t, "placement_lag_hours_avg", guard('IF(COUNTIFS({r},{A},{l},">=0")=0,"",ROUND(SUMIFS({l},{r},{A})/COUNTIFS({r},{A},{l},">=0"),1))'.format(r=ap("campaign_id"), A=A, l=ap("placement_lag_hours"))))
     setf(t, "report_due", guard(lk("drops", "drop_id", did, "t_plus_7")))
     setf(t, "debrief_due", guard(lk("drops", "drop_id", did, "t_plus_10")))
@@ -329,29 +383,55 @@ def campaigns():
     td = TODAY
     w = lambda name: c(t, name)
     checks = ('IF({A}="","",'
-              'IF({dd}="","drop date missing or refused; ","")&'
+              'IF(COUNTIF({drr},{did})=0,"drop_id not on drops; ",IF({dd}="","drop date missing or refused; ",""))&'
               'IF(AND({po}<>"",{po}<>{pe}),"price differs from the price list; ","")&'
-              'IF(AND(LEFT({sr},4)="HOLD",{cb}<>"",{td}>=WORKDAY({cb},-3,{H})),"SHIP HOLD within 3 business days of T-10; ","")&'
+              'IF(AND(LEFT({sr},4)="HOLD",{cb}<>"",{td}>=WORKDAY(N({cb}),-3,{H})),"SHIP HOLD within 3 business days of T-10; ","")&'
               'IF(AND({ap}>0,{cb}<>"",{td}>{cb}),"approvals still pending after T-10; ","")&'
               'IF({roh}<0,"reserve below zero: check inventory; ","")&'
-              'IF(AND({dd}<>"",{td}>WORKDAY({dd},14,{H}),{roh}+{loh}<>0),"units still on hand after T+14; ","")&'
+              'IF(AND({dd}<>"",{td}>WORKDAY(N({dd}),14,{H}),N({roh})+N({loh})<>0),"units still on hand after T+14; ","")&'
               'IF(N({um})>0,"info: "&{um}&" in-window responses with a card code that matches no office (not counted); ","")&'
               'IF(AND({nl}="Y",{nfu}=""),"newsletter form URL missing; ","")&'
-              'IF(AND({nl}="Y",{dd}<>"",{td}>WORKDAY({dd},5,{H}),{npd}=""),"newsletter list not yet passed on (due T+5); ","")&'
+              'IF(AND({nl}="Y",{dd}<>"",{td}>WORKDAY(N({dd}),5,{H}),{npd}=""),"newsletter list not yet passed on (due T+5); ","")&'
               'IF(AND({npd}<>"",{nud}=""),"delete unticked emails; ","")&'
               'IF(AND({npd}<>"",{nd}="",{td}>{npd}+{keep}),"DELETE the consented emails (30 days after passing on); ","")&'
-              'IF(AND({dd}<>"",{spt}=""),"survey prefill template missing; ","")&'
+              'IF(AND({dd}<>"",{spt}="",{td}>=WORKDAY(N({dd}),-4,{H})),"survey prefill template missing (due T-4); ","")&'
               'IF(AND({spt}<>"",ISERROR(SEARCH("CARDCODE",{spt}))),"prefill template has no CARDCODE; ","")&'
-              'IF(AND({cps}="",{dd}<>"",{td}>=WORKDAY({dd},-3,{H})),"card text not yet sent to the brand; ","")&'
+              'IF(AND({cps}="",{dd}<>"",{td}>=WORKDAY(N({dd}),-3,{H})),"card text not yet sent to the brand; ","")&'
               'IF(AND({rdd}="",{rcd}<>"",{td}>{rcd}),"day-30 redemption count due; ","")&'
+              'IF(AND(LEFT({sr},8)="RELEASED",{sed}=""),"ship-date email due (template 02): send it, then log ship_email_sent_date and ship_email_units; ","")&'
+              'IF(AND({seu}<>"",N({uts})>0,N({urc})=0,N({seu})<>N({uts})),"units changed since the ship-date email of "&IF({sed}="","?",TEXT({sed},"yyyy-mm-dd"))&" ("&{seu}&", now "&{uts}&"): send the brand the revised numbers (template 02) and log them; ","")&'
               'IF({g3}="late","report late; ","")&'
-              'IF(AND({pe2}<>"",{dd}<>"",{pe2}<EDATE(WORKDAY({dd},4,{H}),12)),"info: brand insurance ends "&TEXT({pe2},"yyyy-mm-dd")&": diary the renewal certificate; ",""))').format(
-        pe2=lk("brands", "brand_id", bid, "coi_policy_end_date"),
+              'IF(AND(N({oc})>0,{oa}<N({oc}),{ap}=0),"info: "&(N({oc})-{oa})&" office(s) short of the contract: add a roster office or credit $"&IF({tier}="founding",{fl},{ex})&" each; ","")&'
+              'IF({adl}<>"",IF(COUNTIF({sfc},{A})=0,"answers deleted but no frozen totals: the survey numbers now read 0 (tools/freeze_survey.py, SOP answers_delete); ",""),'
+              'IF(AND({dd}<>"",{td}>={dd},ISREF(INDIRECT("\'"&{A}&"\'!B1"))),IF(INDIRECT("\'"&{A}&"\'!B1")<>"Card code (filled in for you)","survey tab column B is not the card code: fix the form or the tab; ",""),IF(AND({dd}<>"",{td}>={dd}),"no survey tab named "&{A}&"; ","")))&'
+              'IF(COUNTIF({brr},{bid})=0,"brand_id not on brands; ",IF(LEFT({qual},1)<>"Y","brand not qualified ("&{qual}&"): nothing ships until it is; ",""))&'
+              'IF(AND(COUNTIF({brr},{bid})>0,OR({bln}="",{bad}="",{bem}="")),"brand billing details missing on brands (legal name, address, email): needed for the invoice; ","")&'
+              'IF(AND({tier}="founding",{lock}<>"Y",N({frank})>3),"the founding tier is for the first three brands only (this is brand "&{frank}&"): use standard; ","")&'
+              'IF(AND({tier}="founding",{lock}<>"Y",COUNTIFS({cbr},{bid},{ctr},"founding",{clr},"<>Y")>1),"a brand has the founding price once; its next two campaigns are founding_lock = Y; ","")&'
+              'IF(AND({lock}="Y",COUNTIFS({cbr},{bid},{ctr},"founding",{clr},"Y")>2),"founding_lock is for the brand\'s next two campaigns only (this is a third): use standard; ","")&'
+              'IF(AND({lock}="Y",COUNTIFS({cbr},{bid},{ctr},"founding",{clr},"<>Y")=0),"founding_lock without a first founding campaign for this brand; ","")&'
+              'IF(AND(N({urc})>0,{dd}<>"",{td}>=WORKDAY(N({dd}),-5,{H})),IF(N({urc})-N({urj})<N({ua}),"received "&(N({urc})-N({urj}))&" usable units for "&{ua}&" allocated: reduce units_override evenly (SOP section 4, short shipment); ","")&'
+              'IF(AND(N({urc})<N({uts}),COUNTIFS({isc},{A},{ist},"short_shipment")=0),"received "&{urc}&" of "&{uts}&" due: log a short_shipment issue and tell the brand today; ",""),"")&'
+              'IF(AND({dd}<>"",{td}>=WORKDAY(N({dd}),1,{H}),N({oc})>0,{cred}<{cexp}-0.005),"credit due from T+1: "&MAX(0,N({oc})-{plc})&" of "&{oc}&" contracted offices not placed by T+1, $"&{cexp}&" due, $"&{cred}&" in credit notes so far (template 06, make_invoice.py); ","")&'
+              'IF(AND({pe2}<>"",{dd}<>"",{pe2}<EDATE(WORKDAY(N({dd}),4,{H}),12)),"info: brand insurance ends "&TEXT({pe2},"yyyy-mm-dd")&": diary the renewal certificate; ",""))').format(
+        drr=R("drops", "drop_id"), did=w("drop_id"), pe2=lk("brands", "brand_id", bid, "coi_policy_end_date"), oc=w("offices_contracted"), oa=w("offices_approved"), tier=w("tier"),
+        fl=cfg("founding_lock_per_office_usd"), ex=cfg("extra_office_usd"),
         A=A, dd=w("drop_date"), po=w("price_override_usd"), pe=w("price_expected_usd"), sr=w("ship_release"), cb=w("cancel_by"),
         td=td, H=HOL, ap=w("approvals_pending"), roh=w("reserve_on_hand"), loh=w("leftover_on_hand"), um=w("responses_unmatched_code"),
         nl=w("newsletter_option"), nfu=w("newsletter_form_url"), npd=w("newsletter_passed_date"), nud=w("newsletter_unticked_deleted_date"),
         nd=w("newsletter_deleted_date"), keep=cfg("newsletter_keep_days"), spt=w("survey_prefill_template"), cps=w("card_proof_sent_date"),
-        rdd=w("code_redemptions_day30"), rcd=w("redemption_check_date"), g3=w("gate2_report_on_time"))
+        rdd=w("code_redemptions_day30"), rcd=w("redemption_check_date"), g3=w("gate2_report_on_time"),
+        sed=w("ship_email_sent_date"), seu=w("ship_email_units"), uts=w("units_to_ship"), urc=w("units_received"),
+        adl=w("answers_deleted_date"), sfc=R("survey_frozen", "campaign_id"), brr=R("brands", "brand_id"), bid=bid,
+        qual=lk("brands", "brand_id", bid, "qualified"), bln=lk("brands", "brand_id", bid, "brand_legal_name"),
+        bad=lk("brands", "brand_id", bid, "billing_address"), bem=lk("brands", "brand_id", bid, "billing_email"),
+        lock=w("founding_lock"), frank=lk("brands", "brand_id", bid, "founding_rank"), cbr=R("campaigns", "brand_id"),
+        ctr=R("campaigns", "tier"), clr=R("campaigns", "founding_lock"), urj=w("units_rejected"), ua=w("units_allocated"),
+        isc=R("issues", "campaign_id"), ist=R("issues", "issue_type"),
+        cred='(-SUMIFS({a},{c},{A},{ty},"credit_note"))'.format(a=iv("amount_usd"), c=iv("campaign_id"), A=A, ty=iv("invoice_type")),
+        cexp='(IF({tier}="founding",{fl},{ex})*MAX(0,N({oc})-{plc}))'.format(tier=w("tier"), fl=cfg("founding_lock_per_office_usd"), ex=cfg("extra_office_usd"), oc=w("offices_contracted"),
+                                                                     plc='COUNTIFS({r},{A},{od},"Y",{w1},"Y")'.format(r=ap("campaign_id"), A=A, od=ap("on_drop"), w1=ap("placed_within_1bd"))),
+        plc='COUNTIFS({r},{A},{od},"Y",{w1},"Y")'.format(r=ap("campaign_id"), A=A, od=ap("on_drop"), w1=ap("placed_within_1bd")))
     setf(t, "checks", checks)
 
 
@@ -377,8 +457,10 @@ def links():
                                 'SUBSTITUTE({tpl},"CARDCODE",{cc})&"&utm_source=office-pantry&utm_medium="&{lt}&"&utm_campaign="&LOWER({A})&"&utm_content="&LOWER({B})))').format(
         A=A, B=B, tpl=tpl, cc=c(t, "card_code"), lt=c(t, "link_type")))
     setf(t, "qr_file", 'IF(OR({A}="",{lt}<>"qr"),"",{s}&".png")'.format(A=A, lt=c(t, "link_type"), s=c(t, "slug")))
-    setf(t, "checks", 'IF({A}="","",IF({tpl}="","no prefill template yet; ","")&IF(COUNTIF({sl},{s})>1,"DUPLICATE slug; ",""))'.format(
-        A=A, tpl=tpl, sl=R("links", "slug"), s=c(t, "slug")))
+    ddl = lk("campaigns", "campaign_id", A, "drop_date")
+    setf(t, "checks", ('IF({A}="","",IF(AND({tpl}="",{dd}<>"",{td}>=WORKDAY(N({dd}),-4,{H})),"no prefill template yet (due T-4); ","")'
+                       '&IF(COUNTIF({sl},{s})>1,"DUPLICATE slug; ",""))').format(
+        A=A, tpl=tpl, dd=ddl, td=TODAY, H=HOL, sl=R("links", "slug"), s=c(t, "slug")))
 
 
 def scans():
@@ -403,13 +485,14 @@ def inventory():
     BB, DD = c(t, "best_by"), c(t, "drop_date")
     setf(t, "best_by_ok", 'IF(OR({M}<>"received",{BB}="",{DD}=""),"",IF({BB}>={DD}+{d},"Y","N"))'.format(M=M, BB=BB, DD=DD, d=cfg("min_shelf_life_days")))
     setf(t, "key", 'IF({A}="","",{A}&"|"&{B}&"|"&{M})'.format(A=A, B=B, M=M))
-    setf(t, "checks", ('IF({A}="","",IF(AND(OR({M}="delivered",{M}="topped_up",{M}="collected"),{B}=""),"office needed; ","")&'
+    setf(t, "checks", ('IF({A}="","",'
+                       'IF(COUNTIF({cpr},{A})=0,"campaign_id not on campaigns; ",IF(AND({B}<>"",COUNTIFS({apc},{A},{apo},{B})=0),"office not on this campaign (approvals tab); ",""))&IF(AND(OR({M}="delivered",{M}="topped_up",{M}="collected"),{B}=""),"office needed; ","")&'
                        'IF(AND({M}<>"correction",N({Q})<=0),"qty must be above 0; ","")&'
                        'IF(AND({M}="received",OR({BB}="",{lot}="")),"log lot and best-by; ","")&'
                        'IF(AND({ok}="N",SUMIFS({qr},{cr},{A},{lr},{lot},{mr},"rejected")<N({Q})),"UNDER "&{d}&" DAYS LEFT ON THE DROP DAY: reject these units; ","")&'
                        'IF(AND({M}="delivered",COUNTIF({kr},{key})>1),"two delivered rows for this office: use one; ","")&'
                        'IF(AND({M}="delivered",{src}=""),"who counted?; ",""))').format(
-        A=A, M=M, B=B, Q=Q, BB=BB, lot=c(t, "lot"), ok=c(t, "best_by_ok"), d=cfg("min_shelf_life_days"),
+        cpr=R("campaigns", "campaign_id"), apc=R("approvals", "campaign_id"), apo=R("approvals", "office_id"), A=A, M=M, B=B, Q=Q, BB=BB, lot=c(t, "lot"), ok=c(t, "best_by_ok"), d=cfg("min_shelf_life_days"),
         kr=R("inventory", "key"), key=c(t, "key"), src=c(t, "count_source"),
         qr=R("inventory", "qty"), cr=R("inventory", "campaign_id"), lr=R("inventory", "lot"), mr=R("inventory", "movement")))
 
@@ -419,10 +502,11 @@ def counts():
     A, B, D = c(t, "campaign_id"), c(t, "office_id"), c(t, "date")
     dd = lk("campaigns", "campaign_id", A, "drop_date")
     setf(t, "window_day", 'IF(OR({A}="",{D}=""),"",IF({D}<{dd},0,NETWORKDAYS({dd},{D},{H})))'.format(A=A, D=D, dd=dd, H=HOL))
-    setf(t, "checks", ('IF({A}="","",IF(COUNTIFS({ca},{A},{oa},{B},{ta},{ty})>1,"two "&{ty}&" counts: keep one; ","")&'
+    setf(t, "checks", ('IF({A}="","",'
+                       'IF(COUNTIF({cpr},{A})=0,"campaign_id not on campaigns; ",IF(AND({B}<>"",COUNTIFS({apc},{A},{apo},{B})=0),"office not on this campaign (approvals tab); ",""))&IF(COUNTIFS({ca},{A},{oa},{B},{ta},{ty})>1,"two "&{ty}&" counts: keep one; ","")&'
                        'IF(AND({ty}="remaining_day5",N({wd})<5),"day-5 count logged before day 5; ","")&'
                        'IF(AND({src}="photo",{pid}=""),"which photo?; ",""))').format(
-        A=A, B=B, ca=R("counts", "campaign_id"), oa=R("counts", "office_id"), ta=R("counts", "count_type"), ty=c(t, "count_type"),
+        cpr=R("campaigns", "campaign_id"), apc=R("approvals", "campaign_id"), apo=R("approvals", "office_id"), A=A, B=B, ca=R("counts", "campaign_id"), oa=R("counts", "office_id"), ta=R("counts", "count_type"), ty=c(t, "count_type"),
         wd=c(t, "window_day"), src=c(t, "source"), pid=c(t, "photo_id")))
 
 
@@ -436,20 +520,21 @@ def photos():
     setf(t, "expected_file_name", 'IF(OR({A}="",{D}=""),"",{A}&"_"&{B}&"_"&{TY}&"_"&TEXT({D},"yyyy-mm-dd")&".jpg")'.format(A=A, B=B, TY=TY, D=D))
     setf(t, "key", 'IF({A}="","",{A}&"|"&{B}&"|"&{TY}&"|"&{u})'.format(A=A, B=B, TY=TY, u=c(t, "usable")))
     setf(t, "key2", 'IF({A}="","",{k}&"|"&N({D}))'.format(A=A, k=c(t, "key"), D=D))
-    setf(t, "checks", ('IF({A}="","",IF(AND({fn}<>"",{fn}<>{ef}),"file name differs from the convention; ","")&'
+    setf(t, "checks", ('IF({A}="","",'
+                       'IF(COUNTIF({cpr},{A})=0,"campaign_id not on campaigns; ",IF(AND({B}<>"",COUNTIFS({apc},{A},{apo},{B})=0),"office not on this campaign (approvals tab); ",""))&IF({D}="","taken date missing; ","")&IF(AND({fn}<>"",{fn}<>{ef}),"file name differs from the convention; ","")&'
                        'IF(AND({TY}="placement",{u}="Y",COUNTIF({kr},{k})>1),"two usable placement photos: mark one N; ","")&'
-                       'IF({np}<>"Y","info: not usable (a person, screen or whiteboard may show): never used; ","")&'
+                       'IF({np}<>"Y","info: not usable (a person, screen or whiteboard may show): never used, delete the file; ","")&'
                        'IF(AND({TY}="placement",{cv}<>"Y"),"info: not usable as a placement photo (no card); ","")&'
                        'IF(AND({TY}="placement",N({wd})>2),"info: placed after the first business day; ","")&'
                        'IF(AND({TY}="later",{wd}<>"",OR(N({wd})<3,N({wd})>5)),"info: later photo outside day 3 to 5; ",""))').format(
-        A=A, np=c(t, "no_people_or_screens"), TY=TY, cv=c(t, "card_visible"), fn=c(t, "file_name"), ef=c(t, "expected_file_name"),
+        cpr=R("campaigns", "campaign_id"), apc=R("approvals", "campaign_id"), apo=R("approvals", "office_id"), A=A, B=B, D=D, np=c(t, "no_people_or_screens"), TY=TY, cv=c(t, "card_visible"), fn=c(t, "file_name"), ef=c(t, "expected_file_name"),
         wd=c(t, "window_day"), u=c(t, "usable"), kr=R("photos", "key"), k=c(t, "key")))
 
 
 def redemptions():
     t = "redemptions"
     A, D = c(t, "campaign_id"), c(t, "as_of_date")
-    setf(t, "days_after_drop", 'IF(OR({A}="",{D}=""),"",{D}-{dd})'.format(A=A, D=D, dd=lk("campaigns", "campaign_id", A, "drop_date")))
+    setf(t, "days_after_drop", 'IF(OR({A}="",{D}="",{dd}=""),"",{D}-N({dd}))'.format(A=A, D=D, dd=lk("campaigns", "campaign_id", A, "drop_date")))
     setf(t, "is_day30", 'IF({d}="","",IF({d}>=30,"Y","N"))'.format(d=c(t, "days_after_drop")))
 
 
@@ -488,17 +573,19 @@ def invoices():
     setf(t, "due_date", 'IF(OR({I}="",{ISS}=""),"",IF({TY}="founding_full",WORKDAY({ISS},{bd},{H}),{ISS}))'.format(I=I, ISS=ISS, TY=TY, bd=cfg("founding_due_bd"), H=HOL))
     setf(t, "total_usd", 'IF({I}="","",N({a})+N({tx}))'.format(I=I, a=c(t, "amount_usd"), tx=c(t, "sales_tax_usd")))
     tot, pd, pa = c(t, "total_usd"), c(t, "paid_date"), c(t, "paid_amount_usd")
-    setf(t, "status", ('IF({I}="","",IF({TY}="credit_note",IF({pd}<>"","refunded","credit"),IF({pd}<>"",IF(N({pa})>={tot}-0.005,"paid","part paid"),'
-                       'IF({ISS}="","draft",IF({td}>{due},"overdue","sent")))))').format(I=I, TY=TY, pd=pd, pa=pa, tot=tot, ISS=ISS, td=TODAY, due=c(t, "due_date")))
+    applied = '(-SUMPRODUCT(({cr}={A})*({tr}="credit_note")*(LEN({pr})=0)*{ar}))'.format(cr=R("invoices", "campaign_id"), A=A, tr=R("invoices", "invoice_type"), pr=R("invoices", "paid_date"), ar=R("invoices", "amount_usd"))
+    setf(t, "status", ('IF({I}="","",IF({TY}="credit_note",IF({pd}<>"","refunded","credit applied"),IF({pd}<>"",IF(N({pa})>={tot}-0.005,"paid",'
+                       'IF(AND({TY}="standard_balance",N({pa})+{ap}>={tot}-0.005),"paid (less credit)","part paid")),'
+                       'IF({ISS}="","draft",IF({td}>{due},"overdue","sent")))))').format(I=I, TY=TY, pd=pd, pa=pa, tot=tot, ISS=ISS, td=TODAY, due=c(t, "due_date"), ap=applied))
     setf(t, "releases_ship", 'IF({I}="","",IF(OR({TY}="founding_full",{TY}="standard_deposit"),"Y","N"))'.format(I=I, TY=TY))
     price = lk("campaigns", "campaign_id", A, "price_usd")
     exp = 'IF({TY}="founding_full",{p},IF({TY}="standard_deposit",ROUND({p}*{ds},2),IF({TY}="standard_balance",{p}-ROUND({p}*{ds},2),"")))'.format(TY=TY, p=price, ds=cfg("deposit_share"))
-    setf(t, "checks", ('IF({I}="","",IF(COUNTIF({ir},{I})>1,"DUPLICATE invoice number; ","")&'
+    setf(t, "checks", ('IF({I}="","",IF(COUNTIF({ir},{I})>1,"DUPLICATE invoice number; ","")&IF(COUNTIF({cpr},{A})=0,"campaign_id missing or not on campaigns; ","")&'
                        'IF(AND({TY}<>"credit_note",{exp}<>"",ABS(N({a})-N({exp}))>0.005),"amount differs from the price ("&{exp}&") - credit notes go on their own row; ","")&'
                        'IF(AND({TY}="credit_note",N({a})>=0),"a credit note is negative; ","")&'
                        'IF(AND({pd}<>"",N({pa})>{tot}+0.005,{TY}<>"credit_note"),"paid more than the total; ","")&'
                        'IF(AND({pd}<>"",{m}=""),"method?; ",""))').format(
-        I=I, ir=R("invoices", "invoice_id"), TY=TY, exp=exp, a=c(t, "amount_usd"), pd=pd, pa=pa, tot=tot, m=c(t, "method")))
+        I=I, A=A, cpr=R("campaigns", "campaign_id"), ir=R("invoices", "invoice_id"), TY=TY, exp=exp, a=c(t, "amount_usd"), pd=pd, pa=pa, tot=tot, m=c(t, "method")))
 
 
 def intake_founder():
@@ -585,17 +672,26 @@ def stops():
                        'IF(AND(OR({coi}="yes",{coi}="unsure"),{cs}<>"received",{cs}<>"not_needed"),"building certificate not received; ","")&'
                        'IF({ph}="","owner phone missing; ","")&IF(N({ch})=0,"no approved brand for this stop; ","")&'
                        'IF(AND({dd}<>"",{td}>{dd},{oc}=""),"log the outcome; ","")&'
+                       'IF(AND(OR({oc}="declined",{oc}="building_refused",{oc}="not_delivered"),N({ch})>0,{dlv}>=N({ch})),"outcome says "&{oc}&" but every brand here is logged delivered: fix the outcome, or delete the wrong delivered rows (SOP section 4); ","")&'
+                       'IF(AND(OR({oc}="declined",{oc}="building_refused",{oc}="not_delivered"),{dlv}>0,{dlv}<N({ch})),"info: "&(N({ch})-{dlv})&" brand(s) turned away at the door, the rest delivered; ","")&'
                        'IF(AND({fd}="Y",{model}="direct-ship"),"info: first drop: visit in person on T; ","")&'
                        'IF(AND({rt}="front desk",{fb}<>"Y"),"info: front desk not agreed: the owner must take it; ",""))').format(
         A=A, B=B, dr=R("stops", "drop_id"), orr=R("stops", "office_id"), coi=lk("offices", "office_id", B, "coi_required"),
         cs=c(t, "building_coi_status"), ph=c(t, "owner_phone"), ch=c(t, "campaigns_here"), fd=c(t, "first_drop"), model=model,
-        rt=c(t, "receiving_type"), fb=c(t, "front_desk_fallback_ok"), dd=dd, td=TODAY, oc=c(t, "outcome")))
+        rt=c(t, "receiving_type"), fb=c(t, "front_desk_fallback_ok"), dd=dd, td=TODAY, oc=c(t, "outcome"),
+        dlv='COUNTIFS({d},{A},{o},{B},{a},"Y",{u},">0")'.format(d=ap("drop_id"), A=A, o=ap("office_id"), B=B, a=ap("approved"), u=ap("units_delivered"))))
+
+
+def survey_frozen():
+    t = "survey_frozen"
+    A, B = c(t, "campaign_id"), c(t, "office_id")
+    setf(t, "key", 'IF({A}="","",{A}&"|"&{B})'.format(A=A, B=B))
 
 
 def build_all():
     T.define()
     drops(); brands(); offices(); stops(); approvals(); campaigns(); links(); scans(); inventory(); counts(); photos()
-    redemptions(); issues(); hours(); costs(); invoices(); intake_founder()
+    redemptions(); issues(); hours(); costs(); invoices(); intake_founder(); survey_frozen()
     missing = [(t.name, col.name) for t in T.TABS.values() for col in t.cols if col.kind == "A" and col.f is None]
     if missing:
         raise SystemExit("formula missing: %s" % missing)

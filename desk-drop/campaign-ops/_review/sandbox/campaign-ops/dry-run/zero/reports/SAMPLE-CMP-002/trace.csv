@@ -1,0 +1,41 @@
+number,value,from
+comment_1,SAMPLE Gone before lunch on Wednesday.,SAMPLE-CMP-002!G2
+comment_2,SAMPLE Not my thing but my team liked it.,SAMPLE-CMP-002!G3
+comment_3,SAMPLE Nice that it lists the allergens on the card.,SAMPLE-CMP-002!G4
+A units_delivered,40,inventory movement=delivered (rows 12)
+A units_placed,40,photos SAMPLE-CMP-002_SAMPLE-O-001_placement_2027-01-12.jpg + counts placed
+A units_topped_up,0,inventory movement=topped_up
+A units_depleted_day5,37,"placed + topped up - counts remaining_day5 (counts rows 17,18,19)"
+A survey_responses,7,"SAMPLE-CMP-002!B card code SAMPLE-CMP-002.SAMPLE-O-001, T to T+4"
+A qr_scans,9,"scans SAMPLE-c002-o001-q close - baseline (scans rows 42,43,44,45)"
+B units_delivered,40,inventory movement=delivered (rows 13)
+B units_placed,40,photos SAMPLE-CMP-002_SAMPLE-O-002_placement_2027-01-12.jpg + counts placed
+B units_topped_up,0,inventory movement=topped_up
+B units_depleted_day5,36,"placed + topped up - counts remaining_day5 (counts rows 20,21,22)"
+B survey_responses,5,"SAMPLE-CMP-002!B card code SAMPLE-CMP-002.SAMPLE-O-002, T to T+4"
+B qr_scans,5,"scans SAMPLE-c002-o002-q close - baseline (scans rows 50,51,52,53)"
+C units_delivered,50,inventory movement=delivered (rows 14)
+C units_placed,50,photos SAMPLE-CMP-002_SAMPLE-O-003_placement_2027-01-12.jpg + counts placed
+C units_topped_up,6,inventory movement=topped_up (rows 18)
+C units_depleted_day5,50,"placed + topped up - counts remaining_day5 (counts rows 23,24,25)"
+C survey_responses,9,"SAMPLE-CMP-002!B card code SAMPLE-CMP-002.SAMPLE-O-003, T to T+4"
+C qr_scans,12,"scans SAMPLE-c002-o003-q close - baseline (scans rows 58,59,60,61)"
+D units_delivered,50,inventory movement=delivered (rows 15)
+D units_placed,50,photos SAMPLE-CMP-002_SAMPLE-O-004_placement_2027-01-13.jpg + counts placed
+D units_topped_up,0,inventory movement=topped_up
+D units_depleted_day5,48,"placed + topped up - counts remaining_day5 (counts rows 26,27,28)"
+D survey_responses,5,"SAMPLE-CMP-002!B card code SAMPLE-CMP-002.SAMPLE-O-004, T to T+4"
+D qr_scans,6,"scans SAMPLE-c002-o004-q close - baseline (scans rows 66,67,68,69)"
+E units_delivered,70,inventory movement=delivered (rows 16)
+E units_placed,70,photos SAMPLE-CMP-002_SAMPLE-O-005_placement_2027-01-12.jpg + counts placed
+E units_topped_up,0,inventory movement=topped_up
+E units_depleted_day5,67,"placed + topped up - counts remaining_day5 (counts rows 29,30,31)"
+E survey_responses,6,"SAMPLE-CMP-002!B card code SAMPLE-CMP-002.SAMPLE-O-005, T to T+4"
+E qr_scans,7,"scans SAMPLE-c002-o005-q close - baseline (scans rows 74,75,76,77)"
+survey_tried_yes,21,"SAMPLE-CMP-002!A:G, in-window rows whose card code matches an office on the campaign"
+survey_rating_avg,4.1,"SAMPLE-CMP-002!A:G, in-window rows whose card code matches an office on the campaign"
+survey_buy_yes,8,"SAMPLE-CMP-002!A:G, in-window rows whose card code matches an office on the campaign"
+survey_buy_maybe,8,"SAMPLE-CMP-002!A:G, in-window rows whose card code matches an office on the campaign"
+survey_buy_no,5,"SAMPLE-CMP-002!A:G, in-window rows whose card code matches an office on the campaign"
+comments_total,12,"SAMPLE-CMP-002!A:G, in-window rows whose card code matches an office on the campaign"
+code_redemptions_to_date,2,"redemptions, latest as_of 2027-01-21"

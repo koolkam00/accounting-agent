@@ -49,7 +49,11 @@ THIN = Side(style="thin", color="BFBFBF")
 ORDER = ["README", "dashboard", "survey_dashboard", "report", "config", "calendar", "drops", "campaigns", "brands",
          "offices", "approvals", "stops", "inventory", "counts", "photos", "links", "scans", "redemptions", "issues",
          "hours", "costs", "invoices", "office_intake", "brand_intake", "office_form", "brand_form",
-         "office_intake_founder", "brand_intake_founder", "in_signed_offices", "in_paid_brands", "responses_template"]
+         "office_intake_founder", "brand_intake_founder", "in_signed_offices", "in_paid_brands", "survey_frozen", "responses_template"]
+# Tabs whose rows the founder (or a form, script or paste) fills, for the "over 90% full" dashboard line.
+FILL_TABS = ["drops", "brands", "offices", "campaigns", "approvals", "stops", "inventory", "counts", "photos", "scans",
+             "redemptions", "issues", "hours", "costs", "invoices", "office_form", "brand_form", "in_signed_offices",
+             "in_paid_brands", "office_intake", "brand_intake", "survey_frozen"]
 
 
 def company_name():
@@ -243,6 +247,15 @@ def write_dashboard(wb):
         ("Offices in E's signed_offices.csv not on offices", 'SUMPRODUCT((%s<>"")*(COUNTIF(%s,%s)=0))' % (
             "in_signed_offices!$A$2:$A$%d" % (T.TABS["in_signed_offices"].last()), T.R("offices", "office_id"),
             "INDEX(in_signed_offices!$A$2:$BZ$%d,0,MATCH(\"office_id\",in_signed_offices!$A$1:$BZ$1,0))" % T.TABS["in_signed_offices"].last()), "in_signed_offices"),
+        ("Offices that left: contact details past their keep date", 'SUMPRODUCT((%s="left")*ISNUMBER(%s)*((%s-%s)>%s)*((LEN(%s)+LEN(%s)+LEN(%s)+LEN(%s))>0))' % (
+            T.R("offices", "status"), T.R("offices", "left_date"), T.TODAY, T.R("offices", "left_date"), T.cfg("contacts_keep_days_after_leaving"),
+            T.R("offices", "contact_name"), T.R("offices", "contact_email"), T.R("offices", "pantry_owner_name"), T.R("offices", "owner_phone")),
+         "offices: clear names, emails, phones in in_signed_offices, office_intake, office_form"),
+        ("Brands whose payments in E's paid_brands.csv differ from the invoices tab", 'COUNTIF(%s,"?*")' % T.R("brands", "e_payment_check"),
+         "brands, e_payment_check (E's file feeds the financial model's Pipeline; the invoices tab releases the ship date)"),
+        ("Tabs over 90% full (rows below the last formula row are not counted)", "+".join(
+            '(COUNTA(%s!$A:$A)-1>0.9*%d)' % (T.q(n), T.N[n] if n not in ("office_form", "brand_form") else T.N[n]) for n in FILL_TABS),
+         "runbook, 'Speed and size': rebuild with tools/build_tracker.py --size full before a tab runs out"),
     ]
     ws.cell(row=r + 1, column=1, value="check").font = BOLD
     ws.cell(row=r + 1, column=2, value="count").font = BOLD
@@ -259,8 +272,9 @@ def write_dashboard(wb):
     dcols = [("drop_id", "drop"), ("drop_date", "date"), ("delivery_model", "model"), ("status", "status"),
              ("date_check", "date check"), ("next_step", "next step"), ("next_step_date", "on"), ("stops", "stops"),
              ("campaigns", "brands"), ("units_allocated", "units"), ("revenue_usd", "revenue"), ("direct_cost_usd", "direct cost"),
-             ("cost_per_stop_usd", "cost per stop"), ("hours", "founder hours"), ("contribution_usd", "contribution"),
-             ("contribution_per_hour_usd", "per founder hour")]
+             ("cost_per_stop_usd", "cost per stop"), ("hours", "founder hours"), ("contribution_usd", "contribution before overhead"),
+             ("contribution_per_hour_usd", "per founder hour, before overhead"), ("gate2_placed_share", "G2 placed in 1 bd"),
+             ("gate2_min_responses", "G2 fewest responses"), ("gate2_reports_late", "G2 reports late"), ("gate2_buy_again_yes", "G2 buy again")]
     for j, (cn, lab) in enumerate(dcols, start=1):
         ws.cell(row=r + 1, column=j, value=lab).font = BOLD
     for k in range(1, 16):
@@ -271,15 +285,18 @@ def write_dashboard(wb):
             col = T.TABS["drops"].cols[T.TABS["drops"].index[cn]]
             if col.fmt:
                 cell.number_format = col.fmt
+    ws.cell(row=r + 17, column=1, value=("Contribution here = revenue (net of credit notes) - direct costs (kit, transport, other) - card fees, before "
+                                         "overhead. The financial model also subtracts its planned overhead allocation (software, insurance, storage), "
+                                         "so its figure per drop is lower by that amount.")).font = Font(italic=True, size=9)
     r = r + 18
     ws.cell(row=r, column=1, value="Campaigns (every rung kept separate)").font = Font(bold=True, size=12)
     ccols = [("campaign_id", "campaign"), ("brand_name", "brand"), ("drop_date", "drop"), ("tier", "tier"),
-             ("ship_release", "ship release"), ("offices_approved", "offices approved"), ("offices_contracted", "contracted"),
+             ("ship_release", "ship release"), ("offices_approved", "offices approved"), ("offices_on_drop", "on the drop"), ("offices_contracted", "contracted"),
              ("units_delivered", "delivered"), ("units_placed_within_1bd", "placed within 1 bd"), ("placed_share_1bd", "share"),
              ("units_topped_up", "topped up"), ("units_depleted_day5", "depleted by day 5"), ("survey_responses", "responded"),
              ("survey_responses_min_office", "fewest at one office"), ("survey_tried_yes", "said they tried"),
              ("survey_rating_avg", "avg rating"), ("qr_scans", "QR scans"), ("code_redemptions_to_date", "code redemptions"),
-             ("revenue_usd", "revenue"), ("contribution_per_hour_usd", "per founder hour"), ("gate2_placed", "G2 placed"),
+             ("revenue_usd", "revenue"), ("contribution_per_hour_usd", "per founder hour, before overhead"), ("gate2_placed", "G2 placed"),
              ("gate2_responses", "G2 responses"), ("gate2_report_on_time", "G2 report"), ("brand_would_buy_again", "buy again"),
              ("checks", "checks")]
     for j, (cn, lab) in enumerate(ccols, start=1):
@@ -313,7 +330,7 @@ def write_dashboard(wb):
     for j in range(2, 10):
         L = get_column_letter(j)
         ws.cell(row=rr, column=j, value='=IF(%s%d="","",SUM(%s%d:%s%d))' % (L, r + 1, L, r + 2, L, rr - 1) if j > 3 else "=SUM(%s%d:%s%d)" % (L, r + 2, L, rr - 1)).number_format = "0.0"
-    for c, w in zip("ABCDEFGHIJKLMNOPQRSTUVWXY", (30, 18, 14, 10, 30, 30, 12, 9, 9, 9, 10, 11, 11, 10, 11, 10, 10, 10, 10, 10, 9, 9, 9, 9, 40)):
+    for c, w in zip("ABCDEFGHIJKLMNOPQRSTUVWXYZ", (30, 18, 14, 10, 30, 30, 12, 9, 9, 9, 9, 10, 11, 11, 10, 11, 10, 10, 10, 10, 10, 9, 9, 9, 9, 40)):
         ws.column_dimensions[c].width = w
     ws.freeze_panes = "A4"
 
@@ -406,8 +423,8 @@ def write_report(wb):
         ws.cell(row=7, column=j, value="=" + val).font = Font(bold=True, size=14)
         ws.cell(row=8, column=j, value="=IF($B$2=\"\",\"\",%s)" % note).alignment = WRAP
     ws.row_dimensions[8].height = 44
-    heads = ["Office", "Industry", "Tuesday headcount", "Units delivered", "Units placed", "Gone by day 5", "Responses", "QR scans", "Placement photo", "Later photo"]
-    cols = ["office_label", None, None, "units_delivered", "units_placed", "units_depleted_day5", "survey_responses", "qr_scans", "placement_photo_date", "later_photo_date"]
+    heads = ["Office", "Industry", "Tuesday headcount", "Units delivered", "Units placed", "Topped up", "Gone by day 5", "Responses", "QR scans", "Placement photo", "Later photo"]
+    cols = ["office_label", None, None, "units_delivered", "units_placed", "units_topped_up", "units_depleted_day5", "survey_responses", "qr_scans", "placement_photo_date", "later_photo_date"]
     for j, h in enumerate(heads, start=1):
         c = ws.cell(row=10, column=j, value=h)
         c.font = BOLD
@@ -429,7 +446,7 @@ def write_report(wb):
                 f = '=IFERROR(INDEX(%s,%s),"")' % (T.R("approvals", cn), m)
             ws.cell(row=rr, column=j, value=f)
     ws.cell(row=23, column=1, value="Total").font = BOLD
-    for j in (4, 5, 6, 7, 8):
+    for j in (4, 5, 6, 7, 8, 9):
         L = get_column_letter(j)
         ws.cell(row=23, column=j, value="=SUM(%s11:%s22)" % (L, L)).font = BOLD
     ws.cell(row=24, column=1, value='=IF(COUNTIF(A11:A22,"*~*")>0,"* placed after the first business day","")')
@@ -445,32 +462,32 @@ def write_report(wb):
     for i in range(1, 4):
         ws["A%d" % (27 + i)] = '=IF(%s="","","“"&%s&"”")' % (camp("comment_%d" % i), camp("comment_%d" % i))
         ws["A%d" % (27 + i)].alignment = WRAP
-        ws.merge_cells("A%d:J%d" % (27 + i, 27 + i))
+        ws.merge_cells("A%d:K%d" % (27 + i, 27 + i))
         ws.row_dimensions[27 + i].height = 30
     ws["A31"] = '=IF($B$2="","","Three of "&%s&" comments, word for word.")' % camp("comments_total")
     ws["A33"] = ('=IF($B$2="","","Engagement: "&N(%s)&" QR scans across "&%s&" offices · "&IF(%s="","no code redemptions reported yet",%s&" code redemptions to date"))'
-                 % (camp("qr_scans"), camp("offices_on_route"), camp("code_redemptions_to_date"), camp("code_redemptions_to_date")))
+                 % (camp("qr_scans"), camp("offices_on_drop"), camp("code_redemptions_to_date"), camp("code_redemptions_to_date")))
     ws["A33"].font = BOLD
     ws["A35"] = "What we learned"
     ws["A35"].font = BOLD
     ws["A36"] = '=%s' % camp("learned")
     ws["A36"].alignment = WRAP
-    ws.merge_cells("A36:J36")
+    ws.merge_cells("A36:K36")
     ws.row_dimensions[36].height = 60
     ws["A38"] = "Recommendation"
     ws["A38"].font = BOLD
     ws["A39"] = '=%s' % camp("recommendation")
     ws["A39"].alignment = WRAP
-    ws.merge_cells("A39:J39")
+    ws.merge_cells("A39:K39")
     ws.row_dimensions[39].height = 32
     ws["A41"] = "Limitations"
     ws["A41"].font = BOLD
     ws["A42"] = limitations_text()
     ws["A42"].alignment = WRAP
-    ws.merge_cells("A42:J42")
+    ws.merge_cells("A42:K42")
     ws.row_dimensions[42].height = 96
     ws["A44"] = '="Prepared by "&%s&" · "&%s&" · "&%s' % (T.cfg("founder_name"), T.cfg("company_name"), T.cfg("founder_email"))
-    for c, w in zip("ABCDEFGHIJ", (12, 18, 14, 12, 12, 12, 11, 10, 15, 15)):
+    for c, w in zip("ABCDEFGHIJK", (12, 18, 14, 12, 12, 10, 12, 11, 10, 15, 15)):
         ws.column_dimensions[c].width = w
 
 
@@ -481,7 +498,7 @@ def lk_off(col, off):
 README_LINES = [
     ("Campaign tracker", "title"),
     ("Every number in a brand report comes from a row in this file or a photo. Type only in white cells. Grey cells are formulas: never type over them. Cream tabs are written by forms, scripts or a pasted file.", ""),
-    ("Rename: change config!B2 (company_name). Nothing else in this file holds the name.", ""),
+    ("Rename: change config!B2 (company_name). Nothing else in this file holds the name. The printed pieces take it from desk-drop-identity/brand.json: change both the same day; every tool refuses while they differ (README, Rename).", ""),
     ("", ""),
     ("Tabs in the order a campaign touches them", "h"),
     ("office_intake, brand_intake: website form rows (CONTRACTS 6.3), written by the website's script when it is bound to this file.", ""),
@@ -498,6 +515,7 @@ README_LINES = [
     ("<campaign_id> tabs: each campaign's survey form writes its own tab, named with the campaign_id (forms/survey-form.md).", ""),
     ("scans: link totals read from the short-link tool. redemptions: what the brand reports. issues: every deviation.", ""),
     ("hours, costs: the founder hours log and the direct costs. Exports for the financial model come from tools/export_actuals.py.", ""),
+    ("survey_frozen: a campaign's survey totals, imported from tools/freeze_survey.py before its raw answers are deleted at 12 months, so its numbers stay.", ""),
     ("dashboard, survey_dashboard, report: read only.", ""),
     ("", ""),
     ("Rules this file keeps", "h"),
@@ -588,11 +606,30 @@ def fill(wb, sample):
                     c.number_format = T.DATE
 
 
+def write_csv_headers(folder):
+    """CONTRACTS section 5: the key tabs also as CSV (header rows; the founder's data lives in Google Sheets)."""
+    import csv
+    os.makedirs(folder, exist_ok=True)
+    for name in ("drops", "campaigns", "brands", "offices", "approvals", "stops", "inventory", "counts", "photos", "scans",
+                 "redemptions", "issues", "hours", "costs", "invoices", "office_intake", "brand_intake"):
+        t = T.TABS[name]
+        with open(os.path.join(folder, name + ".csv"), "w", newline="", encoding="utf-8") as f:
+            csv.writer(f).writerow([c.name for c in t.cols if c.kind != "A"] if name not in ("office_intake", "brand_intake") else [c.name for c in t.cols])
+    with open(os.path.join(folder, "survey_tab.csv"), "w", newline="", encoding="utf-8") as f:
+        csv.writer(f).writerow(survey_headers())
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=os.path.join(ROOT, "tracker", "campaign-tracker.xlsx"))
+    ap.add_argument("--size", choices=sorted(T.SIZES), default=T.SIZE,
+                    help="six-months (default: lighter on a phone) or full (more rows; see the runbook, 'Speed and size')")
     a = ap.parse_args()
+    if a.size != T.SIZE:
+        T.set_size(a.size)
     build(a.out)
+    if a.out == ap.get_default("out"):
+        write_csv_headers(os.path.join(ROOT, "tracker", "csv"))
     print("wrote", a.out)
 
 

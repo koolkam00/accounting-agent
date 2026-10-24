@@ -5,6 +5,7 @@
 """
 import os
 import sys
+sys.dont_write_bytecode = True   # no __pycache__ in the deliverable folder (review round 3, R3-11)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)

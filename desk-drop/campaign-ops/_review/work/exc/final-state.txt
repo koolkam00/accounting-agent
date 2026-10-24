@@ -1,0 +1,35 @@
+formula errors 0 [] disagreements 0 []
+dashboard {'Campaigns with checks to read': 1}
+   campaigns row 7 (SAMPLE-CMP-006 SAMPLE-DRP-003): units still on hand after T+14;
+  offices_approved             10
+  offices_contracted           10
+  units_allocated              465
+  units_to_ship                512
+  units_received               480
+  reserve_on_hand              40
+  leftover_on_hand             0
+  units_delivered              425
+  units_placed                 425
+  units_placed_within_1bd      425
+  placed_share_1bd             1
+  units_topped_up              12
+  units_depleted_day5          None
+  survey_responses             62
+  survey_responses_min_office  0
+  offices_under_5              1
+  qr_scans                     71
+  revenue_usd                  1350
+  deposit_usd                  750
+  invoice_paid_date            2027-02-26 00:00:00
+  gate2_placed                 pass
+  gate2_responses              miss
+  photo_compliance             0.9
+  contribution_usd             970
+  contribution_per_hour_usd    47.32
+  ship_release                 RELEASED 2027-01-28: ship by Mon 2027-02-08 (latest Mon 2027-02-08)
+  checks                       units still on hand after T+14; 
+  approvals SAMPLE-O-001 {'approved': 'Y', 'office_label': 'A', 'units_allocated': 35, 'units_delivered': 35, 'units_placed': 35, 'remaining_day5': 1, 'units_depleted_day5': 34, 'survey_responses': 9, 'qr_scans': 10, 'checks': None}
+  approvals SAMPLE-O-006 {'approved': 'Y', 'office_label': 'F', 'units_allocated': 40, 'units_delivered': 0, 'units_placed': 0, 'remaining_day5': None, 'units_depleted_day5': None, 'survey_responses': 0, 'qr_scans': 0, 'checks': None}
+  drop {'stops': 10, 'revenue_usd': 1350, 'direct_cost_usd': 380, 'cost_per_stop_usd': 38, 'hours': 20.5, 'contribution_usd': 970, 'contribution_per_hour_usd': 47.32, 'gate2_placed_share': 1, 'gate2_min_responses': 0}
+  stop O-006 declined None
+  office O-006 declines 1 drops_so_far 2

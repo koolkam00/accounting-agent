@@ -1,12 +1,12 @@
 # 09 · Reply playbook
 
-Version 1.0 · 2026-10-24 · Part A of workstream E · folder `desk-drop-outreach/messages/`
+Version 1.3 · 2026-10-24 · Outreach engine (workstream E) · `desk-drop-outreach/messages/`
 
 **What it is for.** Every kind of reply, what it means, what to write back (one ask, at most), and exactly what to change in the Clay row, so a reply takes two minutes and nothing is decided from scratch.
 
 **When it is used.** The moment a reply arrives, on any channel. Read it, find its type below, send the answer (or nothing, for an opt-out), and write the Clay columns in the same sitting. Calls themselves run from the call guides in `calls/`.
 
-**The `reply_type` values and status writes are shared with the tracker** (`_work/partB/FOR-PART-A.md`; the tracker in `tracking/` reads them). Status values are CONTRACTS section 4 only.
+**The `reply_type` values and status writes are shared with the tracker** (`tracking/csv/clay_tracking_columns.csv` lists every allowed value; the tracker in `tracking/` reads them). Status values are CONTRACTS section 4 only. If the reply leads to a call, the objection is coded again on the tracker row with the call's codes (`calls/post-call-note-template.md`): `obj_seed_ourselves` is `seed_ourselves`, `obj_price` is `price_per_sample`, `obj_free_trial` is `free_trial`, `obj_what_we_get` is `what_we_get`.
 
 ---
 
@@ -100,8 +100,8 @@ ask: may I check back on a date
 That makes sense. Here's a short note you can forward as it is:
 
 What it is: sealed snacks or drinks from one to three emerging brands, free, roughly monthly, delivered on a Tuesday or Wednesday morning in our receiving window. We choose the categories and can say no to any brand.
-What it asks of us: put it out the day it arrives, two photos, one Slack or email post of an anonymous three-question survey, and a ten-minute chat afterwards.
-What it never involves: any fee, employees' contact details, exclusivity, or storing anything.
+What it asks of us: put it out the day it arrives, two photos, one Slack or email post of an anonymous three-question survey, help getting five survey responses (no one has to answer), our Tuesday headcount, and a ten-minute chat afterwards.
+What it never involves: any fee, employees' contact details, exclusivity, or storing anything beyond the drop itself.
 Safety: only individually packaged, sealed, shelf-stable products labeled with ingredients and allergens; no alcohol, cannabis, supplements or health claims. Each brand carries product liability insurance of at least $1 million. [INSURANCE LINE] If our building needs a certificate of insurance for deliveries, they arrange it before the first drop. We can leave with a week's notice.
 
 Shall I check back on [CHECK-BACK DATE]?
@@ -109,7 +109,7 @@ Shall I check back on [CHECK-BACK DATE]?
 {SIGNATURE}
 ```
 
-In discovery the same note works with the first line changed to "What's being tested:" and "would be" in place of "is". Facts in the note: product standard, insurance, building certificate and a week's notice are in desk-drop-legal-pack/03 sections 4 and 8; two photos, the survey post and the debrief in section 3.
+In discovery the same note works with the first line changed to "What's being tested:" and "would be" in place of "is". Facts in the note: product standard, insurance, building certificate and a week's notice are in desk-drop-legal-pack/03 sections 4 and 8; two photos, the survey post, the five responses, the Tuesday headcount and the debrief in section 3. "Storing anything beyond the drop itself" is the plan's wording ("What offices get and give"): the office holds the product only for its five-day window.
 
 ### D. `send_info`: send the right page and ask for the call
 
@@ -126,14 +126,14 @@ ask: a 20-minute call
 ---
 {greeting}
 
-Attached is a one-page description of the idea. The short version: [OFFICE: free sealed product from emerging brands, roughly monthly once it runs, and three questions for your team] [BRAND: sealed product in offices near the stores that carry you, with photos, counts and feedback], and I'm still finding out whether it's worth building.
+[INFO PAGE LINE] The short version: [OFFICE: free sealed product from emerging brands, roughly monthly once it runs, and three questions for your team] [BRAND: sealed product in offices near the stores that carry you, with photos, counts and feedback], and I'm still finding out whether it's worth building.
 
 Would 20 minutes on [TIME OPTION 1] or [TIME OPTION 2] work?
 
 {SIGNATURE}
 ```
 
-Attach the discovery one-pager only if `discovery_onepager_ready = Y`. If not, leave out the first sentence and say "I can explain it better in 20 minutes than in a document."
+Attach the discovery one-pager only if it counts as ready: `discovery_onepager_ready = Y` and `name_decided = Y` (D's page names the business), or `onepagers_name_free = Y` (`04-slot-state.csv`). `[INFO PAGE LINE]` follows the state: "Attached is a one-page description of the idea." when it counts as ready, else "I can explain it better in 20 minutes than in a document." Once that side's selling switch is Y this reply is refused (it says the idea is still being tested): use the selling version below.
 
 ```message
 id: reply-send-info-selling
@@ -146,14 +146,14 @@ ask: a 20-minute call
 ---
 {greeting}
 
-Attached is the one-page outline. The short version: [OFFICE: free drops from emerging brands roughly monthly, you choose the categories, and in return it goes out the day it arrives, two photos and three survey questions for your team] [BRAND: five offices for a week, about 250 units, photos, counts, a survey and a one-page report, $600 paid before you ship].
+[INFO PAGE LINE] The short version: [OFFICE: free drops from emerging brands roughly monthly, you choose the categories, and in return it goes out the day it arrives, two photos and three survey questions for your team] [BRAND: five offices for a week, about 250 units, photos, counts, a survey and a one-page report, $600 paid before you ship].
 
 Would 20 minutes on [TIME OPTION 1] or [TIME OPTION 2] work?
 
 {SIGNATURE}
 ```
 
-Offices get the office one-pager (`office_onepager_ready`, with the first-drop week); brands get the brand one-pager (`brand_onepager_ready`, with today's roster status). Use the bracketed sentence for their side and delete the other. When the founding places are gone, the brand sentence becomes "ten offices for a week, about 500 units, photos, counts, a survey and a one-page report, $1,500, half when you sign".
+Offices get the office one-pager (`office_onepager_ready`, with the first-drop week); brands get the brand one-pager (`brand_onepager_ready`, with today's roster status). Both wait for `name_decided = Y` or `onepagers_name_free = Y`, because D's pages print the working name; `[INFO PAGE LINE]` then reads "I can explain it better in 20 minutes than in a document" instead of "Attached is the one-page outline." Use the bracketed sentence for their side and delete the other. When the founding places are gone, the brand sentence becomes "ten offices for a week, about 500 units, photos, counts, a survey and a one-page report, $1,500, half when you sign".
 
 ### E. `wrong_person`: ask who
 
@@ -173,7 +173,7 @@ Thank you, and sorry for the misdirected note. Who would be the right person to 
 {SIGNATURE}
 ```
 
-If they name someone: new Clay row (business details only: name, title, business email or LinkedIn), `referral_from` = this `row_id`, and ask permission to use their name only if you want to (F). Write to the new person with 08 part 2b.
+If they name someone: new Clay row (business details only: name, title, business email or LinkedIn), `referral_from` = this `row_id`, and ask permission to use their name only if you want to (F). Write to the new person with 08 part 2b. **A colleague at the same company gets a new Clay row and the same organisation:** copy this row's `company_group` onto the new row and write the company the same way, so the tracker counts the office or brand once for Gate 0, whoever you talk to (`calls/post-call-note-template.md`, "Two people at one organisation").
 
 ### F. `referral`: thank them and ask to use their name
 
@@ -285,14 +285,14 @@ ask: what would it need to show
 ---
 {greeting}
 
-That's fair, and per unit it is about $2.40 plus your product. For comparison, one in-store demo shift, a single demonstrator for four to eight hours at one store, runs about $300 to $700 (T-ROC's 2026 pricing guide). This is five offices for a week, seen by the same people each day, with photos, counts and their comments in a one-page report. If cost per sample is the measure that matters most to you, this may not be the right fit.
+That's fair, and per unit it is about $2.40 plus your product. For comparison, one in-store demo shift, a single demonstrator for four to eight hours at one store, runs about $300 to $700 (T-ROC's 2026 pricing guide). This is five offices for a week, in front of the same teams for as long as it lasts, with photos, counts and their comments in a one-page report. If cost per sample is the measure that matters most to you, this may not be the right fit.
 
 What would it need to show for $600 to be worth it to you?
 
 {SIGNATURE}
 ```
 
-The answer to the question is Gate 0 and pricing evidence: record it verbatim in `call_notes`.
+The answer to the question is Gate 0 and pricing evidence: record it verbatim in `call_notes`. When `founding_taken = 3` the objection is about $1,500: say "per unit it is about $3 plus your product" and "ten offices for a week", and ask "What would it need to show for $1,500 to be worth it to you?"
 
 **J3. `obj_free_trial`: "Can we do a free trial first?"**
 
@@ -307,14 +307,14 @@ ask: may I send the proposal
 ---
 {greeting}
 
-I don't run free trials. The founding price is the trial: $600 for five offices, and your next two campaigns stay at $120 an office for up to ten offices. If an office hasn't put your product out by the day after delivery, you get $120 back for that office.
+I don't run free trials. The founding price is the trial: $600 for five offices, and your next two campaigns stay at $120 an office for up to ten offices. If an office hasn't put your product out by the day after delivery and I can't move it to another office, you get $120 back for that office. In return, if it runs as promised, you write a short note on how it went and we publish it with a case study.
 
-Shall I send the one-page proposal so you can see every term?
+[PROPOSAL ASK REPLY]
 
 {SIGNATURE}
 ```
 
-Terms as desk-drop-legal-pack/10 v0.8 (sections 3 and 8). When `founding_taken = 3` the founding price is gone: say "There's no free trial. A standard campaign is $1,500 for ten offices, half when you sign and half when we confirm placement, and any office that hasn't put it out by the day after delivery comes off the invoice."
+Terms as desk-drop-legal-pack/10 v0.8 (sections 3 and 8; the note and case study are section 3's founding term). `[PROPOSAL ASK REPLY]` offers the one-page proposal only while it counts as ready (`proposal_ready`, and the name decided or name-free pages); otherwise "Shall I send you every term in writing?", and the terms go in the email as in 11 step 1's short version. When `founding_taken = 3` the founding price is gone: say "There's no free trial. A standard campaign is $1,500 for ten offices, half when you sign and half when we confirm placement, and any office that hasn't put it out by the day after delivery, and can't be replaced by another, comes off the invoice."
 
 **J4. `obj_what_we_get`: "What do we actually get out of it?"**
 
@@ -353,7 +353,7 @@ Answer in one or two true sentences and ask the open question again.
 | "Will brands email my team?" (office) | "No. We collect nothing about your employees. The survey is anonymous; the only optional box lets someone ask the brand for its newsletter themselves." |
 | "Can we pick the offices?" (brand) | "The roster is fixed for each drop, by neighborhood, industry and Tuesday headcount, and each office approves your brand before it goes." |
 | "Can we get employees' emails?" (brand) | "No. We don't collect employee data. People who want your newsletter can tick a box on the survey and give it to you themselves." |
-| "Can you guarantee placement, or sales?" (brand) | "No guarantees. What the agreement does say: any office that hasn't put it out by the day after delivery comes off the bill. Sales can't be promised, and the report doesn't pretend to measure them." |
+| "Can you guarantee placement, or sales?" (brand) | "No guarantees. What the agreement does say: any office that hasn't put it out by the day after delivery, and can't be replaced by another office, comes off the bill. Sales can't be promised, and the report doesn't pretend to measure them." |
 | "Who else is in the drop?" (brand) | "Up to two other brands, never one in your category in the same drop." |
 | "Do you work with [another vendor]?" | "No." (Never claim a partner, client or relationship that does not exist.) |
 
@@ -363,7 +363,7 @@ Answer in one or two true sentences and ask the open question again.
 
 No reply 5 business days after the last touch of a sequence:
 
-- **Cold sequences (05, 06, 07):** `status = not_now`, `next_action = recontact`, `next_action_date` = [RECONTACT DATE: Tue 2027-01-19] for anything parked before Fri 2026-12-11. On that date, one email: the touch 1 that is unlocked then (selling if it is on), opening with "I wrote in [MONTH] about [the pantry at {company} / sampling in New York]." No reply to that: `status = no`. That is four emails in all, the most anyone gets.
+- **Cold sequences (05, 06, 07):** three touches per sequence, then silence. The plan keeps silent rows "on a list for month three" (Phase 1, step 5), so a silent row gets **one** recontact, no earlier than 60 days after its last touch: `status = not_now`, `next_action = recontact`, `next_action_date` = [RECONTACT DATE: Tue 2027-01-19] for a last touch on or before Fri 2026-11-20, otherwise the first sending Tuesday at least 60 days after the last touch. On that date, one email, and only if something new and true has unlocked since (the selling copy, a set drop date, a signed roster): the touch 1 that is unlocked then, opening with "I wrote in [MONTH] about [the pantry at {company} / sampling in New York]." Nothing new to say: skip it. No reply to the recontact: `status = no`, `next_action = none`. That is four emails at most, over at least two months, the most anyone gets; the three-touch rule in 05, 06, 07 and `sending/sending-setup.md` 6.6 says the same.
 - **Conversion sequences (10, 11):** follow their own silence steps (two follow-ups, then thanks and one referral ask, then `not_now`).
 - **Never** "just checking in", "bumping this up", "did you see my email?" or a guilt line.
 
@@ -374,3 +374,7 @@ No reply 5 business days after the last touch of a sequence:
 - Round 1 (2026-10-24): drafted every reply type in Part B's `reply_type` list, the plan's four objections (rewritten so each is true on the day it is sent, with T-ROC's checked demo price and the agreement's per-office refund), the facilities and HR note and the silence rule.
 - Round 1 corrections (2026-10-24, before the first render): office answers corrected to the plan (roughly monthly, one case per brand sized to the Tuesday headcount); the guarantee answer rewritten without a promise; ladder words in the "what do we get" answer.
 - Round 3 (2026-10-24): a `no` now gets thanks and one referral ask in one email (plan Phase 1 step 5; Part B's note template).
+- Merge (2026-10-24): the per-office refund now carries the agreement's condition (only if the product cannot move to another roster office, desk-drop-legal-pack/10 section 8); a standard-tier version of the price answer; the map from `obj_*` reply types to the tracker's objection codes; the shared value list cited from `tracking/`, not a scratch note.
+- Review round 1 (2026-10-24): the facilities note lists every office commitment (five survey responses, the Tuesday headcount) and says "storing anything beyond the drop itself" (plan wording); J3 states the founding note-and-case-study term; the silence recontact is the one stated exception to three touches, at least 60 days on and only with something new to say.
+- Review round 2 (2026-10-24): J2 says the product sits "in front of the same teams for as long as it lasts", not "seen by the same people each day"; the one-pagers go only once they may name the business (`name_decided = Y` or D's name-free versions).
+- Review round 3 (2026-10-24): `[INFO PAGE LINE]` in both D replies and `[PROPOSAL ASK REPLY]` in J3 follow the attachment state; the discovery D reply is refused once that side sells; E says a colleague at the same company keeps the first row's `company_group`.

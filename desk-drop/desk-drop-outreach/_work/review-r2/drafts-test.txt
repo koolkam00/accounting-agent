@@ -1,0 +1,83 @@
+=== 2026-11-09 office-discovery-1
+cap: 2 cold first touches for offices on 2026-11-09 (sending/warmup-schedule.csv: 3 for both sides; 1 for brands)
+2 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/o-2026-11-09. Nothing was sent.
+=== 2026-11-09 brand-discovery-1
+cap: 1 cold first touches for brands on 2026-11-09 (sending/warmup-schedule.csv: 3 for both sides; 2 for offices)
+1 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/b-2026-11-09. Nothing was sent.
+=== 2026-11-12 office-discovery-1
+cap: 3 cold first touches for offices on 2026-11-12 (sending/warmup-schedule.csv: 5 for both sides; 2 for brands)
+3 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/o-2026-11-12. Nothing was sent.
+=== 2026-11-12 brand-discovery-1
+cap: 2 cold first touches for brands on 2026-11-12 (sending/warmup-schedule.csv: 5 for both sides; 3 for offices)
+2 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/b-2026-11-12. Nothing was sent.
+=== 2026-11-30 brand-discovery-1 (why_now notes)
+note AB-249: fresh why_now (2026-09-10, https://startupcpg.com/startup-cpg-newswire-happy-candy-launches-nationwide-at-target-with-limited-edition-haunted-edition-halloween-variety-pack/): "Launched nationwide at Target (~2,000 stores) with a limited Haunted Edition Halloween pac". Write why_now_hook in Clay (one true sentence, 03-personalization-fields.md) and run the draft again, or send without it
+note AB-097: fresh why_now (2026-10-02, https://beyondgood.com/): "Launched 70% Dark Chocolate Pistachio Crunch bar on brand store, Oct 2026". Write why_now_hook in Clay (one true sentence, 03-personalization-fields.md) and run the draft again, or send without it
+note AB-070: fresh why_now (2026-10-22, https://www.raakachocolate.com/): "New limited-batch Chili Meltaways truffle box and Pumpkin Crunch Minis launched on brand s". Write why_now_hook in Clay (one true sentence, 03-personalization-fields.md) and run the draft again, or send without it
+note AB-071: fresh why_now (2026-10-15, https://www.fineandraw.com/): "Launched Josh Cellars x FINE & RAW pairing collection and 2026 Halloween boxes on brand st". Write why_now_hook in Clay (one true sentence, 03-personalization-fields.md) and run the draft again, or send without it
+note AB-082: fresh why_now (2026-09-18, https://steveandandys.com/): "New Ginger Snap cookies and soft-baked Chocolate Chip boxes added to brand store, Aug to S". Write why_now_hook in Clay (one true sentence, 03-personalization-fields.md) and run the draft again, or send without it
+10 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/b-1130. Nothing was sent.
+=== brand-conversion-5 2026-12-01 state formed-2
+10 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/c5-formed-2. Nothing was sent.
+Hi Nathan,
+
+Thank you, that's great. I've put Raaka Chocolate down for Tuesday, January 12 as the only chocolate and candy brand in that drop. The agreement and invoice come once five offices have signed and each has said yes to Raaka Chocolate; nothing is due before then.
+
+=== brand-conversion-5 2026-12-01 state unformed-2
+10 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/c5-unformed-2. Nothing was sent.
+Hi Nathan,
+
+Thank you, that's great. I've put Raaka Chocolate down for Tuesday, January 12 as the only chocolate and candy brand in that drop. The agreement and invoice come once five offices have signed and each has said yes to Raaka Chocolate; nothing is due before then.
+
+=== brand-conversion-5 2026-12-01 state formed-5
+10 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/c5-formed-5. Nothing was sent.
+Hi Nathan,
+
+Thank you, that's great. I've put Raaka Chocolate down for Tuesday, January 12 as the only chocolate and candy brand in that drop. The agreement and invoice come once each of the five offices has said yes to Raaka Chocolate; nothing is due before then.
+
+=== brand-conversion-5 2026-12-01 state unformed-5
+10 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/c5-unformed-5. Nothing was sent.
+Hi Nathan,
+
+Thank you, that's great. I've put Raaka Chocolate down for Tuesday, January 12 as the only chocolate and candy brand in that drop. The agreement and invoice come once each of the five offices has said yes to Raaka Chocolate; nothing is due before then.
+
+=== brand-conversion-5 2026-12-01 state unformed-5, approvals complete
+10 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/c5a-unformed-5. Nothing was sent.
+Hi Nathan,
+
+Thank you, that's great. I've put Raaka Chocolate down for Tuesday, January 12 as the only chocolate and candy brand in that drop. The agreement and invoice come by Tuesday, December 8, once the company's registration is through; nothing is due before then.
+=== brand-conversion-5 2026-12-01 state formed-5, approvals complete
+skip AB-082: every gate for the agreement is met (five offices signed and approved, company formed, attorney cleared, name decided): send step 6, not the holding note
+0 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/c5a-formed-5. Nothing was sent.
+=== brand-conversion-5 2026-12-04 (after the last yes)
+skip AB-082: sent 2026-12-04 asking for a yes to the Tue 2027-01-12 drop: after Thu 2026-12-03 the approvals, signature and payment cannot all land before ship-by; offer [NEXT DROP DATE]
+0 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/c5-late. Nothing was sent.
+=== brand-conversion-1 2026-12-01 (after the last proposal)
+skip AB-082: status contacted (needs queued)
+0 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/c1-late. Nothing was sent.
+=== brand-conversion-1 2026-11-30 (last proposal day), call_done rows, offices 2 unformed
+10 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/c1-1130. Nothing was sent.
+To: SAMPLE-sim-6@example.invalid
+Subject: Proposal: Raaka Chocolate in five Flatiron offices, January 12
+
+Hi Nathan,
+
+Thanks again for the time today.
+
+The full proposal follows; here is the short version. Two offices around Flatiron have signed up so far, with about 120 people in on a Tuesday by their own count. No brand is invoiced until five have.
+
+The drop is planned for Tuesday, January 12. It's $600 for five offices, paid before you ship; your next two campaigns stay at $120 an office. You ship 275 units (10% spare), freight prepaid, and send a certificate of product liability cover of $1 million or more per occurrence, naming us as additional insured.
+
+In return for the founding price, if it runs as promised, you write a short note on how it went and we publish it with a case study from your report. The agreement and invoice come once five offices have signed and each has said yes to Raaka Chocolate; nothing is due before then.
+
+Shall I put Raaka Chocolate down for that drop?
+
+[FOUNDER NAME]
+=== brand-conversion-1 2026-12-01 (after the last proposal)
+skip AB-082: sent 2026-12-01 offering the Tue 2027-01-12 drop: after Mon 2026-11-30 a new brand cannot get a yes, the office approvals, a signature and payment in before ship-by; offer [NEXT DROP DATE]
+0 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/c1-late. Nothing was sent.
+=== brand-conversion-5 2026-12-03 materials_sent, formed, offices 2
+10 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/c5-1203. Nothing was sent.
+=== brand-conversion-5 2026-12-01 contacted (wrong status)
+skip AB-082: status contacted (a post-call email needs one of replied, call_booked, call_done, yes_in_principle, materials_sent, signed, paid)
+0 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r2fix/drafts/c5-wrong. Nothing was sent.

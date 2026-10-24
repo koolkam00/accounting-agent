@@ -101,6 +101,7 @@ def main(argv):
     if argv[1].endswith(".xlsx"):
         import tracker as TR
         tr = TR.Tracker(argv[1])
+        common.require_same_name(tr)
         did = argv[2]
         r = tr.drops[did]
         return build(TR._d(r["drop_date"]), TR._s(r["delivery_model"]), did, argv[3], tr.company_name)

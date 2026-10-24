@@ -1,0 +1,96 @@
+===== team_radar.html 95
+About | Radar
+NEW
+Introducing Radar’s MCP server with ChatGPT and Claude integrations. Learn more →
+Products
+Industries
+Customers
+Pricing
+Resources
+Get a demo
+Log in
+Get a demo
+Log in
+Solutions
+Protect
+Precise location verification and geo-compliance
+Optimize
+Arrival detection, live tracking, and job management
+Engage
+Location-based marketing and engagement
+Platform
+Maps
+Base maps, geocoding, autocomplete, and routing
+Geofencing
+Hyper-accurate location tracking and geofencing
+Reveal
+Detect risky web and mobile traffic
+Industries
+Financial services
+Retail
+Restaurants
+Gaming
+Travel and hospitality
+Logistics
+Resources
+Blog
+Documentation
+Security
+Integrations
+Events
+About Radar
+The global leader in location infrastructure and intelligence.
+1,000+
+installed apps
+300M+
+installed devices
+1B+
+API requests per day
+$85.5M
+funding raised
+Location is everything
+In an AI-first world, accurate, real-time geolocation data is a critical input into fraud, operations, and personalization decisions.
+But for most companies, the physical world is a blind spot. Location signals are missing, inaccurate, delayed, or easy to spoof, making them difficult to act on.
+Radar is changing this, bringing physical world truth to every digital decision with the world’s most trusted location infrastructure and intelligence platform.
+Today, thousands of companies, from high-growth startups to the Fortune 500, trust Radar for geolocation.
+Nick Patrick
+Co-Founder and Chief Executive Officer
+Coby Berman
+Co-Founder and Chief Business Development Officer
+Our investors
+Trusted by industry leaders
+Solutions
+Protect
+Optimize
+Engage
+Industries
+Financial services
+Gaming
+Logistics
+Restaurants
+Retail
+Travel and hospitality
+Platform
+Geofencing
+Trips
+Places
+Fraud
+Maps
+Reveal
+Integrations
+Resources
+Documentation
+Blog
+Pricing
+FAQ
+Status
+Company
+About us
+Careers
+Customers
+Sitemap
+Trust
+Privacy policy
+Terms of service
+Manage preferences
+© 2026 Radar Labs, Inc.

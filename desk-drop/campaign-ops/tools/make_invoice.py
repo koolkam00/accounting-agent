@@ -4,8 +4,10 @@
   python3 tools/make_invoice.py TRACKER.xlsx INVOICE_ID OUT_DIR        # one invoice
   python3 tools/make_invoice.py TRACKER.xlsx --campaign CAMPAIGN_ID OUT_DIR   # every invoice of a campaign
 
-Writes OUT_DIR/<invoice_id>.html and .pdf. Refuses an amount that differs from the price list
-(founding_full = price; standard_deposit = 50%; standard_balance = the rest), except a credit note.
+Writes OUT_DIR/<invoice_id>.html and .pdf. Refuses (exit 2) an amount that differs from the price list
+(founding_full = price; standard_deposit = 50%; standard_balance = the rest), except a credit note, and an
+invoice whose brand has no row on brands or no billing details there (legal name, address, email): an invoice
+never goes out with a placeholder in "Bill to" (review round 1, R1-07).
 Payment: bank transfer only (card only if a brand insists: log the fee). The pre-ship invoice says
 plainly that the ship date is confirmed when the money lands.
 """
@@ -50,11 +52,40 @@ def html(tr, inv, out_dir):
         E(common.fmt_date(T)), E(common.fmt_date(T)), E(common.fmt_date(lad["window_end"])), E(cid))
     lines = [(desc, amt)]
     if ty == "standard_balance":
-        lines[0] = (desc + "<br><span class='small'>Placement confirmation sent %s.</span>" % E(common.fmt_date(opscal.add_bd(T, 1)) if T else ""), amt)
+        placed = sum(1 for o in lad["offices"] if o["approved"] == "Y" and o["placed_within_1bd"] == "Y")
+        lines[0] = (desc + "<br><span class='small'>Placement confirmation sent %s: placed by T+1 in %d of %d offices.</span>" % (
+            E(common.fmt_date(opscal.add_bd(T, 1)) if T else ""), placed, n), amt)
     if ty == "credit_note":
         lines = [("Credit: %s<br><span class='small'>Against campaign %s. Brand agreement section 8.</span>" % (E(TR._s(inv.get("note"))), E(cid)), amt)]
+    # A balance invoice shows every credit note already taken off it, so the total is what the brand actually owes.
+    credits = []
+    if ty == "standard_balance":
+        for r in tr.rows["invoices"]:
+            rd = TR._d(r.get("issued_date"))
+            if (TR._s(r["campaign_id"]) == cid and TR._s(r["invoice_type"]) == "credit_note" and not TR._d(r.get("paid_date"))
+                    and rd and issued and rd <= issued):
+                credits.append(r)
+                lines.append(("Less credit note %s: %s" % (E(TR._s(r["invoice_id"])), E(TR._s(r.get("note")))), TR._n(r["amount_usd"])))
+    owed = amt + tax + sum(TR._n(r["amount_usd"]) for r in credits)
     rows = "".join("<tr><td>%s</td><td class='num'>%s</td></tr>" % (d, money(a)) for d, a in lines)
     pay = TR._s(tr.config.get("bank_details"))
+    if ty == "credit_note":
+        bal = [r for r in tr.rows["invoices"] if TR._s(r["campaign_id"]) == cid and TR._s(r["invoice_type"]) == "standard_balance"
+               and TR._d(r.get("issued_date")) and issued and TR._d(r.get("issued_date")) >= issued]
+        if TR._d(inv.get("paid_date")) or not bal:
+            settle = ("<h2>How this is settled</h2><p><b>Nothing for you to pay.</b> We refund %s by bank transfer to the account your payment came from, "
+                      "within five business days (by %s)%s.</p>") % (
+                money(-(amt + tax)), E(common.fmt_date(opscal.add_bd(issued, 5))),
+                (", reference <b>%s</b>" % E(TR._s(inv["invoice_id"]))))
+        else:
+            b0 = bal[0]
+            settle = ("<h2>How this is settled</h2><p><b>Nothing for you to pay on this note.</b> It is taken off invoice <b>%s</b>: "
+                      "pay %s on that invoice instead of %s.</p>") % (
+                E(TR._s(b0["invoice_id"])), money(TR._n(b0["amount_usd"]) + TR._n(b0.get("sales_tax_usd")) + amt + tax),
+                money(TR._n(b0["amount_usd"]) + TR._n(b0.get("sales_tax_usd"))))
+    else:
+        settle = ("<h2>How to pay</h2>\n<p>By bank transfer (ACH or wire) to: %s<br>Reference: <b>%s</b>. No card fees on a bank transfer.</p>"
+                  % (E(pay), E(TR._s(inv["invoice_id"]))))
     ship_line = ""
     if ty in ("founding_full", "standard_deposit"):
         ship_line = "<p><b>Your ship date is confirmed on the day this payment reaches our account.</b> Please ship by %s (latest %s).</p>" % (
@@ -68,18 +99,18 @@ def html(tr, inv, out_dir):
 <h2>Bill to</h2><p>%s<br>%s<br>%s</p>
 <table><tr><th>Description</th><th class='num'>Amount (USD)</th></tr>%s
 <tr><td>Sales tax</td><td class='num'>%s</td></tr>
-<tr><td><b>Total</b></td><td class='num'><b>%s</b></td></tr></table>
+<tr><td><b>%s</b></td><td class='num'><b>%s</b></td></tr></table>
 <p class='small'>%s</p>
 %s
-<h2>How to pay</h2>
-<p>By bank transfer (ACH or wire) to: %s<br>Reference: <b>%s</b>. No card fees on a bank transfer.</p>
+%s
 <p class='small muted'>Questions: %s · %s. Terms: the signed campaign agreement (version %s) for campaign %s.</p>
 """ % (E(tr.company_name), E(TR._s(tr.config.get("postal_address"))), E(TR._s(tr.config.get("founder_email"))), E(TR._s(tr.config.get("founder_phone"))),
        "Credit note" if ty == "credit_note" else "Invoice", E(TR._s(inv["invoice_id"])), E(common.fmt_date(issued)),
        E(common.fmt_date(due)) + ("" if ty != "founding_full" else " (five business days, and before shipping)") if ty != "credit_note" else "n/a",
        E(TR._s(b.get("brand_legal_name")) or "[BRAND LEGAL NAME]"), E(TR._s(b.get("billing_address")) or "[BRAND ADDRESS]"),
-       E(TR._s(b.get("billing_email")) or TR._s(inv.get("sent_to"))), rows, money(tax), money(amt + tax),
-       E(TR._s(tr.config.get("sales_tax_note"))), ship_line, E(pay), E(TR._s(inv["invoice_id"])),
+       E(TR._s(b.get("billing_email")) or TR._s(inv.get("sent_to"))), rows, money(tax),
+       "Amount due" if credits else ("Total credit" if ty == "credit_note" else "Total"), money(owed),
+       E(TR._s(tr.config.get("sales_tax_note"))), ship_line, settle,
        E(TR._s(tr.config.get("founder_email"))), E(TR._s(tr.config.get("founder_phone"))), E(TR._s(c.get("agreement_version"))), E(cid))
     css = ".num{text-align:right;white-space:nowrap}"
     return common.page("%s %s" % ("Credit note" if ty == "credit_note" else "Invoice", inv["invoice_id"]), body, out_dir,
@@ -95,6 +126,7 @@ def main(argv):
         print(__doc__)
         return 1
     tr = TR.Tracker(argv[1])
+    common.require_same_name(tr)
     if argv[2] == "--campaign":
         invs = [r for r in tr.rows["invoices"] if TR._s(r["campaign_id"]) == argv[3]]
         out = argv[4]
@@ -104,6 +136,13 @@ def main(argv):
     if not invs:
         raise SystemExit("no such invoice")
     for inv in invs:
+        c = tr.campaigns.get(TR._s(inv["campaign_id"]))
+        b = tr.brands.get(TR._s(c["brand_id"]), {}) if c else {}
+        missing = [k for k in ("brand_legal_name", "billing_address", "billing_email") if not TR._s(b.get(k)).strip()]
+        if not c or not b or missing:
+            print("REFUSED %s: %s. Type them on the brands tab from the signed agreement's Part 1, then run this again." % (
+                TR._s(inv["invoice_id"]), "campaign or brand row missing" if not (c and b) else "billing details missing on brands: " + ", ".join(missing)))
+            return 2
         hp = common.write(os.path.join(out, "%s.html" % TR._s(inv["invoice_id"])), html(tr, inv, out))
         common.render(hp, hp[:-5] + ".pdf")
         print("invoice", inv["invoice_id"], "->", hp[:-5] + ".pdf")

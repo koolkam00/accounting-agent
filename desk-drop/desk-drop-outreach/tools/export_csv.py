@@ -7,12 +7,18 @@
 Rules (CONTRACTS section 5 and financial-model/HANDOFF.md): UTF-8, one header row, dates YYYY-MM-DD,
 numbers plain (no $, no thousands separators), empty rows dropped. When --from is given, the SAMPLE files
 are not touched; the real handoff and pipeline files are written from the downloaded workbook.
+
+The live paths (handoff/signed_offices.csv, handoff/paid_brands.csv, exports/pipeline_log.csv) ship header-only:
+a CSV cannot carry the SAMPLE banner, and operations (F) and the financial model (H) paste them as they are.
+The SAMPLE rows go to SAMPLE-signed_offices.csv, SAMPLE-paid_brands.csv and SAMPLE-pipeline_log.csv beside them
+(review round 1, R1-18).
 """
 import argparse
 import csv
 import datetime as dt
 import os
 import sys
+sys.dont_write_bytecode = True   # no __pycache__ in the deliverable folder (review round 3, R3-11)
 
 import openpyxl
 
@@ -83,7 +89,9 @@ def main():
     for tab, path, n in (("signed_offices", "handoff/signed_offices.csv", None), ("paid_brands", "handoff/paid_brands.csv", None),
                          ("pipeline_log", "exports/pipeline_log.csv", 9)):
         hdr, rows = tab_rows(wb[tab], n)
-        write(os.path.join(ROOT, path), hdr, rows)
+        d, f = os.path.split(path)
+        write(os.path.join(ROOT, d, "SAMPLE-" + f), hdr, rows)       # the SAMPLE rows, clearly named
+        write(os.path.join(ROOT, path), hdr, [])                     # the live path: header only
     # scorecard readout (values), SAMPLE
     ws = wb["Scorecard"]
     rows = []

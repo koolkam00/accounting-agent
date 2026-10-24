@@ -1,0 +1,36 @@
+Draft maker test, review round 1, 2026-10-24T07:59:58Z. Scratch daily view: A's top 10 office rows by score from clay-icp-tables/offices.csv (2 with hold_before_outreach = Y, 1 with a planted opt_out_date), simulated verified addresses (example.invalid), state copy with domain_ready = Y. Nothing was sent; drafts were written to the scratchpad only.
+
+== Fri 2026-11-27 (no-send day)
+refused: Fri 2026-11-27 is not a sending day (weekend, federal holiday, Fri 2026-11-27 or 18 December to 4 January). The next sending day is Mon 2026-11-30. Nothing written.
+exit 1
+
+== Fri 2026-11-06 (before the first cold day)
+refused: no cold email from [DOMAIN] before Mon 2026-11-09 (sending/sending-setup.md section 0). Weeks 1 and 2 run on warm asks, LinkedIn and walk-ins (files 07 and 08). Nothing written.
+exit 1
+
+== Mon 2026-11-09 (schedule: 3 cold first touches for both sides)
+cap: 2 cold first touches for offices on 2026-11-09 (sending/warmup-schedule.csv: 3 for both sides)
+skip AO-C-085: the day's cap of 2 cold first touches is reached (sending/warmup-schedule.csv; --over-cap to override)
+skip AO-C-160: the day's cap of 2 cold first touches is reached (sending/warmup-schedule.csv; --over-cap to override)
+skip AO-C-082: hold_before_outreach = Y in the Clay table: lease signed, move not confirmed: check the lobby directory before outreach (B) (clear it in Clay first)
+skip AO-C-105: hold_before_outreach = Y in the Clay table: lease signed, move not confirmed: check the lobby directory before outreach (B) (clear it in Clay first)
+skip AO-C-050: the day's cap of 2 cold first touches is reached (sending/warmup-schedule.csv; --over-cap to override)
+skip AO-C-083: opt_out_date 2026-11-02 is filled (an opt-out is never reversed; set do_not_contact = Y in Clay)
+skip AO-C-037: the day's cap of 2 cold first touches is reached (sending/warmup-schedule.csv; --over-cap to override)
+skip AO-C-048: the day's cap of 2 cold first touches is reached (sending/warmup-schedule.csv; --over-cap to override)
+2 drafts written to <scratchpad>/drafts/c. Nothing was sent.
+
+== Thu 2026-11-12, touch 2 (rows set to contacted)
+skip AO-C-082: hold_before_outreach = Y in the Clay table: lease signed, move not confirmed: check the lobby directory before outreach (B) (clear it in Clay first)
+skip AO-C-105: hold_before_outreach = Y in the Clay table: lease signed, move not confirmed: check the lobby directory before outreach (B) (clear it in Clay first)
+skip AO-C-083: opt_out_date 2026-11-02 is filled (an opt-out is never reversed; set do_not_contact = Y in Clay)
+7 drafts written to <scratchpad>/drafts/d. Nothing was sent.
+
+Subjects written for touch 2:
+  Subject: Re: How does the pantry at Cognitiv work?
+  Subject: Re: Question about the pantry at Global Strategy Group
+  Subject: Re: Question about the pantry at Nayya
+  Subject: Re: How does the pantry at Aterian work?
+  Subject: Re: Question about the pantry at Global Trading Systems (GTS)
+  Subject: Re: Question about the pantry at Empathy
+  Subject: Re: How does the pantry at K Health work?

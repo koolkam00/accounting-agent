@@ -7,7 +7,7 @@ last_reply_date,date,YYYY-MM-DD,Each time they reply,Not for bounces or out-of-o
 reply_type,list,"yes, maybe, needs_approval, send_info, wrong_person, referral, not_now, no, opt_out, obj_seed_ourselves, obj_price, obj_free_trial, obj_what_we_get, obj_other, out_of_office, bounce",Each reply (the latest meaningful one),Silence stays blank
 call_date,date,YYYY-MM-DD,"After each conversation, copied from the tracker row",Equals the latest call_date for this row_id in the tracker
 call_notes,text,One line plus 'see tracker <call_date>',After each conversation,"The full notes live in the tracker, not in Clay"
-yes_in_principle,Y/N,Y or N,"After each conversation, copied from the tracker",Y if any tracker row for this row_id says Y; maybe in the tracker is N here
+yes_in_principle,Y/N,Y or N,"After each conversation, copied from the tracker","The latest answer for this row_id in the tracker: Y only if the latest Y, N or maybe is Y (a later N or maybe withdraws an earlier yes); maybe in the tracker is N here"
 next_action,list,"send_touch_2, send_touch_3, await_connection, book_call, run_call, send_one_pager, send_proposal, send_agreement, send_materials_request, chase_payment, ask_referral, recontact, none",Whenever the next step changes,Clay is the only place next actions live
 next_action_date,date,YYYY-MM-DD,With next_action,Drives the follow-up list each morning
 opt_out_date,date,YYYY-MM-DD,"The same day anyone opts out, in any words, on any channel",Also set do_not_contact = Y and status = do_not_contact. Never cleared

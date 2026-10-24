@@ -10,6 +10,7 @@ import os
 import re
 import subprocess
 import sys
+sys.dont_write_bytecode = True   # no __pycache__ in the deliverable folder (review round 3, R3-11)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -66,20 +67,20 @@ def main():
         (esc(brand[6]), 3, "each stopper as an objection code"),
     ]
     o_blocks = [
-        ("Open (30 s)", "Who you are; you are looking at whether free emerging brands, in exchange for a shelf photo and three survey questions, would help offices; not selling today; seven questions, 20 minutes, OK to take notes?"),
+        ("Open (30 s)", "Who you are; you are looking at whether free emerging brands, in exchange for two shelf photos and three survey questions, would help offices; not selling today; seven questions, 20 minutes, OK to take notes?"),
         ("Close (3 min)", "If positive: <b>\"If we did a first drop, who would receive it, and what's a good window on a Tuesday or Wednesday morning?\"</b> Then: \"Can I send you a one-pager?\" Ask before ever quoting them (no name, no company). Stop on time."),
-        ("Gate 0 counts this office only if", "<b>yes_in_principle = Y</b> and <b>pantry owner named</b> and <b>receiving window named</b>. \"I need to ask facilities or HR\" = maybe."),
+        ("Gate 0 counts this office only if", "<b>yes_in_principle = Y</b> and <b>pantry owner named</b> and <b>receiving window named</b>. \"I need to ask facilities or HR\" = maybe. A later N or maybe takes the yes back."),
         ("Say only what is true today", "No brands yet. First drop planned for [DROP DATE: Tue 2027-01-12], only once five offices and the first brands sign. No fees either way. Sealed, labeled products; allergen line from the package. Anonymous survey, no employee details. Insurance: \"we will carry it before your first drop\"."),
         ("Never", "Employee names or details. Photos of people. A health claim. A date, brand or office count the tracker does not show."),
         ("After (10 min)", "Note_Office tab, row to paste, Clay write-back: call_date, status, yes_in_principle, call_notes, call_note_hook, next_action, next_action_date. Referrals = new Clay rows."),
     ]
     b_blocks = [
         ("Open (30 s)", "Who you are; testing an idea (a week in a handful of New York offices, photos and feedback, near their stores); not asking them to buy today; <b>a price question is coming, and their number comes first</b>; seven questions, about 25 minutes."),
-        ("The anchor rule", "Ask Q4, then wait. \"I'll tell you, but I'd like your number first.\" Write it. Then: <b>\"For reference, the standard price I'm testing is $1,500 for ten offices. How does that land?\"</b> Founding price only if asked: five offices for $600, paid up front, $120 an office for the next two campaigns."),
-        ("Gate 0 counts this brand only if", "the higher of the two numbers is <b>$500 or more</b> and the speaker <b>controls the budget</b> alone."),
-        ("Weeks 4 to 7: the seven checks", "1 sealed, shelf-stable, 60+ days at the drop · 2 ingredients and nine allergens on the label · 3 store within ten blocks or online code · 4 ship 275 units to one Manhattan address in ten business days · 5 product liability certificate · 6 approves $600 alone · 7 why New York now. Excluded: alcohol, cannabis/CBD/THC, supplements, refrigerated, preparation, health claims."),
+        ("The anchor rule", "Ask Q4, then wait. \"I'll tell you, but I'd like your number first.\" Write it. Then: <b>\"For reference, the standard price I'm testing is $1,500 for ten offices. How does that land?\"</b> Founding price only if asked: five offices for $600, paid up front, $120 an office for the next two campaigns; in return, if it runs as promised, a short note from them that we can publish with a case study."),
+        ("Gate 0 counts this brand only if", "the higher of the two numbers is <b>$500 or more</b> and the speaker <b>controls the budget</b> alone. A later call with no budget control or a lower number takes it back."),
+        ("Weeks 4 to 7: the seven checks", "1 sealed, shelf-stable, 60+ days at the drop · 2 ingredients and nine allergens on the label · 3 store within ten blocks or online code · 4 ship 275 units to one Manhattan address in ten business days · 5 product liability of $1M per occurrence, us as additional insured · 6 approves $600 alone · 7 why New York now. Excluded: alcohol, cannabis/CBD/THC, supplements, refrigerated, preparation, health claims."),
         ("Say only what is true today", "No offices signed until the tracker says so; no results yet (\"I'd rather tell you that than make up a number\"); no sales guarantee; no free trial; no employee data."),
-        ("After (10 min)", "Note_Brand tab, row to paste, Clay write-back. Close: \"Who else should I be talking to?\", \"Can I come back once five offices have signed?\" (recontact Mon 2026-11-16), and permission before ever quoting them."),
+        ("After (10 min)", "Note_Brand tab, row to paste, Clay write-back. Close: \"Who else should I be talking to?\", \"Can I send you the details once the first offices have said yes, probably the week of November 16?\" (next_action_date Mon 2026-11-16), and permission before ever quoting them."),
     ]
     css = """
 @page { size: Letter landscape; margin: 0.35in 0.4in; }

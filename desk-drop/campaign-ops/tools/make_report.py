@@ -13,7 +13,11 @@ Writes OUT_DIR/<campaign_id>/:
   trace.csv             every number in the report and the tracker rows (or photo) it came from
   office-summary-<office>.md   each office's own summary for the team (counts and its comments)
 
-Refuses (exit 2) when: the drop date is invalid; an office has no day-5 count or no close link reading;
+An office that turned the brand away at the door (stop outcome declined, building_refused or not_delivered, nothing
+delivered) is not on the drop: it gets no letter and no row, and trace.csv and the output say so in a roster note
+(the report email carries the same note).
+
+Refuses (exit 2) when: the drop date is invalid; an office on the drop has no day-5 count or no close link reading;
 a quoted comment is not word for word from an in-window response; the sheet's own formulas disagree
 with this arithmetic; or D's template refuses (claims, impossible numbers, photo dates).
 """
@@ -33,6 +37,29 @@ import opscal  # noqa: E402
 import tracker as TR  # noqa: E402
 
 MARK = re.compile(r"\[name removed\]|\[\.\.\.\]")
+CAPWORD = re.compile(r"[A-Z][a-z]+(?:['\u2019-][A-Za-z]+)*")
+ALWAYS_SAFE = set("""I I'm I'll I've I'd OK Monday Tuesday Wednesday Thursday Friday Saturday Sunday January February March April
+May June July August September October November December""".split())
+
+
+def redact(text, safe=()):
+    """Office summaries quote comments word for word, so a name that slipped in would reach the pantry owner.
+    Replace every capitalized word that does not start a sentence (and is not a safe word such as the brand or
+    product) with [name removed]. It over-removes on purpose (file 13, D10: remove any name before quoting)."""
+    keep = ALWAYS_SAFE | {w for x in safe for w in CAPWORD.findall(x or "")}
+    lead = "SAMPLE " if text.startswith("SAMPLE ") else ""
+    body = text[len(lead):]
+    out, last = [], 0
+    for m in CAPWORD.finditer(body):
+        before = body[:m.start()].rstrip()
+        starts = before == "" or before[-1] in ".!?:;\"'(\u201c"
+        if starts or m.group(0) in keep:
+            continue
+        out.append(body[last:m.start()] + "[name removed]")
+        last = m.end()
+    out.append(body[last:])
+    fixed = re.sub(r"(\[name removed\])(\s+\[name removed\])+", r"\1", "".join(out))
+    return lead + fixed
 
 
 def verbatim(quote, sources):
@@ -98,7 +125,7 @@ def build(tr, cid, out_dir, photos_dir):
     offices = []
     for o in lad["offices"]:
         oid = o["office_id"]
-        if o["approved"] != "Y":
+        if o["on_drop"] != "Y":
             continue
         if o["units_depleted_day5"] is None:
             problems.append("%s: no day-5 count (counts tab, remaining_day5)" % oid)
@@ -140,10 +167,27 @@ def build(tr, cid, out_dir, photos_dir):
         "learned": TR._s(c.get("learned")), "recommendation": TR._s(c.get("recommendation")),
         "claims_reviewed": TR._s(c.get("claims_reviewed")), "claims_review_reason": TR._s(c.get("claims_review_reason")),
     }
+    note = roster_note(lad)
+    if note:
+        trace.append(("roster note", note, "stops outcome " + ", ".join("%s %s" % (o["office_id"], o["stop_outcome"]) for o in lad["turned_away"])))
     for k in ("survey_tried_yes", "survey_rating_avg", "survey_buy_yes", "survey_buy_maybe", "survey_buy_no", "comments_total"):
         trace.append((k, rpt[k], "%s!A:G, in-window rows whose card code matches an office on the campaign" % cid))
     trace.append(("code_redemptions_to_date", rpt["code_redemptions_to_date"], "redemptions, latest as_of " + rpt["code_redemptions_as_of"]))
     return rpt, problems, trace, lad
+
+
+def roster_note(lad):
+    """One line for an office that approved the brand but turned it away at the door (R1-02). The report template has
+    no roster-note field, so this goes into trace.csv and the report email (template 10, {roster_note})."""
+    n = len(lad["turned_away"])
+    if not n:
+        return ""
+    how = {"declined": "declined it at the door", "building_refused": "could not take it (the building refused the delivery)",
+           "not_delivered": "did not receive it"}
+    kinds = sorted({how.get(o["stop_outcome"], "did not take it") for o in lad["turned_away"]})
+    return ("%s that had approved %s %s on the drop day. %s not in this report and %s not billed for %s: the credit is on the "
+            "placement confirmation." % ("One office" if n == 1 else "%d offices" % n, lad["campaign"]["brand_name"], " or ".join(kinds),
+                                         "It is" if n == 1 else "They are", "was" if n == 1 else "were", "it" if n == 1 else "them"))
 
 
 def rows_for(tr, cid, oid, k, o):
@@ -169,34 +213,58 @@ def office_summaries(tr, drop_id, out_dir):
         for a in tr.approvals_for(cid):
             if TR._s(a["office_id"]) not in offices:
                 offices.append(TR._s(a["office_id"]))
+    min_n = int(TR._n(tr.config.get("office_summary_min_answers")) or 3)
     for oid in offices:
         o = tr.office(oid)
         lines = ["%s: what your team said" % TR._s(o.get("company")), ""]
+        shown = 0
         for cid in camps:
             lad = tr.ladder(cid)
             row = next((x for x in lad["offices"] if x["office_id"] == oid), None)
-            if not row or row["approved"] != "Y":
+            if not row or row["on_drop"] != "Y":
                 continue
+            shown += 1
             resp = [x for x in (tr.response_rows(cid) or []) if x["code"] == row["card_code"] and lad["drop_date"] <= x["ts"].date() <= lad["window_end"]]
             n = len(resp)
             lines.append("%s (%s)" % (lad["campaign"]["brand_name"], TR._s(lad["campaign"].get("product_sku"))))
-            lines.append("- %d answers from your team. %d said they tried it." % (n, row["tried_yes"]))
-            if row["rating_n"]:
+            lines.append("- %d answers from your team." % n + (" %d said they tried it." % row["tried_yes"] if n >= min_n else ""))
+            if n < min_n:
+                lines.append("- Fewer than %d answers, so they are not broken down here: that keeps each person's answer private." % min_n)
+                lines.append(units_line(row))
+                lines.append("")
+                continue
+            # The same rule for every figure: no rating or would-buy split from fewer people than the threshold.
+            if row["rating_n"] >= min_n:
                 lines.append("- Average rating %.1f of 5, from %d ratings." % (TR.xround(row["rating_sum"] / row["rating_n"], 1), row["rating_n"]))
-            lines.append("- Would buy it: yes %d, maybe %d, no %d." % (row["buy_yes"], row["buy_maybe"], row["buy_no"]))
-            lines.append("- Units: %d delivered, %d on the shelf in the placement photo, %s gone by day 5." % (
-                row["units_delivered"], row["units_placed"], "not counted" if row["units_depleted_day5"] is None else int(row["units_depleted_day5"])))
-            cm = [x["comment"].strip() for x in resp if x["comment"].strip()]
+                lines.append("- Would buy it: yes %d, maybe %d, no %d." % (row["buy_yes"], row["buy_maybe"], row["buy_no"]))
+            else:
+                lines.append("- Fewer than %d people rated it, so the ratings and would-buy answers are not shown here." % min_n)
+            lines.append(units_line(row))
+            safe = (lad["campaign"]["brand_name"], TR._s(lad["campaign"].get("product_sku")), TR._s(lad["campaign"].get("retailer_line")),
+                    TR._s(tr.config.get("cluster_name")), TR._s(o.get("company")), tr.company_name)
+            cm = [redact(x["comment"].strip(), safe) for x in resp if x["comment"].strip()]
             if cm:
-                lines.append("- What people wrote, word for word:")
+                lines.append("- What people wrote, word for word, with anything that may be a name taken out:")
                 lines += ["  \"%s\"" % x for x in cm]
             lines.append("")
-        lines += ["Answers are anonymous. This summary has totals and comments only, never anyone's individual answers.",
-                  "BEFORE SENDING: read every comment and replace any name or identifying detail with [name removed] (legal pack file 13, D10)."]
+        if not shown:
+            continue   # nothing reached this office on this drop (it turned the brands away at the door): no summary
+        lines += ["Answers are anonymous. This summary has totals and comments only, never anyone's individual answers, and no figure",
+                  "drawn from fewer than %d people." % min_n,
+                  "BEFORE SENDING: read every comment once more; replace anything else that could identify a person with [name removed] (legal pack file 13, D10)."]
         p = os.path.join(out_dir, "office-summary-%s.md" % oid)
         common.write(p, "\n".join(lines) + "\n")
         paths.append(p)
     return paths
+
+
+def units_line(row):
+    """Delivered, top-ups, placed and gone, so the numbers add up for a pantry owner (R1-11)."""
+    top = int(row["units_topped_up"] or 0)
+    gone = "not counted" if row["units_depleted_day5"] is None else "%d" % int(row["units_depleted_day5"])
+    return "- Units: %d delivered%s, %d on the shelf in the placement photo, %s gone by day 5%s." % (
+        row["units_delivered"], (", plus %d topped up on day 3" % top) if top else "", row["units_placed"], gone,
+        " (of the shelf count plus the top-ups)" if top else "")
 
 
 def render(json_path, pdf_path, final=False):
@@ -220,6 +288,7 @@ def main(argv):
     ap.add_argument("--final", action="store_true")
     a = ap.parse_args(argv[1:])
     tr = TR.Tracker(a.tracker)
+    common.require_same_name(tr)
     out = os.path.join(a.out_dir, a.campaign_id)
     os.makedirs(out, exist_ok=True)
     rpt, problems, trace, lad = build(tr, a.campaign_id, out, a.photos)
@@ -238,12 +307,21 @@ def main(argv):
     code, status = render(jp, os.path.join(out, "report.pdf"), a.final)
     for wmsg in status.get("warnings", []):
         print("  warning: " + wmsg)
+    c = lad["campaign"]
+    safe = (c["brand_name"], TR._s(c.get("product_sku")), TR._s(c.get("retailer_line")), TR._s(tr.config.get("cluster_name")), tr.company_name)
+    for i in (1, 2, 3):
+        q = TR._s(rpt.get("comment_%d" % i))
+        if q and redact(q, safe) != q:
+            print("  warning: comment_%d may still hold a name: %r (replace it with [name removed] if it is one)" % (i, q))
     if code != 0:
         print("REFUSED by the report template (exit %d):" % code)
         for e in status.get("errors", []) + status.get("placeholders", [])[:5]:
             print("  - " + e)
         return 2
     office_summaries(tr, TR._s(lad["campaign"]["drop_id"]), a.out_dir)
+    note = roster_note(lad)
+    if note:
+        print("  roster note (for the report email): " + note)
     print("report %s -> %s (sample=%s)" % (a.campaign_id, os.path.join(out, "report.pdf"), status.get("sample")))
     return 0
 

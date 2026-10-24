@@ -1,0 +1,355 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//campaign-ops//sop//EN
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-yes@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270201
+DTEND;VALUE=DATE:20270202
+SUMMARY:SAMPLE-DRP-003: Brand says yes (you)
+DESCRIPTION:Brand says yes: send the campaign agreement (legal pack file 1
+ 0\, Part 1 from the campaign row)\, the invoice (tools/make_invoice.py) an
+ d the certificate request (file 11)\, and ask for the allergen sheet\, log
+ o\, two card sentences\, discount code or landing page\, the unused-produc
+ t election and the newsletter choice. Latest date that still leaves five b
+ usiness days to pay before the requested ship date.\nLog it in: campaigns 
+ row (tier\, offices\, terms)\; invoices row
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-approvals_ask@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270201
+DTEND;VALUE=DATE:20270202
+SUMMARY:SAMPLE-DRP-003: Ask each office on the route about this brand (tem
+ plate 01). (you)
+DESCRIPTION:Ask each office on the route about this brand (template 01). A
+ n office's first three drops need its explicit yes\; after that\, notice a
+ t least five business days ahead and it comes unless they say no.\nLog it 
+ in: approvals rows: asked_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-building_coi@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270201
+DTEND;VALUE=DATE:20270202
+SUMMARY:SAMPLE-DRP-003: Offices whose building wants our certificate (coi_
+ required y (you)
+DESCRIPTION:Offices whose building wants our certificate (coi_required yes
+  or unsure): request it from our carrier at least 10 business days before 
+ that office's first drop (legal pack file 12)\, only once general liabilit
+ y is bound.\nLog it in: offices: building_coi_status\, building_coi_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-paid@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270208
+DTEND;VALUE=DATE:20270209
+SUMMARY:SAMPLE-DRP-003: Payment lands in the business account (brand)
+DESCRIPTION:Payment lands in the business account: log paid_date and paid_
+ amount on invoices. Founding: due within five business days of the invoice
+  and before shipping\; standard: the first 50% on signing. Five business d
+ ays late: you decide whether to cancel and refund (file 10\, section 3).\n
+ Log it in: invoices: paid_date\, paid_amount_usd\, method\, bank_reference
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-coi_check@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270208
+DTEND;VALUE=DATE:20270209
+SUMMARY:SAMPLE-DRP-003: Brand's certificate in (you)
+DESCRIPTION:Brand's certificate in: the five-minute check in legal pack fi
+ le 11. Tick coi_check_ok on brands. If the policy ends before 12 months af
+ ter the window\, diary the renewal certificate.\nLog it in: campaigns: coi
+ _received_date\; brands: coi_check_ok\, coi_policy_end_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-release@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270208
+DTEND;VALUE=DATE:20270209
+SUMMARY:SAMPLE-DRP-003: When campaigns shows ship_release RELEASED (pre-sh
+ ip payment (you)
+DESCRIPTION:When campaigns shows ship_release RELEASED (pre-ship payment i
+ n\, agreement signed\, certificate checked\, every office on the route has
+  answered)\, send the ship-date email (template 02) the same day and log w
+ hat it said. Never confirm a ship date on HOLD. An office that said no and
+  cannot be replaced shows as a credit to make ($120 founding\, $150 standa
+ rd)\, not a hold. If an office joins or leaves the route before the produc
+ t arrives\, the campaign's checks say the units changed: send the revised 
+ email the tool drafts\, and log it.\nLog it in: campaigns: ship_release\; 
+ ship_email_sent_date\, ship_email_units
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-ship@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270208
+DTEND;VALUE=DATE:20270209
+SUMMARY:SAMPLE-DRP-003: Hard ship-by and cancel-by date (T-10). Approvals 
+ due. If T- (brand)
+DESCRIPTION:Hard ship-by and cancel-by date (T-10). Approvals due. If T-10
+  to T-5 crosses 18 to 31 December\, brands were asked to ship earlier (shi
+ p_by_requested).\nLog it in: approvals: reply\, reply_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-receive@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270216
+DTEND;VALUE=DATE:20270217
+SUMMARY:SAMPLE-DRP-003: Receive and count the day cases arrive (by T-5 at 
+ the latest) (you)
+DESCRIPTION:Receive and count the day cases arrive (by T-5 at the latest):
+  count against the packing list\, best-by at least 60 days after T\, lot n
+ umbers\, damage\; photograph the cases. Reject what fails and tell the bra
+ nd the same day. Check the allergen line on the card text word for word ag
+ ainst a package in your hand. Short shipment: reduce units per office even
+ ly (units_override) and tell the brand.\nLog it in: inventory: received (l
+ ot\, best_by)\, rejected\; issues
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-card_proof@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270216
+DTEND;VALUE=DATE:20270217
+SUMMARY:SAMPLE-DRP-003: Send the brand the card text before printing (bran
+ d agreemen (you)
+DESCRIPTION:Send the brand the card text before printing (brand agreement 
+ section 1): two sentences\, allergen line\, buy line.\nLog it in: campaign
+ s: card_proof_sent_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-forms@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270217
+DTEND;VALUE=DATE:20270218
+SUMMARY:SAMPLE-DRP-003: Make each campaign's survey form (forms/survey-for
+ m.md) and\, (you)
+DESCRIPTION:Make each campaign's survey form (forms/survey-form.md) and\, 
+ if the brand chose it\, its newsletter sign-up form. Paste the prefill tem
+ plate into campaigns. Then make the links and QR codes and import them int
+ o the link tool.\nLog it in: campaigns: survey_form_url\, survey_prefill_t
+ emplate\, newsletter_form_url
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-kit_print@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270218
+DTEND;VALUE=DATE:20270219
+SUMMARY:SAMPLE-DRP-003: Not arrived (founder\, courier) = slip exactly one
+  week (tool (you)
+DESCRIPTION:Not arrived (founder\, courier) = slip exactly one week (tools
+ /opscal.py slip) and tell every office and the brand today (template 12). 
+ Otherwise print cards and labels (make_kit.py\; qr-check.txt must say all 
+ OK)\, test-scan every card\, and send each office its window and Slack pos
+ t (template 03).\nLog it in: stops: slack_post_sent_date\; costs: kit
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-courier_brief@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270219
+DTEND;VALUE=DATE:20270220
+SUMMARY:SAMPLE-DRP-003: Courier (you)
+DESCRIPTION:Courier: confirm the booking and send the route sheet (make_ro
+ ute.py). Send building certificates ahead where required.\nLog it in: drop
+ s: courier_or_van
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-confirm@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270222
+DTEND;VALUE=DATE:20270223
+SUMMARY:SAMPLE-DRP-003: Text each pantry owner to confirm (template 04). P
+ ack one la (you)
+DESCRIPTION:Text each pantry owner to confirm (template 04). Pack one labe
+ led case per office per brand against the kit checklist\; bag and label th
+ e reserve. Print the route sheet. Charge the phone\, load the hand truck. 
+ Read every link's total after your test scans and log it as the baseline.\
+ nLog it in: stops: confirm_text_sent_date\; scans: baseline
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-drop@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270223
+DTEND;VALUE=DATE:20270224
+SUMMARY:SAMPLE-DRP-003: Drop day\, 8 to 11 am (you or courier)
+DESCRIPTION:Drop day\, 8 to 11 am: route in order\; 'on my way' 20 minutes
+  out (template 05)\; the per-stop procedure on the route sheet. Courier: y
+ ou meet the courier at every first-drop office. Log everything the same da
+ y.\nLog it in: stops: arrival\, departure\, handed_to_role\, outcome\; inv
+ entory: delivered\; photos\; counts: placed\; issues\; hours: drop_day
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-placement_confirm@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270224
+DTEND;VALUE=DATE:20270225
+SUMMARY:SAMPLE-DRP-003: Placement confirmation to each brand (template 06)
+  (you)
+DESCRIPTION:Placement confirmation to each brand (template 06): the office
+ s placed by today\, each with its photo. Office not placed by today: credi
+ t note row and refund or take it off the balance ($120 founding\, $150 sta
+ ndard). Standard: issue the balance invoice today.\nLog it in: invoices: c
+ redit_note\, standard_balance
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-day3@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270225
+DTEND;VALUE=DATE:20270226
+SUMMARY:SAMPLE-DRP-003: Day 3 (you and office)
+DESCRIPTION:Day 3: ask each office for a count (template 07)\; top up from
+  reserve where empty\; nudge any office under five responses. Read the lin
+ ks (mid).\nLog it in: counts: remaining_day3\; inventory: topped_up\; scan
+ s: mid
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-close@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270301
+DTEND;VALUE=DATE:20270302
+SUMMARY:SAMPLE-DRP-003: Day 5 (you and office)
+DESCRIPTION:Day 5: last photo and count (template 08)\; collect leftovers 
+ (brand chose return) or leave them (release). At the end of the day turn o
+ ff 'Accepting responses' on every campaign survey form and read every link
+  total (close).\nLog it in: counts: remaining_day5\; photos: later\; inven
+ tory: collected or released_to_office\; scans: close
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-pass_on@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270302
+DTEND;VALUE=DATE:20270303
+SUMMARY:SAMPLE-DRP-003: Newsletter (only where chosen) (you)
+DESCRIPTION:Newsletter (only where chosen): send the ticked addresses once
+  (template 09)\, delete the unticked responses today\, log the count only.
+  Reconcile stock: reserve and leftovers on hand. Ask for the return label 
+ (brand chose return).\nLog it in: campaigns: newsletter_passed_date\, news
+ letter_passed_count\, newsletter_unticked_deleted_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-report_draft@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270303
+DTEND;VALUE=DATE:20270304
+SUMMARY:SAMPLE-DRP-003: Pick three comments word for word (replace names w
+ ith [name (you)
+DESCRIPTION:Pick three comments word for word (replace names with [name re
+ moved])\, write three 'learned' lines and the recommendation on the campai
+ gn row.\nLog it in: campaigns: comment_1..3\, learned\, recommendation
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-report@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270304
+DTEND;VALUE=DATE:20270305
+SUMMARY:SAMPLE-DRP-003: Report (make_report.py) to each brand with templat
+ e 10\; standard (you)
+DESCRIPTION:Report (make_report.py) to each brand with template 10\; stand
+ ard: after the balance is paid. Office summaries to each office. Log repor
+ t_delivered_date.\nLog it in: campaigns: report_delivered_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-office_debrief@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270308
+DTEND;VALUE=DATE:20270309
+SUMMARY:SAMPLE-DRP-003: Ten-minute debrief with each office (templates/deb
+ rief-offic (you and office)
+DESCRIPTION:Ten-minute debrief with each office (templates/debrief-office.
+ md). Log the date and the one-question answer.\nLog it in: stops: office_d
+ ebrief_date\, office_would_do_again
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-debrief@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270309
+DTEND;VALUE=DATE:20270310
+SUMMARY:SAMPLE-DRP-003: Brand debrief\, 20 minutes (templates/debrief-bran
+ d.md)\; send (you and brand)
+DESCRIPTION:Brand debrief\, 20 minutes (templates/debrief-brand.md)\; send
+  the renewal proposal the same day. Export actuals for the financial model
+  (export_actuals.py) and set Actuals in = Y there once money\, costs and h
+ ours are final.\nLog it in: campaigns: debrief_date\, brand_would_buy_agai
+ n\, renewed\; hours: reporting_debriefs
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-return_deadline@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270315
+DTEND;VALUE=DATE:20270316
+SUMMARY:SAMPLE-DRP-003: Ten business days after the window (you)
+DESCRIPTION:Ten business days after the window: no prepaid return label = 
+ unused reserve to roster offices\, collected leftovers back to their own o
+ ffice or disposed (brand agreement section 9). Stock on hand must be zero.
+ \nLog it in: inventory: returned_to_brand / given_to_roster_office / relea
+ sed_to_office / disposed
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-redemption@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270325
+DTEND;VALUE=DATE:20270326
+SUMMARY:SAMPLE-DRP-003: Day 30 (calendar) (brand)
+DESCRIPTION:Day 30 (calendar): ask the brand for code redemptions (templat
+ e 11). Log them\; export actuals again\; update renewed.\nLog it in: redem
+ ptions\; campaigns: renewed
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-newsletter_delete@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270401
+DTEND;VALUE=DATE:20270402
+SUMMARY:SAMPLE-DRP-003: Thirty days after passing the list on (you)
+DESCRIPTION:Thirty days after passing the list on: delete every response i
+ n the sign-up form\, the form itself and the sent email\; empty the trash.
+  Log the date.\nLog it in: campaigns: newsletter_deleted_date
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-testimonial@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20270408
+DTEND;VALUE=DATE:20270409
+SUMMARY:SAMPLE-DRP-003: Founding brands only\, if we delivered everything 
+ in section 1 (brand)
+DESCRIPTION:Founding brands only\, if we delivered everything in section 1
+ : the short written statement is due (brand agreement section 3).\nLog it 
+ in: campaigns: notes
+TRANSP:TRANSPARENT
+END:VEVENT
+BEGIN:VEVENT
+UID:SAMPLE-DRP-003-answers_delete@campaign-ops
+DTSTAMP:20261024T120000Z
+DTSTART;VALUE=DATE:20280229
+DTEND;VALUE=DATE:20280301
+SUMMARY:SAMPLE-DRP-003: Twelve months after the campaign (you)
+DESCRIPTION:Twelve months after the campaign: delete the campaign's survey
+  tab\, the form's responses and the form. Log the date.\nLog it in: campai
+ gns: answers_deleted_date
+TRANSP:TRANSPARENT
+END:VEVENT
+END:VCALENDAR

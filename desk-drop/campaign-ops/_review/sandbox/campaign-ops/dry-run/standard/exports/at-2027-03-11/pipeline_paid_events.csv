@@ -1,0 +1,9 @@
+date,side,org_id,org_name,event,value_number,value_text,controls_budget,notes
+2026-12-10,brand,SAMPLE-BR-001,SAMPLE Brightside,paid,600,,Y,SAMPLE-INV-001 SAMPLE-BR-001 founding_full
+2026-12-11,brand,SAMPLE-BR-002,SAMPLE Northbound,paid,600,,Y,SAMPLE-INV-002 SAMPLE-BR-002 founding_full
+2027-01-07,brand,SAMPLE-BR-003,SAMPLE Tallgrass,paid,750,,Y,SAMPLE-INV-004 SAMPLE-BR-003 standard_deposit
+2027-02-16,brand,SAMPLE-BR-003,SAMPLE Tallgrass,paid,750,,Y,SAMPLE-INV-005 SAMPLE-BR-003 standard_balance
+2027-01-11,brand,SAMPLE-BR-004,SAMPLE Orchard Row,paid,750,,Y,SAMPLE-INV-006 SAMPLE-BR-004 standard_deposit
+2027-02-17,brand,SAMPLE-BR-004,SAMPLE Orchard Row,paid,600,,Y,SAMPLE-INV-007 SAMPLE-BR-004 standard_balance
+2027-01-12,brand,SAMPLE-BR-005,SAMPLE Kettle Ridge,paid,750,,Y,SAMPLE-INV-009 SAMPLE-BR-005 standard_deposit
+2027-02-12,brand,SAMPLE-BR-005,SAMPLE Kettle Ridge,paid,750,,Y,SAMPLE-INV-010 SAMPLE-BR-005 standard_balance

@@ -1,0 +1,16 @@
+selftest: 76 example steps checked against the gates and the default calendar
+office-discovery-1 [SAMPLE-O-002] warn: nothing about this person or company is printed: fix the row before sending
+office-selling-1 [SAMPLE-O-002] warn: nothing about this person or company is printed: fix the row before sending
+brand-discovery-1 [SAMPLE-B-002] warn: nothing about this person or company is printed: fix the row before sending
+brand-selling-1 [SAMPLE-B-002] warn: nothing about this person or company is printed: fix the row before sending
+li-office-discovery-1 [SAMPLE-O-002] warn: nothing about this person or company is printed: fix the row before sending
+li-office-selling-1 [SAMPLE-O-002] warn: nothing about this person or company is printed: fix the row before sending
+li-brand-discovery-1 [SAMPLE-B-002] warn: nothing about this person or company is printed: fix the row before sending
+li-brand-selling-1 [SAMPLE-B-002] warn: nothing about this person or company is printed: fix the row before sending
+referral-first-touch [SAMPLE-O-002] warn: nothing about this person or company is printed: fix the row before sending
+reply-needs-approval [SAMPLE-O-001] warn: 188 words
+reply-needs-approval [SAMPLE-O-002] warn: 187 words
+selftest: agreement and invoice promises in steps 1 and 5, 384 combinations filled
+selftest: discovery-only copy refused under its side's selling switch, 64 combinations filled
+selftest: office and brand shares add up to the day's number on 35 schedule days
+68 messages checked; 0 errors

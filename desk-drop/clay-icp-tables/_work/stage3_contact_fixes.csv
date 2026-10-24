@@ -1,0 +1,5 @@
+row_id,contact_rank,first_name,field,new_value,source_url,source_date,reason
+AB-002,founder,Zack,title,Founder,https://www.snackandbakery.com/articles/110099-zacks-mighty-reveals-first-ever-non-gmo-rolled-tortilla-chips,2026-10-24,"Spot check round 6: the opened article says 'founded in 2020 by ... Zack Gazzaniga'; 'CEO' came only from a search result, so it is dropped until a page shows it."
+AB-077,backup,Dahlia,title,Title not stated (works in the business with founder Bryan Graham),https://www.bostonglobe.com/2026/02/24/lifestyle/fruition-chocolate-works-pop-up-shop,2026-10-24,"Spot check round 6: the Boston Globe says only 'With his wife, Dahlia, they craft chocolate'; 'Co-owner' was an inference."
+AB-001,founder,Bjorn,source_url,https://bjornqorn.com/pages/about,https://bjornqorn.com/pages/about,2026-10-24,"Spot check round 6: the 2019 EcoWatch article calls the two 'popcorn makers'; the brand's own About page (opened 2026-10-24) presents 'BJORN & JAMIE' as the people who started it. Better source."
+AB-001,backup,Jamie,source_url,https://bjornqorn.com/pages/about,https://bjornqorn.com/pages/about,2026-10-24,Spot check round 6: as above.

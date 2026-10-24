@@ -1,0 +1,122 @@
+===== primarywave_hr.html 121
+Team | Primary Wave Music
+{ scrolled = isHomePage ? document.getElementById('top').classList.contains('logo-arrived') : window.scrollY > 50 })"
+@loadcheckout.window="
+cart = $event.detail.cart;
+cartCount = $event.detail.cartCount;
+cartTotalPrice = $event.detail.cartTotalPrice;
+checkoutUrl = $event.detail.checkoutUrl;
+"
+>
+Skip to content
+About
+Artists
+What We Do
+Our Team
+Store
+News
+Search
+{ if(value) setTimeout(() => $el.focus(), 300) })"
+>
+Search
+About
+Artists
+What We Do
+Our Team
+Store
+News
+Search
+Email
+0 ? cartCount + ' items in cart' : 'Open cart'"
+class="relative z-30 cursor-pointer"
+>
+Cart
+0"
+x-text="cartCount"
+class="absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-[10px] font-semibold flex items-center justify-center"
+aria-hidden="true"
+x-cloak
+>
+Our Team
+Our team brings together experienced, forward-thinking leaders with a shared commitment to the music. We work closely with our artists and partners, combining creative insight and strategic expertise to build lasting value, honor legacy, and shape what comes next.
+Executive Team
+Brand Marketing
+Synch & Creative A&R
+Marketing
+Content Development
+Digital Marketing
+Recorded Music
+Business Affairs
+Finance & Investment Management
+Business Development
+Talent Management
+Human Resources & Operations
+Shevonne James
+Senior Human Resources Manager
+Shevonne James
+Explore
+Close
+Shevonne James
+Senior Human Resources Manager
+“Jesus Loves Me”
+“Jesus Loves Me”                 –                 Whitney Houston
+Shevonne is the Head of Human Resources at Primary Wave serving as the Senior Human Resources Manager. As an experienced Human Resources professional with a career spanning more than 15 years in the field, she brings a well-versed background in recruitment, employee relations, benefits, training, talent acquisition, and more. Her career began in the healthcare industry, where she held roles at esteemed medical institutions such as Mount Sinai. She holds a Bachelor’s degree in Legal studies and a Master’s degree from Mercy University in Human Resources Management. After dedicating 13 years+ to healthcare, Shevonne made a strategic career pivot in 2021, transitioning into the entertainment industry. She joined Primary Wave Music as a Human Resources Manager—a role that perfectly aligned with her passions for music, law, and people. This transition not only marked a new chapter in her career but also highlighted the versatility of HR professionals across industries.
+Sophia Popovits
+NY Facilities and Culture Manager
+Sophia Popovits
+Explore
+Close
+Sophia Popovits
+NY Facilities and Culture Manager
+“Living my life like it’s golden!”
+“Golden”                 –                 Jill Scott
+Sophia Popovits is the New York Facilities and Culture Manager at Primary Wave, where she has spent over seven years overseeing day-to-day operations, building systems, and organizing engaging experiences for the team. She began her career in entertainment in front of the camera before moving behind the scenes into hospitality and production across restaurants and live events. With more than a decade of experience, she’s no stranger to wearing multiple hats—something she brings to her role with a smile on her face. In addition to managing office operations, Sophia runs the internship program, growing it from a small initiative into a highly sought-after, job-ready pipeline for emerging music professionals. Outside of work, she continues to embrace her on-camera roots through her food content platform.
+Mike Chorny
+Operations Manager / IT
+Mike Chorny
+Explore
+Close
+Mike Chorny
+Operations Manager / IT
+“Singin’ don’t worry about a thing / ’Cos ev’ry little thing's gonna be alright.”
+“Three Little Birds”                 –                 Bob Marley
+Mike Chorny has been with Primary Wave Music Publishing since 2015, where he has played an important role in supporting operations and helping drive internal efficiencies across the organization. Known for his hands-on approach and problem-solving mindset, Mike is deeply involved in keeping systems and processes running smoothly. Outside of the office, he is an avid motorcycle enthusiast who enjoys hitting the road whenever he can.
+Jessica Wilkins
+Senior Executive Assistant
+Jessica Wilkins
+Explore
+Close
+Jessica Wilkins
+Senior Executive Assistant
+“I replied that I had been going through the same things that he had
+True, I've got more fans than the average man
+But not enough loot to last me to the end of the week
+I live by the beat like you live check-to-check
+If it don't move your feet, then, I don't eat, so we like neck-to-neck”
+“Elevators”                 –                 Outkast
+Jessica Wilkins is the Senior Executive Assistant to Primary Wave’s CEO, Larry Mestel, and the COO, Ramon Villa. As an administrative professional with over a decade of experience, Jessica brings a well-rounded background to the team having provided high level support to C suite executives in fashion, non-profit, and finance. Jessica earned her Bachelor of Business Administration in Marketing from Georgia Southern University, then moved to New York to attend The Fashion Institute of Technology where she graduated cum laude with an Associate of Applied Science degree in Advertising and Marketing Communications.
+Join Our Newsletter
+Email
+Subscribe
+By subscribing you agree to with our Privacy Policy and provide consent to receive updates from our company.
+Artists
+About
+What We Do
+News
+Careers
+Contact
+Privacy Policy
+Terms of Service
+© 2026 Primary Wave. All rights reserved.
+Your Cart
+Your cart is currently empty.
+Continue Shopping
+0">
+1 ? lineItem.quantity - 1 : 1)"
+:aria-label="'Decrease quantity of ' + lineItem.title"
+>
+Remove
+Total:
+Checkout
+×
+Loading…

@@ -15,15 +15,19 @@ Three commands (run from desk-drop/desk-drop-outreach/messages/):
       node _render/shoot.js turns them into 390 px PNGs.
 
   python3 _render/fill.py drafts --daily ../../clay-icp-tables/daily-view-offices.csv \
-        --message office-discovery-1 --date 2026-11-03 --out drafts/2026-11-03
+        --message office-discovery-1 --date 2026-11-09 --out drafts/2026-11-09
       Writes one paste-ready .txt per row (subject, body, signature). It never
-      sends anything. It refuses rows with do_not_contact = Y or status other
-      than queued (touch 1) / contacted (touches 2 and 3), and any message the
-      state does not unlock.
+      sends anything. It refuses a no-send day and any cold touch 1 before
+      Mon 2026-11-09, writes no more cold first touches than
+      ../sending/warmup-schedule.csv allows that day (--over-cap to override),
+      and skips rows with do_not_contact = Y, an opt_out_date, A's
+      hold_before_outreach = Y, a status other than queued (touch 1) /
+      contacted (touches 2 and 3), and any message the state does not unlock.
 
 No network access. Standard library only.
 """
 import csv, datetime as dt, html, json, os, re, sys
+sys.dont_write_bytecode = True   # no __pycache__ in the deliverable folder (review round 3, R3-11)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 MSG_DIR = os.path.dirname(HERE)                      # messages/
@@ -110,10 +114,12 @@ def load_state(p):
 
 
 def brand_name():
+    """The working name lives in desk-drop-identity/brand.json only. A missing or broken file is an error,
+    never a silent fallback to an old name (review round 1, R1-19)."""
     try:
         return json.load(open(BRAND_JSON, encoding='utf-8'))['BRAND_NAME']
-    except Exception:
-        return 'Desk Drop'
+    except Exception as e:
+        sys.exit(f'fill.py: cannot read BRAND_NAME from {BRAND_JSON} ({e}). Fix brand.json; no message is filled without it.')
 
 
 def load_messages():
@@ -146,10 +152,13 @@ def broker_block():
         return None
 
 
-def signature_block():
+def signature_block(state=None):
+    """02 holds the signature twice: first as it reads before the name is decided (no business name),
+    then with {BRAND_NAME} once name_decided = Y (review round 1, R1-02)."""
     txt = open(os.path.join(MSG_DIR, '02-commercial-footer.md'), encoding='utf-8').read()
-    m = re.search(r'```text\n(.*?)\n```', txt, re.S)
-    return m.group(1)
+    blocks = re.findall(r'```text\n(.*?)\n```', txt, re.S)
+    decided = (state or {}).get('name_decided') == 'Y'
+    return blocks[1] if decided else blocks[0]
 
 
 # ---------------------------------------------------------------- markers
@@ -184,11 +193,31 @@ def street_short(addr):
     return s
 
 
+ENUM_COLUMNS = {'email_status', 'nearest_retailer_grade', 'lease_status', 'status', 'channel', 'do_not_contact'}
+
+
+def unknown_to_blank(row):
+    """A field the Clay tables could not confirm reads 'unknown' or carries 'unverified, founder to confirm'
+    (CONTRACTS section 2). Nothing like that is ever printed: treat it as blank, so its fallback is used."""
+    out = {}
+    for k, v in (row or {}).items():
+        t = (v or '').strip()
+        low = t.lower()
+        if k in ENUM_COLUMNS:      # 'unverified' is a real value there (CONTRACTS 6.2 and section 4); keep it
+            out[k] = t
+            continue
+        if (low == 'unknown' or low.startswith('unknown ') or low.startswith('unknown(') or low.startswith('unverified')
+                or 'unverified, founder to confirm' in low or '(unverified' in low or low.startswith('none found')):
+            t = ''
+        out[k] = t
+    return out
+
+
 class Ctx:
     def __init__(self, row, state, side, stage, send_date, brand_row=None, slot_values=None):
-        self.row, self.state, self.side, self.stage = row, state, side, stage
+        self.row, self.state, self.side, self.stage = unknown_to_blank(row), state, side, stage
         self.date = send_date
-        self.brand_row = brand_row or {}
+        self.brand_row = unknown_to_blank(brand_row)
         self.slot_values = slot_values or {}
         self.notes = []          # fallbacks and drops, for the annotations and the lint
 
@@ -239,7 +268,8 @@ def opt_why_now(c):
     if not hook:
         c.notes.append('why_now_hook: blank, sentence left out'); return ''
     try:
-        age = (c.date - dt.date.fromisoformat(d[:10])).days
+        # a month-only date (YYYY-MM, allowed by CONTRACTS section 5) is read as the 1st: the oldest it can be
+        age = (c.date - dt.date.fromisoformat(d[:10] if len(d) >= 10 else d[:7] + '-01')).days
     except Exception:
         c.notes.append('why_now_hook: no why_now_date, sentence left out'); return ''
     if age > 120 or age < 0:
@@ -310,7 +340,9 @@ def f_category_only(c):
 def opt_from_city(c, row=None):
     row = row or c.row
     v = (row.get('hq_city') or '').strip()
-    if v and 'unverified' not in v.lower() and v.lower() != 'unknown':
+    # A's table may annotate the city with its evidence: "Brooklyn (privacy policy: ...)". Print the place only.
+    v = v.split(' (')[0].strip() if ' (' in v else v
+    if v and 'unverified' not in (row.get('hq_city') or '').lower() and v.lower() != 'unknown' and re.fullmatch(r"[A-Za-z .,'\-]+", v):
         return ' from ' + mk('F', v)
     c.notes.append('from_city: unknown or unverified, left out')
     return ''
@@ -342,7 +374,7 @@ FIELDS = {
     'call_note_hook_line': f_call_note_hook_line, 'referrer_name': f_referrer_name,
     'brand_name': f_brand_name, 'brand_category_phrase': lambda c: f_category_phrase(c, c.brand_row),
     'first_name_or_founder': lambda c: mk('F', c.val('first_name')) if c.val('first_name') else mk('B', 'the founder'),
-    'referrer_first_name': lambda c: mk('F', c.val('referrer_name').split()[0]) if c.val('referrer_name') else mk('B', '[NAME]'),
+    'referrer_first_name': lambda c: mk('F', c.val('referrer_name').split()[0]) if (c.val('referrer_name') and c.val('referrer_ok_to_name').upper() == 'Y') else mk('B', '[NOT CLEARED TO NAME]'),
 }
 OPTIONAL = {'why_now_hook': opt_why_now, 'retailer_line': opt_retailer_line,
             'retailer_for_office': opt_retailer_for_office,
@@ -356,6 +388,13 @@ SLOT_SEEN = set()
 def S(text):
     SLOT_SEEN.add(text)
     return mk('S', text)
+
+
+def attachment_ready(st, key):
+    """An attachment counts as ready only if it may be sent today (review round 2, R2-07): D's one-pagers and
+    proposal print the working name, so they wait for name_decided = Y unless D has made name-free versions
+    (onepagers_name_free = Y)."""
+    return st.get(key) == 'Y' and (st.get('name_decided') == 'Y' or st.get('onepagers_name_free') == 'Y')
 
 
 def planned(c):
@@ -378,22 +417,22 @@ def slot_sentence(name, c):
         hc = st.get('tuesday_headcount')
         hc = (hc // 10) * 10 if hc else None
         if signed >= 5:
-            return S(f'Five offices around {{CLUSTER}} have signed up, with about {hc} people in on a Tuesday by their own count.')
+            return S(f'Five offices around {{CLUSTER_SHORT}} have signed up, with about {hc} people in on a Tuesday by their own count.')
         if signed >= 1:
             n = 'One office' if signed == 1 else f'{NUMWORD[signed]} offices'
             verb = 'has' if signed == 1 else 'have'
-            return S(f"{n} around {{CLUSTER}} {verb} signed up so far, with about {hc} people in on a Tuesday by their own count. No brand is invoiced until five have.")
+            return S(f"{n} around {{CLUSTER_SHORT}} {verb} signed up so far, with about {hc} people in on a Tuesday by their own count. No brand is invoiced until five have.")
         if yes >= 2:
-            return S(f'{NUMWORD[yes]} offices around {{CLUSTER}} have said yes in principle; none has signed yet. No brand is invoiced until five have.')
+            return S(f'{NUMWORD[yes]} offices around {{CLUSTER_SHORT}} have said yes in principle; none has signed yet. No brand is invoiced until five have.')
         return S('[ROSTER LINE LOCKED: fewer than two offices have said yes; do not send brand selling copy]')
     if name == 'OFFER LINE':
         if ft < 3:
-            return S("The founding offer: {product} in five offices for a week from [DROP DATE: Tue 2027-01-12], about 250 units. You get placement photos, depletion counts, an employee survey and a one-page report. It's $600 before you ship, plus your product and freight; your next two campaigns stay at $120 an office.")
-        return S("The offer: {product} in ten offices for a week from [NEXT DROP DATE: Tue 2027-02-09], about 500 units. You get placement photos, depletion counts, an employee survey and a one-page report. It's $1,500 ($150 an office), half when you sign and half when we confirm placement, plus your product and freight.")
+            return S(f"Founding offer: {{product}} in five offices for a week from the drop {planned(c)} [DROP DATE: Tue 2027-01-12], about 250 units placed, with photos, depletion counts, an employee survey and a one-page report. It's $600, paid before you ship 275 units (10% spare, freight prepaid). Your next two campaigns stay at $120 an office. If it runs as promised, you write a short note we can publish with a case study.")
+        return S("The offer: {product} in ten offices for a week from the drop planned for [NEXT DROP DATE: Tue 2027-02-09], about 500 units placed. You get photos, depletion counts, an employee survey and a one-page report. It's $1,500 ($150 an office), half when you sign and half when we confirm placement; you ship 550 units (10% spare, freight prepaid).")
     if name == 'OFFER SHORT':
         if ft < 3:
-            return S("Founding brands get five offices for a week from [DROP DATE: Tue 2027-01-12], about 250 units, with photos, counts, a short employee survey and a one-page report, for $600 plus the product.")
-        return S("Ten offices for a week from [NEXT DROP DATE: Tue 2027-02-09], about 500 units, with photos, counts, a short employee survey and a one-page report, for $1,500 plus the product.")
+            return S(f"Founding brands get five offices for a week from the drop {planned(c)} [DROP DATE: Tue 2027-01-12], about 250 units placed, with photos, counts, a short survey and a one-page report, for $600, paid before you ship; you send 275 units (10% spare) and freight. If it runs as promised, you write a short note we can publish with a case study.")
+        return S("Ten offices for a week from the drop planned for [NEXT DROP DATE: Tue 2027-02-09], about 500 units placed, with photos, counts, a short survey and a one-page report, for $1,500, half when you sign and half at placement; you send 550 units (10% spare) and freight.")
     if name == 'FOUNDING LINE':
         if ft == 0:
             return S('The founding price is open to the first three brands that sign.')
@@ -406,9 +445,21 @@ def slot_sentence(name, c):
         return S("I'm lining up the first brands now. You'll see each one before it comes, and nothing comes unless you say yes.")
     if name == 'INSURANCE LINE':
         return S('We carry general liability insurance.' if st.get('gl_bound') == 'Y' else 'We will carry general liability insurance before your first drop.')
-    if name == 'FORMATION LINE':
-        if st.get('llc_formed') == 'Y' and st.get('attorney_cleared') == 'Y':
-            c.notes.append('FORMATION LINE: company formed and agreements cleared, left out'); return ''
+    if name in ('FORMATION LINE', 'HOLDING LINE'):
+        # What a brand is told about when the agreement and invoice come (review round 2, R2-01). The agreement
+        # waits for five signed offices, every office's yes to this brand, the company, the attorney and the name.
+        # A date is printed only when the offices are done, because only the formation steps have a known length.
+        wait = brand_agreement_wait(c)
+        if wait == 'offices':
+            return S('The agreement and invoice come once five offices have signed and each has said yes to {product}; nothing is due before then.')
+        if wait == 'approvals':
+            return S('The agreement and invoice come once each of the five offices has said yes to {product}; nothing is due before then.')
+        if wait == 'none':
+            c.notes.append(f'{name}: every gate for the agreement is met, left out (send step 6)'); return ''
+        if name == 'HOLDING LINE' and c.state.get('llc_formed') != 'Y':
+            return S("The agreement and invoice come by [AGREEMENT DATE: Thu 2026-11-19], once the company's registration is through; nothing is due before then.")
+        if name == 'HOLDING LINE':
+            return S('The agreement and invoice come by [AGREEMENT DATE: Thu 2026-11-19]; nothing is due before then.')
         return S('The agreement and invoice come by [AGREEMENT DATE: Thu 2026-11-19]. Nothing is due before then.')
     if name == 'MOCK CARD LINE':
         cold = c.stage in ('selling', 'discovery')
@@ -418,10 +469,22 @@ def slot_sentence(name, c):
             c.notes.append('MOCK CARD LINE: no photo yet, the card described in words')
         return S("It's a 5 by 7 inch card: the brand's name, two sentences about it, the allergen line copied from the package, and a QR code to the survey.")
     if name == 'OFFICE ONE-PAGER LINE':
-        if st.get('office_onepager_ready') == 'Y':
+        if attachment_ready(st, 'office_onepager_ready'):
             return S(f"Attached is the one-page outline, with the first drop for {{company}} {planned(c)} the [FIRST DROP WEEK: week of Mon 2027-01-11].")
         c.notes.append('OFFICE ONE-PAGER LINE: one-pager not ready, nothing attached')
         return S("The first drop for {company} would be planned for the [FIRST DROP WEEK: week of Mon 2027-01-11].")
+    if name == 'STEP 0 SUBJECT':
+        return S('Thank you, and the one-pager') if attachment_ready(st, 'discovery_onepager_ready') else S('Thank you, and what happens next')
+    if name == 'STEP 1 SUBJECT':
+        return S('The one-pager, and thank you') if attachment_ready(st, 'office_onepager_ready') else S('The details, and thank you')
+    if name == 'JOIN ASK':
+        if signed < 5:
+            return S('Would you like {company} to be one of the five founding offices?')
+        return S('Would you like {company} to join for a later drop?')
+    if name == 'JOIN ASK SHORT':
+        if signed < 5:
+            return S('Shall I put {company} down as one of the five?')
+        return S('Shall I put {company} down for a later drop?')
     if name == 'LAST CHECK LINE':
         if signed < 5:
             return S('One last check before I fill the five places: is {company} a yes, or is it a not-now?')
@@ -433,21 +496,43 @@ def slot_sentence(name, c):
     if name == 'INTAKE PARAGRAPH':
         if st.get('intake_form_ready') == 'Y':
             return S("The next step is a short form, about five minutes, with your Tuesday headcount, receiving window and the categories you want: [INTAKE FORM LINK]. I'll turn it into a one-page agreement for you to check and sign. {?[AGREEMENT TIMING LINE]}\n\nCould you fill it in this week?")
-        c.notes.append('INTAKE PARAGRAPH: no intake form yet, six questions by reply')
-        return S("The next step is six quick answers, which I'll turn into a one-page agreement for you to check and sign. {?[AGREEMENT TIMING LINE]}\n1. Roughly how many people are in on a Tuesday?\n2. Who receives deliveries, and in what window (for example, Tuesday 9 to 11)?\n3. Is it a walk-up, a front desk or a loading dock?\n4. Does your building need a certificate of insurance for deliveries: yes, no or unsure?\n5. Slack or email for the survey post?\n6. Any categories or allergens you want us to avoid?\n\nCould you reply with those this week?")
+        c.notes.append('INTAKE PARAGRAPH: no intake form yet, seven questions by reply')
+        return S("The next step is seven quick answers, which I'll turn into a one-page agreement for you to check and sign. {?[AGREEMENT TIMING LINE]}\n1. Roughly how many people are in on a Tuesday?\n2. Who looks after the pantry and can say yes to a brand (name and title)?\n3. Who receives deliveries, on which floor, and in what window (for example, Tuesday 9 to 11)?\n4. Is it a walk-up, a front desk or a loading dock?\n5. Does your building need a certificate of insurance for deliveries: yes, no or unsure?\n6. Slack or email for the survey post?\n7. Which categories would your team like, and any categories or allergens to avoid?\n\nCould you reply with those this week?")
     if name == 'STEP 1 OPENER':
         if c.slot_values.get('_after_step0'):
             return S('As promised, here are the details.')
         return '{call_note_hook_line}'
     if name == 'DISCOVERY ONE-PAGER LINE':
-        if st.get('discovery_onepager_ready') == 'Y':
+        if attachment_ready(st, 'discovery_onepager_ready'):
             return S('Attached is the one-page description I mentioned.')
         c.notes.append('DISCOVERY ONE-PAGER LINE: one-pager not ready, left out'); return ''
     if name == 'PROPOSAL LINE':
-        if st.get('proposal_ready') == 'Y':
+        if attachment_ready(st, 'proposal_ready'):
             return S('Attached is the one-page proposal for {company}, with a map of the stores near the offices and a mock report page.')
         c.notes.append('PROPOSAL LINE: proposal not ready, short version in the email')
         return S('The full proposal follows; here is the short version.')
+    # review round 3 (R3-05): an ask never offers an attachment the state says cannot go yet
+    if name == 'OUTLINE ASK':
+        return S('Could I send you the one-page outline?') if attachment_ready(st, 'office_onepager_ready') else S('Could I send you the details?')
+    if name == 'OUTLINE ASK SHORT':
+        return S('Shall I send the outline?') if attachment_ready(st, 'office_onepager_ready') else S('Shall I send the details?')
+    if name == 'PROPOSAL ASK':
+        if attachment_ready(st, 'proposal_ready'):
+            return S('Shall I send the one-page proposal, with a map of stores near the offices?')
+        return S('Shall I send the details, with the stores near the offices?')
+    if name == 'PROPOSAL ASK REPLY':
+        return S('Shall I send the one-page proposal so you can see every term?') if attachment_ready(st, 'proposal_ready') else S('Shall I send you every term in writing?')
+    if name == 'INFO PAGE LINE':
+        key = 'discovery_onepager_ready' if c.stage == 'discovery' else ('office_onepager_ready' if c.side == 'office' else 'brand_onepager_ready')
+        if attachment_ready(st, key):
+            return S('Attached is a one-page description of the idea.' if c.stage == 'discovery' else 'Attached is the one-page outline.')
+        c.notes.append(f'INFO PAGE LINE: {key} does not count as ready, nothing attached')
+        return S('I can explain it better in 20 minutes than in a document.')
+    if name == 'STEP 0 CAMPAIGN LINE':
+        # review round 3 (R3-02): after the last campaign zero offer a brand new to the pipeline cannot join January
+        if c.date <= LAST_OFFER_CZ:
+            return S('If it goes ahead, the first campaign is planned for January, and only once the first offices have signed.')
+        return S('If it goes ahead, the first campaign I could offer you is planned for February, and only once the offices have signed.')
     if name == 'OFFICE HOURS LINE':
         h = st.get('office_hours_per_signing')
         if h:
@@ -458,13 +543,56 @@ def slot_sentence(name, c):
 
 NUMWORD = {1: 'One', 2: 'Two', 3: 'Three', 4: 'Four', 5: 'Five', 6: 'Six', 7: 'Seven', 8: 'Eight', 9: 'Nine', 10: 'Ten'}
 
+AGREEMENT_EARLIEST = dt.date(2026, 11, 19)   # the day after the attorney hour and name decision (legal pack; derived)
+
+
+def int_state(st, k):
+    try:
+        return int(st.get(k) or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def brand_agreement_wait(c):
+    """What the brand agreement and invoice still wait for (review round 2, R2-01):
+    'offices' (fewer than five signed), 'approvals' (five signed, not every office has said yes to this brand),
+    'date' (only formation, the attorney hour or the name decision is left: a date can be promised), or
+    'none' (every gate is met: the agreement goes now)."""
+    return agreement_wait(c.state, c.row)
+
+
+def agreement_wait(st, row):
+    row = row or {}
+    if int_state(st, 'offices_signed') < 5:
+        return 'offices'
+    if (row.get('office_approvals_complete') or '').strip().upper() != 'Y':
+        return 'approvals'
+    if all(st.get(k) == 'Y' for k in ('llc_formed', 'attorney_cleared', 'name_decided')):
+        return 'none'
+    return 'date'
+
+
+def agreement_date(send_date):
+    """The later of Thu 2026-11-19 and five business days after sending (filing, EIN, bank account; assumption)."""
+    return max(AGREEMENT_EARLIEST, add_bd(send_date, 5))
+
 
 # ---------------------------------------------------------------- fill
 def fill_text(text, c, sig=None):
     if '[PASTE desk-drop-legal-pack/11' in text:
         b = broker_block()
         if b:
+            b = fill_broker_slots(b, c)
             text = re.sub(r'\[PASTE desk-drop-legal-pack/11[^\]]*\]', lambda m: mk('X', b), text)
+    # the LLC name is never typed into a template: it is the brand.json name plus " LLC", to be checked
+    # letter for letter against the filed Articles (review round 1, R1-19)
+    if re.search(r'\[COMPANY NAME: [^\]]*\]', text):
+        if c.state.get('llc_formed') == 'Y':
+            # review round 3 (R3-07): once the company exists the name prints bare; the check goes on the draft's NOTE line
+            text = re.sub(r'\[COMPANY NAME: [^\]]*\]', lambda m: mk('S', f'{brand_name()} LLC'), text)
+        else:
+            text = re.sub(r'\[COMPANY NAME: [^\]]*\]', f'[COMPANY NAME: {brand_name()} LLC]', text)
+        c.notes.append(f'COMPANY NAME: "{brand_name()} LLC" is desk-drop-identity/brand.json plus "LLC"; check it letter for letter against the filed Articles')
     # 1. computed slot sentences (may contain tokens)
     def slot_sub(m):
         inner = m.group(1)
@@ -493,12 +621,15 @@ def fill_text(text, c, sig=None):
         return m.group(0)
     for _ in range(2):
         text = re.sub(r'\{([A-Za-z_]+)\}', tok, text)
-    # 4b. dates computed from the send date, so a slot never prints a day that has passed
-    def later(base, n):
-        return max(base, add_bd(c.date, n))
-    agreement = later(dt.date(2026, 11, 19), 5) if not (c.state.get('attorney_cleared') == 'Y' and (c.side == 'office' or c.state.get('llc_formed') == 'Y')) else None
-    if agreement:
-        text = text.replace('[AGREEMENT DATE: Thu 2026-11-19]', f'[AGREEMENT DATE: {fmt(agreement)}]')
+    # 4b. dates computed from the send date, so a slot never prints a day that has passed. The slot sentences
+    # decide whether a date is promised at all (R2-01); where one is, it is always computed here.
+    text = text.replace('[AGREEMENT DATE: Thu 2026-11-19]', f'[AGREEMENT DATE: {fmt(agreement_date(c.date))}]')
+    # the week the details follow a step 0 email: the week after Gate 0, or the next week if that has begun
+    nxt = c.date + dt.timedelta(days=(7 - c.date.weekday()) % 7 or 7) if c.date.weekday() else c.date
+    follow = max(dt.date(2026, 11, 16), nxt)
+    follow = send_day(follow)
+    follow -= dt.timedelta(days=follow.weekday())        # a "week of" is named by its Monday (review round 3)
+    text = text.replace('[FOLLOW-UP WEEK: week of Mon 2026-11-16]', f'[FOLLOW-UP WEEK: week of {fmt(follow)}]')
     text = text.replace('[CHECK-BACK DATE]', f'[CHECK-BACK DATE: {fmt(send_day(add_bd(c.date, 5)))}]')
     text = text.replace('[SIGN-BY DATE]', f'[SIGN-BY DATE: {fmt(add_bd(c.date, 5))}]')
     text = text.replace('[INVOICE DUE: five business days from today]', f'[INVOICE DUE: {fmt(add_bd(c.date, 5))}]')
@@ -529,8 +660,31 @@ def fill_text(text, c, sig=None):
     return t
 
 
+CZ_SHIP_BY = dt.date(2026, 12, 22)      # CONTRACTS section 3: brands asked to ship by Tue 2026-12-22
+CZ_WINDOW_CLOSE = dt.date(2027, 1, 19)  # T+4 of the campaign zero drop
+
+
+def fill_broker_slots(b, c):
+    """Fill the slots in the legal pack's broker block that the row and the state already know, so the founder
+    types only the brand's legal name, its address and the product and SKU (review round 1, R1-20).
+    The block's words are not changed."""
+    brand = SUFFIX_RE.sub('', c.val('company'))
+    if brand:
+        b = b.replace("[BRAND]'s", brand + ("'" if brand.endswith('s') else "'s"))   # "Brightside Snacks' products"
+        b = b.replace("[BRAND]", brand)
+    else:
+        c.notes.append('broker block: no brand name on the row, [BRAND] left for you')
+    b = b.replace('[AGREEMENT DATE]', f'[AGREEMENT DATE: {fmt(c.date)}]')
+    b = b.replace('[SHIP-BY DATE]', f'[SHIP-BY DATE: {fmt(CZ_SHIP_BY)}]')
+    cover = dt.date(CZ_WINDOW_CLOSE.year + 1, CZ_WINDOW_CLOSE.month, CZ_WINDOW_CLOSE.day)
+    b = re.sub(r'\[COVER-UNTIL DATE: [^\]]*\]', f'[COVER-UNTIL DATE: {fmt(cover)}] (12 months after the window closes) or the latest best-by date on the units, if later', b)
+    b = b.replace('[COVER-UNTIL DATE]', f'[COVER-UNTIL DATE: {fmt(cover)}] (or the later best-by date)')
+    c.notes.append('broker block: [BRAND LEGAL NAME], [BRAND ADDRESS] and [PRODUCT NAME AND SKU] are yours to fill from the brand intake; the dates are campaign zero\'s (change them for a later drop)')
+    return b
+
+
 def fill_message(msg, c, variant='A', first_subject=None):
-    sig = signature_block() if msg.get('channel') in ('email', 'warm-intro', 'walk-in') else ''
+    sig = signature_block(c.state) if msg.get('channel') in ('email', 'warm-intro', 'walk-in') else ''
     sig_filled = fill_text(sig, c) if sig else ''
     body = fill_text(msg['body'], c, sig=mk('G', sig_filled) if sig else '')
     subj = msg.get('subject_' + variant) or msg.get('subject') or ''
@@ -618,16 +772,33 @@ def check(msg, subj, body, c, touch_kind):
         f.append(('error', 'follow-up not sent as a reply in the thread'))
     if len(natural_dates(plain_subj, True).replace('SAMPLE ', '')) > 80:
         f.append(('warn', f'subject {len(plain_subj)} characters'))
-    for m in re.finditer(r'\[([A-Z][A-Z \-]+): (Mon|Tue|Wed|Thu|Fri|Sat|Sun) (\d{4}-\d\d-\d\d)\]', full + ' ' + plain_subj):
-        d = dt.date.fromisoformat(m.group(3))
-        if DOW[d.weekday()] != m.group(2):
+    for m in re.finditer(r'\[([A-Z][A-Z \-]+): (week of )?(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (\d{4}-\d\d-\d\d)\]', full + ' ' + plain_subj):
+        d = dt.date.fromisoformat(m.group(4))
+        if DOW[d.weekday()] != m.group(3):
             f.append(('error', f'{m.group(0)}: weekday wrong'))
         if 'DROP DATE' in m.group(1) and not drop_ok(d):
             f.append(('error', f'{m.group(0)}: not a legal drop day (Tue or Wed, window clear of blackouts)'))
+        # a promised date never lies in the past on the day the message is sent (review round 2, R2-01)
+        last_day = d + dt.timedelta(days=4) if m.group(2) else d
+        if last_day < c.date:
+            f.append(('error', f'{m.group(0)}: a date that has passed on the send date {c.date}'))
+    # the agreement date, wherever it is promised, is the one computed from the send date (R2-01)
+    for m in re.finditer(r'\[AGREEMENT DATE: (?:Mon|Tue|Wed|Thu|Fri) (\d{4}-\d\d-\d\d)\]', strip_marks(body.split('\x01X')[0]) + ' ' + strip_marks(subj)):
+        if dt.date.fromisoformat(m.group(1)) != agreement_date(c.date):
+            f.append(('error', f'{m.group(0)}: not the agreement date computed from the send date ({fmt(agreement_date(c.date))})'))
+    if re.search(r'\[AGREEMENT DATE\]', strip_marks(body.split('\x01X')[0])):
+        f.append(('error', '[AGREEMENT DATE] left unfilled'))
+    # campaign zero's last offer and last yes (review round 2, R2-05): a verbal yes needs up to 3 business days of
+    # office approvals, a 5-business-day sign-by and 5 to pay, all before the asked ship-by Tue 2026-12-22
     if msg['side'] == 'brand' and msg.get('stage') in ('selling', 'conversion') and '2027-01-12' in full + ' ' + plain_subj \
-            and msg['id'] not in ('brand-conversion-6', 'brand-conversion-7', 'brand-conversion-8', 'brand-conversion-9', 'brand-conversion-10') \
-            and c.date > LAST_OFFER_CZ and not c.slot_values.get('_moved'):
-        f.append(('error', f'sent {c.date} offering the Tue 2027-01-12 drop: after Tue 2026-12-08 a new brand cannot be invoiced, paid and insured before ship-by; offer [NEXT DROP DATE]'))
+            and not c.slot_values.get('_moved'):
+        mid = msg['id']
+        offer = (msg.get('stage') == 'selling' and touch in ('0', '1')) or mid == 'brand-conversion-1'
+        asks_yes = mid in ('brand-conversion-2', 'brand-conversion-5') or (msg.get('stage') == 'selling' and touch not in ('0', '1'))
+        if offer and c.date > LAST_OFFER_CZ:
+            f.append(('error', f'sent {c.date} offering the Tue 2027-01-12 drop: after {fmt(LAST_OFFER_CZ)} a new brand cannot get a yes, the office approvals, a signature and payment in before ship-by; offer [NEXT DROP DATE]'))
+        elif asks_yes and c.date > LAST_YES_CZ:
+            f.append(('error', f'sent {c.date} asking for a yes to the Tue 2027-01-12 drop: after {fmt(LAST_YES_CZ)} the approvals, signature and payment cannot all land before ship-by; offer [NEXT DROP DATE]'))
     if msg.get('stage') in ('discovery', 'selling') and touch == '1' and msg.get('channel') in ('email', 'linkedin') \
             and '\x01F' not in body.split('\x01G')[0]:
         f.append(('warn', 'nothing about this person or company is printed: fix the row before sending'))
@@ -636,22 +807,60 @@ def check(msg, subj, body, c, touch_kind):
             f.append(('error', f'computed slot [{name}] was not filled'))
     if 'LOCKED' in full:
         f.append(('error', 'a locked slot was used: this message is not unlocked by the state'))
-    for g in gates(msg, c.state):
+    for g in gates(msg, c.state, c.row, c.side):
         f.append(('error', g))
     if ch in ('email', 'warm-intro', 'walk-in') and 'no thanks' not in full:
         f.append(('error', 'footer missing'))
+    # no cold email from the new domain before the earliest first cold day, whatever the state says (R1-01)
+    if ch == 'email' and touch == '1' and msg.get('stage') in ('discovery', 'selling') and c.date < EARLIEST_COLD:
+        f.append(('error', f'cold email touch 1 on {c.date}: no cold email from [DOMAIN] before {fmt(EARLIEST_COLD)} (sending/sending-setup.md section 0)'))
+    # the working name is not printed before the name is decided (R1-02)
+    if c.state.get('name_decided') != 'Y' and ch in ('email', 'warm-intro', 'walk-in') and brand_name() in strip_marks(body):
+        f.append(('error', f'"{brand_name()}" printed while name_decided = N'))
+    # a drop date reads as fixed only once drop_date_confirmed = Y (04 rule 1, R1-15)
+    if c.state.get('drop_date_confirmed') != 'Y' and msg['id'] not in POST_SIGNATURE:
+        for m in re.finditer(r'(?:\bfrom|\byour|\bfor your)\s+\[(?:NEXT )?DROP DATE', strip_marks(subj) + ' ' + strip_marks(body)):
+            f.append(('error', f'"{m.group(0)}" reads as a fixed date: write "the drop planned for" until drop_date_confirmed = Y'))
     return f
+
+
+EARLIEST_COLD = dt.date(2026, 11, 9)   # sending/sending-setup.md section 0 (review round 1)
+POST_SIGNATURE = ('brand-conversion-7', 'brand-conversion-8', 'brand-conversion-9', 'brand-conversion-10')   # the date is the signed agreement's
 
 
 COMPUTED_SLOTS = ['OFFICE OPENER', 'OFFICE PROGRESS LINE', 'ROSTER LINE', 'OFFER LINE', 'OFFER SHORT', 'FOUNDING LINE',
                   'FIRST BRAND LINE', 'INSURANCE LINE', 'FORMATION LINE', 'MOCK CARD LINE', 'OFFICE HOURS LINE',
                   'OFFICE ONE-PAGER LINE', 'LAST CHECK LINE', 'AGREEMENT TIMING LINE', 'INTAKE PARAGRAPH', 'PROPOSAL LINE',
-                  'STEP 1 OPENER', 'DISCOVERY ONE-PAGER LINE']
-LAST_OFFER_CZ = dt.date(2026, 12, 8)   # derived: yes + 5 business days to form + 5 to pay lands before ship-by Tue 2026-12-22
+                  'STEP 1 OPENER', 'DISCOVERY ONE-PAGER LINE', 'JOIN ASK', 'JOIN ASK SHORT', 'STEP 0 SUBJECT', 'STEP 1 SUBJECT',
+                  'HOLDING LINE', 'OUTLINE ASK', 'OUTLINE ASK SHORT', 'PROPOSAL ASK', 'PROPOSAL ASK REPLY', 'INFO PAGE LINE',
+                  'STEP 0 CAMPAIGN LINE']
+# Derived, founder to confirm (review round 2, R2-05). Working back from the asked ship-by, Tue 2026-12-22:
+# payment due 5 business days after the invoice (invoice by Tue 2026-12-15, the day of signature), signature within
+# 5 business days of the agreement (agreement by Tue 2026-12-08), and up to 3 business days of office approvals
+# before the agreement (verbal yes by Thu 2026-12-03). A proposal needs a few days to get its yes: last one Mon 2026-11-30.
+LAST_YES_CZ = dt.date(2026, 12, 3)
+LAST_OFFER_CZ = dt.date(2026, 11, 30)
 
 
-def gates(msg, st):
+# review round 3 (R3-02): copy that is true only before that side sells. "There's nothing to buy yet", "Questions only",
+# "I'm not selling anything yet" and "before I build anything" become false once the selling switch is Y. Follow-ups 2
+# and 3 of a discovery thread already begun say none of this, so they may finish it (the draft maker matches every
+# follow-up to the row's sequence).
+DISCOVERY_ONLY = {
+    'office': ('office-discovery-1', 'li-office-discovery-note', 'li-office-discovery-1', 'warm-ask-office', 'office-conversion-0'),
+    'brand': ('brand-discovery-1', 'li-brand-discovery-note', 'li-brand-discovery-1', 'warm-ask-brand', 'brand-conversion-0'),
+    'both': ('warm-direct', 'referral-first-touch', 'reply-send-info-discovery'),
+}
+SELLING_VERSION = {'office': '05 part 2, 07 office selling, or 10 step 1', 'brand': '06 part 2, 07 brand selling, or 11 step 1'}
+
+
+def gates(msg, st, row=None, side=None):
     g, i = [], msg['id']
+    row = row or {}
+    sd = msg['side'] if msg['side'] in ('office', 'brand') else (side if side in ('office', 'brand') else None)
+    if sd and (i in DISCOVERY_ONLY[sd] or i in DISCOVERY_ONLY['both']) and st.get(f'{sd}_selling_on') == 'Y':
+        g.append(f'{sd}_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the {sd} side; '
+                 f'send the selling version ({SELLING_VERSION[sd]})')
     if msg.get('channel') == 'email' and msg.get('touch') == '1' and msg.get('stage') in ('discovery', 'selling') and st.get('domain_ready') != 'Y':
         g.append('domain_ready = N: no cold touch 1 from the new domain yet')
     if i.startswith(('office-selling', 'li-office-selling')) and st.get('office_selling_on') != 'Y':
@@ -662,10 +871,32 @@ def gates(msg, st):
         g.append('office_selling_on = N: before Gate 0 the post-call email is step 0 (no date proposed)')
     if i in ('brand-conversion-1', 'brand-conversion-2', 'brand-conversion-3', 'brand-conversion-4') and st.get('brand_selling_on') != 'Y':
         g.append('brand_selling_on = N: before then the post-call email is step 0 (nothing sold)')
+    if i in ('office-conversion-6', 'brand-conversion-6', 'brand-conversion-7', 'brand-conversion-8') and st.get('name_decided') != 'Y':
+        g.append('name_decided = N: agreements, invoices and the insurance request name the business, so they wait for the name decision')
     if i == 'office-conversion-6' and st.get('attorney_cleared') != 'Y':
         g.append('attorney_cleared = N: the office agreement cannot go out')
     if i in ('brand-conversion-6', 'brand-conversion-7', 'brand-conversion-8') and not (st.get('llc_formed') == 'Y' and st.get('attorney_cleared') == 'Y'):
         g.append('llc_formed or attorney_cleared = N: no agreement, invoice or certificate request yet')
+    # the plan's order (How a campaign runs, steps 3 and 4): offices approve the brand, then agreement and payment;
+    # and the selling copy promises "No brand is invoiced until five have" signed (review round 1, R1-04)
+    if i in ('brand-conversion-6', 'brand-conversion-7'):
+        try:
+            signed = int(st.get('offices_signed') or 0)
+        except (TypeError, ValueError):
+            signed = 0
+        if signed < 5:
+            g.append(f'offices_signed = {signed}: no brand agreement or invoice until five offices have signed')
+        if (row.get('office_approvals_complete') or '').strip().upper() != 'Y':
+            g.append('office_approvals_complete is not Y on this brand row: every office on the route must say yes (10, step 7) before the agreement or invoice')
+    # the holding note is for the wait; once every gate is met the agreement itself goes (R2-01)
+    if i == 'brand-conversion-5' and agreement_wait(st, row) == 'none':
+        g.append('every gate for the agreement is met (five offices signed and approved, company formed, attorney cleared, name decided): send step 6, not the holding note')
+    try:
+        ft = int(st.get('founding_taken') or 0)
+    except (TypeError, ValueError):
+        ft = 0
+    if i in ('brand-conversion-1', 'brand-conversion-2', 'brand-conversion-4', 'brand-conversion-5', 'brand-conversion-6', 'brand-conversion-7') and ft >= 3:
+        g.append('founding_taken = 3: these emails carry the founding price; the founding offer is closed (write the standard terms from [OFFER LINE] instead)')
     if msg.get('channel') == 'slack' and st.get('startup_cpg_joined') != 'Y':
         g.append('startup_cpg_joined = N')
     return g
@@ -711,7 +942,7 @@ VALUE_SLOTS = ('UNITS TO SHIP', 'TIME PERIOD')
 def natural_dates(t, subject=False):
     """What the reader sees: [DROP DATE: Tue 2027-01-12] -> Tuesday, January 12 (January 12 in a subject)."""
     def nat(x, week=False):
-        md = f'{MONTHS[x.month - 1]} {x.day}'
+        md = f'{MONTHS[x.month - 1]} {x.day}' + (f', {x.year}' if x.year >= 2028 else '')   # campaign dates are 2026-27; later ones carry the year
         if week:
             return f'week of {md}'
         return md if subject else f'{DAYNAME[x.weekday()]}, {md}'
@@ -744,7 +975,8 @@ def render_example(ex, msgs, rows, states):
             d = add_bd(start, -int(step['days_before']))
         st_step = dict(st); st_step.update({k: (int(v) if isinstance(v, str) and v.isdigit() else v) for k, v in step.get('state', {}).items()})
         sv = dict(ex.get('slot_values') or {}); sv.update(step.get('slot_values', {}))
-        c = Ctx(row, st_step, msg['side'] if msg['side'] in ('office', 'brand') else ex['side'], msg['stage'], d, brand_row, sv)
+        row_step = dict(row); row_step.update(step.get('row', {}))
+        c = Ctx(row_step, st_step, msg['side'] if msg['side'] in ('office', 'brand') else ex['side'], msg['stage'], d, brand_row, sv)
         subj, body = fill_message(msg, c, ex.get('variant', 'A'), first_subject)
         if msg.get('touch') == '1' and msg.get('channel') == 'email':
             first_subject = strip_marks(subj)
@@ -810,17 +1042,68 @@ def cmd_examples():
     return 1 if any(x[2] == 'error' for x in total) else 0
 
 
+# messages whose gates need more than the shared lint state (offices_signed = 0, name_decided = N)
+LINT_OVERRIDES = {m: {'offices_signed': 5, 'offices_yes': 6, 'tuesday_headcount': 410, 'name_decided': 'Y'}
+                  for m in ('office-conversion-6', 'brand-conversion-6', 'brand-conversion-7', 'brand-conversion-8')}
+# discovery copy is filled with both selling switches off (review round 3, R3-02: it is refused once they are on)
+LINT_DISCOVERY = {'office_selling_on': 'N', 'brand_selling_on': 'N'}
+
+
+def state_problems(st, d=None):
+    """Review round 3 (R3-06): a state the folder's own gates make impossible. The logical rules always apply (the live
+    04-slot-state.csv, the lint state, every example); the calendar rules (default dates, derived, founder to confirm)
+    apply when a send date d is given, as in the examples."""
+    n = lambda k: int_state(st, k)
+    p = []
+    if n('offices_signed') > n('offices_yes'):
+        p.append(f'offices_signed {n("offices_signed")} is more than offices_yes {n("offices_yes")} (a signed office is also a yes)')
+    if n('offices_signed') > 0 and not (st.get('attorney_cleared') == 'Y' and st.get('name_decided') == 'Y'):
+        p.append('offices_signed above 0 needs attorney_cleared = Y and name_decided = Y (no office agreement goes out before both)')
+    if n('offices_signed') > 0 and not str(st.get('tuesday_headcount') or '').strip():
+        p.append('offices_signed above 0 needs tuesday_headcount (the signed offices\' own numbers)')
+    if n('offices_signed') == 0 and str(st.get('tuesday_headcount') or '').strip():
+        p.append('tuesday_headcount is filled while offices_signed = 0 (it is blank until an office signs)')
+    if n('founding_taken') > n('brands_paid'):
+        p.append(f'founding_taken {n("founding_taken")} is more than brands_paid {n("brands_paid")}')
+    if n('brands_paid') > 0 and n('offices_signed') < 5:
+        p.append(f'brands_paid {n("brands_paid")} with offices_signed {n("offices_signed")}: no brand is invoiced until five offices have signed')
+    if n('brands_paid') > 0 and not all(st.get(k) == 'Y' for k in ('llc_formed', 'attorney_cleared', 'name_decided')):
+        p.append('brands_paid above 0 needs llc_formed, attorney_cleared and name_decided = Y (no brand agreement or invoice before them)')
+    if st.get('brand_selling_on') == 'Y' and n('offices_yes') < 2:
+        p.append('brand_selling_on = Y needs offices_yes of 2 or more (04-slot-state.csv)')
+    if st.get('drop_date_confirmed') == 'Y' and n('brands_paid') < 2:
+        p.append('drop_date_confirmed = Y needs both founding brands paid (brands_paid 2 or more)')
+    if d is not None:
+        if n('offices_signed') > 0 and d < AGREEMENT_EARLIEST:
+            p.append(f'offices_signed above 0 on {fmt(d)}: no agreement is signed before {fmt(AGREEMENT_EARLIEST)}')
+        for k, first in (('name_decided', dt.date(2026, 11, 18)), ('attorney_cleared', dt.date(2026, 11, 18)), ('llc_formed', AGREEMENT_EARLIEST)):
+            if st.get(k) == 'Y' and d < first:
+                p.append(f'{k} = Y on {fmt(d)}: by the default calendar not before {fmt(first)}')
+    return p
+
+
 def cmd_lint():
     """Fill every message once with each SAMPLE row of its side, in a state that unlocks it."""
     msgs = load_messages()
     exdir, rows, states, exs = load_examples()
-    st = dict(states['_base']); st.update(states['lint-all-unlocked'])
+    st0 = dict(states['_base']); st0.update(states['lint-all-unlocked'])
     bad = 0
+    # review round 3 (R3-06): the live state, the lint state and every example state obey the folder's own gates
+    for label, stx in [('04-slot-state.csv (live)', states['_base']), ('lint-all-unlocked', st0)] + \
+            [(f'lint override {m}', dict(st0, **v)) for m, v in LINT_OVERRIDES.items()]:
+        for prob in state_problems(stx):
+            bad += 1
+            print(f'state {label}: {prob}')
+    bad += selftest_example_states(msgs, rows, states, exs)
     for mid, msg in msgs.items():
+        st = dict(st0); st.update(LINT_OVERRIDES.get(mid, {}))
+        if msg.get('stage') == 'discovery' or mid in DISCOVERY_ONLY['office'] + DISCOVERY_ONLY['brand']:
+            st.update(LINT_DISCOVERY)
         side = msg['side'] if msg['side'] in ('office', 'brand') else 'office'
         for r in rows.values():
             if r['side'] != side:
                 continue
+            r = dict(r, office_approvals_complete='Y')     # the lint state unlocks everything, including R1-04's gate
             c = Ctx(r, st, side, msg['stage'], dt.date(2026, 11, 17), next((x for x in rows.values() if x['side'] == 'brand'), {}),
                     {'TIME OPTION 1': 'Tue 2026-11-24 at 10:00', 'TIME OPTION 2': 'Wed 2026-11-25 at 14:00'})
             subj, body = fill_message(msg, c, 'A', 'SAMPLE subject')
@@ -828,6 +1111,9 @@ def cmd_lint():
                 if k == 'error':
                     bad += 1
                 print(f'{mid} [{r["row_id"]}] {k}: {t}')
+    bad += selftest_agreement_promises(msgs, rows, st0)
+    bad += selftest_discovery_refused(msgs, rows, st0)
+    bad += selftest_side_caps()
     docs = ' '.join(open(os.path.join(MSG_DIR, f), encoding='utf-8').read() for f in os.listdir(MSG_DIR) if re.match(r'^\d\d-.*\.(md|csv)$', f))
     norm = lambda t: re.sub(r'\s+', ' ', t.replace('""', '"')).strip()
     docs_n = norm(docs)
@@ -843,6 +1129,151 @@ def cmd_lint():
     return 1 if bad else 0
 
 
+def selftest_agreement_promises(msgs, rows, st0):
+    """Review round 2 (R2-01): steps 1 and 5 never promise a date the gates make false. Every combination of the
+    gates is filled on four send dates; a date may appear only when the offices are done, never in the past, and
+    "registration" only while llc_formed = N."""
+    bad, n = 0, 0
+    brand = next(r for r in rows.values() if r['side'] == 'brand')
+    for mid in ('brand-conversion-1', 'brand-conversion-5'):
+        msg = msgs[mid]
+        for signed in (0, 2, 5):
+            for appr in ('N', 'Y'):
+                for llc in ('N', 'Y'):
+                    for att in ('N', 'Y'):
+                        for name in ('N', 'Y'):
+                            for d in (dt.date(2026, 11, 17), dt.date(2026, 11, 30), dt.date(2026, 12, 1), dt.date(2026, 12, 3)):
+                                st = dict(st0, offices_signed=signed, llc_formed=llc, attorney_cleared=att, name_decided=name,
+                                          offices_yes=max(signed, 2), founding_taken=0,
+                                          tuesday_headcount={0: '', 2: 120, 5: 410}[signed])
+                                row = dict(brand, office_approvals_complete=appr)
+                                c = Ctx(row, st, 'brand', 'conversion', d)
+                                subj, body = fill_message(msg, c, 'A', 'SAMPLE subject')
+                                core = strip_marks(body.split('\x01G')[0])
+                                wait = agreement_wait(st, row)
+                                n += 1
+                                errs = []
+                                if '[AGREEMENT DATE' in core and wait != 'date':
+                                    errs.append(f'a date is promised while the agreement waits for {wait}')
+                                if wait == 'offices' and 'five offices have signed' not in core:
+                                    errs.append('the wait for five signed offices is not stated')
+                                if wait == 'approvals' and 'each of the five offices has said yes' not in core:
+                                    errs.append('the wait for the office approvals is not stated')
+                                if 'registration' in core and llc == 'Y':
+                                    errs.append('says the registration is pending after llc_formed = Y')
+                                errs += [t for k, t in check(msg, subj, body, c, None) if k == 'error'
+                                         and ('passed' in t or 'AGREEMENT DATE' in t)]
+                                for e in errs:
+                                    bad += 1
+                                    print(f'selftest {mid} signed={signed} approvals={appr} llc={llc} attorney={att} name={name} {d}: {e}')
+    print(f'selftest: agreement and invoice promises in steps 1 and 5, {n} combinations filled')
+    return bad
+
+
+def selftest_example_states(msgs, rows, states, exs):
+    """Review round 3 (R3-06): every example step's state is possible on its send date."""
+    bad, n = 0, 0
+    for ex in exs:
+        st = dict(states['_base']); st.update(states[ex['state']])
+        start = dt.date.fromisoformat(ex['start_date'])
+        for step in ex['messages']:
+            off = step.get('offset_bd', 0)
+            d = send_day(add_bd(start, off)) if off else send_day(start)
+            if step.get('days_before'):
+                d = add_bd(start, -int(step['days_before']))
+            st_step = dict(st); st_step.update({k: (int(v) if isinstance(v, str) and v.isdigit() else v) for k, v in step.get('state', {}).items()})
+            n += 1
+            for prob in state_problems(st_step, d):
+                bad += 1
+                print(f'selftest example state {ex["id"]} {step["id"]} {d}: {prob}')
+    print(f'selftest: {n} example steps checked against the gates and the default calendar')
+    return bad
+
+
+def selftest_discovery_refused(msgs, rows, st0):
+    """Review round 3 (R3-02): every discovery-only block is refused once its side's selling switch is Y, and only then."""
+    bad, n = 0, 0
+    sides = {'office': next(r for r in rows.values() if r['side'] == 'office'), 'brand': next(r for r in rows.values() if r['side'] == 'brand')}
+    for side in ('office', 'brand'):
+        for mid in DISCOVERY_ONLY[side] + DISCOVERY_ONLY['both']:
+            msg = msgs[mid]
+            for on in ('N', 'Y'):
+                for other in ('N', 'Y'):
+                    other_side = 'brand' if side == 'office' else 'office'
+                    st = dict(st0, **{f'{side}_selling_on': on, f'{other_side}_selling_on': other})
+                    c = Ctx(sides[side], st, side, msg['stage'], dt.date(2026, 11, 30))
+                    subj, body = fill_message(msg, c, 'A', 'SAMPLE subject')
+                    refused = any(k == 'error' and 'discovery copy says nothing is for sale' in t for k, t in check(msg, subj, body, c, None))
+                    n += 1
+                    if refused != (on == 'Y'):
+                        bad += 1
+                        print(f'selftest discovery {mid} as {side}, {side}_selling_on = {on}, {other_side}_selling_on = {other}: '
+                              f'{"refused" if refused else "not refused"}')
+    print(f'selftest: discovery-only copy refused under its side\'s selling switch, {n} combinations filled')
+    return bad
+
+
+def side_cap(day_n, side):
+    """Each side's share of the day's cold first touches (review round 2, R2-04): offices get the odd one,
+    so the two shares always add up to the day's number in sending/warmup-schedule.csv."""
+    return (day_n + 1) // 2 if side == 'office' else day_n // 2
+
+
+def selftest_side_caps():
+    bad = 0
+    p = os.path.join(OUT_DIR, 'sending', 'warmup-schedule.csv')
+    days = read_csv(p) if os.path.exists(p) else []
+    for r in days:
+        n = int(r['cold_email_first_touches'] or 0)
+        if side_cap(n, 'office') + side_cap(n, 'brand') != n:
+            bad += 1
+            print(f'selftest side caps {r["date"]}: {side_cap(n, "office")} + {side_cap(n, "brand")} is not {n}')
+    print(f'selftest: office and brand shares add up to the day\'s number on {len(days)} schedule days')
+    return bad
+
+
+def warmup_first_touches(d):
+    """The day's cold first-touch number from sending/warmup-schedule.csv (both sides together), or None."""
+    p = os.path.join(OUT_DIR, 'sending', 'warmup-schedule.csv')
+    try:
+        for r in read_csv(p):
+            if r['date'] == d.isoformat():
+                return int(r['cold_email_first_touches'] or 0)
+    except (OSError, KeyError, ValueError):
+        return None
+    return None
+
+
+def first_subject_for(msgs, msg, row, c, variant):
+    """The touch 1 subject this row was sent, rebuilt from its sequence variant, so a follow-up reads "Re: <it>"."""
+    t1 = next((m for m in msgs.values() if m['side'] == msg['side'] and m.get('stage') == msg.get('stage')
+               and m.get('channel') == msg.get('channel') and m.get('touch') == '1'), None)
+    if not t1:
+        return None
+    s = t1.get('subject_' + variant) or t1.get('subject') or ''
+    return strip_marks(fill_text(s, c)) if s else None
+
+
+CONVERSION_STATUSES = ('replied', 'call_booked', 'call_done', 'yes_in_principle', 'materials_sent', 'signed', 'paid')
+
+
+def fresh_why_now_note(c, msg):
+    """A touch 1 whose row has a fresh why_now (120 days or less, with its URL) but no why_now_hook written yet."""
+    if msg.get('touch') not in ('1',) or '{?why_now_hook}' not in msg['body']:
+        return ''
+    if c.val('why_now_hook') or not c.val('why_now_url'):
+        return ''
+    d = c.val('why_now_date')
+    try:
+        age = (c.date - dt.date.fromisoformat(d[:10] if len(d) >= 10 else d[:7] + '-01')).days
+    except Exception:
+        return ''
+    if 0 <= age <= 120:
+        return (f'fresh why_now ({d}, {c.val("why_now_url")}): "{c.val("why_now")[:90]}". Write why_now_hook in Clay '
+                f'(one true sentence, 03-personalization-fields.md) and run the draft again, or send without it')
+    return ''
+
+
 def cmd_drafts(args):
     import argparse
     ap = argparse.ArgumentParser()
@@ -850,31 +1281,113 @@ def cmd_drafts(args):
     ap.add_argument('--date', required=True); ap.add_argument('--out', required=True)
     ap.add_argument('--state', default=os.path.join(MSG_DIR, '04-slot-state.csv'))
     ap.add_argument('--variant', default=None)
+    ap.add_argument('--over-cap', action='store_true',
+                    help="write more cold first touches than sending/warmup-schedule.csv allows for the day (not recommended)")
+    ap.add_argument('--side-share', type=int, default=None,
+                    help='cold first touches for this side today (default: offices get half the day\'s number rounded up, brands the rest)')
     a = ap.parse_args(args)
     msgs = load_messages(); msg = msgs[a.message]
     st = load_state(a.state)
     d = dt.date.fromisoformat(a.date)
+    # review round 3 (R3-06): never write from a state the gates make impossible
+    probs = state_problems(st)
+    if probs:
+        print('refused: the slot state is not possible under the folder\'s own gates (' + '; '.join(probs) + '). '
+              'Fix messages/04-slot-state.csv (the Friday Scorecard has the counts). Nothing written.')
+        return 1
+    # R1-12 (b): never write drafts for a day nothing is sent
+    if send_day(d) != d:
+        print(f'refused: {fmt(d)} is not a sending day (weekend, federal holiday, Fri 2026-11-27 or 18 December to 4 January). '
+              f'The next sending day is {fmt(send_day(d))}. Nothing written.')
+        return 1
+    cold_t1 = msg.get('channel') == 'email' and msg.get('touch') == '1' and msg.get('stage') in ('discovery', 'selling')
+    if cold_t1 and d < EARLIEST_COLD:
+        print(f'refused: no cold email from [DOMAIN] before {fmt(EARLIEST_COLD)} (sending/sending-setup.md section 0). '
+              f'Weeks 1 and 2 run on warm asks, LinkedIn and walk-ins (files 07 and 08). Nothing written.')
+        return 1
+    cap = None
+    if cold_t1 and not a.over_cap:
+        day_n = warmup_first_touches(d)
+        if day_n is None:
+            print(f'refused: {d} is not in sending/warmup-schedule.csv, so the day\'s cold email number is unknown. '
+                  f'Rebuild the schedule (tools/build_warmup.py) or pass --over-cap. Nothing written.')
+            return 1
+        cap = a.side_share if a.side_share is not None else side_cap(day_n, msg['side'])
+        cap = min(cap, day_n)
+        other = 'brand' if msg['side'] == 'office' else 'office'
+        print(f'cap: {cap} cold first touches for {msg["side"]}s on {d} (sending/warmup-schedule.csv: {day_n} for both sides; '
+              f'{side_cap(day_n, other)} for {other}s)')
     os.makedirs(a.out, exist_ok=True)
     n = 0
     for r in read_csv(a.daily):
+        rid = r.get('row_id')
         if r.get('side') and r['side'] != msg['side'] and msg['side'] in ('office', 'brand'):
-            print(f'skip {r.get("row_id")}: a {r["side"]} row, and {a.message} is for {msg["side"]}s'); continue
+            print(f'skip {rid}: a {r["side"]} row, and {a.message} is for {msg["side"]}s'); continue
         if (r.get('do_not_contact') or 'Y').strip().upper() != 'N':
-            print(f'skip {r.get("row_id")}: do_not_contact is not N'); continue
-        need = 'queued' if msg.get('touch') in ('1', '0') else 'contacted'
-        if (r.get('status') or '').strip() not in (need, 'new' if need == 'queued' else need):
-            print(f'skip {r.get("row_id")}: status {r.get("status")} (needs {need})'); continue
+            print(f'skip {rid}: do_not_contact is not N'); continue
+        # R1-12 (d): an opt-out date or a hold from the Clay tables stops the row, whatever do_not_contact says
+        if (r.get('opt_out_date') or '').strip():
+            print(f'skip {rid}: opt_out_date {r["opt_out_date"].strip()} is filled (an opt-out is never reversed; set do_not_contact = Y in Clay)'); continue
+        if (r.get('hold_before_outreach') or '').strip().upper() == 'Y':
+            why = (r.get('hold_reason') or r.get('hold_note') or '').strip()
+            print(f'skip {rid}: hold_before_outreach = Y in the Clay table{": " + why if why else ""} (clear it in Clay first)'); continue
+        ls = (r.get('lease_status') or '').strip()
+        if msg['side'] == 'office' and ls in ('signed-not-occupied', 'moving-out'):
+            print(f'skip {rid}: lease_status {ls} (not in its cluster office now: confirm on the lobby directory first, cluster-1-flatiron/HANDOFF.md)'); continue
+        status = (r.get('status') or '').strip()
+        if msg.get('stage') == 'conversion':
+            # a post-call email goes to someone who has talked to you (review round 2: the cold-sequence rule refused them)
+            if status not in CONVERSION_STATUSES:
+                print(f'skip {rid}: status {status or "blank"} (a post-call email needs one of {", ".join(CONVERSION_STATUSES)})'); continue
+        else:
+            need = 'queued' if msg.get('touch') in ('1', '0') else 'contacted'
+            if status not in (need, 'new' if need == 'queued' else need):
+                print(f'skip {rid}: status {r.get("status")} (needs {need})'); continue
+            # review round 3 (R3-02): a follow-up continues the thread the row is on, discovery or selling
+            seq = (r.get('sequence') or '').strip()
+            if msg.get('touch') in ('2', '3') and seq and msg.get('stage') in ('discovery', 'selling') and f'-{msg["stage"]}-' not in seq:
+                print(f'skip {rid}: the row is on sequence {seq}; {a.message} belongs to a {msg["stage"]} thread (send that sequence\'s touch {msg["touch"]})'); continue
+        if cap is not None and n >= cap:
+            print(f'skip {rid}: the day\'s cap of {cap} cold first touches is reached (sending/warmup-schedule.csv; --over-cap to override)'); continue
         c = Ctx(r, st, msg['side'], msg['stage'], d)
         variant = a.variant or (r.get('sequence', '')[-1:] if r.get('sequence') else 'A')
-        subj, body = fill_message(msg, c, variant if variant in 'AB' else 'A')
+        variant = variant if variant in ('A', 'B') else 'A'
+        # R1-12 (a): a follow-up is "Re: <the subject touch 1 actually had>"
+        first_subject = first_subject_for(msgs, msg, r, Ctx(r, st, msg['side'], msg['stage'], d), variant) if msg.get('touch') in ('2', '3') else None
+        subj, body = fill_message(msg, c, variant, first_subject)
         fnd = [x for x in check(msg, subj, body, c, None) if x[0] == 'error' or 'nothing about this person' in x[1]]
         if fnd:
-            print(f'skip {r.get("row_id")}: ' + '; '.join(t for _, t in fnd)); continue
-        to = r.get('work_email') if msg.get('channel') in ('email', 'warm-intro', 'walk-in') else r.get('contact_linkedin_url')
+            print(f'skip {rid}: ' + '; '.join(t for _, t in fnd)); continue
+        if 'NOT CLEARED TO NAME' in strip_marks(subj + body):
+            print(f'skip {rid}: the referrer has not agreed to be named (referrer_ok_to_name); use the ordinary first touch'); continue
+        if '(touch 1 subject)' in strip_marks(subj):
+            print(f'skip {rid}: could not rebuild the touch 1 subject; copy it from the sent email'); continue
+        is_mail = msg.get('channel', '').startswith('email') or msg.get('channel') in ('warm-intro', 'walk-in')
+        to = r.get('work_email') if is_mail else r.get('contact_linkedin_url')
+        if not (to or '').strip():
+            print(f'skip {rid}: no {"work_email" if is_mail else "contact_linkedin_url"} on the row'); continue
+        if msg.get('channel') == 'email' and msg.get('stage') in ('discovery', 'selling') and (r.get('email_status') or '').strip() != 'verified':
+            print(f'skip {rid}: email_status is {r.get("email_status") or "blank"}, not verified (03: LinkedIn or walk-in instead)'); continue
         out = f'To: {to}\nSubject: {natural_dates(strip_marks(subj), True)}\n\n{natural_dates(strip_marks(body))}\n'
-        open(os.path.join(a.out, f'{r.get("row_id")}.txt'), 'w', encoding='utf-8').write(out)
+        # review round 2 (R2-18): A's row may hold a fresh reason to write that the founder has not turned into a hook yet
+        hook_note = fresh_why_now_note(c, msg)
+        if hook_note:
+            print(f'note {rid}: {hook_note}')
+            out = f'# NOTE (delete this line before sending): {hook_note}\n' + out
+        # review round 3 (R3-07): what is still yours to fill or check goes on the draft itself, not only in this output
+        left = [x for x in dict.fromkeys(re.findall(r'\[([^\[\]]+)\]', out)) if x not in FOUNDER_PLACEHOLDERS]
+        todo = []
+        if left:
+            todo.append('fill before sending: ' + ', '.join(f'[{x}]' for x in left))
+        if any(n_.startswith('COMPANY NAME:') for n_ in c.notes):
+            todo.append(f'check "{brand_name()} LLC" letter for letter against the filed Articles')
+        if todo:
+            print(f'note {rid}: ' + '; '.join(todo))
+            out = f'# NOTE (delete this line before sending): {"; ".join(todo)}\n' + out
+        open(os.path.join(a.out, f'{rid}.txt'), 'w', encoding='utf-8').write(out)
         n += 1
     print(f'{n} drafts written to {a.out}. Nothing was sent.')
+    return 0
 
 
 if __name__ == '__main__':

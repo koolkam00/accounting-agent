@@ -14,6 +14,7 @@ import argparse
 import datetime as dt
 import os
 import sys
+sys.dont_write_bytecode = True   # no __pycache__ in the deliverable folder (review round 3, R3-11)
 
 from openpyxl import Workbook
 from openpyxl.comments import Comment
@@ -107,15 +108,25 @@ LISTS = {
     "yes_signals": ["named_window_unprompted", "asked_when", "introduced_colleague"],
     "other_approver": ["facilities", "hr", "ceo-or-assistant", "landlord-or-building", "finance", "other"],
 }
+POSITIVE_REPLY_TYPES = ("yes", "maybe", "needs_approval", "send_info", "referral", "not_now",
+                        "obj_seed_ourselves", "obj_price", "obj_free_trial", "obj_what_we_get", "obj_other")
 SEQUENCES = ["office-discovery-A", "office-discovery-B", "office-selling-A", "office-selling-B",
              "brand-discovery-A", "brand-discovery-B", "brand-selling-A", "brand-selling-B",
              "office-conversion-A", "brand-conversion-A"]
 
 # ----------------------------------------------------------------------------- column specs
 # (key, kind, width, help, maps_to). kind: id | text | date | num | list:<name>
+# review round 3 (R3-01): Gate 0 counts organisations, not Clay rows. Every count keys on calc_org (grey column after
+# calc_sync_issue): the typed org_key, else A's company_group when it links several Clay rows (grp-...), else the
+# company name, ignoring case and spaces.
+ORG_KEY_HELP = ("Optional; usually blank. The tracker counts every row of one organisation once, under calc_org: this cell if you type it, "
+                "else the Clay company_group when it links several rows (grp-...), else the company name (case and spaces ignored). "
+                "Type the same text on each row only to join rows whose company is written differently, or two different values to split "
+                "two organisations that share a name.")
 OFFICE_COLS = [
     ("row_id", "id", 15, "Clay row_id of this contact. Required. One row per conversation; a second call with the same office is a second row with the same row_id.", "CONTRACTS 6.2 row_id (join key)"),
-    ("company", "text", 20, "Company name as in Clay.", "plan: Contact, title, company, source"),
+    ("company", "text", 20, "Company name as in Clay. Two contacts at one company: type the company the same way on both rows, and the office counts once.", "plan: Contact, title, company, source"),
+    ("org_key", "text", 12, ORG_KEY_HELP, "review round 3: one organisation, counted once"),
     ("contact_name", "text", 17, "First and last name of the person you spoke to (business contact only).", "plan: Contact"),
     ("contact_title", "text", 18, "Their title.", "plan: title"),
     ("source", "text", 16, "Where the contact came from: the Clay table, warm network, walk-in, or 'referral from <row_id>'.", "plan: source"),
@@ -167,7 +178,8 @@ OFFICE_COLS = [
 
 BRAND_COLS = [
     ("row_id", "id", 15, "Clay row_id of this contact. Required. One row per conversation; a second call is a second row with the same row_id.", "CONTRACTS 6.2 row_id (join key)"),
-    ("company", "text", 20, "Brand name as in Clay.", "plan: Contact, title, company, source"),
+    ("company", "text", 20, "Brand name as in Clay. Two founders of one brand: type the brand the same way on both rows, and the brand counts once.", "plan: Contact, title, company, source"),
+    ("org_key", "text", 12, ORG_KEY_HELP, "review round 3: one organisation, counted once"),
     ("contact_name", "text", 17, "First and last name of the person you spoke to.", "plan: Contact"),
     ("contact_title", "text", 18, "Their title.", "plan: title"),
     ("source", "text", 16, "Where the contact came from: Clay table, Startup CPG event, shelf photo, warm network, referral.", "plan: source"),
@@ -195,8 +207,8 @@ BRAND_COLS = [
     ("qual_q1_sealed_shelf_stable_60d", "list:yesno_unsure_yn", 7, "Qualifying call (weeks 4 to 7). Individually packaged, sealed, shelf-stable, 60+ days of shelf life at delivery? Y, N or unsure, in their words.", "plan Phase 2 checklist 1; brand_intake q1"),
     ("qual_q2_labeled_ingredients_allergens", "list:yesno_unsure_yn", 7, "Label shows ingredients and the nine major allergens?", "checklist 2; brand_intake q2"),
     ("qual_q3_buy_path_near_cluster", "list:yesno_unsure_yn", 7, "Stocked within ten blocks of the cluster, or online with a discount code? (Q6 above.)", "checklist 3; brand_intake q3"),
-    ("qual_q4_can_ship_275_in_10bd", "list:yesno_unsure_yn", 7, "Can ship 275 units (250 plus reserve) to one Manhattan address within ten business days?", "checklist 4; brand_intake q4"),
-    ("qual_q5_product_liability_insurance", "list:yesno_unsure_yn", 7, "Carries product liability insurance and can send a certificate naming the company?", "checklist 5; brand_intake q5"),
+    ("qual_q4_can_ship_275_in_10bd", "list:yesno_unsure_yn", 7, "Can ship 275 units (250 to place plus a 10% reserve) to one Manhattan address within ten business days?", "checklist 4; brand_intake q4"),
+    ("qual_q5_product_liability_insurance", "list:yesno_unsure_yn", 7, "Carries product liability insurance of at least $1,000,000 per occurrence and can add the company as additional insured until 12 months after the campaign? Less cover is N.", "checklist 5; brand_intake q5"),
     ("qual_q6_contact_can_approve_600", "list:yesno_unsure_yn", 7, "Can this person approve $600 without a committee?", "checklist 6; brand_intake q6"),
     ("qual_q7_why_now", "text", 20, "Their reason to want New York trial now (new store, launch, local push), in their words. Blank if none.", "checklist 7; brand_intake q7"),
     ("qual_not_excluded", "list:yn", 7, "Y = not alcohol, cannabis, CBD or THC, a supplement, refrigerated, needing preparation, or carrying a health claim (CONTRACTS 4).", "CONTRACTS section 4"),
@@ -305,9 +317,12 @@ LATER_COLS = [
     ("notes", "text", 24, "Anything else.", "pipeline_log notes"),
 ]
 PIPELINE_COLS = ["date", "side", "org_id", "org_name", "event", "value_number", "value_text", "controls_budget", "notes"]
+CUT_TAGS = ("w1", "w2", "g0", "asof")      # the Scorecard's four cut-off columns (B to E)
 
 CLAY_NEEDED = ["row_id", "company", "status", "do_not_contact", "channel", "sequence", "touch_1_date", "touch_2_date",
-               "touch_3_date", "last_reply_date", "reply_type", "call_date", "yes_in_principle", "opt_out_date"]
+               "touch_3_date", "last_reply_date", "reply_type", "call_date", "yes_in_principle", "opt_out_date",
+               "company_group"]     # review round 3 (R3-01): A's group of related rows (CONTRACTS 6.2 tables, A's HANDOFF section 2)
+SYNC_GROUP_ROW = 5 + CLAY_NEEDED.index("company_group")
 
 CLAY_TRACKING = [
     # column, type, allowed values, written when, rule
@@ -319,7 +334,7 @@ CLAY_TRACKING = [
     ("reply_type", "list", "yes, maybe, needs_approval, send_info, wrong_person, referral, not_now, no, opt_out, obj_seed_ourselves, obj_price, obj_free_trial, obj_what_we_get, obj_other, out_of_office, bounce", "Each reply (the latest meaningful one)", "Silence stays blank"),
     ("call_date", "date", "YYYY-MM-DD", "After each conversation, copied from the tracker row", "Equals the latest call_date for this row_id in the tracker"),
     ("call_notes", "text", "One line plus 'see tracker <call_date>'", "After each conversation", "The full notes live in the tracker, not in Clay"),
-    ("yes_in_principle", "Y/N", "Y or N", "After each conversation, copied from the tracker", "Y if any tracker row for this row_id says Y; maybe in the tracker is N here"),
+    ("yes_in_principle", "Y/N", "Y or N", "After each conversation, copied from the tracker", "The latest answer for this row_id in the tracker: Y only if the latest Y, N or maybe is Y (a later N or maybe withdraws an earlier yes); maybe in the tracker is N here"),
     ("next_action", "list", "send_touch_2, send_touch_3, await_connection, book_call, run_call, send_one_pager, send_proposal, send_agreement, send_materials_request, chase_payment, ask_referral, recontact, none", "Whenever the next step changes", "Clay is the only place next actions live"),
     ("next_action_date", "date", "YYYY-MM-DD", "With next_action", "Drives the follow-up list each morning"),
     ("opt_out_date", "date", "YYYY-MM-DD", "The same day anyone opts out, in any words, on any channel", "Also set do_not_contact = Y and status = do_not_contact. Never cleared"),
@@ -419,6 +434,13 @@ class Book:
             ("target_tuesday_headcount", 350, "Gate 1: combined Tuesday headcount of the signed offices."),
             ("target_brands_paid", 2, "Gate 1: two founding campaigns paid in full. One is a soft pass (plan Phase 2)."),
             ("founding_price_usd", 600, "Founding price, paid in full before shipping."),
+            ("opt_out_rate_flag", 0.05, "Opt-outs over this share of first touches (with enough first touches to judge) flag targeting and copy (sending guide 6.3 to 6.4). Judgment, not a published standard."),
+            ("opt_out_min_count", 3, "The opt-out check flags only with at least this many opt-outs, as the bounce rule does: at 30 to 40 first touches, 2 opt-outs is noise (review round 2). Judgment."),
+            # review round 3 (R3-04, R3-09)
+            ("office_floor", 30, "Plan: offices with fewer than 30 people on a Tuesday are excluded. A Gate 0 yes from a smaller office is shown but not counted."),
+            ("office_preferred_min", 40, "Plan: 40 to 250 on a Tuesday. 30 to 39 is your call: counted, and shown on its own row."),
+            ("office_ceiling", 250, "Plan: offices with more than 250 people on a Tuesday are excluded. A Gate 0 yes from a larger office is shown but not counted."),
+            ("gate0_final_read", dt.date(2026, 11, 27), "Last read of Gate 0 (default, founder to confirm). From this date a side short of its target reads FAIL whatever the number of conversations, and the plan's failure response applies. Earlier, a side reads FAIL as soon as it has held 15 conversations."),
         ]
         header(ws, 2, 1, "setting", width=30)
         header(ws, 2, 2, "value", width=46)
@@ -428,7 +450,7 @@ class Book:
             c = put(ws, f"B{i}", v)
             if isinstance(v, dt.date) or k in ("as_of_date", "clay_offices_export_date", "clay_brands_export_date"):
                 c.number_format = DATE_FMT
-            if k == "reply_rate_target":
+            if k in ("reply_rate_target", "opt_out_rate_flag"):
                 c.number_format = "0%"
             put(ws, f"C{i}", note, font=F_NOTE)
             self.cfg[k] = f"Config!$B${i}"
@@ -461,17 +483,24 @@ class Book:
         name = "Office_Log" if side == "office" else "Brand_Log"
         ws = self.ws[name]
         specs = OFFICE_COLS if side == "office" else BRAND_COLS
+        # review round 3 (R3-01): calc_org (visible) and its helpers come first after the sync issue
+        org_calc = ["calc_cokey", "calc_grp", "calc_cogrp", "calc_orgfirst", "calc_orgrid", "calc_rid_first", "calc_multi"]
         if side == "office":
-            calc = ["calc_sync_issue", "calc_row", "calc_valid", "calc_conv_first", "calc_latest", "calc_q_yes", "calc_q_yes_first",
+            calc = ["calc_sync_issue", "calc_org", "calc_row", "calc_valid", "calc_conv_first", "calc_latest", "calc_q_yes", "calc_q_yes_first",
                     "calc_yes_incomplete", "calc_bp_has", "calc_bp_first", "calc_bp_w1", "calc_bp_w2", "calc_bp_g0", "calc_bp_asof",
                     "calc_bp100_first", "calc_spend_has", "calc_spend_first", "calc_spend_asof", "calc_probe_row", "calc_probe_first",
                     "calc_probe_key", "calc_probe_missing_text", "calc_obj1", "calc_obj2", "calc_obj3", "calc_note_min", "calc_yes_any",
                     "calc_maybe", "calc_maybe_first", "calc_yes_any_first", "calc_bp100", "calc_short", "calc_short_first", "calc_warm", "calc_warm_first",
                     "calc_reach", "calc_reach_first", "calc_alone", "calc_alone_first", "calc_q5y", "calc_q5y_first", "calc_svc", "calc_svc_first",
                     "calc_hc_has", "calc_hc_first", "calc_hc_asof", "calc_appr", "calc_quote", "calc_quote_first",
-                    "calc_clay_idx", "calc_clay_status", "calc_clay_rank", "calc_clay_yes", "calc_clay_call_date"]
+                    "calc_clay_idx", "calc_clay_status", "calc_clay_rank", "calc_clay_yes", "calc_clay_call_date",
+                    # review round 2 (R2-02, R2-10): a yes counts only while it stands; text in number cells; times in call_date
+                    "calc_ans", "calc_ylast"] + [f"calc_{k}_{t}" for k in ("last", "stand", "qc", "yac", "wd") for t in CUT_TAGS] + [
+                    "calc_num_text", "calc_has_time"] + org_calc + [
+                    # review round 3 (R3-04): the office's Tuesday headcount against the plan's 30 to 250
+                    "calc_hc_last", "calc_hc_org", "calc_hc_out", "calc_hc_3039"] + [f"calc_{k}_{t}" for k in ("qcout", "qc3039") for t in CUT_TAGS]
         else:
-            calc = ["calc_sync_issue", "calc_row", "calc_valid", "calc_conv_first", "calc_latest", "calc_g0", "calc_g0_first",
+            calc = ["calc_sync_issue", "calc_org", "calc_row", "calc_valid", "calc_conv_first", "calc_latest", "calc_g0", "calc_g0_first",
                     "calc_g0_strict", "calc_g0_strict_first", "calc_g0_noctrl", "calc_g0_noctrl_first",
                     "calc_wb_has", "calc_wb_first", "calc_wb_w1", "calc_wb_w2", "calc_wb_g0", "calc_wb_asof",
                     "calc_wa_has", "calc_wa_first", "calc_wa_w1", "calc_wa_w2", "calc_wa_g0", "calc_wa_asof",
@@ -479,15 +508,20 @@ class Book:
                     "calc_obj1", "calc_obj2", "calc_obj3", "calc_note_min", "calc_yes_any", "calc_yes_any_first",
                     "calc_qualified", "calc_qualified_first", "calc_short", "calc_short_first",
                     "calc_seeded", "calc_seeded_first", "calc_q2hi_asof", "calc_quote", "calc_quote_first",
-                    "calc_clay_idx", "calc_clay_status", "calc_clay_rank", "calc_clay_yes", "calc_clay_call_date"]
+                    "calc_clay_idx", "calc_clay_status", "calc_clay_rank", "calc_clay_yes", "calc_clay_call_date",
+                    "calc_bneg", "calc_bans", "calc_ans", "calc_ylast"] + [f"calc_{k}_{t}" for k in ("blast", "bstand", "g0c", "g0sc", "bwd") for t in CUT_TAGS] + [
+                    "calc_num_text", "calc_has_time"] + org_calc
         C = Cols(specs, calc)
         self._input_tab(ws, specs, LOG_N)
         calc_help = {
             "calc_sync_issue": "Calculated. What disagrees with the latest Clay paste. Fix it in Clay (or fix this row), then re-paste on Friday. Blank = in sync.",
+            "calc_org": ("Calculated. The organisation this row is counted under (review round 3): org_key if typed, else the Clay company_group "
+                         "when it links several rows (grp-...), else the company name in lower case. Every Gate 0 count, median and "
+                         "pipeline org_id is one per calc_org, so two contacts at one company count once."),
         }
         for k in calc:
             header(ws, 1, C.idx[k], k, calc=True, comment=calc_help.get(k, "Calculated. Do not type here."),
-                   width=34 if k == "calc_sync_issue" else 11)
+                   width=34 if k == "calc_sync_issue" else (18 if k == "calc_org" else 11))
         N1, N2 = 2, LOG_N + 1
         R = lambda k: f"${C.L(k)}${N1}:${C.L(k)}${N2}"
         INC = self.cfg["include_sample"]
@@ -496,16 +530,44 @@ class Book:
         sc = "C" if side == "office" else "D"          # column of Sync's header map for this side
         CR = f"{clay}!$A$2:${CLAY_LAST_COL}${CLAY_N + 1}"
 
-        def earliest(flag, r):
-            return (f'=IF({C.L(flag)}{r}=1,IF(COUNTIFS({R("row_id")},$A{r},{R(flag)},1,{R("call_date")},"<"&{C.L("call_date")}{r})'
-                    f'+COUNTIFS({R("row_id")},$A{r},{R(flag)},1,{R("call_date")},{C.L("call_date")}{r},{R("calc_row")},"<"&{C.L("calc_row")}{r})=0,1,0),0)')
+        def kref(key, r):
+            """review round 3 (R3-01): 'org' groups rows by calc_org (one organisation); 'rid' by the Clay row_id (one person)."""
+            return (R("calc_org"), f"{C.L('calc_org')}{r}") if key == "org" else (R("row_id"), f"$A{r}")
 
-        def latest(flag, r):
-            return (f'=IF({C.L(flag)}{r}=1,IF(COUNTIFS({R("row_id")},$A{r},{R(flag)},1,{R("call_date")},">"&{C.L("call_date")}{r})'
-                    f'+COUNTIFS({R("row_id")},$A{r},{R(flag)},1,{R("call_date")},{C.L("call_date")}{r},{R("calc_row")},">"&{C.L("calc_row")}{r})=0,1,0),0)')
+        def earliest(flag, r, key="org"):
+            kr, kv = kref(key, r)
+            return (f'=IF({C.L(flag)}{r}=1,IF(COUNTIFS({kr},{kv},{R(flag)},1,{R("call_date")},"<"&{C.L("call_date")}{r})'
+                    f'+COUNTIFS({kr},{kv},{R(flag)},1,{R("call_date")},{C.L("call_date")}{r},{R("calc_row")},"<"&{C.L("calc_row")}{r})=0,1,0),0)')
+
+        def latest(flag, r, key="rid"):
+            kr, kv = kref(key, r)
+            return (f'=IF({C.L(flag)}{r}=1,IF(COUNTIFS({kr},{kv},{R(flag)},1,{R("call_date")},">"&{C.L("call_date")}{r})'
+                    f'+COUNTIFS({kr},{kv},{R(flag)},1,{R("call_date")},{C.L("call_date")}{r},{R("calc_row")},">"&{C.L("calc_row")}{r})=0,1,0),0)')
 
         def cut(first, val, cutoff, r):
-            return f'=IF(AND({C.L(first)}{r}=1,{C.L("call_date")}{r}<={cutoff}),{C.L(val)}{r},"")'
+            # INT(N(...)): a call_date typed with a time of day still counts on its day (review round 2, R2-10)
+            return f'=IF(AND({C.L(first)}{r}=1,INT(N({C.L("call_date")}{r}))<={cutoff}),{C.L(val)}{r},"")'
+
+        def last_by(flag, cutoff, r, key="org"):
+            """1 on the latest row of this organisation (key 'org') or row_id (key 'rid') with flag = 1 (by call_date, then
+            sheet order), on or before the cut-off; cutoff None = no cut-off."""
+            kr, kv = kref(key, r)
+            d_ = f'{C.L("call_date")}{r}'
+            within = f',INT(N({d_}))<={cutoff}' if cutoff else ''
+            upto = f',{R("call_date")},"<"&({cutoff}+1)' if cutoff else ''
+            return (f'=IF(AND({C.L(flag)}{r}=1{within}),IF(COUNTIFS({kr},{kv},{R(flag)},1,{R("call_date")},">"&{d_}{upto})'
+                    f'+COUNTIFS({kr},{kv},{R(flag)},1,{R("call_date")},{d_},{R("calc_row")},">"&{C.L("calc_row")}{r})=0,1,0),0)')
+
+        def keyify(expr):
+            """A key that COUNTIFS and MATCH match only to itself: lower case, trimmed, without the wildcard and operator
+            characters * ? ~ < > = (review round 3, R3-01)."""
+            out = f"LOWER(TRIM({expr}))"
+            for ch in ("~", "*", "?", "<", ">", "="):
+                out = f'SUBSTITUTE({out},"{ch}","")'
+            return out
+
+        cuts = dict(zip(CUT_TAGS, (W1, W2, G0, AS)))
+        num_cols = [k for k, kind, *_ in specs if kind == "num"]
 
         hdr_row = f"Sync!${sc}$"
         for r in range(N1, N2 + 1):
@@ -518,9 +580,30 @@ class Book:
             f["calc_obj1"] = f'=IF({C.L("calc_valid")}{r}=1,{C.L("objection_1")}{r}&"","")'
             f["calc_obj2"] = f'=IF({C.L("calc_valid")}{r}=1,{C.L("objection_2")}{r}&"","")'
             f["calc_obj3"] = f'=IF({C.L("calc_valid")}{r}=1,{C.L("objection_3")}{r}&"","")'
-            f["calc_note_min"] = f'=IF(AND({C.L("calc_valid")}{r}=1,ISNUMBER({C.L("note_minutes")}{r}),{d}<={AS}),{C.L("note_minutes")}{r},"")'
-            f["calc_yes_any"] = (f'=IF({C.L("calc_valid")}{r}=1,IF(COUNTIFS({R("row_id")},$A{r},{R("yes_in_principle")},"Y",{R("calc_valid")},1)>0,"Y","N"),"")')
+            f["calc_note_min"] = f'=IF(AND({C.L("calc_valid")}{r}=1,ISNUMBER({C.L("note_minutes")}{r}),INT(N({d}))<={AS}),{C.L("note_minutes")}{r},"")'
+            # Clay's yes_in_principle follows the latest answer (Y, N or maybe) for the row_id, not any Y ever given (R2-02)
+            f["calc_ans"] = (f'=IF(AND({C.L("calc_valid")}{r}=1,OR({C.L("yes_in_principle")}{r}="Y",{C.L("yes_in_principle")}{r}="N",'
+                             f'{C.L("yes_in_principle")}{r}="maybe")),1,0)')
+            f["calc_ylast"] = last_by("calc_ans", None, r, key="rid")      # Clay's yes_in_principle is per person (row_id)
+            f["calc_yes_any"] = (f'=IF({C.L("calc_valid")}{r}=1,IF(COUNTIFS({R("row_id")},$A{r},{R("calc_ylast")},1,{R("yes_in_principle")},"Y")>0,"Y","N"),"")')
+            f["calc_num_text"] = f'=IF(TRIM($A{r})="",0,' + "+".join(f'ISTEXT({C.L(k)}{r})' for k in num_cols) + ')'
+            f["calc_has_time"] = f'=IF({C.L("calc_valid")}{r}=1,IF({d}<>INT({d}),1,0),0)'
             f["calc_clay_idx"] = (f'=IF({C.L("calc_valid")}{r}=1,IFERROR(MATCH($A{r},INDEX({CR},0,{hdr_row}5),0),""),"")')
+            # review round 3 (R3-01): the organisation key. A grp- company_group (A's link between related rows) joins rows
+            # across company names; a row whose own Clay row has no group joins the group of a row with the same company name.
+            co, grp_cell = f'{C.L("company")}{r}', f'INDEX({CR},{C.L("calc_clay_idx")}{r},{hdr_row}{SYNC_GROUP_ROW})&""'
+            f["calc_cokey"] = f'=IF(TRIM($A{r})="","",IF(TRIM({co})="",{keyify(f"$A{r}")},{keyify(co)}))'
+            f["calc_grp"] = (f'=IF({C.L("calc_clay_idx")}{r}="","",IFERROR(IF(LEFT(LOWER(TRIM({grp_cell})),4)="grp-",'
+                             f'{keyify(grp_cell)},""),""))')
+            f["calc_cogrp"] = f'=IF({C.L("calc_grp")}{r}<>"",{C.L("calc_cokey")}{r},"")'
+            ok_ = f'{C.L("org_key")}{r}'
+            f["calc_org"] = (f'=IF(TRIM($A{r})="","",IF(TRIM({ok_})<>"",{keyify(ok_)},'
+                             f'IF({C.L("calc_grp")}{r}<>"",{C.L("calc_grp")}{r},'
+                             f'IFERROR(INDEX({R("calc_grp")},MATCH({C.L("calc_cokey")}{r},{R("calc_cogrp")},0)),{C.L("calc_cokey")}{r}))))')
+            f["calc_orgfirst"] = f'=IF({C.L("calc_conv_first")}{r}=1,{C.L("calc_org")}{r},"")'
+            f["calc_orgrid"] = f'=IF(TRIM($A{r})="","",IFERROR(INDEX($A${N1}:$A${N2},MATCH({C.L("calc_org")}{r},{R("calc_orgfirst")},0))&"",$A{r}&""))'
+            f["calc_rid_first"] = earliest("calc_valid", r, key="rid")
+            f["calc_multi"] = (f'=IF({C.L("calc_conv_first")}{r}=1,IF(COUNTIFS({R("calc_org")},{C.L("calc_org")}{r},{R("calc_rid_first")},1)>1,1,0),0)')
             for key, hrow in (("calc_clay_status", 7), ("calc_clay_yes", 17)):
                 f[key] = f'=IF({C.L("calc_clay_idx")}{r}="","",IFERROR(INDEX({CR},{C.L("calc_clay_idx")}{r},{hdr_row}{hrow})&"",""))'
             f["calc_clay_call_date"] = f'=IF({C.L("calc_clay_idx")}{r}="","",IFERROR(N(INDEX({CR},{C.L("calc_clay_idx")}{r},{hdr_row}16)),0))'
@@ -545,14 +628,28 @@ class Book:
                 f["calc_probe_row"] = (f'=IF(AND({C.L("calc_valid")}{r}=1,OR(TRIM({C.L("budget_probe_verbatim")}{r})<>"",'
                                        f'ISNUMBER({C.L("budget_probe_low_usd")}{r}))),1,0)')
                 f["calc_probe_first"] = earliest("calc_probe_row", r)
-                f["calc_probe_key"] = f'=IF({C.L("calc_probe_first")}{r}=1,$A{r},"")'
+                f["calc_probe_key"] = f'=IF({C.L("calc_probe_first")}{r}=1,{C.L("calc_org")}{r},"")'
                 f["calc_probe_missing_text"] = (f'=IF(AND({C.L("calc_valid")}{r}=1,{C.L("budget_probe_asked")}{r}="Y",'
                                                 f'TRIM({C.L("budget_probe_verbatim")}{r})=""),1,0)')
                 f["calc_maybe"] = f'=IF(AND({C.L("calc_valid")}{r}=1,{C.L("yes_in_principle")}{r}="maybe"),1,0)'
                 f["calc_maybe_first"] = earliest("calc_maybe", r)
                 f["calc_yes_any_first"] = (f'=IF(AND({C.L("calc_valid")}{r}=1,{C.L("yes_in_principle")}{r}="Y"),'
-                                           f'IF(COUNTIFS({R("row_id")},$A{r},{R("yes_in_principle")},"Y",{R("calc_valid")},1,{R("call_date")},"<"&{d})'
-                                           f'+COUNTIFS({R("row_id")},$A{r},{R("yes_in_principle")},"Y",{R("calc_valid")},1,{R("call_date")},{d},{R("calc_row")},"<"&{C.L("calc_row")}{r})=0,1,0),0)')
+                                           f'IF(COUNTIFS({R("calc_org")},{C.L("calc_org")}{r},{R("yes_in_principle")},"Y",{R("calc_valid")},1,{R("call_date")},"<"&{d})'
+                                           f'+COUNTIFS({R("calc_org")},{C.L("calc_org")}{r},{R("yes_in_principle")},"Y",{R("calc_valid")},1,{R("call_date")},{d},{R("calc_row")},"<"&{C.L("calc_row")}{r})=0,1,0),0)')
+                # review round 2 (R2-02): a yes counts at a cut-off only if the office's latest answer (Y, N or maybe) on or
+                # before that cut-off is still Y. A later N or maybe withdraws it.
+                for t, cv in cuts.items():
+                    f[f"calc_last_{t}"] = last_by("calc_ans", cv, r)
+                    f[f"calc_stand_{t}"] = (f'=IF({C.L("calc_valid")}{r}=1,IF(COUNTIFS({R("calc_org")},{C.L("calc_org")}{r},{R(f"calc_last_{t}")},1,'
+                                            f'{R("yes_in_principle")},"Y")>0,1,0),0)')
+                    within = f'INT(N({d}))<={cv}'
+                    # review round 3 (R3-04): an office outside 30 to 250 on a Tuesday is shown, not counted
+                    hc_in = f'{C.L("calc_hc_out")}{r}=0'
+                    f[f"calc_qc_{t}"] = f'=IF(AND({C.L("calc_q_yes_first")}{r}=1,{within},{C.L(f"calc_stand_{t}")}{r}=1,{hc_in}),1,0)'
+                    f[f"calc_qcout_{t}"] = f'=IF(AND({C.L("calc_q_yes_first")}{r}=1,{within},{C.L(f"calc_stand_{t}")}{r}=1,{C.L("calc_hc_out")}{r}=1),1,0)'
+                    f[f"calc_qc3039_{t}"] = f'=IF(AND({C.L(f"calc_qc_{t}")}{r}=1,{C.L("calc_hc_3039")}{r}=1),1,0)'
+                    f[f"calc_yac_{t}"] = f'=IF(AND({C.L("calc_yes_any_first")}{r}=1,{within},{C.L(f"calc_stand_{t}")}{r}=1,{hc_in}),1,0)'
+                    f[f"calc_wd_{t}"] = f'=IF(AND({C.L("calc_yes_any_first")}{r}=1,{within},{C.L(f"calc_stand_{t}")}{r}=0),1,0)'
             else:
                 thr = self.cfg["brand_wtp_threshold_usd"]
                 wb_, wa_ = f'{C.L("wtp_before_usd")}{r}', f'{C.L("wtp_after_usd")}{r}'
@@ -581,8 +678,22 @@ class Book:
                 f["calc_wtp_missing_text"] = (f'=IF(AND({C.L("calc_valid")}{r}=1,OR(AND(ISNUMBER({wb_}),TRIM({C.L("wtp_before_verbatim")}{r})=""),'
                                               f'AND(ISNUMBER({wa_}),TRIM({C.L("wtp_after_verbatim")}{r})=""))),1,0)')
                 f["calc_yes_any_first"] = (f'=IF(AND({C.L("calc_valid")}{r}=1,{C.L("yes_in_principle")}{r}="Y"),'
-                                           f'IF(COUNTIFS({R("row_id")},$A{r},{R("yes_in_principle")},"Y",{R("calc_valid")},1,{R("call_date")},"<"&{d})'
-                                           f'+COUNTIFS({R("row_id")},$A{r},{R("yes_in_principle")},"Y",{R("calc_valid")},1,{R("call_date")},{d},{R("calc_row")},"<"&{C.L("calc_row")}{r})=0,1,0),0)')
+                                           f'IF(COUNTIFS({R("calc_org")},{C.L("calc_org")}{r},{R("yes_in_principle")},"Y",{R("calc_valid")},1,{R("call_date")},"<"&{d})'
+                                           f'+COUNTIFS({R("calc_org")},{C.L("calc_org")}{r},{R("yes_in_principle")},"Y",{R("calc_valid")},1,{R("call_date")},{d},{R("calc_row")},"<"&{C.L("calc_row")}{r})=0,1,0),0)')
+                # review round 2 (R2-02): a brand's $500-and-controls answer counts at a cut-off only if its latest answer on
+                # or before that cut-off still qualifies. A later call where the speaker does not control the budget, or
+                # where every number named is under the threshold, withdraws it. A call with no number is neutral.
+                f["calc_bneg"] = (f'=IF(AND({C.L("calc_valid")}{r}=1,OR({C.L("controls_budget")}{r}="N",AND(OR(ISNUMBER({wb_}),ISNUMBER({wa_})),'
+                                  f'MAX(N({wb_}),N({wa_}))<{thr}))),1,0)')
+                f["calc_bans"] = f'=IF(OR({C.L("calc_g0")}{r}=1,{C.L("calc_bneg")}{r}=1),1,0)'
+                for t, cv in cuts.items():
+                    f[f"calc_blast_{t}"] = last_by("calc_bans", cv, r)
+                    f[f"calc_bstand_{t}"] = (f'=IF({C.L("calc_valid")}{r}=1,IF(COUNTIFS({R("calc_org")},{C.L("calc_org")}{r},{R(f"calc_blast_{t}")},1,'
+                                             f'{R("calc_g0")},1)>0,1,0),0)')
+                    within = f'INT(N({d}))<={cv}'
+                    f[f"calc_g0c_{t}"] = f'=IF(AND({C.L("calc_g0_first")}{r}=1,{within},{C.L(f"calc_bstand_{t}")}{r}=1),1,0)'
+                    f[f"calc_g0sc_{t}"] = f'=IF(AND({C.L("calc_g0_strict_first")}{r}=1,{within},{C.L(f"calc_bstand_{t}")}{r}=1),1,0)'
+                    f[f"calc_bwd_{t}"] = f'=IF(AND({C.L("calc_g0_first")}{r}=1,{within},{C.L(f"calc_bstand_{t}")}{r}=0),1,0)'
             f["calc_short"] = f'=IF(AND({C.L("calc_valid")}{r}=1,{C.L("shortlist")}{r}="Y"),1,0)'
             f["calc_short_first"] = earliest("calc_short", r)
             f["calc_quote"] = f'=IF(AND({C.L("calc_valid")}{r}=1,{C.L("quote_ok_to_share")}{r}="Y"),1,0)'
@@ -598,7 +709,14 @@ class Book:
                 f["calc_hc_has"] = f'=IF(AND({V_},ISNUMBER({C.L("tuesday_headcount")}{r})),1,0)'
                 f["calc_hc_first"] = earliest("calc_hc_has", r)
                 f["calc_hc_asof"] = cut("calc_hc_first", "tuesday_headcount", AS, r)
-                f["calc_appr"] = f'=IF(AND({V_},{C.L("call_date")}{r}<={AS}),{C.L("other_approver")}{r}&"","")'
+                # review round 3 (R3-04): the office's latest Tuesday headcount on any of its rows decides its band
+                f["calc_hc_last"] = last_by("calc_hc_has", None, r)
+                f["calc_hc_org"] = (f'=IF({V_},IF(COUNTIFS({R("calc_org")},{C.L("calc_org")}{r},{R("calc_hc_last")},1)=0,"",'
+                                    f'SUMIFS({R("tuesday_headcount")},{R("calc_org")},{C.L("calc_org")}{r},{R("calc_hc_last")},1)),"")')
+                hco = f'{C.L("calc_hc_org")}{r}'
+                f["calc_hc_out"] = (f'=IF(AND(ISNUMBER({hco}),OR(N({hco})<{self.cfg["office_floor"]},N({hco})>{self.cfg["office_ceiling"]})),1,0)')
+                f["calc_hc_3039"] = (f'=IF(AND(ISNUMBER({hco}),N({hco})>={self.cfg["office_floor"]},N({hco})<{self.cfg["office_preferred_min"]}),1,0)')
+                f["calc_appr"] = f'=IF(AND({V_},INT(N({C.L("call_date")}{r}))<={AS}),{C.L("other_approver")}{r}&"","")'
             else:
                 f["calc_seeded"] = f'=IF(AND({V_},{C.L("q3_seeded_offices")}{r}="Y"),1,0)'
                 f["calc_seeded_first"] = earliest("calc_seeded", r)
@@ -653,14 +771,15 @@ class Book:
             put(ws, f"C{r}", helptext, font=F_NOTE, align=WRAP)
         cr = len(specs) + 7
         put(ws, f"A{cr - 2}", "Check before pasting", font=F_BOLD)
-        put(ws, f"B{cr - 2}", f'=IF(OR(TRIM(B4)="",NOT(ISNUMBER(B10))),"row_id and a real call_date are required","OK to paste")', font=F_BOLD)
+        cd_row = 4 + [k for k, *_r in specs].index("call_date")
+        put(ws, f"B{cr - 2}", f'=IF(OR(TRIM(B4)="",NOT(ISNUMBER(B{cd_row}))),"row_id and a real call_date are required","OK to paste")', font=F_BOLD)
         put(ws, f"A{cr - 1}", f"Row to paste into {log} (formulas; paste as values only)", font=F_BOLD)
         for j in range(len(specs)):
             c = ws.cell(row=cr, column=j + 1, value=f'=IF(Note_{"Office" if side == "office" else "Brand"}!$B${4 + j}="","",Note_{"Office" if side == "office" else "Brand"}!$B${4 + j})')
             c.fill = FILL_CALC
             if specs[j][1] == "date":
                 c.number_format = DATE_FMT
-        assert specs[6][0] == "call_date"
+        assert specs[0][0] == "row_id"
         ws.freeze_panes = "B4"
         setattr(self, f"note_row_{side}", cr)
 
@@ -796,9 +915,11 @@ class Book:
         S = self.signed_cols
         OL = self.C_office
         key_rng = f"Office_Log!${OL.L('calc_probe_key')}$2:${OL.L('calc_probe_key')}${LOG_N + 1}"
+        org_rng = f"Office_Log!${OL.L('calc_org')}$2:${OL.L('calc_org')}${LOG_N + 1}"
         for r in range(2, HAND_N + 2):
             rid = f"{S.L('clay_row_id')}{r}"
-            m = f"MATCH({rid},{key_rng},0)"
+            # review round 3 (R3-01): the organisation's first budget-probe answer, whichever of its contacts gave it
+            m = f'MATCH(IFERROR(INDEX({org_rng},MATCH({rid},Office_Log!$A$2:$A${LOG_N + 1},0)),"(no log row)"),{key_rng},0)'
             for k, src, kind in (("budget_probe_verbatim", "budget_probe_verbatim", "text"),
                                  ("budget_probe_date", "call_date", "date"),
                                  ("budget_probe_monthly_usd", "budget_probe_low_usd", "num")):
@@ -876,7 +997,7 @@ class Book:
                 return {
                     "B": f'=IF({ok},{tab}!{C.L("call_date")}{rr},"")',
                     "C": f'=IF(B{{R}}="","","{side}")',
-                    "D": f'=IF(B{{R}}="","",{tab}!$A{rr}&"")',
+                    "D": f'=IF(B{{R}}="","",{tab}!{C.L("calc_orgrid")}{rr}&"")',      # review round 3 (R3-01)
                     "E": f'=IF(B{{R}}="","",{txt(f"{tab}!{C.L('company')}{rr}")})',
                     "F": f'=IF(B{{R}}="","","{event}")',
                     "G": f'=IF(B{{R}}="","",{value(rr) if value else chr(34)*2})',
@@ -902,7 +1023,18 @@ class Book:
         V = lambda tab, C, rr: f"{tab}!{C.L('calc_valid')}{rr}=1"
         emit_log(1, "office conversation", log_gen("Office_Log", OL, "office", lambda rr: V("Office_Log", OL, rr), "conversation",
                                                     notes=lambda rr: txt(f"Office_Log!{OL.L('call_type')}{rr}")))
-        emit_log(2, "office yes_in_principle", log_gen("Office_Log", OL, "office", lambda rr: f"Office_Log!{OL.L('calc_q_yes')}{rr}=1",
+        # review round 2 (R2-02): a yes given by Gate 0 is exported only if it still stood on Gate 0 day, and a later yes only
+        # if it still stands on the as-of date, so the financial model never counts a withdrawn office
+        G0c = self.cfg["gate0_date"]
+        yes_ok = lambda rr: (f"AND(Office_Log!{OL.L('calc_q_yes')}{rr}=1,Office_Log!{OL.L('calc_hc_out')}{rr}=0,IF(INT(N(Office_Log!{OL.L('call_date')}{rr}))<={G0c},"
+                             f"Office_Log!{OL.L('calc_stand_g0')}{rr},Office_Log!{OL.L('calc_stand_asof')}{rr})=1)")
+
+        def org_of(side, rid_expr):
+            """review round 3 (R3-01): the organisation's first row_id for a Clay row_id that has a log row, else the row_id."""
+            tab, C_ = ("Office_Log", OL) if side == "office" else ("Brand_Log", BL)
+            return (f'IFERROR(INDEX({tab}!${C_.L("calc_orgrid")}$2:${C_.L("calc_orgrid")}${LOG_N + 1},'
+                    f'MATCH({rid_expr},{tab}!$A$2:$A${LOG_N + 1},0))&"",{rid_expr}&"")')
+        emit_log(2, "office yes_in_principle", log_gen("Office_Log", OL, "office", yes_ok,
                                                         "yes_in_principle",
                                                         notes=lambda rr: f'"owner: "&Office_Log!{OL.L("pantry_owner_title")}{rr}&"; window: "&Office_Log!{OL.L("receiving_window")}{rr}'))
         emit_log(3, "office budget_probe", log_gen("Office_Log", OL, "office", lambda rr: f"Office_Log!{OL.L('calc_probe_row')}{rr}=1",
@@ -943,7 +1075,7 @@ class Book:
             dte = f"signed_offices!{S.L('agreement_signed_date')}{rr}"
             R_ = r_now[0] + i - 1
             return {"B": f'=IF(AND(ISNUMBER({dte}),TRIM({rid})<>"",{sample_ok(rid)}),{dte},"")',
-                    "C": f'=IF(B{R_}="","","office")', "D": f'=IF(B{R_}="","",{rid}&"")',
+                    "C": f'=IF(B{R_}="","","office")', "D": f'=IF(B{R_}="","",{org_of("office", rid)})',
                     "E": f'=IF(B{R_}="","",{txt("signed_offices!" + S.L("company") + str(rr))})',
                     "F": f'=IF(B{R_}="","","signed")',
                     "G": f'=IF(B{R_}="","",{num("signed_offices!" + S.L("tuesday_headcount") + str(rr))})',
@@ -960,7 +1092,7 @@ class Book:
                 amt = f"paid_brands!{P.L(f'payment_{k}_usd')}{rr}"
                 R_ = r_now[0] + i - 1
                 return {"B": f'=IF(AND(ISNUMBER({dte}),ISNUMBER({amt}),TRIM({rid})<>"",{sample_ok(rid)}),{dte},"")',
-                        "C": f'=IF(B{R_}="","","brand")', "D": f'=IF(B{R_}="","",{rid}&"")',
+                        "C": f'=IF(B{R_}="","","brand")', "D": f'=IF(B{R_}="","",{org_of("brand", rid)})',
                         "E": f'=IF(B{R_}="","",{txt("paid_brands!" + P.L("brand_name") + str(rr))})',
                         "F": f'=IF(B{R_}="","","paid")', "G": f'=IF(B{R_}="","",{amt})',
                         "H": f'=IF(B{R_}="","","")', "I": f'=IF(B{R_}="","","")',
@@ -979,7 +1111,8 @@ class Book:
             ev = f"later_events!{LT.L('event')}{rr}"
             R_ = r_now[0] + i - 1
             return {"B": f'=IF(AND(ISNUMBER({dte}),TRIM({rid})<>"",OR({ev}="renewal_answer",{ev}="opt_out"),{sample_ok(rid)}),{dte},"")',
-                    "C": f'=IF(B{R_}="","",later_events!{LT.L("side")}{rr}&"")', "D": f'=IF(B{R_}="","",{rid}&"")',
+                    "C": f'=IF(B{R_}="","",later_events!{LT.L("side")}{rr}&"")',
+                    "D": f'=IF(B{R_}="","",IF(later_events!{LT.L("side")}{rr}="office",{org_of("office", rid)},{org_of("brand", rid)}))',
                     "E": f'=IF(B{R_}="","",{txt("later_events!" + LT.L("org_name") + str(rr))})',
                     "F": f'=IF(B{R_}="","",{ev}&"")',
                     "G": f'=IF(B{R_}="","",{num("later_events!" + LT.L("value_number") + str(rr))})',
@@ -997,7 +1130,7 @@ class Book:
                 rid = f'IFERROR(INDEX({CR},{i},Sync!${sc}$5)&"","")'
                 dte = f'IFERROR(N(INDEX({CR},{i},Sync!${sc}${tr})),0)'
                 return {"B": f'=IF(AND({dte}>0,{rid}<>"",OR(LEFT({rid},6)<>"SAMPLE",{INC}="Y")),{dte},"")',
-                        "C": f'=IF(B{R_}="","","{side}")', "D": f'=IF(B{R_}="","",{rid})',
+                        "C": f'=IF(B{R_}="","","{side}")', "D": f'=IF(B{R_}="","",{org_of(side, rid)})',
                         "E": f'=IF(B{R_}="","",IFERROR(INDEX({CR},{i},Sync!${sc}$6)&"",""))',
                         "F": f'=IF(B{R_}="","","outreach_sent")', "G": f'=IF(B{R_}="","","")', "H": f'=IF(B{R_}="","","")',
                         "I": f'=IF(B{R_}="","","")',
@@ -1089,7 +1222,7 @@ class Book:
             nonlocal r
             put(ws, f"A{r}", label)
             for col_ in "BCDE":
-                put(ws, f"{col_}{r}", f'=COUNTIFS({rng(tab, C, flag)},1,{rng(tab, C, "call_date")},"<="&{col_}${cut_row})', fmt=fmt, font=F_BOLD)
+                put(ws, f"{col_}{r}", f'=COUNTIFS({rng(tab, C, flag)},1,{rng(tab, C, "call_date")},"<"&({col_}${cut_row}+1))', fmt=fmt, font=F_BOLD)
             if target is not None:
                 put(ws, f"F{r}", f"={target}" if isinstance(target, str) else target)
             put(ws, f"G{r}", how, font=F_NOTE, align=WRAP)
@@ -1097,12 +1230,33 @@ class Book:
                 self.sc[key] = r
             r += 1
 
-        def row_status(label, count_row, target, key):
+        def row_cut(label, tab, C, prefix, target=None, how="", key=None):
+            """A count whose rule depends on the cut-off itself (one helper column per cut-off, review round 2)."""
+            nonlocal r
+            put(ws, f"A{r}", label)
+            for col_, tag in zip("BCDE", CUT_TAGS):
+                put(ws, f"{col_}{r}", f'=COUNTIF({rng(tab, C, f"{prefix}_{tag}")},1)', fmt="0", font=F_BOLD)
+            if target is not None:
+                put(ws, f"F{r}", f"={target}" if isinstance(target, str) else target)
+            put(ws, f"G{r}", how, font=F_NOTE, align=WRAP)
+            if key:
+                self.sc[key] = r
+            r += 1
+
+        def row_status(label, count_row, target, key, conv_row, conv_target):
+            # review round 2 (R2-03): the plan's test is "5 of 15" and "3 of 15". With fewer than 15 conversations held and
+            # the target not reached, the test has not been run: INCOMPLETE, never FAIL, so no pivot follows a volume shortfall.
             nonlocal r
             put(ws, f"A{r}", label, font=F_BOLD)
+            # review round 3 (R3-09): INCOMPLETE ends at the final read (Config gate0_final_read, Fri 2026-11-27 by default)
             for col_ in "BCDE":
-                put(ws, f"{col_}{r}", f'=IF({col_}{count_row}>={target},"PASS",IF({col_}${cut_row}<{cfg["gate0_date"]},"not yet","FAIL"))', font=F_BOLD)
-            put(ws, f"G{r}", "PASS once the count reaches the target. Before Gate 0 a shortfall reads 'not yet'; on or after Gate 0 it reads FAIL.", font=F_NOTE, align=WRAP)
+                put(ws, f"{col_}{r}", (f'=IF({col_}{count_row}>={target},"PASS",IF({col_}${cut_row}<{cfg["gate0_date"]},"not yet",'
+                                       f'IF(OR({col_}{conv_row}>={conv_target},{col_}${cut_row}>={cfg["gate0_final_read"]}),"FAIL",'
+                                       f'"INCOMPLETE: "&{col_}{conv_row}&" of "&{conv_target}&" conversations")))'),
+                    font=F_BOLD)
+            put(ws, f"G{r}", ("PASS at the target. Before Gate 0 a shortfall is 'not yet'. From Gate 0: FAIL once 15 conversations are held; "
+                              "with fewer, INCOMPLETE (no failure response yet) until the final read, Fri 2026-11-27 (Config gate0_final_read), "
+                              "when a shortfall is FAIL."), font=F_NOTE, align=WRAP)
             self.sc[key] = r
             r += 1
 
@@ -1128,12 +1282,20 @@ class Book:
 
         section("Offices (Gate 0: at least 5 of 15 say yes in principle AND name a pantry owner AND a receiving window)")
         row_counts("Office conversations held", "Office_Log", OL, "calc_conv_first", cfg["target_office_conversations"],
-                   "Distinct row_ids in Office_Log with a call_date on or before the cut-off.", "o_conv")
-        row_counts("Yes in principle, pantry owner named, receiving window named", "Office_Log", OL, "calc_q_yes_first",
-                   cfg["target_office_yes"], "The Gate 0 count. One per office, from its first qualifying conversation.", "o_yes")
-        row_status("Gate 0, office side", self.sc["o_yes"], cfg["target_office_yes"], "o_status")
-        row_counts("Yes in principle, any (owner or window may be missing)", "Office_Log", OL, "calc_yes_any_first", None,
-                   "Offices that said Y at least once. The gap to the row above is follow-up work: get the owner and the window.", "o_yes_any")
+                   "Distinct offices (calc_org on Office_Log) by the cut-off. Two contacts at one company count once.", "o_conv")
+        row_cut("Yes in principle, pantry owner named, receiving window named", "Office_Log", OL, "calc_qc",
+                cfg["target_office_yes"], ("The Gate 0 count: one per office (calc_org), while its latest answer (Y, N or maybe, from any contact) by the "
+                                           "cut-off is still Y. Under 30 or over 250 on a Tuesday: not counted (row below)."), "o_yes")
+        row_status("Gate 0, office side", self.sc["o_yes"], cfg["target_office_yes"], "o_status", self.sc["o_conv"], cfg["target_office_conversations"])
+        row_cut("Yes in principle, any (owner or window may be missing)", "Office_Log", OL, "calc_yac", None,
+                "Offices whose latest answer is Y. The gap to the row above is follow-up work: get the owner and the window.", "o_yes_any")
+        row_cut("Withdrawn after a yes (latest answer N or maybe): not counted", "Office_Log", OL, "calc_wd", None,
+                "Offices that said Y and later said N or maybe, by the cut-off. Set their Clay status to no or not_now.", "o_wd")
+        # review round 3 (R3-04): the plan's participating office is 40 to 250 on a Tuesday (hard floor 30)
+        row_cut("Yes with owner and window, but under 30 or over 250 on a Tuesday: not counted", "Office_Log", OL, "calc_qcout", None,
+                "Plan: under 30 or over 250 on a Tuesday is excluded (Config office_floor, office_ceiling). If the number is right, it is not a participating office.", "o_yes_hcout")
+        row_cut("Of the counted yeses: 30 to 39 on a Tuesday (your call)", "Office_Log", OL, "calc_qc3039", None,
+                "Counted above. The plan's band is 40 to 250; 30 to 39 is the founder's call before signing.", "o_yes_3039")
         row_counts("Conversations with people you already know (channel warm-intro)", "Office_Log", OL, "calc_warm_first", 5,
                    "Plan Phase 0: five of the fifteen office conversations should come from your own network. Set channel = warm-intro for anyone you knew before.", "o_warm")
         row_counts("Said maybe at least once (someone else must agree)", "Office_Log", OL, "calc_maybe_first", None,
@@ -1144,7 +1306,7 @@ class Book:
                        "The n behind the median.", "o_bp_n")
         row_count_vals("Of those, said no budget (0)", "Office_Log", OL, "calc_bp", "Counted inside the median.", "o_bp_zero", crit="0")
         put(ws, f"A{r}", "Offices naming $100 a month or more (decision-rule input), as of")
-        put(ws, f"E{r}", f'=COUNTIFS({rng("Office_Log", OL, "calc_bp100_first")},1,{rng("Office_Log", OL, "call_date")},"<="&E${cut_row})', fmt="0", font=F_BOLD)
+        put(ws, f"E{r}", f'=COUNTIFS({rng("Office_Log", OL, "calc_bp100_first")},1,{rng("Office_Log", OL, "call_date")},"<"&(E${cut_row}+1))', fmt="0", font=F_BOLD)
         put(ws, f"G{r}", "Plan decision rule: office-paid tier is tested if at least five offices named $100 a month or more.", font=F_NOTE, align=WRAP)
         self.sc["o_bp100"] = r
         r += 1
@@ -1160,12 +1322,14 @@ class Book:
 
         section("Brands (Gate 0: at least 3 of 15 say they would pay $500 or more AND the speaker controls the budget)")
         row_counts("Brand conversations held", "Brand_Log", BL, "calc_conv_first", cfg["target_brand_conversations"],
-                   "Distinct row_ids in Brand_Log with a call_date on or before the cut-off.", "b_conv")
-        row_counts("Would pay $500 or more and controls the budget", "Brand_Log", BL, "calc_g0_first", cfg["target_brand_yes"],
-                   "The Gate 0 count: the higher of the before and after numbers is $500 or more, and controls_budget = Y. Same rule as the financial model.", "b_yes")
-        row_status("Gate 0, brand side", self.sc["b_yes"], cfg["target_brand_yes"], "b_status")
-        row_counts("Strict read: named $500 or more BEFORE hearing $1,500, and controls the budget", "Brand_Log", BL, "calc_g0_strict_first", None,
-                   "Shown so an anchored answer is not mistaken for an unprompted one.", "b_strict")
+                   "Distinct brands (calc_org on Brand_Log) by the cut-off. Two founders of one brand, or brands A grouped as one (company_group), count once.", "b_conv")
+        row_cut("Would pay $500 or more and controls the budget", "Brand_Log", BL, "calc_g0c", cfg["target_brand_yes"],
+                "The Gate 0 count, one per brand (calc_org): the higher of the two numbers is $500 or more and controls_budget = Y, while its latest answer by the cut-off, from any contact, still qualifies (a later controls_budget = N, or every number under $500, withdraws it).", "b_yes")
+        row_status("Gate 0, brand side", self.sc["b_yes"], cfg["target_brand_yes"], "b_status", self.sc["b_conv"], cfg["target_brand_conversations"])
+        row_cut("Strict read: named $500 or more BEFORE hearing $1,500, and controls the budget", "Brand_Log", BL, "calc_g0sc", None,
+                "Shown so an anchored answer is not mistaken for an unprompted one. Withdrawn answers are left out here too.", "b_strict")
+        row_cut("Withdrawn after saying $500 or more (a later call: no budget control, or a lower number): not counted", "Brand_Log", BL, "calc_bwd", None,
+                "Brands that qualified and later withdrew, by the cut-off. The financial model still counts them until it adopts the same rule (HANDOFF 2.3).", "b_wd")
         row_counts("Said $500 or more but the speaker does not control the budget", "Brand_Log", BL, "calc_g0_noctrl_first", None,
                    "Not counted for Gate 0 from that conversation. Ask for a call with the budget owner.", "b_noctrl")
         row_median("Median brand number before $1,500 was mentioned, USD per campaign", "Brand_Log", BL, "calc_wb",
@@ -1190,7 +1354,8 @@ class Book:
         o, b = self.sc["o_status"], self.sc["b_status"]
         put(ws, f"A{r}", "Gate 0 result", font=F_BOLD)
         for col_ in "BCDE":
-            put(ws, f"{col_}{r}", f'=IF(AND({col_}{o}="PASS",{col_}{b}="PASS"),"PASS",IF(OR({col_}{o}="FAIL",{col_}{b}="FAIL"),"FAIL","not yet"))', font=F_BOLD)
+            put(ws, f"{col_}{r}", (f'=IF(AND({col_}{o}="PASS",{col_}{b}="PASS"),"PASS",IF(OR({col_}{o}="FAIL",{col_}{b}="FAIL"),"FAIL",'
+                                   f'IF(OR(LEFT({col_}{o},10)="INCOMPLETE",LEFT({col_}{b},10)="INCOMPLETE"),"INCOMPLETE","not yet")))'), font=F_BOLD)
         self.sc["g0"] = r
         r += 1
         put(ws, f"A{r}", "Sentence for the Gate 0 decision (as of)", font=F_BOLD)
@@ -1206,6 +1371,15 @@ class Book:
         ws.merge_cells(f"B{r}:G{r}")
         put(ws, f"B{r}", "Fewer than 3 brands: test the office-paid version for three more weeks. Fewer than 5 offices: change the cluster or the office size band, not the model.", font=F_NOTE, align=WRAP)
         ws.row_dimensions[r].height = 30
+        r += 1
+        put(ws, f"A{r}", "If a side is INCOMPLETE (default, founder to confirm)", font=F_NOTE)
+        ws.merge_cells(f"B{r}:G{r}")
+        put(ws, f"B{r}", ("Do not apply the failure response above to an INCOMPLETE side yet: the plan's test (5 of 15, 3 of 15) has not been run. "
+                          "Keep booking discovery calls on that side and read the As of column again on Fri 2026-11-20 (set Config as_of_date). "
+                          "The final read is Fri 2026-11-27 (Config gate0_final_read): from then a side still short reads FAIL and the response applies, "
+                          "the plan's 'stretch the weeks but keep the gates'. A side that passed goes ahead meanwhile."), font=F_NOTE, align=WRAP)
+        ws.row_dimensions[r].height = 54
+        self.sc["incomplete_note"] = r
         r += 1
 
         # top objections
@@ -1228,7 +1402,7 @@ class Book:
                 a, b_, c, d = (CL(base + k) for k in range(4))
                 put(ws, f"{a}{rr}", code, fill=FILL_CALC)
                 put(ws, f"{b_}{rr}", lab, fill=FILL_CALC)
-                cnt = "+".join(f'COUNTIFS({rng(tab, C, f"calc_obj{k}")},{a}{rr},{rng(tab, C, "call_date")},"<="&$E${cut_row})' for k in (1, 2, 3))
+                cnt = "+".join(f'COUNTIFS({rng(tab, C, f"calc_obj{k}")},{a}{rr},{rng(tab, C, "call_date")},"<"&($E${cut_row}+1))' for k in (1, 2, 3))
                 put(ws, f"{c}{rr}", "=" + cnt, fill=FILL_CALC)
                 put(ws, f"{d}{rr}", f"={c}{rr}-{i + 1}/1000", fill=FILL_CALC)
             obj_tables[side] = (h0 + 1, h0 + len(codes), base)
@@ -1264,29 +1438,40 @@ class Book:
         for side in ("office", "brand"):
             ridc, t1, lr, rt, oo = (clay_col(side, h) for h in ("row_id", "touch_1_date", "last_reply_date", "reply_type", "opt_out_date"))
             conv_row = self.sc["o_conv" if side == "office" else "b_conv"]
+            pos_types = POSITIVE_REPLY_TYPES
             rows = [
-                ("first", f"{side.capitalize()} first touches sent", lambda c: f'=IFERROR(COUNTIFS({t1},"<="&{c},{ridc},{SC}),0)', "0",
+                ("first", f"{side.capitalize()} first touches sent", lambda c: f'=IFERROR(COUNTIFS({t1},"<"&({c}+1),{ridc},{SC}),0)', "0",
                  "Clay rows with touch_1_date on or before the cut-off."),
-                ("replies", f"{side.capitalize()} replies (any human reply, opt-outs included)",
-                 lambda c: f'=IFERROR(COUNTIFS({lr},"<="&{c},{ridc},{SC},{rt},"<>bounce",{rt},"<>out_of_office"),0)', "0",
-                 "Rows with last_reply_date on or before the cut-off; bounces and auto-replies excluded."),
-                ("rate", f"{side.capitalize()} reply rate", None, "0%", "Replies / first touches. The plan needs 20%."),
-                ("positive", f"{side.capitalize()} positive replies",
-                 lambda c: "=" + "+".join(f'IFERROR(COUNTIFS({lr},"<="&{c},{ridc},{SC},{rt},"{t}"),0)' for t in ("yes", "maybe", "needs_approval", "send_info", "referral")),
-                 "0", "reply_type yes, maybe, needs_approval, send_info or referral."),
+                ("replies", f"{side.capitalize()} replies, all (any human reply, opt-outs included)",
+                 lambda c: f'=IFERROR(COUNTIFS({lr},"<"&({c}+1),{ridc},{SC},{rt},"<>bounce",{rt},"<>out_of_office"),0)', "0",
+                 "Rows with last_reply_date on or before the cut-off; bounces and auto-replies excluded. Information only."),
+                ("rate", f"{side.capitalize()} reply rate, all replies (information only)", None, "0%",
+                 "All replies / first touches. Opt-outs and refusals count here, so this rate can look healthy while conversations fall short. It does not drive the check."),
+                ("positive", f"{side.capitalize()} conversation replies",
+                 lambda c: "=" + "+".join(f'IFERROR(COUNTIFS({lr},"<"&({c}+1),{ridc},{SC},{rt},"{t}"),0)' for t in pos_types),
+                 "0", "reply_type yes, maybe, needs_approval, send_info, referral, not_now or an objection (obj_*): a reply that can become a conversation. Not opt_out, no, wrong_person, bounce or out_of_office."),
+                ("posrate", f"{side.capitalize()} conversation-reply rate", None, "0%",
+                 "Conversation replies / first touches. This drives the 20% check below: the plan's 150 messages at 20% is 30 conversations."),
                 ("convrate", f"{side.capitalize()} conversations per first touch", None, "0%", "Conversations (above) / first touches. 15 from about 75 first touches is 20%."),
-                ("optout", f"{side.capitalize()} opt-outs", lambda c: f'=IFERROR(COUNTIFS({oo},"<="&{c},{ridc},{SC}),0)', "0",
+                ("optout", f"{side.capitalize()} opt-outs", lambda c: f'=IFERROR(COUNTIFS({oo},"<"&({c}+1),{ridc},{SC}),0)', "0",
                  "Rows with opt_out_date on or before the cut-off. Every one must have do_not_contact = Y."),
+                ("optrate", f"{side.capitalize()} opt-out rate", None, "0.0%",
+                 "Opt-outs / first touches. Over 5% (Config opt_out_rate_flag) with 3 or more opt-outs (opt_out_min_count) and 30 or more first touches: check targeting and copy (sending guide 6.3 to 6.4)."),
             ]
             first_r = r
+            at = {key: first_r + n for n, (key, *_rest) in enumerate(rows)}
             for key, label, fn, fmt, how in rows:
                 put(ws, f"A{r}", label)
                 for col_ in "BCDE":
                     c = f"{col_}${cut_row}"
                     if key == "rate":
-                        v = f'=IF({col_}{first_r}=0,"",{col_}{first_r + 1}/{col_}{first_r})'
+                        v = f'=IF({col_}{at["first"]}=0,"",{col_}{at["replies"]}/{col_}{at["first"]})'
+                    elif key == "posrate":
+                        v = f'=IF({col_}{at["first"]}=0,"",{col_}{at["positive"]}/{col_}{at["first"]})'
+                    elif key == "optrate":
+                        v = f'=IF({col_}{at["first"]}=0,"",{col_}{at["optout"]}/{col_}{at["first"]})'
                     elif key == "convrate":
-                        v = f'=IF({col_}{first_r}=0,"",{col_}{conv_row}/{col_}{first_r})'
+                        v = f'=IF({col_}{at["first"]}=0,"",{col_}{conv_row}/{col_}{at["first"]})'
                     else:
                         v = fn(c)
                     put(ws, f"{col_}{r}", v, fmt=fmt, font=F_BOLD)
@@ -1295,11 +1480,19 @@ class Book:
                 r += 1
             put(ws, f"A{r}", f"{side.capitalize()} reply-rate check (as of)", font=F_BOLD)
             ws.merge_cells(f"B{r}:G{r}")
-            fr, rr_ = self.sc[f"{side}_first"], self.sc[f"{side}_rate"]
+            fr, rr_ = self.sc[f"{side}_first"], self.sc[f"{side}_posrate"]
             put(ws, f"B{r}", (f'=IF(E{fr}<{cfg["min_first_touches_to_judge"]},"Too few first touches to judge ("&E{fr}&" of "&{cfg["min_first_touches_to_judge"]}&").",'
-                              f'IF(E{rr_}<{cfg["reply_rate_target"]},"UNDER 20%: run sending/sending-setup.md section 6 before sending more.","OK: at or above 20%."))'),
+                              f'IF(E{rr_}<{cfg["reply_rate_target"]},"UNDER 20%: conversation replies are under 20% of first touches. Run sending/sending-setup.md section 6 before sending more.","OK: conversation replies at or above 20%."))'),
                 font=F_BOLD)
             self.sc[f"{side}_check"] = r
+            r += 1
+            put(ws, f"A{r}", f"{side.capitalize()} opt-out check (as of)", font=F_BOLD)
+            ws.merge_cells(f"B{r}:G{r}")
+            orr = self.sc[f"{side}_optrate"]
+            put(ws, f"B{r}", (f'=IF(E{fr}<{cfg["min_first_touches_to_judge"]},"Too few first touches to judge ("&E{fr}&" of "&{cfg["min_first_touches_to_judge"]}&").",'
+                              f'IF(AND(E{self.sc[f"{side}_optout"]}>={cfg["opt_out_min_count"]},E{orr}>{cfg["opt_out_rate_flag"]}),"OPT-OUTS OVER 5%: check targeting and copy (sending/sending-setup.md 6.3 to 6.4).","OK: fewer than 3 opt-outs, or 5% or under."))'),
+                font=F_BOLD)
+            self.sc[f"{side}_optcheck"] = r
             r += 1
         bounce_o = f'IFERROR(COUNTIFS({clay_col("office", "reply_type")},"bounce",{clay_col("office", "row_id")},{SC}),0)'
         bounce_b = f'IFERROR(COUNTIFS({clay_col("brand", "reply_type")},"bounce",{clay_col("brand", "row_id")},{SC}),0)'
@@ -1310,7 +1503,7 @@ class Book:
         r += 1
 
         section("By sequence variant and by channel, as of (pick winners only on large gaps; see sending guide 6.4)")
-        for j, h in enumerate(["Sequence or channel", "Side", "First touches", "Replies", "Reply rate", "", "Positive replies"], start=1):
+        for j, h in enumerate(["Sequence or channel", "Side", "First touches", "Replies, all", "Reply rate, all", "", "Conversation replies"], start=1):
             if h:
                 header(ws, r, j, h)
         r += 1
@@ -1325,15 +1518,15 @@ class Book:
                     crit_col, crit = seq, f"A{r}"
                     put(ws, f"A{r}", name)
                 put(ws, f"B{r}", side)
-                put(ws, f"C{r}", f'=IFERROR(COUNTIFS({crit_col},{crit},{t1},"<="&{AS_},{ridc},{SC}),0)', fmt="0")
-                put(ws, f"D{r}", f'=IFERROR(COUNTIFS({crit_col},{crit},{lr},"<="&{AS_},{ridc},{SC},{rt},"<>bounce",{rt},"<>out_of_office"),0)', fmt="0")
+                put(ws, f"C{r}", f'=IFERROR(COUNTIFS({crit_col},{crit},{t1},"<"&({AS_}+1),{ridc},{SC}),0)', fmt="0")
+                put(ws, f"D{r}", f'=IFERROR(COUNTIFS({crit_col},{crit},{lr},"<"&({AS_}+1),{ridc},{SC},{rt},"<>bounce",{rt},"<>out_of_office"),0)', fmt="0")
                 put(ws, f"E{r}", f'=IF(C{r}=0,"",D{r}/C{r})', fmt="0%")
-                put(ws, f"G{r}", "=" + "+".join(f'IFERROR(COUNTIFS({crit_col},{crit},{lr},"<="&{AS_},{ridc},{SC},{rt},"{t}"),0)'
-                                                for t in ("yes", "maybe", "needs_approval", "send_info", "referral")), fmt="0")
+                put(ws, f"G{r}", "=" + "+".join(f'IFERROR(COUNTIFS({crit_col},{crit},{lr},"<"&({AS_}+1),{ridc},{SC},{rt},"{t}"),0)'
+                                                for t in POSITIVE_REPLY_TYPES), fmt="0")
                 if name == SEQUENCES[0]:
                     self.sc["seq_first"] = r
                 r += 1
-        put(ws, f"A{r}", "Sequence names come from Clay's sequence column. Edit the names in column A to match the variants Part A's copy uses.", font=F_NOTE)
+        put(ws, f"A{r}", "Sequence names come from Clay's sequence column. Edit the names in column A to match the variants in messages/05 to 07.", font=F_NOTE)
         r += 1
 
         section("After Gate 0: Gate 1 progress (five offices signed with 350+ on a Tuesday; two founding brands paid in full)")
@@ -1354,13 +1547,13 @@ class Book:
         pd1 = f"paid_brands!${P_.L('payment_1_date')}$2:${P_.L('payment_1_date')}${HAND_N + 1}"
         ptier = f"paid_brands!${P_.L('tier')}$2:${P_.L('tier')}${HAND_N + 1}"
         g1rows = [
-            ("g1_signed", "Offices signed (signed_offices rows)", lambda c: f'=COUNTIFS({srid},"<>",{srid},{SC},{sdate},"<="&{c})', "0", cfg["target_offices_signed"],
+            ("g1_signed", "Offices signed (signed_offices rows)", lambda c: f'=COUNTIFS({srid},"<>",{srid},{SC},{sdate},"<"&({c}+1))', "0", cfg["target_offices_signed"],
              "Rows with a clay_row_id and agreement_signed_date on or before the cut-off."),
-            ("g1_headcount", "Combined Tuesday headcount of signed offices", lambda c: f'=SUMIFS({shc},{srid},"<>",{srid},{SC},{sdate},"<="&{c})', "0", cfg["target_tuesday_headcount"],
+            ("g1_headcount", "Combined Tuesday headcount of signed offices", lambda c: f'=SUMIFS({shc},{srid},"<>",{srid},{SC},{sdate},"<"&({c}+1))', "0", cfg["target_tuesday_headcount"],
              "Each office's own intake number, never the Clay estimate."),
-            ("g1_paid", "Brands paid in full", lambda c: f'=COUNTIFS(Sync!$Y$22:$Y${21 + HAND_N},"<="&{c})', "0", cfg["target_brands_paid"],
+            ("g1_paid", "Brands paid in full", lambda c: f'=COUNTIFS(Sync!$Y$22:$Y${21 + HAND_N},"<"&({c}+1))', "0", cfg["target_brands_paid"],
              "payment_1_usd + payment_2_usd reach price_usd. Ship dates and office approvals (also Gate 1) are tracked in operations."),
-            ("g1_anypay", "Brands with any payment", lambda c: f'=COUNTIFS({prid},"<>",{prid},{SC},{pd1},"<="&{c})', "0", None,
+            ("g1_anypay", "Brands with any payment", lambda c: f'=COUNTIFS({prid},"<>",{prid},{SC},{pd1},"<"&({c}+1))', "0", None,
              "A standard brand's deposit counts here, not above."),
         ]
         for key, label, fn, fmt, target, how in g1rows:
@@ -1390,7 +1583,7 @@ class Book:
 
         section("Numbers for the Startup CPG posts (messages/12), as of: distinct offices or brands")
         def cnt(tab, C, flag):
-            return f'=COUNTIFS({rng(tab, C, flag)},1,{rng(tab, C, "call_date")},"<="&$E${cut_row})'
+            return f'=COUNTIFS({rng(tab, C, flag)},1,{rng(tab, C, "call_date")},"<"&($E${cut_row}+1))'
         hc = rng("Office_Log", OL, "calc_hc_asof")
         q2lo, q2hi = rng("Brand_Log", BL, "calc_q2_asof"), rng("Brand_Log", BL, "calc_q2hi_asof")
         appr = rng("Office_Log", OL, "calc_appr")
@@ -1477,6 +1670,14 @@ class Book:
             ("Duplicate clay_row_id on signed_offices or paid_brands",
              f'=SUMPRODUCT(({srid}<>"")*1)-SUMPRODUCT(({srid}<>"")/COUNTIF({srid},{srid}&""))+SUMPRODUCT(({prid}<>"")*1)-SUMPRODUCT(({prid}<>"")/COUNTIF({prid},{prid}&""))',
              "fix", "One row per office and per brand. A second campaign for the same brand stays on its first row (renewals go on later_events)."),
+            ("Number cells typed as text (for example \"$600\")", f'=SUM(Office_Log!${OL.L("calc_num_text")}$2:${OL.L("calc_num_text")}${LOG_N + 1})+SUM(Brand_Log!${BL.L("calc_num_text")}$2:${BL.L("calc_num_text")}${LOG_N + 1})', "fix", "Retype as a plain number, no $ or commas: a number stored as text counts as nothing, so a $600 answer would drop out of Gate 0."),
+            ("call_date cells with a time of day", f'=SUM(Office_Log!${OL.L("calc_has_time")}$2:${OL.L("calc_has_time")}${LOG_N + 1})+SUM(Brand_Log!${BL.L("calc_has_time")}$2:${BL.L("calc_has_time")}${LOG_N + 1})', "fix", "Retype the date alone (YYYY-MM-DD). The counts already read it by its day, but Clay and the pipeline export carry the time."),
+            ("Two or more row_ids share one org_key (counted once)",
+             f'=SUM(Office_Log!${OL.L("calc_multi")}$2:${OL.L("calc_multi")}${LOG_N + 1})+SUM(Brand_Log!${BL.L("calc_multi")}$2:${BL.L("calc_multi")}${LOG_N + 1})',
+             "info", "Organisations with more than one contact in the logs, each counted once (calc_org shows the key). If two are really different organisations, type different org_key values."),
+            ("Gate 0 yes with tuesday_headcount under 30 or over 250 (as of)", f'=COUNTIF(Office_Log!${OL.L("calc_qcout_asof")}$2:${OL.L("calc_qcout_asof")}${LOG_N + 1},1)',
+             "info", "Not counted for Gate 0 (plan: 30 to 250 on a Tuesday). Check the number with the office; if it is right, it is not a participating office."),
+            ("Withdrawn yes answers (offices and brands, as of)", f'=COUNTIF(Office_Log!${OL.L("calc_wd_asof")}$2:${OL.L("calc_wd_asof")}${LOG_N + 1},1)+COUNTIF(Brand_Log!${BL.L("calc_bwd_asof")}$2:${BL.L("calc_bwd_asof")}${LOG_N + 1},1)', "info", "Not counted for Gate 0. Clay yes_in_principle follows the latest answer; set the Clay status to no or not_now."),
             ("SAMPLE rows in this file", f"={sample_count}", "sample", "Delete them before real use, or keep include_sample = N so they are ignored."),
         ]
         for label, fml, kind, todo in checks:
@@ -1507,9 +1708,13 @@ class Book:
         ws.conditional_formatting.add(rng_all, FormulaRule(formula=['B7="FAIL"'], fill=FILL_FAIL))
         ws.conditional_formatting.add(rng_all, FormulaRule(formula=['B7="FIX"'], fill=FILL_FAIL))
         ws.conditional_formatting.add(rng_all, FormulaRule(formula=['B7="not yet"'], fill=FILL_WAIT))
+        ws.conditional_formatting.add(rng_all, FormulaRule(formula=['LEFT(B7,10)="INCOMPLETE"'], fill=FILL_WARN))
         ws.conditional_formatting.add(f"B1:G{r}", FormulaRule(formula=['LEFT(B1,8)="UNDER 20"'], fill=FILL_WARN))
+        ws.conditional_formatting.add(f"B1:G{r}", FormulaRule(formula=['LEFT(B1,13)="OPT-OUTS OVER"'], fill=FILL_WARN))
         ws.freeze_panes = "B7"
         ws.sheet_view.zoomScale = 90
+        # the SAMPLE banner (row 1) and the title repeat on every printed page (review round 2, R2-15)
+        ws.print_title_rows = "1:2"
 
     # ------------------------------------------------------------------ start, dictionary, clay columns
     def build_start(self):
@@ -1531,7 +1736,7 @@ class Book:
             ("Every Friday (15 minutes)", "bold"),
             ("1. Export the Clay offices table (all columns) and paste it on Clay_Offices at A1. Same for brands on Clay_Brands. Type both export dates on Config.", ""),
             ("2. Open Scorecard. Fix every FIX under Data checks (the Sync tab and the red calc_sync_issue cells show where).", ""),
-            ("3. Read the Gate 0 block, the medians, the top objections and the reply rates. If a reply rate says UNDER 20%, run sending guide section 6.", ""),
+            ("3. Read the Gate 0 block, the medians, the top objections and the reply rates. If a reply-rate check says UNDER 20% (conversation replies) or an opt-out check says OPT-OUTS OVER 5%, run sending guide section 6.", ""),
             ("4. Download pipeline_log as CSV (File > Download > CSV, this tab only) to desk-drop-outreach/exports/pipeline_log.csv and paste it into the financial model's Pipeline tab.", ""),
             ("5. When an office signs or a brand pays: add the row on signed_offices or paid_brands, download that tab as CSV to desk-drop-outreach/handoff/.", ""),
             ("", ""),
@@ -1543,6 +1748,7 @@ class Book:
             ("", ""),
             ("Rules", "bold"),
             ("Business contacts only. No employee names or details, ever. Verbatims are the speaker's own words; write 'paraphrase:' if you could not catch them exactly.", ""),
+            ("One organisation counts once: every Gate 0 count reads calc_org (the grey column after calc_sync_issue on each log), so a colleague at the same company is a new Clay row and a new log row with the company written the same way.", ""),
             ("Grey columns are formulas. Hidden calc columns sit to the right of each log; unhide them only to debug.", ""),
             ("Dates as YYYY-MM-DD. Money as plain numbers. Rows whose row_id starts with SAMPLE are ignored while include_sample = N.", ""),
         ]
@@ -1574,9 +1780,9 @@ class Book:
         add("paid_brands", [(k, "text", 0, "From brand_intake (CONTRACTS 6.3).", "CONTRACTS 6.3") for k in BRAND_INTAKE] + PAID_EXTRA)
         add("later_events", LATER_COLS)
         pl = [("date", "date", 0, "Date of the event.", "H section 3"), ("side", "text", 0, "office or brand.", "H section 3"),
-              ("org_id", "text", 0, "The Clay row_id, the same for every event of one organization.", "H section 3 (recommended)"),
+              ("org_id", "text", 0, "The Clay row_id of the organisation's first conversation (calc_org on the logs), the same for every event of one organisation, so two contacts at one company are one org_id (review round 3). A Clay row with no log row keeps its own row_id.", "H section 3 (recommended)"),
               ("org_name", "text", 0, "Company or brand name.", "H section 3"),
-              ("event", "text", 0, "outreach_sent (one per touch), conversation, yes_in_principle (offices: only with owner and window), signed, paid (one per payment), budget_probe, renewal_answer, opt_out (roster exits only).", "H section 3"),
+              ("event", "text", 0, "outreach_sent (one per touch), conversation, yes_in_principle (offices: only with owner and window, and only while the yes stands: a later N or maybe withdraws it), signed, paid (one per payment), budget_probe, renewal_answer, opt_out (roster exits only).", "H section 3"),
               ("value_number", "num", 0, "signed: Tuesday headcount. paid: USD received. office budget_probe: USD a month (low end; 0 = no budget). brand budget_probe: USD per campaign. renewal_answer: USD committed if yes.", "H section 3"),
               ("value_text", "text", 0, "Verbatim answer; renewal_answer: yes, maybe or no.", "H section 3"),
               ("controls_budget", "Y/N", 0, "Brand budget_probe and yes rows only.", "H section 3"),

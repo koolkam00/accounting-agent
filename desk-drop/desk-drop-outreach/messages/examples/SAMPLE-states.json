@@ -1,16 +1,15 @@
 {
- "_readme": "SAMPLE tracker states for the examples. Each overrides ../04-slot-state.csv (today's real state: every switch N, every count 0). Illustrative placeholders, not results.",
- "SAMPLE-discovery-wk2": {
-  "domain_ready": "Y",
-  "discovery_onepager_ready": "Y"
- },
+ "_readme": "SAMPLE tracker states for the examples. Each overrides ../04-slot-state.csv (today's real state: every switch N, every count 0). Since review round 3 every state obeys the folder's own gates and the default calendar on its send dates (fill.py lint checks it): no office signed before Thu 2026-11-19 or before attorney_cleared and name_decided are Y, no founding place taken before five offices have signed, no name decided before Wed 2026-11-18. Illustrative placeholders, not results.",
  "SAMPLE-office-selling-progress": {
   "domain_ready": "Y",
   "office_selling_on": "Y",
   "offices_yes": "4",
   "offices_signed": "3",
   "tuesday_headcount": "265",
-  "mock_card_photo_ready": "Y"
+  "mock_card_photo_ready": "Y",
+  "attorney_cleared": "Y",
+  "name_decided": "Y",
+  "office_onepager_ready": "Y"
  },
  "SAMPLE-office-selling-none-yet": {
   "domain_ready": "Y",
@@ -23,10 +22,15 @@
   "domain_ready": "Y",
   "office_selling_on": "Y",
   "brand_selling_on": "Y",
-  "offices_yes": "4",
-  "offices_signed": "3",
-  "tuesday_headcount": "265",
-  "founding_taken": "1"
+  "offices_yes": "6",
+  "offices_signed": "5",
+  "tuesday_headcount": "410",
+  "founding_taken": "1",
+  "brands_paid": "1",
+  "llc_formed": "Y",
+  "attorney_cleared": "Y",
+  "name_decided": "Y",
+  "proposal_ready": "Y"
  },
  "SAMPLE-brand-selling-first-yes": {
   "domain_ready": "Y",
@@ -43,8 +47,9 @@
   "mock_card_photo_ready": "Y",
   "intake_form_ready": "Y",
   "attorney_cleared": "Y",
-  "offices_yes": "4",
-  "offices_signed": "3"
+  "offices_yes": "2",
+  "offices_signed": "0",
+  "name_decided": "Y"
  },
  "SAMPLE-office-conversion-nothing-ready": {
   "domain_ready": "Y",
@@ -61,7 +66,8 @@
   "offices_yes": "5",
   "offices_signed": "5",
   "tuesday_headcount": "410",
-  "founding_taken": "0"
+  "founding_taken": "0",
+  "name_decided": "Y"
  },
  "SAMPLE-brand-conversion-before-formation": {
   "domain_ready": "Y",
@@ -69,8 +75,7 @@
   "brand_selling_on": "Y",
   "proposal_ready": "N",
   "offices_yes": "3",
-  "offices_signed": "1",
-  "tuesday_headcount": "60",
+  "offices_signed": "0",
   "founding_taken": "0"
  },
  "SAMPLE-linkedin-discovery": {},
@@ -80,7 +85,9 @@
   "offices_yes": "4",
   "offices_signed": "3",
   "tuesday_headcount": "265",
-  "founding_taken": "1"
+  "founding_taken": "0",
+  "attorney_cleared": "Y",
+  "name_decided": "Y"
  },
  "SAMPLE-linkedin-selling-first-yes": {
   "office_selling_on": "Y",
@@ -94,9 +101,8 @@
   "office_selling_on": "Y",
   "brand_selling_on": "Y",
   "offices_yes": "4",
-  "offices_signed": "3",
-  "tuesday_headcount": "265",
-  "founding_taken": "1",
+  "offices_signed": "0",
+  "founding_taken": "0",
   "mock_card_photo_ready": "Y",
   "office_onepager_ready": "Y",
   "intake_form_ready": "Y",
@@ -104,6 +110,11 @@
   "llc_formed": "Y",
   "proposal_ready": "Y",
   "startup_cpg_joined": "Y",
+  "discovery_onepager_ready": "Y",
+  "name_decided": "N"
+ },
+ "SAMPLE-discovery-wk3": {
+  "domain_ready": "Y",
   "discovery_onepager_ready": "Y"
  }
 }
