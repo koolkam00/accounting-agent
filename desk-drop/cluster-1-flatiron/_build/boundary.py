@@ -11,9 +11,11 @@ roadway plus one standard 100 ft (30.5 m) lot:
               225 Park Ave S have deep through-lots, address points at +359 and +363)
   30th St     centreline s = 30.0    -> north line s = 30.50
   14th St     centreline s = 14.0    -> south line s = 13.45 (14th St is a 100 ft street)
-Union Square South notch: from University Place (x = +182) to the Third Avenue
-centreline (x = +621), the whole 13th-to-14th block is inside (s >= 13.0), and east of
-the Park Ave S line the north frontage of 14th St is inside (s <= 14.55).
+Union Square frame: from University Place (x = +182) to the Third Avenue centreline
+(x = +621), everything from the 13th St centreline to the 15th St centreline is inside.
+That takes in the square's south frame (Whole Foods, 841-853 Broadway, Zero Irving,
+Trader Joe's) and its east frame (the Union Square East block with Target, and Con Ed's
+headquarters block), which are the cluster's retail anchor at the plan's southern edge.
 """
 import json
 import math
@@ -22,7 +24,7 @@ import grid
 
 WEST, EAST = -362.0, 376.0
 NORTH, SOUTH = 30.50, 13.45
-NOTCH_W, NOTCH_E, NOTCH_S, NOTCH_N = 182.0, 621.0, 13.0, 14.55
+NOTCH_W, NOTCH_E, NOTCH_S, NOTCH_N = 182.0, 621.0, 13.0, 15.0
 
 # polygon in (x, s), clockwise from the north-west corner
 POLY_XS = [
@@ -34,7 +36,7 @@ POLY_XS = [
 def inside_xs(x, s):
     if WEST <= x <= EAST and SOUTH <= s <= NORTH:
         return True
-    if NOTCH_W <= x <= NOTCH_E and NOTCH_S <= s <= NOTCH_N and (x <= EAST or s <= NOTCH_N):
+    if NOTCH_W <= x <= NOTCH_E and NOTCH_S <= s <= NOTCH_N:
         return True
     return False
 
@@ -88,7 +90,7 @@ def geojson_feature():
         "properties": {
             "name": "Cluster 1: Flatiron, NoMad and Union Square",
             "kind": "boundary",
-            "rule": "13th/14th St to 30th St, Sixth Ave to Park Ave S, both frontages of each edge street and avenue; Union Square South notch from University Pl to Third Ave between 13th and 14th St.",
+            "rule": "14th St to 30th St, Sixth Ave to Park Ave S, both frontages of each edge street and avenue; plus the Union Square frame from University Pl to Third Ave between the 13th and 15th St centrelines.",
             "drawn": "2026-10-24",
             "grid_source": grid.model()["source"],
         },

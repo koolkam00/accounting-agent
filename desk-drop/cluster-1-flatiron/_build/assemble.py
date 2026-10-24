@@ -278,7 +278,7 @@ def load_coworking():
 
 
 COWORK_FLOORS = {  # floors per coworking location, from the rows' own sources
-    "W-06": {4}, "W-07": {5, 6}, "W-08": {11}, "W-09": {2, 3}, "W-10": {4}, "W-11": {18, 19}, "W-12": {7},
+    "W-05": {2, 4, 5, 6}, "W-06": {4}, "W-07": {5, 6}, "W-08": {11}, "W-09": {2, 3}, "W-10": {4}, "W-11": {18, 19}, "W-12": {7},
     "W-13": {2}, "W-15": {5}, "W-16": {5}, "W-17": {9, 10, 11, 12}, "W-18": {2}, "W-19": {4, 5}, "W-20": {4, 5},
     "W-21": {4}, "W-22": {7}, "W-23": {2}, "W-24": {20}, "W-25": {31}, "W-26": {8, 9, 10}, "W-27": {6}, "W-28": {36},
 }
@@ -290,7 +290,7 @@ DIRECT_LEASE_DOCUMENTED = {  # same building as a coworking site, but the compan
     "Nayya", "Cognitiv", "Stellar Health", "Global Strategy Group", "Baseten", "Rakuten USA", "Charlie Health",
     "Matador Content", "Stone Source", "Alpine Investors", "GameChanger", "Senator Investment Group",
     "Selldorf Architects", "Valon", "Kaltura", "Wellcom Worldwide", "Green Mountain Energy", "Purple (PR)",
-    "Capital One", "Acxiom", "Chainalysis",
+    "Capital One", "Acxiom", "Chainalysis", "SharkNinja", "Criteo",
 }
 
 

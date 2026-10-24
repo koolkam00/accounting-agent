@@ -50,7 +50,13 @@
 
   DD.brand = () => window.DD_BRAND || { BRAND_NAME: '[BRAND_NAME missing: run node render/build-brand.js]', contact: {} };
   // A founder contact value from brand.json, e.g. DD.contact('PHONE') -> "[PHONE]" until filled.
-  DD.contact = (k) => { const c = (DD.brand().contact || {}); return c[k] == null ? `[${k.replace(/_/g, ' ')}]` : c[k]; };
+  // An unfilled contact counts as a placeholder, so --final refuses a document without it.
+  DD.contact = (k) => {
+    const c = (DD.brand().contact || {});
+    const v = c[k] == null ? `[${k.replace(/_/g, ' ')}]` : c[k];
+    if (DD.isPlaceholder(String(v))) { const m = `brand.json: ${k} (fill it in brand.json, then run node render/build-brand.js)`; if (DD.status && !DD.status.placeholders.includes(m)) DD.status.placeholders.push(m); }
+    return v;
+  };
 
   // Image source for a photo value: embedded data, a URL, or a path. Empty -> null.
   DD.imgSrc = (v) => {
