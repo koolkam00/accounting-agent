@@ -12,7 +12,7 @@ Version 1.0 · 2026-10-24 · workstream E, part B · `desk-drop-outreach/calls/`
 
 ## 1. Before the call (2 minutes)
 
-- Open the contact's row in the Clay offices table and a new row on **Office_Log** in `tracking/conversation-tracker.xlsx` (Google Sheets). Paste the `row_id`, company, name and title now, so the note later is only answers.
+- Open the contact's row in the Clay offices table and the **Note_Office** tab of `tracking/conversation-tracker.xlsx` (Google Sheets; works on a phone). Paste the `row_id`, company, name and title now, so the note later is only answers.
 - Glance at: `onsite_band` (an estimate; never say it to them), the building's lobby type (`cluster-1-flatiron/companies.csv`, `building_lobby_type`), and the two or three nearest stores in `cluster-1-flatiron/retailers.csv`.
 - Have the budget probe (question 6) on screen. It is read word for word.
 - Have `calls/post-call-note-template.md` open in a second tab. Block ten minutes after the call for it.
@@ -70,8 +70,8 @@ Say only what is true on the day. Progress claims (offices signed, brands lined 
 | They ask | Say | Never say |
 | --- | --- | --- |
 | "Which brands?" | "None yet. I'm talking to emerging New York brands this month. You'd see each one before it came, and you could veto any." | A brand name you have not qualified |
-| "When would it start?" | Weeks 1 to 3: "Not before January. The first drop is planned for [DROP DATE: Tue 2027-01-12], and only once five offices and the first brands have signed." After that, the slot in `messages/04-slot-table.csv` | A firm date before `drop_date_confirmed = Y` |
-| "What does it cost us?" | "Nothing. No fees in either direction. We ask for the shelf placement the day it arrives, two photos, one survey post and a ten-minute chat afterwards." | "Free forever" |
+| "When would it start?" | Weeks 1 to 3: "The first drop is planned for [DROP DATE: Tue 2027-01-12], and only once five offices and the first brands have signed." After that, the slot in `messages/04-slot-table.csv` | A firm date before `drop_date_confirmed = Y` |
+| "What does it cost us?" | "Nothing. No fees in either direction. We ask for the shelf placement the day it arrives, two photos, one survey post, help reaching five survey responses (nobody has to answer), your Tuesday headcount, and a ten-minute chat afterwards." | "Free forever" |
 | "Who else is doing it?" | Weeks 1 to 3: "You'd be one of the first. I'm talking to about fifteen office managers around here." | "Lots of offices nearby" |
 | "Is it safe? Allergens?" | "Only sealed, shelf-stable, commercially labeled products, and the card repeats the allergen line from the package word for word." | Any health claim about a product |
 | "Do you collect our employees' details?" | "No. The survey is anonymous. Nobody signs in." | Anything about collecting emails (the optional brand-newsletter box is the brand's, opt-in, and only if a brand chooses it) |
@@ -106,3 +106,4 @@ Round numbers are part B's rounds; a round that did not change this file is not 
 - Round 1 (2026-10-24): plan questions kept verbatim and in order; added prep, opening, probes, column map, Gate 0 rule, close, truthful answers, walk-in version.
 - Round 3 (2026-10-24): critique as an office manager who deletes forty vendor emails a day: the budget probe right after "it's free" reads like a bait and switch, so it now gets one line of framing before it (the probe itself is unchanged); `shortlist` added to the close for the plan's 8 offices; `channel` = warm-intro is now defined as "anyone you knew before", which the Scorecard counts against the plan's five warm conversations.
 - Round 4 (2026-10-24): `uses_snack_service`, `q3_brands_reach_out` and `other_approver` added so the Startup CPG post numbers (`messages/12-startup-cpg-posts.md`) are counts, not guesses; the close now asks permission before anyone is quoted (`quote_ok_to_share`).
+- Round 5 (2026-10-24): read-through: "Not before January" removed (it would be false if the stretch drop on Tue 2026-12-08 happens); the answer to "what does it cost us?" now lists every office commitment in the plan (it left out the five responses and the Tuesday headcount); prep points to the Note_Office tab.
