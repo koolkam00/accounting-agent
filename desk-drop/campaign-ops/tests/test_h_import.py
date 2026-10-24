@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Load this folder's SAMPLE exports into a COPY of the financial model and check that its outputs move sensibly.
 
-  python3 tests/test_h_import.py [exports/SAMPLE-zero exports/SAMPLE-standard exports/SAMPLE-exception]
+  python3 tests/test_h_import.py [exports/SAMPLE-zero exports/SAMPLE-standard exports/SAMPLE-exception exports/SAMPLE-direct]
 
 For each SAMPLE export folder (campaign_actuals.csv, drop_costs.csv, hours_log.csv; the Pipeline tab is the outreach
 workstream's file only since review round 1, R1-06, so nothing of this folder's is pasted there):
@@ -44,8 +44,8 @@ TABS = [("campaign_actuals.csv", "Actuals_Campaigns"), ("drop_costs.csv", "Actua
 DATES = {"drop_date", "invoice_paid_date", "report_delivered_date", "deposit_paid_date", "date"}
 TEXT = {"campaign_id", "drop_id", "delivery_model", "tier", "brand_id", "brand_would_buy_again", "renewed", "notes", "activity", "note",
         "side", "org_id", "org_name", "event", "value_text", "controls_budget"}
-AS_OF = {"zero": dt.date(2027, 2, 12), "standard": dt.date(2027, 3, 12), "exception": dt.date(2027, 3, 26)}
-DROP_ROW = {"DRP-001": 7, "DRP-002": 8, "DRP-003": 9}
+AS_OF = {"zero": dt.date(2027, 2, 12), "standard": dt.date(2027, 3, 12), "exception": dt.date(2027, 3, 26), "direct": dt.date(2027, 4, 26)}
+DROP_ROW = {"DRP-001": 7, "DRP-002": 8, "DRP-003": 9, "DRP-004": 10}
 
 
 def sha(p):

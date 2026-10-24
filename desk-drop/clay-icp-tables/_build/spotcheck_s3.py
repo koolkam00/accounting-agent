@@ -102,6 +102,57 @@ def sample(rnd, seed):
         print(name, ids)
 
 
+def sample_touched(rnd, seed):
+    """Review round 1 (round 9 onward): five rows per table that this round changed (new contacts, the space
+    check, the claims re-scan) and five others, none drawn in rounds 6 to 8."""
+    random.seed(int(seed))
+    r9o = pd.read_csv(os.path.join(C.WORK, "contacts_r9_offices.csv"), dtype=str).row_id
+    r9b = pd.read_csv(os.path.join(C.WORK, "contacts_r9_brands.csv"), dtype=str).row_id
+    for name, top in (("offices", "top50"), ("brands", "top60")):
+        df = pd.read_csv(os.path.join(C.A_DIR, f"{name}.csv"), dtype=str, keep_default_na=False)
+        pool = df[df[top] == "Y"]
+        prior = set()
+        for f in os.listdir(C.WORK):
+            m = re.match(rf"spotcheck_(r\d+)_{name}_sample\.csv$", f)
+            if m and int(m.group(1)[1:]) >= 6 and m.group(1) != rnd:
+                prior |= set(pd.read_csv(os.path.join(C.WORK, f), dtype=str).row_id)
+        pool = pool[~pool.row_id.isin(prior)]
+        if name == "offices":
+            touched = pool[pool.row_id.isin(r9o) | (pool.onsite_space_check == "Y")]
+        else:
+            touched = pool[pool.row_id.isin(r9b) | pool.founder_review_reason.str.contains("Claims review")
+                           | (pool.founder_review_type.str.contains("format"))]
+        a = random.sample(sorted(touched.row_id), min(5, len(touched)))
+        rest = pool[~pool.row_id.isin(a)]
+        b = random.sample(sorted(rest.row_id), 10 - len(a))
+        ids = a + b
+        df[df.row_id.isin(ids)].to_csv(os.path.join(C.WORK, f"spotcheck_{rnd}_{name}_sample.csv"), index=False)
+        print(name, "touched", a, "other", b)
+
+
+def claims_fresh(rnd, website):
+    """The R1-01 gate check, re-opened: homepage, Shopify catalog, About and FAQ, scanned with the gate's patterns."""
+    import scan_claims as SC
+    base = SC.base_of(website)
+    hits = []
+    pages = []
+    for u in (website, base + "/products.json?limit=250", base + "/pages/about", base + "/pages/faq"):
+        code, h = fetch(rnd, u)
+        pages.append(f"{code}")
+        if not h:
+            continue
+        if u.endswith("limit=250"):
+            prods = SC.products_text(h, base)
+            texts = prods or []
+        else:
+            texts = [(u, SC.text(h))]
+        for pu, t in texts:
+            d = {}
+            SC.scan_text(t, pu, d)
+            hits += [f"{v['cls']}: {v['phrase']} @ {v['url'][-50:]}" for v in d.values() if v["cls"] != "nutrient"]
+    return pages, sorted(set(hits))[:12]
+
+
 def first_url(s):
     m = re.search(r"https?://[^\s;|)'\"]+", s or "")
     return m.group(0).rstrip(".,") if m else ""
@@ -171,7 +222,17 @@ def evidence(rnd):
                 out += ["     " + s for s in snip(h, ["Typical time on-site", "days", "hybrid", "office"])]
         elif r["attendance_source_url"]:
             out += ["     " + s for s in snip(h, ["Typical time on-site", "days a week", "Hybrid", "In-Office"])] if h else []
-        out.append(f"  gate: {r['gate_result']} | onsite {r['onsite_low']}-{r['onsite_high']} band {r['onsite_band']} | {r['onsite_basis'][:220]}")
+        out.append(f"  gate: {r['gate_result']} | onsite {r['onsite_low']}-{r['onsite_high']} band {r['onsite_band']} | {r['onsite_basis'][:400]}")
+        if r.get("leased_sf_mentioned"):
+            code, h = fetch(rnd, r["address_source_url"])
+            sfs = [x.strip() for x in r["leased_sf_mentioned"].split(";")]
+            out.append(f"  space: leased_sf {r['leased_sf_mentioned']} | space_check {r.get('onsite_space_check', '')}")
+            out += ["     " + s for s in snip(h, [x.replace(' sf', '') for x in sfs])] if h else []
+        if r.get("linkedin_company_url", "unknown") not in ("", "unknown"):
+            code, h = fetch(rnd, r["website"])
+            slug = r["linkedin_company_url"].rstrip("/").split("/")[-1]
+            out.append(f"  linkedin_company_url: {r['linkedin_company_url']} | site [{code}] links it: "
+                       f"{bool(h) and slug.lower() in h.lower()}")
         out.append(f"  contact: {r['first_name']} {r['last_name']} | {r['title']} | {r['contact_status']} | {r['contact_evidence']} | ny_base {r['contact_ny_base']} | title_match {r['title_match']}")
         code, h = fetch(rnd, r["contact_source_url"])
         out.append(f"  [contact_source {code}] {r['contact_source_url']}")
@@ -214,9 +275,10 @@ def evidence(rnd):
         out.append(f"  [shelf_source {code}] {u}")
         if h:
             out += ["     " + s for s in snip(h, ["shelf", "refrigerat", "best by"])]
-        code, h = fetch(rnd, r["website"])
-        hits = sorted(set(m.group(0).lower() for m in CLAIM_WORDS.finditer(page_text(h)))) if h else []
-        out.append(f"  health_claim_gate: homepage [{code}] structure/function phrases found: {hits or 'none'}")
+        pages, hits = claims_fresh(rnd, r["website"])
+        out.append(f"  health_claim_gate: homepage, catalog, about, faq [{', '.join(pages)}] claim or ingredient "
+                   f"phrases: {hits or 'none'} | review_blocking {r.get('review_blocking', '')} | "
+                   f"{r['founder_review_type']}")
         out.append(f"  contact: {r['first_name']} {r['last_name']} | {r['title']} | {r['contact_role']} | {r['contact_status']} | {r['contact_evidence']}")
         code, h = fetch(rnd, r["contact_source_url"])
         out.append(f"  [contact_source {code}] {r['contact_source_url']}")
@@ -259,5 +321,7 @@ def evidence(rnd):
 if __name__ == "__main__":
     if sys.argv[1] == "sample":
         sample(sys.argv[2], sys.argv[3])
+    elif sys.argv[1] == "sample_touched":
+        sample_touched(sys.argv[2], sys.argv[3])
     else:
         evidence(sys.argv[2])

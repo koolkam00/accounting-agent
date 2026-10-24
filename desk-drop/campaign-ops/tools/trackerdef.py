@@ -33,7 +33,7 @@ BRAND_INTAKE_COLS = ["submitted_at", "form_version", "brand_name", "website", "c
 SIGNED_OFFICES_EXTRA = ["office_id", "clay_row_id", "agreement_signed_date", "agreement_file", "founding_roster_named",
                         "budget_probe_verbatim", "budget_probe_date", "budget_probe_monthly_usd"]
 SIGNED_OFFICES_REQUESTED = ["industry", "pantry_owner_phone", "pantry_owner_email", "public_naming_ok",
-                            "agreement_version", "building_id"]
+                            "agreement_version", "building_id", "in_coworking", "in_boundary"]
 PAID_BRANDS_EXTRA = ["brand_id", "clay_row_id", "tier", "price_usd", "offices_count", "payment_terms",
                      "agreement_signed_date", "invoice_id", "invoice_date", "payment_received_date",
                      "coi_received_date", "allergen_sheet_received_date", "logo_received_date", "card_sentences",
@@ -334,6 +334,7 @@ def define():
         ("status", "I", d(dv=dv_list(["active", "paused", "left"]))),
         ("left_date", "I", d(fmt=DATE)),
         ("notes", "I", d(width=24)),
+        ("eligibility_confirmed", "I", d(dv=YN, help="Y once you have confirmed an office the checks question: a coworking operator that controls the pantry and joins as one office, or an office just outside the cluster boundary that is still walkable from the route (review round 2, R2-05).")),
         ("company", "A", d(width=20)), ("office_address", "A", d(width=24)), ("floor_suite", "A"),
         ("tuesday_headcount", "A", d(width=9)), ("contact_name", "A"), ("contact_phone", "A"), ("contact_email", "A", d(width=20)),
         ("pantry_owner_name", "A"), ("pantry_owner_title", "A"), ("pantry_owner_is_contact", "A", d(width=7)),
@@ -343,7 +344,11 @@ def define():
         ("public_naming_ok", "A", d(width=7)), ("clay_row_id", "A"),
         ("industry", "A", d(width=14)), ("owner_phone", "A", d(width=14, help="Phone for the route sheet: the pantry owner's, or the contact's when they are the owner.")),
         ("headcount_band", "A", d(width=9)), ("size_check", "A", d(width=22)), ("default_units", "A", d(width=8)),
-        ("drops_so_far", "A", d(width=8)), ("declines", "A", d(width=8)),
+        ("drops_so_far", "A", d(width=8)),
+        ("declines", "A", d(width=8, help="Stops where this office declined every brand at the door. Refusing one brand and taking another does not count (review round 2, R2-05).")),
+        ("in_coworking", "A", d(width=7, help="From E's signed_offices.csv (B's companies.csv carries it).")),
+        ("in_boundary", "A", d(width=7, help="From E's signed_offices.csv (B's companies.csv carries it).")),
+        ("checks", "A", d(width=40)),
     ]), N["offices"], "Participating customers: the signed roster.", color="DDEBF7", group="Customers"))
 
     camp_inputs = [
@@ -403,7 +408,7 @@ def define():
         ("offices_under_5", 8), ("survey_tried_yes", 8), ("tried_no_didnt_see", 8), ("tried_no_not_for_me", 8),
         ("tried_no_gone", 8), ("survey_rating_n", 8), ("survey_rating_avg", 8), ("survey_buy_yes", 8),
         ("survey_buy_maybe", 8), ("survey_buy_no", 8), ("comments_total", 8), ("responses_outside_window", 8),
-        ("responses_unmatched_code", 8), ("qr_scans", 8), ("post_link_opens", 8), ("code_redemptions_to_date", 8),
+        ("responses_unmatched_code", 8), ("responses_office_not_on_drop", 8), ("qr_scans", 8), ("post_link_opens", 8), ("code_redemptions_to_date", 8),
         ("code_redemptions_as_of", 11), ("code_redemptions_day30", 8), ("revenue_usd", 10), ("deposit_usd", 10),
         ("deposit_paid_date", 11), ("invoice_paid_date", 11), ("processing_fee_usd", 9), ("direct_cost_usd", 10),
         ("shared_cost_usd", 10), ("hours_direct", 8), ("hours_shared", 8), ("contribution_usd", 10),
@@ -432,7 +437,7 @@ def define():
         ("drop_id", "A"), ("drop_date", "A", d(fmt=DATE)), ("brand_name", "A", d(width=16)), ("company", "A", d(width=18)),
         ("office_seq", "A", d(width=6)), ("office_label", "A", d(width=6)), ("office_drop_number", "A", d(width=7)),
         ("approval_mode", "A", d(width=9)), ("approved", "A", d(width=9)),
-        ("on_drop", "A", d(width=7, help="Y = approved and not turned away at the door. N = the office said no, or the stop's outcome is declined, building_refused or not_delivered with no units delivered for this brand. Every count of offices on a drop (the financial model's offices, Gate 2, depletion, photos, letters) uses on_drop = Y.")),
+        ("on_drop", "A", d(width=7, help="Y = approved and not turned away at the door. N = the office said no, or the stop's outcome is declined, building_refused or not_delivered with no units delivered for this brand. Every count of offices on a drop (the financial model's offices, Gate 2, depletion, photos, letters) and every survey and link total uses on_drop = Y.")),
         ("fit_check", "A", d(width=24)),
         ("units_allocated", "A", d(width=8)), ("card_code", "A", d(width=24)),
         ("units_delivered", "A", d(width=8)), ("delivered_at", "A", d(fmt="yyyy-mm-dd hh:mm", width=15)),
@@ -449,6 +454,7 @@ def define():
         ("buy_maybe", "A", d(width=6)), ("buy_no", "A", d(width=6)), ("comments", "A", d(width=6)),
         ("seq_key", "A", d(width=12)), ("window_end", "A", d(fmt=DATE)), ("resp_min_key", "A", d(width=8)),
         ("survey_frozen", "A", d(width=7, help="Y = this office's survey numbers come from the survey_frozen tab (the raw answers were deleted after 12 months).")),
+        ("hand_carried", "A", d(width=7, help="Direct-ship only: Y = the office's front desk will not hold food (receiving not walk-up, front_desk_fallback_ok not Y), so its carton ships to you with the reserve and you deliver it on T (review round 2).")),
     ]), N["approvals"], "One row per office per campaign: the office's yes, its units, and its whole ladder.", color="E2EFDA", group="Campaign"))
 
     add(Tab("stops", _cols([
@@ -467,8 +473,10 @@ def define():
         ("drop_date", "A", d(fmt=DATE)), ("company", "A", d(width=18)), ("office_address", "A", d(width=22)),
         ("floor_suite", "A"), ("receiving_window", "A"), ("receiving_type", "A"), ("pantry_owner_name", "A"),
         ("owner_phone", "A"), ("front_desk_fallback_ok", "A", d(width=7)), ("building_coi_status", "A"),
-        ("campaigns_here", "A", d(width=7)), ("units_here", "A", d(width=7)), ("first_drop", "A", d(width=7)),
+        ("campaigns_here", "A", d(width=7)), ("units_here", "A", d(width=7, help="All brands together. Per brand: the approvals tab (units_allocated) or the kit checklist.")), ("first_drop", "A", d(width=7)),
         ("minutes_on_site", "A", d(width=7)), ("checks", "A", d(width=34)),
+        ("delivery_point_note", "A", d(width=26, help="From offices: where to go in the building (printed on the route sheet; the no-code fallback prints it too).")),
+        ("declined_all", "A", d(width=7, help="Y = the outcome is declined and no brand was delivered here: the office turned every brand away. Counts toward 'declined twice' on offices.")),
     ]), N["stops"], "One row per office per drop: the route.", color="E2EFDA", group="Campaign"))
 
     add(Tab("inventory", _cols([

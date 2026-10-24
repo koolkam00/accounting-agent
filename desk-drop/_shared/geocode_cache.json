@@ -49,6 +49,16 @@
   "query": "100 Fifth Avenue",
   "source": "nyc-geosearch"
  },
+ "100 fifth avenue, new york, ny": {
+  "bbl": "1008177502",
+  "confidence": 0.8,
+  "label": "100 FIFTH AVENUE, New York, NY, USA",
+  "lat": 40.737051,
+  "lon": -73.993359,
+  "match": "fallback",
+  "query": "100 Fifth Avenue, New York, NY",
+  "source": "nyc-geosearch"
+ },
  "101 fifth avenue": {
   "bbl": "1008460002",
   "confidence": 0.8,
@@ -257,6 +267,16 @@
   "lon": -73.988677,
   "match": "fallback",
   "query": "1140 Broadway",
+  "source": "nyc-geosearch"
+ },
+ "1140 broadway, new york, ny": {
+  "bbl": "1008280033",
+  "confidence": 0.8,
+  "label": "1140 B'WAY, New York, NY, USA",
+  "lat": 40.743939,
+  "lon": -73.988677,
+  "match": "fallback",
+  "query": "1140 Broadway, New York, NY",
   "source": "nyc-geosearch"
  },
  "115 east 23rd street": {
@@ -509,6 +529,16 @@
   "query": "124 East 14th Street",
   "source": "nyc-geosearch"
  },
+ "124 east 14th street, new york, ny": {
+  "bbl": "1005590016",
+  "confidence": 0.8,
+  "label": "124 EAST 14 STREET, New York, NY, USA",
+  "lat": 40.733674,
+  "lon": -73.988766,
+  "match": "fallback",
+  "query": "124 East 14th Street, New York, NY",
+  "source": "nyc-geosearch"
+ },
  "1245 broadway": {
   "bbl": "1008320017",
   "confidence": 0.8,
@@ -577,6 +607,16 @@
   "lon": -73.984472,
   "match": "fallback",
   "query": "136 Madison Avenue",
+  "source": "nyc-geosearch"
+ },
+ "1365 halsey street, brooklyn, ny 11237": {
+  "bbl": "3034070051",
+  "confidence": 0.8,
+  "label": "1365 HALSEY STREET, Brooklyn, NY, USA",
+  "lat": 40.695581,
+  "lon": -73.905933,
+  "match": "fallback",
+  "query": "1365 Halsey Street, Brooklyn, NY 11237",
   "source": "nyc-geosearch"
  },
  "137 east 25th street": {
@@ -687,6 +727,16 @@
   "lon": -73.991349,
   "match": "fallback",
   "query": "150 Fifth Avenue",
+  "source": "nyc-geosearch"
+ },
+ "152 7th avenue south, new york, ny": {
+  "bbl": "1006120029",
+  "confidence": 0.8,
+  "label": "152 7 AVENUE SOUTH, New York, NY, USA",
+  "lat": 40.735256,
+  "lon": -74.002126,
+  "match": "fallback",
+  "query": "152 7th Avenue South, New York, NY",
   "source": "nyc-geosearch"
  },
  "155 fifth avenue": {
@@ -839,6 +889,16 @@
   "query": "184 2nd Ave, New York, NY",
   "source": "nyc-geosearch"
  },
+ "184 kent avenue, brooklyn, ny 11249": {
+  "bbl": "3023487501",
+  "confidence": 0.8,
+  "label": "184 KENT AVENUE, Brooklyn, NY, USA",
+  "lat": 40.718739,
+  "lon": -73.96488,
+  "match": "fallback",
+  "query": "184 Kent Avenue, Brooklyn, NY 11249",
+  "source": "nyc-geosearch"
+ },
  "19 union square west": {
   "bbl": "1008430020",
   "confidence": 0.8,
@@ -887,6 +947,16 @@
   "lon": -73.982595,
   "match": "fallback",
   "query": "2 Park Avenue",
+  "source": "nyc-geosearch"
+ },
+ "20 christopher street, new york, ny": {
+  "bbl": "1005930042",
+  "confidence": 0.8,
+  "label": "20 CHRISTOPHER STREET, New York, NY, USA",
+  "lat": 40.733816,
+  "lon": -74.000658,
+  "match": "fallback",
+  "query": "20 Christopher Street, New York, NY",
   "source": "nyc-geosearch"
  },
  "20 east 33rd street": {
@@ -999,6 +1069,16 @@
   "query": "21 East 22nd Street",
   "source": "nyc-geosearch"
  },
+ "214 1st avenue, new york, ny": {
+  "bbl": "1004400008",
+  "confidence": 0.8,
+  "label": "214 1 AVENUE, New York, NY, USA",
+  "lat": 40.730432,
+  "lon": -73.9829,
+  "match": "fallback",
+  "query": "214 1st Avenue, New York, NY",
+  "source": "nyc-geosearch"
+ },
  "215 park avenue south": {
   "bbl": "1008730067",
   "confidence": 0.8,
@@ -1017,6 +1097,16 @@
   "lon": -73.98825,
   "match": "fallback",
   "query": "215 Park Avenue South, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "215 stratford road, brooklyn, ny 11218": {
+  "bbl": "3051420056",
+  "confidence": 0.8,
+  "label": "215 STRATFORD ROAD, Brooklyn, NY, USA",
+  "lat": 40.643353,
+  "lon": -73.968396,
+  "match": "fallback",
+  "query": "215 Stratford Road, Brooklyn, NY 11218",
   "source": "nyc-geosearch"
  },
  "22 8th ave, new york, ny": {
@@ -1047,6 +1137,16 @@
   "lon": -73.992895,
   "match": "fallback",
   "query": "22 West 19th Street",
+  "source": "nyc-geosearch"
+ },
+ "22 west 19th street, new york, ny": {
+  "bbl": "1008200026",
+  "confidence": 0.8,
+  "label": "22 WEST 19 STREET, New York, NY, USA",
+  "lat": 40.739399,
+  "lon": -73.992895,
+  "match": "fallback",
+  "query": "22 West 19th Street, New York, NY",
   "source": "nyc-geosearch"
  },
  "220 fifth avenue": {
@@ -1289,6 +1389,16 @@
   "query": "257 Park Avenue South",
   "source": "nyc-geosearch"
  },
+ "257 park avenue south, new york, ny": {
+  "bbl": "1008767504",
+  "confidence": 0.8,
+  "label": "257 PARK AVENUE SOUTH, New York, NY, USA",
+  "lat": 40.738577,
+  "lon": -73.987151,
+  "match": "fallback",
+  "query": "257 Park Avenue South, New York, NY",
+  "source": "nyc-geosearch"
+ },
  "258 eighth avenue": {
   "bbl": "1007737504",
   "confidence": 0.8,
@@ -1397,6 +1507,16 @@
   "lon": -73.985346,
   "match": "fallback",
   "query": "28 East 28th Street",
+  "source": "nyc-geosearch"
+ },
+ "28 east 28th street, new york, ny": {
+  "bbl": "1008570024",
+  "confidence": 0.8,
+  "label": "28 EAST 28 STREET, New York, NY, USA",
+  "lat": 40.743465,
+  "lon": -73.985346,
+  "match": "fallback",
+  "query": "28 East 28th Street, New York, NY",
   "source": "nyc-geosearch"
  },
  "28 west 23rd street": {
@@ -1749,6 +1869,16 @@
   "query": "360 Park Avenue South",
   "source": "nyc-geosearch"
  },
+ "360 park avenue south, new york, ny": {
+  "bbl": "1008550024",
+  "confidence": 0.8,
+  "label": "360 PARK AVENUE SOUTH, New York, NY, USA",
+  "lat": 40.742105,
+  "lon": -73.985534,
+  "match": "fallback",
+  "query": "360 Park Avenue South, New York, NY",
+  "source": "nyc-geosearch"
+ },
  "361 6th ave, new york, ny": {
   "bbl": "1005920018",
   "confidence": 0.8,
@@ -1969,6 +2099,16 @@
   "query": "40 West 25th Street",
   "source": "nyc-geosearch"
  },
+ "40 west 25th street, new york, ny": {
+  "bbl": "1008260065",
+  "confidence": 0.8,
+  "label": "40 WEST 25 STREET, New York, NY, USA",
+  "lat": 40.743613,
+  "lon": -73.991062,
+  "match": "fallback",
+  "query": "40 West 25th Street, New York, NY",
+  "source": "nyc-geosearch"
+ },
  "401 park avenue south": {
   "bbl": "1008830088",
   "confidence": 0.8,
@@ -2157,6 +2297,16 @@
   "lon": -73.983617,
   "match": "fallback",
   "query": "440 Park Avenue South",
+  "source": "nyc-geosearch"
+ },
+ "440 park avenue south, new york, ny": {
+  "bbl": "1008590048",
+  "confidence": 0.8,
+  "label": "440 PARK AVENUE SOUTH, New York, NY, USA",
+  "lat": 40.744522,
+  "lon": -73.983617,
+  "match": "fallback",
+  "query": "440 Park Avenue South, New York, NY",
   "source": "nyc-geosearch"
  },
  "448 w 16th st, new york, ny": {
@@ -2459,6 +2609,16 @@
   "query": "60 Madison Avenue",
   "source": "nyc-geosearch"
  },
+ "60 madison avenue, new york, ny": {
+  "bbl": "1008560058",
+  "confidence": 0.8,
+  "label": "60 MADISON AVENUE, New York, NY, USA",
+  "lat": 40.743288,
+  "lon": -73.986627,
+  "match": "fallback",
+  "query": "60 Madison Avenue, New York, NY",
+  "source": "nyc-geosearch"
+ },
  "61 west 23rd street": {
   "bbl": "1008250009",
   "confidence": 0.8,
@@ -2527,6 +2687,16 @@
   "lon": -73.985346,
   "match": "fallback",
   "query": "63 Madison Avenue",
+  "source": "nyc-geosearch"
+ },
+ "630 flushing avenue, brooklyn, ny 11206": {
+  "bbl": "3017200001",
+  "confidence": 0.8,
+  "label": "630 FLUSHING AVENUE, Brooklyn, NY, USA",
+  "lat": 40.699771,
+  "lon": -73.948173,
+  "match": "fallback",
+  "query": "630 Flushing Avenue, Brooklyn, NY 11206",
   "source": "nyc-geosearch"
  },
  "635 avenue of the americas": {
@@ -2709,6 +2879,16 @@
   "query": "75 9th Ave, New York, NY",
   "source": "nyc-geosearch"
  },
+ "75 9th avenue, new york, ny": {
+  "bbl": "1007130001",
+  "confidence": 0.8,
+  "label": "75 9 AVENUE, New York, NY, USA",
+  "lat": 40.742563,
+  "lon": -74.006051,
+  "match": "fallback",
+  "query": "75 9th Avenue, New York, NY",
+  "source": "nyc-geosearch"
+ },
  "765 sixth avenue": {
   "bbl": "1008010041",
   "confidence": 0.8,
@@ -2889,6 +3069,16 @@
   "query": "860 Broadway, New York, NY",
   "source": "nyc-geosearch"
  },
+ "87 saint marks place, brooklyn, ny 11217": {
+  "bbl": "3009320073",
+  "confidence": 0.8,
+  "label": "87 SAINT MARK'S PLACE, Brooklyn, NY, USA",
+  "lat": 40.681692,
+  "lon": -73.979187,
+  "match": "fallback",
+  "query": "87 Saint Marks Place, Brooklyn, NY 11217",
+  "source": "nyc-geosearch"
+ },
  "881 broadway": {
   "bbl": "1008470062",
   "confidence": 0.8,
@@ -2997,6 +3187,16 @@
   "lon": -73.984896,
   "match": "fallback",
   "query": "99 Madison Avenue",
+  "source": "nyc-geosearch"
+ },
+ "999 atlantic avenue, brooklyn, ny 11238": {
+  "bbl": "3020190060",
+  "confidence": 0.8,
+  "label": "999 ATLANTIC AVENUE, Brooklyn, NY, USA",
+  "lat": 40.680317,
+  "lon": -73.959081,
+  "match": "fallback",
+  "query": "999 Atlantic Avenue, Brooklyn, NY 11238",
   "source": "nyc-geosearch"
  },
  "eataly, 200 fifth avenue, new york, ny 10010": {

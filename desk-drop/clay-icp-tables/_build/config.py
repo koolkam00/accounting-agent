@@ -73,7 +73,7 @@ B_KNOWN = 10
 # founder_review types (the most severe one applies; see stage1-notes.md)
 B_REVIEW_PENALTY = {"owner": -25, "scale-reported": -35, "scale": -12, "dormant": -12, "not-emerging": -10, "perishable-risk": -8,
                     "under-floor": -5, "alcohol-adjacent": -5, "claim-functional": -4, "nutrient-claim": -4,
-                    "format": -4,
+                    "format": -4, "format-unconfirmed": 0,
                     "other": -2}
 
 WHY_NOW_WINDOW_DAYS = 365

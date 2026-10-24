@@ -144,3 +144,40 @@ Changes:
   (mock-tested); survey-form.md Part 3 now says time stamps could link a sign-up to an answer; Part C suggestion withdrawn.
 - Office summary threshold 3 -> 5. Exception scenario (reviewer's, with the SOP as now written) added as dry-run/exception.
 - dryrun.py counts tool refusals and final dashboard checks as problems. New tests: test_exception.py, test_retention.py.
+Results after the fixes: zero 44 days, standard 57, exception 57 (second replay after the harness fix): 0 formula errors,
+0 disagreements, 0 tool refusals, 0 final dashboard checks each; direct-ship variant 0 errors (now drafts per-office ship
+emails); tests/run_all.sh ALL PASS in 4 min 37 s (98 links, 286 text drafts, 84 CSVs; H load 3 runs, SHA unchanged).
+H copy, DRP-003: units_depleted_day5 408, campaigns under 5 per office 0, contribution 815 (tracker 970 before overhead).
+
+## Review round 2 (independent reviewer, `_review/round-2.md`): builder fixes, 2026-10-24 from about 11:30 UTC
+Findings: 1 blocker, 2 majors, 6 minors, all from the reviewer's direct-ship SAMPLE drop (SAMPLE-DRP-004). Fixed all; none rejected.
+- R2-01: campaign survey and link totals (responses, tried, reasons, ratings, would-buy, comments, QR scans, post opens) now
+  SUMIFS over approvals on_drop = "Y" (formulas.py) and tot() over on-drop offices (tracker.py). New campaigns column
+  responses_office_not_on_drop (on the survey dashboard's "Not counted", in trace.csv, the report email and an info check);
+  responses_unmatched_code keeps meaning "no office". make_report quotes only comments from on-drop card codes.
+- R2-02: direct-ship logging is now one received and one delivered row per office carton (office_count); the reserve's received
+  row has no office. Short-shipment checks split by model: founder/courier unchanged; direct-ship checks the receiving address
+  from T-5 (reserve plus hand-carried cartons, new approvals column hand_carried) and everything from T+1 against units_to_ship
+  less the allocation of offices turned away. New approvals check "delivered X of Y allocated" (info once an issue for that
+  office is logged). "reserve below zero" says what to log in direct-ship.
+- R2-03: direct-ship tracking sheet (drop-day rules, office count per brand, refused carton goes back with the carrier, founder
+  block), T-3 email (envelope of cards, the extra ask to count each carton, no window), T-1 text (no window promise; desk or
+  anyone in the office), SOP section 4 rows for a refused and a short carton. An office whose front desk will not hold food is
+  hand-carried in direct-ship: its cartons ship to the founder with the reserve (ship-date email, kit checklist, tracking sheet,
+  stops info). Delivered-count note on the page (learned), in trace.csv and in the report email; fields asked of D.
+- Found while fixing: the direct-ship kit checklist printed the reserve as received - allocated (-463 in the reviewer's run);
+  now reserve at the receiving address less the hand-carried cases.
+- R2-04: dashboard "Tabs over 90% full" reads office_form/brand_form through INDIRECT; test replaces the tab and checks it.
+- R2-05: campaign check for two campaigns of one category on a drop; stops.declined_all and offices.declines count only stops
+  where every brand was refused; offices.checks (declined twice; in_coworking; in_boundary) with eligibility_confirmed; E asked
+  for in_coworking and in_boundary (B's companies.csv has them).
+- R2-06: make_debrief --reports (default: reports beside the output); no PDF -> "NO REPORT YET" and no "from the report".
+- R2-07: the roster line opens "What we learned" when fewer offices are in the report than the agreement names ("credited" only
+  when the credit notes cover it).
+- R2-08: stops.delivery_point_note (lookup); README fallback lists it and says where per-brand units are.
+- R2-09: day-3 nudge "has"/"have".
+- New scenario direct() (scenarios.py) replaces tools/dryrun_direct.py and dry-run/standard/direct-ship-variant/; new
+  tests/test_direct.py (9 cases); run_all.sh replays four dry runs with --dry-runs; test_links and test_h_import take the
+  direct folder (H's DRP-004 is Schedule row 10).
+- Sizes: six-months 53,397 formula cells (6,741 INDIRECT), full 89,807 (11,901). Longest formula unchanged
+  (brands.e_payment_check, 14,459 characters); campaigns.checks now 9,156 (was 6,980).

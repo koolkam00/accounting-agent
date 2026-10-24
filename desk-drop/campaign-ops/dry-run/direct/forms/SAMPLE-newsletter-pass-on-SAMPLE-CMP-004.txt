@@ -1,0 +1,11 @@
+SAMPLE. Test data only: illustrative placeholders, not results. Never send or print for use.
+
+SAMPLE. What template 09 sends to SAMPLE Orchard Row on 2027-02-17: the ticked addresses only, sorted, nothing else.
+
+sample-reader-cmp-004-01@example.com
+sample-reader-cmp-004-02@example.com
+sample-reader-cmp-004-03@example.com
+sample-reader-cmp-004-04@example.com
+
+Unticked responses deleted in the form on 2027-02-17 (3 of them). Every response, the form and the sent email deleted on 2027-03-19.
+The tracker holds only the dates and the count (4).

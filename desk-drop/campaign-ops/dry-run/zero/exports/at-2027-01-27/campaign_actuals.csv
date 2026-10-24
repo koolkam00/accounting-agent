@@ -1,0 +1,3 @@
+campaign_id,drop_id,drop_date,delivery_model,tier,brand_id,offices,units_received,units_delivered,units_placed,units_placed_within_1bd,units_topped_up,units_depleted_day5,survey_responses,survey_tried_yes,qr_scans,code_redemptions_day30,revenue_usd,invoice_paid_date,processing_fee_usd,report_delivered_date,brand_would_buy_again,renewed,deposit_usd,deposit_paid_date,survey_responses_min_office
+SAMPLE-CMP-001,SAMPLE-DRP-001,2027-01-12,founder,founding,SAMPLE-BR-001,5,276,250,248,198,5,200,34,25,45,,480,2026-12-10,0,2027-01-22,yes,pending,,,4
+SAMPLE-CMP-002,SAMPLE-DRP-001,2027-01-12,founder,founding,SAMPLE-BR-002,5,275,250,250,250,6,238,32,21,39,,600,2026-12-11,0,2027-01-22,maybe,pending,,,5

@@ -82,15 +82,35 @@ def and_list(xs):
 
 def excluded(lad):
     """Say plainly what was not counted (brand finance asks)."""
-    out_w, unm = lad["responses_outside_window"], lad["responses_unmatched_code"]
-    if not (out_w or unm):
+    out_w, unm = lad["responses_outside_window"] or 0, lad["responses_unmatched_code"] or 0
+    nod = lad.get("responses_office_not_on_drop") or 0
+    if not (out_w or unm or nod):
         return ""
     parts = []
     if out_w:
         parts.append("%d outside the window (before the drop day or after day 5)" % out_w)
     if unm:
         parts.append("%d with a card code that matched no office" % unm)
-    return "\n%d survey answers were not counted: %s.\n" % (out_w + unm, " and ".join(parts))
+    if nod:
+        # Review round 2 (R2-01): an office that turned the brand away may still have answers (the post was out).
+        parts.append("%d from an office that was not on the drop (it turned %s away, so its people never had the product)" % (
+            nod, lad["campaign"]["brand_name"]))
+    n = out_w + unm + nod
+    return "\n%d survey answer%s %s not counted: %s.\n" % (n, "" if n == 1 else "s", "was" if n == 1 else "were", ", ".join(parts[:-1]) + (" and " if len(parts) > 1 else "") + parts[-1])
+
+
+def delivered_note(lad):
+    """How the delivered rung was counted, when it was not our own count at handoff (review round 2, R2-03(e))."""
+    src = [o["delivered_count_source"] for o in lad["offices"] if o["on_drop"] == "Y" and o["units_delivered"]]
+    office, plist = src.count("office_count"), src.count("packing_list")
+    out = []
+    if office:
+        out.append(("Delivered: counted by each office on arrival (you shipped straight to them), not by us at handoff." if office == len(src) else
+                    "Delivered: counted on arrival by %d of the %d offices (you shipped straight to them); we counted the other %s at handoff." % (
+                        office, len(src), "one" if len(src) - office == 1 else str(len(src) - office))))
+    if plist:
+        out.append("At %d office%s the delivered count is your packing list: nobody counted it." % (plist, "" if plist == 1 else "s"))
+    return ("\n" + " ".join(out) + "\n") if out else ""
 
 
 def run(tr, drop_id, step, out, reports=None):
@@ -172,10 +192,19 @@ def run(tr, drop_id, step, out, reports=None):
                 continue   # already sent and nothing changed: no new draft
             b = tr.brand(TR._s(c["brand_id"]))
             rows = ["| Office | Units | Address |", "| --- | --- | --- |"]
+            hand_units = 0
             for o in lad["offices"]:
                 if o["approved"] == "Y":
                     off = tr.office(o["office_id"])
-                    rows.append("| %s | %d | %s |" % (o["office_label"], o["units_allocated"], ("%s, %s" % (TR._s(off.get("office_address")), TR._s(off.get("floor_suite")))) if model == "direct-ship" else "with the rest, to the address above"))
+                    if model == "direct-ship" and tr.hand_carried(o["office_id"], model):
+                        # Review round 2 (R2-03): the front desk there will not hold food, so this carton comes to us.
+                        hand_units += int(o["units_allocated"] or 0)
+                        where = "with the reserve, to %s (we deliver it by hand: that office's front desk will not hold food)" % TR._s(tr.config.get("receiving_address"))
+                    elif model == "direct-ship":
+                        where = "%s, %s" % (TR._s(off.get("office_address")), TR._s(off.get("floor_suite")))
+                    else:
+                        where = "with the rest, to the address above"
+                    rows.append("| %s | %d | %s |" % (o["office_label"], o["units_allocated"], where))
             card = "> %s\n> %s\n> %s %s\n> %s" % (c["brand_name"], TR._s(c.get("card_sentences")), TR._s(c.get("allergen_line_verbatim")),
                                                 TR._s(c.get("may_contain_verbatim")), TR._s(c.get("retailer_line")))
             import math
@@ -184,8 +213,10 @@ def run(tr, drop_id, step, out, reports=None):
                        brand_contact_email=TR._s(b.get("contact_email")), offices=lad["offices_approved"], revised_line=revised,
                        revised_subject="Revised: " if revised else "", ship_lines=("- Office cartons: one per office to its own address (table below), each marked with our case label for that office (attached), "
                                    "by a service that delivers on %s itself, not earlier: offices hold nothing for us before the drop. One tracking number per office by %s.\n"
-                                   "- Reserve (%d units): to %s, to arrive by %s.\n- Cancel-by date: %s." % (
-                                       L(T), L(opscal.add_bd(T, -2)), reserve, TR._s(tr.config.get("receiving_address")), L(s["receive"]), L(s["ship_by"])))
+                                   "- Reserve (%d units)%s: to %s, to arrive by %s.\n- Cancel-by date: %s." % (
+                                       L(T), L(opscal.add_bd(T, -2)), reserve,
+                                       (" and the %d units marked \"with the reserve\" below" % hand_units) if hand_units else "",
+                                       TR._s(tr.config.get("receiving_address")), L(s["receive"]), L(s["ship_by"])))
                        if model == "direct-ship" else
                        ("- Ship by: %s. It must arrive by %s.\n- Ship to: %s" % (
                            L(s["ship_by_requested"]) + ("" if s["ship_by_requested"] == s["ship_by"] else " (latest %s)" % L(s["ship_by"])),
@@ -199,21 +230,46 @@ def run(tr, drop_id, step, out, reports=None):
             off, mine, ctx = office_ctx(oid)
             if not mine:
                 continue
+            # Direct-ship (review round 2, R2-03): a carrier brings the cartons at no set time, the office counts them, and the
+            # cards come by post; an office whose front desk will not hold food gets its cartons from us by hand.
+            carrier = model == "direct-ship" and not tr.hand_carried(oid, model)
             if step == "t3":
                 items = [(l["campaign"], links[(c, oid, "post")]) for c, l in mine] if links else []
                 ctx["post_text"] = MK.post_text(tr, oid, items) if items else "[POST TEXT: add the survey prefill templates first]"
-                stop = next((x for x in tr.rows["stops"] if TR._s(x["drop_id"]) == drop_id and TR._s(x["office_id"]) == oid), {})
-                ctx["placement_photo_who"] = "I'll take it if I place it myself" if model == "founder" else "you or the courier"
+                ctx["subject_window"] = "" if carrier else ", " + ctx["receiving_window"]
+                if carrier:
+                    ctx["arrival_block"] = ("Your drop is %s. Coming: %s. This time the brands ship straight to you: a carrier brings one carton per brand "
+                                            "during the day on %s (carriers give no set time), and may leave it at your front desk or mailroom. The tent "
+                                            "cards come first, in a small envelope from me that should reach you by %s: please keep it for the cartons." % (
+                                                ctx["drop_date_long"], ctx["brand_list"], ctx["drop_date_long"], L(opscal.add_bd(T, -1))))
+                    ctx["placement_photo_who"] = "you take it: the carrier only drops the cartons"
+                    ctx["direct_ask"] = ("\n\nOne extra ask, because the brands ship to you directly: when the cartons come, put each card in front of its "
+                                         "brand, count the units in each carton and text me the numbers with the placement photo (%s). Your count is what "
+                                         "the brand's report shows as delivered. A carton short or damaged: tell me and I'll top it up from my reserve. If "
+                                         "you'd rather not take a brand after all, refuse that carton and the carrier takes it back." % ctx["founder_phone"])
+                else:
+                    ctx["arrival_block"] = "Your drop is %s, in your window, %s. Coming: %s." % (ctx["drop_date_long"], ctx["receiving_window"], ctx["brand_list"])
+                    if model == "direct-ship":
+                        ctx["arrival_block"] += " Your front desk can't hold food, so the brands send your cartons to me and I'll bring them myself, cards included."
+                    ctx["placement_photo_who"] = "I'll take it if I place it myself" if model in ("founder", "direct-ship") else "you, or the courier if they place it"
+                    ctx["direct_ask"] = ""
             if step == "t1":
                 fd = TR._s(off.get("front_desk_fallback_ok")) == "Y"
-                ctx["who_brings"] = {"founder": "I'll bring", "courier": "our courier will bring"}.get(model, "the carrier delivers")
-                ctx["fallback_line"] = ("If you're out, it goes to the front desk, as we agreed." if fd else
-                                        "If you'll be out, just tell me and we'll come the next morning instead." if model != "direct-ship" else
-                                        "If you'll be out, tell me today and I'll ask the carrier to deliver the next morning instead.")
+                if carrier:
+                    ctx["delivery_line"] = "the carrier delivers %s during the day (carriers give no set time)." % ctx["brand_list_short"]
+                    ctx["fallback_line"] = ("It may be left at your front desk or mailroom: please bring it up the same day, count each carton "
+                                            "and text me the numbers with the photo." if fd else
+                                            "If you're out, anyone in the office can take it in. Please count each carton and text me the "
+                                            "numbers with the photo.")
+                else:
+                    who = {"courier": "our courier will bring"}.get(model, "I'll bring")
+                    ctx["delivery_line"] = "%s %s in your %s window." % (who, ctx["brand_list_short"], ctx["receiving_window"])
+                    ctx["fallback_line"] = ("If you're out, it goes to the front desk, as we agreed." if fd and model != "direct-ship" else
+                                            "If you'll be out, just tell me and we'll come the next morning instead.")
             if step == "day3":
                 low = [l["campaign"]["brand_name"] for c, l in mine for x in l["offices"] if x["office_id"] == oid and x["survey_responses"] < 5]
-                ctx["responses_nudge"] = (" Also: %s has under five survey answers from your team so far. If you can, a one-line reminder in %s would help." % (
-                    " and ".join(low), ctx["survey_channel"])) if low else ""
+                ctx["responses_nudge"] = (" Also: %s %s under five survey answers from your team so far. If you can, a one-line reminder in %s would help." % (
+                    and_list(low), "has" if len(low) == 1 else "have", ctx["survey_channel"])) if low else ""
             if step == "day5":
                 coll = [l["campaign"]["brand_name"] for c, l in mine if TR._s(l["campaign"].get("unused_product_election")) == "return"]
                 rel = [l["campaign"]["brand_name"] for c, l in mine if TR._s(l["campaign"].get("unused_product_election")) != "return"]
@@ -303,7 +359,8 @@ def run(tr, drop_id, step, out, reports=None):
                        responses=lad["survey_responses"], scans=int(lad["qr_scans"]),
                        redemptions_part=(", and %d code redemptions so far, as you reported them" % red) if red is not None else "",
                        discount_code=TR._s(c.get("discount_code")), count=TR._s(c.get("newsletter_passed_count")) or "[N]",
-                       excluded_line=excluded(lad), roster_note=("\n" + MR.roster_note(lad) + "\n") if lad["turned_away"] else "")
+                       excluded_line=excluded(lad), roster_note=("\n" + MR.roster_note(lad) + "\n") if lad["turned_away"] else "",
+                       delivered_note=delivered_note(lad))
             written.append(write_msg(out, step, cid, meta, body, ctx))
     elif step == "slip":
         new = opscal.slip(T)
@@ -326,6 +383,9 @@ def main(argv):
         return 1
     tr = TR.Tracker(argv[1])
     common.require_same_name(tr)
+    if argv[2] not in tr.drops or tr.drop_date(argv[2]) is None:
+        print("REFUSED: %s is not on the drops tab with a valid drop date (date_check)" % argv[2])
+        return 2
     w = run(tr, argv[2], argv[3], argv[4], reports)
     print("%s: %d drafts -> %s" % (argv[3], len(w), os.path.join(argv[4], argv[3])))
     if getattr(run, "refused", None):

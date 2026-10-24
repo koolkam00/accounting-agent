@@ -1,0 +1,77 @@
+Timestamp,Card code (filled in for you),Did you try SAMPLE Tallgrass?,How was it?,Would you buy it?,What happened?,Anything you'd tell SAMPLE Tallgrass? (optional)
+2027-02-09 09:09:00,SAMPLE-CMP-003.SAMPLE-O-001,Yes,5,Yes,,"SAMPLE Tastes like an oatmeal cookie, in a good way."
+2027-02-09 09:31:00,SAMPLE-CMP-003.SAMPLE-O-003,No,,,Didn't see it,SAMPLE Asked Priya to save me a bag. Really good.
+2027-02-09 09:34:00,SAMPLE-CMP-003.SAMPLE-O-005,Yes,5,Maybe,,SAMPLE Wish it came in a smaller size.
+2027-02-09 09:38:00,SAMPLE-CMP-003.SAMPLE-O-004,Yes,5,Maybe,,SAMPLE Saved one for my kid.
+2027-02-09 09:44:00,SAMPLE-CMP-003.SAMPLE-O-005,Yes,4,Yes,,
+2027-02-09 10:03:00,SAMPLE-CMP-003.SAMPLE-O-005,Yes,3,Yes,,SAMPLE Not my thing but my team liked it.
+2027-02-09 10:20:00,SAMPLE-CMP-003.SAMPLE-O-002,Yes,5,Yes,,
+2027-02-09 10:47:00,SAMPLE-CMP-003.SAMPLE-O-004,Yes,4,Yes,,SAMPLE Not my thing but my team liked it.
+2027-02-09 11:01:00,SAMPLE-CMP-003.SAMPLE-O-005,Yes,4,No,,
+2027-02-09 11:04:00,SAMPLE-CMP-003.SAMPLE-O-008,Yes,4,Maybe,,SAMPLE A bit too salty for me.
+2027-02-09 11:12:00,SAMPLE-CMP-003.SAMPLE-O-009,Yes,4,Maybe,,
+2027-02-09 11:22:00,SAMPLE-CMP-003.SAMPLE-O-005,Yes,5,Maybe,,SAMPLE Where can I buy these near the office?
+2027-02-09 11:56:00,SAMPLE-CMP-003.SAMPLE-O-009,No,,,Not for me,SAMPLE Not my thing but my team liked it.
+2027-02-09 12:17:00,SAMPLE-CMP-003.SAMPLE-O-006,Yes,5,Yes,,
+2027-02-09 12:42:00,SAMPLE-CMP-003.SAMPLE-O-003,No,,,Didn't see it,SAMPLE Saw it by the coffee machine and took two. Really good.
+2027-02-09 12:46:00,SAMPLE-CMP-003.SAMPLE-O-007,Yes,4,No,,SAMPLE Saw it by the coffee machine and took two. Really good.
+2027-02-09 13:41:00,SAMPLE-CMP-003.SAMPLE-O-007,Yes,4,Yes,,SAMPLE Nice that it lists the allergens on the card.
+2027-02-09 14:55:00,SAMPLE-CMP-003.SAMPLE-O-003,Yes,3,No,,SAMPLE Where can I buy these near the office?
+2027-02-09 15:01:00,SAMPLE-CMP-003.SAMPLE-O-010,No,,,Gone by the time I looked,
+2027-02-09 15:04:00,SAMPLE-CMP-003.SAMPLE-O-007,Yes,3,Yes,,SAMPLE Gone before lunch on Wednesday.
+2027-02-09 15:47:00,SAMPLE-CMP-003.SAMPLE-O-001,Yes,4,No,,
+2027-02-09 15:58:00,SAMPLE-CMP-003.SAMPLE-O-006,No,,,Gone by the time I looked,
+2027-02-09 16:12:00,SAMPLE-CMP-003.SAMPLE-O-007,No,,,Not for me,SAMPLE Not my thing but my team liked it.
+2027-02-09 16:32:00,SAMPLE-CMP-003.SAMPLE-O-002,Yes,4,No,,
+2027-02-09 16:49:00,SAMPLE-CMP-003.SAMPLE-O-002,Yes,5,Yes,,SAMPLE Nice that it lists the allergens on the card.
+2027-02-10 09:58:00,SAMPLE-CMP-003.SAMPLE-O-002,Yes,4,Yes,,SAMPLE Asked Priya to save me a bag. Really good.
+2027-02-10 10:06:00,SAMPLE-CMP-003.SAMPLE-O-006,No,,,Didn't see it,
+2027-02-10 10:28:00,SAMPLE-CMP-003.SAMPLE-O-007,Yes,4,Maybe,,"SAMPLE Good crunch, would pick it up at the store."
+2027-02-10 10:29:00,SAMPLE-CMP-003.SAMPLE-O-010,Yes,4,Maybe,,
+2027-02-10 10:39:00,SAMPLE-CMP-003.SAMPLE-O-006,Yes,4,Maybe,,
+2027-02-10 11:13:00,SAMPLE-CMP-003.SAMPLE-O-009,No,,,Gone by the time I looked,
+2027-02-10 11:48:00,SAMPLE-CMP-003.SAMPLE-O-001,No,,,Didn't see it,
+2027-02-10 12:29:00,SAMPLE-CMP-003.SAMPLE-O-005,Yes,4,No,,"SAMPLE Good crunch, would pick it up at the store."
+2027-02-10 12:31:00,SAMPLE-CMP-003.SAMPLE-O-002,Yes,5,Yes,,
+2027-02-10 12:51:00,SAMPLE-CMP-003.SAMPLE-O-006,No,,,Not for me,
+2027-02-10 12:54:00,SAMPLE-CMP-003.SAMPLE-O-005,Yes,4,Maybe,,
+2027-02-10 13:11:00,SAMPLE-CMP-003.SAMPLE-O-007,No,,,Gone by the time I looked,SAMPLE Nice that it lists the allergens on the card.
+2027-02-10 13:16:00,SAMPLE-CMP-003.SAMPLE-O-002,Yes,3,Maybe,,
+2027-02-10 13:28:00,SAMPLE-CMP-003.SAMPLE-O-010,No,,,Didn't see it,
+2027-02-10 14:38:00,SAMPLE-CMP-003.SAMPLE-O-010,Yes,3,No,,
+2027-02-10 15:23:00,SAMPLE-CMP-003.SAMPLE-O-009,Yes,4,Yes,,
+2027-02-10 15:55:00,SAMPLE-CMP-003.SAMPLE-O-006,Yes,4,Yes,,
+2027-02-10 16:25:00,SAMPLE-CMP-003.SAMPLE-O-008,No,,,Not for me,SAMPLE Not my thing but my team liked it.
+2027-02-10 16:26:00,SAMPLE-CMP-003.SAMPLE-O-005,Yes,4,Yes,,SAMPLE Not my thing but my team liked it.
+2027-02-10 16:38:00,SAMPLE-CMP-003.SAMPLE-O-004,Yes,4,Maybe,,SAMPLE Gone before lunch on Wednesday.
+2027-02-11 09:09:00,SAMPLE-CMP-003.SAMPLE-O-001,No,,,Didn't see it,
+2027-02-11 09:21:00,SAMPLE-CMP-003.SAMPLE-O-005,Yes,5,Yes,,
+2027-02-11 09:24:00,SAMPLE-CMP-003.SAMPLE-O-010,Yes,4,Maybe,,"SAMPLE Good crunch, would pick it up at the store."
+2027-02-11 09:49:00,SAMPLE-CMP-003.SAMPLE-O-003,Yes,4,Yes,,
+2027-02-11 09:55:00,SAMPLE-CMP-003.SAMPLE-O-004,Yes,3,Yes,,
+2027-02-11 10:18:00,SAMPLE-CMP-003.SAMPLE-O-004,Yes,4,No,,SAMPLE Gone before lunch on Wednesday.
+2027-02-11 11:06:00,SAMPLE-CMP-003.SAMPLE-O-008,Yes,4,Maybe,,
+2027-02-11 11:15:00,SAMPLE-CMP-003.SAMPLE-O-008,No,,,Didn't see it,
+2027-02-11 11:53:00,SAMPLE-CMP-003.SAMPLE-O-010,No,,,Didn't see it,
+2027-02-11 12:07:00,SAMPLE-CMP-003.SAMPLE-O-001,Yes,5,Yes,,
+2027-02-11 12:15:00,SAMPLE-CMP-003.SAMPLE-O-008,Yes,3,Yes,,SAMPLE Where can I buy these near the office?
+2027-02-11 12:28:00,SAMPLE-CMP-003.SAMPLE-O-003,Yes,4,Yes,,
+2027-02-11 12:33:00,SAMPLE-CMP-003.SAMPLE-O-001,Yes,3,Yes,,
+2027-02-11 13:07:00,SAMPLE-CMP-003.SAMPLE-O-004,Yes,5,Maybe,,
+2027-02-11 13:25:00,SAMPLE-CMP-003.SAMPLE-O-007,No,,,Didn't see it,
+2027-02-11 14:10:00,SAMPLE-CMP-003.SAMPLE-O-004,No,,,Didn't see it,
+2027-02-11 14:11:00,SAMPLE-CMP-003.SAMPLE-O-009,No,,,Not for me,
+2027-02-11 14:32:00,SAMPLE-CMP-003.SAMPLE-O-002,Yes,5,Yes,,
+2027-02-11 14:40:00,SAMPLE-CMP-003.SAMPLE-O-009,Yes,4,Yes,,SAMPLE Gone before lunch on Wednesday.
+2027-02-11 14:56:00,SAMPLE-CMP-003.SAMPLE-O-008,Yes,4,No,,
+2027-02-11 15:08:00,SAMPLE-CMP-003.SAMPLE-O-009,Yes,3,Yes,,SAMPLE Saw it by the coffee machine and took two. Really good.
+2027-02-11 15:27:00,SAMPLE-CMP-003.SAMPLE-O-009,Yes,5,No,,
+2027-02-11 15:32:00,SAMPLE-CMP-003.SAMPLE-O-004,No,,,Gone by the time I looked,SAMPLE A bit too salty for me.
+2027-02-11 15:37:00,SAMPLE-CMP-003.SAMPLE-O-006,Yes,4,Yes,,SAMPLE Where can I buy these near the office?
+2027-02-11 16:17:00,SAMPLE-CMP-003.SAMPLE-O-003,Yes,4,Maybe,,
+2027-02-11 16:20:00,SAMPLE-CMP-003.SAMPLE-O-007,Yes,5,Yes,,
+2027-02-12 11:00:00,SAMPLE-CMP-003.SAMPLE-O-002,No,,,Gone by the time I looked,
+2027-02-12 14:08:00,SAMPLE-CMP-003.SAMPLE-O-007,Yes,5,Yes,,
+2027-02-12 16:07:00,SAMPLE-CMP-003.SAMPLE-O-002,Yes,5,No,,
+2027-02-12 16:09:00,SAMPLE-CMP-003.SAMPLE-O-001,Yes,4,Maybe,,SAMPLE Gone before lunch on Wednesday.
+2027-02-16 11:04:00,SAMPLE-CMP-003.SAMPLE-O-005,No,,,Didn't see it,SAMPLE Gone before lunch on Wednesday.

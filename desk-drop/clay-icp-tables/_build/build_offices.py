@@ -273,6 +273,10 @@ def source_type(url, website):
 
 
 COWORK_SITE = {}
+_sp = os.path.join(C.WORK, "space_r9.csv")
+SPACE = {r["row_id"]: r for r in pd.read_csv(_sp, dtype=str, keep_default_na=False).to_dict("records")} \
+    if os.path.exists(_sp) else {}
+SPACE_SF = {k: f"{int(v['leased_sf']):,} sf" for k, v in SPACE.items()}
 
 
 # ------------------------------------------------------------------ build
@@ -341,7 +345,7 @@ def main():
             o["hq_in_nyc"] = r["hq_in_nyc"] or "unknown"
             o["parent_company"] = r["parent_company"] or "unknown"
             o["linkedin_company_url"] = r["linkedin_company_url"] or "unknown"
-            o["leased_sf_mentioned"] = r["leased_sf_mentioned"]
+            o["leased_sf_mentioned"] = SPACE_SF.get(o["row_id"], r["leased_sf_mentioned"])
             o["b_notes"] = r["notes"]
             o["found_date"] = r["found_date"]
             o["source_url"] = r["address_source_url"]
@@ -355,6 +359,12 @@ def main():
                 o["lobby_note"] = f"B lists '{o['lobby_type']}' with no lobby source: unknown until the walk"
                 o["lobby_type"] = "unknown"
             o["coi_required"] = b["coi_required"] if b is not None else "unknown"
+            o["leased_sf_source"] = "B's sources" if r["leased_sf_mentioned"] else ""
+            if not r["leased_sf_mentioned"] and o["row_id"] in SPACE:
+                # spot check round 10: the row's own lease article states the space; B recorded none
+                sp = SPACE[o["row_id"]]
+                r = dict(r, leased_sf_mentioned=f"{int(sp['leased_sf']):,} sf")
+                o["leased_sf_source"] = f"{sp['source_url']} (opened {sp['opened']}): '...{sp['quote'][-160:]}'"
             est = estimate(r)
         else:
             cid = r["coworking_id"]
@@ -411,6 +421,7 @@ def main():
                 o["lobby_type"] = "unknown"
             o["coi_required"] = b["coi_required"] if b is not None else "unknown"
             o["pantry_control"] = r["pantry_control"]
+            o["leased_sf_source"] = ""
             est = dict(low=None, high=None, central=None, band="unknown", confidence="none",
                        basis="Coworking site: member headcount not sourced; treat as one office if the operator "
                              "controls the pantry and ask the Tuesday count at intake.",
@@ -439,8 +450,9 @@ def main():
             fails.append(f"inside a coworking space ({o['coworking_id']})")
         if kind == "company" and COWORK_MOVE.search(r["notes"] or ""):
             # review round 1 (R1-15): still a coworking tenant today, so it fails the coworking gate until it moves
-            fails.append("inside a coworking space until its move to this address (B notes); re-check after "
-                         + (r["move_in_date"] or "the move") )
+            md = r["move_in_date"] if r["move_in_date"] not in ("", "unknown") else ""
+            fails.append("inside a coworking space until its move to this address (B notes); re-check "
+                         + (f"after {md}" if md else "after the move (no date reported): walk by or ask at intake"))
         if kind == "company" and r["candidate_status"] == "excluded-not-office":
             fails.append("no staffed office shown at the address (B: excluded-not-office)")
         if "under-30" in est["flags"]:
@@ -596,7 +608,7 @@ def main():
                      "primary_contact_status", "title_match", "contact_source_url", "contact_found_date",
                      "backup_first_name", "backup_last_name", "backup_title", "backup_linkedin_url",
                      "backup_work_email", "backup_email_status",
-                     "b_candidate_status", "near_miss_class", "nyc_office_may_fit", "leased_sf_mentioned", "b_notes",
+                     "b_candidate_status", "near_miss_class", "nyc_office_may_fit", "leased_sf_mentioned", "leased_sf_source", "b_notes",
                      "a_corrections"]
     df = df[lead]
     df.to_csv(os.path.join(C.WORK, "stage1_offices.csv"), index=False, quoting=csv.QUOTE_MINIMAL)  # stage 3 merges contacts into offices.csv

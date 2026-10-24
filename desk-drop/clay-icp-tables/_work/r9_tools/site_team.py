@@ -41,6 +41,8 @@ def main():
     import pandas as pd
     st = pd.read_csv(os.path.join(W, 'stage1_offices.csv'), dtype=str, keep_default_na=False).set_index('row_id')
     rows = []
+    if os.path.exists(OUT):
+        rows = [r for r in csv.DictReader(open(OUT, encoding='utf-8')) if r['row_id'] not in sys.argv[1:]]
     for rid in sys.argv[1:]:
         o = st.loc[rid]
         site = o.website if o.website.startswith('http') else ''

@@ -182,6 +182,15 @@ class Tracker:
         r["default_units"] = default_units(h, self.config)
         return r
 
+    def hand_carried(self, oid, model):
+        """Direct-ship only: an office whose front desk or dock will not hold food (receiving is not walk-up and the owner did not
+        agree the front desk may take it) gets its cartons through the founder: the brand ships them with the reserve to the
+        receiving address and the founder delivers them on T (review round 2, R2-03). The stops tab says so (info)."""
+        if model != "direct-ship":
+            return False
+        o = self.office(oid)
+        return _s(o.get("receiving_type")) != "walk-up" and _s(o.get("front_desk_fallback_ok")) != "Y"
+
     def brand(self, bid):
         b = dict(self.brands.get(bid, {}))
         src = self.intake.get(_s(b.get("intake_key")), {})
@@ -333,15 +342,20 @@ class Tracker:
                 "buy_no": count(lambda x: x["buy"] == "No"), "comments": count(lambda x: x["comment"].strip() != ""),
                 "qr_scans": delta(qslug), "post_link_opens": delta(pslug), "qr_slug": qslug, "post_slug": pslug,
                 "survey_frozen": "Y" if oid in frozen else "",
+                "hand_carried": "Y" if self.hand_carried(oid, c["delivery_model"]) else "",
             })
             if oid in frozen and T0:
                 # The raw answers were deleted after 12 months: the frozen totals stand in (R1-12).
                 fz = frozen[oid]
                 for k in FROZEN_COLS:
                     offices[-1][k] = int(_n(fz.get(k)))
-        tot = lambda k: sum((o[k] or 0) for o in offices)
+        tot_all = lambda k: sum((o[k] or 0) for o in offices)
         approved = [o for o in offices if o["approved"] == "Y"]
         ondrop = [o for o in offices if o["on_drop"] == "Y"]
+        # Review round 2 (R2-01): survey and link totals count offices on the drop only; answers from an office that said
+        # no or turned the brand away at the door are kept apart (responses_office_not_on_drop), never in a rung.
+        tot = lambda k: sum((o[k] or 0) for o in ondrop)
+        off_drop = sum(o["survey_responses"] or 0 for o in offices if o["on_drop"] != "Y")
         deleted = _d(c.get("answers_deleted_date")) is not None
         rn = tot("rating_n")
         inv_rows = [r for r in self.rows["invoices"] if _s(r["campaign_id"]) == cid]
@@ -361,9 +375,9 @@ class Tracker:
             "units_allocated": sum(o["units_allocated"] or 0 for o in approved),
             "units_received": sum(_n(r["qty"]) for r in inv if _s(r["movement"]) == "received"),
             "units_rejected": sum(_n(r["qty"]) for r in inv if _s(r["movement"]) == "rejected"),
-            "units_delivered": tot("units_delivered"), "units_placed": tot("units_placed"),
+            "units_delivered": tot_all("units_delivered"), "units_placed": tot_all("units_placed"),
             "units_placed_within_1bd": sum(o["units_placed"] for o in offices if o["placed_within_1bd"] == "Y"),
-            "units_topped_up": tot("units_topped_up"),
+            "units_topped_up": tot_all("units_topped_up"),
             "units_depleted_day5": None if any(x is None for x in depleted_all) else sum(depleted_all),
             "survey_responses": tot("survey_responses"),
             "survey_responses_min_office": min((o["survey_responses"] for o in ondrop), default=None),
@@ -374,8 +388,9 @@ class Tracker:
             "comments_total": tot("comments"),
             "responses_in_window": len(inwin), "responses_total": len(resp),
             "responses_outside_window": None if deleted else len(resp) - len(inwin),
-            "responses_unmatched_code": None if deleted else len(inwin) - tot("survey_responses"),
-            "qr_scans": sum(o["qr_scans"] or 0 for o in offices), "post_link_opens": sum(o["post_link_opens"] or 0 for o in offices),
+            "responses_unmatched_code": None if deleted else len(inwin) - tot("survey_responses") - off_drop,
+            "responses_office_not_on_drop": off_drop if T0 else None,
+            "qr_scans": sum(o["qr_scans"] or 0 for o in ondrop), "post_link_opens": sum(o["post_link_opens"] or 0 for o in ondrop),
             "code_redemptions_to_date": red_to_date, "code_redemptions_as_of": asof, "code_redemptions_day30": red30,
             "revenue_usd": round(sum(_n(r["amount_usd"]) for r in inv_rows), 2),
             "deposit_usd": round(sum(_n(r["paid_amount_usd"]) for r in deposit_rows), 2) if deposit_rows else None,
@@ -383,6 +398,10 @@ class Tracker:
             "invoice_paid_date": max(paid_dates(("founding_full", "standard_balance")), default=None),
             "processing_fee_usd": round(sum(_n(r["processing_fee_usd"]) for r in inv_rows), 2),
             "reserve_on_hand": sum(reserve_delta(r) for r in inv), "leftover_on_hand": sum(leftover_delta(r) for r in inv),
+            # Direct-ship (review round 2, R2-02): what reached the receiving address (reserve, and the cartons of offices
+            # the founder delivers by hand), apart from the office cartons each office counted in.
+            "units_received_at_base": sum(_n(r["qty"]) for r in inv if _s(r["movement"]) == "received" and not _s(r.get("office_id"))),
+            "units_allocated_turned_away": sum(o["units_allocated"] or 0 for o in offices if o["turned_away"]),
         }
         camp["placed_share_1bd"] = (camp["units_placed_within_1bd"] / camp["units_delivered"]) if camp["units_delivered"] else None
         camp["photo_compliance"] = (sum(1 for o in ondrop if o["both_photos"] == "Y") / len(ondrop)) if ondrop else None
@@ -559,7 +578,7 @@ def leftover_delta(r):
 
 
 # ------------------------------------------------------------ comparison with the sheet's formulas
-APPROVAL_COMPARE = ["approved", "on_drop", "survey_frozen", "units_allocated", "units_delivered", "units_placed", "placed_within_1bd", "units_topped_up",
+APPROVAL_COMPARE = ["approved", "on_drop", "survey_frozen", "hand_carried", "units_allocated", "units_delivered", "units_placed", "placed_within_1bd", "units_topped_up",
                     "units_depleted_day5", "survey_responses", "tried_yes", "rating_n", "buy_yes", "buy_maybe", "buy_no",
                     "comments", "qr_scans", "post_link_opens", "both_photos", "later_photo_day", "office_label",
                     "placement_photo_file", "later_photo_file", "placement_lag_hours"]
@@ -569,7 +588,8 @@ CAMPAIGN_COMPARE = ["units_received", "units_delivered", "units_placed", "units_
                     "comments_total", "qr_scans", "post_link_opens", "code_redemptions_to_date", "code_redemptions_day30",
                     "revenue_usd", "deposit_usd", "processing_fee_usd", "direct_cost_usd", "shared_cost_usd",
                     "contribution_usd", "contribution_per_hour_usd", "reserve_on_hand", "leftover_on_hand", "photo_compliance",
-                    "responses_outside_window", "responses_unmatched_code", "offices_approved", "offices_on_drop", "units_allocated"]
+                    "responses_outside_window", "responses_unmatched_code", "responses_office_not_on_drop", "offices_approved",
+                    "offices_on_drop", "units_allocated"]
 
 
 def _eq(a, b):

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Every check for this folder. Run from campaign-ops/:  bash tests/run_all.sh [--dry-runs]
-# --dry-runs also replays the three SAMPLE dry runs day by day and the direct-ship variant (about 30 minutes).
+# --dry-runs also replays the four SAMPLE dry runs day by day (about 40 minutes).
 set -u
 cd "$(dirname "$0")/.."
 fail=0
@@ -13,16 +13,17 @@ if [ "${1:-}" = "--dry-runs" ]; then
   step "dry run zero"      python3 tools/dryrun.py zero
   step "dry run standard"  python3 tools/dryrun.py standard
   step "dry run exception" python3 tools/dryrun.py exception
-  step "direct-ship variant" python3 tools/dryrun_direct.py
+  step "dry run direct"    python3 tools/dryrun.py direct
 fi
 step "forms script"       node tests/test_forms_gs.js
 step "intake mapping"     python3 tests/test_intake_mapping.py
 step "outreach handoff"    python3 tests/test_e_handoff.py
 step "exceptions"          python3 tests/test_exception.py
+step "direct-ship"         python3 tests/test_direct.py
 step "12-month deletion"   python3 tests/test_retention.py
-step "links and QR"        python3 tests/test_links.py dry-run/zero dry-run/standard dry-run/exception
+step "links and QR"        python3 tests/test_links.py dry-run/zero dry-run/standard dry-run/exception dry-run/direct
 step "office summaries"    python3 tests/test_office_summary.py
-step "financial model"     python3 tests/test_h_import.py exports/SAMPLE-zero exports/SAMPLE-standard exports/SAMPLE-exception
+step "financial model"     python3 tests/test_h_import.py exports/SAMPLE-zero exports/SAMPLE-standard exports/SAMPLE-exception exports/SAMPLE-direct
 step "folder rules"        python3 tests/check_folder.py
 echo
 [ $fail -eq 0 ] && echo "ALL PASS" || echo "SOMETHING FAILED"

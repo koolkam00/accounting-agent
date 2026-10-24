@@ -4,6 +4,8 @@
   python3 tools/dryrun.py zero        # campaign zero: 2 brands x 5 offices, founder model
   python3 tools/dryrun.py standard    # first standard run: 3 brands x 10 offices, courier model
   python3 tools/dryrun.py exception   # second standard run: a short shipment and an office that declines at the door
+  python3 tools/dryrun.py direct      # third run, direct-ship, 2 brands x 10 offices: a short carton, a carton refused at the
+                                      #   door with answers from that office, a desk that will not hold food (review round 2)
   python3 tools/dryrun.py zero --final-only
 
 For each day on the scenario's calendar, the tracker is built with only the rows the founder would
@@ -150,7 +152,7 @@ def dashboard_checks(path):
         r += 1
     msgs = []
     import trackerdef as TD
-    for tab in ("campaigns", "approvals", "stops", "inventory", "counts", "photos", "scans", "issues", "hours", "costs", "invoices", "links", "brands"):
+    for tab in ("campaigns", "approvals", "stops", "inventory", "counts", "photos", "scans", "issues", "hours", "costs", "invoices", "links", "brands", "offices"):
         t = TD.TABS[tab]
         w = wb[tab]
         ci = t.index["checks" if "checks" in t.index else "e_payment_check"] + 1
@@ -221,7 +223,8 @@ def main(argv):
         for m in msgs[:12]:
             log.append("    - " + m)
         for cid, v in rel.items():
-            if v and str(v).startswith("RELEASED") and cid not in released:
+            # Only this scenario's own campaigns (an earlier drop's release is not this drop's ship-date email).
+            if v and str(v).startswith("RELEASED") and cid not in released and cid in scn["campaigns"]:
                 released.add(cid)
                 log.append("- %s ship release: %s" % (cid, v))
                 run_tool(["tools/make_messages.py", snap, did, "ship_release", os.path.join(out, "messages")], log)

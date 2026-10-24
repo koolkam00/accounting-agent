@@ -59,8 +59,20 @@ def stops_for(tr, drop_id):
         here = (o.get("lat"), o.get("lon"))
         wm = walk_minutes(prev, here) if prev else None
         prev = here
-        out.append({"s": s, "o": o, "oid": oid, "items": items, "first": first, "walk": wm})
+        out.append({"s": s, "o": o, "oid": oid, "items": items, "first": first, "walk": wm,
+                    "hand": tr.hand_carried(oid, TR._s(tr.drops[drop_id].get("delivery_model")))})
     return T, camps, lads, out, problems
+
+
+DIRECT_RULES = [
+    "The carrier delivers on the drop day at no set time. From 8 am, watch each tracking number below; when one shows delivered, text that owner.",
+    "Each office counts the units in each carton and texts you the count with the placement photo (card in front, no people, screens or whiteboards). Write the count below.",
+    "Carton short or damaged: log a short_shipment (or damaged_or_short_dated) issue for that office, tell the brand today, and top up from your reserve on day 3.",
+    "Carton refused at the door: the carrier takes it back to the brand. Outcome declined; no received or delivered row; nothing goes into your reserve. Tell the brand today; the credit is on the placement confirmation (T+1).",
+    "No delivery shown by the end of the drop day: call the owner, then the brand, and log a late_arrival issue. A carton placed after T+1 is not placed within one business day.",
+    "FIRST DROP offices: be there yourself in the office's receiving window on the drop day.",
+    "YOU DELIVER offices (the front desk will not hold food): their cartons came to you with the reserve. Carry them in the office's window, as on a founder route (SOP section 3), and write the handed-over count.",
+]
 
 
 def door_rules(model):
@@ -102,16 +114,27 @@ def html_for(tr, drop_id, out_dir):
     for cid in camps:
         lad = lads[cid]
         reserve.append("%s: %d" % (lad["campaign"]["brand_name"], max(0, int(lad["units_received"] - lad["units_rejected"] - lad["units_allocated"]))))
-    load = {}
+    load, carry = {}, {}
     for st in stops:
         for (b, p, u, n, cid) in st["items"]:
-            x = load.setdefault(b, [0, 0])
+            x = (carry if st["hand"] else load).setdefault(b, [0, 0])
             x[0] += u
             x[1] += n
     ncases = sum(v[1] for v in load.values())
-    hdr.append("<p class='small'><b>%s</b>: %s. <b>%d cases in all.</b></p>" % (
+    hdr.append("<p class='small'><b>%s</b>: %s. <b>%d %s in all.</b></p>" % (
         "Shipped by the brands straight to the offices" if model == "direct-ship" else "Load",
-        E(" · ".join("%s %d units in %d cases" % (b, v[0], v[1]) for b, v in load.items())), ncases))
+        E(" · ".join("%s %d units in %d %s" % (b, v[0], v[1], "cartons" if model == "direct-ship" else "cases") for b, v in load.items())), ncases,
+        "cartons" if model == "direct-ship" else "cases"))
+    if model == "direct-ship":
+        res = []
+        for cid in camps:
+            lad = lads[cid]
+            hand_u = sum(u for st in stops if st["hand"] for (b, p, u, n, c2) in st["items"] if c2 == cid)
+            res.append("%s: %d" % (lad["campaign"]["brand_name"], max(0, int(lad["units_received_at_base"] - lad["units_rejected"] - hand_u))))
+        hdr.append("<p class='small'>%s<b>Reserve with you</b> (for day-3 top-ups; never left at an office): %s. Call %s for anything this sheet does not answer.</p>" % (
+            ("<b>You carry</b> (shipped to you with the reserve): %s. " % E(" · ".join("%s %d units in %d case%s" % (b, v[0], v[1], "" if v[1] == 1 else "s") for b, v in carry.items()))) if carry else "",
+            E(" · ".join(res)), E(phone)))
+        hdr.append("<div class='box2'><b>On the drop day</b><ol class='small'>%s</ol></div>" % "".join("<li>%s</li>" % E(r) for r in DIRECT_RULES))
     if model == "courier" and stops:
         import datetime as _dt
         first_t = TR._t(stops[0]["s"].get("planned_time"))
@@ -144,12 +167,15 @@ def html_for(tr, drop_id, out_dir):
             # Review round 1 (R1-05): a courier carries no PDF of ours unless we send it, so say where it is.
             coi_txt = ("Certificate: already sent to the building; a copy is attached to your booking email from %s. "
                        "If the desk asks for anything else, call %s" % (founder, phone))
+        elif model == "direct-ship" and not st["hand"]:
+            coi_txt = "Building certificate: already sent to the building; carry the PDF on your phone if you visit"
         else:
             coi_txt = "Certificate: already sent to the building; carry the PDF on your phone in case the desk asks"
         fd = TR._s(o.get("front_desk_fallback_ok")) == "Y"
         if model == "direct-ship":
-            cases = "".join("<tr><td>%s</td><td class='small'>%s</td><td>%d units</td><td>%d case%s</td><td>on the shelf (count) <span class='box'></span></td></tr>" % (
-                E(b), E(p), u, n, "" if n == 1 else "s", ) for (b, p, u, n, cid) in st["items"])
+            cases = "".join("<tr><td>%s</td><td class='small'>%s</td><td>%d units · %d %s</td><td>%s <span class='box'></span></td><td>placement photo <span class='chk'></span></td></tr>" % (
+                E(b), E(p), u, n, ("case" if n == 1 else "cases") if st["hand"] else ("carton" if n == 1 else "cartons"),
+                "handed over (count)" if st["hand"] else "the office's count", ) for (b, p, u, n, cid) in st["items"])
         else:
             # Two counts per brand (R1-05): handed over is the delivered rung (who counted: founder or courier); the shelf
             # count only if you placed it yourself (otherwise the office's placement photo gives it).
@@ -158,15 +184,22 @@ def html_for(tr, drop_id, out_dir):
                                 E(b), E(p), u, n, "" if n == 1 else "s") for (b, p, u, n, cid) in st["items"])
         walk = (" · about %d min from the last stop" % st["walk"]) if st["walk"] else ""
         if model == "direct-ship":
-            body.append("""<div class='stop'><h2>%d. %s %s</h2>
-<div class='grid small'><div>%s, %s<br>%s</div><div>Owner <b>%s</b> · <b>%s</b><br>Kit mailed: %s · tracking %s</div></div>
+            flag = ("<span class='warn'>YOU DELIVER: the front desk will not hold food; window %s</span>" % E(TR._s(o.get("receiving_window"))) if st["hand"] else "") + (
+                " <span class='warn'>FIRST DROP: be there in the %s window</span>" % E(TR._s(o.get("receiving_window"))) if st["first"] else "")
+            kit = ("Cards: you carry them with the cases" if st["hand"] else
+                   "Cards mailed: %s" % (E(common.fmt_date(TR._d(s.get("kit_mailed_date")))) or "<span class='warn'>not yet</span>"))
+            ask = ("Hand the cases to the owner in the window (never the front desk), two photos, write the handed-over count."
+                   if st["hand"] else
+                   "Ask the owner for: the count of each carton, the placement photo with the card, by %s at the latest. Refused at the door: outcome declined, nothing to log in inventory." % E(common.fmt_date(opscal.add_bd(T, 1))))
+            body.append("""<div class='stop'><h2>%d. %s <span class='small muted'>%s</span> %s</h2>
+<div class='grid small'><div>%s, %s<br><i>%s</i></div><div>Owner <b>%s</b> · <b>%s</b><br>%s · tracking %s</div></div>
 <table class='small'>%s</table>
-<p class='small'>%s Confirm with the owner: case arrived (count), placed (photo with the card), by T+1 %s.</p>
-<p class='small'>Arrived <span class='box'></span> · counted <span class='box'></span> · placement photo <span class='chk'></span> · issue <span class='box' style='min-width:2.5in'></span></p></div>""" % (
-                i, E(TR._s(o.get("company"))), "<span class='warn'>FIRST DROP: visit in person on T</span>" if st["first"] else "",
+<p class='small'>%s %s</p>
+<p class='small'>Delivered (time) <span class='box'></span> · outcome <span class='box'></span> · issue <span class='box' style='min-width:2.5in'></span></p></div>""" % (
+                i, E(TR._s(o.get("company"))), E(oid), flag,
                 E(TR._s(o.get("office_address"))), E(TR._s(o.get("floor_suite"))), E(TR._s(o.get("delivery_point_note"))),
-                E(TR._s(o.get("pantry_owner_name"))), E(o["owner_phone"]), E(common.fmt_date(TR._d(s.get("kit_mailed_date")))) or "<span class='warn'>not yet</span>",
-                E(TR._s(s.get("carrier_tracking"))) or "<span class='warn'>missing</span>", cases, E(coi_txt + "."), E(common.fmt_date(opscal.add_bd(T, 1)))))
+                E(TR._s(o.get("pantry_owner_name"))), E(o["owner_phone"]), kit,
+                E(TR._s(s.get("carrier_tracking"))) or "<span class='warn'>missing</span>", cases, E(coi_txt + "."), E(ask)))
             continue
         body.append("""<div class='stop'><h2>%d. %s · %s <span class='small muted'>%s</span> %s</h2>
 <div class='grid small'><div><b>%s</b>%s<br>%s<br><i>%s</i></div>
@@ -180,7 +213,7 @@ def html_for(tr, drop_id, out_dir):
             E(TR._s(o.get("delivery_point_note"))), E(walk.strip(" ·")),
             E(TR._s(o.get("pantry_owner_name"))), E(o["owner_phone"]), E(TR._s(o.get("receiving_type"))), E(TR._s(o.get("receiving_window"))),
             "Y (front desk or mailroom)" if fd else "N, the owner must take it", E(coi_txt), cases))
-    who = {"courier": "the courier", "direct-ship": "whoever visited the first-drop offices"}.get(model, "a backup, if one ran it")
+    who = {"courier": "the courier", "direct-ship": "whoever watched the tracking or delivered by hand"}.get(model, "a backup, if one ran it")
     back = ""
     if model == "courier":
         back = ("<p class='small'><b>Cases you took back</b> (declined, or owner out with no front desk agreed): bring every one to %s today, "
@@ -189,14 +222,23 @@ def html_for(tr, drop_id, out_dir):
     elif model == "founder":
         back = ("<p class='small'><b>Cases you took back</b> (declined, or owner out): they go back to %s with the reserve, sealed; "
                 "write how many here ______ and redeliver next morning only where the owner was out.</p>" % E(TR._s(tr.config.get("receiving_address"))))
-    tail = ["<div class='keep'><h2>When the route is done</h2>", back,
+    if model == "direct-ship":
+        # Review round 2 (R2-03): the direct-ship counts come from the offices, and a refused carton goes back to the brand.
+        inv_lines = ("<li>Inventory tab, for each office carton: one <i>received</i> row (office_id, <b>the office's count</b>, count_source office_count, "
+                     "lot and best-by from the brand's ship notice) and one <i>delivered</i> row with the same count (office_count). "
+                     "A carton refused at the door: outcome declined, <b>no</b> received or delivered row, nothing to reserve: the carrier returns it to the brand. "
+                     "The offices you delivered by hand: a delivered row only (founder_count); their cases were received with the reserve.</li>"
+                     "<li>A short or damaged carton: an issue row for that office (short_shipment or damaged_or_short_dated); the approvals check asks for it.</li>")
+    else:
+        inv_lines = ("<li>Inventory tab: one <i>delivered</i> row per office per brand, the <b>handed over</b> count, and who counted (founder_count or courier_count). "
+                     "None for an office that declined: its case stays in reserve (SOP section 4).</li>")
+    tail = ["<div class='keep'><h2>%s</h2>" % ("When the day is done" if model == "direct-ship" else "When the route is done"), back,
             "<p class='small'><b>If someone other than the founder ran it (%s):</b> today, send the photos and this sheet, every count and time "
             "filled in, to %s at %s. Keep no copy: this sheet holds people's names and phone numbers. Shred any spare.</p>" % (
                 E(who), E(TR._s(tr.config.get("founder_name"))), E(phone)),
             "<h3>Founder, the same day</h3><ol class='small'>",
             "<li>Tracker, stops tab: arrival, departure, handed to, outcome for every stop.</li>",
-            "<li>Inventory tab: one <i>delivered</i> row per office per brand, the <b>handed over</b> count, and who counted (founder_count or courier_count). "
-            "None for an office that declined: its case stays in reserve (SOP section 4).</li>",
+            inv_lines,
             "<li>Photos: save as &lt;campaign_id&gt;_&lt;office_id&gt;_placement_&lt;date&gt;.jpg; one row each on the photos tab; the shelf count on the counts tab.</li>",
             "<li>Issues tab: anything on this sheet's Issue lines. Hours tab: drop_day hours.</li>",
             "<li>Tomorrow (T+1): placement confirmation to each brand (tools/make_messages.py).</li>",

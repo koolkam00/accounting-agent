@@ -15,7 +15,13 @@ Writes OUT_DIR/<campaign_id>/:
 
 An office that turned the brand away at the door (stop outcome declined, building_refused or not_delivered, nothing
 delivered) is not on the drop: it gets no letter and no row, and trace.csv and the output say so in a roster note
-(the report email carries the same note).
+(the report email carries the same note). Its people's survey answers (the post link may already be out) are counted
+nowhere: every survey number, and every quoted comment, comes from offices on the drop only (review round 2, R2-01).
+
+Two lines are put ahead of the founder's "What we learned" lines on the page itself, until the report template has fields
+for them (review round 2, R2-03 and R2-07): a roster line when fewer offices are in the report than the agreement names,
+and a delivered line when an office counted its own carton (direct-ship) or nobody counted (packing list), because the
+template's fixed text says "our count at handoff".
 
 Refuses (exit 2) when: the drop date is invalid; an office on the drop has no day-5 count or no close link reading;
 a quoted comment is not word for word from an in-window response; the sheet's own formulas disagree
@@ -95,7 +101,7 @@ def build(tr, cid, out_dir, photos_dir):
     resp = tr.response_rows(cid) or []
     win_end = lad["window_end"]
     inwin = [x for x in resp if T <= x["ts"].date() <= win_end]
-    codes = {o["card_code"] for o in lad["offices"]}
+    codes = {o["card_code"] for o in lad["offices"] if o["on_drop"] == "Y"}
     sources = [x["comment"] for x in inwin if x["code"] in codes and x["comment"].strip()]
     comments = []
     for i in (1, 2, 3):
@@ -104,9 +110,9 @@ def build(tr, cid, out_dir, photos_dir):
             continue
         src = verbatim(q, sources)
         if not src:
-            problems.append("comment_%d is not word for word from an in-window response on %s's survey tab: %r" % (i, cid, q))
+            problems.append("comment_%d is not word for word from an in-window response from an office on the drop (%s's survey tab): %r" % (i, cid, q))
         else:
-            row = next(x["_row"] for x in inwin if x["comment"] == src)
+            row = next(x["_row"] for x in inwin if x["comment"] == src and x["code"] in codes)
             trace.append(("comment_%d" % i, q, "%s!G%d" % (cid, row)))
         comments.append(q)
     pdir = os.path.join(out_dir, "photos")
@@ -164,16 +170,66 @@ def build(tr, cid, out_dir, photos_dir):
         "code_redemptions_to_date": "" if lad["code_redemptions_to_date"] is None else str(int(lad["code_redemptions_to_date"])),
         "code_redemptions_as_of": lad["code_redemptions_as_of"].isoformat() if lad["code_redemptions_as_of"] else "",
         "retailer_velocity": TR._s(c.get("retailer_velocity")),
-        "learned": TR._s(c.get("learned")), "recommendation": TR._s(c.get("recommendation")),
+        "learned": "\n".join(page_notes(lad, tr) + ([TR._s(c.get("learned"))] if TR._s(c.get("learned")).strip() else [])),
+        "recommendation": TR._s(c.get("recommendation")),
         "claims_reviewed": TR._s(c.get("claims_reviewed")), "claims_review_reason": TR._s(c.get("claims_review_reason")),
     }
     note = roster_note(lad)
     if note:
         trace.append(("roster note", note, "stops outcome " + ", ".join("%s %s" % (o["office_id"], o["stop_outcome"]) for o in lad["turned_away"])))
+    for line in page_notes(lad, tr):
+        trace.append(("learned, line added by the tool", line, "campaigns offices_contracted %s; approvals on_drop; inventory delivered count_source" % TR._s(c.get("offices_contracted"))))
     for k in ("survey_tried_yes", "survey_rating_avg", "survey_buy_yes", "survey_buy_maybe", "survey_buy_no", "comments_total"):
-        trace.append((k, rpt[k], "%s!A:G, in-window rows whose card code matches an office on the campaign" % cid))
+        trace.append((k, rpt[k], "%s!A:G, in-window rows whose card code matches an office on the drop" % cid))
+    nod = lad.get("responses_office_not_on_drop") or 0
+    if nod:
+        offs = [o for o in lad["offices"] if o["on_drop"] != "Y" and o["survey_responses"]]
+        trace.append(("not counted: answers from an office not on the drop", nod,
+                      "%s!B card code %s (on_drop N): in no survey number and no quote" % (cid, ", ".join(o["card_code"] for o in offs))))
     trace.append(("code_redemptions_to_date", rpt["code_redemptions_to_date"], "redemptions, latest as_of " + rpt["code_redemptions_as_of"]))
     return rpt, problems, trace, lad
+
+
+def page_notes(lad, tr=None):
+    """Lines the report page itself must carry until D's template has fields for them (review round 2, R2-03 and R2-07)."""
+    c = lad["campaign"]
+    out = []
+    ondrop = [o for o in lad["offices"] if o["on_drop"] == "Y"]
+    contracted = int(TR._n(c.get("offices_contracted")) or 0)
+    missing = contracted - len(ondrop)
+    if contracted and missing > 0:
+        away = lad["turned_away"]
+        how = {"declined": "declined it at the door on the drop day", "building_refused": "could not take it (the building refused the delivery)",
+               "not_delivered": "did not receive it"}
+        sent = []
+        if away:
+            sent.append("%s that had approved %s %s." % ("One office" if len(away) == 1 else "%d offices" % len(away), c["brand_name"],
+                                                       " or ".join(sorted({how.get(o["stop_outcome"], "did not take it") for o in away}))))
+        rest = missing - len(away)
+        if rest > 0:
+            said_no = any(o["approved"] == "N" for o in lad["offices"])
+            sent.append("%s not filled: %s, and no roster office could take %s place." % (
+                "One place was" if rest == 1 else "%d places were" % rest, "an office said no" if said_no else "no office was free",
+                "its" if rest == 1 else "their"))
+        credited = True
+        if tr is not None:
+            share = TR._n(tr.config.get("founding_lock_per_office_usd")) if TR._s(c.get("tier")) == "founding" else TR._n(tr.config.get("extra_office_usd"))
+            cred = -sum(TR._n(r["amount_usd"]) for r in tr.rows["invoices"] if TR._s(r["campaign_id"]) == TR._s(c["campaign_id"])
+                        and TR._s(r["invoice_type"]) == "credit_note")
+            credited = cred >= share * missing - 0.005
+        out.append("Roster: %d of the %d offices in the agreement. %s %s" % (
+            len(ondrop), contracted, " ".join(sent),
+            ("A missing office is not charged: its share was credited." if missing == 1 else "Missing offices are not charged: their share was credited.")
+            if credited else ("A missing office is not charged: a credit note follows." if missing == 1 else "Missing offices are not charged: a credit note follows.")))
+    src = [o["delivered_count_source"] for o in ondrop if o["units_delivered"]]
+    office, plist = src.count("office_count"), src.count("packing_list")
+    if office:
+        out.append(("Delivered: each office counted its own carton on arrival (the brand shipped direct), not us at handoff." if office == len(src) else
+                    "Delivered: %d of the %d offices counted their own cartons on arrival (the brand shipped direct); we counted the other %s at handoff." % (
+                        office, len(src), "one" if len(src) - office == 1 else str(len(src) - office))))
+    if plist:
+        out.append("Delivered: at %d office%s the count is the brand's packing list; nobody counted it." % (plist, "" if plist == 1 else "s"))
+    return out
 
 
 def roster_note(lad):

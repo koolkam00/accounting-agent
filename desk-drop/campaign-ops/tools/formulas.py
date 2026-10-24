@@ -146,7 +146,19 @@ def offices():
     setf(t, "default_units", 'IF(OR({A}="",{h}=""),"",MIN({mx},MAX({mn},MROUND({b}+{p}*{h},{rd}))))'.format(
         A=A, h=h, mx=cfg("units_max"), mn=cfg("units_min"), b=cfg("units_base"), p=cfg("units_per_person"), rd=cfg("units_round")))
     setf(t, "drops_so_far", 'IF({A}="","",COUNTIFS({so},{A},{sd},"<="&{td}))'.format(A=A, so=R("stops", "office_id"), sd=R("stops", "drop_date"), td=TODAY))
-    setf(t, "declines", 'IF({A}="","",COUNTIFS({so},{A},{oc},"declined"))'.format(A=A, so=R("stops", "office_id"), oc=R("stops", "outcome")))
+    # Review round 2 (R2-05): a decline counts only where the office turned every brand away (stops.declined_all), so an
+    # office that refused one brand and took another is not pushed toward "two declines and you leave".
+    setf(t, "declines", 'IF({A}="","",COUNTIFS({so},{A},{da},"Y"))'.format(A=A, so=R("stops", "office_id"), da=R("stops", "declined_all")))
+    for f in ("in_coworking", "in_boundary"):
+        setf(t, f, 'IF({A}="","",{v})'.format(A=A, v=hdr_lookup("in_signed_offices", "office_id", A, f)))
+    st, ec = c(t, "status"), c(t, "eligibility_confirmed")
+    setf(t, "checks", ('IF({A}="","",IF({st}="left","",'
+                       'IF(N({dc})>=2,"declined every brand at the door twice: take the office off the roster (SOP section 4: status left, left_date); ","")&'
+                       'IF({cw}="Y",IF({ec}="Y","info: in a coworking space; you confirmed the operator controls the pantry; ",'
+                       '"in a coworking space: only an operator that controls the pantry may join, as one office (plan); confirm, then eligibility_confirmed = Y, or take it off the roster; "),"")&'
+                       'IF({ib}="N",IF({ec}="Y","info: outside the cluster boundary; you confirmed it is on the route; ",'
+                       '"outside the cluster boundary: confirm it is walkable from the route (eligibility_confirmed = Y), or take it off the roster; "),"")))').format(
+        A=A, st=st, dc=c(t, "declines"), cw=c(t, "in_coworking"), ib=c(t, "in_boundary"), ec=ec))
 
 
 def resp_rng(colL, row_campaign):
@@ -192,6 +204,8 @@ def approvals():
                           'IF(ISNUMBER(SEARCH({cat},{cw})),"","info: category not on the office\'s list; ")&IF({vet}<>"","info: read the vetoes against the label; ",""))').format(
         A=A, B=B, cat=cat, cw=cw, vet=vet, bn=c(t, "brand_name"), L=L, O=T.TABS[t].letter("office_id"), f=T.TABS[t].first(), l=T.TABS[t].last()))
     setf(t, "units_allocated", 'IF({A}="","",IF({o}<>"",{o},{v}))'.format(A=A, o=c(t, "units_override"), v=lk("offices", "office_id", B, "default_units")))
+    setf(t, "hand_carried", 'IF({A}="","",IF(AND({m}="direct-ship",{rt}<>"walk-up",{fb}<>"Y"),"Y",""))'.format(
+        A=A, m=lk("campaigns", "campaign_id", A, "delivery_model"), rt=lk("offices", "office_id", B, "receiving_type"), fb=lk("offices", "office_id", B, "front_desk_fallback_ok")))
     setf(t, "card_code", 'IF({A}="","",{A}&"."&{B})'.format(A=A, B=B))
     inv = lambda col: R("inventory", col)
     setf(t, "units_delivered", 'IF({A}="","",SUMIFS({q},{c},{A},{o},{B},{m},"delivered"))'.format(A=A, B=B, q=inv("qty"), c=inv("campaign_id"), o=inv("office_id"), m=inv("movement")))
@@ -254,10 +268,14 @@ def approvals():
               'IF({ap}="N","info: office said no; ","")&IF(AND({ap}="Y",{od}="N"),"info: turned away at the door, so not on the drop (no letter, not in the report or Gate 2; the credit check is on campaigns); ","")&'
               'IF(AND({ud}>0,{pd}="",{dd}<>"",{td}>WORKDAY(N({dd}),4,{H})),"info: no usable placement photo, so nothing counts as placed; ","")&'
               'IF(AND({ud}>0,{dd}<>"",{td}>WORKDAY(N({dd}),4,{H}),N({sr})<{mr}),"info: under "&{mr}&" responses; ","")&'
-              'IF({dcs}="packing_list","info: delivered count not verified; ",""))').format(
+              'IF({dcs}="packing_list","info: delivered count not verified; ","")&'
+              'IF(AND(N({ud})>0,N({ud})<N({ua})),IF(COUNTIFS({isc},{A},{iso},{B},{ist},"short_shipment")+COUNTIFS({isc},{A},{iso},{B},{ist},"damaged_or_short_dated")=0,'
+              '"delivered "&{ud}&" of "&{ua}&" allocated: a short carton? log a short_shipment issue for this office and tell the brand today; top up from reserve on day 3; ",'
+              '"info: delivered "&{ud}&" of "&{ua}&" allocated (issue logged); "),""))').format(
         A=A, B=B, ofr=R("offices", "office_id"), cpr=R("campaigns", "campaign_id"), fit=c(t, "fit_check"), ap=c(t, "approved"), od=c(t, "on_drop"), ud=c(t, "units_delivered"), pd=c(t, "placement_photo_date"), pc=c(t, "placed_count"),
         up=c(t, "units_placed"), r5=c(t, "remaining_day5"), tu=c(t, "units_topped_up"), dd=dd, td=TODAY, H=HOL,
-        sr=c(t, "survey_responses"), mr=cfg("min_responses_per_office"), qs=c(t, "qr_scans"), dcs=c(t, "delivered_count_source"))
+        sr=c(t, "survey_responses"), mr=cfg("min_responses_per_office"), qs=c(t, "qr_scans"), dcs=c(t, "delivered_count_source"),
+        ua=c(t, "units_allocated"), isc=R("issues", "campaign_id"), iso=R("issues", "office_id"), ist=R("issues", "issue_type"))
     setf(t, "checks", checks)
     return base, guard
 
@@ -327,9 +345,14 @@ def campaigns():
     setf(t, "units_rejected", guard('SUMIFS({q},{c},{A},{m},"rejected")'.format(q=inv("qty"), c=inv("campaign_id"), A=A, m=inv("movement"))))
     setf(t, "reserve_on_hand", guard('SUMIFS({q},{c},{A})'.format(q=inv("reserve_delta"), c=inv("campaign_id"), A=A)))
     setf(t, "leftover_on_hand", guard('SUMIFS({q},{c},{A})'.format(q=inv("leftover_delta"), c=inv("campaign_id"), A=A)))
-    for col in ("units_delivered", "units_placed", "units_topped_up", "survey_responses", "tried_no_didnt_see",
-                "tried_no_not_for_me", "tried_no_gone", "qr_scans", "post_link_opens"):
+    for col in ("units_delivered", "units_placed", "units_topped_up"):
         setf(t, col, guard('SUMIFS({v},{r},{A})'.format(v=ap(col), r=ap("campaign_id"), A=A)))
+    # Review round 2 (R2-01): every survey and link total counts only offices on the drop (on_drop = Y). An office that
+    # said no, or turned the brand away at the door, may still have answers (the post link went out at T-3); they are
+    # shown apart in responses_office_not_on_drop and never in the responded rung.
+    od = ap("on_drop")
+    for col in ("survey_responses", "tried_no_didnt_see", "tried_no_not_for_me", "tried_no_gone", "qr_scans", "post_link_opens"):
+        setf(t, col, guard('SUMIFS({v},{r},{A},{od},"Y")'.format(v=ap(col), r=ap("campaign_id"), A=A, od=od)))
     setf(t, "units_placed_within_1bd", guard('SUMIFS({v},{r},{A},{w},"Y")'.format(v=ap("units_placed"), r=ap("campaign_id"), A=A, w=ap("placed_within_1bd"))))
     setf(t, "placed_share_1bd", guard('IF(N({d})=0,"",{w}/{d})'.format(d=c(t, "units_delivered"), w=c(t, "units_placed_within_1bd"))))
     # Offices on the drop only (R1-02): an office that turned the brand away at the door has no day-5 count to wait for.
@@ -337,11 +360,13 @@ def campaigns():
     setf(t, "survey_responses_min_office", guard('IF(N({n})=0,"",SUMPRODUCT(MIN({v}+({r}<>{A})*1000000)))'.format(
         n=c(t, "offices_on_drop"), r=ap("campaign_id"), A=A, v=ap("resp_min_key"))))
     setf(t, "offices_under_5", guard('COUNTIFS({r},{A},{a},"Y",{v},"<"&{m})'.format(r=ap("campaign_id"), A=A, a=ap("on_drop"), v=ap("survey_responses"), m=cfg("min_responses_per_office"))))
-    setf(t, "survey_tried_yes", guard('SUMIFS({v},{r},{A})'.format(v=ap("tried_yes"), r=ap("campaign_id"), A=A)))
-    setf(t, "survey_rating_n", guard('SUMIFS({v},{r},{A})'.format(v=ap("rating_n"), r=ap("campaign_id"), A=A)))
-    setf(t, "survey_rating_avg", guard('IF(N({n})=0,"",ROUND(SUMIFS({s},{r},{A})/{n},1))'.format(n=c(t, "survey_rating_n"), s=ap("rating_sum"), r=ap("campaign_id"), A=A)))
+    setf(t, "survey_tried_yes", guard('SUMIFS({v},{r},{A},{od},"Y")'.format(v=ap("tried_yes"), r=ap("campaign_id"), A=A, od=od)))
+    setf(t, "survey_rating_n", guard('SUMIFS({v},{r},{A},{od},"Y")'.format(v=ap("rating_n"), r=ap("campaign_id"), A=A, od=od)))
+    setf(t, "survey_rating_avg", guard('IF(N({n})=0,"",ROUND(SUMIFS({s},{r},{A},{od},"Y")/{n},1))'.format(n=c(t, "survey_rating_n"), s=ap("rating_sum"), r=ap("campaign_id"), A=A, od=od)))
     for col, src in (("survey_buy_yes", "buy_yes"), ("survey_buy_maybe", "buy_maybe"), ("survey_buy_no", "buy_no"), ("comments_total", "comments")):
-        setf(t, col, guard('SUMIFS({v},{r},{A})'.format(v=ap(src), r=ap("campaign_id"), A=A)))
+        setf(t, col, guard('SUMIFS({v},{r},{A},{od},"Y")'.format(v=ap(src), r=ap("campaign_id"), A=A, od=od)))
+    setf(t, "responses_office_not_on_drop", guard('IF({dd}="","",SUMIFS({v},{r},{A},{od},"<>Y"))'.format(
+        dd=c(t, "drop_date"), v=ap("survey_responses"), r=ap("campaign_id"), A=A, od=od)))
     ra = resp_rng("A", A)
     dd, we = c(t, "drop_date"), lk("drops", "drop_id", did, "t_plus_4")
     tot = 'IFERROR(COUNT({ra}),0)'.format(ra=ra)
@@ -349,7 +374,8 @@ def campaigns():
     # After the 12-month deletion (answers_deleted_date) these two cannot be known any more: blank.
     adl = c(t, "answers_deleted_date")
     setf(t, "responses_outside_window", guard('IF(OR({dd}="",{adl}<>""),"",{tot}-{inw})'.format(dd=dd, adl=adl, tot=tot, inw=inw)))
-    setf(t, "responses_unmatched_code", guard('IF(OR({dd}="",{adl}<>""),"",{inw}-N({sr}))'.format(dd=dd, adl=adl, inw=inw, sr=c(t, "survey_responses"))))
+    setf(t, "responses_unmatched_code", guard('IF(OR({dd}="",{adl}<>""),"",{inw}-N({sr})-N({nod}))'.format(
+        dd=dd, adl=adl, inw=inw, sr=c(t, "survey_responses"), nod=c(t, "responses_office_not_on_drop"))))
     rd = lambda col: R("redemptions", col)
     asof = maxdate('({c}={A})*{d}'.format(c=rd("campaign_id"), A=A, d=rd("as_of_date")))
     setf(t, "code_redemptions_as_of", guard(asof))
@@ -387,7 +413,9 @@ def campaigns():
               'IF(AND({po}<>"",{po}<>{pe}),"price differs from the price list; ","")&'
               'IF(AND(LEFT({sr},4)="HOLD",{cb}<>"",{td}>=WORKDAY(N({cb}),-3,{H})),"SHIP HOLD within 3 business days of T-10; ","")&'
               'IF(AND({ap}>0,{cb}<>"",{td}>{cb}),"approvals still pending after T-10; ","")&'
-              'IF({roh}<0,"reserve below zero: check inventory; ","")&'
+              'IF({roh}<0,IF({mdl}="direct-ship","reserve below zero: in direct-ship, log a received row for each office carton beside its delivered row (SOP drop_ds); ","reserve below zero: check inventory; "),"")&'
+              'IF(AND({cat}<>"",COUNTIFS({cdr},{did},{ccat},{cat})>1),"another campaign on this drop is also "&{cat}&": no competing product in the same delivery (plan, What brands buy): move one to another drop; ","")&'
+              'IF(N({nod})>0,"info: "&{nod}&" in-window answers from an office not on the drop (it said no, or turned the brand away at the door): not counted; ","")&'
               'IF(AND({dd}<>"",{td}>WORKDAY(N({dd}),14,{H}),N({roh})+N({loh})<>0),"units still on hand after T+14; ","")&'
               'IF(N({um})>0,"info: "&{um}&" in-window responses with a card code that matches no office (not counted); ","")&'
               'IF(AND({nl}="Y",{nfu}=""),"newsletter form URL missing; ","")&'
@@ -410,8 +438,12 @@ def campaigns():
               'IF(AND({tier}="founding",{lock}<>"Y",COUNTIFS({cbr},{bid},{ctr},"founding",{clr},"<>Y")>1),"a brand has the founding price once; its next two campaigns are founding_lock = Y; ","")&'
               'IF(AND({lock}="Y",COUNTIFS({cbr},{bid},{ctr},"founding",{clr},"Y")>2),"founding_lock is for the brand\'s next two campaigns only (this is a third): use standard; ","")&'
               'IF(AND({lock}="Y",COUNTIFS({cbr},{bid},{ctr},"founding",{clr},"<>Y")=0),"founding_lock without a first founding campaign for this brand; ","")&'
-              'IF(AND(N({urc})>0,{dd}<>"",{td}>=WORKDAY(N({dd}),-5,{H})),IF(N({urc})-N({urj})<N({ua}),"received "&(N({urc})-N({urj}))&" usable units for "&{ua}&" allocated: reduce units_override evenly (SOP section 4, short shipment); ","")&'
-              'IF(AND(N({urc})<N({uts}),COUNTIFS({isc},{A},{ist},"short_shipment")=0),"received "&{urc}&" of "&{uts}&" due: log a short_shipment issue and tell the brand today; ",""),"")&'
+              'IF(AND({mdl}<>"direct-ship",N({urc})>0,{dd}<>"",{td}>=WORKDAY(N({dd}),-5,{H})),IF(N({urc})-N({urj})<N({ua}),"received "&(N({urc})-N({urj}))&" usable units for "&{ua}&" allocated: reduce units_override evenly (SOP section 4, short shipment); ","")&'
+              'IF(AND(N({urc})<N({uts}),{nss}=0),"received "&{urc}&" of "&{uts}&" due: log a short_shipment issue and tell the brand today; ",""),"")&'
+              'IF(AND({mdl}="direct-ship",{dd}<>"",{td}>=WORKDAY(N({dd}),-5,{H}),{td}<WORKDAY(N({dd}),1,{H}),OR({rres}>0,{td}>WORKDAY(N({dd}),-5,{H})),{rres}<N({rp})+{hca},{nss}=0),'
+              '"at your address: received "&{rres}&" of "&(N({rp})+{hca})&" (the reserve"&IF({hca}>0,", plus the cartons you deliver by hand","")&", due by T-5; the office cartons come on T): log a short_shipment issue and tell the brand today; ","")&'
+              'IF(AND({mdl}="direct-ship",{dd}<>"",{td}>=WORKDAY(N({dd}),1,{H}),N({urc})<N({uts})-{taa},{nss}=0),'
+              '"received "&N({urc})&" of "&(N({uts})-{taa})&" due (the reserve plus each office carton as counted; a carton refused at the door is not due): log any office count still missing (a received and a delivered row), or log a short_shipment issue and tell the brand today; ","")&'
               'IF(AND({dd}<>"",{td}>=WORKDAY(N({dd}),1,{H}),N({oc})>0,{cred}<{cexp}-0.005),"credit due from T+1: "&MAX(0,N({oc})-{plc})&" of "&{oc}&" contracted offices not placed by T+1, $"&{cexp}&" due, $"&{cred}&" in credit notes so far (template 06, make_invoice.py); ","")&'
               'IF(AND({pe2}<>"",{dd}<>"",{pe2}<EDATE(WORKDAY(N({dd}),4,{H}),12)),"info: brand insurance ends "&TEXT({pe2},"yyyy-mm-dd")&": diary the renewal certificate; ",""))').format(
         drr=R("drops", "drop_id"), did=w("drop_id"), pe2=lk("brands", "brand_id", bid, "coi_policy_end_date"), oc=w("offices_contracted"), oa=w("offices_approved"), tier=w("tier"),
@@ -428,6 +460,11 @@ def campaigns():
         lock=w("founding_lock"), frank=lk("brands", "brand_id", bid, "founding_rank"), cbr=R("campaigns", "brand_id"),
         ctr=R("campaigns", "tier"), clr=R("campaigns", "founding_lock"), urj=w("units_rejected"), ua=w("units_allocated"),
         isc=R("issues", "campaign_id"), ist=R("issues", "issue_type"),
+        mdl=w("delivery_model"), cat=w("category"), cdr=R("campaigns", "drop_id"), ccat=R("campaigns", "category"), nod=w("responses_office_not_on_drop"),
+        rp=w("reserve_planned"), nss='COUNTIFS({isc},{A},{ist},"short_shipment")'.format(isc=R("issues", "campaign_id"), A=A, ist=R("issues", "issue_type")),
+        rres='(N({urc})-SUMIFS({q},{c},{A},{m},"received",{o},"?*"))'.format(urc=w("units_received"), q=inv("qty"), c=inv("campaign_id"), A=A, m=inv("movement"), o=inv("office_id")),
+        taa='SUMIFS({u},{r},{A},{a},"Y",{od},"N")'.format(u=ap("units_allocated"), r=ap("campaign_id"), A=A, a=ap("approved"), od=ap("on_drop")),
+        hca='SUMIFS({u},{r},{A},{a},"Y",{h},"Y")'.format(u=ap("units_allocated"), r=ap("campaign_id"), A=A, a=ap("approved"), h=ap("hand_carried")),
         cred='(-SUMIFS({a},{c},{A},{ty},"credit_note"))'.format(a=iv("amount_usd"), c=iv("campaign_id"), A=A, ty=iv("invoice_type")),
         cexp='(IF({tier}="founding",{fl},{ex})*MAX(0,N({oc})-{plc}))'.format(tier=w("tier"), fl=cfg("founding_lock_per_office_usd"), ex=cfg("extra_office_usd"), oc=w("offices_contracted"),
                                                                      plc='COUNTIFS({r},{A},{od},"Y",{w1},"Y")'.format(r=ap("campaign_id"), A=A, od=ap("on_drop"), w1=ap("placed_within_1bd"))),
@@ -658,7 +695,7 @@ def stops():
     A, B = c(t, "drop_id"), c(t, "office_id")
     setf(t, "drop_date", 'IF({A}="","",IF({ok}="OK",{d},""))'.format(A=A, ok=lk("drops", "drop_id", A, "date_check"), d=lk("drops", "drop_id", A, "drop_date")))
     for col in ("company", "office_address", "floor_suite", "receiving_window", "receiving_type", "pantry_owner_name",
-                "owner_phone", "front_desk_fallback_ok", "building_coi_status"):
+                "owner_phone", "front_desk_fallback_ok", "building_coi_status", "delivery_point_note"):
         setf(t, col, 'IF({B}="","",{v})'.format(B=B, v=lk("offices", "office_id", B, col)))
     ap = lambda col: R("approvals", col)
     setf(t, "campaigns_here", 'IF({A}="","",COUNTIFS({d},{A},{o},{B},{a},"Y"))'.format(A=A, B=B, d=ap("drop_id"), o=ap("office_id"), a=ap("approved")))
@@ -668,6 +705,8 @@ def stops():
         A=A, B=B, dd=dd, so=R("stops", "office_id"), sd=R("stops", "drop_date"), oc=R("stops", "outcome")))
     setf(t, "minutes_on_site", 'IF(OR({a}="",{b}=""),"",ROUND(({b}-{a})*1440,0))'.format(a=c(t, "arrival_time"), b=c(t, "departure_time")))
     model = lk("drops", "drop_id", A, "delivery_model")
+    dlv = 'COUNTIFS({d},{A},{o},{B},{a},"Y",{u},">0")'.format(d=ap("drop_id"), A=A, o=ap("office_id"), B=B, a=ap("approved"), u=ap("units_delivered"))
+    setf(t, "declined_all", 'IF({A}="","",IF(AND({oc}="declined",N({ch})>0,{dlv}=0),"Y",""))'.format(A=A, oc=c(t, "outcome"), ch=c(t, "campaigns_here"), dlv=dlv))
     setf(t, "checks", ('IF({A}="","",IF(COUNTIFS({dr},{A},{orr},{B})>1,"DUPLICATE stop; ","")&'
                        'IF(AND(OR({coi}="yes",{coi}="unsure"),{cs}<>"received",{cs}<>"not_needed"),"building certificate not received; ","")&'
                        'IF({ph}="","owner phone missing; ","")&IF(N({ch})=0,"no approved brand for this stop; ","")&'
@@ -675,6 +714,7 @@ def stops():
                        'IF(AND(OR({oc}="declined",{oc}="building_refused",{oc}="not_delivered"),N({ch})>0,{dlv}>=N({ch})),"outcome says "&{oc}&" but every brand here is logged delivered: fix the outcome, or delete the wrong delivered rows (SOP section 4); ","")&'
                        'IF(AND(OR({oc}="declined",{oc}="building_refused",{oc}="not_delivered"),{dlv}>0,{dlv}<N({ch})),"info: "&(N({ch})-{dlv})&" brand(s) turned away at the door, the rest delivered; ","")&'
                        'IF(AND({fd}="Y",{model}="direct-ship"),"info: first drop: visit in person on T; ","")&'
+                       'IF(AND({model}="direct-ship",{rt}<>"walk-up",{fb}<>"Y"),"info: direct-ship, and the front desk will not hold food: the brand ships this office\'s cartons to you with the reserve and you deliver them yourself on T (the tracking sheet and the ship-date email say so); ","")&'
                        'IF(AND({rt}="front desk",{fb}<>"Y"),"info: front desk not agreed: the owner must take it; ",""))').format(
         A=A, B=B, dr=R("stops", "drop_id"), orr=R("stops", "office_id"), coi=lk("offices", "office_id", B, "coi_required"),
         cs=c(t, "building_coi_status"), ph=c(t, "owner_phone"), ch=c(t, "campaigns_here"), fd=c(t, "first_drop"), model=model,

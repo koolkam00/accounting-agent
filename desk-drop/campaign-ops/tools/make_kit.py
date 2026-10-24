@@ -205,26 +205,49 @@ def main(argv):
 def checklist(tr, drop_id, T, camps, rows, order, out, warnings, fit, cards):
     sample = common.is_sample(drop_id)
     model = TR._s(tr.drops[drop_id]["delivery_model"])
+    ds = model == "direct-ship"
     body = ["<h1>Kit checklist · %s · %s</h1>" % (common.E(drop_id), common.fmt_date(T)),
-            "<p>Delivery model: <b>%s</b>. Pack on T-1 (%s). One labeled case per office per brand. Counts must match this sheet.</p>" % (
-                common.E(model), common.fmt_date(opscal.add_bd(T, -1)))]
+            ("<p>Delivery model: <b>direct-ship</b>. The brands ship one labeled carton per office (send each brand labels.pdf by T-10, SOP "
+             "direct_plan). Mail on T-3 (%s): one envelope per office with its tent cards, one per brand plus a spare, to arrive by T-1. Offices "
+             "marked YOU CARRY get their cases from you on the drop day (their front desk will not hold food): pack those on T-1.</p>" % (
+                 common.fmt_date(opscal.add_bd(T, -3))) if ds else
+             "<p>Delivery model: <b>%s</b>. Pack on T-1 (%s). One labeled case per office per brand. Counts must match this sheet.</p>" % (
+                common.E(model), common.fmt_date(opscal.add_bd(T, -1))))]
     faces = {(c["office_id"], c["campaign_id"]): (f or {}) for c, f in zip(cards, fit + [{}] * len(cards))}
-    body.append("<table><tr><th>Stop</th><th>Office</th><th>Brand</th><th>Units</th><th>Cases</th><th>Tent card</th><th>Packed</th></tr>")
+    body.append("<table><tr><th>Stop</th><th>Office</th><th>Brand</th><th>Units</th><th>%s</th><th>Tent card</th><th>%s</th></tr>" % (
+        "Cartons (the brand ships)" if ds else "Cases", "Mailed or packed" if ds else "Packed"))
+    hand_units = {}
     for oid in order:
+        carry = tr.hand_carried(oid, model)
         for (o, cid, brand, units, n_cases, upc) in [r for r in rows if r[0] == oid]:
             f = faces.get((oid, cid), {})
             note = "front face carries the ingredient list: <b>this side faces the room</b>" if f.get("ingredients_on_front_face") else ""
-            body.append("<tr><td>%s</td><td>%s<br><span class='small muted'>%s</span></td><td>%s</td><td>%d</td><td>%d%s</td><td>1 + 1 spare %s</td><td><span class='chk'></span></td></tr>" % (
+            if carry:
+                hand_units[cid] = hand_units.get(cid, 0) + units
+            where = ("<b>YOU CARRY</b>: pack the case" if carry else "in the envelope") if ds else ""
+            body.append("<tr><td>%s</td><td>%s<br><span class='small muted'>%s</span></td><td>%s</td><td>%d</td><td>%d%s</td><td>1 + 1 spare %s %s</td><td><span class='chk'></span></td></tr>" % (
                 order.index(oid) + 1, common.E(TR._s(tr.office(oid).get("company"))), common.E(oid), common.E(brand), units, n_cases,
-                (" (%d a case)" % upc) if n_cases > 1 else "", note))
+                (" (%d a case)" % upc) if n_cases > 1 else "", where, note))
     body.append("</table>")
     body.append("<h2>Reserve (stays with you, never left at an office)</h2><table><tr><th>Brand</th><th>Reserve units</th><th>Bagged and labeled</th></tr>")
     for cid in camps:
         lad = tr.ladder(cid)
-        body.append("<tr><td>%s</td><td>%d</td><td><span class='chk'></span></td></tr>" % (
-            common.E(lad["campaign"]["brand_name"]), int(lad["units_received"] - lad["units_rejected"] - lad["units_allocated"])))
+        # Direct-ship (review round 2): only the reserve and the YOU CARRY cases reach you; the office cartons never do.
+        res = (lad["units_received_at_base"] - lad["units_rejected"] - hand_units.get(cid, 0)) if ds else (
+            lad["units_received"] - lad["units_rejected"] - lad["units_allocated"])
+        body.append("<tr><td>%s</td><td>%d</td><td><span class='chk'></span></td></tr>" % (common.E(lad["campaign"]["brand_name"]), max(0, int(res))))
     body.append("</table>")
-    body.append("<h2>Before you leave (plan appendix J)</h2><ul>" + "".join("<li><span class='chk'></span>%s</li>" % common.E(x) for x in [
+    if ds:
+        body.append("<h2>Before you mail (direct-ship)</h2><ul>" + "".join("<li><span class='chk'></span>%s</li>" % common.E(x) for x in [
+            "Tent cards: print cards.pdf twice (one to place, one spare per office and brand); qr-check.txt says OK on every line; test-scan one card per brand",
+            "Allergen line on each card checked word for word against a package from the reserve",
+            "One envelope per office, addressed to the pantry owner at the office address, with that office's cards: posted today (stops: kit_mailed_date)",
+            "Each brand has labels.pdf and a tracking number per office by T-2 (stops: carrier_tracking)",
+            "Reserve bagged, labeled RESERVE, per brand; the YOU CARRY cases labeled for their office",
+            "Tracking sheet printed (make_route.py): every office's phone and tracking numbers",
+            "The T-3 email (template 03) tells each office the envelope is coming and asks for the count of each carton"]) + "</ul>")
+    else:
+        body.append("<h2>Before you leave (plan appendix J)</h2><ul>" + "".join("<li><span class='chk'></span>%s</li>" % common.E(x) for x in [
         "Cases labeled per office; counts match this sheet",
         "Tent cards: print cards.pdf twice (one to place, one spare per office and brand); qr-check.txt says OK on every line; test-scan one card per brand",
         "Allergen line on each card checked word for word against the package in your hand",

@@ -212,10 +212,9 @@ def status_of(conf, last, url, note, website):
     if conf.startswith("snippet"):
         return "unverified"
     if "theorg.com" in domain(url):
-        # a name The Org lists and the employer's own page also shows is employer-confirmed
-        if website and re.search(r"(?:confirmed|also listed|listed) on (?:the )?(?:employer|company)'?s? (?:own )?(?:site|page)|"
-                                 + re.escape(domain(website)), note or "", re.I):
-            return "verified-page" if last.lower() != "unknown" else "first-name-only"
+        # by the source alone: where the employer's own page also shows the person, a sourced fix in
+        # stage3_contact_fixes.csv points source_url at that page (spot check round 10: a note that merely
+        # mentioned the company's domain had been read as employer confirmation)
         return "crowd-listed"
     if last.lower() == "unknown":
         return "first-name-only"
@@ -237,8 +236,6 @@ def person(r, website):
     if li and not how:
         how = "listed on an opened page or in search results; LinkedIn itself not opened"
     ev = evidence_of(url or r["source_url"], website, conf)
-    if status == "verified-page" and ev.startswith("The Org"):
-        ev = "The Org, and the employer's own page"
     return dict(first=fn, last=ln, name=f"{fn} {ln}" if ln != "unknown" else fn, title=r["title"], url=url,
                 li=li, li_how=how, status=status, note=r["notes"], rank=r["contact_rank"], conf=conf, evidence=ev,
                 rec="" if r.get("_live") else record_date(r["notes"]), src_date=r["source_date"] or TODAY)
@@ -519,6 +516,16 @@ def offices():
     researched = set(cts.row_id)
     lk = rd("linkedin_company_r9.csv")
     lk = {} if lk is None else {r["row_id"]: r for r in lk.to_dict("records") if r["linkedin_company_url"]}
+    # second source: the LinkedIn page The Org's company record lists (opened 2026-10-24 for the contact research)
+    tor = rd("r9_theorg_candidates.csv")
+    if tor is not None:
+        for r in tor.to_dict("records"):
+            if r["company_linkedin"] and r["org"] and r["row_id"] not in lk:
+                u = r["company_linkedin"].replace("http://", "https://").rstrip("/")
+                if not u.startswith("https://www."):
+                    u = u.replace("https://", "https://www.")
+                lk[r["row_id"]] = dict(linkedin_company_url=u, opened="2026-10-24",
+                                       source_url=f"https://theorg.com/org/{r['org']}", via="The Org's company record")
     rows = []
     for o in df.to_dict("records"):
         o["side"] = "office"
@@ -559,7 +566,8 @@ def offices():
         o["_ev"] = EV_RANK[o["primary_contact_status"]]
         if o["row_id"] in lk and o.get("linkedin_company_url", "unknown") in ("", "unknown"):
             o["linkedin_company_url"] = lk[o["row_id"]]["linkedin_company_url"]
-            o["linkedin_company_source"] = (f"linked from the company's own site ({lk[o['row_id']]['source_url']}, "
+            via = lk[o["row_id"]].get("via") or "the company's own site"
+            o["linkedin_company_source"] = (f"linked from {via} ({lk[o['row_id']]['source_url']}, "
                                             f"opened {lk[o['row_id']]['opened']}); LinkedIn not opened")
         else:
             o["linkedin_company_source"] = "" if o.get("linkedin_company_url", "") in ("", "unknown") else "B's file"

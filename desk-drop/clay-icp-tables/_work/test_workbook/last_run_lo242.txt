@@ -1,0 +1,9 @@
+LibreOffice: soffice
+baseline: 36 office and 34 brand formula columns on 308 + 311 rows compared, 0 cells differ; views: Daily view - Offices 10 rows; Daily view - Brands 10 rows; Walk list - Offices 13 rows; Founder review - Brands 30 rows
+edits: 10 office and 6 brand edits, 0 cells differ from derive(); 13 of 13 facts hold; office view now Cognitiv, Nayya, 1stDibs, Dashlane, CompStak, Bombas, Inspiren, Stellar Health, Candid Health, Butterfly Network
+enrichment: 3 rows pasted with 41 columns in another order, 0 cells differ
+paste: Clay import pasted over Offices!A1 (175 rows x 38 columns); the view shows only the warning: yes
+few: 35 ready rows set contacted and 2 referral rows typed below the data; the view shows 2 rows (expected 2), rest blank, 0 cells differ; 3 of 3 referral facts hold
+validation: status, do_not_contact, known_to_founder, hold_before_outreach and promote_backup refuse other input (error style stop)
+PASS: every formula and view equals the Python twin in all five scenarios
+exit 0

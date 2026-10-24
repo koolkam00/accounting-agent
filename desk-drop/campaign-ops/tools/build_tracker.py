@@ -253,9 +253,15 @@ def write_dashboard(wb):
          "offices: clear names, emails, phones in in_signed_offices, office_intake, office_form"),
         ("Brands whose payments in E's paid_brands.csv differ from the invoices tab", 'COUNTIF(%s,"?*")' % T.R("brands", "e_payment_check"),
          "brands, e_payment_check (E's file feeds the financial model's Pipeline; the invoices tab releases the ship date)"),
+        # office_form and brand_form are replaced when a Google Form is linked (the placeholder tab is deleted and Google's
+        # new tab renamed): a direct reference would turn into #REF! and never re-bind, so those two are read through
+        # INDIRECT, like office_intake_founder (review round 2, R2-04).
         ("Tabs over 90% full (rows below the last formula row are not counted)", "+".join(
-            '(COUNTA(%s!$A:$A)-1>0.9*%d)' % (T.q(n), T.N[n] if n not in ("office_form", "brand_form") else T.N[n]) for n in FILL_TABS),
+            ('(COUNTA(INDIRECT("%s!A:A"))-1>0.9*%d)' if n in ("office_form", "brand_form") else '(COUNTA(%s!$A:$A)-1>0.9*%d)') % (T.q(n), T.N[n])
+            for n in FILL_TABS),
          "runbook, 'Speed and size': rebuild with tools/build_tracker.py --size full before a tab runs out"),
+        ("Offices with roster checks (declined twice, coworking, outside the boundary)", 'COUNTIF(%s,"?*")-COUNTIF(%s,"info:*")' % (
+            T.R("offices", "checks"), T.R("offices", "checks")), "offices, checks (review round 2)"),
     ]
     ws.cell(row=r + 1, column=1, value="check").font = BOLD
     ws.cell(row=r + 1, column=2, value="count").font = BOLD
@@ -382,11 +388,13 @@ def write_survey_dashboard(wb):
     ws.cell(row=22, column=3, value="=" + camp("responses_outside_window"))
     ws.cell(row=23, column=1, value="card code matches no office on this campaign")
     ws.cell(row=23, column=3, value="=" + camp("responses_unmatched_code"))
-    ws.cell(row=25, column=1, value=("Who sees what (legal pack file 13, D6 and D9): this sheet is the founder's only. The brand gets totals and at most three "
+    ws.cell(row=24, column=1, value="from an office not on the drop (it said no, or turned the brand away at the door)")
+    ws.cell(row=24, column=3, value="=" + camp("responses_office_not_on_drop"))
+    ws.cell(row=26, column=1, value=("Who sees what (legal pack file 13, D6 and D9): this sheet is the founder's only. The brand gets totals and at most three "
                                      "comments word for word; each office gets its own summary, never answers row by row. No email address is ever in this file: "
                                      "newsletter sign-ups live only in the campaign's separate sign-up form.")).alignment = WRAP
-    ws.merge_cells("A25:N25")
-    ws.row_dimensions[25].height = 48
+    ws.merge_cells("A26:N26")
+    ws.row_dimensions[26].height = 48
     for c, w in zip("ABCDEFGHIJKLMN", (16, 22, 10, 10, 10, 10, 12, 8, 9, 10, 8, 8, 9, 30)):
         ws.column_dimensions[c].width = w
 
@@ -521,7 +529,7 @@ README_LINES = [
     ("Rules this file keeps", "h"),
     ("The ladder rungs stay in separate columns: delivered, placed, depleted, responded, scanned, purchased. Incremental is not measured. Nothing adds them up.", ""),
     ("Placed means visible in a usable placement photo with the card. Placed within one business day means that photo is dated on or before T+1.", ""),
-    ("Survey counts only include answers inside the window, T to the end of T+4, whose card code matches an office on the campaign.", ""),
+    ("Survey counts only include answers inside the window, T to the end of T+4, whose card code matches an office on the drop (approved and not turned away at the door). Answers from any other office are shown apart, never counted.", ""),
     ("No employee data. No email address ever enters this file.", ""),
     ("SAMPLE: any ID or text starting with SAMPLE is test data; the dashboard and report show a SAMPLE banner.", ""),
     ("Google Sheets: File > Settings > Locale United States, Time zone America/New_York.", ""),

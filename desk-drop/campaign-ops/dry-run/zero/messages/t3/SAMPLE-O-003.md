@@ -1,6 +1,6 @@
 SAMPLE. Test data only: illustrative placeholders, not results. Never send or print for use.
 
-DRAFT (not sent). When: T-3, to every office on the route (founder and courier models); with the kit in the post for direct-ship (mailed to arrive by T-1)
+DRAFT (not sent). When: T-3, to every office on the route; for direct-ship, the day the envelope of cards goes in the post (it arrives by T-1)
 To: SAMPLE Owner 003 <SAMPLE-owner-003@example.com>
 Subject: Your drop: Tuesday January 12, 9 to 11 am
 

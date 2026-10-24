@@ -331,15 +331,19 @@ SEV_RULES = [  # (type, pattern) checked against the researcher's founder_review
     # review round 1 (R1-16): functional-ingredient and implied-effect wording needs the founder's decision before
     # outreach; nutrient-content wording ('5g protein', 'low sugar') is allowed by CONTRACTS section 4 and only
     # constrains copy, so it is information, not a block
-    ("claim-functional", r"(functional|adaptogen|prebiotic|probiotic|glp-1|nootropic|mushroom|electrolyte|caffeine|"
-                         r"energy|gut-friendly|gut friendly|wellness positioning|check (?:bar )?labels? for claims|"
-                         r"dental health|claim review)"),
-    ("nutrient-claim", r"(claim|protein|sugar|keto|superfood|antioxidant|wellness|health|nourish|fiber)"),
+    ("claim-functional", r"(adaptogen|prebiotic|probiotic|glp-1|nootropic|mushroom|gut-friendly|gut friendly|"
+                         r"energy-boosting|boost of energy|steady energy|energy positioning|natural energy|energy lines?\b|"
+                         r"functional (?:ingredient|line|chocolate|blend)|claims review|labels? for claims|"
+                         r"dental health|healthy pick-me-up)"),
+    ("nutrient-claim", r"(claim|protein|sugar|keto|superfood|antioxidant|wellness|health|nourish|fiber|electrolyte|"
+                       r"caffeine|functional|energy)"),
 ]
 # founder-review types that must be cleared (founder_review_cleared = Y) before a row can be queued; the others
 # are notes for copy and intake
-BLOCKING_TYPES = {"owner", "scale-reported", "scale", "not-emerging", "dormant", "perishable-risk", "under-floor",
-                  "alcohol-adjacent", "format", "claim-functional", "other"}
+BLOCKING_TYPES = {"owner", "scale-reported", "scale", "not-emerging", "dormant", "perishable-risk",
+                  "alcohol-adjacent", "format", "claim-functional"}
+# information only (read on the Founder review tab or at intake): nutrient-claim, under-floor, other,
+# format-unconfirmed (single-serve not shown; the first call asks), and the shelf-life and store-only notes
 NAME_IN_DATA = re.compile(r"\bDesk Drop\b")  # CONTRACTS rename rule: the working name never sits in a data cell
 
 
@@ -607,12 +611,13 @@ def main():
             fr_add.append(f"scale signal in the why-now ('{ms.group(0)}'): likely above the $10M band; ask at intake")
         elif mn and not {"scale", "scale-reported"} & set(sev):
             fr_add.append(f"national retail distribution in the why-now ('{mn.group(0)}'): check the revenue band at intake")
-        if o["individually_packaged"] in ("N", "unknown") and "format" not in sev:
-            # review round 1 (R1-16): individually packaged is one of the seven qualifiers; not shown means a look
+        if o["individually_packaged"] == "N" and "format" not in sev:
+            # review round 1 (R1-16): individually packaged is one of the seven qualifiers
             sev = [x for x in sev if x != "other"] + ["format"]
-            fr_add.append("individually packaged single-serve format " +
-                          ("not shown on the pages read" if o["individually_packaged"] == "unknown" else
-                           "not offered on the pages read (check for a single-serve SKU)"))
+            fr_add.append("no individually packaged single-serve SKU on the pages read (check for one before outreach)")
+        elif o["individually_packaged"] == "unknown" and "format" not in sev:
+            sev = sev + ["format-unconfirmed"]
+            fr_add.append("single-serve pack not shown on the pages read: ask on the first call")
         o["founder_review_type"] = ";".join(sev)
         if o["shelf_stable"] in ("likely", "unknown"):
             fr_add.append("60-day shelf life not stated")
@@ -641,9 +646,10 @@ def main():
             o["why_now_date"] = mwd.group(1)
             o["why_now"] = (o["why_now"] + f" ({mwd.group(2)})").strip()
         if o["why_now"] and (not o["why_now_url"].startswith("http") or
-                             not re.match(r"^\d{4}-\d{2}(?:-\d{2})?$", o["why_now_date"])):
+                             not re.match(r"^\d{4}-\d{2}(?:-\d{2})?$", o["why_now_date"]) or
+                             re.search(r"unverified|snippet|not opened", o["why_now"], re.I)):
             o["notes"] = (o["notes"] + " | " if o["notes"] else "") + (
-                f"Why-now without a link and a date, kept as a note only: {o['why_now']} "
+                f"Why-now without an opened link and a date, kept as a note only: {o['why_now']} "
                 f"(url: {o['why_now_url'] or 'none'}; date: {o['why_now_date'] or 'none'})")
             o["why_now"], o["why_now_url"], o["why_now_date"] = "", "", ""
         kind, age, win = why_now_class(o["why_now"], o["why_now_url"], o["why_now_date"], r["notes"], o["website"])

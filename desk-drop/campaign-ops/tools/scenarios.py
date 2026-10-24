@@ -8,6 +8,9 @@ standard:  first standard run, 3 brands x 10 offices, courier, drop Tue 2027-02-
            kept, as the real tracker would keep them).
 exception: second standard run, 1 brand x 10 offices, courier, drop Tue 2027-02-23: a short shipment (480 of
            567) and one office that declines at the door (added in review round 1 from the reviewer's scenario).
+direct:    third run, 2 brands x 10 offices, direct-ship, drop Tue 2027-03-23: a short carton at one office, one office
+           refusing one brand's carton at the door (with answers from its people), a desk that will not hold food
+           (added in review round 2 from the reviewer's scenario).
 """
 import datetime as dt
 import random
@@ -820,7 +823,7 @@ def exception():
     rows["brand_intake"] += bweb
     rows["brand_form"] += bform
     rows["brands"] += brands
-    rows["drops"].append({"_on": d("2027-01-20"), "drop_id": "SAMPLE-DRP-003", "drop_date": T, "delivery_model": "courier", "status": "confirmed",
+    rows["drops"].append({"_on": d("2027-01-11"), "drop_id": "SAMPLE-DRP-003", "drop_date": T, "delivery_model": "courier", "status": "confirmed",
                           "receiving_location": "SAMPLE receiving address (founder's home, sealed cases)",
                           "courier_or_van": "SAMPLE Example Courier, booking SAMPLE-BK-0223, pickup 7:45 am", "backup_person": "SAMPLE backup (briefed 2027-02-19)",
                           "notes": "SAMPLE second standard run (exception run)"})
@@ -967,3 +970,230 @@ def exception():
         f.update(report_delivered_date=s["report_due"], debrief_date=s["debrief"], brand_would_buy_again=s["debrief"], renewed=s["debrief"])
     return {"name": "exception", "T": T, "drop_id": "SAMPLE-DRP-003", "rows": rows, "responses": resp,
             "campaigns": [cid], "offices": O10, "delivery_model": "courier"}
+
+
+# ---------------------------------------------------------------- direct-ship run (review round 2)
+def direct():
+    """SAMPLE-DRP-004, Tue 2027-03-23 (the financial model's DRP-004), direct-ship: the plan's model from campaign three.
+    Built from the reviewer's round-2 scenario (campaign-ops/_review/r2/work/scenario_r2.py), logged the way sop/SOP.md
+    now says for direct-ship (review round 2, R2-02 and R2-03):
+      SAMPLE-CMP-007  SAMPLE Brightside, founding_lock = Y (its second campaign), 10 offices, $1,200 paid before shipping
+      SAMPLE-CMP-008  SAMPLE Tallgrass, standard renewal, 10 offices, $750 + $750
+    - The brands ship one carton per office straight to each office, and the reserve to the receiving address by T-5.
+    - SAMPLE-O-009's front desk will not hold food, so its two cartons ship with the reserve and the founder carries them on T.
+    - Each office counts its cartons and texts the count with the placement photo: one received and one delivered row per
+      office per brand (count_source office_count); lot and best-by from the brand's ship notice, checked on the reserve.
+    - Short carton: SAMPLE-O-003's Brightside carton holds 26 of 50; short_shipment issue for that office, 20 topped up on day 3.
+    - Refused at the door: SAMPLE-O-008 refuses the Tallgrass carton (takes Brightside): outcome declined, no rows, the carrier
+      returns it to the brand, $150 credit. Its owner had already posted the link mailed with the kit, so two people there
+      answered the Tallgrass survey: shown apart, never counted."""
+    import opscal
+    import tracker as TR
+    ex = exception()
+    rows = copy_rows(ex["rows"])
+    T = d("2027-03-23")
+    s = opscal.sop_dates(T)
+    did = "SAMPLE-DRP-004"
+    O10 = [o[0] for o in OFFICES]
+    signed_on = d("2027-02-24")
+    HAND = "SAMPLE-O-009"
+    rows["drops"].append({"_on": d("2027-02-22"), "drop_id": did, "drop_date": T, "delivery_model": "direct-ship", "status": "confirmed",
+                          "receiving_location": "SAMPLE direct to each office; reserve (and SAMPLE-O-009's cartons) to the receiving address",
+                          "courier_or_van": "", "backup_person": "SAMPLE backup (briefed 2027-03-19)",
+                          "notes": "SAMPLE third run (direct-ship run)"})
+    CMP = {
+        "SAMPLE-CMP-007": dict(brand_id="SAMPLE-BR-001", tier="founding", founding_lock="Y",
+                               card_sentences="SAMPLE Two friends in Queens make lentil crisps that taste like a snack, not a compromise. Baked in small batches in Long Island City.",
+                               allergen_source="contains_statement", allergen_line_verbatim="SAMPLE Contains: milk, sesame.",
+                               may_contain_verbatim="SAMPLE Made in a facility that also processes tree nuts.",
+                               retailer_line="SAMPLE Example Market, 1 Example Street", discount_code="SAMPLEDESK15", code_site="example.com",
+                               landing_url="https://example.com/brightside/office", unused_product_election="release", newsletter_option="N",
+                               product_sku=BRANDS["SAMPLE-BR-001"]["sku"]),
+        "SAMPLE-CMP-008": dict(brand_id="SAMPLE-BR-003", tier="standard", founding_lock="",
+                               card_sentences="SAMPLE Oat and date bars from a Jersey City bakery that started as a farmers-market stand. Four ingredients, no surprises.",
+                               allergen_source="contains_statement", allergen_line_verbatim="SAMPLE Contains: oats (gluten), almonds.",
+                               may_contain_verbatim="SAMPLE May contain peanuts.", retailer_line="SAMPLE Example Market, 1 Example Street",
+                               discount_code="SAMPLEBAR20", code_site="example.com", unused_product_election="release", newsletter_option="N",
+                               product_sku=BRANDS["SAMPLE-BR-003"]["sku"]),
+    }
+    paid = {"SAMPLE-CMP-007": d("2027-03-01"), "SAMPLE-CMP-008": d("2027-02-26")}
+    for cid, f in CMP.items():
+        rows["campaigns"].append(dict(_on=signed_on, campaign_id=cid, drop_id=did, offices_contracted=10, agreement_signed_date=signed_on,
+                                      agreement_version="0.8", coi_received_date=paid[cid], allergen_sheet_received_date=paid[cid],
+                                      logo_received_date=paid[cid], card_proof_sent_date=s["receive"],
+                                      survey_form_url="https://docs.google.com/forms/d/e/%s-FORM/viewform" % cid,
+                                      survey_prefill_template="https://docs.google.com/forms/d/e/%s-FORM/viewform?usp=pp_url&entry.1000001=CARDCODE" % cid,
+                                      _fields_on={"survey_form_url": opscal.add_bd(T, -4), "survey_prefill_template": opscal.add_bd(T, -4)},
+                                      _fields_history={"ship_email_sent_date": [(paid[cid], paid[cid])], "ship_email_units": [(paid[cid], 567)]},
+                                      **f))
+    pc = s["placement_confirm"]
+    bal_paid = d("2027-03-29")
+    rows["invoices"] += [
+        {"_on": signed_on, "invoice_id": "SAMPLE-INV-030", "campaign_id": "SAMPLE-CMP-007", "invoice_type": "founding_full", "issued_date": signed_on,
+         "amount_usd": 1200, "sales_tax_usd": 0, "sent_to": "SAMPLE-ap-001@example.com", "paid_date": paid["SAMPLE-CMP-007"], "paid_amount_usd": 1200,
+         "method": "bank_transfer", "bank_reference": "SAMPLE-ACH-7030", "processing_fee_usd": 0,
+         "_fields_on": {k: paid["SAMPLE-CMP-007"] for k in ("paid_date", "paid_amount_usd", "method", "bank_reference")}},
+        {"_on": signed_on, "invoice_id": "SAMPLE-INV-031", "campaign_id": "SAMPLE-CMP-008", "invoice_type": "standard_deposit", "issued_date": signed_on,
+         "amount_usd": 750, "sales_tax_usd": 0, "sent_to": "SAMPLE-ap-003@example.com", "paid_date": paid["SAMPLE-CMP-008"], "paid_amount_usd": 750,
+         "method": "bank_transfer", "bank_reference": "SAMPLE-ACH-7031", "processing_fee_usd": 0,
+         "_fields_on": {k: paid["SAMPLE-CMP-008"] for k in ("paid_date", "paid_amount_usd", "method", "bank_reference")}},
+        {"_on": pc, "invoice_id": "SAMPLE-INV-032", "campaign_id": "SAMPLE-CMP-008", "invoice_type": "standard_balance", "issued_date": pc,
+         "amount_usd": 750, "sales_tax_usd": 0, "sent_to": "SAMPLE-ap-003@example.com", "paid_date": bal_paid, "paid_amount_usd": 600,
+         "method": "bank_transfer", "bank_reference": "SAMPLE-ACH-7032", "processing_fee_usd": 0,
+         "_fields_on": {k: bal_paid for k in ("paid_date", "paid_amount_usd", "method", "bank_reference")}},
+        {"_on": pc, "invoice_id": "SAMPLE-INV-033", "campaign_id": "SAMPLE-CMP-008", "invoice_type": "credit_note", "issued_date": pc,
+         "amount_usd": -150, "sales_tax_usd": 0, "sent_to": "SAMPLE-ap-003@example.com",
+         "note": "SAMPLE office SAMPLE-O-008 refused the carton at the door: taken off the balance, brand agreement section 8"},
+    ]
+    # Approvals: SAMPLE-O-001 to 005 are on their 4th drop (opt-out: no reply needed); 006 to 010 on their 3rd (explicit yes).
+    for cid in CMP:
+        for o in O10:
+            rep = {o: ("yes", d("2027-02-25"))} if o in O10[5:] else {o: (None, None)}
+            rows["approvals"] += _approvals(cid, [o], signed_on, rep, None)
+    for i, oid in enumerate(O10, start=1):
+        dec, hand = oid == "SAMPLE-O-008", oid == HAND
+        trk = ("SAMPLE with the reserve to the receiving address (SAMPLE Brightside SAMPLE-1Z7R0001; SAMPLE Tallgrass SAMPLE-1Z8R0001)" if hand else
+               "SAMPLE Brightside SAMPLE-1Z7%04d; SAMPLE Tallgrass SAMPLE-1Z8%04d" % (i, i))
+        stop = {"_on": s["kit_print"], "drop_id": did, "office_id": oid, "route_order": i, "planned_time": tm(10, 30) if hand else tm(10, 0),
+                "slack_post_sent_date": s["kit_print"], "kit_mailed_date": "" if hand else s["kit_print"], "carrier_tracking": trk,
+                "confirm_text_sent_date": s["confirm"], "arrival_time": tm(10, 32) if hand else tm(10, 10 + i),
+                "departure_time": tm(10, 44) if hand else "", "handed_to_role": "pantry owner" if hand else "carrier",
+                "outcome": "handed_to_owner" if hand else ("declined" if dec else "carrier_delivered"),
+                "notes": ("SAMPLE owner refused the Tallgrass carton at the door (pantry full of bars this month); took Brightside; the carrier returns the carton to the brand" if dec else
+                          "SAMPLE desk will not hold food: the founder carried both cartons from the receiving address" if hand else ""),
+                "office_debrief_date": opscal.add_bd(T, 9), "office_would_do_again": "maybe" if dec else "yes",
+                "_fields_on": {"carrier_tracking": opscal.add_bd(T, -2), "arrival_time": T, "departure_time": T, "handed_to_role": T, "outcome": T, "notes": T,
+                               "office_debrief_date": opscal.add_bd(T, 9), "office_would_do_again": opscal.add_bd(T, 9)}}
+        if not stop["kit_mailed_date"]:
+            stop.pop("kit_mailed_date")
+        if not stop["departure_time"]:
+            stop.pop("departure_time")
+        rows["stops"].append(stop)
+    alloc = {"SAMPLE-O-001": 40, "SAMPLE-O-002": 40, "SAMPLE-O-003": 50, "SAMPLE-O-004": 50, "SAMPLE-O-005": 70,
+             "SAMPLE-O-006": 45, "SAMPLE-O-007": 60, "SAMPLE-O-008": 45, "SAMPLE-O-009": 75, "SAMPLE-O-010": 40}
+    lots = {"SAMPLE-CMP-007": ("SAMPLE-L2703", d("2027-08-31")), "SAMPLE-CMP-008": ("SAMPLE-TG-0301", d("2027-09-30"))}
+    inv, cnt, ph = [], [], []
+    for cid in CMP:   # SOP receive_ds: the reserve (52 = 10% of 515, rounded up) and SAMPLE-O-009's carton, at the receiving address
+        inv.append({"_on": s["receive"], "date": s["receive"], "time": tm(14, 0), "campaign_id": cid, "movement": "received", "qty": 52,
+                    "lot": lots[cid][0], "best_by": lots[cid][1], "count_source": "founder_count", "note": "SAMPLE reserve; one package checked"})
+        inv.append({"_on": s["receive"], "date": s["receive"], "time": tm(14, 5), "campaign_id": cid, "movement": "received", "qty": alloc[HAND],
+                    "lot": lots[cid][0], "best_by": lots[cid][1], "count_source": "founder_count", "note": "SAMPLE SAMPLE-O-009's carton, shipped with the reserve (desk will not hold food)"})
+    pid = [700]
+
+    def photo(cid, oid, typ, day, t, src="office"):
+        pid[0] += 1
+        p = "SAMPLE-PH-%04d" % pid[0]
+        ph.append({"_on": day, "photo_id": p, "campaign_id": cid, "office_id": oid, "photo_type": typ, "taken_date": day, "taken_time": t,
+                   "source": src, "file_name": "%s_%s_%s_%s.jpg" % (cid, oid, typ, day.isoformat()), "received_date": day,
+                   "card_visible": "Y", "no_people_or_screens": "Y"})
+        return p
+    rnd = random.Random(2024)
+    tops = {("SAMPLE-CMP-007", "SAMPLE-O-003"): 20, ("SAMPLE-CMP-008", "SAMPLE-O-009"): 6}
+    for cid in CMP:
+        for oid in O10:
+            if cid == "SAMPLE-CMP-008" and oid == "SAMPLE-O-008":
+                continue   # SOP section 4: carton refused at the door = no received and no delivered row; the carrier returns it
+            u = 26 if (cid == "SAMPLE-CMP-007" and oid == "SAMPLE-O-003") else alloc[oid]
+            t_in = tm(10, 32) if oid == HAND else tm(10, 10 + O10.index(oid) + 1)
+            if oid != HAND:   # SOP drop_ds: the office's own count of its carton, received and delivered together
+                inv.append({"_on": T, "date": T, "time": t_in, "campaign_id": cid, "office_id": oid, "movement": "received", "qty": u,
+                            "lot": lots[cid][0], "best_by": lots[cid][1], "count_source": "office_count",
+                            "note": "SAMPLE carton counted by the office; lot and best-by from the brand's ship notice"})
+            inv.append({"_on": T, "date": T, "time": t_in, "campaign_id": cid, "office_id": oid, "movement": "delivered", "qty": u,
+                        "count_source": "founder_count" if oid == HAND else "office_count"})
+            p = photo(cid, oid, "placement", T, tm(10, 40) if oid == HAND else tm(13, 0), "founder" if oid == HAND else "office")
+            cnt.append({"_on": T, "date": T, "time": tm(13, 0), "campaign_id": cid, "office_id": oid, "count_type": "placed", "units": u, "source": "photo", "photo_id": p})
+            r3 = int(u * rnd.uniform(0.2, 0.5))
+            cnt.append({"_on": s["check_day3"], "date": s["check_day3"], "time": tm(11, 0), "campaign_id": cid, "office_id": oid, "count_type": "remaining_day3", "units": r3, "source": "owner_report"})
+            tu = tops.get((cid, oid), 0)
+            if tu:
+                inv.append({"_on": s["check_day3"], "date": s["check_day3"], "time": tm(13, 0), "campaign_id": cid, "office_id": oid, "movement": "topped_up", "qty": tu, "count_source": "founder_count"})
+            r5 = max(0, int((r3 + tu) * rnd.uniform(0.05, 0.3)))
+            p2 = photo(cid, oid, "later", s["close"], tm(15, 0))
+            cnt.append({"_on": s["close"], "date": s["close"], "time": tm(16, 0), "campaign_id": cid, "office_id": oid, "count_type": "remaining_day5", "units": r5, "source": "photo", "photo_id": p2})
+    for cid in CMP:   # what is physically left in the reserve, counted and released (the brand chose release)
+        left = 52 - sum(v for (c, o), v in tops.items() if c == cid)
+        inv.append({"_on": s["close"], "date": s["close"], "time": tm(17, 0), "campaign_id": cid, "office_id": "SAMPLE-O-005", "movement": "released_to_office",
+                    "bucket": "reserve", "qty": left, "count_source": "founder_count", "note": "SAMPLE brand chose release: counted reserve to the largest office"})
+    rows["inventory"] += inv
+    rows["counts"] += cnt
+    rows["photos"] += ph
+    resp = dict(ex["responses"])
+    names = {"SAMPLE-CMP-007": "SAMPLE Brightside", "SAMPLE-CMP-008": "SAMPLE Tallgrass"}
+    quotes = {"SAMPLE-CMP-007": ["SAMPLE Still the best crisps in the pantry.", "SAMPLE Sesame was a surprise, glad the card said so.", "SAMPLE Ran out fast on our floor."],
+              "SAMPLE-CMP-008": ["SAMPLE Good with coffee.", "SAMPLE Bit dry for me.", "SAMPLE Where can I buy a box?"]}
+    for k, cid in enumerate(CMP):
+        plan = {o: 5 + (_h((cid, o)) % 5) for o in O10 if not (cid == "SAMPLE-CMP-008" and o == "SAMPLE-O-008")}
+        if cid == "SAMPLE-CMP-007":
+            plan["SAMPLE-O-010"] = 4
+        extra = []
+        if cid == "SAMPLE-CMP-008":   # two answers from the office that refused the carton (the post was already out)
+            extra = [[dt.datetime.combine(T, tm(11, 5)), "SAMPLE-CMP-008.SAMPLE-O-008", "No", "", "", "Didn't see it", ""],
+                     [dt.datetime.combine(opscal.add_bd(T, 1), tm(9, 40)), "SAMPLE-CMP-008.SAMPLE-O-008", "No", "", "", "Didn't see it", "SAMPLE never saw them"]]
+        rr = survey(cid, plan, T, s["close"], 900 + k, extra)
+        ensure_comments(rr, T, s["close"], quotes[cid])
+        for r in rr:
+            r.append(r[0].date())
+        resp[cid] = (names[cid], rr)
+    scans = []
+    for cid in CMP:
+        for oid in O10:
+            for kind in ("q", "p"):
+                close = (1 if kind == "q" else 4) if (cid == "SAMPLE-CMP-008" and oid == "SAMPLE-O-008") else 4 + (_h((cid, oid, kind)) % 10)
+                sl = TR.slug(cid, oid, kind)
+                for day, typ, v in ((s["confirm"], "baseline", 1), (s["check_day3"], "mid", max(1, close // 2)), (s["close"], "close", close)):
+                    scans.append({"_on": day, "read_date": day, "read_time": tm(17, 30), "slug": sl, "reading_type": typ, "clicks_to_date": v})
+    rows["scans"] += scans
+    rows["redemptions"] += [
+        {"_on": s["report_due"], "campaign_id": c, "as_of_date": s["report_due"] - dt.timedelta(days=1), "redemptions_to_date": k,
+         "reported_date": s["report_due"] - dt.timedelta(days=1), "reported_by_role": "SAMPLE brand co-founder"} for c, k in (("SAMPLE-CMP-007", 5), ("SAMPLE-CMP-008", 7))] + [
+        {"_on": T + dt.timedelta(days=30), "campaign_id": c, "as_of_date": T + dt.timedelta(days=30), "redemptions_to_date": k,
+         "reported_date": T + dt.timedelta(days=30), "reported_by_role": "SAMPLE brand co-founder"} for c, k in (("SAMPLE-CMP-007", 9), ("SAMPLE-CMP-008", 12))]
+    rows["issues"] += [
+        {"_on": T, "issue_id": "SAMPLE-ISS-030", "date": T, "time": tm(13, 30), "drop_id": did, "campaign_id": "SAMPLE-CMP-007", "office_id": "SAMPLE-O-003",
+         "issue_type": "short_shipment", "what_happened": "SAMPLE the office counted 26 of 50 in the Brightside carton: one inner carton of 24 missing.",
+         "action_taken": "SAMPLE brand told the same day; 20 topped up from the reserve on day 3; no price change (SOP section 4).",
+         "brand_told_date": T, "office_told_date": T, "closed_date": s["check_day3"]},
+        {"_on": T, "issue_id": "SAMPLE-ISS-031", "date": T, "time": tm(10, 20), "drop_id": did, "campaign_id": "SAMPLE-CMP-008", "office_id": "SAMPLE-O-008",
+         "issue_type": "declined_at_door", "what_happened": "SAMPLE pantry owner refused the Tallgrass carton from the carrier; took Brightside.",
+         "action_taken": "SAMPLE carrier returns the carton to the brand; $150 taken off the balance at T+1.",
+         "brand_told_date": T, "office_told_date": T, "closed_date": pc},
+    ]
+    H = []
+
+    def hrs(day, act, h, c="", note=""):
+        H.append({"_on": day, "date": day, "drop_id": did, "campaign_id": c, "activity": act, "hours": h, "note": note})
+    for cid in CMP:
+        hrs(d("2027-02-22"), "brand_sales", 2.0, cid, "SAMPLE renewal call, proposal, agreement")
+        hrs(s["report_due"], "reporting_debriefs", 1.5, cid, "SAMPLE report")
+        hrs(s["debrief"], "reporting_debriefs", 0.5, cid, "SAMPLE debrief")
+    hrs(d("2027-02-25"), "office_coordination", 1.5, note="SAMPLE approvals")
+    hrs(s["receive"], "receiving_kitting", 1.0, note="SAMPLE reserve and one office's cartons in, one package checked")
+    hrs(s["kit_print"], "receiving_kitting", 1.5, note="SAMPLE kits mailed to nine offices")
+    hrs(T, "drop_day", 2.0, note="SAMPLE tracking, office counts and photos; one office delivered by hand")
+    hrs(s["check_day3"], "checks_pickup", 1.5, note="SAMPLE day-3 counts, two top-ups on foot")
+    hrs(s["close"], "checks_pickup", 1.0, note="SAMPLE day 5, reserve released")
+    hrs(pc, "admin_invoicing", 1.0, note="SAMPLE balance and credit note")
+    rows["hours"] += H
+    rows["costs"] += [
+        {"_on": s["kit_print"], "date": s["kit_print"], "drop_id": did, "campaign_id": "SAMPLE-CMP-007", "cost_type": "kit", "amount_usd": 80, "vendor": "SAMPLE copy shop"},
+        {"_on": s["kit_print"], "date": s["kit_print"], "drop_id": did, "campaign_id": "SAMPLE-CMP-008", "cost_type": "kit", "amount_usd": 80, "vendor": "SAMPLE copy shop"},
+        {"_on": s["kit_print"], "date": s["kit_print"], "drop_id": did, "cost_type": "other_direct", "amount_usd": 45, "vendor": "SAMPLE post office", "note": "SAMPLE kit postage, 9 envelopes (illustrative)"},
+    ]
+    learned = {"SAMPLE-CMP-007": "SAMPLE One carton arrived 24 short; the office topped up from reserve on day 3.\nSAMPLE Went fastest in the two largest offices.\nSAMPLE The sesame line on the card was noticed.",
+               "SAMPLE-CMP-008": "SAMPLE Bars lasted longer than chips again.\nSAMPLE Coffee came up in two comments.\nSAMPLE One office had too many bars this month."}
+    rec = {"SAMPLE-CMP-007": "SAMPLE Renew into the same ten offices; ask the warehouse to weigh each carton before it ships.",
+           "SAMPLE-CMP-008": "SAMPLE Renew into the nine offices that took it; skip a month at the tenth."}
+    for r in rows["campaigns"]:
+        cid = r["campaign_id"]
+        if cid not in CMP:
+            continue
+        r.update(comment_1=quotes[cid][0], comment_2=quotes[cid][1], comment_3=quotes[cid][2], learned=learned[cid], recommendation=rec[cid],
+                 report_delivered_date=s["report_due"], debrief_date=s["debrief"],
+                 brand_would_buy_again="yes" if cid == "SAMPLE-CMP-007" else "maybe", renewed="pending")
+        f = r["_fields_on"]
+        for k in ("comment_1", "comment_2", "comment_3", "learned", "recommendation"):
+            f[k] = opscal.add_bd(T, 6)
+        f.update(report_delivered_date=s["report_due"], debrief_date=s["debrief"], brand_would_buy_again=s["debrief"], renewed=s["debrief"])
+    return {"name": "direct", "T": T, "drop_id": did, "rows": rows, "responses": resp, "campaigns": list(CMP), "offices": O10,
+            "delivery_model": "direct-ship"}

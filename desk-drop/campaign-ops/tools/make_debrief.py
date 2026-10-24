@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Debrief note sheets, filled from the tracker so you walk in with the numbers.
 
-  python3 tools/make_debrief.py TRACKER.xlsx DROP_ID OUT_DIR
+  python3 tools/make_debrief.py TRACKER.xlsx DROP_ID OUT_DIR [--reports REPORTS_DIR]
 
 Writes OUT_DIR/debrief-brand-<campaign>.md for each brand and debrief-office-<office>.md for each office.
+REPORTS_DIR is the folder make_report.py wrote (default: a "reports" folder beside OUT_DIR). A brand sheet whose
+campaign has no report.pdf there starts with "NO REPORT YET" and does not say the numbers are "from the report"
+(review round 2, R2-06).
 Templates: templates/debrief-brand.md, templates/debrief-office.md, and templates/debrief-office-declined.md for an
 office that turned every brand away at the door (it is asked why, never how the product landed).
 """
@@ -19,10 +22,26 @@ import opscal  # noqa: E402
 import tracker as TR  # noqa: E402
 
 
+def declines_all(tr, oid):
+    """Stops where this office declined every brand at the door (the sheet's stops.declined_all)."""
+    n = 0
+    for x in tr.rows["stops"]:
+        if TR._s(x["office_id"]) != oid or TR._s(x.get("outcome")) != "declined":
+            continue
+        camps = [cid for cid, c in tr.campaigns.items() if TR._s(c["drop_id"]) == TR._s(x["drop_id"])]
+        here = [r for cid in camps for r in tr.approvals_for(cid) if TR._s(r["office_id"]) == oid and tr._approved(cid, r)]
+        got = sum(1 for r in here for m in tr.rows["inventory"] if TR._s(m["campaign_id"]) == TR._s(r["campaign_id"])
+                  and TR._s(m.get("office_id")) == oid and TR._s(m["movement"]) == "delivered" and TR._n(m["qty"]) > 0)
+        if here and not got:
+            n += 1
+    return n
+
+
 def main(argv):
     if len(argv) < 4:
         print(__doc__)
         return 1
+    reports = argv[argv.index("--reports") + 1] if "--reports" in argv else os.path.join(os.path.dirname(os.path.abspath(argv[3])), "reports")
     tr = TR.Tracker(argv[1])
     common.require_same_name(tr)
     did, out = argv[2], argv[3]
@@ -51,7 +70,13 @@ def main(argv):
                "redemption_check": common.fmt_date(s["redemption_check"]), "discount_code": TR._s(c.get("discount_code")) or "(no code)",
                "roster_note": MR.roster_note(lad) or "Every office that approved the brand took it.",
                "testimonial_line": ("Founding brand: the short written statement is due by %s (brand agreement section 3), only if we delivered everything in section 1." % common.fmt_date(s["debrief"] + __import__("datetime").timedelta(days=30))) if founding_first else "No testimonial term for this tier."}
-        common.write(os.path.join(out, "debrief-brand-%s.md" % cid), MM.fill(tb, ctx))
+        txt = MM.fill(tb, ctx)
+        if not os.path.exists(os.path.join(reports, cid, "report.pdf")):
+            txt = ("**NO REPORT YET: run tools/make_report.py first** (no %s). The numbers below are the tracker's as of today, not a "
+                   "report the brand has seen.\n\n" % os.path.join(reports, cid, "report.pdf")) + txt.replace(
+                "## The numbers they have in front of them (from the report, %s)" % ctx["report_date"],
+                "## The numbers so far (from the tracker, %s: the brand has no report yet)" % common.fmt_date(tr.today))
+        common.write(os.path.join(out, "debrief-brand-%s.md" % cid), txt)
         n += 1
     stops = {TR._s(x["office_id"]): x for x in tr.rows["stops"] if TR._s(x["drop_id"]) == did}
     for oid, st in stops.items():
@@ -73,7 +98,8 @@ def main(argv):
                    "stop_note": TR._s(st.get("notes")) or "(no note on the stops tab)",
                    "categories": ", ".join(MM.CAT.get(k, k) for k in TR._s(o.get("categories_wanted")).split(";") if k),
                    "receiving_window": TR._s(o.get("receiving_window")),
-                   "declines": sum(1 for x in tr.rows["stops"] if TR._s(x["office_id"]) == oid and TR._s(x.get("outcome")) == "declined")}
+                   # Only stops where the office declined every brand count (review round 2, R2-05; offices.declines).
+                   "declines": declines_all(tr, oid)}
             common.write(os.path.join(out, "debrief-office-%s.md" % oid), MM.fill(tdec, ctx))
             n += 1
             continue

@@ -1,0 +1,72 @@
+number,value,from
+comment_1,SAMPLE Still the best crisps in the pantry.,SAMPLE-CMP-007!G2
+comment_2,"SAMPLE Sesame was a surprise, glad the card said so.",SAMPLE-CMP-007!G3
+comment_3,SAMPLE Ran out fast on our floor.,SAMPLE-CMP-007!G4
+A units_delivered,40,inventory movement=delivered (rows 95)
+A units_placed,40,photos SAMPLE-CMP-007_SAMPLE-O-001_placement_2027-03-23.jpg + counts placed
+A units_topped_up,0,inventory movement=topped_up
+A units_depleted_day5,37,"placed + topped up - counts remaining_day5 (counts rows 146,147,148)"
+A survey_responses,5,"SAMPLE-CMP-007!B card code SAMPLE-CMP-007.SAMPLE-O-001, T to T+4"
+A qr_scans,6,"scans SAMPLE-c007-o001-q close - baseline (scans rows 316,317,318)"
+B units_delivered,40,inventory movement=delivered (rows 97)
+B units_placed,40,photos SAMPLE-CMP-007_SAMPLE-O-002_placement_2027-03-23.jpg + counts placed
+B units_topped_up,0,inventory movement=topped_up
+B units_depleted_day5,38,"placed + topped up - counts remaining_day5 (counts rows 149,150,151)"
+B survey_responses,7,"SAMPLE-CMP-007!B card code SAMPLE-CMP-007.SAMPLE-O-002, T to T+4"
+B qr_scans,8,"scans SAMPLE-c007-o002-q close - baseline (scans rows 322,323,324)"
+C units_delivered,26,inventory movement=delivered (rows 99)
+C units_placed,26,photos SAMPLE-CMP-007_SAMPLE-O-003_placement_2027-03-23.jpg + counts placed
+C units_topped_up,20,inventory movement=topped_up (rows 100)
+C units_depleted_day5,40,"placed + topped up - counts remaining_day5 (counts rows 152,153,154)"
+C survey_responses,9,"SAMPLE-CMP-007!B card code SAMPLE-CMP-007.SAMPLE-O-003, T to T+4"
+C qr_scans,10,"scans SAMPLE-c007-o003-q close - baseline (scans rows 328,329,330)"
+D units_delivered,50,inventory movement=delivered (rows 102)
+D units_placed,50,photos SAMPLE-CMP-007_SAMPLE-O-004_placement_2027-03-23.jpg + counts placed
+D units_topped_up,0,inventory movement=topped_up
+D units_depleted_day5,49,"placed + topped up - counts remaining_day5 (counts rows 155,156,157)"
+D survey_responses,6,"SAMPLE-CMP-007!B card code SAMPLE-CMP-007.SAMPLE-O-004, T to T+4"
+D qr_scans,12,"scans SAMPLE-c007-o004-q close - baseline (scans rows 334,335,336)"
+E units_delivered,70,inventory movement=delivered (rows 104)
+E units_placed,70,photos SAMPLE-CMP-007_SAMPLE-O-005_placement_2027-03-23.jpg + counts placed
+E units_topped_up,0,inventory movement=topped_up
+E units_depleted_day5,65,"placed + topped up - counts remaining_day5 (counts rows 158,159,160)"
+E survey_responses,8,"SAMPLE-CMP-007!B card code SAMPLE-CMP-007.SAMPLE-O-005, T to T+4"
+E qr_scans,4,"scans SAMPLE-c007-o005-q close - baseline (scans rows 340,341,342)"
+F units_delivered,45,inventory movement=delivered (rows 106)
+F units_placed,45,photos SAMPLE-CMP-007_SAMPLE-O-006_placement_2027-03-23.jpg + counts placed
+F units_topped_up,0,inventory movement=topped_up
+F units_depleted_day5,42,"placed + topped up - counts remaining_day5 (counts rows 161,162,163)"
+F survey_responses,5,"SAMPLE-CMP-007!B card code SAMPLE-CMP-007.SAMPLE-O-006, T to T+4"
+F qr_scans,6,"scans SAMPLE-c007-o006-q close - baseline (scans rows 346,347,348)"
+G units_delivered,60,inventory movement=delivered (rows 108)
+G units_placed,60,photos SAMPLE-CMP-007_SAMPLE-O-007_placement_2027-03-23.jpg + counts placed
+G units_topped_up,0,inventory movement=topped_up
+G units_depleted_day5,57,"placed + topped up - counts remaining_day5 (counts rows 164,165,166)"
+G survey_responses,7,"SAMPLE-CMP-007!B card code SAMPLE-CMP-007.SAMPLE-O-007, T to T+4"
+G qr_scans,8,"scans SAMPLE-c007-o007-q close - baseline (scans rows 352,353,354)"
+H units_delivered,45,inventory movement=delivered (rows 110)
+H units_placed,45,photos SAMPLE-CMP-007_SAMPLE-O-008_placement_2027-03-23.jpg + counts placed
+H units_topped_up,0,inventory movement=topped_up
+H units_depleted_day5,42,"placed + topped up - counts remaining_day5 (counts rows 167,168,169)"
+H survey_responses,9,"SAMPLE-CMP-007!B card code SAMPLE-CMP-007.SAMPLE-O-008, T to T+4"
+H qr_scans,10,"scans SAMPLE-c007-o008-q close - baseline (scans rows 358,359,360)"
+I units_delivered,75,inventory movement=delivered (rows 111)
+I units_placed,75,photos SAMPLE-CMP-007_SAMPLE-O-009_placement_2027-03-23.jpg + counts placed
+I units_topped_up,0,inventory movement=topped_up
+I units_depleted_day5,66,"placed + topped up - counts remaining_day5 (counts rows 170,171,172)"
+I survey_responses,6,"SAMPLE-CMP-007!B card code SAMPLE-CMP-007.SAMPLE-O-009, T to T+4"
+I qr_scans,12,"scans SAMPLE-c007-o009-q close - baseline (scans rows 364,365,366)"
+J units_delivered,40,inventory movement=delivered (rows 113)
+J units_placed,40,photos SAMPLE-CMP-007_SAMPLE-O-010_placement_2027-03-23.jpg + counts placed
+J units_topped_up,0,inventory movement=topped_up
+J units_depleted_day5,38,"placed + topped up - counts remaining_day5 (counts rows 173,174,175)"
+J survey_responses,4,"SAMPLE-CMP-007!B card code SAMPLE-CMP-007.SAMPLE-O-010, T to T+4"
+J qr_scans,5,"scans SAMPLE-c007-o010-q close - baseline (scans rows 370,371,372)"
+"learned, line added by the tool",Delivered: 9 of the 10 offices counted their own cartons on arrival (the brand shipped direct); we counted the other one at handoff.,campaigns offices_contracted 10; approvals on_drop; inventory delivered count_source
+survey_tried_yes,48,"SAMPLE-CMP-007!A:G, in-window rows whose card code matches an office on the drop"
+survey_rating_avg,4.2,"SAMPLE-CMP-007!A:G, in-window rows whose card code matches an office on the drop"
+survey_buy_yes,19,"SAMPLE-CMP-007!A:G, in-window rows whose card code matches an office on the drop"
+survey_buy_maybe,25,"SAMPLE-CMP-007!A:G, in-window rows whose card code matches an office on the drop"
+survey_buy_no,4,"SAMPLE-CMP-007!A:G, in-window rows whose card code matches an office on the drop"
+comments_total,21,"SAMPLE-CMP-007!A:G, in-window rows whose card code matches an office on the drop"
+code_redemptions_to_date,5,"redemptions, latest as_of 2027-03-31"

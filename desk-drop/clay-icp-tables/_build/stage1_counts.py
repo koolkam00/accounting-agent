@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Print the stage 1 counts used in _work/stage1-notes.md and REPORT.md (markdown)."""
+"""Print the stage 1 counts used in _work/stage1-notes.md and the report back (markdown)."""
 import collections
 import os
 

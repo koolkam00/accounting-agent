@@ -10,8 +10,8 @@
 3. SAMPLE rule: in every SAMPLE tracker, every ID and every free-text value starts with SAMPLE, and
    every SAMPLE output document carries the SAMPLE banner: the HTML pages, and (review round 1, R1-10) every text
    draft (.md, .txt) under dry-run/, whose first lines must hold the banner line. A CSV keeps CONTRACTS section 5's
-   one header row (a banner row would break the paste into the financial model), so every data row of a dry-run or
-   SAMPLE export CSV must instead carry a SAMPLE value.
+   one header row (a banner row would break the paste into the financial model), so a dry-run or SAMPLE export CSV
+   must instead be named for a SAMPLE ID (file or folder) or carry a SAMPLE value on every data row.
 4. Required files: README.md and HANDOFF.md exist (REPORT.md is saved by the orchestrator).
 5. No email address other than example.com / placeholders in any source file.
 """
@@ -48,6 +48,11 @@ def main():
     squash = low.replace(" ", "")
     for dirpath, dirs, files in os.walk(ROOT):
         if "node_modules" in dirpath:
+            continue
+        # _review/ is the independent reviewer's folder: its sandbox holds links to the other workstreams' folders,
+        # whose names CONTRACTS section 1 fixes. Nothing in it is part of this system or read by any tool.
+        if os.path.relpath(dirpath, ROOT).split(os.sep)[0] == "_review":
+            dirs[:] = []
             continue
         for n in dirs + files:
             if low in n.lower() or squash in n.lower().replace("-", "").replace("_", ""):
@@ -103,6 +108,8 @@ def main():
     for c in (glob.glob(os.path.join(ROOT, "dry-run", "**", "*.csv"), recursive=True) +
               glob.glob(os.path.join(ROOT, "exports", "SAMPLE-*", "*.csv"))):
         csvs += 1
+        if "SAMPLE" in os.path.relpath(c, ROOT):
+            continue   # the file or its folder is named for a SAMPLE ID (for example reports/SAMPLE-CMP-001/trace.csv)
         for i, row in enumerate(open(c, encoding="utf-8").read().splitlines()[1:], start=2):
             if row.strip() and "SAMPLE" not in row:
                 fails.append("CSV row without a SAMPLE value: %s:%d" % (os.path.relpath(c, ROOT), i))

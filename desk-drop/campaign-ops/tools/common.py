@@ -102,7 +102,7 @@ def write(path, text):
     (CONTRACTS section 2; review round 1, R1-10). Every SAMPLE ID and text starts with SAMPLE, so a draft that holds
     the word SAMPLE was built on sample data; a real draft never does."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    if path.endswith((".md", ".txt")) and "SAMPLE" in text and not text.startswith(TEXT_BANNER):
+    if path.endswith((".md", ".txt")) and ("SAMPLE" in text or "SAMPLE" in os.path.basename(path)) and not text.startswith(TEXT_BANNER):
         text = TEXT_BANNER + "\n\n" + text
     with open(path, "w", encoding="utf-8") as f:
         f.write(text)
