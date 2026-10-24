@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# build-pdfs.sh: rebuilds every generated file from the templates and brand.json (v1.3, 2026-10-24):
+# build-pdfs.sh: rebuilds every generated file from the templates and brand.json (v1.4, 2026-10-24; a spec page whose text would be cut off now stops the build):
 #   wordmark, system/brand.js, signature/, avatar/, every PDF in pdf/, a PNG of every PDF page in
 #   pdf/png/, and the spec sheets in specs/.
 # Run from anywhere after any change (including a rename):

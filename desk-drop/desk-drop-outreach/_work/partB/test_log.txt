@@ -1,0 +1,194 @@
+tracker test run 2026-10-24T05:58:49
+== SAMPLE workbook, include_sample = Y
+ok   SAMPLE workbook: error cells after recalculation: got 0 want 0
+ok   SAMPLE banner present: got True want True
+ok   office o_conv @ 2026-10-30: got 3 want 3
+ok   office o_yes @ 2026-10-30: got 1 want 1
+ok   office o_yes_any @ 2026-10-30: got 2 want 2
+ok   office o_maybe @ 2026-10-30: got 0 want 0
+ok   office o_bp_med @ 2026-10-30: got 50 want 50.0
+ok   office o_bp_n @ 2026-10-30: got 2 want 2
+ok   office o_bp_zero @ 2026-10-30: got 1 want 1
+ok   brand b_conv @ 2026-10-30: got 3 want 3
+ok   brand b_yes @ 2026-10-30: got 2 want 2
+ok   brand b_strict @ 2026-10-30: got 1 want 1
+ok   brand b_noctrl @ 2026-10-30: got 0 want 0
+ok   brand b_wb_med @ 2026-10-30: got 375 want 375.0
+ok   brand b_wb_n @ 2026-10-30: got 2 want 2
+ok   brand b_wa_med @ 2026-10-30: got 600 want 600
+ok   brand b_wa_n @ 2026-10-30: got 3 want 3
+ok   office Gate 0 status @ 2026-10-30: got 'not yet' want 'not yet'
+ok   brand Gate 0 status @ 2026-10-30: got 'not yet' want 'not yet'
+ok   Gate 0 overall @ 2026-10-30: got 'not yet' want 'not yet'
+ok   office pace first @ 2026-10-30: got 12 want 12
+ok   office pace replies @ 2026-10-30: got 4 want 4
+ok   office pace rate @ 2026-10-30: got 0.333333333333333 want 0.3333333333333333
+ok   office pace positive @ 2026-10-30: got 4 want 4
+ok   office pace convrate @ 2026-10-30: got 0.25 want 0.25
+ok   office pace optout @ 2026-10-30: got 0 want 0
+ok   brand pace first @ 2026-10-30: got 12 want 12
+ok   brand pace replies @ 2026-10-30: got 4 want 4
+ok   brand pace rate @ 2026-10-30: got 0.333333333333333 want 0.3333333333333333
+ok   brand pace positive @ 2026-10-30: got 4 want 4
+ok   brand pace convrate @ 2026-10-30: got 0.25 want 0.25
+ok   brand pace optout @ 2026-10-30: got 0 want 0
+ok   office o_conv @ 2026-11-06: got 7 want 7
+ok   office o_yes @ 2026-11-06: got 3 want 3
+ok   office o_yes_any @ 2026-11-06: got 4 want 4
+ok   office o_maybe @ 2026-11-06: got 1 want 1
+ok   office o_bp_med @ 2026-11-06: got 50 want 50
+ok   office o_bp_n @ 2026-11-06: got 5 want 5
+ok   office o_bp_zero @ 2026-11-06: got 2 want 2
+ok   brand b_conv @ 2026-11-06: got 7 want 7
+ok   brand b_yes @ 2026-11-06: got 3 want 3
+ok   brand b_strict @ 2026-11-06: got 2 want 2
+ok   brand b_noctrl @ 2026-11-06: got 1 want 1
+ok   brand b_wb_med @ 2026-11-06: got 400 want 400.0
+ok   brand b_wb_n @ 2026-11-06: got 6 want 6
+ok   brand b_wa_med @ 2026-11-06: got 700 want 700.0
+ok   brand b_wa_n @ 2026-11-06: got 6 want 6
+ok   office Gate 0 status @ 2026-11-06: got 'not yet' want 'not yet'
+ok   brand Gate 0 status @ 2026-11-06: got 'PASS' want 'PASS'
+ok   Gate 0 overall @ 2026-11-06: got 'not yet' want 'not yet'
+ok   office pace first @ 2026-11-06: got 23 want 23
+ok   office pace replies @ 2026-11-06: got 13 want 13
+ok   office pace rate @ 2026-11-06: got 0.565217391304348 want 0.5652173913043478
+ok   office pace positive @ 2026-11-06: got 10 want 10
+ok   office pace convrate @ 2026-11-06: got 0.304347826086957 want 0.30434782608695654
+ok   office pace optout @ 2026-11-06: got 0 want 0
+ok   brand pace first @ 2026-11-06: got 22 want 22
+ok   brand pace replies @ 2026-11-06: got 12 want 12
+ok   brand pace rate @ 2026-11-06: got 0.545454545454545 want 0.5454545454545454
+ok   brand pace positive @ 2026-11-06: got 9 want 9
+ok   brand pace convrate @ 2026-11-06: got 0.318181818181818 want 0.3181818181818182
+ok   brand pace optout @ 2026-11-06: got 0 want 0
+ok   office o_conv @ 2026-11-13: got 13 want 13
+ok   office o_yes @ 2026-11-13: got 6 want 6
+ok   office o_yes_any @ 2026-11-13: got 8 want 8
+ok   office o_maybe @ 2026-11-13: got 2 want 2
+ok   office o_bp_med @ 2026-11-13: got 75 want 75.0
+ok   office o_bp_n @ 2026-11-13: got 8 want 8
+ok   office o_bp_zero @ 2026-11-13: got 3 want 3
+ok   brand b_conv @ 2026-11-13: got 13 want 13
+ok   brand b_yes @ 2026-11-13: got 6 want 6
+ok   brand b_strict @ 2026-11-13: got 5 want 5
+ok   brand b_noctrl @ 2026-11-13: got 1 want 1
+ok   brand b_wb_med @ 2026-11-13: got 500 want 500
+ok   brand b_wb_n @ 2026-11-13: got 11 want 11
+ok   brand b_wa_med @ 2026-11-13: got 800 want 800
+ok   brand b_wa_n @ 2026-11-13: got 7 want 7
+ok   office Gate 0 status @ 2026-11-13: got 'PASS' want 'PASS'
+ok   brand Gate 0 status @ 2026-11-13: got 'PASS' want 'PASS'
+ok   Gate 0 overall @ 2026-11-13: got 'PASS' want 'PASS'
+ok   office pace first @ 2026-11-13: got 33 want 33
+ok   office pace replies @ 2026-11-13: got 19 want 19
+ok   office pace rate @ 2026-11-13: got 0.575757575757576 want 0.5757575757575758
+ok   office pace positive @ 2026-11-13: got 15 want 15
+ok   office pace convrate @ 2026-11-13: got 0.393939393939394 want 0.3939393939393939
+ok   office pace optout @ 2026-11-13: got 1 want 1
+ok   brand pace first @ 2026-11-13: got 34 want 34
+ok   brand pace replies @ 2026-11-13: got 18 want 18
+ok   brand pace rate @ 2026-11-13: got 0.529411764705882 want 0.5294117647058824
+ok   brand pace positive @ 2026-11-13: got 14 want 14
+ok   brand pace convrate @ 2026-11-13: got 0.382352941176471 want 0.38235294117647056
+ok   brand pace optout @ 2026-11-13: got 1 want 1
+ok   office o_conv @ 2026-11-20: got 14 want 14
+ok   office o_yes @ 2026-11-20: got 7 want 7
+ok   office o_yes_any @ 2026-11-20: got 9 want 9
+ok   office o_maybe @ 2026-11-20: got 2 want 2
+ok   office o_bp_med @ 2026-11-20: got 75 want 75.0
+ok   office o_bp_n @ 2026-11-20: got 8 want 8
+ok   office o_bp_zero @ 2026-11-20: got 3 want 3
+ok   brand b_conv @ 2026-11-20: got 15 want 15
+ok   brand b_yes @ 2026-11-20: got 7 want 7
+ok   brand b_strict @ 2026-11-20: got 6 want 6
+ok   brand b_noctrl @ 2026-11-20: got 1 want 1
+ok   brand b_wb_med @ 2026-11-20: got 500 want 500
+ok   brand b_wb_n @ 2026-11-20: got 13 want 13
+ok   brand b_wa_med @ 2026-11-20: got 850 want 850.0
+ok   brand b_wa_n @ 2026-11-20: got 8 want 8
+ok   office Gate 0 status @ 2026-11-20: got 'PASS' want 'PASS'
+ok   brand Gate 0 status @ 2026-11-20: got 'PASS' want 'PASS'
+ok   Gate 0 overall @ 2026-11-20: got 'PASS' want 'PASS'
+ok   office pace first @ 2026-11-20: got 39 want 39
+ok   office pace replies @ 2026-11-20: got 23 want 23
+ok   office pace rate @ 2026-11-20: got 0.58974358974359 want 0.5897435897435898
+ok   office pace positive @ 2026-11-20: got 17 want 17
+ok   office pace convrate @ 2026-11-20: got 0.358974358974359 want 0.358974358974359
+ok   office pace optout @ 2026-11-20: got 1 want 1
+ok   brand pace first @ 2026-11-20: got 40 want 40
+ok   brand pace replies @ 2026-11-20: got 24 want 24
+ok   brand pace rate @ 2026-11-20: got 0.6 want 0.6
+ok   brand pace positive @ 2026-11-20: got 18 want 18
+ok   brand pace convrate @ 2026-11-20: got 0.375 want 0.375
+ok   brand pace optout @ 2026-11-20: got 1 want 1
+ok   offices naming $100+/month (as of): got 4 want 4
+ok   median pantry spend (as of): got 850 want 850.0
+ok   median quarterly sampling budget (as of): got 2000 want 2000
+ok   top office objection 1 label: got '1. I need to ask facilities, HR or someone else (needs_approval)' want '1. I need to ask facilities, HR or someone else (needs_approval)'
+ok   top office objection 1 mentions: got 5 want 5
+ok   top office objection 1 quote: got 'SAMPLE: needs_approval (office 04)' want 'SAMPLE: needs_approval (office 04)'
+ok   top office objection 2 label: got '2. Allergy or food-safety worry (allergy_policy)' want '2. Allergy or food-safety worry (allergy_policy)'
+ok   top office objection 2 mentions: got 5 want 5
+ok   top office objection 2 quote: got 'SAMPLE: allergy_policy (office 01)' want 'SAMPLE: allergy_policy (office 01)'
+ok   top office objection 3 label: got '3. We already have a pantry vendor or contract (existing_vendor)' want '3. We already have a pantry vendor or contract (existing_vendor)'
+ok   top office objection 3 mentions: got 2 want 2
+ok   top office objection 3 quote: got 'SAMPLE: existing_vendor / allergy_policy (office 02)' want 'SAMPLE: existing_vendor / allergy_policy (office 02)'
+ok   top brand objection 1 label: got '1. $600 / the price is more than we pay per sample elsewhere (price_per_sample)' want '1. $600 / the price is more than we pay per sample elsewhere (price_per_sample)'
+ok   top brand objection 1 mentions: got 4 want 4
+ok   top brand objection 1 quote: got 'SAMPLE: price_per_sample / what_we_get (brand 01)' want 'SAMPLE: price_per_sample / what_we_get (brand 01)'
+ok   top brand objection 2 label: got '2. We can seed offices ourselves for free (seed_ourselves)' want '2. We can seed offices ourselves for free (seed_ourselves)'
+ok   top brand objection 2 mentions: got 3 want 3
+ok   top brand objection 2 quote: got 'SAMPLE: seed_ourselves / price_per_sample (brand 03)' want 'SAMPLE: seed_ourselves / price_per_sample (brand 03)'
+ok   top brand objection 3 label: got '3. What do we actually get out of it? (what_we_get)' want '3. What do we actually get out of it? (what_we_get)'
+ok   top brand objection 3 mentions: got 3 want 3
+ok   top brand objection 3 quote: got 'SAMPLE: what_we_get (brand 04)' want 'SAMPLE: what_we_get (brand 04)'
+ok   Gate 0 sentence: got 'As of 2026-11-20: 7 of 14 offices said yes with a pantry owner and a receiving window (target 5); 7 of 15 brands would pay $500 or more and control the budget (target 3). Gate 0: PASS.' want 'As of 2026-11-20: 7 of 14 offices said yes with a pantry owner and a receiving window (target 5); 7 of 15 brands would pay $500 or more and control the budget (target 3). Gate 0: PASS.'
+ok   office reply-rate message: got 'OK: at or above 20%.' want 'OK: at or above 20%.'
+ok   brand reply-rate message: got 'OK: at or above 20%.' want 'OK: at or above 20%.'
+ok   sequence office-discovery-A first touches: got 20 want 20
+ok   sequence office-discovery-A replies: got 8 want 8
+ok   office log sync flags (row_ids): got ['SAMPLE-O-004', 'SAMPLE-O-006', 'SAMPLE-O-014'] want ['SAMPLE-O-004', 'SAMPLE-O-006', 'SAMPLE-O-014']
+ok   office flag O-004 text: got 'Clay status is replied: set call_done or later' want 'Clay status is replied: set call_done or later'
+ok   office flag O-006 text: got 'Clay yes_in_principle should be Y' want 'Clay yes_in_principle should be Y'
+ok   office flag O-014 text: got 'row_id not found in the Clay paste: add the Clay row or fix the row_id' want 'row_id not found in the Clay paste: add the Clay row or fix the row_id'
+ok   brand log sync flags: got {'SAMPLE-B-009': 'Clay status is call_booked: set call_done or later'} want {'SAMPLE-B-009': 'Clay status is call_booked: set call_done or later'}
+ok   Clay office-side flags: got {'SAMPLE-O-020': 'status call_done but no tracker row', 'SAMPLE-O-030': 'do_not_contact = Y but status is contacted'} want {'SAMPLE-O-020': 'status call_done but no tracker row', 'SAMPLE-O-030': 'do_not_contact = Y but status is contacted'}
+ok   Clay brand-side flags: got {'SAMPLE-B-021': 'status paid but no paid_brands row and no tracker row'} want {'SAMPLE-B-021': 'status paid but no paid_brands row and no tracker row'}
+ok   handoff status flags: got [None, None] want [None, None]
+ok   signed_offices budget_probe_verbatim (from log): got 'SAMPLE: maybe $100 to $200 a month' want 'SAMPLE: maybe $100 to $200 a month'
+ok   signed_offices budget_probe_date: got datetime.date(2026, 10, 27) want datetime.date(2026, 10, 27)
+ok   signed_offices budget_probe_monthly_usd: got 100 want 100
+ok   paid_brands payment_received_date: got datetime.date(2026, 12, 3) want datetime.date(2026, 12, 3)
+ok   pipeline_log header: got ['date', 'side', 'org_id', 'org_name', 'event', 'value_number', 'value_text', 'controls_budget', 'notes'] want ['date', 'side', 'org_id', 'org_name', 'event', 'value_number', 'value_text', 'controls_budget', 'notes']
+ok   pipeline_log event count: got 210 want 210
+ok   pipeline_log rows identical to independent computation: got 0 want 0
+ok   pipeline_log in date order: got True want True
+ok   pipeline_log has no outreach opt_out rows (roster exits only): got 0 want 0
+ok   check: office sync issues: got (3, 'FIX') want (3, 'FIX')
+ok   check: brand sync issues: got (1, 'FIX') want (1, 'FIX')
+ok   check: Clay office issues: got (2, 'FIX') want (2, 'FIX')
+ok   check: Clay brand issues: got (1, 'FIX') want (1, 'FIX')
+ok   check: missing Clay columns: got (0, 'OK') want (0, 'OK')
+ok   check: clay paste age: got (0, 'OK') want (0, 'OK')
+ok   check: notes over ten minutes: got 5 want 5
+ok   check: median minutes per note: got 9 want 9
+ok   check: yes missing owner or window: got 2 want 2
+ok   check: SAMPLE rows flagged: got 'SAMPLE' want 'SAMPLE'
+== SAMPLE workbook, include_sample = N
+ok   include_sample=N: error cells: got 0 want 0
+ok   include_sample=N: o_conv as of: got 0 want 0
+ok   include_sample=N: o_yes as of: got 0 want 0
+ok   include_sample=N: b_conv as of: got 0 want 0
+ok   include_sample=N: b_yes as of: got 0 want 0
+ok   include_sample=N: office_first as of: got 0 want 0
+ok   include_sample=N: brand_first as of: got 0 want 0
+ok   include_sample=N: median reads none yet: got 'none yet' want 'none yet'
+ok   include_sample=N: pipeline_log empty: got 0 want 0
+ok   include_sample=N: banner says ignored: got True want True
+ok   include_sample=N: sync flags hidden: got True want True
+== blank workbook
+ok   blank workbook: error cells after recalculation: got 0 want 0
+ok   blank workbook: no SAMPLE banner: got True want True
+ok   blank workbook: include_sample: got 'N' want 'N'
+RESULT: 0 failing of 189 checks

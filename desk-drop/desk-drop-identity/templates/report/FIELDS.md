@@ -54,7 +54,7 @@ The operations workstream (F) fills this from its tracker. Keys use the CONTRACT
 | `retailer_velocity` | the brand | Optional text: only store-level sales the brand shares, with its source. Labelled "suggestive only". |
 | `learned` | founder | Three lines, one bullet each. Checked for claims and soft-ladder words (an error, v1.3). |
 | `recommendation` | founder | Renew into which offices, adjust what, or stop. |
-| `claims_reviewed`, `claims_review_reason` | founder | v1.3. `learned`, `recommendation` and `retailer_velocity` go through the one shared claims list (health claims, structure or function wording, "guaranteed", sales lift, ROI, conversions, acquisition, "new customers", "drove/grew sales"). **A hit is an error (exit 2).** Only when the words are not a claim: `Y` plus a sentence of reason turns it into a warning. |
+| `claims_reviewed`, `claims_review_reason` | founder | v1.3. `learned`, `recommendation` and `retailer_velocity` go through the one shared claims list (health claims, structure or function wording, "guaranteed", sales lift, ROI, conversions, acquisition, "new customers", "drove/grew sales"). **A hit is an error (exit 2).** v1.4 widens the list ("sales rose", "converted", "uplift", "3x return", "return on spend", "incremental sales"; `tests/claims/claims-test.js`). Only when the words are not a claim: `Y` plus a sentence of reason turns it into a warning. **The list is a net, not a review**: the Chrome panel has a second tick box, "I read \"What we learned\", the recommendation and the retailer line for sales and health claims", unticked when those fields change or a file is loaded; F's report checklist carries the same read for command-line reports. |
 
 ## Fixed parts (not fields)
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# run-all.sh: every automated test for the identity system (v1.3, 2026-10-24: review round 2 cases added). Run from anywhere:
+# run-all.sh: every automated test for the identity system (v1.4, 2026-10-24: review round 3 cases added). Run from anywhere:
 #   bash tests/run-all.sh
 # Needs Node 18+ with Playwright and ImageMagick (convert, montage). Optional QR decode test
 # needs jsQR and pngjs: set DD_QR_DECODER to a folder where `npm install jsqr pngjs` was run.
@@ -17,7 +17,7 @@ expect() { # expect <exit-code> <name> <command...>
 T=templates/tent-card/samples; C=templates/case-label/samples
 
 expect 0 "tokens agree and meet contrast" node tests/check-tokens.js
-for s in basic allergen-25-words long-name short-name retailer-only code-only batch-5-offices ingredient-list-37-words ingredient-list-74-words single-ingredient logo-wide logo-compact allergen-max-review two-flavors logo-wide-full-card; do
+for s in basic allergen-25-words long-name short-name retailer-only code-only batch-5-offices ingredient-list-37-words ingredient-list-50-words ingredient-list-74-words single-ingredient logo-wide logo-compact allergen-max-review two-flavors logo-wide-full-card logo-wide-gives-way; do
   expect 0 "tent card renders: $s" node render/render.js tent-card $T/SAMPLE-$s.json "$TMP/tc-$s.pdf"
 done
 # v1.2 (review round 1): the removed "Nowhere" option is refused; split mode puts the list on the front face;
@@ -40,6 +40,21 @@ F=$(fitof $T/SAMPLE-two-flavors.json); echo "$F" | grep -q '"flavors":2' && ok "
 node render/render.js tent-card $T/SAMPLE-two-flavors-too-long-must-block.json "$TMP/tf.pdf" --json > "$TMP/tf.json" 2>/dev/null; [ $? = 2 ] && grep -q "one card per flavor" "$TMP/tf.json" && ok "two long flavor statements are refused with the one-card-per-flavor instruction (exit 2)" || bad "two-flavor refusal"
 # v1.3 (review round 2, R2-08): a wide logo stops at 0.75 in and gives way after the story and find-it line
 F=$(fitof $T/SAMPLE-logo-wide-full-card.json); L=$(echo "$F" | sed -E 's/.*"logo_in":([0-9.]+).*/\1/'); echo "$F" | grep -q '"story_dropped":false' && python3 -c "import sys; sys.exit(0 if float('$L') >= 0.75 else 1)" && ok "a wide logo on a full card keeps 0.75 in or more ($L in), and the story stays" || bad "wide logo floor: $F"
+# v1.4 (review round 3, R3-04): a wide logo at its 0.75 in floor gives way to the typed name before the card is refused
+F=$(fitof $T/SAMPLE-logo-wide-gives-way.json); echo "$F" | grep -q '"logo":"logo-wide-replaced-by-typed-name"' && echo "$F" | grep -q '"story_dropped":false' && ok "round-3 reviewer's 25+18-word ALL-CAPS card with a wide logo and both buy halves: the logo gives way to the typed name, the story stays ($F)" || bad "wide logo gives way: $F"
+# v1.4 (review round 3, R3-06): a split card keeps "Take one." and the QR on the room face when the list leaves room, and flags it when not
+F=$(fitof $T/SAMPLE-ingredient-list-50-words.json); echo "$F" | grep -q '"qr_on_room_face":true' && ok "50-word ingredient list: split card, \"Take one.\" and the QR also on the face toward the room" || bad "split card QR on the room face: $F"
+node render/render.js tent-card $T/SAMPLE-ingredient-list-74-words.json "$TMP/s74.pdf" --json > "$TMP/s74.json" 2>/dev/null; grep -q '"qr_off_room_face": true' "$TMP/s74.json" && grep -q "Slack or email post" "$TMP/s74.json" && ok "74-word ingredient list: no room for the QR on the room face, so the card warns and flags qr_off_room_face for the report" || bad "74-word split card flag"
+# v1.4 (review round 3, R3-02): the wider claims net, phrase by phrase, and end to end on a card and a report
+expect 0 "claims net: FDA structure or function examples, sales and return wording caught; ordinary copy and every shipped sentence pass (tests/claims/claims-test.js)" node tests/claims/claims-test.js
+for c in "Calcium builds strong bones." "The fiber maintains bowel regularity and promotes digestion." "Good for your gut." "Our best flavor yet."; do
+  sed "s/\"card_sentences\": \"[^\"]*\"/\"card_sentences\": \"SAMPLE Two friends bake these in Queens. $c\"/" $T/SAMPLE-basic.json > "$TMP/claim.json"
+  expect 2 "tent card refuses (v1.4): \"$c\"" node render/render.js tent-card "$TMP/claim.json" "$TMP/claim.pdf"
+done
+sed 's/"card_sentences": "[^"]*"/"card_sentences": "SAMPLE Two friends bake these in Queens. Lift the lid and take one; the resealable bag prevents crumbs."/' $T/SAMPLE-basic.json > "$TMP/plain.json"
+expect 0 "tent card accepts ordinary copy the v1.3 list refused (\"Lift the lid\", \"prevents crumbs\")" node render/render.js tent-card "$TMP/plain.json" "$TMP/plain.pdf"
+python3 -c "import json,sys; d=json.load(open('templates/report/samples/SAMPLE-5-offices.json')); d['learned']='SAMPLE Sales rose 20% at the Union Square store after the drop.\nSAMPLE The card converted 12% of tasters into buyers.\nSAMPLE We saw clear uplift and a 3x return on spend.'; [o.update(placement_photo='', later_photo='') for o in d['offices']]; json.dump(d,open(sys.argv[1],'w'))" "$TMP/claim-report.json"
+expect 2 "report refuses the round-3 reviewer's sales sentences in \"What we learned\"" node render/render.js report "$TMP/claim-report.json" "$TMP/claim-report.pdf"
 expect 2 "tent card refuses an over-full card (stress)" node render/render.js tent-card $T/SAMPLE-stress-must-block.json "$TMP/stress.pdf"
 expect 3 "--final refuses SAMPLE data" node render/render.js tent-card $T/SAMPLE-basic.json "$TMP/final.pdf" --final
 sed 's/"retailer_line": ""/"retailer_line": "[RETAILER, STREET]"/' $T/BLANK-placeholders.json > "$TMP/blank.json"
@@ -58,7 +73,7 @@ done
 expect 3 "case label --final flags [PHONE] from brand.json" node render/render.js case-label $C/SAMPLE-office-and-reserve.json "$TMP/clf.pdf" --final
 
 # visual tests (write PNGs for a person to look at)
-for s in basic allergen-25-words long-name short-name logo-wide logo-compact ingredient-list-74-words two-flavors logo-wide-full-card; do
+for s in basic allergen-25-words long-name short-name logo-wide logo-compact ingredient-list-50-words ingredient-list-74-words two-flavors logo-wide-full-card logo-wide-gives-way; do
   node render/render.js tent-card $T/SAMPLE-$s.json "$TMP/f.pdf" --face-png tests/out/tc-$s-face.png --dpi 150 >/dev/null 2>&1
   convert tests/out/tc-$s-face.png -filter Triangle -resize x120 -quality 75 tests/downscale/$s-120px.jpg
   convert tests/out/tc-$s-face.png -filter Triangle -resize x60 -quality 75 tests/downscale/$s-60px.jpg

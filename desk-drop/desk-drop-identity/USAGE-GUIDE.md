@@ -2,7 +2,7 @@
 
 For the founder, or anyone helping. No design software and no designer needed: you need Google Chrome. Your details, every card, label and document, and the email signature all work from Chrome alone. The terminal commands are optional and only save time on bigger drops. One job needs the terminal once: a rename (section 16).
 
-Version 1.3, 2026-10-24 (review rounds 1 and 2). Part 1 (tent card, case label, logo, colors) and part 2 (documents, email signature, avatar).
+Version 1.4, 2026-10-24 (review rounds 1 to 3). Part 1 (tent card, case label, logo, colors) and part 2 (documents, email signature, avatar).
 
 **Name and print gate, from the legal pack's name-check log (`01-name-check-log.md` v0.7, 2026-10-24):** print run **HOLD**, public launch **HOLD**, private discovery calls **go**. A business already trades as "DeskDrop" and the USPTO has called the words descriptive. The legal pack recommends checking two fallback names by Fri 2026-11-13 and choosing at the attorney hour, Wed 2026-11-18 (both derived, founder to confirm). Until you decide: home and copy-shop test prints are fine, documents sent one to one in discovery are fine, nothing is ordered from a print shop and no public profile goes up. A rename here is one edit (section 16).
 
@@ -31,7 +31,7 @@ Version 1.3, 2026-10-24 (review rounds 1 and 2). Part 1 (tent card, case label, 
 
 1. **Allergen text is copied word for word from the package.** Same words, same spelling, same order, including "Contains" and the "may contain" line. Read it off the package itself, not from the brand's email. Never shorten it. It prints at 14 pt and nothing can make it smaller.
 2. **One card per office, never swapped.** Each office's card has its own QR link and its card ID (for example "Card O-003 · CMP-001") in the bottom corner.
-3. **No claims anywhere.** No "healthy", "best", "guaranteed", no "supports gut health" or "boosts immunity", no sales, lift or new-customer promises. The templates refuse these words (a red "Claims check" in the status box): rewrite in plain facts.
+3. **No claims anywhere.** No "healthy", "best", "guaranteed", no "supports gut health", "builds strong bones" or "promotes digestion", no sales, lift, return or new-customer promises. The templates catch the common claim words (a red "Claims check" in the status box), but the check is a net, not a review: you still read every sentence yourself, and the card and the report each ask you to tick that you did. Rewrite a claim in plain facts.
 4. **Measurement words stay exact.** Delivered, placed, depleted, responded, scanned, purchased, incremental (not measured). Never "conversions", "ROI", "sales lift" or "acquisition".
 5. **Yellow means unfinished.** Anything with a yellow highlighter is a placeholder. Nothing yellow leaves the building.
 6. **Red SAMPLE banner means practice.** Anything with it is test material.
@@ -46,21 +46,21 @@ Version 1.3, 2026-10-24 (review rounds 1 and 2). Part 1 (tent card, case label, 
 > 2. **Where the package declares allergens**, **Allergen statement**, **"May contain" or facility line**, word for word from the package. Two flavors: section 19.
 > 3. **Retailer and street**, or **Discount code** plus **Site for the code**.
 > 4. **QR link for THIS office**, **Office ID**, **Campaign ID**.
-> 5. Tick the allergen box, see **Ready to print**, then **Print** (Letter, Scale 100, Background graphics on).
+> 5. Tick both boxes (allergen text, claims), see **Ready to print** and read any notes under it, then **Print** (Letter, Scale 100, Background graphics on).
 
-You need: the brand's details (from the paid brand row or their email, so you can copy and paste), **the package itself** (for the allergen text), and this office's QR link and office ID (from the operations tracker).
+You need: the brand's details (from the paid brand row or their email, to copy and paste), **the package itself** (for the allergen text), and this office's QR link and office ID (from the operations tracker).
 
-1. Open the folder `desk-drop-identity/templates/tent-card/` and double-click `tent-card.html`. If it opens in another browser, right-click it and choose Open With > Google Chrome.
-2. The card appears on the right with yellow placeholders. Grey text inside an empty box is a hint, not a value.
-3. **Brand.** Paste into **Brand name** (the short form, as on the package), **Product (optional)**, and **Two sentences: who makes it and why** (under 200 characters, no claims: the card refuses "healthy", "supports gut health" and the like). If the brand sent a logo file, use **Choose picture** under **Brand logo (optional)**: a wide logo replaces the typed name, a square one sits beside it. No logo is fine: the name prints in type.
-4. **Allergens.** Pick up the package. In **Where the package declares allergens**, choose: a "Contains" statement (most packages); no "Contains" line, so you copy the whole ingredient list; or no ingredient list at all (a single-ingredient product such as water or almonds). Then type what is printed into **Allergen statement, exactly as on the package**: the "Contains" line, or the whole ingredient list starting with "Ingredients", or the product's name exactly as printed. Never decide yourself that an ingredient list has no allergens: whey is milk, semolina is wheat, tahini is sesame. Copy it all. Type the "may contain" or shared-facility line into **"May contain" or facility line, exactly as on the package**. If the brand sends two flavors, also follow section 19. Read your typing back against the package, word by word. Tick the box **I read the allergen text against the package itself, word for word**.
-5. **Where to buy.** Fill **Retailer and street** (as "Retailer Name, 123 Street Name"), or **Discount code** and **Site for the code**, or all three. The card writes the sentence for you.
-6. **QR and IDs.** Paste this office's link into **QR link for THIS office**, then type **Office ID** and **Campaign ID**. Point your phone camera at the QR on screen: it must open this office's link.
-7. Read the status box under the buttons. It must say **Ready to print** and nothing in red. Read every yellow "Check:" note. If it says the two sentences were "left off", shorten them until they come back.
-8. Press **Save as JSON** so you can reuse the card (for the next office, press **Load JSON**, change only the QR link and the office ID).
+1. Double-click `desk-drop-identity/templates/tent-card/tent-card.html` (if another browser opens it: right-click, Open With > Google Chrome). The card shows yellow placeholders; grey text in an empty box is a hint, not a value.
+2. **Brand.** Paste into **Brand name** (the short form, as on the package), **Product (optional)** and **Two sentences: who makes it and why** (under 200 characters, no claims). If the brand sent a logo, use **Choose picture** under **Brand logo (optional)**: a wide logo replaces the typed name, a square one sits beside it. No logo is fine.
+3. **Allergens.** With the package in your hand, choose **Where the package declares allergens**: a "Contains" statement (most packages); no "Contains" line, so you copy the whole ingredient list; or a single-ingredient product with no list (water, almonds). Type what is printed into **Allergen statement, exactly as on the package**: the "Contains" line, the whole list starting with "Ingredients", or the product's name. Never judge a list yourself: whey is milk, semolina is wheat, tahini is sesame. Type the "may contain" or facility line into **"May contain" or facility line, exactly as on the package**. Two flavors: section 19. Read your typing back against the package, word by word, then tick **I read the allergen text against the package itself, word for word**.
+4. **Where to buy.** Fill **Retailer and street** (as "Retailer Name, 123 Street Name"), or **Discount code** and **Site for the code**, or all three. The card writes the sentence.
+5. **QR and IDs.** Paste this office's link into **QR link for THIS office**, then type **Office ID** and **Campaign ID**. Point your phone camera at the QR on screen: it must open this office's link.
+6. **Claims.** Read the name, product and two sentences once more: no health or sales claims ("healthy", "builds strong bones", "best"). The card catches common ones, not all. Tick **I read the brand name, product and two sentences for health and sales claims**.
+7. The status box under the buttons must say **Ready to print**, nothing in red. Read each note under "Read these notes first" (some stay, such as "The product line was left off"). If the two sentences were "left off", shorten them.
+8. Press **Save as JSON** to reuse the card.
 9. Press **Print** and set: Destination your printer, Paper Letter, Scale 100 (or "Actual size"), Margins Default, More settings > **Background graphics** on. Load one sheet of cardstock. Print.
 
-For the next office of the same brand: **Load JSON**, change **QR link for THIS office** and **Office ID**, tick the allergen box again (loading a file always unticks it), check the status box, print. About two minutes each. (Or press **Add a card**: it copies this card, a box above the fields switches between the cards, and Print prints every card.)
+For the next office of the same brand: **Load JSON**, change **QR link for THIS office** and **Office ID**, tick both boxes again (loading a file always unticks them), check the status box, print. About two minutes each. (Or press **Add a card**: it copies this card, a box above the fields switches between the cards, and Print prints every card.)
 
 If the status box shows anything red, or the card looks wrong, see section 18.
 
@@ -108,7 +108,7 @@ Spec: `specs/case-label-spec.pdf`.
 
 ## 6. Place it and take the two photos
 
-- At eye level beside the existing snacks, never inside a cabinet. Card in front of the product, allergen panel visible. One display per pantry. If the card says **this side faces the room** beside its card ID (a long ingredient list has a face of its own), stand that side toward the room.
+- At eye level beside the existing snacks, never inside a cabinet. Card in front of the product, allergen panel visible. One display per pantry. If the card says **this side faces the room** beside its card ID (a long ingredient list has a face of its own), stand that side toward the room. If its panel warned that the QR is only on the other side, check that office's Slack or email post went out, and note it in the report.
 - **Drop day, wide photo:** step back until the whole pantry is in the frame, with the card and product in it. This is the report's **placement photo**.
 - **Drop day, close photo, for your own check:** card and product from about arm's length; the card should span at least a fifth of the photo's width. Zoom in on your phone and check you can read the allergen panel. If not, step closer and take it again.
 - **Day 3 or 5, close photo:** the office sends a close photo of the card and product (you take it yourself if you are there for top-ups). This is the report's **later photo**: it shows what is left.
@@ -153,7 +153,7 @@ Send it the same day the office manager says "send me something", with a specifi
 3. Optional: **Office name (optional)** prints "Prepared for ..." in the header.
 4. Optional: to use your own photo of the card on a real shelf instead of the drawing, set **Picture on the page** to the photo and use **Choose picture** under **Photo (if you chose a real photo)**. No identifiable people, never a stock photo.
 5. The rest is the copy, in boxes under "Copy (change only if you need to)". One list item per line. Two stars around words (`**like this**`) make them bold.
-6. When the status box says **Ready to print**, press **Print or save as PDF** and save as PDF (same settings as section 8).
+6. When the status box says **Ready to print** (read any notes under it), press **Print or save as PDF** and save as PDF (same settings as section 8).
 
 If you add text and the page no longer fits, a red "does not fit" bar appears and no PDF will be right. Shorten until it goes.
 
@@ -176,9 +176,9 @@ Two pages: the proposal, and a mock report page so the brand sees exactly what i
 2. **Brand:** **Brand**, **Product and pack size**, **Prepared for (optional)** (their name and title), **Proposal date**, **Category** (for category exclusivity).
 3. **Campaign:** **Tier** (founding for the first three brands only, otherwise standard), **Extra offices** (usually 0), **Proposed drop date** (a Tuesday or Wednesday three to four weeks out, as `2027-01-12`). Every date in the timeline is worked out from it with the business-day rules. **Ask them to ship by (optional)**: only if earlier than the latest date, for example to avoid holiday freight.
 4. **The offices:** one fold-out row per office: **Neighborhood**, **Industry**, **Tuesday headcount**, **Planned units** (30 to 80, about 50). No company names before the brand signs. The template refuses the wrong number of rows (5 founding, 10 standard, plus extras), and more than 12 offices on one proposal. With many offices the page lays the roster across its full width by itself.
-5. **Where to buy nearby:** one row per store that carries the brand near these offices: **Store**, **Street address**, **Distance from the offices**, in the order the cluster-map workstream numbered them on the map (**Number on the map (optional)** if the order differs; "-" for a store the map does not show). Only stores you have evidence for. If they sell online only, add no rows and fill **Online store for the code (optional)**.
-6. **Retailer map picture:** a landscape picture (about 2.5 to 1) of the cluster with the brand's stores marked, from the cluster-map workstream (`cluster-1-flatiron/`). **No office pins before the brand signs**: a pin on a building can identify the company. The map is shown whole, never cropped; a tall map prints small and the panel warns you. A landscape map fits with up to 12 offices and four stores, tested with real store names from `cluster-1-flatiron/retailers.csv` (the four longest) and with the cluster-map workstream's own maps; the page then puts the map and the stores across the full width, map left, stores one line each with their pin numbers. Until a landscape map exists, press **Remove** to leave the map off, or leave the yellow slot (it blocks the final PDF).
-7. When the status box says **Ready to print**, save as PDF (section 8 settings), check both pages, and attach it to your email. Page 2, the mock report, carries the brand's own name and dates with illustrative numbers and grey example text: nothing on it is yellow once your details are in.
+5. **Where to buy nearby:** one row per store that carries the brand near these offices: **Store**, **Street address**, **Distance from the offices** (short: "3 blocks", "2 to 8 blocks", "in the cluster"), in the order the cluster-map workstream numbered them on the map (**Number on the map (optional)** if the order differs; "-" for a store the map does not show). Only stores you have evidence for. A bracket at the end of a store's name that repeats its street or store number, such as "(278 Park Avenue South)" or "(store 540)", is left off the page, since the street prints beside it; **Shown as (optional)** sets a shorter name yourself. If they sell online only, add no rows and fill **Online store for the code (optional)**.
+6. **Retailer map picture:** a landscape picture (about 2.5 to 1) of the cluster with the brand's stores marked, from the cluster-map workstream (`cluster-1-flatiron/`). **No office pins before the brand signs**: a pin on a building can identify the company. The map is shown whole, never cropped; a tall map prints small and the panel warns you. A landscape map fits with up to 12 offices and four stores, tested with the store sets in `tests/documents/cases/` (real names from `cluster-1-flatiron/retailers.csv`: the four longest, and three sets of stores inside the cluster with "inside the cluster" as the distance) and with the cluster-map workstream's own maps. Longer names or distances may need a shorter **Shown as (optional)** name or distance: if so, the red message says by how much and which store. Until a landscape map exists, press **Remove** to leave the map off, or leave the yellow slot (it blocks the final PDF).
+7. When the status box says **Ready to print** (read any notes under it), save as PDF (section 8 settings), check both pages, and attach it to your email. Page 2, the mock report, carries the brand's own name and dates with illustrative numbers and grey example text: nothing on it is yellow once your details are in.
 
 ---
 
@@ -195,7 +195,7 @@ From a terminal, if the operations tracker writes the JSON: `node render/render.
 5. **Comments:** paste three into **Comment 1, word for word**, **Comment 2, word for word** and **Comment 3, word for word**, exactly as written, typos included. The one change you must make: replace any person's name or identifying detail with `[name removed]` (the survey privacy notice promises it, legal pack file 13). Pick comments useful to the brand, including a critical one if there is one. If you must cut a long one, mark the cut with `[...]` and keep every other word. A comment with an email address or phone number is refused: pick another.
 6. **Purchases:** **Code redemptions to date**, the number the brand reports. **Retailer velocity (optional)** only if the brand sends store-level sales.
 7. **What we learned: three lines**, one per line, and **Recommendation**: renew into which offices, adjust what, or stop.
-8. Tick **I checked every photo shows no identifiable people, and every comment is copied word for word**. When it says **Ready to print**, save as PDF (section 8 settings).
+8. Tick **I checked every photo shows no identifiable people, and every comment is copied word for word**. Read "What we learned", the recommendation and the retailer line for sales or health claims ("sales rose", "converted", "uplift"), then tick **I read "What we learned", the recommendation and the retailer line for sales and health claims**. When it says **Ready to print** (read any notes under it), save as PDF (section 8 settings).
 
 The page refuses numbers that cannot be true (placed more than delivered, depleted more than placed plus topped up, more "tried" than responses). Fix the count, never the template.
 
@@ -278,12 +278,14 @@ No spending without your written yes: get the quote, then decide. The plan budge
 | You see | Do this |
 | --- | --- |
 | Red "Fix before printing" | Do what it says. The card will not be right until it is gone. |
-| A big red DO NOT PLACE panel on the card | The text cannot fit with the allergen text at 14 pt. Shorten the two sentences, product line or retailer line. |
+| A big red DO NOT PLACE panel on the card | The text cannot fit with the allergen text at 14 pt. The red message lists what can still give way: one way to buy instead of two, a shorter retailer line, removing the logo, a shorter form of the name. |
+| "The brand's logo was replaced by the typed name ..." | A wide logo was already at its smallest (0.75 in) and the card still did not fit, so the name prints in type. Fine to print. One buy path instead of two, or a shorter retailer line, may bring the logo back. |
 | "The two sentences were left off" | Same: shorten them, or accept the card without them (tell the brand). |
-| "The ingredient list is too long to share a face ..." | The front now carries the name, the whole list and where to buy, marked "this side faces the room"; the other face has the story and the QR. Stand it with the marked side toward the room and take the close photo of that side. |
+| "The ingredient list is too long to share a face ..." | The front now carries the name, the whole list and where to buy, marked "this side faces the room", and also "Take one." with the QR when the list leaves room; the other face has the story and the QR. Stand it with the marked side toward the room and take the close photo of that side. |
+| "... leaves no room for the QR on the side facing the room ..." | The QR is only on the side facing the product, so fewer people will scan it. Check that this office posted the survey link in Slack or email, and say in the report's "What we learned" that its card had the QR on the back. |
 | "allergen_source "none_on_label" ... was removed" | An old file used the removed "Nowhere" option. Choose the ingredient-list option and copy the whole list, or the single-ingredient option for a product with no ingredient list. |
 | "The logo picture is ... px tall and may print soft" | Ask the brand for an SVG, or a PNG at least 300 px tall. Or remove the logo: the name prints in type. |
-| "Claims check, The two sentences: ..." (red) | The sentences make a health, sales or "guaranteed" claim ("healthy", "supports gut health", "boosts immunity", "the best"). Rewrite them as plain facts: who makes it and why. Only if the check is wrong (the words are not a claim), set **Claims reviewed** to Yes and write why; the note then stays on the card's file. |
+| "Claims check, The two sentences: ..." (red) | The sentences make a health, sales or "guaranteed" claim ("healthy", "supports gut health", "builds strong bones", "good for your gut", "the best"). Rewrite them as plain facts: who makes it and why. Only if the check is wrong (the words are not a claim), set **Claims reviewed** to Yes and write why; the note then stays on the card's file. |
 | "... nutrient wording ..." (yellow) | "10g protein" or "low sugar" is not a health claim, but check it matches the package before you print (CONTRACTS section 4). |
 | "The two flavors' allergen text does not fit one card at the locked 14 pt" | Make one card per flavor: press **Add a card** (it copies this one, same office ID and QR link). On the first card, empty the five flavor-2 boxes, so it carries flavor 1 alone. On the second, copy flavor 2's package into the main allergen boxes and empty the flavor-2 boxes. Stand each card with its own product. |
 | Brand name looks squeezed | Use the short brand name (24 characters or fewer reads best across a pantry). |
@@ -303,7 +305,8 @@ No spending without your written yes: get the quote, then decide. The plan budge
 | "Comment 2 contains what looks like an email address" | Choose a different comment. Never edit a comment's words. |
 | "Office D has 4 survey responses, under the five ..." | A note for you, not an error. The report prints the real number. |
 | "... the placement photo is dated ..., but "placed within one business day" is Y" (or N) | The photo's date and the roster disagree. Check the photo's date in its details and the tracker, and fix whichever is wrong. If you do not know a photo's date, leave **Placement photo date** empty: the report then prints no date. |
-| "Claims check, What we learned: ..." (red) | The text claims lift, sales growth, ROI or new customers, which nothing in the report measures. Say what was counted, rung by rung. |
+| "Claims check, What we learned: ..." (red) | The text claims lift, sales growth ("sales rose"), a return on spend, conversions or new customers, which nothing in the report measures. Say what was counted, rung by rung. |
+| "The proposal runs past the bottom of the page by 0.05 in ..." | The message says by how much, which store rows run to two lines and which parts are longest. Give a long store a shorter **Shown as (optional)** name, shorten a distance ("3 blocks", "in the cluster"), or remove a store. |
 | "To keep the comments whole, the later photos moved to page 2" | Normal for long comments with six or more offices. Page 1 keeps every placement photo. |
 | "... every photo thumbnail moved to page 2" | The text is very long. Page 1 keeps the count of photos received. Shorten "What we learned" or the recommendation to bring the placement photos back. |
 | A picture does not appear | Use JPEG or PNG. On an iPhone, share the photo as "Most Compatible" or export it as JPEG. |
@@ -318,5 +321,5 @@ The proposal lets a brand send two flavors treated as one product. Each flavor's
 1. Make the card as in section 2, with flavor 1's package in your hand for **Where the package declares allergens**, **Allergen statement, exactly as on the package** and **"May contain" or facility line, exactly as on the package**.
 2. In the group headed "Second flavor (only if the brand sends two)", type **Flavor 1 name, as printed on its package** and **Flavor 2 name, as printed on its package**.
 3. Pick up flavor 2's package. Choose **Where flavor 2's package declares allergens**, then copy **Flavor 2 allergen statement, exactly as on its package** and **Flavor 2 "may contain" line, exactly as on its package**, even where they match flavor 1.
-4. Read both back against both packages, then tick the allergen box.
+4. Read both back against both packages, then tick the allergen box (and the claims box, as in section 2).
 5. If the status says the two flavors' allergen text does not fit one card at 14 pt, make one card per flavor (section 18, "two flavors").

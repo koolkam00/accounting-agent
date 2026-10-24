@@ -16,7 +16,8 @@ const fs = require('fs'); const path = require('path');
   await page.screenshot({ path: path.join(dir, 'public-map.png'), clip: { x: 0, y: 0, width: w, height: h } });
   await page.close();
   // brand maps (review round 1, R1-08): every brand-maps/*.svg to a PNG at twice the size
-  const bdir = path.join(dir, 'brand-maps');
+  // review round 3 (R3-02): the label QA maps in _build/out/qa/brand-map/ render the same way
+  for (const bdir of [path.join(dir, 'brand-maps'), path.join(qa, 'brand-map')]) {
   if (fs.existsSync(bdir)) {
     for (const f of fs.readdirSync(bdir).filter(f => f.endsWith('.svg'))) {
       const bs = fs.readFileSync(path.join(bdir, f), 'utf8');
@@ -27,6 +28,7 @@ const fs = require('fs'); const path = require('path');
       await bp.screenshot({ path: path.join(bdir, f.replace(/\.svg$/, '.png')), clip: { x: 0, y: 0, width: bw, height: bh } });
       await bp.close();
     }
+  }
   }
   // route sheet
   page = await browser.newPage({ viewport: { width: 1400, height: 960 } });

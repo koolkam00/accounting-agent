@@ -15,6 +15,13 @@ python3 public_map.py "$FTPY"       # public-map.svg
 # per-brand landscape map for D's proposal (review round 1, R1-08): the SAMPLE layout test only.
 # For a real brand: python3 public_map.py "$FTPY" --brand <slug> --stores <retailer_ids>  (writes brand-maps/<slug>.svg)
 python3 public_map.py "$FTPY" --brand SAMPLE-brightside --stores B-R-011,B-R-010,B-R-025 --sample
+# review round 3 (R3-02): label QA maps (D's long-name set, six stores, numbers-only) -> _build/out/qa/brand-map/ (render.js makes the PNGs)
+mkdir -p out/qa/brand-map
+{ python3 public_map.py "$FTPY" --brand SAMPLE-long-names --stores B-R-018,B-R-020,B-R-013,B-R-016 --sample --out-dir out/qa/brand-map
+  python3 public_map.py "$FTPY" --brand SAMPLE-long-names-numbers-only --stores B-R-018,B-R-020,B-R-013,B-R-016 --sample --labels numbers --out-dir out/qa/brand-map
+  python3 public_map.py "$FTPY" --brand SAMPLE-six-stores --stores B-R-011,B-R-012,B-R-013,B-R-014,B-R-015,B-R-016 --sample --out-dir out/qa/brand-map
+  python3 public_map.py "$FTPY" --brand SAMPLE-brightside-numbers-only --stores B-R-011,B-R-010,B-R-025 --sample --labels numbers --out-dir out/qa/brand-map
+} > out/qa/brand-map/brand_map_qa.txt
 python3 xlsx.py                     # cluster-1-flatiron.xlsx
 python3 pin_qa.py | head -3         # pin checks incl. the CSCL block-face test  -> _build/out/pin_qa.csv
 NODE_PATH="$(npm root -g)" node render.js "$ROOT"   # public-map.png, route-private.png, QA screenshots

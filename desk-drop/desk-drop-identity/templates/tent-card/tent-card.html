@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tent card template</title>
 <!--
-  TENT CARD, 5 x 7 in faces (7 in wide, 5 in tall), tent fold. Template v1.3, 2026-10-24
+  TENT CARD, 5 x 7 in faces (7 in wide, 5 in tall), tent fold. Template v1.4, 2026-10-24
+  (v1.4 review round 3: wider claims net and a claims tick box, a wide logo at its floor gives way
+  to the typed name, the two sentences drop only when that frees height, a split card's room face
+  keeps "Take one." and the QR when the list leaves room)
   (v1.3 review round 2: two-flavor allergen panel, shared claims check that blocks, wide logo floor
   0.75 in and later in the give-way, card ID inside the margin, 9 pt room tag)
   (v1.0 2026-10-23; v1.2 review round 1: brand logo slot, no "Nowhere" allergen option, the
@@ -81,6 +84,8 @@
     flex: none; margin-top: .1in; border: 2px solid var(--dd-ink); padding: .06in .1in .07in;
     background: #fff;
   }
+  /* 9 pt bold: a label, not a sentence to read; raising it to 10 pt was tried in v1.4 (review round 3, R3-09) and made
+     the 74-word ingredient card refuse and the wide-logo card lose its logo. SYSTEM.md names it as a floor exception. */
   .face .allergen-label { margin: 0 0 .02in; font: 700 9pt/1.2 var(--dd-font-text); color: var(--dd-ink); }
   .face .allergen-text {
     margin: 0; font-family: var(--dd-font-text); font-weight: 600;
@@ -286,7 +291,7 @@
     sheet.style.height = MODE === 'home' ? '11in' : '10.25in';
     sheet.innerHTML = `<div class="flat"><div class="face back">${faceHTML(r)}</div><div class="face front">${faceHTML(r)}</div></div>
       <div class="sheet-note" style="left:.75in;top:.12in;width:7in">Print at 100% (Actual size) on 80 to 110 lb cover cardstock. Cut on the corner marks. Score and fold on the FOLD marks; both sides read upright when standing.</div>
-      <div class="sheet-note" style="left:.75in;top:10.6in;width:7in">${DD.text(r.brand_name || '')} · Card ${DD.text(r.office_id || '')} · ${DD.text(r.campaign_id || '')} · template v1.3</div>`;
+      <div class="sheet-note" style="left:.75in;top:10.6in;width:7in">${DD.text(r.brand_name || '')} · Card ${DD.text(r.office_id || '')} · ${DD.text(r.campaign_id || '')} · template v1.4</div>`;
     marks(sheet);
     sheet.querySelectorAll('.qr-slot').forEach(s => { s.innerHTML = DD.qrSvg(r.qr_url, QR_MAX); });
     // allergen rules

@@ -642,3 +642,124 @@ RETAILER_REVIEW2 = {
                             "notes_replace": [("Buy-path tier A (documented natural, local or emerging set).", "Buy-path tier B (large supermarket with natural, organic and specialty aisles; no emerging set documented).")],
                             "notes_add": "Review round 2: moved from tier A to tier B. The store page lists aisles such as 'Living Gluten Free' but no local or emerging-brand set, and no store-level brand list was checked."},
 }
+
+# ================================================================ review round 3 (2026-10-24)
+WP = "https://en.wikipedia.org/wiki/"
+SEC_215PAS = "https://www.sec.gov/Archives/edgar/data/1013454/000153949726000704/n5676_x5-424h.htm"
+# R3-06: a profile or listing whose content the subject itself supplies or can edit (Built In's employer profiles carry
+# "Is This Your Company? Manage"; Deskpass and LiquidSpace listings are written by the operator) is not independent of the
+# subject's own page. A high row needs its confirmation from a publisher the subject does not write: press, a landlord or
+# broker release, a filing, a licence or an encyclopedia.
+SUBJECT_EDITABLE_DOMAINS = {"builtinnyc.com", "builtin.com", "deskpass.com", "api.deskpass.com", "liquidspace.com"}
+THIRD_PARTY_DOMAINS = {"commercialobserver.com", "nyrej.com", "rebusinessonline.com", "connectcre.com", "therealdeal.com",
+                       "flatironnomad.nyc", "en.wikipedia.org", "sec.gov", "bisnow.com", "globest.com", "mannpublications.com",
+                       "coworkingcafe.com", "crainsnewyork.com", "metro-manhattan.com"} | SUBJECT_EDITABLE_DOMAINS
+R3_KEPT = ("Review round 3: Built In is an employer-editable profile, so it no longer counts as the independent confirmation of the "
+           "company's own page. ")
+REVIEW3_OVERRIDES = {
+    "Dashlane": {"second_source_url": "https://commercialobserver.com/2019/04/dashlane-lease-44-west-18th-street-forty-four-eighteen-associates/",
+                 "second_source_date": "2019-04-22",
+                 "note_add": R3_KEPT + "The independent source is now CO 2019-04-22 (opened 2026-10-24): 'signed a 10-year lease for the entire fourth "
+                             "floor' of 44 West 18th Street; Mann Report 2019-10-03 adds the third floor on a second 10-year lease. The row stays high."},
+    "CompStak": {"second_source_url": "https://commercialobserver.com/2022/12/compstak-leases-27k-sf-at-675-avenue-of-the-americas/",
+                 "second_source_date": "2022-12-20",
+                 "note_add": R3_KEPT + "The independent source is now CO 2022-12-20 (opened 2026-10-24): 'signed a five-year lease to relocate its "
+                             "global headquarters to 25,644 square feet at 675 Avenue of the Americas'. The row stays high."},
+    "Empathy": {"second_source_url": "https://commercialobserver.com/2024/03/nyu-langones-empathy-project-takes-6k-sf-in-flatiron-district/",
+                "second_source_date": "2024-03-06",
+                "note_add": R3_KEPT + "The independent source is now CO 2024-03-06 (opened 2026-10-24; headline 'Loss Support Organization Empathy "
+                            "Takes 6K SF in Flatiron District'): 'moving its headquarters to the top floor of Kaufman Organization's 56 West 22nd "
+                            "Street'. The row stays high."},
+    "Signal AI": {"second_source_url": "https://commercialobserver.com/2022/12/signal-ai-doubles-offices-in-move-to-440-park-avenue-south/",
+                  "second_source_date": "2022-12-19",
+                  "note_add": R3_KEPT + "The independent source is now CO 2022-12-19 (opened 2026-10-24): 'signed a lease for space at Samco "
+                              "Properties at 440 Park Avenue South' (11,140 sf; lease length not disclosed). The row stays high."},
+    "Carbyne": {"second_source_url": "https://www.connectcre.com/stories/software-company-carbyne-911-inks-downtown-lease/",
+                "second_source_date": "2023-08-18",
+                "note_add": R3_KEPT + "The independent source is now Connect CRE 2023-08-18 (opened 2026-10-24): 'signed a lease for 5,702 square feet "
+                            "of space at 45 West 27th Street ... will occupy the second floor ... as its headquarters'. The row stays high."},
+    "TripleLift": {"note_add": R3_KEPT + "No press, landlord or filing source naming TripleLift at 53 West 23rd Street was found "
+                               "(one web search on 2026-10-24 returned only directory aggregators and other tenants' leases), so the row is medium."},
+    "Seedtag": {"confidence": "medium",
+                "note_add": "Review round 3: lowered from high to medium. The independent source (CO 2023-03-28) reports a three-year lease, so its "
+                            "stated term ended about 2026-03 and it cannot confirm the office today; the company's own contact page is the one current source."},
+    # R3-05: parents named by a public source (Wikipedia pages opened 2026-10-24)
+    "General Assembly": {"parent_company": "The Adecco Group",
+                         "parent_company_source": WP + "General_Assembly_(school) (opened 2026-10-24, last edited 2026-10-05): 'purchased by the Adecco Group in 2018'"},
+    "The Corcoran Group": {"parent_company": "Compass, Inc.",
+                           "parent_company_source": WP + "Corcoran_Group (opened 2026-10-24, last edited 2026-05-27): infobox 'parent = Compass, Inc.'"},
+    "BrainPOP": {"parent_company": "Kirkbi A/S",
+                 "parent_company_source": WP + "BrainPop (opened 2026-10-24, last edited 2026-10-09): 'In 2022, Kirkbi A/S ... acquired BrainPop'; infobox owner Kirkbi"},
+    # R3-09 (6): Foursquare's HQ city: Built In says New York, Revelio says San Francisco
+    "Foursquare": {"hq_city": "unknown", "hq_in_nyc": "unknown",
+                   "note_add": "Review round 3: HQ city set to unknown because the sources conflict: the Built In offices page says HQ New York "
+                               "(50 West 23rd Street) and the Revelio Labs page cited for the second count says HQ San Francisco."},
+    # R3-10: year-only source dates
+    "HUMAN Security": {"second_source_date": "2023-03-23",
+                       "note_add": "Review round 3: second_source_date set from '2023' to 2023-03-23, the Built In article's datePublished (opened 2026-10-24)."},
+}
+REVIEW3_OVERRIDES["BrainPOP"]["note_add"] = (R3_KEPT + "The only independent source found is CO 2010-08-10 (opened 2026-10-24): a 15-year lease "
+                                              "for the entire 17th floor, so its stated term ended about 2025 and it cannot confirm the office today. "
+                                              "The row is medium on its own live page.")
+HEADCOUNT_DATE_R3 = {  # R3-10: a year-only date moves into the notes and the date is left blank
+    "Candid Health": ("headcount_second_source_date", "Review round 3: headcount_second_source_date left blank (date not stated): the About page "
+                      "timeline puts 'Grew team to 130+ employees' under 2025 with no month; the page was opened 2026-10-24."),
+    "Palantir Technologies": ("headcount_source_date", "Review round 3: headcount_source_date left blank (date not stated): the Wikipedia infobox "
+                              "dates the 4,429 employee figure to 2025 with no month."),
+    "Kohler Co. (NYC office)": ("headcount_source_date", "Review round 3: headcount_source_date left blank (date not stated): the Wikipedia infobox "
+                                "dates the 40,000 employee figure to 2019 with no month."),
+}
+# R3-04: 'occupied' needs a dated source under 24 months or the company's own live page; otherwise occupancy-unconfirmed
+OCCUPIED_NOTE = ("Review round 3: lease status set from occupied to occupancy-unconfirmed: only an undated profile places it here "
+                 "(Built In, Deskpass or LiquidSpace), and B treats such profiles as often stale. Check the lobby directory on the walk.")
+# R3-07: the last inferences in notes rewritten to state sources only (appended after any earlier edit of the same row)
+for _k, _v in ({
+    "TripleLift": [("the contact page says '400+ Talented Workers' across 8+ locations, so the whole company may be near the top of the band.",
+                    "the contact page says '400+ Talented Workers' across 8+ locations (whole company).")],
+    "Stone Source": [("Likely includes a showroom; headcount not found.", "Use of the space not sourced; headcount not found.")],
+    "Hungryroot": [("term likely ended around 2024 and no current confirmation found", "a five-year term from 2019 ends about 2024 by arithmetic, and no current confirmation was found")],
+    "Sapien AI": [("is a 5-person Berkeley firm, likely a different company)", "is a 5-person Berkeley firm; not used, as nothing ties it to this company)")],
+    "Hunter Point Capital": [("so it has probably not moved yet;", "so the move is not confirmed;")],
+    "Vestal Point Capital": [("Downgraded to low because it is probably not in the building yet.", "Downgraded to low because no source confirms it has moved in.")],
+    "Everlast Worldwide (US headquarters)": [("Term was one year, so likely stale; not reconfirmed.", "Term was one year, so the lease as reported has ended; not reconfirmed.")],
+    "Augury": [("The #169 suite number suggests a mailbox or shared suite, and whether", "The address carries suite '#169', and whether")],
+}).items():
+    NOTE_EDITS.setdefault(_k, []).extend(_v)
+COWORKING_REVIEW3 = {
+    "W-08": {"second_source_url": SEC_215PAS, "second_source_date": "2026-02-05",
+             "notes_add": "Review round 3: Deskpass is an operator-written listing, so it no longer counts as the independent source. The independent "
+                          "source is now the 215 Park Avenue South CMBS prospectus rent roll (sec.gov, 2026-02-05, cited by research slice S1): Industrious "
+                          "holds three floors, 51,765 sf, to 2035. The row stays high. " + SEC_NOTE},
+    "W-20": {"notes_replace": [("designed for consumer-brand founders': members are likely emerging CPG founders (a brand-side lead source as well as an office).",
+                                "designed for consumer-brand founders'. Members are not listed.")]},
+    "W-17": {"notes_replace": [("which suggests a partnership; not confirmed.", "a partnership between the two operators is not confirmed.")]},
+    "W-25": {"notes_replace": [("which suggests stale text)", "so the page text may be old)")]},
+    "W-05": {"notes_replace": [("shows staffed hours and availability, so probably open; open status unverified, founder to confirm.",
+                                "shows staffed hours and availability; open status unverified, founder to confirm."),
+                               ("office at 245 5th Ave, so it is probably open; founder to confirm.", "office at 245 5th Ave; open status unverified, founder to confirm.")]},
+    "W-14": {"exclusive_food_contract_signal_replace": [("outside food placement likely needs operator approval (inference)",
+                                                         "whether outside food needs operator approval is not sourced; ask at intake")]},
+    "W-30": {"exclusive_food_contract_signal_replace": [("outside snack placement likely needs operator approval",
+                                                         "whether outside snacks need operator approval is not sourced; ask at intake")]},
+}
+COWORKING_EDITABLE_NOTE = ("Review round 3: lowered from high to medium. The second source is a listing the operator writes (Deskpass or LiquidSpace), "
+                           "so it does not independently confirm the operator's own page; no press, landlord or filing source was found. A walk-by can raise it.")
+BANNED_NOTE_PATTERNS += [r"near the top of the band", r"likely includes", r"are likely", r"probably (?:not|open)", r"likely stale",
+                         r"likely a different", r"likely needs", r"likely ended", r"suggests (?:a|stale)"]
+# R3-05: owner pass over the remaining candidates on Wikipedia (raw wikitext and page footer, opened 2026-10-24). Recorded only where the
+# infobox or the text names a controlling owner; minority stakes (Exor 24% of Christian Louboutin, Blue Owl 6% of ICONIQ) and a former
+# corporate name (Vita Coco's 'All Market Inc.') are not parents.
+PARENT_R3 = {
+    "Biohub (Chan Zuckerberg Biohub)": ("Chan Zuckerberg Initiative", WP + "Chan_Zuckerberg_Biohub (opened 2026-10-24, last edited 2026-08-22): infobox 'parent = Chan Zuckerberg Initiative'"),
+    "Matador Content": ("Boat Rocker Media", WP + "Matador_Content (opened 2026-10-24, last edited 2026-06-16): 'In 2018, Matador Content was acquired by the Canadian company Boat Rocker Media'"),
+    "Daily Harvest": ("Chobani", WP + "Daily_Harvest (opened 2026-10-24, last edited 2026-07-13): infobox 'owner = Chobani'"),
+    "Kodansha USA": ("Kodansha", WP + "Kodansha_USA (opened 2026-10-24, last edited 2026-09-11): infobox 'parent = Kodansha'"),
+    "Foursquare": ("Infillion (acquisition announced 2026-09-18)", WP + "Foursquare_(company) (opened 2026-10-24, last edited 2026-10-24): 'In September 2026, Foursquare was acquired by Infillion', citing Infillion's release of 2026-09-18"),
+    "Everlast Worldwide (US headquarters)": ("Frasers Group", WP + "Everlast_(brand) (opened 2026-10-24, last edited 2026-06-01): 'In 2007, Everlast was acquired by the British retailing group Frasers Group'"),
+    "MCM Worldwide": ("Sungjoo Group", WP + "MCM_Worldwide (opened 2026-10-24, last edited 2026-10-23): infobox 'parent = Sungjoo Group'"),
+}
+REVIEW3_OVERRIDES["The Corcoran Group"]["note_add"] = ("Review round 3: parent Compass, Inc. (Wikipedia, opened 2026-10-24); Corcoran's own headcount "
+                                                     "is not sourced; founder to confirm before approach.")
+NOTE_EDITS.setdefault("The Corcoran Group", []).append(
+    ("Headcount not sourced; a large brokerage, check for over-500 before use.", "Headcount not sourced."))
+BANNED_NOTE_PATTERNS += [r"a large brokerage"]

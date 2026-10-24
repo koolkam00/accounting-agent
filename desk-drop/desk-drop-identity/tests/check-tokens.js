@@ -20,11 +20,13 @@ for (const m of rootBlock.matchAll(/(--dd-[\w-]+):\s*([^;]+);/g)) vars[m[1]] = m
 
 const problems = [];
 let checked = 0;
+// v1.4 (review round 3, R3-08): a JSON value "{color.ink}" is a reference; in tokens.css it is var(--dd-ink)
+const refCss = (v) => { const m = /^\{color\.([\w-]+)\}$/.exec(String(v)); return m && json.color[m[1]] ? `var(${json.color[m[1]].css})` : null; };
 (function walk(o) {
   if (o && typeof o === 'object') {
     if (o.css && o.$value !== undefined) {
       checked++;
-      const want = Array.isArray(o.$value) ? o.$value.map(f => /\s/.test(f) ? `"${f}"` : f).join(', ') : String(o.$value);
+      const want = refCss(o.$value) || (Array.isArray(o.$value) ? o.$value.map(f => /\s/.test(f) ? `"${f}"` : f).join(', ') : String(o.$value));
       const have = vars[o.css];
       if (have === undefined) problems.push(`${o.css} is in tokens.json but not in tokens.css`);
       else if (have.toLowerCase() !== want.toLowerCase()) problems.push(`${o.css}: css "${have}" vs json "${want}"`);
@@ -32,9 +34,27 @@ let checked = 0;
     Object.values(o).forEach(walk);
   }
 })(json);
+// every custom property in the light block, aliases included (v1.4: aliases are no longer skipped),
+// needs a tokens.json entry whose "css" is that name
+const cssNames = new Set();
+(function names(o) { if (o && typeof o === 'object') { if (o.css) cssNames.add(o.css); Object.values(o).forEach(names); } })(json);
 for (const k of Object.keys(vars)) {
-  if (vars[k].startsWith('var(')) continue; // semantic aliases
-  if (!JSON.stringify(json).includes(`"${k}"`)) problems.push(`${k} is in tokens.css but not in tokens.json`);
+  if (!cssNames.has(k)) problems.push(`${k} is in tokens.css but has no tokens.json entry with "css": "${k}"${vars[k].startsWith('var(') ? ' (a semantic alias: add it to the "semantic" group)' : ''}`);
+}
+// the dark blocks: each role in tokens.css resolves to the hex tokens.json's dark-mode gives
+{
+  const hexOf = (v) => { v = v.trim(); const m = /^var\((--dd-[\w-]+)\)$/.exec(v); return m ? (vars[m[1]] || '').toLowerCase() : v.toLowerCase(); };
+  const darkBlocks = [...css.matchAll(/(@media \(prefers-color-scheme: dark\)\s*\{\s*:root[^{]*|:root\[data-theme="dark"\])\s*\{([^}]*)\}/g)].map((m) => m[2]);
+  if (darkBlocks.length !== 2) problems.push(`expected 2 dark blocks in tokens.css, found ${darkBlocks.length}`);
+  darkBlocks.forEach((b, bi) => {
+    for (const m of b.matchAll(/--dd-([\w-]+):\s*([^;]+);/g)) {
+      const want = json['dark-mode'] && json['dark-mode'][m[1]];
+      if (!want) problems.push(`dark block ${bi + 1}: --dd-${m[1]} has no dark-mode entry in tokens.json`);
+      else if (hexOf(m[2]) !== String(want).toLowerCase()) problems.push(`dark block ${bi + 1}: --dd-${m[1]} is ${hexOf(m[2])} in tokens.css, ${want} in tokens.json`);
+      checked++;
+    }
+  });
+  for (const k of Object.keys(json.semantic || {})) if (!k.startsWith('$') && !(json['dark-mode'] || {})[k]) problems.push(`semantic role ${k} has no dark-mode value`);
 }
 // v1.3 (review round 2, R2-10): one custom property, one meaning. A name defined twice in the
 // same block (or as a color in one block and a width in another) fails.
@@ -69,4 +89,4 @@ const contrast = textPairs.map(([f, b, min]) => { const r = ratio(C[f], C[b]); i
 
 console.log(`checked ${checked} tokens; contrast: ${contrast.join('; ')}`);
 if (problems.length) { console.log('FAIL\n' + problems.map(p => '  ' + p).join('\n')); process.exit(1); }
-console.log('PASS: tokens.css, tokens.json and build-brand.js agree; all text pairs meet WCAG 2.2 AA.');
+console.log('PASS: tokens.css, tokens.json and build-brand.js agree (core colors, the eight light-mode semantic roles and both dark blocks); all text pairs meet WCAG 2.2 AA.');

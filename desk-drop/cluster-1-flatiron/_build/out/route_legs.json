@@ -4,13 +4,34 @@
    "stop": 1,
    "path": [
     [
-     -73.994287,
-     40.739342
+     -73.989367,
+     40.737722
     ]
    ]
   },
   {
    "stop": 2,
+   "path": [
+    [
+     -73.989492,
+     40.737553
+    ],
+    [
+     -73.991708,
+     40.738502
+    ],
+    [
+     -73.991819,
+     40.738352
+    ],
+    [
+     -73.994249,
+     40.739393
+    ]
+   ]
+  },
+  {
+   "stop": 3,
    "path": [
     [
      -73.994249,
@@ -27,7 +48,7 @@
    ]
   },
   {
-   "stop": 3,
+   "stop": 4,
    "path": [
     [
      -73.994977,
@@ -44,7 +65,7 @@
    ]
   },
   {
-   "stop": 4,
+   "stop": 5,
    "path": [
     [
      -73.99275,
@@ -57,19 +78,6 @@
     [
      -73.992604,
      40.742984
-    ],
-    [
-     -73.992429,
-     40.74291
-    ]
-   ]
-  },
-  {
-   "stop": 5,
-   "path": [
-    [
-     -73.992429,
-     40.74291
     ],
     [
      -73.99186,
@@ -85,8 +93,16 @@
      40.742666
     ],
     [
-     -73.991625,
-     40.742565
+     -73.989644,
+     40.741717
+    ],
+    [
+     -73.988257,
+     40.743583
+    ],
+    [
+     -73.987398,
+     40.743215
     ]
    ]
   },
@@ -94,20 +110,16 @@
    "stop": 7,
    "path": [
     [
-     -73.991625,
-     40.742565
+     -73.987398,
+     40.743215
     ],
     [
-     -73.992604,
-     40.742984
+     -73.984794,
+     40.7421
     ],
     [
-     -73.992715,
-     40.742835
-    ],
-    [
-     -73.991602,
-     40.742359
+     -73.984668,
+     40.742269
     ]
    ]
   },
@@ -115,16 +127,12 @@
    "stop": 8,
    "path": [
     [
-     -73.991602,
-     40.742359
+     -73.984668,
+     40.742269
     ],
     [
-     -73.98654,
-     40.740191
-    ],
-    [
-     -73.986833,
-     40.739797
+     -73.984231,
+     40.742857
     ]
    ]
   },
@@ -132,8 +140,8 @@
    "stop": 9,
    "path": [
     [
-     -73.986833,
-     40.739797
+     -73.984231,
+     40.742857
     ],
     [
      -73.988655,
@@ -169,16 +177,16 @@
  },
  "variants": {
   "no_security_minimum": {
-   "total_minutes": 207.3,
-   "total_one_load": 187.3,
-   "end": "11:27",
-   "stops": "Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); TripleLift (53 West 23rd Street); Foursquare (50 West 23rd Street); 1stDibs (300 Park Avenue South); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
+   "total_minutes": 225.0,
+   "total_one_load": 205.0,
+   "end": "11:45",
+   "stops": "Aterian (37 East 18th Street); Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Empathy (56 West 22nd Street); Inspiren (61 West 23rd Street); Activate Consulting (11 East 26th Street); Simplebet (373 Park Avenue South); K Health (387 Park Avenue South); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
   },
   "no_band_rule": {
-   "total_minutes": 207.3,
-   "total_one_load": 187.3,
-   "end": "11:27",
-   "stops": "Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); TripleLift (53 West 23rd Street); Foursquare (50 West 23rd Street); 1stDibs (300 Park Avenue South); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
+   "total_minutes": 225.0,
+   "total_one_load": 205.0,
+   "end": "11:45",
+   "stops": "Aterian (37 East 18th Street); Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Empathy (56 West 22nd Street); Inspiren (61 West 23rd Street); Activate Consulting (11 East 26th Street); Simplebet (373 Park Avenue South); K Health (387 Park Avenue South); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
   },
   "high_or_medium": {
    "total_minutes": 194.9,
@@ -193,5 +201,5 @@
    "stops": "Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Instant (53 West 21st Street); PlayPlay (53 West 21st Street); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); TripleLift (53 West 23rd Street); BMF (We Are BMF) (50 West 23rd Street); Foursquare (50 West 23rd Street)"
   }
  },
- "rule": "one 76-150 office and at least three bands (no high-confidence, occupied 40-75 office with a sourced band remains after review round 2's second headcounts; the high-or-medium variant below keeps a 40-75 office)"
+ "rule": "at least three bands including one 76-150 office (no high-confidence, occupied 40-75 office with a sourced band remains after review round 2's second headcounts; the high-or-medium variant below keeps a 40-75 office)"
 }

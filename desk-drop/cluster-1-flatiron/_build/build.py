@@ -100,7 +100,7 @@ def sf_mentions(text):
         v = int(h.replace(",", ""))
         if 1000 <= v <= 2_000_000 and v not in vals:
             vals.append(v)
-    return "; ".join(f"{v:,} sf" for v in vals[:3])
+    return ";".join(f"{v:,} sf" for v in vals[:3])
 
 
 def main():
@@ -146,8 +146,8 @@ def main():
     c["coworking_id"] = [wmap.get(t, "") if (t and ic == "Y") else "" for t, ic in zip(c._cw_temp, c.in_coworking)]
     w["building_id"] = w.bbl.map(lambda k: bid.get(k, ""))
     w["notes"] = w.apply(lambda x: (x.notes + (" " + x.pin_note if x.get("pin_note") else "")).strip(), axis=1)
-    w["tenant_company_ids"] = w.coworking_id.map(lambda k: "; ".join(c[(c.coworking_id == k) & (c.in_coworking == "Y")].company_id))
-    b["coworking_ids"] = b.bbl.map(lambda k: "; ".join(w[w.bbl == k].coworking_id))
+    w["tenant_company_ids"] = w.coworking_id.map(lambda k: ";".join(c[(c.coworking_id == k) & (c.in_coworking == "Y")].company_id))
+    b["coworking_ids"] = b.bbl.map(lambda k: ";".join(w[w.bbl == k].coworking_id))
 
     # ---------------- retailers
     r["_o"] = r.in_boundary.map(lambda v: 0 if v == "Y" else 1)
@@ -168,7 +168,7 @@ def main():
         lambda v: 0 if v <= 0 else max(1, int(round(v * grid.model()["spacing_m"] / P["walk_pace_m_per_min"]))))
     miss = r[(r.public_map == "Y") & (r.public_description == "")]
     assert miss.empty, list(miss.retailer_name)
-    b["retailer_ids"] = b.bbl.map(lambda k: "; ".join(r[r.bbl == k].retailer_id))
+    b["retailer_ids"] = b.bbl.map(lambda k: ";".join(r[r.bbl == k].retailer_id))
     cand_b = b[b.candidate_company_count > 0]
     near_n, near_b, near_d = [], [], []
     for _, x in r.iterrows():
@@ -179,7 +179,7 @@ def main():
     r["candidates_within_5_blocks"], r["nearest_candidate_building_id"], r["nearest_candidate_blocks"] = near_n, near_b, near_d
 
     # ---------------- building fields
-    b["candidate_company_ids"] = b.bbl.map(lambda k: "; ".join(cand[cand.bbl == k].index.map(lambda i: c.at[i, "company_id"]) if False else c[(c.bbl == k) & (c.candidate_status == "candidate")].company_id))
+    b["candidate_company_ids"] = b.bbl.map(lambda k: ";".join(c[(c.bbl == k) & (c.candidate_status == "candidate")].company_id))
     b["other_company_count"] = b.bbl.map(lambda k: int(((c.bbl == k) & (c.candidate_status != "candidate")).sum()))
     b["verified_on_foot"] = ""
     b["notes"] = b.notes_research
@@ -202,14 +202,14 @@ def main():
     # ---------------- route
     try:
         route, legs = model_route(c, b)
-        route_rule = "one 40-75 and one 76-150 office"
+        route_rule = "at least three bands including one 40-75 and one 76-150 office"
         main_bands = ("40-75", "76-150")
     except ValueError:
         # review round 2: after the second headcounts no high-confidence, occupied 40-75 office with a sourced band
         # remains, so the main route asks for a 76-150 office and three bands; the high-or-medium variant keeps both
         main_bands = ("76-150",)
         route, legs = model_route(c, b, bands_required=main_bands)
-        route_rule = ("one 76-150 office and at least three bands (no high-confidence, occupied 40-75 office with a sourced band "
+        route_rule = ("at least three bands including one 76-150 office (no high-confidence, occupied 40-75 office with a sourced band "
                       "remains after review round 2's second headcounts; the high-or-medium variant below keeps a 40-75 office)")
     variants = {}
     for key, kw in (("no_security_minimum", {"min_security": 0}),
@@ -588,9 +588,9 @@ CHECK_COWORK = ("Operator signage in the lobby; floors listed on the directory; 
 
 
 def walk_plan(b, w, r, c):
-    """Every Buildings-tab building, every in-boundary coworking site and every retailer,
-    in 90-minute sessions. Phase 1 (core) covers everything inside the boundary; phase 2
-    (outer) covers retailers outside the line. Each phase is one open tour (nearest neighbour
+    """Every Buildings-tab building, every coworking site and every retailer, in 90-minute
+    sessions. Phase 1 (core) covers everything inside the boundary; phase 2 (outer) covers the
+    retailers and (review round 3) the coworking sites outside the line. Each phase is one open tour (nearest neighbour
     plus 2-opt on estimated minutes), cut into sessions of balanced length."""
     stops = {}
 
@@ -599,7 +599,7 @@ def walk_plan(b, w, r, c):
             stops[key] = {"items": [], "street_address": addr, "lat": lat, "lon": lon, "grid_s": s, "grid_x": x,
                           "dwell": 0.0, "checks": [], "kinds": [], "phase": phase}
         st = stops[key]
-        st["items"].append(f"{ident} {name}")
+        st["items"].append(f"{ident} {name}".replace(";", ","))  # review round 3: ';' only separates items
         st["dwell"] = max(st["dwell"], dwell) + (1.0 if st["dwell"] else 0.0)
         if check not in st["checks"]:
             st["checks"].append(check)
@@ -612,9 +612,10 @@ def walk_plan(b, w, r, c):
             x.grid_x, min(6.0, 3.0 + 0.5 * max(0, n - 1)), "BUILDING: " + CHECK_BUILDING, 1)
         if x.get("entrance_note"):
             stops[x.bbl or x.building_id]["checks"].insert(0, "ENTRANCE: " + x.entrance_note)
-    for _, x in w[w.in_boundary == "Y"].iterrows():
+    # review round 3 (R3-08): the 8 coworking sites just outside the line are walked too, in the outer sessions
+    for _, x in w.iterrows():
         add(x.bbl or x.coworking_id, "coworking", x.coworking_id, x.location_name, x.street_address.split(",")[0], x.lat,
-            x.lon, x.grid_s, x.grid_x, 3.0, "COWORKING: " + CHECK_COWORK, 1)
+            x.lon, x.grid_s, x.grid_x, 3.0, "COWORKING: " + CHECK_COWORK, 1 if x.in_boundary == "Y" else 2)
     for _, x in r.iterrows():
         dwell = {"A": 10.0, "B": 6.0, "C": 3.0}.get(x.buy_path_tier, 5.0)
         add(x.bbl or x.retailer_id, "retailer", x.retailer_id, x.retailer_name, x.street_address.split(",")[0], x.lat,
@@ -645,9 +646,9 @@ def walk_plan(b, w, r, c):
             new_session = k == 0 or cuts[k] != cuts[k - 1]
             lm = 0.0 if new_session else legs[k]
             order += 1
-            rows.append({"session": sess, "phase": "core (inside the boundary)" if phase == 1 else "outer retailers (within ten blocks)",
-                         "order": order, "stops_here": "; ".join(st["items"]),
-                         "stop_types": "; ".join(sorted(set(st["kinds"]))), "street_address": st["street_address"],
+            rows.append({"session": sess, "phase": "core (inside the boundary)" if phase == 1 else "outer (stores within ten blocks and coworking sites just outside the line)",
+                         "order": order, "stops_here": ";".join(st["items"]),
+                         "stop_types": ";".join(sorted(set(st["kinds"]))), "street_address": st["street_address"],
                          "lat": st["lat"], "lon": st["lon"], "walk_minutes_from_previous_est": round(lm, 1),
                          "dwell_minutes_est": st["dwell"], "verify_checklist": " || ".join(st["checks"]),
                          "observed_lobby_type": "", "security_desk": "", "loading_dock_hours": "", "coi_signage": "",

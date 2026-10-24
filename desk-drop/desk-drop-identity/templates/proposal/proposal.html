@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Campaign proposal template</title>
 <!--
-  ONE-PAGE CAMPAIGN PROPOSAL plus a MOCK REPORT PAGE, US Letter portrait. Template v1.2, 2026-10-24.
+  ONE-PAGE CAMPAIGN PROPOSAL plus a MOCK REPORT PAGE, US Letter portrait. Template v1.4, 2026-10-24
+  (v1.4, review round 3: store names, display_name, distance column, parked sections, a refusal
+  that says what to shorten).
   Contents: plan.md Phase 2 "The proposal" (roster by neighborhood, industry and Tuesday headcount;
   map of retailers that carry the brand; campaign specification; price, terms, founding lock;
   what the brand supplies and by when; timeline with the drop date; what the report contains,
@@ -303,7 +305,7 @@
       return m && !DD.isPlaceholder(s) && (/\d/.test(m[2]) || /^(?:formerly|store|now)\b/i.test(m[2].trim())) ? m[1] : s;
     };
     retailers.forEach((x, k) => { const dl = String(x.distance || '').trim(); if (dl.length > 22 && !DD.isPlaceholder(dl)) DD.warn(i, `Store ${k + 1}: the distance "${dl}" is long, so it wraps. A short form such as "3 blocks" or "in the cluster" keeps the row on one line.`); });
-    const storeList = retailers.length ? `<table class="t stores">${mapSrc ? '<colgroup><col style="width:.24in"><col><col class="dist" style="width:.92in"></colgroup>' : '<colgroup><col><col class="dist" style="width:.92in"></colgroup>'}<thead><tr>${mapSrc ? '<th class="r">#</th>' : ''}<th>Store</th><th>From the offices</th></tr></thead><tbody>${retailers.map((x, k) => `<tr>${mapSrc ? `<td class="r num"><b>${DD.text(pin(x, k))}</b></td>` : ''}<td><b>${show(storeName(x), '[RETAILER]')}</b>, ${show(x.street, '[STREET]')}</td><td class="dist"><span class="dv">${show(x.distance, '[DISTANCE]')}</span></td></tr>`).join('')}</tbody></table>` : '';
+    const storeList = retailers.length ? `<table class="t stores">${mapSrc ? '<colgroup><col style="width:.24in"><col><col class="dist" style="width:.92in"></colgroup>' : '<colgroup><col><col class="dist" style="width:.92in"></colgroup>'}<thead><tr>${mapSrc ? '<th class="r">#</th>' : ''}<th>Store</th><th>From the offices</th></tr></thead><tbody>${retailers.map((x, k) => `<tr>${mapSrc ? `<td class="r num"><b>${DD.text(pin(x, k))}</b></td>` : ''}<td><b>${show(storeName(x), '[RETAILER]')}</b>, ${String(x.street || '').length <= 28 ? `<span class="nowrap">${show(x.street, '[STREET]')}</span>` : show(x.street, '[STREET]')}</td><td class="dist"><span class="dv">${show(x.distance, '[DISTANCE]')}</span></td></tr>`).join('')}</tbody></table>` : '';
     const mapHTML = DD.isPlaceholder(String(r.map_image || '')) ? `<div class="img-slot map"><span><b><mark class="dd-ph">[RETAILER MAP]</mark></b>From the cluster map: the cluster and your stores. No office pins before you sign</span></div>`
       : mapSrc ? `<figure class="map-fig"><img class="map map-img" src="${DD.escape(mapSrc)}" alt="Map of the offices and stores">${r.map_caption ? `<figcaption>${DD.text(r.map_caption)}</figcaption>` : ''}</figure>` : '';
     // the full-width version keeps its caption under the stores, so the map column stays short

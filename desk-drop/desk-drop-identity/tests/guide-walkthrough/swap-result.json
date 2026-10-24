@@ -1,6 +1,6 @@
 {
   "date": "2026-10-24",
-  "first_card_seconds": 522,
+  "first_card_seconds": 515,
   "next_card_seconds": 128,
   "model": {
     "open": 60,
@@ -18,7 +18,7 @@
   },
   "parts": [
     "open the file 60s",
-    "read section 2 (646 words) 194s",
+    "read section 2 (623 words) 187s",
     "type 215 characters from the package and IDs 65s",
     "paste 6 fields 48s",
     "choose the allergen option 6s",
@@ -31,12 +31,12 @@
     "print dialog 60s"
   ],
   "log": [
-    "templates/tent-card/tent-card.html: guide sections 2, 19 name 25 boxes or buttons; missing in the panel: none",
+    "templates/tent-card/tent-card.html: guide sections 2, 19 name 26 boxes or buttons; missing in the panel: none",
     "templates/discovery-one-pager/discovery-one-pager.html: guide sections 8 name 2 boxes or buttons; missing in the panel: none",
     "templates/office-one-pager/office-one-pager.html: guide sections 9 name 4 boxes or buttons; missing in the panel: none",
     "templates/brand-one-pager/brand-one-pager.html: guide sections 10 name 1 boxes or buttons; missing in the panel: none",
-    "templates/proposal/proposal.html: guide sections 11 name 19 boxes or buttons; missing in the panel: none",
-    "templates/report/report.html: guide sections 12 name 31 boxes or buttons; missing in the panel: none",
+    "templates/proposal/proposal.html: guide sections 11 name 20 boxes or buttons; missing in the panel: none",
+    "templates/report/report.html: guide sections 12 name 32 boxes or buttons; missing in the panel: none",
     "After filling: This is SAMPLE data. It prints with a SAMPLE banner. | Last step: I read the allergen text against the package itself, word for word (tick the box above). | Last step: I read the brand name, product and two sentences for health and sales claims (tick the box above).",
     "After the allergen check box: This is SAMPLE data. It prints with a SAMPLE banner.",
     "Second office, after Load JSON and two changes: This is SAMPLE data. It prints with a SAMPLE banner.",

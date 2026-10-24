@@ -272,7 +272,7 @@
         </section>
         <section class="sec lim"><p class="lim-p"><b class="lim-h">Limitations.</b> <span class="lim-text">${D.escape(R.LIMITATIONS)}</span></p></section>
       </div>
-      ${X.footer(`Prepared by ${D.text(r.prepared_by || D.contact('FOUNDER_NAME'))} · ${X.contact(' · ', ['PHONE', 'EMAIL'])}`, `${X.brandName()} · report template v1.3`)}
+      ${X.footer(`Prepared by ${D.text(r.prepared_by || D.contact('FOUNDER_NAME'))} · ${X.contact(' · ', ['PHONE', 'EMAIL'])}`, `${X.brandName()} · report template v1.4`)}
     </div>`;
   };
 
@@ -294,7 +294,7 @@
       ${X.header({ kicker: 'Campaign report · evidence', meta: `${D.text(r.campaign_id || '[CAMPAIGN ID]')} · ${show(r.brand_name, '[BRAND]')}` })}
       <div class="bd"><h2>Evidence: every photo</h2><p class="note">Two photos per office. Dates are shown where recorded. No identifiable people. Cropped to fit; the original files are available on request.</p>
         <div class="apg">${cells}</div></div>
-      ${X.footer(`Page 2 of the report for ${D.text(r.campaign_id || '[CAMPAIGN ID]')}`, `${X.brandName()} · report template v1.3`)}
+      ${X.footer(`Page 2 of the report for ${D.text(r.campaign_id || '[CAMPAIGN ID]')}`, `${X.brandName()} · report template v1.4`)}
     </div>`;
   };
 

@@ -322,3 +322,154 @@ def corner(addr, lat, lon):
     return la, lo, (f"corner lot: the lot-centroid pin sat {d_side:.0f} m from {side_label} but {d_addr:.0f} m from {label}, "
                     f"so it was moved to the {label} frontage near the corner ({off:.0f} m from the {label} centreline, "
                     f"{ds_new:.0f} m from {side_label}; {math.dist(F, P0):.0f} m from the old pin)"), side_label
+
+
+# ------------------------------------------------------------------ review round 3 (R3-03): keep the pin on its own tax lot
+# The round-2 corner rule (26 m from the cross street) could push a pin past a short corner lot onto the neighbour's
+# frontage. Every pin now has to sit inside its own MapPLUTO lot polygon. A pin outside it moves to the lot's frontage
+# on the addressed street, LOT_INSIDE_M inside the lot line: the middle of that frontage for a corner lot whose frontage is
+# LONG_FRONTAGE_M or shorter, else the nearest point that keeps CORNER_SIDE_MIN_M from the cross street; for any other
+# pin, the frontage point nearest the old pin. The tax lot (bbl) never changes.
+LOT_INSIDE_M = 3.0
+LONG_FRONTAGE_M = 35.0
+LOT_CACHE = os.path.join(HERE, "out", "lots_cache.json")
+LOT_SOURCE = ("NYC MapPLUTO (Department of City Planning) tax-lot polygons, version 26v2, from the public "
+              "planninglabs.carto.com SQL endpoint that ZoLa uses, fetched 2026-10-24")
+
+
+def lots(bbls):
+    """MapPLUTO lot polygons by bbl (GeoJSON geometry), cached in _build/out/lots_cache.json. GET only."""
+    import subprocess
+    import urllib.parse
+    have = json.load(open(LOT_CACHE)) if os.path.exists(LOT_CACHE) else {}
+    need = sorted({str(b).split(".")[0] for b in bbls if b and str(b).split(".")[0].isdigit()} - set(have))
+    for k in range(0, len(need), 40):
+        chunk = need[k:k + 40]
+        q = "SELECT bbl,address,version,the_geom FROM dcp_mappluto WHERE bbl IN (%s)" % ",".join(chunk)
+        url = "https://planninglabs.carto.com/api/v2/sql?format=geojson&q=" + urllib.parse.quote(q)
+        out = subprocess.run(["curl", "-sS", "--max-time", "90", "-A", "cluster-research-script/0.1", url],
+                             capture_output=True, text=True).stdout
+        got = {str(int(f["properties"]["bbl"])): {"address": f["properties"].get("address"), "version": f["properties"].get("version"),
+                                                  "geometry": f["geometry"]} for f in json.loads(out)["features"]}
+        for b in chunk:
+            have[b] = got.get(b)
+    json.dump(have, open(LOT_CACHE, "w"))
+    return have
+
+
+def lot_rings(lot):
+    """Outer rings of a lot, in grid metres."""
+    if not lot or not lot.get("geometry"):
+        return []
+    g = lot["geometry"]
+    polys = g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]
+    return [[grid.to_m(la, lo) for lo, la in poly[0]] for poly in polys]
+
+
+def in_rings(P, rings):
+    ins = False
+    for ring in rings:
+        for (x1, y1), (x2, y2) in zip(ring, ring[1:]):
+            if (y1 > P[1]) != (y2 > P[1]) and P[0] < (x2 - x1) * (P[1] - y1) / (y2 - y1) + x1:
+                ins = not ins
+    return ins
+
+
+def dist_rings(P, rings):
+    best = None
+    for ring in rings:
+        for A, B in zip(ring, ring[1:]):
+            d = _proj(P, A, B)[0]
+            best = d if best is None or d < best else best
+    return best if best is not None else 1e9
+
+
+def lot_frontage(rings, label):
+    """The lot's frontage on the addressed street: (F0, F1, u, n_in, length) in metres, or None.
+    Frontage edges run parallel to the street (within 30 degrees) and are the lot edges nearest its centreline."""
+    edges = []
+    for ring in rings:
+        for A, B in zip(ring, ring[1:]):
+            L = math.dist(A, B)
+            if L < 0.5:
+                continue
+            M = ((A[0] + B[0]) / 2, (A[1] + B[1]) / 2)
+            d, u = nearest(M, label)
+            if d is None:
+                continue
+            e = ((B[0] - A[0]) / L, (B[1] - A[1]) / L)
+            if _parallel(e, u):
+                edges.append((d, A, B, u))
+    if not edges:
+        return None
+    dmin = min(e[0] for e in edges)
+    if dmin > 45.0:   # the lot does not front this street
+        return None
+    front = [e for e in edges if e[0] <= dmin + 3.0]
+    u = front[0][3]
+    n = (-u[1], u[0])
+    pts = [p for e in front for p in (e[1], e[2])]
+    O = pts[0]
+    ts = [(p[0] - O[0]) * u[0] + (p[1] - O[1]) * u[1] for p in pts]
+    ns = [(p[0] - O[0]) * n[0] + (p[1] - O[1]) * n[1] for p in pts]
+    t0, t1, nn = min(ts), max(ts), sum(ns) / len(ns)
+    F0 = (O[0] + u[0] * t0 + n[0] * nn, O[1] + u[1] * t0 + n[1] * nn)
+    F1 = (O[0] + u[0] * t1 + n[0] * nn, O[1] + u[1] * t1 + n[1] * nn)
+    allp = [p for ring in rings for p in ring]
+    C = (sum(p[0] for p in allp) / len(allp), sum(p[1] for p in allp) / len(allp))
+    side = (C[0] - F0[0]) * n[0] + (C[1] - F0[1]) * n[1]
+    n_in = n if side > 0 else (-n[0], -n[1])
+    return F0, F1, u, n_in, t1 - t0
+
+
+def clamp_to_lot(addr, lat, lon, lot, corner_side=""):
+    """(lat, lon, note) when the pin lies outside its own lot, else None. See the block comment above."""
+    rings = lot_rings(lot)
+    if not rings or not lat:
+        return None
+    P = grid.to_m(float(lat), float(lon))
+    if in_rings(P, rings):
+        return None
+    out_m = dist_rings(P, rings)
+    pa = parse(addr)
+    fr = lot_frontage(rings, pa[1]) if pa else None
+    if fr:
+        F0, F1, u, n_in, length = fr
+        tP = (P[0] - F0[0]) * u[0] + (P[1] - F0[1]) * u[1]
+        lo_t, hi_t = (LOT_INSIDE_M, length - LOT_INSIDE_M) if length > 2 * LOT_INSIDE_M else (length / 2, length / 2)
+        how = ""
+        if corner_side and length <= LONG_FRONTAGE_M:
+            t = length / 2
+            how = f"the middle of the lot's {length:.0f} m {pa[1]} frontage"
+        elif corner_side:
+            ok = [k * 0.5 for k in range(int(lo_t * 2), int(hi_t * 2) + 1)
+                  if (beside((F0[0] + u[0] * k * 0.5, F0[1] + u[1] * k * 0.5), corner_side)[0] or 0) >= CORNER_SIDE_MIN_M]
+            t = min(ok, key=lambda k: abs(k - tP)) if ok else length / 2
+            how = (f"the point of the lot's {length:.0f} m {pa[1]} frontage nearest the old pin that is at least "
+                   f"{CORNER_SIDE_MIN_M:.0f} m from {corner_side}") if ok else f"the middle of the lot's {length:.0f} m {pa[1]} frontage"
+        else:
+            t = min(max(tP, lo_t), hi_t)
+            how = f"the point of the lot's {length:.0f} m {pa[1]} frontage nearest the old pin"
+        Q = (F0[0] + u[0] * t, F0[1] + u[1] * t)
+        for inset in (LOT_INSIDE_M, 5.0, 8.0, 12.0):
+            Qi = (Q[0] + n_in[0] * inset, Q[1] + n_in[1] * inset)
+            if in_rings(Qi, rings):
+                la, lo = grid.from_m(*Qi)
+                return la, lo, (f"Review round 3: the pin sat {out_m:.1f} m outside its own tax lot ({LOT_SOURCE.split(',')[0]}), "
+                                f"so it was moved to {how}, {inset:.0f} m inside the lot line ({math.dist(Qi, P):.0f} m from the old pin). Tax lot unchanged.")
+    # no frontage on the addressed street (an address form CSCL cannot test, such as Union Square South): the point
+    # inside the lot, at least LOT_INSIDE_M from every lot line, nearest the old pin (1 m search grid)
+    xs = [p[0] for ring in rings for p in ring]; ys = [p[1] for ring in rings for p in ring]
+    best = None
+    for gx in range(int(min(xs)), int(max(xs)) + 1):
+        for gy in range(int(min(ys)), int(max(ys)) + 1):
+            G = (float(gx), float(gy))
+            if in_rings(G, rings) and dist_rings(G, rings) >= LOT_INSIDE_M:
+                d = math.dist(G, P)
+                if best is None or d < best[0]:
+                    best = (d, G)
+    if best is None:
+        return None
+    la, lo = grid.from_m(*best[1])
+    return la, lo, (f"Review round 3: the pin sat {out_m:.1f} m outside its own tax lot ({LOT_SOURCE.split(',')[0]}), "
+                    f"so it was moved to the nearest point {LOT_INSIDE_M:.0f} m inside the lot line ({best[0]:.0f} m from the old pin). Tax lot unchanged.")

@@ -4,7 +4,7 @@ no brand name (so a rename never touches it). Drawn on the Manhattan grid, so av
 up the page. Writes public-map.svg (fonts embedded as subsets) and public-map.png.
 
 Usage: python3 public_map.py [path to a python that has fontTools]
-       python3 public_map.py [python] --brand <slug> --stores B-R-010,B-R-011 [--layout landscape] [--sample]
+       python3 public_map.py [python] --brand <slug> --stores B-R-010,B-R-011 [--labels names|numbers] [--sample] [--out-dir DIR]
 
 Brand mode (review round 1, R1-08) writes brand-maps/<slug>.svg only: a 1050 x 420 landscape
 map of the boundary and the named stores, with no office pins and no business name, for the
@@ -13,6 +13,7 @@ render.js turns every brand-maps/*.svg into a PNG at twice the size.
 """
 import base64
 import json
+import math
 import os
 import re
 import subprocess
@@ -239,46 +240,93 @@ def font_css(chars):
 
 # ------------------------------------------------------------------ brand mode (landscape, one brand's stores)
 BW, BH = 1050, 420
+PIN_R = 17
+FRAME_CLEAR = 40          # review round 3 (R3-02): no pin within 40 px of the frame
+LABEL_FONT, LABEL_SIZE = "AtkinsonNext-600.ttf", 19
+LABEL_H = 28
 
 
-def brand_map(slug, store_ids, sample=False):
+def measure(strings, font=LABEL_FONT, size=LABEL_SIZE):
+    """Advance widths in px of each string in D's text face, read with fontTools (in FT_PY)."""
+    code = ("import json,sys\nfrom fontTools.ttLib import TTFont\nf=TTFont(sys.argv[1]);cm=f.getBestCmap();hm=f['hmtx'].metrics;"
+            "upm=f['head'].unitsPerEm\nd=json.load(sys.stdin)\nprint(json.dumps([sum(hm[cm.get(ord(ch),'.notdef')][0] for ch in t)"
+            "*float(sys.argv[2])/upm for t in d]))")
+    out = subprocess.run([FT_PY, "-c", code, os.path.join(FONT_DIR, font), str(size)], input=json.dumps(list(strings)),
+                         capture_output=True, text=True, check=True).stdout
+    return json.loads(out)
+
+
+def _hit(a, b, m=0.0):
+    return not (a[2] + m <= b[0] or b[2] + m <= a[0] or a[3] + m <= b[1] or b[3] + m <= a[1])
+
+
+def brand_map(slug, store_ids, sample=False, labels="names", out_dir=None):
     """A bold, simple 2.5:1 map for the proposal column (it prints about 3 in wide), styled like
-    D's own SAMPLE landscape map: the boundary, numbered store markers with names, a few avenue
-    and street names, no office pins and no business name. Numbers follow the order of --stores,
-    so list the stores in the same order as the proposal's store table."""
+    D's own SAMPLE landscape map: the boundary, numbered store markers, a few avenue and street
+    names, no office pins and no business name. Numbers follow the order of --stores, so list the
+    stores in the same order as the proposal's store table.
+
+    Review round 3 (R3-02): labels="numbers" draws the numbered pins only (the proposal's store table
+    carries the names). labels="names" places each name with a collision pass: right, left, above,
+    below, then a leader line to the nearest free spot, never over a pin, another name, the north
+    arrow, the scale bar or the SAMPLE banner; a street or avenue name that would sit under a store
+    name is dropped instead. The extent keeps every pin at least 40 px inside the frame. Returns a QA dict."""
     r = pd.read_csv(os.path.join(ROOT, "retailers.csv"), dtype=str).fillna("")
     ids = [i.strip() for i in store_ids.split(",") if i.strip()]
     unknown = [i for i in ids if i not in set(r.retailer_id)]
     if unknown:
         raise SystemExit(f"not in retailers.csv: {unknown}. Add the store to _work/retailers_research.csv and rebuild first.")
+    if len(set(ids)) != len(ids):
+        raise SystemExit("a store is listed twice")
     if not re.fullmatch(r"[A-Za-z0-9-]+", slug):
         raise SystemExit("slug: letters, digits and hyphens only")
     if sample and not slug.startswith("SAMPLE"):
         raise SystemExit("a sample map's slug must start with SAMPLE")
     if not 1 <= len(ids) <= 6:
         raise SystemExit("one to six stores")
+    if labels not in ("names", "numbers"):
+        raise SystemExit("--labels is names or numbers")
     st = r.set_index("retailer_id").loc[ids].reset_index()
     st["s"] = [grid.sx(float(a), float(o))[0] for a, o in zip(st.lat, st.lon)]
     st["x"] = [grid.sx(float(a), float(o))[1] for a, o in zip(st.lat, st.lon)]
     ring = boundary.polygon_lonlat()
     rsx = [grid.sx(la, lo) for lo, la in ring]
     # u = uptown metres (runs to the right), v = crosstown metres (east runs down)
-    us = [s_ * SP for s_, _ in rsx] + list(st.s * SP)
-    vs = [x_ for _, x_ in rsx] + list(st.x)
     top = 44 if sample else 8
     bottom, left, right = 8, 8, 8
     aw, ah = BW - left - right, BH - top - bottom
-    pad_v = 70.0
-    v0, v1 = min(vs) - pad_v, max(vs) + pad_v
-    sc = ah / (v1 - v0)
-    u_need = (max(us) - min(us)) + 2 * 150.0
-    if u_need * sc > aw:
-        sc = aw / u_need
-    uc, vc = (min(us) + max(us)) / 2, (v0 + v1) / 2
-    u0 = uc - aw / 2 / sc
+    bu, bv = [s_ * SP for s_, _ in rsx], [x_ for _, x_ in rsx]
+    su, sv = list(st.s * SP), list(st.x)
+    m_pin = FRAME_CLEAR + PIN_R
+
+    def offsets(sc):
+        """Feasible screen offsets (cu, cv) for scale sc, or None: pins >= m_pin from the frame, boundary >= 8 px."""
+        res = []
+        for b_, s_, lo, hi in ((bu, su, left, BW - right), (bv, sv, top, BH - bottom)):
+            a0 = max(lo + 8 - sc * min(b_), lo + m_pin - sc * min(s_))
+            a1 = min(hi - 8 - sc * max(b_), hi - m_pin - sc * max(s_))
+            if a0 > a1:
+                return None
+            res.append((a0 + a1) / 2)
+        return res
+    # the old framing's scale is the ceiling (a 70 m crosstown and 150 m uptown margin round boundary and stores)
+    vs_all, us_all = bv + sv, bu + su
+    sc_hi = min(ah / (max(vs_all) - min(vs_all) + 140.0), aw / (max(us_all) - min(us_all) + 300.0))
+    lo_, hi_ = 0.01, sc_hi
+    if offsets(hi_):
+        lo_ = hi_
+    else:
+        for _ in range(50):
+            mid = (lo_ + hi_) / 2
+            if offsets(mid):
+                lo_ = mid
+            else:
+                hi_ = mid
+    sc = lo_
+    cu, cv = offsets(sc)
 
     def Q(s_, x_):
-        return (left + aw / 2 + (s_ * SP - uc) * sc, top + ah / 2 + (x_ - vc) * sc)
+        return (cu + s_ * SP * sc, cv + x_ * sc)
 
     def qll(lat, lon):
         s_, x_ = grid.sx(lat, lon)
@@ -291,8 +339,8 @@ def brand_map(slug, store_ids, sample=False):
     def text(x, y, t, size, weight=400, fill=INK, anchor="start", family="text", extra=""):
         used.update(str(t))
         fam = "DDDisplay" if family == "display" else "DDText"
-        out.append(f'<text x="{x:.1f}" y="{y:.1f}" font-family="{fam}, Arial, sans-serif" font-size="{size}" '
-                   f'font-weight="{weight}" fill="{fill}" text-anchor="{anchor}" {extra}>{esc(t)}</text>')
+        return (f'<text x="{x:.1f}" y="{y:.1f}" font-family="{fam}, Arial, sans-serif" font-size="{size}" '
+                f'font-weight="{weight}" fill="{fill}" text-anchor="{anchor}" {extra}>{esc(t)}</text>')
     out.append(f'<rect x="0" y="0" width="{BW}" height="{BH}" fill="{PAPER_WARM}"/>')
     out.append(f'<clipPath id="bclip"><rect x="{left}" y="{top}" width="{aw}" height="{ah}" rx="6"/></clipPath>')
     out.append(f'<rect x="{left}" y="{top}" width="{aw}" height="{ah}" rx="6" fill="{PAPER_WARM}"/>')
@@ -324,75 +372,220 @@ def brand_map(slug, store_ids, sample=False):
     bpts = [qll(la, lo) for lo, la in ring]
     out.append('<path d="M' + " L".join(f"{px:.1f},{py:.1f}" for px, py in bpts) + f' Z" fill="{COBALT_TINT}" fill-opacity="0.8" '
                f'stroke="{COBALT}" stroke-width="5" stroke-linejoin="round"/>')
-    # a few names, large enough to read at print size: avenues at the uptown (right) edge, where the grid is regular
-    for name, x_ in (("Sixth Ave", -310.6), ("Fifth Ave", 0), ("Park Ave S", 311.4), ("Third Ave", 621.1), ("Seventh Ave", -585), ("Second Ave", 837.5)):
-        px, py = Q((u0 + aw / sc) / SP, x_)
-        if top + 22 < py < BH - bottom - 40:
-            w_ = 9.2 * len(name) + 10
-            out.append(f'<rect x="{BW - right - 4 - w_:.1f}" y="{py - 20:.1f}" width="{w_:.1f}" height="22" rx="4" fill="{PAPER_WARM}" fill-opacity="0.85"/>')
-            text(BW - right - 9, py - 3, name, 16, 600, STONE, "end")
-    # review round 2 (R2-13): the scale bar box sits bottom left; a street label that would fall under it moves above it
+    base_layer = len(out)
+
+    # ---- fixed furniture: north arrow top left (top right if a pin is under it), scale bar bottom left (or right)
+    pins = []
+    for k, x in enumerate(st.itertuples(), 1):
+        px, py = qll(float(x.lat), float(x.lon))
+        pins.append([k, px, py, px, py, x])          # number, drawn x, y, true x, y, row
+    # next-door stores: fan the later pin out with a thin line back to its true spot
+    for a in range(len(pins)):
+        for b_ in range(a):
+            if math.dist(pins[a][1:3], pins[b_][1:3]) < 2 * PIN_R + 6:
+                ang = math.radians(-60 + 40 * (a % 4))
+                pins[a][1] = pins[b_][1] + (2 * PIN_R + 10) * math.cos(ang)
+                pins[a][2] = pins[b_][2] + (2 * PIN_R + 10) * math.sin(ang)
+    pin_boxes = [(p[1] - PIN_R - 3, p[2] - PIN_R - 3, p[1] + PIN_R + 3, p[2] + PIN_R + 3) for p in pins]
     L_sc = 400 * sc
-    sbox = (left + 14 - 8, left + 14 - 8 + L_sc + 140)
+    sb_w, sb_h = L_sc + 140, 32
+    sb = None
+    for sx0 in (left + 14, BW - right - 14 - sb_w + 8):
+        box = (sx0 - 8, BH - bottom - 16 - 22, sx0 - 8 + sb_w, BH - bottom - 16 - 22 + sb_h)
+        if not any(_hit(box, pb, 4) for pb in pin_boxes):
+            sb = (sx0, box); break
+    if sb is None:
+        sx0 = left + 14; sb = (sx0, (sx0 - 8, BH - bottom - 38, sx0 - 8 + sb_w, BH - bottom - 6))
+    arrow = None
+    for ax in (left + 30, BW - right - 30):
+        box = (ax - 27, top + 34 - 21, ax + 27, top + 34 + 33)
+        if not any(_hit(box, pb, 4) for pb in pin_boxes) and not _hit(box, sb[1], 4):
+            arrow = (ax, box); break
+    if arrow is None:
+        arrow = (left + 30, (left + 3, top + 13, left + 57, top + 67))
+    hard = [arrow[1], sb[1]] + ([(0, 0, BW, 40)] if sample else [])
+    frame = (left + 4, top + 4, BW - right - 4, BH - bottom - 4)
+
+    # ---- soft labels: avenues at the uptown (right) edge, three street numbers at the bottom edge
+    soft = []   # (box, svg list)
+    u0 = (left + aw - cu) / sc
+    for name, x_ in (("Sixth Ave", -310.6), ("Fifth Ave", 0), ("Park Ave S", 311.4), ("Third Ave", 621.1), ("Seventh Ave", -585), ("Second Ave", 837.5)):
+        px, py = Q(u0 / SP, x_)
+        if top + 22 < py < BH - bottom - 40:
+            w_ = measure([name], size=16)[0] + 12
+            box = (BW - right - 4 - w_, py - 20, BW - right - 4, py + 2)
+            if any(_hit(box, h_, 2) for h_ in hard):
+                continue
+            soft.append((box, [f'<rect x="{box[0]:.1f}" y="{box[1]:.1f}" width="{w_:.1f}" height="22" rx="4" fill="{PAPER_WARM}" fill-opacity="0.85"/>',
+                               text(BW - right - 10, py - 3, name, 16, 600, STONE, "end")]))
+    vbot = (BH - bottom - cv) / sc
     for k in (14, 23, 30):
-        px, py = Q(k, v1 - 10)
+        px, py = Q(k, vbot - 10 / sc)
         if left + 30 < px < BW - right - 30:
             suf = "th" if 10 <= k % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(k % 10, "th")
             lab = f"{k}{suf} St"
-            half = 4.8 * len(lab) + 6
-            under = not (px + half < sbox[0] or px - half > sbox[1])
-            ly = BH - bottom - 10 - (44 if under else 0)
-            # a paper backing keeps the label readable where it meets the boundary line
-            out.append(f'<rect x="{px - half:.1f}" y="{ly - 16:.1f}" width="{2 * half:.1f}" height="21" rx="4" fill="{PAPER_WARM}" fill-opacity="0.9"/>')
-            text(px, ly, lab, 16, 600, STONE, "middle")
+            half = measure([lab], size=16)[0] / 2 + 7
+            ly = BH - bottom - 10
+            box = (px - half, ly - 16, px + half, ly + 5)
+            if any(_hit(box, h_, 2) for h_ in hard) or any(_hit(box, pb, 2) for pb in pin_boxes):
+                continue
+            soft.append((box, [f'<rect x="{box[0]:.1f}" y="{box[1]:.1f}" width="{2 * half:.1f}" height="21" rx="4" fill="{PAPER_WARM}" fill-opacity="0.9"/>',
+                               text(px, ly, lab, 16, 600, STONE, "middle")]))
+
+    # ---- store labels
+    names = [p[5].retailer_name for p in pins]
+    widths = measure(names) if labels == "names" else [0] * len(pins)
+
+    def candidates(p, w_):
+        px, py = p[1], p[2]
+        bw_ = w_ + 12
+        g = PIN_R + 6
+        yield ("right", (px + g, py - LABEL_H / 2, px + g + bw_, py + LABEL_H / 2), None)
+        yield ("left", (px - g - bw_, py - LABEL_H / 2, px - g, py + LABEL_H / 2), None)
+        yield ("above", (px - bw_ / 2, py - g - LABEL_H, px + bw_ / 2, py - g), None)
+        yield ("below", (px - bw_ / 2, py + g, px + bw_ / 2, py + g + LABEL_H), None)
+        d_ = PIN_R - 4
+        yield ("above-right", (px + d_, py - g - LABEL_H + 4, px + d_ + bw_, py - g + 4), None)
+        yield ("above-left", (px - d_ - bw_, py - g - LABEL_H + 4, px - d_, py - g + 4), None)
+        yield ("below-right", (px + d_, py + g - 4, px + d_ + bw_, py + g - 4 + LABEL_H), None)
+        yield ("below-left", (px - d_ - bw_, py + g - 4, px - d_, py + g - 4 + LABEL_H), None)
+        for rad in (60, 85, 115, 150, 190, 240):
+            for deg in (0, 180, -35, 35, 145, -145, -90, 90, -60, 60, 120, -120):
+                ex, ey = px + rad * math.cos(math.radians(deg)), py + rad * math.sin(math.radians(deg))
+                if math.cos(math.radians(deg)) >= 0:
+                    box = (ex, ey - LABEL_H / 2, ex + bw_, ey + LABEL_H / 2)
+                else:
+                    box = (ex - bw_, ey - LABEL_H / 2, ex, ey + LABEL_H / 2)
+                yield ("leader", box, (ex, ey))
+
+    def box_dist(box, x_, y_):
+        return math.hypot(max(box[0] - x_, 0, x_ - box[2]), max(box[1] - y_, 0, y_ - box[3]))
+
+    def ok(box, placed, me, use_soft, leader=False):
+        if box[0] < frame[0] or box[1] < frame[1] or box[2] > frame[2] or box[3] > frame[3]:
+            return False
+        # unambiguous: a name sits clearly nearer its own pin than any other pin (a leader line names its pin itself)
+        if not leader:
+            own = box_dist(box, pins[me][1], pins[me][2])
+            if any(box_dist(box, q[1], q[2]) < own + 14 for j, q in enumerate(pins) if j != me):
+                return False
+        if any(_hit(box, h_, 3) for h_ in hard):
+            return False
+        if any(_hit(box, pb, 2) for pb in pin_boxes):
+            return False
+        if any(_hit(box, b2, 4) for b2 in placed.values()):
+            return False
+        if use_soft and any(_hit(box, sb_[0], 2) for sb_ in soft):
+            return False
+        return True
+
+    def leader_ok(p, end, placed):
+        # the leader must not cross another pin or another name
+        x0, y0 = p[1], p[2]
+        for t in [k / 20 for k in range(4, 20)]:
+            qx, qy = x0 + (end[0] - x0) * t, y0 + (end[1] - y0) * t
+            pt = (qx - 1, qy - 1, qx + 1, qy + 1)
+            if any(_hit(pt, pb) for j, pb in enumerate(pin_boxes) if j != pins.index(p)):
+                return False
+            if any(_hit(pt, b2) for b2 in placed.values()):
+                return False
+        return True
+
+    def solve(order):
+        placed, how = {}, {}
+        for idx in order:
+            p, w_ = pins[idx], widths[idx]
+            got = None
+            for use_soft in (True, False):
+                for kind, box, end in candidates(p, w_):
+                    if ok(box, placed, idx, use_soft, end is not None) and (end is None or leader_ok(p, end, placed)):
+                        got = (kind, box, end); break
+                if got:
+                    break
+            if not got:
+                return None
+            placed[idx] = got[1]; how[idx] = got
+        return how
+    KINDS = ["right", "left", "above-right", "above-left", "below-right", "below-left", "above", "below", "leader"]
+    how = {}
+    if labels == "names":
+        import itertools
+        best = None
+        for order in itertools.permutations(range(len(pins))):
+            h_ = solve(order)
+            if h_ is not None:
+                score = sum(1 for v in h_.values() if v[0] == "leader") * 20 + sum(KINDS.index(v[0]) for v in h_.values())
+                if best is None or score < best[0]:
+                    best = (score, h_)
+                if score == 0:
+                    break
+        if best is None:
+            raise SystemExit("store names do not fit; use --labels numbers (the proposal's store table carries the names)")
+        how = best[1]
+    label_boxes = [v[1] for v in how.values()]
+    # soft labels that a store name covers are dropped
+    dropped = 0
+    for box, svg_ in soft:
+        if any(_hit(box, lb, 2) for lb in label_boxes):
+            dropped += 1; continue
+        out.extend(svg_)
     out.append("</g>")
-    # stores: numbered markers (order of --stores) with names; the label goes right unless it would leave the frame
-    boxes = []
-    for k, x in enumerate(st.itertuples(), 1):
-        px, py = qll(float(x.lat), float(x.lon))
-        fill = COBALT if x.buy_path_tier == "A" else INK
-        out.append(f'<circle cx="{px:.1f}" cy="{py:.1f}" r="17" fill="{fill}" stroke="{PAPER}" stroke-width="3"/>')
-        text(px, py + 6.5, k, 18, 700, PAPER, "middle")
-        label = x.retailer_name
-        w_est = 10.6 * len(label)
-        right_side = px + 24 + w_est < BW - right - 140
-        tx = px + 24 if right_side else px - 24
-        bx0 = (tx - 5) if right_side else (tx - w_est - 5)
-        out.append(f'<rect x="{bx0:.1f}" y="{py - 15:.1f}" width="{w_est + 10:.1f}" height="28" rx="5" fill="{PAPER}" fill-opacity="0.92"/>')
-        text(tx, py + 6.5, label, 19, 600, INK, "start" if right_side else "end")
-        boxes.append((min(bx0, px - 20), py - 20, max(bx0 + w_est + 10, px + 20), py + 20))
-    # the cluster's own label, in the first spot inside the line that no store label covers
+    # ---- draw: fan-out lines, leaders, pins, names
+    for p in pins:
+        if (p[1], p[2]) != (p[3], p[4]):
+            out.append(f'<path d="M{p[3]:.1f},{p[4]:.1f} L{p[1]:.1f},{p[2]:.1f}" stroke="{INK}" stroke-width="2"/>')
+            out.append(f'<circle cx="{p[3]:.1f}" cy="{p[4]:.1f}" r="4" fill="{INK}"/>')
+    for idx, (kind, box, end) in how.items():
+        if kind == "leader":
+            p = pins[idx]
+            ex = min(max(p[1], box[0]), box[2]); ey = min(max(p[2], box[1]), box[3])
+            ang = math.atan2(ey - p[2], ex - p[1])
+            out.append(f'<path d="M{p[1] + (PIN_R + 2) * math.cos(ang):.1f},{p[2] + (PIN_R + 2) * math.sin(ang):.1f} L{ex:.1f},{ey:.1f}" '
+                       f'stroke="{INK}" stroke-width="2"/>')
+    for p in pins:
+        fill = COBALT if p[5].buy_path_tier == "A" else INK
+        out.append(f'<circle cx="{p[1]:.1f}" cy="{p[2]:.1f}" r="{PIN_R}" fill="{fill}" stroke="{PAPER}" stroke-width="3"/>')
+        out.append(text(p[1], p[2] + 6.5, p[0], 18, 700, PAPER, "middle"))
+    for idx, (kind, box, end) in how.items():
+        out.append(f'<rect x="{box[0]:.1f}" y="{box[1]:.1f}" width="{box[2] - box[0]:.1f}" height="{LABEL_H}" rx="5" fill="{PAPER}" fill-opacity="0.94"/>')
+        out.append(text(box[0] + 6, box[1] + LABEL_H / 2 + 6.5, names[idx], LABEL_SIZE, 600, INK, "start"))
+    # the cluster's own label, in the first spot inside the line that no store pin or name covers
     lw, lh = 160, 28
-    for s_, x_ in ((25.5, -220), (19.0, -220), (27.5, 120), (17.5, 120), (22.0, 0), (28.5, -60), (16.0, -60)):
+    occupied = pin_boxes + label_boxes + hard
+    for s_, x_ in ((25.5, -220), (19.0, -220), (27.5, 120), (17.5, 120), (22.0, 0), (28.5, -60), (16.0, -60), (21.0, -150), (24.0, 150)):
         cx_, cy_ = Q(s_, x_)
         r_ = (cx_ - lw / 2, cy_ - lh / 2, cx_ + lw / 2, cy_ + lh / 2)
-        if not any(not (r_[2] < b[0] or r_[0] > b[2] or r_[3] < b[1] or r_[1] > b[3]) for b in boxes):
-            text(cx_, cy_ + 8, "Office cluster", 22, 700, COBALT, "middle", "display")
+        if not any(_hit(r_, b, 2) for b in occupied) and frame[0] < r_[0] and r_[2] < frame[2] and frame[1] < r_[1] and r_[3] < frame[3]:
+            out.append(text(cx_, cy_ + 8, "Office cluster", 22, 700, COBALT, "middle", "display"))
             break
-    # north arrow top left, scale bar bottom left
-    ax, ay = left + 30, top + 34
+    # north arrow and scale bar
+    ax, ay = arrow[0], top + 34
     th = grid.model()["theta_deg"]
     out.append(f'<circle cx="{ax}" cy="{ay + 6}" r="26" fill="{PAPER}" fill-opacity="0.9"/>')
     out.append(f'<g transform="rotate({90 - th:.1f} {ax} {ay})"><path d="M{ax},{ay - 18} L{ax + 8},{ay + 8} L{ax},{ay + 4} L{ax - 8},{ay + 8} Z" fill="{INK}"/></g>')
-    text(ax, ay + 26, "N", 12, 700, INK, "middle")
-    L = 400 * sc
-    sx0, sy0 = left + 14, BH - bottom - 16
-    out.append(f'<rect x="{sx0 - 8}" y="{sy0 - 22}" width="{L + 140:.1f}" height="32" rx="5" fill="{PAPER}" fill-opacity="0.92"/>')
-    out.append(f'<path d="M{sx0},{sy0} h{L:.1f}" stroke="{INK}" stroke-width="4"/>')
-    text(sx0 + L + 10, sy0 + 5, "400 m, 5 min", 15, 600, INK)
+    out.append(text(ax, ay + 26, "N", 12, 700, INK, "middle"))
+    sx0, sy0 = sb[0], BH - bottom - 16
+    out.append(f'<rect x="{sx0 - 8}" y="{sy0 - 22}" width="{sb_w:.1f}" height="{sb_h}" rx="5" fill="{PAPER}" fill-opacity="0.92"/>')
+    out.append(f'<path d="M{sx0},{sy0} h{L_sc:.1f}" stroke="{INK}" stroke-width="4"/>')
+    out.append(text(sx0 + L_sc + 10, sy0 + 5, "400 m, 5 min", 15, 600, INK))
     if sample:
         out.append(f'<rect x="0" y="0" width="{BW}" height="38" fill="#B3261E"/>')
-        text(BW / 2, 26, "SAMPLE: stores picked for a layout test, not a brand's real stockists", 18, 700, PAPER, "middle")
+        out.append(text(BW / 2, 26, "SAMPLE: stores picked for a layout test, not a brand's real stockists", 18, 700, PAPER, "middle"))
     body = "\n".join(out)
     svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {BW} {BH}" width="{BW}" height="{BH}" role="img" aria-labelledby="bt bd">'
            f'<title id="bt">Map of the Flatiron, NoMad and Union Square office cluster with {len(st)} stores</title>'
            f'<desc id="bd">Stores: {esc("; ".join(f"{i}. {n}" for i, n in enumerate(st.retailer_name, 1)))}. No office locations are shown. '
            f'Streets and parks: NYC Open Data (CSCL, NYC Parks).</desc>'
            f"<style>{font_css(used)}</style>\n{body}\n</svg>\n")
-    d = os.path.join(ROOT, "brand-maps")
+    d = out_dir or os.path.join(ROOT, "brand-maps")
     os.makedirs(d, exist_ok=True)
     open(os.path.join(d, f"{slug}.svg"), "w").write(svg)
-    print("brand map", slug, "stores", len(st), "bytes", len(svg))
+    edge = min(min(p[1] - left, BW - right - p[1], p[2] - top, BH - bottom - p[2]) - PIN_R for p in pins)
+    qa = {"slug": slug, "labels": labels, "stores": ids, "scale_px_per_m": round(sc, 4), "min_pin_edge_to_frame_px": round(edge, 1),
+          "placements": {names[k]: v[0] for k, v in how.items()}, "street_labels_dropped": dropped,
+          "scale_bar": "left" if sb[0] == left + 14 else "right", "north_arrow": "left" if arrow[0] == left + 30 else "right"}
+    print("brand map", slug, json.dumps(qa))
+    return qa
 
 
 if __name__ == "__main__":
@@ -403,11 +596,14 @@ if __name__ == "__main__":
     ap.add_argument("--stores", help="comma-separated retailer_ids from retailers.csv")
     ap.add_argument("--layout", default="landscape", choices=["landscape"])
     ap.add_argument("--sample", action="store_true", help="adds the SAMPLE banner (slug must start with SAMPLE)")
+    ap.add_argument("--labels", default="names", choices=["names", "numbers"],
+                    help="names (default): numbered pins with store names; numbers: numbered pins only, names in the proposal's table")
+    ap.add_argument("--out-dir", help="write the SVG here instead of brand-maps/ (QA runs)")
     a = ap.parse_args()
     FT_PY = a.ftpy
     if a.brand:
         if not a.stores:
             raise SystemExit("--brand needs --stores")
-        brand_map(a.brand, a.stores, a.sample)
+        brand_map(a.brand, a.stores, a.sample, a.labels, a.out_dir)
     else:
         main()

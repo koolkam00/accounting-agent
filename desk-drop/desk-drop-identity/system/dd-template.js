@@ -86,7 +86,8 @@
   // needs the founder's review (CONTRACTS section 4): a warning.
   // v1.4 (review round 3, R3-02): a wider net. The round-3 reviewer showed FDA's own structure or
   // function examples ("calcium builds strong bones", "fiber maintains bowel regularity",
-  // "antioxidants maintain cell integrity"; FDA, "Structure/Function Claims", opened 2026-10-24)
+  // "antioxidants maintain cell integrity"; FDA, "Structure/Function Claims", opened 2026-10-24,
+  // _work/research/sources.md S27)
   // and plain sales sentences ("Sales rose 20%", "converted 12% of tasters") passing. The list now
   // has (a) a verb from the structure or function family followed, within three words, by a body
   // or effect word; (b) standalone health words; (c) disease words; (d) sales, lift, return and
@@ -118,7 +119,7 @@
     'return on (?:ad )?(?:spend|investment)', '\\d+(?:\\.\\d+)?\\s?x (?:return|roi|roas|more sales)',
     'conversions?', 'conversion rate', '(?<!\\ban?\\s)convert(?:s|ed|ing)?', 'trial[- ]to[- ](?:purchase|buy)',
     'acquisition', 'acquire[sd]?', 'new (?:customers|buyers|shoppers)',
-    '(?:drove|drives?|driven|driving|generated?|generates|generating|grew|grows?|grow|increased?|increases|increasing|boost(?:s|ed)?|lifts?|lifted) (?:\\S+ ){0,3}?(?:sales|buyers|customers|purchases|revenue|demand|trial|velocity|traffic)',
+    '(?:drove|drives?|driven|driving|generated?|generates|generating|grew|grows?|grow|increased?|increases|increasing|boost(?:s|ed)?|lifts?|lifted) (?:\\S+ ){0,3}?(?:sales(?! lift)|buyers|customers|purchases|revenue|demand|trial|velocity|traffic)',
     '(?:sales|revenue|purchases|orders|velocity|demand|units sold) (?:\\w+ ){0,2}?(?:rose|grew|increased|jumped|climbed|spiked|soared|doubled|tripled|went up|improved|up)',
     'incremental (?:sales|units|purchases|revenue|buyers|customers|demand|trial)',
     // (e) superlatives

@@ -19,6 +19,17 @@ S["candidates"] = len(cand)
 S["candidates_by_conf"] = cand.confidence.value_counts().to_dict()
 S["candidates_by_band"] = cand.headcount_band.value_counts().to_dict()
 S["candidates_conf_band"] = pd.crosstab(cand.confidence, cand.headcount_band).to_dict()
+BAND_ORDER = ["40-75", "76-150", "151-250", "251-500", "under-40", "unknown"]
+CONF_ORDER = ["high", "medium", "low"]
+_xt = pd.crosstab(cand.headcount_band, cand.confidence).reindex(index=BAND_ORDER, columns=CONF_ORDER, fill_value=0)
+S["conf_band_table"] = [{"band": bnd, **{k: int(_xt.at[bnd, k]) for k in CONF_ORDER}, "total": int(_xt.loc[bnd].sum())} for bnd in BAND_ORDER]
+S["conf_band_table"].append({"band": "all", **{k: int(_xt[k].sum()) for k in CONF_ORDER}, "total": int(_xt.values.sum())})
+S["candidates_by_parent"] = cand[cand.parent_company != "unknown"].parent_company.to_dict()
+_walked = set(t.split(" ")[0] for v in walk.stops_here for t in v.split(";") if t)
+S["walk_coverage"] = {"buildings": f"{len(set(b.building_id) & _walked)} of {len(b)}", "retailers": f"{len(set(r.retailer_id) & _walked)} of {len(r)}",
+                      "coworking_inside": f"{len(set(w[w.in_boundary == 'Y'].coworking_id) & _walked)} of {int((w.in_boundary == 'Y').sum())}",
+                      "coworking_outside": f"{len(set(w[w.in_boundary == 'N'].coworking_id) & _walked)} of {int((w.in_boundary == 'N').sum())}"}
+S["coworking_by_conf_inside"] = w[w.in_boundary == "Y"].confidence.value_counts().to_dict()
 S["candidates_by_lease"] = cand.lease_status.value_counts().to_dict()
 S["candidates_scope"] = cand.headcount_scope.value_counts().to_dict()
 # review round 2: second headcounts, HQ outside New York, parents
@@ -83,9 +94,10 @@ S["route"]["rule"] = _rl.get("rule", "")
 S["route"]["stop_list"] = [f"{x.stop}. {x.company_name}, {x.street_address} ({x.lobby_type}; {x.headcount_band})" for x in route.itertuples()]
 # review round 1 numbers
 band4 = ["40-75", "76-150", "151-250", "251-500"]
-S["candidates_occupied_banded"] = int(((cand.lease_status == "occupied") & cand.headcount_band.isin(band4)).sum())
-S["candidates_banded"] = int(cand.headcount_band.isin(band4).sum())
-S["candidates_banded_hq"] = cand[cand.headcount_band.isin(band4)].hq_in_nyc.value_counts().to_dict()
+S["candidates_occupied_banded"] = int(((banded.lease_status == "occupied")).sum())
+S["candidates_occupied_banded_4"] = int(((cand.lease_status == "occupied") & cand.headcount_band.isin(band4)).sum())
+S["candidates_banded_4"] = int(cand.headcount_band.isin(band4).sum())   # review round 3 (R3-09): 45 banded = 44 in the four bands + 1 under-40
+S["candidates_banded_hq"] = banded.hq_in_nyc.value_counts().to_dict()
 S["candidates_hq"] = cand.hq_in_nyc.value_counts().to_dict()
 S["candidates_under40_founder_call"] = cand[cand.headcount_band == "under-40"].company_name.tolist()
 S["near_classes"] = n.near_miss_class.value_counts().to_dict()

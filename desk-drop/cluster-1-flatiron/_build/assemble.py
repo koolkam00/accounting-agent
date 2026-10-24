@@ -83,7 +83,8 @@ def apply_merges(c):
 
 
 def apply_overrides(c):
-    for name, o in list(R.OVERRIDES.items()) + list(R.REVIEW1_OVERRIDES.items()) + list(R.REVIEW2_OVERRIDES.items()):
+    for name, o in (list(R.OVERRIDES.items()) + list(R.REVIEW1_OVERRIDES.items()) + list(R.REVIEW2_OVERRIDES.items())
+                    + list(R.REVIEW3_OVERRIDES.items())):
         idx = c.index[c.company_name == name]
         assert len(idx) == 1, name
         i = idx[0]
@@ -140,6 +141,12 @@ def audit_confidence(c):
         recent = fresh(a_url, a_date) or fresh(b_url, b_date)
         recent_dated = dated_fresh(a_url, a_date) or dated_fresh(b_url, b_date)
         independent = bool(b_url) and domain(b_url) != domain(a_url)
+        # review round 3 (R3-06): the company's own page and an employer-editable profile are not independent of each other
+        site = domain(r.website) if r.website not in ("", "unknown") else ""
+        own_a = r.get("address_source_type", "") == "company-site" or (bool(site) and domain(a_url) == site)
+        own_b = bool(site) and domain(b_url) == site
+        ed_a, ed_b = domain(a_url) in R.SUBJECT_EDITABLE_DOMAINS, domain(b_url) in R.SUBJECT_EDITABLE_DOMAINS
+        editable_pair = (own_a and ed_b) or (ed_a and own_b) or (ed_a and ed_b)
         same_release = "same" in r.notes.lower() and ("announcement" in r.notes.lower() or "release" in r.notes.lower())
         conf = r.confidence
         new = conf
@@ -151,6 +158,9 @@ def audit_confidence(c):
                 new = "low"; why.append("the only current source is an undated third-party profile (Built In, Deskpass or LiquidSpace), which can only confirm a dated or own-site source")
             elif not independent:
                 new = "medium"; why.append("second source is the same publisher or missing")
+            elif editable_pair:
+                new = "medium"; why.append("review round 3: the second source is an employer-editable profile (Built In), which does not "
+                                           "independently confirm the company's own page")
             elif same_release and r.research_slice.startswith("S1") and r.company_name in ("Selldorf Architects",):
                 new = "medium"; why.append("both articles trace to one broker announcement")
         if conf == "medium" and not recent:
@@ -160,6 +170,12 @@ def audit_confidence(c):
         if new != conf:
             c.at[i, "confidence"] = new
             c.at[i, "notes_assembly"] = (c.at[i, "notes_assembly"] + f" Confidence lowered at assembly from {conf} to {new}: {'; '.join(why)}.").strip()
+        # review round 3 (R3-04): occupied needs a dated source under 24 months or the company's own live page
+        if c.at[i, "lease_status"] == "occupied" and not recent_dated:
+            c.at[i, "lease_status"] = "occupancy-unconfirmed"
+            txt = R.OCCUPIED_NOTE if recent else ("Review round 3: lease status set from occupied to occupancy-unconfirmed: no source "
+                                                  "under 24 months places it here. Check the lobby directory on the walk.")
+            c.at[i, "notes_assembly"] = (c.at[i, "notes_assembly"] + " " + txt).strip()
     return c
 
 
@@ -308,6 +324,28 @@ def headcount_second(c):
     return c
 
 
+def review3_late(c):
+    """Review round 3: parents and HQ fields set after hq_fields (R3-05, R3-09), year-only dates moved to notes (R3-10)."""
+    for name, o in R.REVIEW3_OVERRIDES.items():
+        i = c.index[c.company_name == name][0]
+        for f in ("parent_company", "parent_company_source", "hq_city", "hq_in_nyc"):
+            if f in o:
+                c.at[i, f] = o[f]
+    for name, (pc_, src_) in R.PARENT_R3.items():
+        idx = c.index[c.company_name == name]
+        assert len(idx) == 1, name
+        assert c.at[idx[0], "parent_company"] == "unknown", name
+        c.at[idx[0], "parent_company"], c.at[idx[0], "parent_company_source"] = pc_, src_
+    for name, (col, note) in R.HEADCOUNT_DATE_R3.items():
+        idx = c.index[c.company_name == name]
+        assert len(idx) == 1, name
+        i = idx[0]
+        assert re.fullmatch(r"\d{4}", str(c.at[i, col])), (name, col, c.at[i, col])
+        c.at[i, col] = ""
+        c.at[i, "notes_assembly"] = (c.at[i, "notes_assembly"] + " " + note).strip()
+    return c
+
+
 # ------------------------------------------------------------------ buildings
 def load_buildings():
     fr = []
@@ -386,7 +424,7 @@ def merge_buildings(b, c, pl):
         rows.append({
             "bbl": key if not key.startswith("addr:") else "",
             "street_address": canon,
-            "also_known_as": "; ".join(a for a in addrs if a != canon),
+            "also_known_as": ";".join(a for a in addrs if a != canon),
             "building_name": bname,
             "lat": gr.lat, "lon": gr.lon,
             "lobby_type": lobby, "lobby_source_url": lobby_url,
@@ -458,6 +496,22 @@ def load_coworking():
                     "found_date": R.TODAY})
         new.append(row)
     w = pd.concat([w, pd.DataFrame(new)], ignore_index=True).fillna("")
+    # review round 3: second sources and note rewrites (R3-06, R3-07), then the operator-written-listing rule (R3-06)
+    for i, r in w.iterrows():
+        for f, v in R.COWORKING_REVIEW3.get(r.coworking_id, {}).items():
+            if f == "notes_add":
+                w.at[i, "notes"] = (w.at[i, "notes"] + " " + v).strip()
+            elif f.endswith("_replace"):
+                col = "notes" if f == "notes_replace" else f[: -len("_replace")]
+                for o_, n_ in v:
+                    assert o_ in w.at[i, col], (r.coworking_id, o_)
+                    w.at[i, col] = w.at[i, col].replace(o_, n_)
+            else:
+                w.at[i, f] = v
+    for i, r in w.iterrows():
+        if r.confidence == "high" and domain(r.source_url) not in R.THIRD_PARTY_DOMAINS and domain(r.second_source_url) in R.SUBJECT_EDITABLE_DOMAINS:
+            w.at[i, "confidence"] = "medium"
+            w.at[i, "notes"] = (w.at[i, "notes"] + " " + R.COWORKING_EDITABLE_NOTE).strip()
     return w
 
 
@@ -624,6 +678,35 @@ def fix_pins(df, label):
     return df
 
 
+def clamp_lots(df, label, lots_):
+    """Review round 3 (R3-03): every pin inside its own MapPLUTO tax lot (frontage.clamp_to_lot)."""
+    for i, r in df.iterrows():
+        if not r.lat or not r.get("bbl"):
+            continue
+        lot = lots_.get(str(r.bbl).split(".")[0])
+        res = frontage.clamp_to_lot(r.street_address.split(",")[0], df.at[i, "lat"], df.at[i, "lon"], lot,
+                                    df.at[i, "corner_side_street"] if "corner_side_street" in df.columns else "")
+        if not res:
+            continue
+        la, lo, note = res
+        t = frontage.face(la, lo, r.street_address.split(",")[0])
+        if t["testable"] and not t["ok"]:
+            # the recorded lot is not on the addressed block face (a geocoder bbl across the street): keep the frontage pin
+            pa_ = (lot or {}).get("address", "")
+            df.at[i, "pin_note"] = (str(df.at[i, "pin_note"] or "") + f" Review round 3: the tax lot recorded for this row "
+                                    f"(MapPLUTO address '{pa_}') is not on the addressed block face, so the pin stays on the "
+                                    f"address's frontage; bbl to confirm.").strip()
+            PIN_LOG.append((label, r.street_address.split(",")[0], "lot-conflict"))
+            continue
+        name_key = r.get("retailer_name", "") or r.get("location_name", "")
+        if name_key in R.PIN_OVERRIDES:
+            note = note.replace("the pin sat", "the store's own published coordinate sat")
+        df.at[i, "lat"], df.at[i, "lon"] = f"{la:.6f}", f"{lo:.6f}"
+        df.at[i, "pin_note"] = (str(df.at[i, "pin_note"] or "") + " " + note).strip()
+        PIN_LOG.append((label, r.street_address.split(",")[0], "lot"))
+    return df
+
+
 # ------------------------------------------------------------------ main
 def main():
     c = load_companies()
@@ -637,6 +720,7 @@ def main():
     c = normalise_company_fields(c)
     c = hq_fields(c)
     c = headcount_second(c)
+    c = review3_late(c)
 
     b_raw = load_buildings()
     # company rows whose tax lot has no slice building row: add a bare row from the company data
@@ -658,6 +742,9 @@ def main():
     assert not missing, missing
 
     c = fix_pins(c, "company"); b = fix_pins(b, "building"); w = fix_pins(w, "coworking"); r = fix_pins(r, "retailer")
+    lots_ = frontage.lots(list(c.bbl) + list(b.bbl) + list(w.bbl) + list(r.bbl))
+    c = clamp_lots(c, "company", lots_); b = clamp_lots(b, "building", lots_)
+    w = clamp_lots(w, "coworking", lots_); r = clamp_lots(r, "retailer", lots_)
     for row in sorted(set(PIN_LOG)):
         print("pin fix:", row)
     # geometry for everything
