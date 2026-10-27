@@ -101,9 +101,15 @@ def main():
     if n:
         fails.append("formula errors: %s" % errs[:5])
     hdr = so[0]
+    # Asked of E in review round 2 (R2-05), after E's files were published: a blank or missing column means "no
+    # check", so E's current files must still load (0 formula errors above). Reported, not failed, until E adds them.
+    pending = {"in_coworking", "in_boundary"}
     for need in T.SIGNED_OFFICES_REQUESTED if hasattr(T, "SIGNED_OFFICES_REQUESTED") else []:
         if need not in hdr:
-            fails.append("E's signed_offices.csv lacks requested column %s" % need)
+            if need in pending:
+                print("  NOTE E's signed_offices.csv does not carry %s yet (requested in review round 2; blank = no check)" % need)
+            else:
+                fails.append("E's signed_offices.csv lacks requested column %s" % need)
     for need in T.PAID_BRANDS_REQUESTED if hasattr(T, "PAID_BRANDS_REQUESTED") else []:
         if need not in pb[0]:
             fails.append("E's paid_brands.csv lacks requested column %s" % need)

@@ -89,7 +89,7 @@ Version 1.3 · 2026-10-24 (review round 2 fixes: survey and link totals count on
 | `tests/test_intake_mapping.py` | The founder-side form answers come out in exactly the CONTRACTS 6.3 values |
 | `tests/test_e_handoff.py` | The outreach workstream's own SAMPLE `signed_offices.csv` and `paid_brands.csv` pasted into a tracker: read by column name, offices fill, dashboard checks work both ways, and E's payments are reconciled with the invoices tab (1 / 0 / 1) |
 | `tests/test_exception.py` | The exceptions, each as a tracker on its day: an office that declines at the door (report, messages, debrief, export, credit check), a delivered row logged by mistake, a short shipment, an unqualified brand and blank billing details, a rename in one place only, the founding-tier limits |
-| `tests/test_direct.py` | Review round 2: direct-ship receiving (no false short shipment at T-5, a short reserve, a short carton, cartons logged as delivered only), answers from an office off the drop kept out of every number and quote while the report renders, the roster and delivered lines on the page, NO REPORT YET, the direct-ship documents, day-3 grammar, the final reserve and export, the roster rules (two full declines, coworking, boundary, one category per drop), and the capacity warning after the form tab is replaced |
+| `tests/test_direct.py` | Review round 2: direct-ship receiving (no false short shipment at T-5, a short reserve, a short carton, cartons logged as delivered only), answers from an office off the drop kept out of every number and quote while the report renders, the roster and delivered lines on the page, NO REPORT YET, the direct-ship documents, day-3 grammar, the final reserve and export, the roster rules (two full declines, coworking, boundary, one category per drop), the capacity warning after the form tab is replaced, and the delivered line when one office's count is only the brand's packing list |
 | `tests/test_retention.py` | The 12-month deletion: freeze, delete the survey tab, recalculate; every survey number and the export unchanged; without the freeze, a check |
 | `tests/test_links.py` | Every QR (printed card and PNG) followed through the redirects to the right campaign's form with the right office's card code; the Short.io import file says the same and names no office |
 | `tests/test_office_summary.py` | Office summaries quote no SAMPLE name and stay word for word apart from [name removed]; with a higher threshold, small office-brand groups show the count only |
@@ -170,7 +170,7 @@ python3 tools/make_debrief.py tracker.xlsx DRP-002 out/debriefs --reports out/re
 python3 tools/export_actuals.py tracker.xlsx exports/              # T+10, and after day 30
 python3 tools/freeze_survey.py tracker.xlsx CMP-004 out/           # 12 months on, before deleting the answers
 python3 tools/build_tracker.py [--size full] [--out X.xlsx]        # rebuild the blank tracker
-bash tests/run_all.sh                                              # every check (about 5 minutes)
+bash tests/run_all.sh                                              # every check (about 9 minutes)
 bash tests/run_all.sh --dry-runs                                   # and the four replays (about 40 minutes)
 ```
 

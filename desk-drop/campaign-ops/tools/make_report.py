@@ -223,10 +223,11 @@ def page_notes(lad, tr=None):
             if credited else ("A missing office is not charged: a credit note follows." if missing == 1 else "Missing offices are not charged: a credit note follows.")))
     src = [o["delivered_count_source"] for o in ondrop if o["units_delivered"]]
     office, plist = src.count("office_count"), src.count("packing_list")
+    others = len(src) - office - plist  # counted by us (founder or courier) at handoff
     if office:
         out.append(("Delivered: each office counted its own carton on arrival (the brand shipped direct), not us at handoff." if office == len(src) else
-                    "Delivered: %d of the %d offices counted their own cartons on arrival (the brand shipped direct); we counted the other %s at handoff." % (
-                        office, len(src), "one" if len(src) - office == 1 else str(len(src) - office))))
+                    "Delivered: %d of the %d offices counted their own cartons on arrival (the brand shipped direct)%s." % (
+                        office, len(src), ("; we counted %s%s at handoff" % ("" if plist else "the other ", "one" if others == 1 else str(others))) if others else "")))
     if plist:
         out.append("Delivered: at %d office%s the count is the brand's packing list; nobody counted it." % (plist, "" if plist == 1 else "s"))
     return out

@@ -104,10 +104,11 @@ def delivered_note(lad):
     src = [o["delivered_count_source"] for o in lad["offices"] if o["on_drop"] == "Y" and o["units_delivered"]]
     office, plist = src.count("office_count"), src.count("packing_list")
     out = []
+    others = len(src) - office - plist  # counted by us (founder or courier) at handoff
     if office:
         out.append(("Delivered: counted by each office on arrival (you shipped straight to them), not by us at handoff." if office == len(src) else
-                    "Delivered: counted on arrival by %d of the %d offices (you shipped straight to them); we counted the other %s at handoff." % (
-                        office, len(src), "one" if len(src) - office == 1 else str(len(src) - office))))
+                    "Delivered: counted on arrival by %d of the %d offices (you shipped straight to them)%s." % (
+                        office, len(src), ("; we counted %s%s at handoff" % ("" if plist else "the other ", "one" if others == 1 else str(others))) if others else "")))
     if plist:
         out.append("At %d office%s the delivered count is your packing list: nobody counted it." % (plist, "" if plist == 1 else "s"))
     return ("\n" + " ".join(out) + "\n") if out else ""

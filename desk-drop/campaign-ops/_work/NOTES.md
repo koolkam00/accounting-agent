@@ -181,3 +181,16 @@ Findings: 1 blocker, 2 majors, 6 minors, all from the reviewer's direct-ship SAM
   direct folder (H's DRP-004 is Schedule row 10).
 - Sizes: six-months 53,397 formula cells (6,741 INDIRECT), full 89,807 (11,901). Longest formula unchanged
   (brands.e_payment_check, 14,459 characters); campaigns.checks now 9,156 (was 6,980).
+- Resumed after an interruption (12:05 UTC): the four dry runs had finished on the final tracker code (zero 44 days,
+  standard 57, exception 57, direct 48; 0 problems each). First full suite run on that code: test_e_handoff FAILED because
+  in_coworking and in_boundary (asked of E this round) are not in E's published files yet; the test now reports them as
+  a NOTE (blank = no check; E's files still load with 0 formula errors). Also found: the delivered line (page and report
+  email) said "we counted the other N at handoff" including offices whose count is only the packing list; fixed in
+  make_report.page_notes and make_messages.delivered_note, test_direct case 10. No dry run has a packing_list row
+  (checked on all four final trackers), so no replay output changes.
+- Looked at (rendered at 70 to 90 dpi): direct tracking sheet (4 pages and the 390 px phone PNG), CMP-007 and CMP-008
+  reports, the exception CMP-006 report (roster line), the direct kit checklist (reserve 52 and 52), and the T-3, T-1,
+  day-3 and report-email drafts.
+- Suite: tests/run_all.sh ALL PASS in 8 min 53 s (138 links; 337 text drafts and 116 CSVs checked; H load 4 runs, SHA
+  unchanged). Full size rebuilt to check: 89,807 formula cells, 11,901 INDIRECT. H copy, DRP-004: units_received 1,065,
+  delivered 961, survey_responses 127, contribution 2,190 (tracker 2,345 before overhead).

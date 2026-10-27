@@ -27,6 +27,8 @@ builds a tracker as the founder would have it on one day, recalculates it with L
     on one drop raise a check.                                                                                 (R2-05)
  9. The dashboard's "Tabs over 90% full" survives replacing the office_form tab (INDIRECT), and no formula refers to
     office_form or brand_form directly.                                                                         (R2-04)
+10. The delivered line on the page and in the report email when one office's count is the brand's packing list:
+    "we counted" names only the offices counted at handoff.                                                     (R2-03)
 Writes only to a temporary folder.
 """
 import copy
@@ -280,6 +282,29 @@ def main():
     r9 = RC.recalc(p9, os.path.join(tmp, "forms-r.xlsx"))
     d9 = DR.dashboard_checks(r9)[0]
     ok(d9.get("Tabs over 90% full (rows below the last formula row are not counted)") == 1, "office_form replaced and over 90%%: dashboard %s" % d9)
+
+    # 10. The delivered line when one office's count is only the brand's packing list: "we counted" names only the
+    #     offices counted at handoff (found while fixing R2-03(e); the replays have no packing-list row).
+    import make_messages as MM
+    import make_report as MR
+
+    def fake(srcs):
+        return {"campaign": {"offices_contracted": len(srcs), "brand_name": "SAMPLE X", "tier": "standard", "campaign_id": "SAMPLE-C"},
+                "turned_away": [], "offices": [{"on_drop": "Y", "units_delivered": 40, "delivered_count_source": s} for s in srcs]}
+    for srcs, want_page, want_mail in (
+            (["office_count"] * 8 + ["packing_list"],
+             ["Delivered: 8 of the 9 offices counted their own cartons on arrival (the brand shipped direct).",
+              "Delivered: at 1 office the count is the brand's packing list; nobody counted it."],
+             "Delivered: counted on arrival by 8 of the 9 offices (you shipped straight to them). At 1 office the delivered count is your packing list: nobody counted it."),
+            (["office_count"] * 7 + ["packing_list", "founder_count"],
+             ["Delivered: 7 of the 9 offices counted their own cartons on arrival (the brand shipped direct); we counted one at handoff.",
+              "Delivered: at 1 office the count is the brand's packing list; nobody counted it."], None),
+            (["founder_count"] * 9, [], "")):
+        got = MR.page_notes(fake(srcs))
+        ok(got == want_page, "page delivered line for %s: %s" % (sorted(set(srcs)), got))
+        if want_mail is not None:
+            gm = MM.delivered_note(fake(srcs)).strip()
+            ok(gm == want_mail, "report-email delivered line for %s: %r" % (sorted(set(srcs)), gm))
 
     for f in fails:
         print("  FAIL " + f)
