@@ -1,0 +1,61 @@
+Monthly steady state and break-even
+Engine rows below compute one drop; the monthly view multiplies by drops per month and pays overhead once.
+"Planning estimates, not a forecast. Row 7, 'Plan reading (e), fixed for comparison', holds the plan's own figures and does not move with Inputs. Every other row, the 'Active scenario' column and every break-even line follow Inputs."
+
+Case,,,,Inputs to the engine,,,,,,,,,Revenue,,,,,,Hard costs,,,,,,,,Founder hours by activity,,,,,,,,Result,,Split
+Drop or case,Drop date,Delivery model,Tier,Offices,New offices,Brands,of which renewals,of which founding-rate renewals,Standard price per office,Founding price per office,Storage allocated (1/0),Card processing (1/0),Drop runs (1/0),New founding brands,New standard brands,Revenue at founding rate,Revenue at standard rate,Revenue,Display kits,Transport,Kit mailing,Card processing,Storage allocation,Software allocation,Insurance allocation,Hard costs,brand_sales (h),office_coordination (h),receiving_kitting (h),drop_day (h),checks_pickup (h),reporting_debriefs (h),admin_invoicing (h),Founder hours,Contribution,Contribution per founder hour,"Direct costs (kits, transport, mailing, processing)",Overhead allocations (views of monthly costs)
+"Plan reading (e), fixed for comparison: one three-brand courier drop at the plan's figures",,courier,standard,10,0,3,0,0,150,120,1,1,1,0,3,0,4500,4500,80,300,0,135,75,30,50,670,18,10,4,8,4,6,2,52,3830,73.6538,515,155
+"Standard drop on Inputs today: brands per drop, steady-state model and offices, all new brands",,courier,standard,10,0,3,0,0,150,120,1,1,1,0,3,0,4500,4500,80,300,0,135,75,30,50,670,18,10,4,8,4,6,2,52,3830,73.6538,515,155
+Active scenario: one steady-state drop,,courier,standard,10,0,3,1.2,0,150,120,1,1,1,0,1.8,0,4500,4500,80,300,0,135,75,30,50,670,13.2,10,4,8,4,6,2,47.2,3830,81.1441,515,155
+"Break-even: one-brand standard drop, new brand (steady-state model)",,courier,standard,10,0,1,0,0,150,120,1,1,1,0,1,0,1500,1500,80,300,0,45,75,30,50,580,6,10,3,8,4,2,2,35,920,26.2857,425,155
+Crossing: 1 new brand,,courier,standard,10,0,1,0,0,150,120,1,1,1,0,1,0,1500,1500,80,300,0,45,75,30,50,580,6,10,3,8,4,2,2,35,920,26.2857,425,155
+Crossing: 2 new brands,,courier,standard,10,0,2,0,0,150,120,1,1,1,0,2,0,3000,3000,80,300,0,90,75,30,50,625,12,10,3.5,8,4,4,2,43.5,2375,54.5977,470,155
+"Crossing at the active renewal rate, 1 brand",,courier,standard,10,0,1,0.4,0,150,120,1,1,1,0,0.6,0,1500,1500,80,300,0,45,75,30,50,580,4.4,10,3,8,4,2,2,33.4,920,27.5449,425,155
+"Crossing at the active renewal rate, 2 brands",,courier,standard,10,0,2,0.8,0,150,120,1,1,1,0,1.2,0,3000,3000,80,300,0,90,75,30,50,625,8.8,10,3.5,8,4,4,2,40.3,2375,58.933,470,155
+"Crossing: direct-ship, 1 new brand",,direct-ship,standard,10,0,1,0,0,150,120,1,1,1,0,1,0,1500,1500,80,0,0,45,75,30,50,280,6,10,1,3,4,2,2,28,1220,43.5714,125,155
+"Crossing: direct-ship, 2 new brands",,direct-ship,standard,10,0,2,0,0,150,120,1,1,1,0,2,0,3000,3000,80,0,0,90,75,30,50,325,12,10,1.5,3,4,4,2,36.5,2675,73.2877,170,155
+Price crossing: standard drop at the first sensitivity price,,courier,standard,10,0,3,0,0,100,120,1,1,1,0,3,0,3000,3000,80,300,0,90,75,30,50,625,18,10,4,8,4,6,2,52,2375,45.6731,470,155
+Price crossing: standard drop at the first price plus one step,,courier,standard,10,0,3,0,0,125,120,1,1,1,0,3,0,3750,3750,80,300,0,112.5,75,30,50,647.5,18,10,4,8,4,6,2,52,3102.5,59.6635,492.5,155
+
+
+Monthly steady state
+,Line,Plan reading (e),Active scenario,Unit,How it is built
+,Drops per month,2,2,drops,Inputs / Scenarios
+,Revenue,9000,9000,USD per month,drops x one drop
+,Hard costs (incl. overhead allocations),1340,1340,USD per month,drops x one drop
+,Founder hours,104,94.4,hours per month,drops x one drop
+,Contribution (plan definition),7660,7660,USD per month,revenue less hard costs
+,Contribution per founder hour,73.6538,81.1441,USD per hour
+,Contribution per year at this rate,91920,91920,USD per year,before overhead not absorbed and before tax
+,Founder hours per week,24,21.7846,hours per week,monthly hours / weeks per month
+,Overhead paid per month,310,310,USD per month,software + insurance + phone + storage if unit
+,Overhead allocated to drops per month,310,310,USD per month,drops x allocation per drop
+,Overhead not absorbed by drops,0,0,USD per month,paid less allocated; zero at two drops a month
+,Office-paid tier revenue (gross),0,0,USD per month,scenario B only
+,Office-paid tier cost to serve (needs quote),0,0,USD per month,blank until quoted
+,Office-paid tier counted in the net?,no office-paid tier,no office-paid tier,,"left out until its cost to serve is quoted, so an unpriced cost never flatters the net"
+,Drop-day hours handed to a hire,0,0,hours per month,scenario A rule: hire above two drops a month
+,Delivery hire cost,0,0,USD per month
+,"Net monthly contribution after overhead, office tier and hire",7660,7660,USD per month,office tier only when 'counted in the net' says yes
+,Founder hours net of the hire,104,94.4,hours per month
+,Net contribution per founder hour,73.6538,81.1441,USD per hour
+,New brand wins needed per month,6,3.6,wins,brand slots less renewals
+,Qualified brand conversations per month,30,18,conversations,wins / close rate
+,Office roster so no office gets more than one drop a month,20,20,offices,drops x offices per drop
+
+Break-even (every line follows Inputs)
+,Measure,Value,,Unit,How it is built
+,"Startup outlays to recover (one-time cash, Inputs section 11)",4125,,USD,sum of startup cash amounts
+,Contribution of a one-brand standard drop,920,,USD per campaign,engine row 10
+,"Contribution per brand on a standard drop (price, brands per drop and delivery model on Inputs)",1276.6667,,USD per campaign,engine row 8 / its brands; shared costs split equally
+,"Campaigns to recover startup cash, one-brand drops",5,,campaigns,"startup / contribution, rounded up"
+,Brand campaigns on standard drops to recover startup cash (brands per drop on Inputs),4,,brand campaigns,"startup / contribution per brand, rounded up"
+,Standard drops to recover startup cash (brands per drop on Inputs),2,,drops,"startup / contribution of the whole standard drop (engine row 8), rounded up"
+,One-brand standard drop: contribution before overhead allocations,1075,,USD per campaign,revenue less direct costs
+,Overhead paid per month,310,,USD per month,Monthly steady state
+,Standard campaigns a month to cover overhead,1,,campaigns per month,"overhead / contribution before allocations, rounded up"
+,"Brands per drop where contribution per hour reaches the Gate 3 target, new brands",1.8058,,brands per drop,linear in brands: solved from engine rows 11 and 12
+,Smallest whole number of brands that clears it,2,,brands per drop
+,"Same, at the active renewal rate",1.6757,,brands per drop,engine rows 13 and 14
+,"Same, brands ship direct",1.1748,,brands per drop,engine rows 15 and 16
+,Standard price per office where a standard drop reaches the target (brands per drop on Inputs),107.732,,USD per office,linear in price: engine rows 17 and 18

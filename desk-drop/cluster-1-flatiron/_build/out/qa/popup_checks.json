@@ -1,0 +1,50 @@
+[
+ {
+  "query": "853 Broadway",
+  "top": 120,
+  "bottom": 553,
+  "left": 56,
+  "right": 353,
+  "heading_visible": true,
+  "overlaps_controls": false,
+  "inside_view": true,
+  "list_scrolls": true,
+  "items": 10
+ },
+ {
+  "query": "11 East 26th",
+  "top": 120,
+  "bottom": 574,
+  "left": 56,
+  "right": 353,
+  "heading_visible": true,
+  "overlaps_controls": false,
+  "inside_view": true,
+  "list_scrolls": true,
+  "items": 12
+ },
+ {
+  "query": "41 Madison",
+  "top": 120,
+  "bottom": 646,
+  "left": 56,
+  "right": 353,
+  "heading_visible": true,
+  "overlaps_controls": false,
+  "inside_view": true,
+  "list_scrolls": true,
+  "items": 9
+ },
+ {
+  "query": "53 West 23rd",
+  "top": 122,
+  "bottom": 437,
+  "left": 56,
+  "right": 353,
+  "heading_visible": true,
+  "overlaps_controls": false,
+  "inside_view": true,
+  "list_scrolls": false,
+  "items": 4
+ }
+]

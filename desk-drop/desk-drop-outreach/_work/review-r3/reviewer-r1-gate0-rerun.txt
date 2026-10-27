@@ -1,0 +1,31 @@
+# Reviewer round 1 Gate 0 edge script: as shipped, then one company per row_id (sed, scratch copy)
+## as shipped
+FAIL Office conversations held got [1, 1, 1, 1] want [1, 6, 9, 10]
+FAIL Yes in principle, pantry owner named, receiving window named got [1, 1, 1, 1] want [1, 2, 5, 6]
+FAIL Gate 0, office side got ['not yet', 'not yet', 'INCOMPLETE: 1 of 15 conversations', 'INCOMPLETE: 1 of 15 conversations'] want ['not yet', 'not yet', 'PASS', 'PASS']
+FAIL Median budget-probe answer, USD a month got [0, 0, 0, 0] want [0, 100, 125, 150]
+FAIL Brand conversations held got [1, 1, 1, 1] want [1, 5, 7, 8]
+FAIL Would pay $500 or more and controls the budget got [1, 0, 1, 1] want [1, 3, 5, 6]
+FAIL Gate 0, brand side got ['not yet', 'not yet', 'INCOMPLETE: 1 of 15 conversations', 'INCOMPLETE: 1 of 15 conversations'] want ['not yet', 'PASS', 'PASS', 'PASS']
+FAIL Strict read: named $500 or more BEFORE hearing $1,500, and controls the budget got [1, 0, 1, 1] want [1, 2, 2, 3]
+FAIL Median brand number before $1,500 was mentioned, USD per campaign got [600, 600, 600, 600] want [600, 500, 550, 600]
+FAIL Gate 0 result got ['not yet', 'not yet', 'INCOMPLETE', 'INCOMPLETE'] want ['not yet', 'not yet', 'PASS', 'PASS']
+noctrl row: [0, 1, 1, 1]
+sentence: As of 2026-11-20: 1 of 1 offices said yes with a pantry owner and a receiving window (target 5); 1 of 1 brands would pay $500 or more and control the budget (target 3). Gate 0: INCOMPLETE.
+banner: SAMPLE: this file holds 21 SAMPLE rows. Illustrative placeholders, not results. include_sample = Y (SAMPLE rows are counted)
+FAILS 10
+## one company per row_id
+FAIL Office conversations held got [1, 6, 8, 9] want [1, 6, 9, 10]
+ok   Yes in principle, pantry owner named, receiving window named got [1, 2, 5, 6] want [1, 2, 5, 6]
+ok   Gate 0, office side got ['not yet', 'not yet', 'PASS', 'PASS'] want ['not yet', 'not yet', 'PASS', 'PASS']
+ok   Median budget-probe answer, USD a month got [0, 100, 125, 150] want [0, 100, 125, 150]
+ok   Brand conversations held got [1, 5, 7, 8] want [1, 5, 7, 8]
+ok   Would pay $500 or more and controls the budget got [1, 3, 5, 6] want [1, 3, 5, 6]
+ok   Gate 0, brand side got ['not yet', 'PASS', 'PASS', 'PASS'] want ['not yet', 'PASS', 'PASS', 'PASS']
+ok   Strict read: named $500 or more BEFORE hearing $1,500, and controls the budget got [1, 2, 2, 3] want [1, 2, 2, 3]
+ok   Median brand number before $1,500 was mentioned, USD per campaign got [600, 500, 550, 600] want [600, 500, 550, 600]
+ok   Gate 0 result got ['not yet', 'not yet', 'PASS', 'PASS'] want ['not yet', 'not yet', 'PASS', 'PASS']
+noctrl row: [0, 1, 2, 2]
+sentence: As of 2026-11-20: 6 of 9 offices said yes with a pantry owner and a receiving window (target 5); 6 of 8 brands would pay $500 or more and control the budget (target 3). Gate 0: PASS.
+banner: SAMPLE: this file holds 21 SAMPLE rows. Illustrative placeholders, not results. include_sample = Y (SAMPLE rows are counted)
+FAILS 1

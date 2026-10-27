@@ -1,0 +1,458 @@
+{
+ "boundary": {
+  "area_km2": 1.044,
+  "north_south_m": 1389,
+  "east_west_m": 738,
+  "corner_to_corner_walk_m": 2372,
+  "corner_walk_min_hand_truck": 37
+ },
+ "company_rows_total": 276,
+ "company_rows_inside": 270,
+ "company_rows_outside": 6,
+ "candidates": 162,
+ "candidates_by_conf": {
+  "medium": 82,
+  "high": 49,
+  "low": 31
+ },
+ "candidates_by_band": {
+  "unknown": 117,
+  "251-500": 16,
+  "151-250": 11,
+  "40-75": 10,
+  "76-150": 7,
+  "under-40": 1
+ },
+ "candidates_conf_band": {
+  "151-250": {
+   "high": 6,
+   "low": 1,
+   "medium": 4
+  },
+  "251-500": {
+   "high": 6,
+   "low": 5,
+   "medium": 5
+  },
+  "40-75": {
+   "high": 0,
+   "low": 2,
+   "medium": 8
+  },
+  "76-150": {
+   "high": 5,
+   "low": 0,
+   "medium": 2
+  },
+  "under-40": {
+   "high": 0,
+   "low": 0,
+   "medium": 1
+  },
+  "unknown": {
+   "high": 32,
+   "low": 23,
+   "medium": 62
+  }
+ },
+ "conf_band_table": [
+  {
+   "band": "40-75",
+   "high": 0,
+   "medium": 8,
+   "low": 2,
+   "total": 10
+  },
+  {
+   "band": "76-150",
+   "high": 5,
+   "medium": 2,
+   "low": 0,
+   "total": 7
+  },
+  {
+   "band": "151-250",
+   "high": 6,
+   "medium": 4,
+   "low": 1,
+   "total": 11
+  },
+  {
+   "band": "251-500",
+   "high": 6,
+   "medium": 5,
+   "low": 5,
+   "total": 16
+  },
+  {
+   "band": "under-40",
+   "high": 0,
+   "medium": 1,
+   "low": 0,
+   "total": 1
+  },
+  {
+   "band": "unknown",
+   "high": 32,
+   "medium": 62,
+   "low": 23,
+   "total": 117
+  },
+  {
+   "band": "all",
+   "high": 49,
+   "medium": 82,
+   "low": 31,
+   "total": 162
+  }
+ ],
+ "candidates_by_parent": {
+  "12": "Nuveen",
+  "14": "Chan Zuckerberg Initiative",
+  "29": "Boat Rocker Media",
+  "38": "Procter & Gamble",
+  "39": "LVMH",
+  "47": "Insider Inc. (majority owner)",
+  "54": "Chobani",
+  "60": "The Adecco Group",
+  "85": "Kodansha",
+  "89": "Infillion (acquisition announced 2026-09-18)",
+  "95": "Kirkbi A/S",
+  "101": "NRG Energy",
+  "103": "Innocean Worldwide",
+  "141": "Compass, Inc.",
+  "145": "Frasers Group",
+  "151": "Sungjoo Group"
+ },
+ "walk_coverage": {
+  "buildings": "81 of 81",
+  "retailers": "30 of 30",
+  "coworking_inside": "24 of 24",
+  "coworking_outside": "8 of 8"
+ },
+ "coworking_by_conf_inside": {
+  "medium": 11,
+  "high": 9,
+  "low": 4
+ },
+ "candidates_by_lease": {
+  "occupied": 81,
+  "occupancy-unconfirmed": 51,
+  "signed-not-occupied": 30
+ },
+ "candidates_scope": {
+  "unknown": 117,
+  "whole-company": 43,
+  "nyc-office": 2
+ },
+ "candidates_banded": 45,
+ "candidates_by_check": {
+  "no-count": 95,
+  "single-source": 23,
+  "disagree": 22,
+  "agree": 21,
+  "scope-differs": 1
+ },
+ "banded_hq_not_nyc": 12,
+ "banded_hq_unknown": 3,
+ "candidates_with_parent": 16,
+ "moved_to_near_miss_r2": [
+  "Clay",
+  "GameChanger",
+  "Harvey",
+  "Mercury",
+  "Nourish",
+  "Seedtag",
+  "Sierra",
+  "Sigma Computing",
+  "Synthesia",
+  "Valon"
+ ],
+ "occupied_banded": 26,
+ "status_counts": {
+  "candidate": 162,
+  "near-miss-over-500": 102,
+  "near-miss-outside": 6,
+  "excluded-coworking": 5,
+  "excluded-not-office": 1
+ },
+ "candidates_by_area": {
+  "13th-18th St": 35,
+  "18th-23rd St": 55,
+  "23rd-26th St": 26,
+  "26th-30th St": 46
+ },
+ "buildings": 81,
+ "buildings_lobby": {
+  "unknown": 64,
+  "security desk": 15,
+  "loading dock": 2
+ },
+ "buildings_coi": {
+  "unknown": 81
+ },
+ "buildings_with_candidates": 73,
+ "coworking": 32,
+ "coworking_inside": 24,
+ "coworking_by_conf": {
+  "medium": 15,
+  "high": 11,
+  "low": 6
+ },
+ "coworking_pantry": {
+  "operator": 25,
+  "unknown": 7
+ },
+ "coworking_status": {
+  "open": 24,
+  "unverified": 6,
+  "open-unverified": 1,
+  "possibly-closed": 1
+ },
+ "retailers": 30,
+ "retailers_inside": 11,
+ "retailers_by_tier": {
+  "B": 18,
+  "C": 8,
+  "A": 4
+ },
+ "retailers_by_conf": {
+  "high": 22,
+  "medium": 6,
+  "low": 2
+ },
+ "retailers_public": 14,
+ "retailers_max_blocks": 7,
+ "cand_bldg_to_tierA_blocks": {
+  "max": 10.2,
+  "median": 5.4,
+  "share_within_5": 0.38
+ },
+ "cand_bldg_to_public_store_blocks": {
+  "max": 7.7,
+  "median": 3.3,
+  "share_within_3": 0.44
+ },
+ "route": {
+  "stops": 10,
+  "stop_minutes": 150,
+  "walking_minutes": 43.2,
+  "total_minutes": 213.2,
+  "end": "11:33",
+  "metres": 2173,
+  "car_faster_legs": 0,
+  "longest_leg_min": 9.5,
+  "lobby": {
+   "unknown": 8,
+   "security desk": 2
+  },
+  "bands": {
+   "76-150": 4,
+   "251-500": 3,
+   "151-250": 3
+  },
+  "at_12_min_stops": 183.2,
+  "nine_stops": 195.2,
+  "reload_minutes": 20.0,
+  "reloads": 1,
+  "cases_per_load": 5,
+  "total_one_load": 193.2,
+  "end_one_load": "11:13",
+  "over_minutes": 33,
+  "over_one_load": 13,
+  "variants": {
+   "no_security_minimum": {
+    "total_minutes": 213.2,
+    "total_one_load": 193.2,
+    "end": "11:33",
+    "stops": "K Health (387 Park Avenue South); Simplebet (373 Park Avenue South); Activate Consulting (11 East 26th Street); Inspiren (61 West 23rd Street); Empathy (56 West 22nd Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Dashlane (44 West 18th Street); Aterian (37 East 18th Street); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
+   },
+   "no_band_rule": {
+    "total_minutes": 213.2,
+    "total_one_load": 193.2,
+    "end": "11:33",
+    "stops": "K Health (387 Park Avenue South); Simplebet (373 Park Avenue South); Activate Consulting (11 East 26th Street); Inspiren (61 West 23rd Street); Empathy (56 West 22nd Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Dashlane (44 West 18th Street); Aterian (37 East 18th Street); Cognitiv (215 Park Avenue South); Global Strategy Group (215 Park Avenue South)"
+   },
+   "high_or_medium": {
+    "total_minutes": 194.9,
+    "total_one_load": 174.9,
+    "end": "11:14",
+    "stops": "Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Instant (53 West 21st Street); PlayPlay (53 West 21st Street); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); TripleLift (53 West 23rd Street); BMF (We Are BMF) (50 West 23rd Street); Foursquare (50 West 23rd Street)"
+   },
+   "high_or_medium_no_security_minimum": {
+    "total_minutes": 194.9,
+    "total_one_load": 174.9,
+    "end": "11:14",
+    "stops": "Dashlane (44 West 18th Street); Global Trading Systems (GTS) (625 Avenue of the Americas); Instant (53 West 21st Street); PlayPlay (53 West 21st Street); Empathy (56 West 22nd Street); BrainPOP (71 West 23rd Street); Inspiren (61 West 23rd Street); TripleLift (53 West 23rd Street); BMF (We Are BMF) (50 West 23rd Street); Foursquare (50 West 23rd Street)"
+   }
+  },
+  "rule": "at least three bands including one 76-150 office (no high-confidence, occupied 40-75 office with a sourced band remains after review round 2's second headcounts; the high-or-medium variant below keeps a 40-75 office)",
+  "stop_list": [
+   "1. K Health, 387 Park Avenue South (unknown; 251-500)",
+   "2. Simplebet, 373 Park Avenue South (unknown; 76-150)",
+   "3. Activate Consulting, 11 East 26th Street (unknown; 76-150)",
+   "4. Inspiren, 61 West 23rd Street (unknown; 76-150)",
+   "5. Empathy, 56 West 22nd Street (unknown; 151-250)",
+   "6. Global Trading Systems (GTS), 625 Avenue of the Americas (unknown; 251-500)",
+   "7. Dashlane, 44 West 18th Street (unknown; 251-500)",
+   "8. Aterian, 37 East 18th Street (unknown; 76-150)",
+   "9. Cognitiv, 215 Park Avenue South (security desk; 151-250)",
+   "10. Global Strategy Group, 215 Park Avenue South (security desk; 151-250)"
+  ]
+ },
+ "candidates_occupied_banded": 26,
+ "candidates_occupied_banded_4": 26,
+ "candidates_banded_4": 44,
+ "candidates_banded_hq": {
+  "Y": 30,
+  "N": 12,
+  "unknown": 3
+ },
+ "candidates_hq": {
+  "unknown": 88,
+  "Y": 50,
+  "N": 24
+ },
+ "candidates_under40_founder_call": [
+  "Normal Computing"
+ ],
+ "near_classes": {
+  "over-1,000 (1,001 to 4,999)": 45,
+  "just-over-500 (501 to 1,000)": 29,
+  "not-near (5,000 or more)": 28,
+  "outside-line": 6
+ },
+ "near_nyc_may_fit": 12,
+ "pins_moved_frontage": {
+  "companies": 22,
+  "near_miss": 31,
+  "buildings": 12,
+  "coworking": 2,
+  "retailers": 3
+ },
+ "corner_pins": {
+  "companies": 76,
+  "near_miss": 56,
+  "buildings": 37,
+  "coworking": 20,
+  "retailers": 11
+ },
+ "pins_published_coordinate": 3,
+ "public_walk_minutes": {
+  "Eataly NYC Flatiron": 0,
+  "Fairway Market Chelsea": 0,
+  "Whole Foods Market NoMad": 0,
+  "Whole Foods Market Union Square": 0,
+  "Westside Market NYC (84 Third Ave)": 1,
+  "Westside Market NYC (180 Third Ave)": 2,
+  "Westside Market NYC (170 West 23rd St)": 3,
+  "Westside Market NYC (77 Seventh Ave)": 3,
+  "Whole Foods Market Chelsea": 3,
+  "Eden Gourmet Marketplace Gramercy Park": 4,
+  "Citarella Greenwich Village": 4,
+  "Wegmans Astor Place": 5,
+  "LifeThyme Natural Market": 5,
+  "Fairway Market Kips Bay": 8
+ },
+ "coworking_high_with_second": 11,
+ "coworking_high": 11,
+ "walk": {
+  "sessions": 11,
+  "total_minutes": 820,
+  "stops": 124,
+  "table": [
+   {
+    "session": "1",
+    "phase": "core (inside the boundary)",
+    "stops": 11,
+    "minutes": 80,
+    "start": "14 St-Union Sq (L), about 1 min walk",
+    "end": "23 St-Baruch College (6), about 1 min walk"
+   },
+   {
+    "session": "2",
+    "phase": "core (inside the boundary)",
+    "stops": 14,
+    "minutes": 79,
+    "start": "23 St-Baruch College (6), about 2 min walk",
+    "end": "28 St (6), about 2 min walk"
+   },
+   {
+    "session": "3",
+    "phase": "core (inside the boundary)",
+    "stops": 13,
+    "minutes": 78,
+    "start": "28 St (6), about 3 min walk",
+    "end": "28 St (R W), about 2 min walk"
+   },
+   {
+    "session": "4",
+    "phase": "core (inside the boundary)",
+    "stops": 16,
+    "minutes": 78,
+    "start": "28 St (R W), about 2 min walk",
+    "end": "23 St (R W), about 3 min walk"
+   },
+   {
+    "session": "5",
+    "phase": "core (inside the boundary)",
+    "stops": 15,
+    "minutes": 79,
+    "start": "23 St (R W), about 1 min walk",
+    "end": "14 St (F M), about 6 min walk"
+   },
+   {
+    "session": "6",
+    "phase": "core (inside the boundary)",
+    "stops": 13,
+    "minutes": 79,
+    "start": "14 St-Union Sq (N Q R W), about 5 min walk",
+    "end": "23 St (R W), about 5 min walk"
+   },
+   {
+    "session": "7",
+    "phase": "core (inside the boundary)",
+    "stops": 15,
+    "minutes": 79,
+    "start": "23 St (R W), about 5 min walk",
+    "end": "23 St (F M), about 2 min walk"
+   },
+   {
+    "session": "8",
+    "phase": "outer (stores within ten blocks and coworking sites just outside the line)",
+    "stops": 6,
+    "minutes": 66,
+    "start": "W 4 St-Wash Sq (A C E), about 3 min walk",
+    "end": "3 Av (L), about 4 min walk"
+   },
+   {
+    "session": "9",
+    "phase": "outer (stores within ten blocks and coworking sites just outside the line)",
+    "stops": 7,
+    "minutes": 64,
+    "start": "3 Av (L), about 5 min walk",
+    "end": "23 St-Baruch College (6), about 9 min walk"
+   },
+   {
+    "session": "10",
+    "phase": "outer (stores within ten blocks and coworking sites just outside the line)",
+    "stops": 8,
+    "minutes": 65,
+    "start": "28 St (6), about 8 min walk",
+    "end": "34 St-Herald Sq (N Q R W), about 4 min walk"
+   },
+   {
+    "session": "11",
+    "phase": "outer (stores within ten blocks and coworking sites just outside the line)",
+    "stops": 6,
+    "minutes": 73,
+    "start": "34 St-Herald Sq (N Q R W), about 1 min walk",
+    "end": "14 St (1 2 3), about 1 min walk"
+   }
+  ],
+  "core_sessions": 7,
+  "outer_sessions": 4,
+  "core_minutes": 552,
+  "outer_minutes": 268
+ }
+}

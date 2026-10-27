@@ -1,0 +1,14 @@
+column,type,allowed_values,written_when,rule
+sequence,text,"<side>-<stage>-<variant>, e.g. office-discovery-A (stage: discovery, selling, conversion)",When the first touch is sent,Never changed afterwards; a new sequence on the same person is a new value only if the old one ended (not_now recontact)
+touch_1_date,date,YYYY-MM-DD,"The day the first message with the ask is sent (email, LinkedIn message, walk-in conversation)",A LinkedIn invitation with no note is not a touch: set next_action = await_connection instead
+touch_2_date,date,YYYY-MM-DD,Day touch 2 is sent,Skip if they replied
+touch_3_date,date,YYYY-MM-DD,Day touch 3 is sent,Last touch; then stop
+last_reply_date,date,YYYY-MM-DD,Each time they reply,Not for bounces or out-of-office auto-replies
+reply_type,list,"yes, maybe, needs_approval, send_info, wrong_person, referral, not_now, no, opt_out, obj_seed_ourselves, obj_price, obj_free_trial, obj_what_we_get, obj_other, out_of_office, bounce",Each reply (the latest meaningful one),Silence stays blank
+call_date,date,YYYY-MM-DD,"After each conversation, copied from the tracker row",Equals the latest call_date for this row_id in the tracker
+call_notes,text,One line plus 'see tracker <call_date>',After each conversation,"The full notes live in the tracker, not in Clay"
+yes_in_principle,Y/N,Y or N,"After each conversation, copied from the tracker","The latest answer for this row_id in the tracker: Y only if the latest Y, N or maybe is Y (a later N or maybe withdraws an earlier yes); maybe in the tracker is N here"
+next_action,list,"send_touch_2, send_touch_3, await_connection, book_call, run_call, send_one_pager, send_proposal, send_agreement, send_materials_request, chase_payment, ask_referral, recontact, none",Whenever the next step changes,Clay is the only place next actions live
+next_action_date,date,YYYY-MM-DD,With next_action,Drives the follow-up list each morning
+opt_out_date,date,YYYY-MM-DD,"The same day anyone opts out, in any words, on any channel",Also set do_not_contact = Y and status = do_not_contact. Never cleared
+referral_from,text,row_id of the person who referred them,When you create a row for a referred person,Lets the scorecard and you trace referrals

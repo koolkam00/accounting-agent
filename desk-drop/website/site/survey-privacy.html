@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en" data-page="survey-privacy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow"><!-- staging; removed in the production copy (tools/make_production.py) -->
+<title>Survey privacy notice</title>
+<meta name="description" content="How the anonymous employee survey handles answers and the optional newsletter email.">
+<meta name="theme-color" content="#F7F3EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1F1D1A" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Survey privacy notice">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/bricolage-grotesque-latin-opsz96-800.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/site.css">
+<script src="site.config.js"></script>
+<script src="assets/js/boot.js"></script>
+<script src="assets/js/site.js" defer></script>
+</head>
+<body>
+<!-- HEADER:START (same on every page; tests/check_site.py keeps them equal) -->
+<a class="skip-link" href="#main">Skip to main content</a>
+<p class="staging-bar">Staging preview, not public. The name is a working name and not yet cleared.</p>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="index.html"><svg class="brand-symbol" viewBox="0 0 96 100" aria-hidden="true" focusable="false"><rect class="sym-shelf" x="0" y="81" width="96" height="19" rx="3.5"/><rect class="sym-box" x="20.44" y="5.69" width="61.13" height="61.13" rx="4.2" transform="rotate(-12 51 36.25)"/></svg><span class="dd-brand-name" data-config="BRAND_NAME"></span><span class="visually-hidden"> home</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="brands.html">For brands</a>
+      <a href="offices.html">For offices</a>
+    </nav>
+  </div>
+</header>
+<!-- HEADER:END -->
+
+<main id="main" tabindex="-1">
+  <section class="section">
+    <div class="wrap prose">
+      <p class="draft-flag">Draft for attorney review. Not legal advice.</p>
+      <h1>Survey privacy notice</h1>
+      <p class="muted">This is the notice the anonymous employee survey links to.</p>
+      <!-- NOTICE START: copied word for word from desk-drop-legal-pack/13-survey-privacy-notice.md Part C (v0.6). Edit there first. The company name and contact details come from site.config.js; the [BRAND] slots stay until the legal pack words them generically (HANDOFF.md, question to G). -->
+      <p>Last updated <span class="ph">[DATE]</span>. This survey is run by <strong><span data-config="COMPANY_LEGAL_NAME"></span></strong> ("<strong>we</strong>", "<strong>us</strong>"), which brings products from emerging snack and drink brands to offices. Questions: <a data-config="CONTACT_EMAIL" data-config-mailto></a>, <span data-config="POSTAL_ADDRESS"></span>.</p>
+
+      <h2>What we collect</h2>
+      <ul>
+        <li>Your answers to the survey questions, and your comment if you write one.</li>
+        <li>Which office the survey link came from (it is built into the link on the card and in your office's post) and when you answered.</li>
+        <li>Your email address, only if you choose to give it for the brand's newsletter.</li>
+      </ul>
+
+      <h2>What we do not collect</h2>
+      <p>We do not ask for your name, your work email, a login or an employee ID. We do not ask your employer for anything about you, and your employer does not see your individual answers from us except comments, which we may quote word for word in the office summary.</p>
+
+      <h2>Technical information</h2>
+      <p>The services that run the survey form and the short link on the card process technical information, such as IP address and device type, to deliver the page, under their own privacy policies. We set them up not to ask you to sign in. From the short link we see only totals, such as how many times it was opened and on which days.</p>
+
+      <h2>How we use your answers</h2>
+      <p>To write a one-page report for the brand and a summary for your office, and to improve how we run these drops. We do not sell your answers or use them for advertising to you.</p>
+
+      <h2>Who sees what</h2>
+      <ul>
+        <li><strong>The brand</strong> gets totals (how many people answered, how many tried it, the average rating, how many would buy) and up to three comments quoted word for word, without any email address.</li>
+        <li><strong>Your office</strong> gets a summary of your team's answers, which may include comments quoted word for word.</li>
+        <li>Comments are quoted as written, except that we remove any name we find. Please leave out your name and anything that identifies you or anyone else.</li>
+      </ul>
+
+      <h2>If you give your email</h2>
+      <p>We pass it to <span class="ph">[BRAND]</span> only if you tick the box. If you give an email but leave the box unticked, we delete it within seven days after the survey closes and never pass it on. We send the brand those addresses once, as a list kept separate from survey answers, within seven days after the survey closes. After that, <span class="ph">[BRAND]</span>'s privacy policy applies (<span class="ph">[BRAND PRIVACY POLICY URL]</span>) and you can unsubscribe from <span class="ph">[BRAND]</span> at any time. We delete our copy within 30 days after passing it on. If you change your mind, write to <a data-config="CONTACT_EMAIL" data-config-mailto></a>: if we have not passed your email on yet, we delete it; if we have, we ask <span class="ph">[BRAND]</span> to delete it too.</p>
+
+      <h2>How long we keep answers</h2>
+      <p>We keep survey answers for 12 months after the campaign, then delete them. Reports keep only totals and quoted comments.</p>
+
+      <h2>Your choices</h2>
+      <p>The survey is optional. You can skip it, skip any question or stop at any time. Because answers are anonymous, we cannot find yours to change or delete it unless you gave an email address.</p>
+
+      <h2>Changes</h2>
+      <p>If we change this notice, we update the date above. We will not use answers already given in a way this notice does not describe.</p>
+      <!-- NOTICE END -->
+    </div>
+  </section>
+</main>
+
+<!-- FOOTER:START (same on every page) -->
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div>
+      <p class="footer-brand"><span class="dd-brand-name" data-config="BRAND_NAME"></span></p>
+      <p data-config="TAGLINE"></p>
+    </div>
+    <nav aria-label="Footer">
+      <ul>
+        <li><a href="brands.html">For brands</a></li>
+        <li><a href="offices.html">For offices</a></li>
+        <li><a href="privacy.html">Privacy</a></li>
+        <li><a href="survey-privacy.html">Survey privacy notice</a></li>
+      </ul>
+    </nav>
+    <div>
+      <p>Founder: <span data-config="FOUNDER_NAME"></span></p>
+      <p>Email: <a data-config="CONTACT_EMAIL" data-config-mailto></a></p>
+      <p data-config-line="PHONE">Phone: <a data-config="PHONE" data-config-tel></a></p>
+      <p>Mail: <span data-config="POSTAL_ADDRESS"></span></p>
+    </div>
+  </div>
+</footer>
+<!-- FOOTER:END -->
+</body>
+</html>

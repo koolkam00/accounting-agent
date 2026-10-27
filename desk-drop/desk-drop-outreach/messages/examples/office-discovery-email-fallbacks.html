@@ -1,0 +1,68 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<title>office-discovery-email-fallbacks</title><style>
+*{box-sizing:border-box} body{margin:0;background:#e9e7e2;font:15px/1.45 -apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1d1d1f}
+.wrap{width:390px;margin:0 auto;padding:12px 12px 24px}
+.banner{background:#b3261e;color:#fff;font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:8px 10px;border-radius:8px;margin-bottom:8px}
+.title{font-weight:700;font-size:16px;margin:6px 2px 2px}
+.meta{font-size:12px;color:#555;margin:0 2px 8px}
+.legend{display:flex;flex-wrap:wrap;gap:6px;font-size:11px;margin:0 2px 10px}
+.legend span{padding:1px 6px;border-radius:4px}
+.card{background:#fff;border-radius:12px;padding:12px 14px 14px;margin:10px 0;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.card.li{background:#fff;border-left:4px solid #0a66c2}
+.card.slack{border-left:4px solid #611f69}
+.hd{font-size:12px;color:#666;border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:8px}
+.hd b{color:#1d1d1f}
+.subj{font-weight:700;font-size:15px;margin:2px 0 4px;color:#1d1d1f}
+.body{white-space:pre-wrap;word-wrap:break-word}
+.F{background:#e3edfb;border-radius:3px}
+.C{}
+.B{background:#ffe7b3;border-radius:3px;outline:1px dashed #b36b00}
+.S{background:#fff3a0;border-radius:3px}
+.P{background:#ececec;border-radius:3px;font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.G{display:block;color:#222;font-size:14px;border-top:1px solid #eee;margin-top:6px;padding-top:6px}
+.X{display:block;font-size:12.5px;color:#333;background:#f4f4f4;border-radius:6px;padding:6px 8px;margin-top:4px}
+.notes{margin-top:8px;font-size:11.5px;color:#7a4b00;background:#fff8e8;border-radius:6px;padding:6px 8px}
+.notes div.fb::before{content:'fallback · ';font-weight:700}
+.notes div.st::before{content:'state · ';font-weight:700}
+.findings{margin-top:8px;font-size:11.5px;border-radius:6px;padding:6px 8px}
+.ok{background:#e8f5e9;color:#1b5e20}.bad{background:#fdecea;color:#8a1c14}
+.foot{font-size:11px;color:#666;margin:12px 2px 0}
+</style></head><body><div class="wrap">
+<div class="banner">SAMPLE · example, not a real send · every fallback triggered</div>
+<div class="title">Office cold email, discovery version: three touches</div>
+<div class="meta">Row SAMPLE-O-002 · state "SAMPLE-discovery-wk3" · subject variant B</div>
+<div class="legend"><span class="F">from the row</span><span class="B">fallback used</span><span class="S">slot (tracker state or date)</span><span class="P">[YOUR DETAIL]</span></div>
+<div class="card "><div class="hd"><b>From</b> [FOUNDER NAME] &lt;[EMAIL]&gt;<br><b>To</b> office@sample-office.example<br><b>Sent</b> Mon 2026-11-09 (example) · office-discovery-1</div><div class="subj">How does the pantry at <span class="B">your office</span> work?</div><div class="body"><span class="B">Hello,</span>
+
+I'm researching how offices around <span class="B">Flatiron, NoMad and Union Square</span> stock their pantries, and I'd like to hear how it works at <span class="B">your office</span>.
+
+The idea I'm testing: emerging snack and drink brands send sealed product to a few nearby offices, free, and the team says what it thought. Before I build anything, I want to know whether that would help you or just add to your vendor email.
+
+It's questions only, about 20 minutes, and I'll send you what I hear from the other offices, with no names. Would you have time in the next two weeks?
+
+<span class="G"><span class="P"><span class="P">[FOUNDER NAME]</span></span>
+Setting up an office sampling service in <span class="C">Flatiron</span>
+<span class="P"><span class="P">[PHONE]</span></span> | <span class="P"><span class="P">[EMAIL]</span></span>
+<span class="P"><span class="P">[POSTAL ADDRESS]</span></span>
+
+This is a business pitch, sent one to one. Not interested? Reply "no thanks" and I won't email you again.</span></div><div class="notes"><div class="fb">why_now_hook: why_now_date 2026-03-02 is 252 days before the send date (over 120), sentence left out</div><div class="fb">greeting: no first name, &quot;Hello,&quot; used</div><div class="fb">area: no street, the cluster name used</div><div class="fb">company: blank, &quot;your office&quot; used</div></div><div class="findings bad"><div>warn: nothing about this person or company is printed: fix the row before sending</div></div></div><div class="card "><div class="hd"><b>From</b> [FOUNDER NAME] &lt;[EMAIL]&gt;<br><b>To</b> office@sample-office.example<br><b>Sent</b> Fri 2026-11-13 (example) · office-discovery-2</div><div class="subj">Re: How does the pantry at your office work?</div><div class="body"><span class="B">Hello,</span>
+
+If a call is too much, one line by reply would help just as much: when a brand offers <span class="B">your office</span> free product today, what happens to it?
+
+<span class="G"><span class="P"><span class="P">[FOUNDER NAME]</span></span>
+Setting up an office sampling service in <span class="C">Flatiron</span>
+<span class="P"><span class="P">[PHONE]</span></span> | <span class="P"><span class="P">[EMAIL]</span></span>
+<span class="P"><span class="P">[POSTAL ADDRESS]</span></span>
+
+This is a business pitch, sent one to one. Not interested? Reply "no thanks" and I won't email you again.</span></div><div class="notes"><div class="fb">greeting: no first name, &quot;Hello,&quot; used</div><div class="fb">company: blank, &quot;your office&quot; used</div></div><div class="findings ok">checks passed: one ask, length, banned words, dates, footer, gates</div></div><div class="card "><div class="hd"><b>From</b> [FOUNDER NAME] &lt;[EMAIL]&gt;<br><b>To</b> office@sample-office.example<br><b>Sent</b> Thu 2026-11-19 (example) · office-discovery-3</div><div class="subj">Re: How does the pantry at your office work?</div><div class="body"><span class="B">Hello,</span>
+
+I'll stop here. If someone else looks after the pantry at <span class="B">your office</span>, could you point me to them?
+
+<span class="G"><span class="P"><span class="P">[FOUNDER NAME]</span></span>
+Setting up an office sampling service in <span class="C">Flatiron</span>
+<span class="P"><span class="P">[PHONE]</span></span> | <span class="P"><span class="P">[EMAIL]</span></span>
+<span class="P"><span class="P">[POSTAL ADDRESS]</span></span>
+
+This is a business pitch, sent one to one. Not interested? Reply "no thanks" and I won't email you again.</span></div><div class="notes"><div class="fb">greeting: no first name, &quot;Hello,&quot; used</div><div class="fb">company: blank, &quot;your office&quot; used</div></div><div class="findings ok">checks passed: one ask, length, banned words, dates, footer, gates</div></div>
+<div class="foot">Filled by messages/_render/fill.py from 05-office-cold-emails.md on 2026-10-24. SAMPLE row and state from examples/SAMPLE-rows.csv and SAMPLE-states.json. Illustrative placeholders, not results.</div>
+</div></body></html>

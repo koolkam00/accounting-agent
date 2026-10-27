@@ -1,0 +1,378 @@
+{
+ "type": "FeatureCollection",
+ "name": "cluster-1-public",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73.99773,
+       40.737252
+      ],
+      [
+       -73.992114,
+       40.734846
+      ],
+      [
+       -73.992322,
+       40.734566
+      ],
+      [
+       -73.987789,
+       40.732625
+      ],
+      [
+       -73.986864,
+       40.733868
+      ],
+      [
+       -73.989394,
+       40.734952
+      ],
+      [
+       -73.982226,
+       40.744591
+      ],
+      [
+       -73.989845,
+       40.747855
+      ],
+      [
+       -73.99773,
+       40.737252
+      ]
+     ]
+    ]
+   },
+   "properties": {
+    "kind": "boundary",
+    "name": "Flatiron, NoMad and Union Square"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.999072,
+     40.733799
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-025",
+    "name": "LifeThyme Natural Market",
+    "address": "410 Sixth Avenue",
+    "buy_path_tier": "A",
+    "shelf_set": "Independent natural and organic grocer",
+    "inside_boundary": "N",
+    "blocks_outside": "5",
+    "walk_minutes_from_cluster_edge": 5,
+    "as_of": "2026-10-24",
+    "map_number": 1
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.991138,
+     40.734772
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-011",
+    "name": "Whole Foods Market Union Square",
+    "address": "4 Union Square South",
+    "buy_path_tier": "A",
+    "shelf_set": "Natural and organic supermarket",
+    "inside_boundary": "Y",
+    "blocks_outside": "0",
+    "walk_minutes_from_cluster_edge": 0,
+    "as_of": "2026-10-24",
+    "map_number": 2
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.995342,
+     40.745148
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-021",
+    "name": "Whole Foods Market Chelsea",
+    "address": "250 Seventh Avenue",
+    "buy_path_tier": "A",
+    "shelf_set": "Natural and organic supermarket",
+    "inside_boundary": "N",
+    "blocks_outside": "3",
+    "walk_minutes_from_cluster_edge": 3,
+    "as_of": "2026-10-24",
+    "map_number": 3
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.985791,
+     40.743448
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-010",
+    "name": "Whole Foods Market NoMad",
+    "address": "63 Madison Avenue",
+    "buy_path_tier": "A",
+    "shelf_set": "Natural and organic supermarket",
+    "inside_boundary": "Y",
+    "blocks_outside": "0",
+    "walk_minutes_from_cluster_edge": 0,
+    "as_of": "2026-10-24",
+    "map_number": 4
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.991994,
+     40.730835
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-024",
+    "name": "Wegmans Astor Place",
+    "address": "770 Broadway",
+    "buy_path_tier": "B",
+    "shelf_set": "Large supermarket with natural, organic and specialty sections",
+    "inside_boundary": "N",
+    "blocks_outside": "4",
+    "walk_minutes_from_cluster_edge": 5,
+    "as_of": "2026-10-24",
+    "map_number": 5
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.998798,
+     40.73434
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-023",
+    "name": "Citarella Greenwich Village",
+    "address": "424 Sixth Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "Gourmet market",
+    "inside_boundary": "N",
+    "blocks_outside": "4",
+    "walk_minutes_from_cluster_edge": 4,
+    "as_of": "2026-10-24",
+    "map_number": 6
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.988569,
+     40.731868
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-013",
+    "name": "Westside Market NYC (84 Third Ave)",
+    "address": "84 Third Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "Gourmet neighbourhood market",
+    "inside_boundary": "N",
+    "blocks_outside": "1",
+    "walk_minutes_from_cluster_edge": 1,
+    "as_of": "2026-10-24",
+    "map_number": 7
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.999107,
+     40.738773
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-018",
+    "name": "Westside Market NYC (77 Seventh Ave)",
+    "address": "77 Seventh Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "Gourmet neighbourhood market",
+    "inside_boundary": "N",
+    "blocks_outside": "2",
+    "walk_minutes_from_cluster_edge": 3,
+    "as_of": "2026-10-24",
+    "map_number": 8
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.986314,
+     40.735054
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-016",
+    "name": "Westside Market NYC (180 Third Ave)",
+    "address": "180 Third Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "Gourmet neighbourhood market",
+    "inside_boundary": "N",
+    "blocks_outside": "2",
+    "walk_minutes_from_cluster_edge": 2,
+    "as_of": "2026-10-24",
+    "map_number": 9
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.983719,
+     40.737696
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-020",
+    "name": "Eden Gourmet Marketplace Gramercy Park",
+    "address": "275 Third Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "Gourmet and specialty grocer",
+    "inside_boundary": "N",
+    "blocks_outside": "3",
+    "walk_minutes_from_cluster_edge": 4,
+    "as_of": "2026-10-24",
+    "map_number": 10
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.995342,
+     40.743718
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-017",
+    "name": "Westside Market NYC (170 West 23rd St)",
+    "address": "170 West 23rd Street",
+    "buy_path_tier": "B",
+    "shelf_set": "Gourmet neighbourhood market",
+    "inside_boundary": "N",
+    "blocks_outside": "2",
+    "walk_minutes_from_cluster_edge": 3,
+    "as_of": "2026-10-24",
+    "map_number": 11
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.989477,
+     40.741986
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-001",
+    "name": "Eataly NYC Flatiron",
+    "address": "200 Fifth Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "Italian food market and restaurants",
+    "inside_boundary": "Y",
+    "blocks_outside": "0",
+    "walk_minutes_from_cluster_edge": 0,
+    "as_of": "2026-10-24",
+    "map_number": 12
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.991431,
+     40.744457
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-003",
+    "name": "Fairway Market Chelsea",
+    "address": "766 Sixth Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "Specialty supermarket",
+    "inside_boundary": "Y",
+    "blocks_outside": "0",
+    "walk_minutes_from_cluster_edge": 0,
+    "as_of": "2026-10-24",
+    "map_number": 13
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.97677,
+     40.74271
+    ]
+   },
+   "properties": {
+    "kind": "retailer",
+    "retailer_id": "B-R-029",
+    "name": "Fairway Market Kips Bay",
+    "address": "550 Second Avenue",
+    "buy_path_tier": "B",
+    "shelf_set": "Specialty supermarket",
+    "inside_boundary": "N",
+    "blocks_outside": "7",
+    "walk_minutes_from_cluster_edge": 8,
+    "as_of": "2026-10-24",
+    "map_number": 14
+   }
+  }
+ ]
+}

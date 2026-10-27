@@ -1,0 +1,8 @@
+formulas scanned: 20306
+formulas with a numeric literal other than 0 or 1: 0
+functions used (38): ABS x160, AND x9305, COUNT x16, COUNTA x16, COUNTIF x35, COUNTIFS x7707, DATE x1, DATEVALUE x500, EDATE x54, EOMONTH x9, FIND x500, IF x30240, IFERROR x1817, INDEX x6573, ISERROR x18, ISNUMBER x4023, LEFT x1012, LEN x512, MATCH x577, MAX x267, MEDIAN x3, MIN x110, MONTH x1, N x4194, NOT x12, OR x2033, ROUND x4, ROUNDUP x5, SUM x368, SUMIFS x3763, SUMPRODUCT x49, TEXT x73, TIMEVALUE x500, TODAY x1, TRIM x1500, WEEKDAY x24, WORKDAY x294, YEAR x1
+functions not on the Google Sheets list: 0
+features Google Sheets may not carry: 0
+cells spelling the company name outside its one input cell (should be 0): 0
+company-name input cells: ['Inputs!C8']
+INDEX over a one-row range without a row argument (should be 0): 0; with INDEX(range, 1, column): 6027

@@ -1,0 +1,1055 @@
+[
+ {
+  "gtfs_stop_id": "R19",
+  "station_id": "14",
+  "complex_id": "14",
+  "division": "BMT",
+  "line": "Broadway - Brighton",
+  "stop_name": "23 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "R W",
+  "structure": "Subway",
+  "gtfs_latitude": "40.741303",
+  "gtfs_longitude": "-73.989344",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.989344,
+    40.741303
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "R18",
+  "station_id": "13",
+  "complex_id": "13",
+  "division": "BMT",
+  "line": "Broadway - Brighton",
+  "stop_name": "28 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "R W",
+  "structure": "Subway",
+  "gtfs_latitude": "40.745494",
+  "gtfs_longitude": "-73.988691",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.988691,
+    40.745494
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "637",
+  "station_id": "408",
+  "complex_id": "619",
+  "division": "IRT",
+  "line": "Lexington Av",
+  "stop_name": "Bleecker St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "6",
+  "structure": "Subway",
+  "gtfs_latitude": "40.725915",
+  "gtfs_longitude": "-73.994659",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.994659,
+    40.725915
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "D18",
+  "station_id": "228",
+  "complex_id": "228",
+  "division": "IND",
+  "line": "6th Av - Culver",
+  "stop_name": "23 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "F M",
+  "structure": "Subway",
+  "gtfs_latitude": "40.742878",
+  "gtfs_longitude": "-73.992821",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.992821,
+    40.742878
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "A30",
+  "station_id": "165",
+  "complex_id": "165",
+  "division": "IND",
+  "line": "8th Av - Fulton St",
+  "stop_name": "23 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "C E",
+  "structure": "Subway",
+  "gtfs_latitude": "40.745906",
+  "gtfs_longitude": "-73.998041",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.998041,
+    40.745906
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "633",
+  "station_id": "404",
+  "complex_id": "404",
+  "division": "IRT",
+  "line": "Lexington Av",
+  "stop_name": "28 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "6",
+  "structure": "Subway",
+  "gtfs_latitude": "40.74307",
+  "gtfs_longitude": "-73.984264",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "2",
+  "ada_northbound": "0",
+  "ada_southbound": "1",
+  "ada_notes": "Downtown only",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.984264,
+    40.74307
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "132",
+  "station_id": "322",
+  "complex_id": "601",
+  "division": "IRT",
+  "line": "Broadway - 7Av",
+  "stop_name": "14 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "1 2 3",
+  "structure": "Subway",
+  "gtfs_latitude": "40.737826",
+  "gtfs_longitude": "-74.000201",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -74.000201,
+    40.737826
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "128",
+  "station_id": "318",
+  "complex_id": "318",
+  "division": "IRT",
+  "line": "Broadway - 7Av",
+  "stop_name": "34 St-Penn Station",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "1 2 3",
+  "structure": "Subway",
+  "gtfs_latitude": "40.750373",
+  "gtfs_longitude": "-73.991057",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.991057,
+    40.750373
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "A31",
+  "station_id": "166",
+  "complex_id": "618",
+  "division": "IND",
+  "line": "8th Av - Fulton St",
+  "stop_name": "14 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "A C E",
+  "structure": "Subway",
+  "gtfs_latitude": "40.740893",
+  "gtfs_longitude": "-74.00169",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -74.00169,
+    40.740893
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "D19",
+  "station_id": "229",
+  "complex_id": "601",
+  "division": "IND",
+  "line": "6th Av - Culver",
+  "stop_name": "14 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "F M",
+  "structure": "Subway",
+  "gtfs_latitude": "40.738228",
+  "gtfs_longitude": "-73.996209",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.996209,
+    40.738228
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "L03",
+  "station_id": "117",
+  "complex_id": "602",
+  "division": "BMT",
+  "line": "Canarsie",
+  "stop_name": "14 St-Union Sq",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "L",
+  "structure": "Subway",
+  "gtfs_latitude": "40.734789",
+  "gtfs_longitude": "-73.99073",
+  "north_direction_label": "West Side",
+  "south_direction_label": "Brooklyn",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.99073,
+    40.734789
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "L05",
+  "station_id": "118",
+  "complex_id": "118",
+  "division": "BMT",
+  "line": "Canarsie",
+  "stop_name": "3 Av",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "L",
+  "structure": "Subway",
+  "gtfs_latitude": "40.732849",
+  "gtfs_longitude": "-73.986122",
+  "north_direction_label": "West Side",
+  "south_direction_label": "Brooklyn",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.986122,
+    40.732849
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "131",
+  "station_id": "321",
+  "complex_id": "321",
+  "division": "IRT",
+  "line": "Broadway - 7Av",
+  "stop_name": "18 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "1",
+  "structure": "Subway",
+  "gtfs_latitude": "40.74104",
+  "gtfs_longitude": "-73.997871",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.997871,
+    40.74104
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "724",
+  "station_id": "466",
+  "complex_id": "609",
+  "division": "IRT",
+  "line": "Flushing",
+  "stop_name": "5 Av",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "7",
+  "structure": "Subway",
+  "gtfs_latitude": "40.753821",
+  "gtfs_longitude": "-73.981963",
+  "north_direction_label": "Queens",
+  "south_direction_label": "Hudson Yards",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.981963,
+    40.753821
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "A32",
+  "station_id": "167",
+  "complex_id": "167",
+  "division": "IND",
+  "line": "8th Av - Fulton St",
+  "stop_name": "W 4 St-Wash Sq",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "A C E",
+  "structure": "Subway",
+  "gtfs_latitude": "40.732338",
+  "gtfs_longitude": "-74.000495",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -74.000495,
+    40.732338
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "632",
+  "station_id": "403",
+  "complex_id": "403",
+  "division": "IRT",
+  "line": "Lexington Av",
+  "stop_name": "33 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "6",
+  "structure": "Subway",
+  "gtfs_latitude": "40.746081",
+  "gtfs_longitude": "-73.982076",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.982076,
+    40.746081
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "634",
+  "station_id": "405",
+  "complex_id": "405",
+  "division": "IRT",
+  "line": "Lexington Av",
+  "stop_name": "23 St-Baruch College",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "6",
+  "structure": "Subway",
+  "gtfs_latitude": "40.739864",
+  "gtfs_longitude": "-73.986599",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.986599,
+    40.739864
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "129",
+  "station_id": "319",
+  "complex_id": "319",
+  "division": "IRT",
+  "line": "Broadway - 7Av",
+  "stop_name": "28 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "1",
+  "structure": "Subway",
+  "gtfs_latitude": "40.747215",
+  "gtfs_longitude": "-73.993365",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.993365,
+    40.747215
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "R16",
+  "station_id": "11",
+  "complex_id": "611",
+  "division": "BMT",
+  "line": "Broadway - Brighton",
+  "stop_name": "Times Sq-42 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "N Q R W",
+  "structure": "Subway",
+  "gtfs_latitude": "40.754672",
+  "gtfs_longitude": "-73.986754",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.986754,
+    40.754672
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "D21",
+  "station_id": "230",
+  "complex_id": "619",
+  "division": "IND",
+  "line": "6th Av - Culver",
+  "stop_name": "Broadway-Lafayette St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "B D F M",
+  "structure": "Subway",
+  "gtfs_latitude": "40.725297",
+  "gtfs_longitude": "-73.996204",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.996204,
+    40.725297
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "134",
+  "station_id": "324",
+  "complex_id": "324",
+  "division": "IRT",
+  "line": "Broadway - 7Av",
+  "stop_name": "Houston St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "1",
+  "structure": "Subway",
+  "gtfs_latitude": "40.728251",
+  "gtfs_longitude": "-74.005367",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -74.005367,
+    40.728251
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "R21",
+  "station_id": "16",
+  "complex_id": "16",
+  "division": "BMT",
+  "line": "Broadway - Brighton",
+  "stop_name": "8 St-NYU",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "R W",
+  "structure": "Subway",
+  "gtfs_latitude": "40.730328",
+  "gtfs_longitude": "-73.992629",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.992629,
+    40.730328
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "631",
+  "station_id": "402",
+  "complex_id": "610",
+  "division": "IRT",
+  "line": "Lexington Av",
+  "stop_name": "Grand Central-42 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "4 5 6",
+  "structure": "Subway",
+  "gtfs_latitude": "40.751776",
+  "gtfs_longitude": "-73.976848",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.976848,
+    40.751776
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "D16",
+  "station_id": "226",
+  "complex_id": "609",
+  "division": "IND",
+  "line": "6th Av - Culver",
+  "stop_name": "42 St-Bryant Pk",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "B D F M",
+  "structure": "Subway",
+  "gtfs_latitude": "40.754222",
+  "gtfs_longitude": "-73.984569",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.984569,
+    40.754222
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "D20",
+  "station_id": "167",
+  "complex_id": "167",
+  "division": "IND",
+  "line": "6th Av - Culver",
+  "stop_name": "W 4 St-Wash Sq",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "B D F M",
+  "structure": "Subway",
+  "gtfs_latitude": "40.732338",
+  "gtfs_longitude": "-74.000495",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -74.000495,
+    40.732338
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "L06",
+  "station_id": "119",
+  "complex_id": "119",
+  "division": "BMT",
+  "line": "Canarsie",
+  "stop_name": "1 Av",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "L",
+  "structure": "Subway",
+  "gtfs_latitude": "40.730953",
+  "gtfs_longitude": "-73.981628",
+  "north_direction_label": "West Side",
+  "south_direction_label": "Brooklyn",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.981628,
+    40.730953
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "L02",
+  "station_id": "116",
+  "complex_id": "601",
+  "division": "BMT",
+  "line": "Canarsie",
+  "stop_name": "6 Av",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "L",
+  "structure": "Subway",
+  "gtfs_latitude": "40.737335",
+  "gtfs_longitude": "-73.996786",
+  "north_direction_label": "West Side",
+  "south_direction_label": "Brooklyn",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.996786,
+    40.737335
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "723",
+  "station_id": "465",
+  "complex_id": "610",
+  "division": "IRT",
+  "line": "Flushing",
+  "stop_name": "Grand Central-42 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "7",
+  "structure": "Subway",
+  "gtfs_latitude": "40.751431",
+  "gtfs_longitude": "-73.976041",
+  "north_direction_label": "Queens",
+  "south_direction_label": "Hudson Yards",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.976041,
+    40.751431
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "635",
+  "station_id": "406",
+  "complex_id": "602",
+  "division": "IRT",
+  "line": "Lexington Av",
+  "stop_name": "14 St-Union Sq",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "4 5 6",
+  "structure": "Subway",
+  "gtfs_latitude": "40.734673",
+  "gtfs_longitude": "-73.989951",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.989951,
+    40.734673
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "130",
+  "station_id": "320",
+  "complex_id": "320",
+  "division": "IRT",
+  "line": "Broadway - 7Av",
+  "stop_name": "23 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "1",
+  "structure": "Subway",
+  "gtfs_latitude": "40.744081",
+  "gtfs_longitude": "-73.995657",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.995657,
+    40.744081
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "R20",
+  "station_id": "15",
+  "complex_id": "602",
+  "division": "BMT",
+  "line": "Broadway - Brighton",
+  "stop_name": "14 St-Union Sq",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "N Q R W",
+  "structure": "Subway",
+  "gtfs_latitude": "40.735736",
+  "gtfs_longitude": "-73.990568",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.990568,
+    40.735736
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "133",
+  "station_id": "323",
+  "complex_id": "323",
+  "division": "IRT",
+  "line": "Broadway - 7Av",
+  "stop_name": "Christopher St-Stonewall",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "1",
+  "structure": "Subway",
+  "gtfs_latitude": "40.733422",
+  "gtfs_longitude": "-74.002906",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -74.002906,
+    40.733422
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "R17",
+  "station_id": "12",
+  "complex_id": "607",
+  "division": "BMT",
+  "line": "Broadway - Brighton",
+  "stop_name": "34 St-Herald Sq",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "N Q R W",
+  "structure": "Subway",
+  "gtfs_latitude": "40.749567",
+  "gtfs_longitude": "-73.98795",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.98795,
+    40.749567
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "901",
+  "station_id": "469",
+  "complex_id": "610",
+  "division": "IRT",
+  "line": "Lexington - Shuttle",
+  "stop_name": "Grand Central-42 St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "S",
+  "structure": "Subway",
+  "gtfs_latitude": "40.752769",
+  "gtfs_longitude": "-73.979189",
+  "north_direction_label": "Times Square",
+  "south_direction_label": "Last Stop",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.979189,
+    40.752769
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "A33",
+  "station_id": "168",
+  "complex_id": "168",
+  "division": "IND",
+  "line": "8th Av - Fulton St",
+  "stop_name": "Spring St",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "C E",
+  "structure": "Subway",
+  "gtfs_latitude": "40.726227",
+  "gtfs_longitude": "-74.003739",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "2",
+  "ada_northbound": "0",
+  "ada_southbound": "1",
+  "ada_notes": "Downtown only",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -74.003739,
+    40.726227
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "636",
+  "station_id": "407",
+  "complex_id": "407",
+  "division": "IRT",
+  "line": "Lexington Av",
+  "stop_name": "Astor Pl",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "6",
+  "structure": "Subway",
+  "gtfs_latitude": "40.730054",
+  "gtfs_longitude": "-73.99107",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "0",
+  "ada_northbound": "0",
+  "ada_southbound": "0",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.99107,
+    40.730054
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "A28",
+  "station_id": "164",
+  "complex_id": "164",
+  "division": "IND",
+  "line": "8th Av - Fulton St",
+  "stop_name": "34 St-Penn Station",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "A C E",
+  "structure": "Subway",
+  "gtfs_latitude": "40.752287",
+  "gtfs_longitude": "-73.993391",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.993391,
+    40.752287
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "D17",
+  "station_id": "227",
+  "complex_id": "607",
+  "division": "IND",
+  "line": "6th Av - Culver",
+  "stop_name": "34 St-Herald Sq",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "B D F M",
+  "structure": "Subway",
+  "gtfs_latitude": "40.749719",
+  "gtfs_longitude": "-73.987823",
+  "north_direction_label": "Uptown",
+  "south_direction_label": "Downtown",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -73.987823,
+    40.749719
+   ]
+  }
+ },
+ {
+  "gtfs_stop_id": "L01",
+  "station_id": "115",
+  "complex_id": "618",
+  "division": "BMT",
+  "line": "Canarsie",
+  "stop_name": "8 Av",
+  "borough": "M",
+  "cbd": "true",
+  "daytime_routes": "L",
+  "structure": "Subway",
+  "gtfs_latitude": "40.739777",
+  "gtfs_longitude": "-74.002578",
+  "north_direction_label": "Last Stop",
+  "south_direction_label": "Brooklyn",
+  "ada": "1",
+  "ada_northbound": "1",
+  "ada_southbound": "1",
+  "ada_notes": "NaN",
+  "georeference": {
+   "type": "Point",
+   "coordinates": [
+    -74.002578,
+    40.739777
+   ]
+  }
+ }
+]

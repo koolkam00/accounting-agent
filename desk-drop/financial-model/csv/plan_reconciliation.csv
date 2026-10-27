@@ -1,0 +1,26 @@
+num,plan_statement,plan_figure,model_figure,difference,tolerance,status,reason
+1,Campaign zero hard costs,280,276,-4,5,within tolerance,(b) $40 kits + $120 transport + $0 storage + $30 software + $50 insurance + $36 processing = $276; the plan rounds to $280.
+2,Campaign zero contribution,920,924,4,5,within tolerance,"(b) $1,200 - $276 = $924."
+3,Campaign zero per founder hour,16,16.2105,0.2105,0.5,within tolerance,(b) $924 / 57 h = $16.2.
+4,Three-brand courier hard costs,670,670,0,5,within tolerance,"(a) one $8 kit per office per drop: $80, not $240."
+5,Three-brand courier per founder hour ('about $74'),74,73.6538,-0.3462,0.5,within tolerance,"$3,830 / 52 h = $73.7."
+6,One-brand drop per founder hour ('about $26'),26,26.2857,0.2857,0.5,within tolerance,$920 / 35 h = $26.3.
+7,Direct-ship hard costs,370,370,0,5,within tolerance,"(c) keeps $75 storage, $0 transport."
+8,"$2,000 each per founder hour",102,101.6346,-0.3654,0.5,within tolerance,"$5,285 / 52 h = $101.6."
+9,"At $1,000 'about $47 an hour'",47,47.4038,0.4038,0.5,within tolerance,"(d) no card processing: $2,465 / 52 h = $47.4."
+10,"At $1,000 with processing",47,45.6731,-1.3269,0.5,differs: see reason,"(d) with 3% processing: $2,375 / 52 h = $45.7. Shown as a contrast; differs by design."
+11,Monthly revenue at steady state,9000,9000,0,25,within tolerance,(e) 2 x the three-brand courier drop.
+12,"Monthly hard costs ('about $1,350')",1350,1340,-10,25,within tolerance,"(e) 2 x $670 = $1,340; the plan rounds to $1,350."
+13,Monthly founder hours ('about 104'),104,104,0,0.01,within tolerance,(e) 2 x 52 h.
+14,"Monthly contribution ('roughly $7,650')",7650,7660,10,25,within tolerance,"(e) $9,000 - $1,340 = $7,660; the plan rounds to $7,650."
+15,"A year at that rate ('about $90,000')",90000,91920,1920,5000,within tolerance,"$7,660 x 12 = $91,920, before overhead and tax."
+16,Brand wins a month ('six'),6,6,0,0.01,within tolerance,All brands new in the plan's picture.
+17,Qualified conversations a month ('about 30'),30,30,0,0.01,within tolerance,6 wins / 20% close rate.
+18,Roster ('about 20 offices'),20,20,0,0.01,within tolerance,"2 drops x 10 offices, one drop per office a month."
+19,"Fixed overhead a month ('$200 to $350'): midpoint, tolerance half the range",275,310,35,75,within tolerance,"$60 software + $100 insurance + $150 storage + $0 phone = $310, inside the range. With home storage: $160, below it."
+20,Standard campaigns a month to cover overhead ('one'),1,1,0,0.01,within tolerance,"$310 / $1,075 contribution before allocations, rounded up."
+21,Hours per brand win ('six'),6,6,0,0.01,within tolerance,5 conversations x 0.75 h + 2.25 h paperwork at a 20% close rate.
+22,"Capital, low end",3360,3360,0,0.01,within tolerance,Sum of the plan's low column.
+23,"Capital, high end",6510,6510,0,0.01,within tolerance,Sum of the plan's high column.
+24,"Software, six months",360,360,0,0.01,within tolerance,Six $60 payments inside the window.
+25,"Transport, campaigns zero to two",600,720,120,0.01,differs: see reason,Per-drop rates give $720; the plan's lump does not reconcile to its own rates. The model keeps the rates (more conservative by $120).

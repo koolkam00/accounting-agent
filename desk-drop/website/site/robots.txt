@@ -1,0 +1,5 @@
+# STAGING version. Crawlers may fetch pages so that they can see each page's noindex tag and the
+# X-Robots-Tag header (Google: a page blocked here cannot show its noindex). The production copy
+# (tools/make_production.py) gets tools/production/robots.txt instead.
+User-agent: *
+Allow: /

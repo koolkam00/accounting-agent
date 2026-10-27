@@ -1,0 +1,16 @@
+# Part A working notes (message copy)
+
+Started 2026-10-24. Scope: all message copy. Part B (other agent) builds sending setup, call guides, post-call note, tracker, scorecard, handoff rows.
+
+## Inputs read
+- prompts/E-outreach-engine.md, plan.md, CONTRACTS.md (2026-10-24)
+- desk-drop-legal-pack/02 footer v0.6, 03 office agreement v0.8 notes, 10 brand agreement v0.8 terms, 11 COI request v0.7, name-check-log v0.6 (HOLD on public profile under working name)
+- desk-drop-identity HANDOFF v1.3: discovery one-pager, office one-pager (first_drop), brand one-pager (roster_status), proposal, signature-outreach.txt (includes Footer B)
+- clay-icp-tables/: no HANDOFF.md and no daily-view-*.csv on 2026-10-24 (only _work research slices). Examples use SAMPLE rows.
+- website/HANDOFF.md: no live URL; deep links planned at https://[DOMAIN]/offices#join and /brands#apply
+
+## Changelog by round
+- Round 1 (2026-10-24): drafted all twelve message files (LinkedIn profile, footer, field map, slot table, office and brand cold sequences, LinkedIn, warm/referral/walk-in, reply playbook, both conversion paths, Startup CPG posts) from the brief, plan, CONTRACTS and the legal and identity handoffs; built _render/fill.py (fill, check, render) and rendered 20 phone-width examples.
+- Round 2 (2026-10-24): looked at every render as the office manager, the CPG founder and the deliverability specialist. Fixed: subjects broke on the company fallback ("the your office pantry"); sentences starting with a fallback were lower case; two slot dates printed days already past (agreement date now computed from the send date); the brand selling email was a 148-word wall (cut to 124, offer restructured, "plus your product and freight" stated); repeated card sentence in office touch 2; ladder words softened in the LinkedIn About ("put out", "gone") restored to placed and depleted; "I place" (untrue present tense) in a LinkedIn note; dates now read as "Tuesday, January 12" to the recipient while templates keep CONTRACTS slots.
+- Round 3 (2026-10-24): aligned with Part B's call guides (no date proposed in weeks 1 to 3): added step 0 discovery thank-you emails for both sides and gates that refuse step 1 before Gate 0; added the last-offer date for campaign zero (Tue 2026-12-08) after the fallback render showed a verbal yes on Dec 9 that could not be invoiced and paid before ship-by; a "no" now gets thanks plus one referral ask (plan, Part B); slot wording is now checked against 04-slot-table.csv by the lint (it found five drifted sentences, fixed); a personalization floor warns when a touch 1 says nothing about the person.
+- Round 4 (2026-10-24): last look at every render. Fixed: step 1 still thanked the person "for today" when it went out two weeks after the call (now "As promised"); a slot name with a digit ([STEP 1 OPENER]) was printed raw, so the lint now fails on any unfilled computed slot; the legal pack's broker block carried markdown-escaped dollar signs; the draft maker would have written brand drafts from an office message and drafts for rows with nothing personal in them (now skipped with the reason); send-day rules matched to Part B's warm-up calendar (no new first touches on Wed 2026-11-25). Lint: 67 messages, 0 errors; 20 PNGs rendered at 390 px and looked at.

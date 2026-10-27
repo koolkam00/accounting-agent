@@ -1,0 +1,11 @@
+# Cloudflare Pages response headers (https://developers.cloudflare.com/pages/configuration/headers/).
+# Other hosts ignore this file.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+  X-Frame-Options: DENY
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https://*.goatcounter.com; font-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; form-action 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'
+# STAGING ONLY: delete the next two lines at the publish step (SETUP.md section 10).
+/*
+  X-Robots-Tag: noindex, nofollow

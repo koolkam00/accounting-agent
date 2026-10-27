@@ -1,0 +1,11 @@
+item,plan_low_usd,plan_high_usd,model_working_usd,where_the_model_pays_it,model_cash_in_six_months_usd,model_less_plan_high_usd,reading,legal_pack_status
+LLC filing and certificate of publication,250,250,250,Startup outlays,250,0,Reproduces.,"verified 2026-10-23 ($200 and $50, dos.ny.gov)"
+Newspaper publication,250,2000,2000,Startup outlays,2000,0,"Plan high end until quoted; the plan gives no working figure. Legal pack working figures: $1,745 New York County, $345 Albany County.","needs quote: legal pack range $200 to $2,000, working $1,745"
+"General liability insurance, one year",500,1500,1200,"Overhead (Cash_Ledger, insurance)",1200,-300,"The plan's own working figure, about $100 a month, sits inside the range.","plan estimate in the legal pack: $500 to $1,500, working $1,200; three quotes before binding, latest 2026-12-21"
+"Food warehouse license, if required",0,400,400,Startup outlays,400,0,High end until the state answers.,fee verified 2026-10-23; whether required is unknown
+Printing and materials,300,300,300,Startup outlays,300,0,Startup supplies; per-drop kits are separate.,plan estimate
+"Software, six months",360,360,360,"Overhead (Cash_Ledger, software)",360,0,Six monthly payments inside the window.,plan estimate
+"Transport, campaigns zero to two",600,600,720,"Per drop (Drop_PnL transport, first three drops)",720,120,Per-drop rates give $120 + $300 + $300 = $720; the plan's $600 lump does not reconcile to its own rates.,plan estimate
+Domain and email,100,100,100,Startup outlays,100,0,Reproduces.,plan estimate
+Reserve,1000,1000,1000,Not spent; added to capital to commit,,,"Held back, not an outflow.",plan estimate
+Total (model cash excludes the reserve),3360,6510,6330,,5330,,,

@@ -1,0 +1,15 @@
+measure,value,unit,how_it_is_built
+"Startup outlays to recover (one-time cash, Inputs section 11)",4125,USD,sum of startup cash amounts
+Contribution of a one-brand standard drop,920,USD per campaign,engine row 10
+"Contribution per brand on a standard drop (price, brands per drop and delivery model on Inputs)",1276.6667,USD per campaign,engine row 8 / its brands; shared costs split equally
+"Campaigns to recover startup cash, one-brand drops",5,campaigns,"startup / contribution, rounded up"
+Brand campaigns on standard drops to recover startup cash (brands per drop on Inputs),4,brand campaigns,"startup / contribution per brand, rounded up"
+Standard drops to recover startup cash (brands per drop on Inputs),2,drops,"startup / contribution of the whole standard drop (engine row 8), rounded up"
+One-brand standard drop: contribution before overhead allocations,1075,USD per campaign,revenue less direct costs
+Overhead paid per month,310,USD per month,Monthly steady state
+Standard campaigns a month to cover overhead,1,campaigns per month,"overhead / contribution before allocations, rounded up"
+"Brands per drop where contribution per hour reaches the Gate 3 target, new brands",1.8058,brands per drop,linear in brands: solved from engine rows 11 and 12
+Smallest whole number of brands that clears it,2,brands per drop,
+"Same, at the active renewal rate",1.6757,brands per drop,engine rows 13 and 14
+"Same, brands ship direct",1.1748,brands per drop,engine rows 15 and 16
+Standard price per office where a standard drop reaches the target (brands per drop on Inputs),107.732,USD per office,linear in price: engine rows 17 and 18

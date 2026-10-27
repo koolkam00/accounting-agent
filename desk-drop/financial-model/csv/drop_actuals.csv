@@ -1,0 +1,13 @@
+drop_id,drop_date,actuals_in,revenue,card_processing,display_kits,transport,other_direct,overhead_allocations_same_views_as_plan_shown_once_the_drop_has_actual_data,hard_costs,brand_sales_h,office_coordination_h,receiving_kitting_h,drop_day_h,checks_pickup_h,reporting_debriefs_h,admin_invoicing_h,founder_hours,contribution,contribution_per_founder_hour,units_received,units_delivered,units_placed,units_placed_within_1bd,units_topped_up,units_depleted_day5,survey_responses,survey_tried_yes,qr_scans,code_redemptions_day30,incremental,brand_campaigns,placed_within_1_business_day_share_of_delivered,campaigns_under_the_responses_per_office_threshold,reports_late_or_missing,brands_that_would_buy_again_yes,renewed_y,renewed_n,actual_cash_inside_the_six_months_receipts_less_direct_costs
+DRP-001,2027-01-12,N,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,0,0,0,0,0,0,0,0,0,0,not measured,0,,,,,0,0,0
+DRP-002,2027-02-09,N,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,0,0,0,0,0,0,0,0,0,0,not measured,0,,,,,0,0,0
+DRP-003,2027-02-23,N,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,0,0,0,0,0,0,0,0,0,0,not measured,0,,,,,0,0,0
+DRP-004,2027-03-23,N,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,0,0,0,0,0,0,0,0,0,0,not measured,0,,,,,0,0,0
+DRP-005,2027-04-06,N,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,0,0,0,0,0,0,0,0,0,0,not measured,0,,,,,0,0,0
+DRP-006,,N,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,0,0,0,0,0,0,0,0,0,0,not measured,0,,,,,0,0,0
+DRP-007,,N,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,0,0,0,0,0,0,0,0,0,0,not measured,0,,,,,0,0,0
+DRP-008,,N,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,0,0,0,0,0,0,0,0,0,0,not measured,0,,,,,0,0,0
+DRP-009,,N,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,0,0,0,0,0,0,0,0,0,0,not measured,0,,,,,0,0,0
+DRP-010,,N,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,0,0,0,0,0,0,0,0,0,0,not measured,0,,,,,0,0,0
+DRP-011,,N,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,0,0,0,0,0,0,0,0,0,0,not measured,0,,,,,0,0,0
+DRP-012,,N,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,,,0,0,0,0,0,0,0,0,0,0,not measured,0,,,,,0,0,0

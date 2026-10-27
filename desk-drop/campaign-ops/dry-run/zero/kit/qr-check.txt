@@ -1,0 +1,12 @@
+SAMPLE. Test data only: illustrative placeholders, not results. Never send or print for use.
+
+OK    page 1  SAMPLE-O-001 SAMPLE-CMP-001  expected https://go.example.com/SAMPLE-c001-o001-q  front https://go.example.com/SAMPLE-c001-o001-q  back https://go.example.com/SAMPLE-c001-o001-q
+OK    page 2  SAMPLE-O-001 SAMPLE-CMP-002  expected https://go.example.com/SAMPLE-c002-o001-q  front https://go.example.com/SAMPLE-c002-o001-q  back https://go.example.com/SAMPLE-c002-o001-q
+OK    page 3  SAMPLE-O-003 SAMPLE-CMP-001  expected https://go.example.com/SAMPLE-c001-o003-q  front https://go.example.com/SAMPLE-c001-o003-q  back https://go.example.com/SAMPLE-c001-o003-q
+OK    page 4  SAMPLE-O-003 SAMPLE-CMP-002  expected https://go.example.com/SAMPLE-c002-o003-q  front https://go.example.com/SAMPLE-c002-o003-q  back https://go.example.com/SAMPLE-c002-o003-q
+OK    page 5  SAMPLE-O-002 SAMPLE-CMP-001  expected https://go.example.com/SAMPLE-c001-o002-q  front https://go.example.com/SAMPLE-c001-o002-q  back https://go.example.com/SAMPLE-c001-o002-q
+OK    page 6  SAMPLE-O-002 SAMPLE-CMP-002  expected https://go.example.com/SAMPLE-c002-o002-q  front https://go.example.com/SAMPLE-c002-o002-q  back https://go.example.com/SAMPLE-c002-o002-q
+OK    page 7  SAMPLE-O-005 SAMPLE-CMP-001  expected https://go.example.com/SAMPLE-c001-o005-q  front https://go.example.com/SAMPLE-c001-o005-q  back https://go.example.com/SAMPLE-c001-o005-q
+OK    page 8  SAMPLE-O-005 SAMPLE-CMP-002  expected https://go.example.com/SAMPLE-c002-o005-q  front https://go.example.com/SAMPLE-c002-o005-q  back https://go.example.com/SAMPLE-c002-o005-q
+OK    page 9  SAMPLE-O-004 SAMPLE-CMP-001  expected https://go.example.com/SAMPLE-c001-o004-q  front https://go.example.com/SAMPLE-c001-o004-q  back https://go.example.com/SAMPLE-c001-o004-q
+OK    page 10  SAMPLE-O-004 SAMPLE-CMP-002  expected https://go.example.com/SAMPLE-c002-o004-q  front https://go.example.com/SAMPLE-c002-o004-q  back https://go.example.com/SAMPLE-c002-o004-q

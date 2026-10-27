@@ -1,0 +1,15 @@
+gate,test,review_date,threshold,model_assumes,live_value,status,if_it_fails_plan
+Gate 0,Office conversations held (context),2026-11-13,15,,0,info,
+Gate 0,"Offices yes in principle, with owner and receiving window",2026-11-13,5,,0,not yet,"Fewer than 5 offices: change the cluster or office size band, not the model."
+Gate 0,Brand conversations held (context),2026-11-13,15,,0,info,
+Gate 0,Brands that would pay $500 or more and control the budget,2026-11-13,3,,0,not yet,Fewer than 3: test the office-paid version for three more weeks before deciding.
+Gate 1,Offices signed,2026-12-11,5,5,0,not yet,Offices sign but no brand pays even $600: pivot to office-paid or stop. No free campaign.
+Gate 1,Combined Tuesday headcount of signed offices,2026-12-11,350,,0,not yet,
+Gate 1,Brands paid in full,2026-12-11,2,2,0,not yet,"One paid brand is a soft pass: run it, make the second sale first."
+Gate 2,Units placed within one business day (share of delivered),2027-01-22,0.8,,,not yet,"Fix the procedure once (card, handoff, Slack post). A second miss is a stop signal."
+Gate 2,Brand campaigns under 5 survey responses per office (must be 0),2027-01-22,0,,,not yet,
+Gate 2,Reports late (after T+7) or missing (must be 0),2027-01-22,0,,,not yet,
+Gate 2,Brands that would buy again,2027-01-22,1,,,not yet,
+Gate 3,"Renewals at $1,500 or more, signed by the review date",2027-03-12,1,1,0,not yet,"No renewal: redesign the evidence (velocity, redemptions), run one more drop. A second miss is a stop."
+Gate 3,"Contribution per founder hour, standard runs",2027-03-12,50,61.28,,not yet: 2 standard run(s) without actuals,Not yet until every standard run dated by the review date has actuals in (next row).
+Gate 3,Standard runs dated by the review date with actuals in (the rate above uses only these; threshold = all of them),2027-03-12,2,,0,2 without actuals,Set Actuals in = Y by T+10; code_redemptions_day30 can follow later (HANDOFF 2.4).

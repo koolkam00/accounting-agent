@@ -1,0 +1,63 @@
+{
+ "brand_name": "SAMPLE Brightside",
+ "product_sku": "SAMPLE Sea Salt Lentil Crisps, 1 oz bags",
+ "prepared_for": "SAMPLE Contact, Founder",
+ "proposal_date": "2026-12-01",
+ "category": "chips-crisps",
+ "tier": "founding",
+ "extra_offices": "0",
+ "drop_date": "2027-01-12",
+ "ship_by_requested": "2026-12-22",
+ "offices": [
+  {
+   "neighborhood": "Flatiron",
+   "industry": "Software",
+   "headcount_band": "76-150",
+   "planned_units": "55"
+  },
+  {
+   "neighborhood": "NoMad",
+   "industry": "Architecture",
+   "headcount_band": "40-75",
+   "planned_units": "40"
+  },
+  {
+   "neighborhood": "Flatiron",
+   "industry": "Media",
+   "headcount_band": "76-150",
+   "planned_units": "50"
+  },
+  {
+   "neighborhood": "Union Square",
+   "industry": "Nonprofit",
+   "headcount_band": "40-75",
+   "planned_units": "40"
+  },
+  {
+   "neighborhood": "NoMad",
+   "industry": "Design studio",
+   "headcount_band": "151-250",
+   "planned_units": "65"
+  }
+ ],
+ "retailers": [
+  {
+   "retailer_name": "SAMPLE Whole Foods Market Union Square",
+   "street": "SAMPLE 4 Union Square South",
+   "distance": "SAMPLE inside the cluster"
+  },
+  {
+   "retailer_name": "SAMPLE Whole Foods Market NoMad",
+   "street": "SAMPLE 63 Madison Avenue",
+   "distance": "SAMPLE inside the cluster"
+  },
+  {
+   "retailer_name": "SAMPLE LifeThyme Natural Market",
+   "street": "SAMPLE 410 Sixth Avenue",
+   "distance": "SAMPLE about 5 min walk"
+  }
+ ],
+ "online_site": "example.com",
+ "map_image": "../../../../brand-maps/SAMPLE-brightside.png",
+ "map_caption": "SAMPLE layout test only: brand map from cluster-1-flatiron/brand-maps, built 2026-10-24. Streets: NYC Open Data."
+}

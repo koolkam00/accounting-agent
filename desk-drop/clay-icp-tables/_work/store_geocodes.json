@@ -1,0 +1,523 @@
+{
+ "110 w 32 st": {
+  "bbl": "1008077503",
+  "confidence": 0.8,
+  "label": "110 WEST 32 STREET, New York, NY, USA",
+  "lat": 40.748608,
+  "lon": -73.989574,
+  "match": "fallback",
+  "query": "110 W 32nd St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "115 w 31 st": {
+  "bbl": "1008077503",
+  "confidence": 0.8,
+  "label": "115 WEST 31 STREET, New York, NY, USA",
+  "lat": 40.748371,
+  "lon": -73.989747,
+  "match": "fallback",
+  "query": "115 W 31st St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "121 madison ave": {
+  "bbl": "1008600022",
+  "confidence": 0.8,
+  "label": "121 MADISON AVENUE, New York, NY, USA",
+  "lat": 40.74531,
+  "lon": -73.984491,
+  "match": "fallback",
+  "query": "121 Madison Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "124 1 ave": {
+  "bbl": "1004350005",
+  "confidence": 0.8,
+  "label": "124 1 AVENUE, New York, NY, USA",
+  "lat": 40.727146,
+  "lon": -73.985257,
+  "match": "fallback",
+  "query": "124 1st Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "124 1 ave is at the edge of the ten-block band": null,
+ "1265 broadway": {
+  "bbl": "1008330075",
+  "confidence": 0.8,
+  "label": "1265 B'WAY, New York, NY, USA",
+  "lat": 40.748127,
+  "lon": -73.988542,
+  "match": "fallback",
+  "query": "1265 Broadway, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "133 lexington ave": {
+  "bbl": "1008840061",
+  "confidence": 0.8,
+  "label": "133 LEXINGTON AVENUE, New York, NY, USA",
+  "lat": 40.743022,
+  "lon": -73.981894,
+  "match": "fallback",
+  "query": "133 Lexington Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "143 division st": {
+  "bbl": "1002830077",
+  "confidence": 0.8,
+  "label": "143 DIVISION STREET, New York, NY, USA",
+  "lat": 40.714387,
+  "lon": -73.990794,
+  "match": "fallback",
+  "query": "143 Division St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "15 e 18 st": {
+  "bbl": "1008470016",
+  "confidence": 0.8,
+  "label": "15 EAST 18 STREET, New York, NY, USA",
+  "lat": 40.738223,
+  "lon": -73.99064,
+  "match": "fallback",
+  "query": "15 E 18th St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "15 e 28 st": {
+  "bbl": "1008587503",
+  "confidence": 0.8,
+  "label": "15 EAST 28 STREET, New York, NY, USA",
+  "lat": 40.744529,
+  "lon": -73.985967,
+  "match": "fallback",
+  "query": "15 E 28th St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "160 lexington ave": {
+  "bbl": "1008860021",
+  "confidence": 0.8,
+  "label": "160 LEXINGTON AVENUE, New York, NY, USA",
+  "lat": 40.744114,
+  "lon": -73.981718,
+  "match": "fallback",
+  "query": "160 Lexington Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "172 ave b": {
+  "bbl": "1004040029",
+  "confidence": 0.8,
+  "label": "172 AVENUE B, New York, NY, USA",
+  "lat": 40.727393,
+  "lon": -73.979781,
+  "match": "fallback",
+  "query": "172 Avenue B, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "172 ave b is likely beyond ten blocks": {
+  "bbl": "1004040029",
+  "confidence": 0.8,
+  "label": "172 AVENUE B, New York, NY, USA",
+  "lat": 40.727393,
+  "lon": -73.979781,
+  "match": "fallback",
+  "query": "172 Avenue B is likely beyond ten blocks, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "184 2 ave": {
+  "bbl": "1004530006",
+  "confidence": 0.8,
+  "label": "184 2 AVENUE, New York, NY, USA",
+  "lat": 40.730672,
+  "lon": -73.985829,
+  "match": "fallback",
+  "query": "184 2nd Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "2 berry st": {
+  "bbl": "3022790015",
+  "confidence": 0.8,
+  "label": "2 BERRY STREET, Brooklyn, NY, USA",
+  "lat": 40.722556,
+  "lon": -73.955169,
+  "match": "fallback",
+  "query": "2 Berry St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "200 madison ave": {
+  "bbl": "1008650014",
+  "confidence": 0.8,
+  "label": "200 MADISON AVENUE, New York, NY, USA",
+  "lat": 40.748927,
+  "lon": -73.982677,
+  "match": "fallback",
+  "query": "200 Madison Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "203 10 ave": {
+  "bbl": "1006940031",
+  "confidence": 0.8,
+  "label": "203 10 AVENUE, New York, NY, USA",
+  "lat": 40.747244,
+  "lon": -74.004856,
+  "match": "fallback",
+  "query": "203 10th Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "22 8 ave": {
+  "bbl": "1006250051",
+  "confidence": 0.8,
+  "label": "22 8 AVENUE, New York, NY, USA",
+  "lat": 40.737675,
+  "lon": -74.00445,
+  "match": "fallback",
+  "query": "22 8th Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "22 w 19 st": {
+  "bbl": "1008200026",
+  "confidence": 0.8,
+  "label": "22 WEST 19 STREET, New York, NY, USA",
+  "lat": 40.739399,
+  "lon": -73.992895,
+  "match": "fallback",
+  "query": "22 W 19th St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "225 8 ave": {
+  "bbl": "1007457503",
+  "confidence": 0.8,
+  "label": "225 8 AVENUE, New York, NY, USA",
+  "lat": 40.744425,
+  "lon": -73.999537,
+  "match": "fallback",
+  "query": "225 8th Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "23 e 17 st": {
+  "bbl": "1008460017",
+  "confidence": 0.8,
+  "label": "23 EAST 17 STREET, New York, NY, USA",
+  "lat": 40.737505,
+  "lon": -73.990726,
+  "match": "fallback",
+  "query": "23 E 17th St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "23 w 19 st": {
+  "bbl": "1008210055",
+  "confidence": 0.8,
+  "label": "23 WEST 19 STREET, New York, NY, USA",
+  "lat": 40.740088,
+  "lon": -73.992487,
+  "match": "fallback",
+  "query": "23 W 19th St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "236 w 10 st": {
+  "bbl": "1006190016",
+  "confidence": 0.8,
+  "label": "236 WEST 10 STREET, New York, NY, USA",
+  "lat": 40.7337,
+  "lon": -74.005472,
+  "match": "fallback",
+  "query": "236 W 10th St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "240 mulberry st": {
+  "bbl": "1004940009",
+  "confidence": 0.8,
+  "label": "240 MULBERRY STREET, New York, NY, USA",
+  "lat": 40.722798,
+  "lon": -73.995714,
+  "match": "fallback",
+  "query": "240 Mulberry St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "249 park ave s": {
+  "bbl": "1008750079",
+  "confidence": 0.8,
+  "label": "249 PARK AVENUE SOUTH, New York, NY, USA",
+  "lat": 40.738022,
+  "lon": -73.987525,
+  "match": "fallback",
+  "query": "249 Park Ave S, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "25 university pl": {
+  "bbl": "1005607501",
+  "confidence": 0.8,
+  "label": "25 UNIVERSITY PLACE, New York, NY, USA",
+  "lat": 40.731694,
+  "lon": -73.994089,
+  "match": "fallback",
+  "query": "25 University Place, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "261 7 ave": {
+  "bbl": "1008000077",
+  "confidence": 0.8,
+  "label": "261 7 AVENUE, New York, NY, USA",
+  "lat": 40.745186,
+  "lon": -73.994536,
+  "match": "fallback",
+  "query": "261 7th Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "300 8 ave": {
+  "bbl": "1007750001",
+  "confidence": 0.8,
+  "label": "300 8 AVENUE, New York, NY, USA",
+  "lat": 40.746557,
+  "lon": -73.997174,
+  "match": "fallback",
+  "query": "300 8th Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "300 w 22 st": {
+  "bbl": "1007450040",
+  "confidence": 0.8,
+  "label": "300 WEST 22 STREET, New York, NY, USA",
+  "lat": 40.744613,
+  "lon": -73.999382,
+  "match": "fallback",
+  "query": "300 W 22nd St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "311 11 ave": {
+  "bbl": "1006750012",
+  "confidence": 0.8,
+  "label": "311 11 AVENUE, New York, NY, USA",
+  "lat": 40.753165,
+  "lon": -74.004914,
+  "match": "fallback",
+  "query": "311 11th Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "315 5 ave": {
+  "bbl": "1008610075",
+  "confidence": 0.8,
+  "label": "315 5 AVENUE, New York, NY, USA",
+  "lat": 40.746899,
+  "lon": -73.985191,
+  "match": "fallback",
+  "query": "315 5th Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "33 greenwich ave": {
+  "bbl": "1006110065",
+  "confidence": 0.8,
+  "label": "33 GREENWICH AVENUE, New York, NY, USA",
+  "lat": 40.734896,
+  "lon": -74.000386,
+  "match": "fallback",
+  "query": "33 Greenwich Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "341 3 ave": {
+  "bbl": "1009060001",
+  "confidence": 0.8,
+  "label": "341 3 AVENUE, New York, NY, USA",
+  "lat": 40.740209,
+  "lon": -73.981735,
+  "match": "fallback",
+  "query": "341 3rd Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "36 lexington ave": {
+  "bbl": "1008790060",
+  "confidence": 0.8,
+  "label": "36 LEXINGTON AVENUE, New York, NY, USA",
+  "lat": 40.740069,
+  "lon": -73.984599,
+  "match": "fallback",
+  "query": "36 Lexington Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "361 6 ave": {
+  "bbl": "1005920018",
+  "confidence": 0.8,
+  "label": "361 6 AVENUE, New York, NY, USA",
+  "lat": 40.732341,
+  "lon": -74.000823,
+  "match": "fallback",
+  "query": "361 6th Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "365 canal st": {
+  "bbl": "1002280005",
+  "confidence": 0.8,
+  "label": "365 CANAL STREET, New York, NY, USA",
+  "lat": 40.721301,
+  "lon": -74.004072,
+  "match": "fallback",
+  "query": "365 Canal St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "368 10 ave": {
+  "bbl": "1007297507",
+  "confidence": 0.8,
+  "label": "368 10 AVENUE, New York, NY, USA",
+  "lat": 40.75307,
+  "lon": -73.99945,
+  "match": "fallback",
+  "query": "368 10th Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "38 e 23 st": {
+  "bbl": "1008510050",
+  "confidence": 0.8,
+  "label": "38 EAST 23 STREET, New York, NY, USA",
+  "lat": 40.740342,
+  "lon": -73.98744,
+  "match": "fallback",
+  "query": "38 E 23rd St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "38 w 32 st": {
+  "bbl": "1008330018",
+  "confidence": 0.8,
+  "label": "38 WEST 32 STREET, New York, NY, USA",
+  "lat": 40.747652,
+  "lon": -73.987562,
+  "match": "fallback",
+  "query": "38 W 32nd St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "408 6 ave": {
+  "bbl": "1005720004",
+  "confidence": 0.8,
+  "label": "408 6 AVENUE, New York, NY, USA",
+  "lat": 40.733749,
+  "lon": -73.999109,
+  "match": "fallback",
+  "query": "408 6th Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "409 w 15 st": {
+  "bbl": "1007130001",
+  "confidence": 0.8,
+  "label": "409 WEST 15 STREET, New York, NY, USA",
+  "lat": 40.742563,
+  "lon": -74.006051,
+  "match": "fallback",
+  "query": "409 W 15th St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "434 6 ave": {
+  "bbl": "1005730006",
+  "confidence": 0.8,
+  "label": "434 6 AVENUE, New York, NY, USA",
+  "lat": 40.734539,
+  "lon": -73.998533,
+  "match": "fallback",
+  "query": "434 6th Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "448 w 16 st": {
+  "bbl": "1007130001",
+  "confidence": 0.8,
+  "label": "448 WEST 16 STREET, New York, NY, USA",
+  "lat": 40.742563,
+  "lon": -74.006051,
+  "match": "fallback",
+  "query": "448 W 16th St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "459 w 15 st": {
+  "bbl": "1007130001",
+  "confidence": 0.8,
+  "label": "459 WEST 15 STREET, New York, NY, USA",
+  "lat": 40.742563,
+  "lon": -74.006051,
+  "match": "fallback",
+  "query": "459 W 15th St, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "498 6 ave": {
+  "bbl": "1005760007",
+  "confidence": 0.8,
+  "label": "498 6 AVENUE, New York, NY, USA",
+  "lat": 40.736292,
+  "lon": -73.997212,
+  "match": "fallback",
+  "query": "498 6th Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "501 6 ave": {
+  "bbl": "1006080039",
+  "confidence": 0.8,
+  "label": "501 6 AVENUE, New York, NY, USA",
+  "lat": 40.736382,
+  "lon": -73.997982,
+  "match": "fallback",
+  "query": "501 6th Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "528 3 ave": {
+  "bbl": "1008910039",
+  "confidence": 0.8,
+  "label": "528 3 AVENUE, New York, NY, USA",
+  "lat": 40.7467,
+  "lon": -73.977762,
+  "match": "fallback",
+  "query": "528 3rd Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "623 2 ave": {
+  "bbl": "1009150027",
+  "confidence": 0.8,
+  "label": "623 2 AVENUE, New York, NY, USA",
+  "lat": 40.745049,
+  "lon": -73.976055,
+  "match": "fallback",
+  "query": "623 2nd Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "67 irving pl": {
+  "bbl": "1008740017",
+  "confidence": 0.8,
+  "label": "67 IRVING PLACE, New York, NY, USA",
+  "lat": 40.736756,
+  "lon": -73.987074,
+  "match": "fallback",
+  "query": "67 Irving Pl, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "71 irving pl": {
+  "bbl": "1008740019",
+  "confidence": 0.8,
+  "label": "71 IRVING PLACE, New York, NY, USA",
+  "lat": 40.73683,
+  "lon": -73.986993,
+  "match": "fallback",
+  "query": "71 Irving Place, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "716 6 ave": {
+  "bbl": "1008250001",
+  "confidence": 0.8,
+  "label": "716 6 AVENUE, New York, NY, USA",
+  "lat": 40.743043,
+  "lon": -73.99233,
+  "match": "fallback",
+  "query": "716 6th Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "75 9 ave": {
+  "bbl": "1007130001",
+  "confidence": 0.8,
+  "label": "75 9 AVENUE, New York, NY, USA",
+  "lat": 40.742563,
+  "lon": -74.006051,
+  "match": "fallback",
+  "query": "75 9th Ave, New York, NY",
+  "source": "nyc-geosearch"
+ },
+ "79 e 10 st": {
+  "bbl": "1005560001",
+  "confidence": 0.8,
+  "label": "79 EAST 10 STREET, New York, NY, USA",
+  "lat": 40.7316,
+  "lon": -73.989886,
+  "match": "fallback",
+  "query": "79 E 10th St, New York, NY",
+  "source": "nyc-geosearch"
+ }
+}

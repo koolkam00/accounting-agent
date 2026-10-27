@@ -1,0 +1,23 @@
+line,plan_reading_e,active_scenario,unit,how_it_is_built
+Drops per month,2,2,drops,Inputs / Scenarios
+Revenue,9000,9000,USD per month,drops x one drop
+Hard costs (incl. overhead allocations),1340,1340,USD per month,drops x one drop
+Founder hours,104,94.4,hours per month,drops x one drop
+Contribution (plan definition),7660,7660,USD per month,revenue less hard costs
+Contribution per founder hour,73.6538,81.1441,USD per hour,
+Contribution per year at this rate,91920,91920,USD per year,before overhead not absorbed and before tax
+Founder hours per week,24,21.7846,hours per week,monthly hours / weeks per month
+Overhead paid per month,310,310,USD per month,software + insurance + phone + storage if unit
+Overhead allocated to drops per month,310,310,USD per month,drops x allocation per drop
+Overhead not absorbed by drops,0,0,USD per month,paid less allocated; zero at two drops a month
+Office-paid tier revenue (gross),0,0,USD per month,scenario B only
+Office-paid tier cost to serve (needs quote),0,0,USD per month,blank until quoted
+Office-paid tier counted in the net?,no office-paid tier,no office-paid tier,,"left out until its cost to serve is quoted, so an unpriced cost never flatters the net"
+Drop-day hours handed to a hire,0,0,hours per month,scenario A rule: hire above two drops a month
+Delivery hire cost,0,0,USD per month,
+"Net monthly contribution after overhead, office tier and hire",7660,7660,USD per month,office tier only when 'counted in the net' says yes
+Founder hours net of the hire,104,94.4,hours per month,
+Net contribution per founder hour,73.6538,81.1441,USD per hour,
+New brand wins needed per month,6,3.6,wins,brand slots less renewals
+Qualified brand conversations per month,30,18,conversations,wins / close rate
+Office roster so no office gets more than one drop a month,20,20,offices,drops x offices per drop

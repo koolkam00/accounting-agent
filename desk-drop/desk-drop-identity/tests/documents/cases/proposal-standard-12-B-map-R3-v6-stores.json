@@ -1,0 +1,115 @@
+{
+  "brand_name": "SAMPLE Brightside",
+  "product_sku": "SAMPLE Sea Salt Lentil Crisps, 1 oz bags",
+  "prepared_for": "SAMPLE Contact, Founder",
+  "proposal_date": "2027-01-14",
+  "category": "chips-crisps",
+  "tier": "standard",
+  "extra_offices": "2",
+  "drop_date": "2027-02-09",
+  "ship_by_requested": "",
+  "offices": [
+    {
+      "neighborhood": "Flatiron",
+      "industry": "Software",
+      "headcount_band": "76-150",
+      "planned_units": "55"
+    },
+    {
+      "neighborhood": "NoMad",
+      "industry": "Architecture",
+      "headcount_band": "40-75",
+      "planned_units": "40"
+    },
+    {
+      "neighborhood": "Flatiron",
+      "industry": "Media",
+      "headcount_band": "76-150",
+      "planned_units": "50"
+    },
+    {
+      "neighborhood": "Union Square",
+      "industry": "Nonprofit",
+      "headcount_band": "40-75",
+      "planned_units": "40"
+    },
+    {
+      "neighborhood": "NoMad",
+      "industry": "Design studio",
+      "headcount_band": "151-250",
+      "planned_units": "65"
+    },
+    {
+      "neighborhood": "Flatiron",
+      "industry": "Law",
+      "headcount_band": "76-150",
+      "planned_units": "45"
+    },
+    {
+      "neighborhood": "NoMad",
+      "industry": "Advertising",
+      "headcount_band": "76-150",
+      "planned_units": "50"
+    },
+    {
+      "neighborhood": "Union Square",
+      "industry": "Education",
+      "headcount_band": "40-75",
+      "planned_units": "40"
+    },
+    {
+      "neighborhood": "Flatiron",
+      "industry": "Finance",
+      "headcount_band": "151-250",
+      "planned_units": "70"
+    },
+    {
+      "neighborhood": "NoMad",
+      "industry": "Software",
+      "headcount_band": "151-250",
+      "planned_units": "45"
+    },
+    {
+      "neighborhood": "Union Square",
+      "industry": "Architecture",
+      "headcount_band": "151-250",
+      "planned_units": "70"
+    },
+    {
+      "neighborhood": "NoMad",
+      "industry": "Hospitality",
+      "headcount_band": "76-150",
+      "planned_units": "55"
+    }
+  ],
+  "retailers": [
+    {
+      "retailer_name": "Trader Joe's Union Square (store 540)",
+      "street": "142 East 14th Street",
+      "distance": "inside the cluster",
+      "map_number": "1"
+    },
+    {
+      "retailer_name": "Morton Williams (278 Park Avenue South)",
+      "street": "278 Park Avenue South",
+      "distance": "inside the cluster",
+      "map_number": "2"
+    },
+    {
+      "retailer_name": "Eataly NYC Flatiron",
+      "street": "200 Fifth Avenue",
+      "distance": "inside the cluster",
+      "map_number": "3"
+    },
+    {
+      "retailer_name": "Eden Gourmet Marketplace Gramercy Park",
+      "street": "275 Third Avenue",
+      "distance": "3 blocks outside",
+      "map_number": "4"
+    }
+  ],
+  "online_site": "example.com",
+  "map_image": "../../proposal-map/B-SAMPLE-brightside-map.png",
+  "map_caption": "SAMPLE map: workstream B's SAMPLE brand map (pins do not match these stores; layout test only)",
+  "_test_note": "Review round 3 (R3-03): the round-3 reviewer's store set v6, 12 offices: B-R-009, B-R-004, B-R-001, B-R-020 from cluster-1-flatiron/retailers.csv, names exactly as B writes them, distance 'inside the cluster'. Must fit."
+}

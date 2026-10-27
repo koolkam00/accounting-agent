@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Model route sheet (private)</title>
+<link rel="stylesheet" href="__LEAFLET_CSS__" integrity="__LEAFLET_CSS_SRI__" crossorigin="anonymous">
+<style>
+ body{margin:0;font-family:"Atkinson Hyperlegible Next",system-ui,Arial,sans-serif;color:#1F1D1A;background:#fff;width:1400px}
+ header{background:#1F1D1A;color:#fff;padding:14px 20px;display:flex;gap:14px;align-items:center}
+ header .tag{background:#B3261E;font-weight:700;font-size:13px;padding:3px 8px;border-radius:4px}
+ header h1{font-size:22px;margin:0}
+ .wrap{display:flex}
+ #map{width:820px;height:900px}
+ .side{width:560px;padding:14px 18px;box-sizing:border-box}
+ table{border-collapse:collapse;width:100%;font-size:14px}
+ td,th{border-bottom:1px solid #E6E1D6;padding:6px 4px;text-align:left;vertical-align:top}
+ th{font-size:12px;color:#6B675F;text-transform:uppercase;letter-spacing:.04em}
+ .n{background:#1F1D1A;color:#fff;border-radius:50%;width:26px;height:26px;line-height:26px;text-align:center;font-weight:700;font-size:13px;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+ .sec{color:#B3261E;font-weight:700}
+ p.note{font-size:13px;color:#6B675F;line-height:1.4;margin:8px 0}
+ .tot{font-size:15px;font-weight:700;margin:10px 0 4px}
+</style></head><body>
+<header><span class="tag">PRIVATE</span><h1 id="h"></h1></header>
+<div class="wrap"><div id="map"></div><div class="side">
+<table><thead><tr><th>#</th><th>Office (example)</th><th>Address</th><th>Lobby</th><th>Arrive</th><th>Walk</th></tr></thead><tbody id="tb"></tbody></table>
+<p class="tot" id="tot"></p>
+<p class="note">All times are estimates: hand-truck pace 64 m/min (MUTCD 3.5 ft/s), 25 s per avenue crossing, 15 s per side-street crossing, 15 min per stop (plan). Legs run sidewalk to sidewalk, to the corner and across, never mid-block. Example offices only: none has been contacted. Confirm each receiving window at intake and re-order to match; security desks last.</p>
+<p class="note">Map data &copy; OpenStreetMap contributors. Never publish this sheet: it names companies.</p>
+</div></div>
+<script src="__LEAFLET_JS__" integrity="__LEAFLET_JS_SRI__" crossorigin="anonymous"></script>
+<script>
+const BRAND_NAME="__BRAND_NAME__"; const R=__ROUTE__; const LINE=__LINE__; const TOT=__TOT__;
+document.getElementById('h').textContent=BRAND_NAME+": model ten-stop Tuesday route, 8 to 11 am (estimate)";
+const m=L.map('map',{zoomControl:false,attributionControl:true});
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(m);
+L.polyline(LINE.map(p=>[p[1],p[0]]),{color:'#E37400',weight:6,opacity:.9}).addTo(m);
+const pts=[];
+R.forEach((s,i)=>{const ll=[+s.lat,+s.lon];pts.push(ll);
+ const off=[[0,0],[14,-14],[-14,14],[14,14],[-14,-14]][R.slice(0,i).filter(q=>Math.abs(+q.lat-+s.lat)<0.0002&&Math.abs(+q.lon-+s.lon)<0.0003).length%5];
+ L.marker(ll,{icon:L.divIcon({className:'',html:`<div class="n" style="transform:translate(${off[0]}px,${off[1]}px)">${s.stop}</div>`,iconSize:[30,30],iconAnchor:[15,15]})}).addTo(m);
+ document.getElementById('tb').insertAdjacentHTML('beforeend',`<tr><td>${s.stop}</td><td>${s.company_name}</td><td>${s.street_address}${s.floor&&s.floor.length<=12&&!/unknown|not/.test(s.floor)?', fl '+s.floor:''}</td><td class="${s.lobby_type==='security desk'?'sec':''}">${s.lobby_type}</td><td>${s.arrive_est}</td><td>${s.stop==1?'start':s.leg_minutes_est+' min'}${Number(s.reload_minutes_before)>0?' + '+s.reload_minutes_before+' min reload':''}</td></tr>`);});
+m.fitBounds(L.latLngBounds(pts).pad(0.12));
+document.getElementById('tot').textContent=TOT;
+</script></body></html>

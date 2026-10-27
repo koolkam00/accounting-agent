@@ -1,0 +1,8 @@
+tests/node_modules/
+tests/package-lock.json
+tests/out/tmp/
+tests/out/lighthouse/*-*.json
+!tests/out/lighthouse/summary.json
+__pycache__/
+publish/
+publish-draft/

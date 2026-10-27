@@ -1,0 +1,119 @@
+{
+  "brand_name": "SAMPLE Brightside",
+  "product_sku": "SAMPLE Sea Salt Lentil Crisps, 1 oz bags",
+  "prepared_for": "SAMPLE Contact, Founder",
+  "proposal_date": "2027-01-14",
+  "category": "chips-crisps",
+  "tier": "standard",
+  "extra_offices": "2",
+  "drop_date": "2027-02-09",
+  "ship_by_requested": "",
+  "offices": [
+    {
+      "neighborhood": "Flatiron",
+      "industry": "Software",
+      "headcount_band": "76-150",
+      "planned_units": "55"
+    },
+    {
+      "neighborhood": "NoMad",
+      "industry": "Architecture",
+      "headcount_band": "40-75",
+      "planned_units": "40"
+    },
+    {
+      "neighborhood": "Flatiron",
+      "industry": "Media",
+      "headcount_band": "76-150",
+      "planned_units": "50"
+    },
+    {
+      "neighborhood": "Union Square",
+      "industry": "Nonprofit",
+      "headcount_band": "40-75",
+      "planned_units": "40"
+    },
+    {
+      "neighborhood": "NoMad",
+      "industry": "Design studio",
+      "headcount_band": "151-250",
+      "planned_units": "65"
+    },
+    {
+      "neighborhood": "Flatiron",
+      "industry": "Law",
+      "headcount_band": "76-150",
+      "planned_units": "45"
+    },
+    {
+      "neighborhood": "NoMad",
+      "industry": "Advertising",
+      "headcount_band": "76-150",
+      "planned_units": "50"
+    },
+    {
+      "neighborhood": "Union Square",
+      "industry": "Education",
+      "headcount_band": "40-75",
+      "planned_units": "40"
+    },
+    {
+      "neighborhood": "Flatiron",
+      "industry": "Finance",
+      "headcount_band": "151-250",
+      "planned_units": "70"
+    },
+    {
+      "neighborhood": "NoMad",
+      "industry": "Software",
+      "headcount_band": "151-250",
+      "planned_units": "45"
+    },
+    {
+      "neighborhood": "Union Square",
+      "industry": "Architecture",
+      "headcount_band": "151-250",
+      "planned_units": "70"
+    },
+    {
+      "neighborhood": "NoMad",
+      "industry": "Hospitality",
+      "headcount_band": "76-150",
+      "planned_units": "55"
+    }
+  ],
+  "retailers": [
+    {
+      "retailer_name": "Eden Gourmet Marketplace Union Square (formerly Garden of Eden)",
+      "street": "7 East 14th Street",
+      "distance": "about 4 to 10 blocks south",
+      "map_number": "1",
+      "display_name": "Eden Gourmet Marketplace Union Square (formerly Garden of Eden) Marketplace and Kitchen"
+    },
+    {
+      "retailer_name": "Morton Williams (278 Park Avenue South)",
+      "street": "278 Park Avenue South",
+      "distance": "about 4 to 10 blocks south",
+      "map_number": "2",
+      "display_name": "Morton Williams (278 Park Avenue South) Marketplace and Kitchen"
+    },
+    {
+      "retailer_name": "Westside Market NYC (170 West 23rd St)",
+      "street": "170 West 23rd Street",
+      "distance": "about 4 to 10 blocks south",
+      "map_number": "3",
+      "display_name": "Westside Market NYC (170 West 23rd St) Marketplace and Kitchen"
+    },
+    {
+      "retailer_name": "Trader Joe's Union Square (store 540)",
+      "street": "142 East 14th Street",
+      "distance": "about 4 to 10 blocks south",
+      "map_number": "4",
+      "display_name": "Trader Joe's Union Square (store 540) Marketplace and Kitchen"
+    }
+  ],
+  "online_site": "example.com",
+  "map_image": "../../proposal-map/B-SAMPLE-brightside-map.png",
+  "map_caption": "SAMPLE map: workstream B's SAMPLE brand map (pins do not match these stores; layout test only)",
+  "_test_note": "Review round 3 (R3-03): long display names and long distances on all four stores. Must be REFUSED, and the message must say by how much and name the stores that wrap."
+}

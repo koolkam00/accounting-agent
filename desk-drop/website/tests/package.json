@@ -1,0 +1,10 @@
+{
+  "name": "website-tests",
+  "private": true,
+  "description": "Test tools for the website. Install with: npm install (from website/tests). Playwright comes from the global install.",
+  "devDependencies": {
+    "axe-core": "4.14.0",
+    "html-validate": "11.16.2",
+    "lighthouse": "13.5.0"
+  }
+}

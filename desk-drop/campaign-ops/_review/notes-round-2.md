@@ -1,0 +1,31 @@
+# Reviewer scratch notes, round 2 (2026-10-24)
+- Sandbox: _review/r2/desk-drop/ (tar copies of campaign-ops without _review, identity without _review/tests/pdf/specs, financial-model, outreach, legal pack, _shared). No symlinks to live folders.
+- Read: brief F, CONTRACTS, plan (economics, Phase 3, measurement, tools, appendix), README, HANDOFF, round-1 review + builder response.
+- builder suite on sandbox: ALL PASS 4m51s (_review/r2/run_all-r2.log)
+- opscal check: 2026-12-22, 2027-07-06/07, 2026-08-25, 2027-08-17/18/24/25, Mon 2027-01-11, Fri 2027-01-15/2027-02-12, 2026-12-15/16, 2027-06-29/30, 2027-12-14/15, 2026-11-11 all REFUSED (exit 2); OK: 2027-01-12, 2026-12-08/09, 2027-08-11, 2027-07-13, 2027-11-23/24 (Thanksgiving skipped), 2027-06-15 (Juneteenth skipped). Campaign zero dates match CONTRACTS s3.
+- Name: only config!B2 holds "Desk Drop" in tracker; no path with the name; no source file with it.
+- No coworking / in-boundary eligibility check anywhere in F (grep cowork/boundary: none). Minor.
+- short.io/pricing opened 2026-10-24: Free 1,000 links, 50k clicks/mo, 5 domains, link automation 1,000 (API or bulk create) -> matches F.
+- DIRECT-SHIP SNAPSHOT T-5 (2027-03-16), reviewer scenario (_review/r2/work/scenario_r2.py, quick_r2.py): both campaigns' checks say "received 52 usable units for 515 allocated: reduce units_override evenly (SOP section 4, short shipment); received 52 of 567 due: log a short_shipment issue and tell the brand today" although only the reserve is meant to arrive (SOP receive_ds). False instruction. MAJOR.
+- Sources opened 2026-10-24: support.google.com/a/users/answer/9303071 (default restricted, setting under Settings > Responses) OK; help.dropbox.com dropbox-sign-free-plan (3/30 days, bundle = 1, audit trail) OK; waveapps.com/pricing (Starter free unlimited invoices; 2.9% + $0.60; Pro $19) OK.
+- Independent QR audit (zxing) of builder's current kits: zero 20/20, standard 58/58, exception 20/20 OK.
+- H load (round-1 reviewer loader) of builder's current exports/SAMPLE-exception: 0 formula errors, 0 failing checks; DRP-003 depleted 408, under-threshold 0, contribution 815; H SHA unchanged. Builder's R1-02 fix claim verified.
+- DIRECT-SHIP SNAPSHOT T+1 (2027-03-24): reserve_on_hand -439 (CMP-007) and -418 (CMP-008) -> "reserve below zero: check inventory" (false); short-shipment check still says reduce units_override. CMP-008 survey_responses 39 includes 2 from O-008 (on_drop N) -> campaign totals (formula + tracker.py tot()) sum ALL approvals rows, not on_drop only. O-003 delivered 26 of 50: no check fires.
+- Sheet date_check (LibreOffice) agrees with opscal on 16 dates incl. 2027-08-24, 2027-12-14, 2027-11-24, 2027-03-23 and all T offsets (_review/r2/work/test_sheet_dates_r2.py)
+- dashboard!B27 'Tabs over 90% full' references office_form!$A:$A and brand_form!$A:$A directly inside IFERROR(...,0); forms docs step 5 say delete placeholder tab and rename Google's tab -> in Sheets the direct refs become #REF! and never rebind -> check silently 0 forever. (office_intake_founder uses INDIRECT, so the builder knew.) Minor.
+- Reviewer run QR: 40/40 (20 cards both faces + 20 PNG) decode (zxing) to right form + card code via Short.io import CSV; 20 post links match office; 40 import rows right form/code/utm_medium.
+- Direct-ship messages: T-3 says photo by "you or the courier" (no courier in direct-ship); no mention of the mailed kit or counting cartons; T-1 promises carrier "in your 9 to 11 am window" and "front desk, as we agreed" (carrier knows nothing of it; O-009 desk will not hold food). Tracking sheet closing block copies founder/courier text: founder_count or courier_count, "case stays in reserve" for a declined office.
+- Day-3 text grammar: "SAMPLE Brightside and SAMPLE Tallgrass has under five" (minor polish).
+- No category-exclusivity check per drop; offices.declines computed but no check for 2 declines; no coworking/boundary check. Minor (roster rules).
+- Partial decline (O-008 refuses Tallgrass only) handled: on_drop N for Tallgrass only, letters skip, day3/day5 ask only Brightside, placement confirmation 9 of 10 + $150 credit, credit note settles on INV-032. Good.
+- Founding lock CMP-007: price 1,200 (120 x 10), founding_full invoice, released on paid date. OK.
+- REPLAY DONE (11m22s, 48 days): 0 formula errors, 0 disagreements; make_report SAMPLE-CMP-008 REFUSED by D template: "The 'did not try' reasons add up to more than the people who did not try" (roster sum 61 on-drop; campaign didnt_see 7 incl. 2 from O-008 off-drop; 7+7+5=19 > 61-44=17). Report email refused (no PDF). Final dashboard: 2 campaigns with permanent false checks (reserve below zero -491/-470; units still on hand after T+14; reduce units_override; received 52 of 567).
+- Independent arithmetic (raw scenario rows) vs tracker: delivered 491/470, topped 20/6, depleted 474/460 all match; responses CMP-008 tracker 63 vs on-drop 61.
+- H load of SAMPLE-r2direct: 0 errors, 0 failing checks; DRP-004 units_received 104 vs delivered 961; survey_responses 129 (incl. 2 off-drop); contribution 2190; H SHA unchanged.
+- Workaround test (quick_r2.py 2027-04-23 recv: log received per office carton): reserve 0, CMP-007 clean; CMP-008 still "received 522 of 567 due" (refused carton). So fix = SOP + check excluding turned-away offices.
+- Rename test: config!B2 changed only -> make_route/make_kit/make_invoice/make_messages exit 2 REFUSED. R1-04 verified.
+- R1-02 fixes verified in builder's exception run: no day3/day5 drafts for O-006, declined follow-up template, report roster note in email.
+- CMP-007 report rendered and viewed: says "Delivered 491 At handoff" and limitations "our count at handoff" though every delivered row is office_count (direct-ship).
+- Brand debrief CMP-008 says "from the report, Thu 2027-04-01" though the report was refused (make_debrief does not check PDF).
+- round-2.md written: 1 blocker, 2 majors, 6 minors
+- Removed tools/__pycache__ that my read-only import of live trackerdef created at 11:13 (it did not exist before).

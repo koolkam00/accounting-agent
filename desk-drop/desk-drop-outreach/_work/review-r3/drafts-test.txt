@@ -1,0 +1,130 @@
+# Draft-maker runs for review round 3, 2026-10-24. Inputs: A's daily views (09:27) copied to a scratch folder with simulated addresses (SAMPLE-sim...@example.invalid, scratch only) and scratch slot states. Nothing was sent; drafts were written only to the scratch folder.
+
+== R3-02 (1) brand-discovery-1 on Mon 2026-11-30, brand_selling_on = Y (offices_signed 2, attorney and name Y)
+cap: 5 cold first touches for brands on 2026-11-30 (sending/warmup-schedule.csv: 10 for both sides; 5 for offices)
+skip AB-219: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-216: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-249: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-097: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-075: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-070: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-071: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-082: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-002: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-233: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+0 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r3fix/drafts/r1. Nothing was sent.
+
+== R3-02 (2) brand-conversion-0 on Tue 2026-12-01, brand_selling_on = Y
+skip AB-219: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-216: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-249: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-097: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-075: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-070: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-071: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-082: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-002: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+skip AB-233: brand_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the brand side; send the selling version (06 part 2, 07 brand selling, or 11 step 1)
+0 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r3fix/drafts/r2. Nothing was sent.
+
+== R3-02 (3) brand-conversion-0 on Tue 2026-12-01, brand_selling_on = N (after the last campaign zero offer)
+note AB-219: fill before sending: [ONE THING THEY SAID THAT CHANGED YOUR THINKING]
+note AB-216: fill before sending: [ONE THING THEY SAID THAT CHANGED YOUR THINKING]
+note AB-249: fill before sending: [ONE THING THEY SAID THAT CHANGED YOUR THINKING]
+note AB-097: fill before sending: [ONE THING THEY SAID THAT CHANGED YOUR THINKING]
+note AB-075: fill before sending: [ONE THING THEY SAID THAT CHANGED YOUR THINKING]
+note AB-070: fill before sending: [ONE THING THEY SAID THAT CHANGED YOUR THINKING]
+note AB-071: fill before sending: [ONE THING THEY SAID THAT CHANGED YOUR THINKING]
+note AB-082: fill before sending: [ONE THING THEY SAID THAT CHANGED YOUR THINKING]
+note AB-002: fill before sending: [ONE THING THEY SAID THAT CHANGED YOUR THINKING]
+note AB-233: fill before sending: [ONE THING THEY SAID THAT CHANGED YOUR THINKING]
+10 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r3fix/drafts/r3. Nothing was sent.
+-- first draft:
+# NOTE (delete this line before sending): fill before sending: [ONE THING THEY SAID THAT CHANGED YOUR THINKING]
+To: SAMPLE-sim8@example.invalid
+Subject: Thank you for the time today
+
+Hi Zack,
+
+Thanks again for the time today. What you said about [ONE THING THEY SAID THAT CHANGED YOUR THINKING] is going straight into how I design this.
+
+I'm not selling anything yet. If it goes ahead, the first campaign I could offer you is planned for February, and only once the offices have signed.
+
+May I send you the details then, probably in the week of December 7?
+
+[FOUNDER NAME]
+Founder, Desk Drop
+[PHONE] | [EMAIL]
+[POSTAL ADDRESS]
+
+This is a business pitch, sent one to one. Not interested? Reply "no thanks" and I won't email you again.
+
+== R3-02 (4) office-discovery-1 on Mon 2026-11-30, office_selling_on = Y
+cap: 5 cold first touches for offices on 2026-11-30 (sending/warmup-schedule.csv: 10 for both sides; 5 for brands)
+skip AO-C-035: office_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the office side; send the selling version (05 part 2, 07 office selling, or 10 step 1)
+skip AO-C-160: office_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the office side; send the selling version (05 part 2, 07 office selling, or 10 step 1)
+skip AO-C-037: office_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the office side; send the selling version (05 part 2, 07 office selling, or 10 step 1)
+skip AO-C-034: office_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the office side; send the selling version (05 part 2, 07 office selling, or 10 step 1)
+skip AO-C-085: office_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the office side; send the selling version (05 part 2, 07 office selling, or 10 step 1)
+skip AO-C-031: office_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the office side; send the selling version (05 part 2, 07 office selling, or 10 step 1)
+skip AO-C-083: office_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the office side; send the selling version (05 part 2, 07 office selling, or 10 step 1)
+skip AO-C-052: office_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the office side; send the selling version (05 part 2, 07 office selling, or 10 step 1)
+skip AO-C-091: office_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the office side; send the selling version (05 part 2, 07 office selling, or 10 step 1)
+skip AO-C-096: office_selling_on = Y: this discovery copy says nothing is for sale, which is no longer true on the office side; send the selling version (05 part 2, 07 office selling, or 10 step 1)
+0 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r3fix/drafts/r4. Nothing was sent.
+
+== R3-02 (5) brand-selling-2 on rows whose sequence is brand-discovery-A
+skip AB-219: the row is on sequence brand-discovery-A; brand-selling-2 belongs to a selling thread (send that sequence's touch 2)
+skip AB-216: the row is on sequence brand-discovery-A; brand-selling-2 belongs to a selling thread (send that sequence's touch 2)
+skip AB-249: the row is on sequence brand-discovery-A; brand-selling-2 belongs to a selling thread (send that sequence's touch 2)
+skip AB-097: the row is on sequence brand-discovery-A; brand-selling-2 belongs to a selling thread (send that sequence's touch 2)
+skip AB-075: the row is on sequence brand-discovery-A; brand-selling-2 belongs to a selling thread (send that sequence's touch 2)
+skip AB-070: the row is on sequence brand-discovery-A; brand-selling-2 belongs to a selling thread (send that sequence's touch 2)
+skip AB-071: the row is on sequence brand-discovery-A; brand-selling-2 belongs to a selling thread (send that sequence's touch 2)
+skip AB-082: the row is on sequence brand-discovery-A; brand-selling-2 belongs to a selling thread (send that sequence's touch 2)
+skip AB-002: the row is on sequence brand-discovery-A; brand-selling-2 belongs to a selling thread (send that sequence's touch 2)
+skip AB-233: the row is on sequence brand-discovery-A; brand-selling-2 belongs to a selling thread (send that sequence's touch 2)
+0 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r3fix/drafts/r5. Nothing was sent.
+
+== R3-02 (6) brand-discovery-2 on the same rows with brand_selling_on = Y: the thread finishes
+10 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r3fix/drafts/r6. Nothing was sent.
+
+== R3-05 office-selling-1 on Mon 2026-11-30 with the one-pager not ready (name decided, office_onepager_ready N)
+cap: 5 cold first touches for offices on 2026-11-30 (sending/warmup-schedule.csv: 10 for both sides; 5 for brands)
+skip AO-C-031: the day's cap of 5 cold first touches is reached (sending/warmup-schedule.csv; --over-cap to override)
+skip AO-C-083: the day's cap of 5 cold first touches is reached (sending/warmup-schedule.csv; --over-cap to override)
+skip AO-C-052: the day's cap of 5 cold first touches is reached (sending/warmup-schedule.csv; --over-cap to override)
+skip AO-C-091: the day's cap of 5 cold first touches is reached (sending/warmup-schedule.csv; --over-cap to override)
+skip AO-C-096: the day's cap of 5 cold first touches is reached (sending/warmup-schedule.csv; --over-cap to override)
+5 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r3fix/drafts/r7. Nothing was sent.
+      5 Could I send you the details?
+
+== R3-06 the reviewer's impossible state (offices_signed 2, attorney_cleared and name_decided N)
+refused: the slot state is not possible under the folder's own gates (offices_signed above 0 needs attorney_cleared = Y and name_decided = Y (no office agreement goes out before both); offices_signed above 0 needs tuesday_headcount (the signed offices' own numbers)). Fix messages/04-slot-state.csv (the Friday Scorecard has the counts). Nothing written.
+
+== R3-07 brand-conversion-8 on Mon 2026-12-07, formed and cleared, five offices signed, approvals complete
+note AB-219: fill before sending: [BRAND LEGAL NAME], [BRAND ADDRESS], [PRODUCT NAME AND SKU]; check "Desk Drop LLC" letter for letter against the filed Articles
+note AB-216: fill before sending: [BRAND LEGAL NAME], [BRAND ADDRESS], [PRODUCT NAME AND SKU]; check "Desk Drop LLC" letter for letter against the filed Articles
+note AB-249: fill before sending: [BRAND LEGAL NAME], [BRAND ADDRESS], [PRODUCT NAME AND SKU]; check "Desk Drop LLC" letter for letter against the filed Articles
+note AB-097: fill before sending: [BRAND LEGAL NAME], [BRAND ADDRESS], [PRODUCT NAME AND SKU]; check "Desk Drop LLC" letter for letter against the filed Articles
+note AB-075: fill before sending: [BRAND LEGAL NAME], [BRAND ADDRESS], [PRODUCT NAME AND SKU]; check "Desk Drop LLC" letter for letter against the filed Articles
+note AB-070: fill before sending: [BRAND LEGAL NAME], [BRAND ADDRESS], [PRODUCT NAME AND SKU]; check "Desk Drop LLC" letter for letter against the filed Articles
+note AB-071: fill before sending: [BRAND LEGAL NAME], [BRAND ADDRESS], [PRODUCT NAME AND SKU]; check "Desk Drop LLC" letter for letter against the filed Articles
+note AB-082: fill before sending: [BRAND LEGAL NAME], [BRAND ADDRESS], [PRODUCT NAME AND SKU]; check "Desk Drop LLC" letter for letter against the filed Articles
+note AB-002: fill before sending: [BRAND LEGAL NAME], [BRAND ADDRESS], [PRODUCT NAME AND SKU]; check "Desk Drop LLC" letter for letter against the filed Articles
+note AB-233: fill before sending: [BRAND LEGAL NAME], [BRAND ADDRESS], [PRODUCT NAME AND SKU]; check "Desk Drop LLC" letter for letter against the filed Articles
+10 drafts written to /tmp/claude-0/-home-user-accounting-agent/35161228-045e-5c59-97cb-d166fe4ca4c5/scratchpad/E-r3fix/drafts/r9. Nothing was sent.
+-- first 12 lines of the first draft:
+# NOTE (delete this line before sending): fill before sending: [BRAND LEGAL NAME], [BRAND ADDRESS], [PRODUCT NAME AND SKU]; check "Desk Drop LLC" letter for letter against the filed Articles
+To: SAMPLE-sim8@example.invalid
+Subject: Five things we need from Zack's Mighty for the January 12 drop
+
+Hi Zack,
+
+These are the five things the card and the campaign need from you:
+
+1. A certificate of insurance showing your product liability coverage of at least $1,000,000, with Desk Drop LLC added as an additional insured. Your broker issues it; everything they need is in the note at the bottom, so you can forward this email to them as it is.
+2. Your ingredient and allergen statement as printed on the package: a spec sheet, or a clear photo of the panel. The card repeats your "Contains" line word for word, and any "may contain" line too.
+3. Your logo: an SVG, or a PNG at least 300 pixels tall on a transparent or white background.
+4. Two sentences for the card, in your words: who makes it and why it exists, 200 characters or fewer. No health claims (nothing like "supports gut health" or "boosts immunity") and no "best". You'll approve the card proof before it prints.
+-- bracketed [COMPANY NAME in the draft: 0

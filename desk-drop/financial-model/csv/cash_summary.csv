@@ -1,0 +1,14 @@
+measure,value
+Lowest cumulative net cash flow (before founder cash),-4476
+Week of the lowest point,13
+That week starts,2027-01-18
+"Peak cash need (the lowest point, as a positive number)",4476
+Reserve held back (plan),1000
+Capital to commit: peak need plus reserve,5476
+"Plan capital figure, high end (Capital tab)",6510
+Gap: plan capital figure minus capital to commit (positive = headroom),1034
+Founder cash committed (Inputs),not set
+Lowest cash balance with founder cash,-4476
+Cumulative net cash at the end of week 26,11409
+Latest week with an actual bank balance typed (row 30),
+Variance that week (actual less model),

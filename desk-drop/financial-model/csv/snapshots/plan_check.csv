@@ -1,0 +1,58 @@
+Plan check: the plan's figures reproduced by the model
+Each case runs through the same engine as the drops. Plan figures are typed from plan.md for comparison only.
+"Planning estimates, not a forecast. Reproduction holds while inputs equal the plan defaults (Inputs 'Changed' column). If you change an input, a 'differs' here is expected and is not an error."
+
+Case,,,,Inputs to the engine,,,,,,,,,Revenue,,,,,,Hard costs,,,,,,,,Founder hours by activity,,,,,,,,Result,,Split
+Drop or case,Drop date,Delivery model,Tier,Offices,New offices,Brands,of which renewals,of which founding-rate renewals,Standard price per office,Founding price per office,Storage allocated (1/0),Card processing (1/0),Drop runs (1/0),New founding brands,New standard brands,Revenue at founding rate,Revenue at standard rate,Revenue,Display kits,Transport,Kit mailing,Card processing,Storage allocation,Software allocation,Insurance allocation,Hard costs,brand_sales (h),office_coordination (h),receiving_kitting (h),drop_day (h),checks_pickup (h),reporting_debriefs (h),admin_invoicing (h),Founder hours,Contribution,Contribution per founder hour,"Direct costs (kits, transport, mailing, processing)",Overhead allocations (views of monthly costs),,Plan revenue,Plan hard costs,Plan founder hours,Plan contribution,Plan per founder hour,Money tolerance,Hours tolerance,Per-hour tolerance,Kind,Status,Plan reading
+"1. Campaign zero: 2 founding brands, 5 offices, you deliver",,founder,founding,5,5,2,0,0,150,120,0,1,1,2,0,1200,0,1200,40,120,0,36,0,30,50,276,20,20,3,5,3,4,2,57,924,16.2105,196,80,,1200,280,57,920,16,5,0.01,0.5,reproduce,reproduces,"(b) storage $0 at home, transport $120, processing 3%: $276, which the plan rounds to $280."
+"2. Standard drop, 1 brand, 10 offices, courier",,courier,standard,10,0,1,0,0,150,120,1,1,1,0,1,0,1500,1500,80,300,0,45,75,30,50,580,6,10,3,8,4,2,2,35,920,26.2857,425,155,,1500,580,35,920,26,5,0.01,0.5,reproduce,reproduces
+"3. Standard drop, 3 brands, 10 offices, courier",,courier,standard,10,0,3,0,0,150,120,1,1,1,0,3,0,4500,4500,80,300,0,135,75,30,50,670,18,10,4,8,4,6,2,52,3830,73.6538,515,155,,4500,670,52,3830,74,5,0.01,0.5,reproduce,reproduces,(a) kit $8 per office per drop. Per brand it would be $830.
+"4. Standard drop, 3 brands, brands ship direct",,direct-ship,standard,10,0,3,0,0,150,120,1,1,1,0,3,0,4500,4500,80,0,0,135,75,30,50,370,18,10,2,3,4,6,2,45,4130,91.7778,215,155,,4500,370,45,4130,92,5,0.01,0.5,reproduce,reproduces,(c) keeps the $75 storage allocation and $0 transport.
+"5. Standard drop, 3 brands at $2,000 each",,courier,standard,10,0,3,0,0,200,120,1,1,1,0,3,0,6000,6000,80,300,0,180,75,30,50,715,18,10,4,8,4,6,2,52,5285,101.6346,560,155,,6000,715,52,5285,102,5,0.01,0.5,reproduce,reproduces
+"6. Three-brand drop at $1,000 each, no processing",,courier,standard,10,0,3,0,0,100,120,1,0,1,0,3,0,3000,3000,80,300,0,0,75,30,50,535,18,10,4,8,4,6,2,52,2465,47.4038,380,155,,,,52,,47,5,0.01,0.5,reproduce,reproduces,"(d) $2,465 / 52 h = $47.4. The plan's 'about $47' assumes no card processing."
+"6b. Same at $1,000 each with 3% processing",,courier,standard,10,0,3,0,0,100,120,1,1,1,0,3,0,3000,3000,80,300,0,90,75,30,50,625,18,10,4,8,4,6,2,52,2375,45.6731,470,155,,,,52,,47,5,0.01,0.5,contrast,"differs, as expected","(d) with processing it is $45.7, so the plan's $47 is the no-processing reading."
+Edge: zero brands,,courier,standard,10,0,0,0,0,150,120,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,n/a,0,0,,0,0,0,0,,0.01,0.01,0.01,edge,behaves,"A drop with no brand does not run: no cost, no hours, per hour 'n/a'."
+"Edge: one office, one brand, courier",,courier,standard,1,0,1,0,0,150,120,1,1,1,0,1,0,150,150,8,30,0,4.5,75,30,50,197.5,6,1,3,0.8,0.4,2,2,15.2,-47.5,-3.125,42.5,155,,150,197.5,15.2,-47.5,-3.125,0.01,0.01,0.01,edge,behaves,"Expected values worked by hand: $8 kit + $30 courier + $4.50 processing + $155 allocations; 15.2 hours. Finite, negative per hour."
+"Edge: 100% renewal, 3 brands",,courier,standard,10,0,3,3,0,150,120,1,1,1,0,0,0,4500,4500,80,300,0,135,75,30,50,670,6,10,4,8,4,6,2,40,3830,95.75,515,155,,4500,670,40,3830,95.75,0.01,0.01,0.01,edge,behaves,"Expected by hand: brand sales 3 x 2 h = 6 h instead of 18 h, so 40 hours."
+Edge: new founding brand on a 10-office drop,,courier,founding,10,0,1,0,0,150,120,1,1,1,1,0,1350,0,1350,80,300,0,40.5,75,30,50,575.5,10,10,3,8,4,2,2,39,774.5,19.859,420.5,155,,1350,,,,,0.01,0.01,0.01,edge,behaves,$600 for 5 offices plus 5 extra offices at $150.
+
+
+"The plan's founder-hour table, activity by activity"
+Activity,Plan: campaign zero,Model,Plan: 1-brand drop,Model,Plan: 3-brand drop,Model,"Plan: 3-brand, direct ship",Model,All match?,Tolerance (h),0.01
+brand_sales,20,20,6,6,18,18,18,18,yes
+office_coordination,20,20,10,10,10,10,10,10,yes
+receiving_kitting,3,3,3,3,4,4,2,2,yes
+drop_day,5,5,8,8,8,8,3,3,yes
+checks_pickup,3,3,4,4,4,4,4,4,yes
+reporting_debriefs,4,4,2,2,6,6,6,6,yes
+admin_invoicing,2,2,2,2,2,2,2,2,yes
+total,57,57,35,35,52,52,45,45,yes
+
+
+"Reconciliation: plan figure, model figure, difference, reason"
+#,Plan statement (plan.md),Plan figure,Model figure,Difference,Tolerance,Status,"Reason (plan reading, not a fudge)"
+1,Campaign zero hard costs,280,276,-4,5,within tolerance,(b) $40 kits + $120 transport + $0 storage + $30 software + $50 insurance + $36 processing = $276; the plan rounds to $280.
+2,Campaign zero contribution,920,924,4,5,within tolerance,"(b) $1,200 - $276 = $924."
+3,Campaign zero per founder hour,16,16.2105,0.2105,0.5,within tolerance,(b) $924 / 57 h = $16.2.
+4,Three-brand courier hard costs,670,670,0,5,within tolerance,"(a) one $8 kit per office per drop: $80, not $240."
+5,Three-brand courier per founder hour ('about $74'),74,73.6538,-0.3462,0.5,within tolerance,"$3,830 / 52 h = $73.7."
+6,One-brand drop per founder hour ('about $26'),26,26.2857,0.2857,0.5,within tolerance,$920 / 35 h = $26.3.
+7,Direct-ship hard costs,370,370,0,5,within tolerance,"(c) keeps $75 storage, $0 transport."
+8,"$2,000 each per founder hour",102,101.6346,-0.3654,0.5,within tolerance,"$5,285 / 52 h = $101.6."
+9,"At $1,000 'about $47 an hour'",47,47.4038,0.4038,0.5,within tolerance,"(d) no card processing: $2,465 / 52 h = $47.4."
+10,"At $1,000 with processing",47,45.6731,-1.3269,0.5,differs: see reason,"(d) with 3% processing: $2,375 / 52 h = $45.7. Shown as a contrast; differs by design."
+11,Monthly revenue at steady state,9000,9000,0,25,within tolerance,(e) 2 x the three-brand courier drop.
+12,"Monthly hard costs ('about $1,350')",1350,1340,-10,25,within tolerance,"(e) 2 x $670 = $1,340; the plan rounds to $1,350."
+13,Monthly founder hours ('about 104'),104,104,0,0.01,within tolerance,(e) 2 x 52 h.
+14,"Monthly contribution ('roughly $7,650')",7650,7660,10,25,within tolerance,"(e) $9,000 - $1,340 = $7,660; the plan rounds to $7,650."
+15,"A year at that rate ('about $90,000')",90000,91920,1920,5000,within tolerance,"$7,660 x 12 = $91,920, before overhead and tax."
+16,Brand wins a month ('six'),6,6,0,0.01,within tolerance,All brands new in the plan's picture.
+17,Qualified conversations a month ('about 30'),30,30,0,0.01,within tolerance,6 wins / 20% close rate.
+18,Roster ('about 20 offices'),20,20,0,0.01,within tolerance,"2 drops x 10 offices, one drop per office a month."
+19,"Fixed overhead a month ('$200 to $350'): midpoint, tolerance half the range",275,310,35,75,within tolerance,"$60 software + $100 insurance + $150 storage + $0 phone = $310, inside the range. With home storage: $160, below it."
+20,Standard campaigns a month to cover overhead ('one'),1,1,0,0.01,within tolerance,"$310 / $1,075 contribution before allocations, rounded up."
+21,Hours per brand win ('six'),6,6,0,0.01,within tolerance,5 conversations x 0.75 h + 2.25 h paperwork at a 20% close rate.
+22,"Capital, low end",3360,3360,0,0.01,within tolerance,Sum of the plan's low column.
+23,"Capital, high end",6510,6510,0,0.01,within tolerance,Sum of the plan's high column.
+24,"Software, six months",360,360,0,0.01,within tolerance,Six $60 payments inside the window.
+25,"Transport, campaigns zero to two",600,720,120,0.01,differs: see reason,Per-drop rates give $720; the plan's lump does not reconcile to its own rates. The model keeps the rates (more conservative by $120).

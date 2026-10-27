@@ -1,0 +1,6 @@
+review,date,paid_out_before_review_day_usd,brand_cash_received_by_review_day_usd,refunds_owed_for_drops_not_run_usd,net_if_you_stop_here_usd,cumulative_net_cash_end_of_review_week_usd
+Gate 0,2026-11-13,-160,0,0,-160,-160
+Gate 1,2026-12-11,-3120,1200,1200,-3120,-3856
+Gate 2,2027-01-22,-5326,1200,0,-4126,-4476
+Gate 3,2027-03-12,-7193.5,12450,2250,3006.5,5256.5
+Six-month decision,2027-04-09,-7791,19200,0,11409,11409

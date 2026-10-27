@@ -26,3 +26,12 @@ reports/*.json
 *.log
 .python-version
 .streamlit/secrets.toml
+desk-drop/_shared/.geocode.lock
+desk-drop/_shared/.geocode.last
+
+# Desk Drop: scratch kept on disk, not in git
+desk-drop/**/node_modules/
+desk-drop/*/_review/*/
+desk-drop/clay-icp-tables/_work/fetch/
+desk-drop/**/*.html.gz
+desk-drop/**/*.tmp

@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campaign proposal template</title>
+<!--
+  ONE-PAGE CAMPAIGN PROPOSAL plus a MOCK REPORT PAGE, US Letter portrait. Template v1.4, 2026-10-24
+  (v1.4, review round 3: store names, display_name, distance column, parked sections, a refusal
+  that says what to shorten).
+  Contents: plan.md Phase 2 "The proposal" (roster by neighborhood, industry and Tuesday headcount;
+  map of retailers that carry the brand; campaign specification; price, terms, founding lock;
+  what the brand supplies and by when; timeline with the drop date; what the report contains,
+  with a mock page). Price and terms follow plan.md and desk-drop-legal-pack/10-brand-campaign-agreement.md.
+  Dates are worked out from the drop date with the CONTRACTS.md section 3 rules (system/dd-dates.js).
+  Page 2 is drawn by system/dd-report.js, the same code as the real report, filled with
+  illustrative placeholders under the label "Illustrative placeholders, not results".
+  Open in Chrome and fill the boxes, or: node render/render.js proposal data.json out.pdf --final
+-->
+<link rel="stylesheet" href="../../fonts/fonts.css">
+<link rel="stylesheet" href="../../tokens/tokens.css">
+<link rel="stylesheet" href="../../system/dd-print.css">
+<link rel="stylesheet" href="../../system/dd-docs.css">
+<style id="dd-report-css"></style>
+<style>
+  .pr .bd { padding-top: .13in; }
+  .pr h1.title { font-size: 15.5pt; line-height: 1.12; }
+  .pr .lead { font-size: 9.5pt; margin-top: .05in; }
+  .pr .cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: .25in; margin-top: .12in; }
+  .pr .col { min-width: 0; display: flex; flex-direction: column; }
+  .pr .col .sec + .sec { margin-top: .1in; }
+  .pr h2 { font-size: 10.5pt; margin-bottom: .04in; }
+  .pr p, .pr li { font-size: 8.8pt; line-height: 1.34; }
+  .pr table.t { font-size: 8.5pt; line-height: 1.2; }
+  .pr table.t td { padding: .025in .04in; }
+  .pr table.t th { font-size: 6.8pt; padding: .02in .04in .03in; }
+  .pr .price { background: var(--dd-cobalt-tint); padding: .08in .12in .09in; }
+  .pr .price .kicker { font-size: 7.5pt; }
+  .pr .price .ph { display: flex; align-items: center; gap: .1in; margin-top: .02in; }
+  .pr .price .big { flex: none; display: block; font: 800 24pt/1 var(--dd-font-display); font-variation-settings: "opsz" 96; letter-spacing: -.01em; }
+  .pr .price .per { display: block; font: 700 9pt/1.25 var(--dd-font-text); }
+  .pr .price ul { margin-top: .05in; }
+  .pr .price li { font-size: 8.5pt; margin-bottom: .02in; }
+  .pr .map { width: 100%; height: 1.3in; margin-bottom: .05in; }
+  .pr .map.img-slot { font-size: 8pt; }
+  /* a map is shown whole, never cropped: cropping could hide a store */
+  .pr .map-img { display: block; width: 100%; object-fit: contain; background: #fff; border: 1px solid var(--dd-mist); }
+  .pr ul.plain li { margin-bottom: .022in; }
+  .pr .dates td:last-child { white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
+  .pr .dates td { padding: .018in .04in; }
+  .pr .rep { margin-top: .12in; border-top: 2px solid var(--dd-ink); padding-top: .06in; }
+  .pr .runin { font: 800 10.5pt/1.15 var(--dd-font-display); font-variation-settings: "opsz" 96; margin-right: .04in; }
+  .pr.tight p, .pr.tight li { font-size: 8.5pt; line-height: 1.3; }
+  .pr.tight h1.title { font-size: 14.5pt; }
+  /* the last give-way step (v1.3): tighter gaps between sections, same type sizes */
+  .pr.compact .wide { margin-top: .08in; }
+  .pr.compact .cols { margin-top: .08in; }
+  .pr.compact .col .sec + .sec { margin-top: .07in; }
+  .pr.compact .rep { margin-top: .08in; }
+  .pr.compact ul.plain li { margin-bottom: .01in; }
+  .pr.compact h2 { margin-bottom: .025in; }
+  .pr.compact .dates td, .pr.compact table.stores td { padding-top: .008in; padding-bottom: .008in; }
+  .pr.compact .price { padding: .06in .1in .07in; }
+  .pr .roster-note { margin-top: .03in; }
+  .pr .terms { margin-top: .05in; }
+  .pr.many table.t td { padding: .015in .04in; }
+  .pr .wide { margin-top: .12in; }
+  .pr .rs2-g { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: .25in; align-items: start; }
+  .pr .rs2-total { margin-top: .04in; }
+  .pr .rs3-g { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: .2in; align-items: start; }
+  .pr .tl2 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: .12in; row-gap: .05in; }
+  .pr .tl2-c { border-top: 2px solid var(--dd-mist); padding-top: .03in; min-width: 0; }
+  .pr .tl2-c.drop { border-top-color: var(--dd-cobalt); }
+  .pr .tl2-l { display: block; font: 400 7.5pt/1.2 var(--dd-font-text); color: var(--dd-ink-soft); }
+  .pr .tl2-d { display: block; font: 700 9pt/1.25 var(--dd-font-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pr .terms { margin-top: 0; }
+  .pr .col [data-sec="terms"] { margin-top: .04in; }
+  .pr .price .agr { margin-top: .03in; }
+  .pr table.ro { table-layout: fixed; }
+  .pr table.ro th:nth-child(4) { white-space: normal; }
+  .pr table.stores { table-layout: fixed; }
+  /* full-width buy section: the map at its own width on the left, the stores one line each on the right */
+  .pr .buy2-g { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: .22in; align-items: start; }
+  .pr .buy2-map { width: 2.4in; }
+  .pr .buy2-t .map-cap { margin-top: .03in; font-size: 7pt; }
+  /* a store's name and street are never cut: a long one wraps (and the layout choice counts it) */
+  .pr .buy2-g .map-fig, .pr .buy2-g .map { margin-top: 0; }
+  /* v1.4 (R3-03): the distance stays on one line; its column is sized to the longest entry in fit() */
+  .pr table.stores .dv { white-space: nowrap; }
+  .pr table.stores.dist-wrap .dv { white-space: normal; }
+</style>
+</head>
+<body>
+<div id="dd-sheets"></div>
+
+<!-- ============ EDIT THE PROPOSAL HERE (or use the boxes on screen) ============
+     Offices: no company names before the brand signs. Dates come from the drop date. -->
+<script type="application/json" id="dd-data">
+{
+  "brand_name": "[BRAND]",
+  "product_sku": "[PRODUCT AND PACK SIZE]",
+  "prepared_for": "",
+  "proposal_date": "[PROPOSAL DATE]",
+  "category": "[CATEGORY]",
+  "tier": "founding",
+  "extra_offices": "0",
+  "drop_date": "[DROP DATE: Tue 2027-01-12]",
+  "ship_by_requested": "",
+  "offices": [
+    { "neighborhood": "[NEIGHBORHOOD]", "industry": "[INDUSTRY]", "headcount_band": "[HEADCOUNT BAND]", "planned_units": "[N]" },
+    { "neighborhood": "[NEIGHBORHOOD]", "industry": "[INDUSTRY]", "headcount_band": "[HEADCOUNT BAND]", "planned_units": "[N]" },
+    { "neighborhood": "[NEIGHBORHOOD]", "industry": "[INDUSTRY]", "headcount_band": "[HEADCOUNT BAND]", "planned_units": "[N]" },
+    { "neighborhood": "[NEIGHBORHOOD]", "industry": "[INDUSTRY]", "headcount_band": "[HEADCOUNT BAND]", "planned_units": "[N]" },
+    { "neighborhood": "[NEIGHBORHOOD]", "industry": "[INDUSTRY]", "headcount_band": "[HEADCOUNT BAND]", "planned_units": "[N]" }
+  ],
+  "retailers": [
+    { "retailer_name": "[RETAILER]", "street": "[STREET]", "distance": "[DISTANCE FROM THE OFFICES]" }
+  ],
+  "online_site": "",
+  "map_image": "[RETAILER MAP]",
+  "map_caption": ""
+}
+</script>
+<!-- ========================================================================= -->
+
+<script src="../../system/brand.js"></script>
+<script src="../../system/dd-template.js"></script>
+<script src="../../system/dd-dates.js"></script>
+<script src="../../system/dd-docs.js"></script>
+<script src="../../system/dd-report.js"></script>
+<script src="../../system/dd-offer.js"></script>
+<script>
+(function () {
+  'use strict';
+  document.getElementById('dd-report-css').textContent = DDReport.CSS;
+  const X = DDDocs, Dt = DDDates;
+  const CATEGORIES = [['[CATEGORY]', 'choose'], ['chips-crisps', 'Chips and crisps'], ['popcorn-puffs', 'Popcorn and puffs'], ['crackers-pretzels', 'Crackers and pretzels'], ['bars', 'Bars'], ['cookies-baked', 'Cookies and baked snacks'], ['chocolate-candy', 'Chocolate and candy'], ['nuts-seeds-trail', 'Nuts, seeds and trail mix'], ['meat-snacks', 'Jerky and meat sticks, shelf-stable only'], ['fruit-snacks', 'Dried fruit and fruit snacks'], ['sparkling-soda', 'Sparkling water and soda'], ['tea-juice', 'Tea, juice and other non-carbonated drinks, shelf-stable'], ['coffee-rtd', 'Ready-to-drink coffee, shelf-stable'], ['other-snack', 'Other snack'], ['other-drink', 'Other drink']];
+  const catLabel = (k) => { const c = CATEGORIES.find(([v]) => v === k); return c && !c[0].startsWith('[') ? c[1].toLowerCase().replace(/, shelf-stable( only)?$/, '') : null; };
+  // Price and terms: plan.md "Price" table and the campaign agreement, section 3 and 8.
+  const O = window.DD_OFFER;
+  const MAX_OFFICES = 12;   // the most that fit one proposal page with a map and four stores (tested)
+  const PRICE = { founding: { base: O.founding.price, offices: O.founding.offices, per: O.founding.per_office }, standard: { base: O.standard.price, offices: O.standard.offices, per: O.standard.per_office }, extra: O.extra_office };
+
+  const FIELDS = [
+    { group: 'Brand', key: 'brand_name', label: 'Brand', required: true, help: 'As the brand writes it. From brand_intake: brand_name.' },
+    { group: 'Brand', key: 'product_sku', label: 'Product and pack size', help: 'One SKU, or two flavors treated as one. From product_sku.' },
+    { group: 'Brand', key: 'prepared_for', label: 'Prepared for (optional)', help: 'The brand contact\'s name and title, e.g. "Jane Doe, Founder". Business contact only.' },
+    { group: 'Brand', key: 'proposal_date', label: 'Proposal date', help: 'Today, YYYY-MM-DD. Send within 24 hours of the call.' },
+    { group: 'Brand', key: 'category', label: 'Category', options: CATEGORIES, help: 'Category exclusivity: no other brand in this category in the same drop.' },
+    { group: 'Campaign', key: 'tier', label: 'Tier', options: [['founding', 'Founding: $600 for 5 offices (first three brands only)'], ['standard', 'Standard: $1,500 for 10 offices']] },
+    { group: 'Campaign', key: 'extra_offices', label: `Extra offices at ${'$' + O.extra_office} each`, help: 'Usually 0.' },
+    { group: 'Campaign', key: 'drop_date', label: 'Proposed drop date', required: true, help: 'YYYY-MM-DD, a Tuesday or Wednesday three to four weeks out. Every other date is worked out from it, using the CONTRACTS calendar rules.' },
+    { group: 'Campaign', key: 'ship_by_requested', label: 'Ask them to ship by (optional)', help: 'Only if earlier than the latest ship-by date, e.g. to avoid holiday freight. YYYY-MM-DD.' },
+    { group: 'The offices (no company names before signing)', key: 'offices', type: 'table', label: 'One row per office on this route', minRows: 1, maxRows: MAX_OFFICES,
+      help: 'From the signed offices. Neighborhood, industry and Tuesday headcount band only.',
+      rowLabel: (k) => 'Office ' + String.fromCharCode(65 + k),
+      summary: (o) => [o.neighborhood, o.industry].filter((x) => x && !DD.isPlaceholder(String(x))).join(' · '),
+      newRow: () => ({ neighborhood: '[NEIGHBORHOOD]', industry: '[INDUSTRY]', headcount_band: '[HEADCOUNT BAND]', planned_units: '[N]' }),
+      columns: [
+        { key: 'neighborhood', label: 'Neighborhood', help: 'Flatiron, NoMad or Union Square.' },
+        { key: 'industry', label: 'Industry', help: 'e.g. Software, Architecture.' },
+        { key: 'headcount_band', label: 'Tuesday headcount', options: DDReport.BAND_OPTIONS },
+        { key: 'planned_units', label: 'Planned units', help: 'About 50, sized to Tuesday headcount, between 30 and 80.' }
+      ] },
+    { group: 'Where to buy nearby', key: 'retailers', type: 'table', label: 'Stores that carry the brand near these offices', minRows: 0, maxRows: 4,
+      help: 'Only stores you have evidence for (the store\'s own site, the brand\'s store locator, or seen on the shelf). Leave no rows if the buy path is online only.',
+      rowLabel: (k) => 'Store ' + (k + 1),
+      summary: (o) => [o.retailer_name, o.street].filter((x) => x && !DD.isPlaceholder(String(x))).join(', '),
+      newRow: () => ({ retailer_name: '[RETAILER]', street: '[STREET]', distance: '[DISTANCE FROM THE OFFICES]' }),
+      columns: [
+        { key: 'retailer_name', label: 'Store', help: 'As in the cluster map\'s retailers.csv. A bracketed street or store number at the end, such as "(278 Park Avenue South)" or "(store 540)", is left off the page: the street is printed beside it.' },
+        { key: 'display_name', label: 'Shown as (optional)', help: 'A shorter name for the page, e.g. "Eden Gourmet Union Square". Empty: the store\'s name as above.' },
+        { key: 'street', label: 'Street address', help: 'e.g. 4 Union Square South.' },
+        { key: 'distance', label: 'Distance from the offices', help: 'Short, e.g. "3 blocks", "2 to 8 blocks" or "in the cluster" (18 characters or fewer keeps it on one line). Measure it on the cluster map; do not guess.' },
+        { key: 'map_number', label: 'Number on the map (optional)', help: 'The number of this store\'s pin on the map from the cluster map workstream. Empty: the row number (B numbers the pins in the order you give the stores).' }
+      ] },
+    { group: 'Where to buy nearby', key: 'online_site', label: 'Online store for the code (optional)', help: 'e.g. brightside.com. Shown if there is no store, or as a second path.' },
+    { group: 'Where to buy nearby', key: 'map_image', type: 'image', label: 'Retailer map picture', emptyText: 'None: the map is left off; the stores still print, without pin numbers.', help: 'A landscape picture (about 2.5 to 1) from the cluster map (cluster-1-flatiron): the cluster boundary and this brand\'s stores. No office pins before the brand signs: a pin can identify a company. Shown whole, never cropped. Press Remove to leave the map out.' },
+    { group: 'Where to buy nearby', key: 'map_caption', label: 'Map caption (optional)', help: 'Say where the map comes from, e.g. "Map data: OpenStreetMap contributors".' }
+  ];
+
+  // ---------- mock page data: illustrative placeholders only (plan.md appendix M figures) ----------
+  const row = (l, ind, b, dl, pl, y, top, dep, resp, sc) => ({ office_label: l, industry: ind, headcount_band: b, units_delivered: String(dl), units_placed: String(pl), placed_within_1bd: y, units_topped_up: top ? String(top) : '', units_depleted_day5: String(dep), survey_responses: String(resp), qr_scans: String(sc), placement_photo: '[PHOTO]', later_photo: '[PHOTO]' });
+  const MOCK5 = [row('A', 'Tech', '76-150', 50, 50, 'Y', 0, 46, 9, 14), row('B', 'Design', '40-75', 40, 40, 'Y', 0, 31, 7, 9), row('C', 'Media', '76-150', 55, 55, 'Y', 5, 57, 10, 16), row('D', 'Finance', '40-75', 45, 45, 'N', 0, 28, 5, 8), row('E', 'Architecture', '151-250', 60, 60, 'Y', 0, 52, 10, 16)];
+  const MOCK10 = MOCK5.concat([row('F', 'Software', '151-250', 65, 65, 'Y', 5, 66, 11, 15), row('G', 'Advertising', '76-150', 50, 50, 'Y', 0, 41, 8, 10), row('H', 'Law', '76-150', 45, 45, 'Y', 0, 30, 6, 7), row('I', 'Nonprofit', '40-75', 40, 40, 'Y', 0, 27, 5, 6), row('J', 'Education', '40-75', 50, 50, 'Y', 0, 36, 6, 9)]);
+  // The brand's own name, product and drop date from this proposal; illustrative numbers; the
+  // text slots are grey examples (dd-report.js mock mode), never the yellow "unfinished" mark.
+  // v1.3 (review round 2, R2-12): the mock roster is THIS proposal's route: the same offices, in
+  // the same order, with the same industry, headcount band and planned units (as delivered). Only
+  // placed, depleted, responses and scans are illustrative, scaled from the plan's appendix M
+  // pattern (MOCK10). A slot still unfilled in the proposal falls back to the MOCK10 example.
+  function mockOffices(r) {
+    const offs = Array.isArray(r.offices) ? r.offices : [];
+    if (!offs.length) return MOCK5;
+    const real = (v) => v != null && String(v).trim() !== '' && !DD.isPlaceholder(String(v));
+    return offs.map((o, k) => {
+      const m = MOCK10[k % MOCK10.length];
+      const del = real(o.planned_units) && n(o.planned_units) != null ? n(o.planned_units) : n(m.units_delivered);
+      const f = (x) => n(x) / n(m.units_delivered);           // the example's own ratios
+      const dep = Math.min(del + (m.units_topped_up ? 5 : 0), Math.round(del * f(m.units_depleted_day5)));
+      return Object.assign({}, m, {
+        office_label: String.fromCharCode(65 + k), industry: real(o.industry) ? o.industry : m.industry,
+        headcount_band: real(o.headcount_band) ? o.headcount_band : m.headcount_band,
+        units_delivered: String(del), units_placed: String(del), units_topped_up: m.units_topped_up ? '5' : '',
+        units_depleted_day5: String(dep), survey_responses: String(Math.max(5, Math.round(del * f(m.survey_responses)))),
+        qr_scans: String(Math.round(del * f(m.qr_scans)))
+      });
+    });
+  }
+  function mockData(r, tier) {
+    const offices = mockOffices(r);
+    const resp = offices.reduce((a, o) => a + n(o.survey_responses), 0);
+    const del = offices.reduce((a, o) => a + n(o.units_delivered), 0);
+    const tried = Math.round(resp * 0.72), yes = Math.round(tried * 0.45), maybe = Math.round(tried * 0.39);
+    return {
+      brand_name: r.brand_name, product_sku: r.product_sku, cluster: 'Flatiron, NoMad and Union Square', tier, campaign_id: '',
+      drop_date: r.drop_date, report_date: '', offices,
+      survey_tried_yes: String(tried), survey_rating_avg: '4.1', survey_rating_n: String(tried),
+      survey_buy_yes: String(yes), survey_buy_maybe: String(maybe), survey_buy_no: String(Math.max(0, tried - yes - maybe - Math.round(tried * 0.05))),
+      comment_1: '', comment_2: '', comment_3: '', code_redemptions_to_date: String(Math.round(del * 0.038)), code_redemptions_as_of: '',
+      learned: '', recommendation: '', prepared_by: ''
+    };
+  }
+
+  const n = (v) => X.num(v);
+  const show = (v, d) => { const s = String(v == null ? '' : v).trim(); return s ? DD.text(s) : `<mark class="dd-ph">${d}</mark>`; };
+
+  function render(sheet, r, i) {
+    sheet.classList.add('doc');
+    const tier = r.tier === 'standard' ? 'standard' : 'founding';
+    const P = PRICE[tier];
+    const extra = Math.max(0, n(r.extra_offices) || 0);
+    const offices = Array.isArray(r.offices) ? r.offices : [];
+    const want = P.offices + extra;
+    const total = P.base + extra * PRICE.extra;
+    const units = offices.reduce((a, o) => (a == null || n(o.planned_units) == null) ? null : a + n(o.planned_units), 0);
+    const reserve = units == null ? null : Math.ceil(units * O.reserve_pct / 100);
+    const retailers = (Array.isArray(r.retailers) ? r.retailers : []).filter((x) => x && (x.retailer_name || x.street));
+    const site = String(r.online_site || '').trim();
+    const cat = catLabel(r.category);
+
+    // dates
+    const f = Dt.readDateField(r.drop_date);
+    const c = f.iso ? Dt.campaign(f.iso) : null;
+    const dt = (label, d) => `<span class="nowrap">${!c ? `<mark class="dd-ph">[${label}]</mark>` : f.slot ? `<mark class="dd-ph">[${label}: ${Dt.fmt(d)}]</mark>` : Dt.fmt(d)}</span>`;
+    const shipReq = Dt.parse(r.ship_by_requested);
+    const shipLine = c ? (shipReq ? `<span class="nowrap">${f.slot ? `<mark class="dd-ph">[SHIP BY: ${Dt.fmt(shipReq)}]</mark>` : Dt.fmt(shipReq)}</span> (latest ${dt('LATEST', c.dates.ship_by)})` : dt('SHIP BY', c.dates.ship_by)) : '<mark class="dd-ph">[SHIP BY]</mark>';
+    const dropTxt = `<span class="nowrap">${!c ? show(r.drop_date, '[DROP DATE]') : f.slot ? DD.text(r.drop_date) : Dt.fmt(c.dates.drop)}</span>`;
+
+    // checks
+    if (c) { c.errors.forEach((m) => DD.error(i, m)); c.warnings.forEach((m) => DD.warn(i, m)); }
+    if (offices.length !== want) DD.error(i, `The route lists ${offices.length} offices; a ${tier} campaign with ${extra} extra has ${want}. Add or remove rows, or change "Extra offices".`);
+    if (want > MAX_OFFICES) DD.error(i, `${want} offices is more than one proposal holds (${MAX_OFFICES}). Split the route into two campaigns.`);
+    offices.forEach((o, k) => { const u = n(o.planned_units); if (u != null && (u < O.units_min || u > O.units_max)) DD.error(i, `Office ${String.fromCharCode(65 + k)}: ${u} planned units is outside ${O.units_min} to ${O.units_max}.`); if (String(o.planned_units || '').trim() && u == null && !DD.isPlaceholder(String(o.planned_units))) DD.error(i, `Office ${String.fromCharCode(65 + k)}: planned units must be a whole number.`); });
+    if (!retailers.length && !site) DD.error(i, 'Add a store that carries the brand near these offices, or the online store for the code. Every brand needs a buy path.');
+    if (shipReq && c && shipReq > c.dates.ship_by) DD.error(i, '"Ask them to ship by" is later than the latest ship-by date (10 business days before the drop).');
+    if (r.ship_by_requested && !shipReq) DD.error(i, '"Ask them to ship by" must be a date in the form YYYY-MM-DD.');
+    if (!cat) DD.placeholder(i, 'category');
+    X.checkClaims(i, 'The product line', r.product_sku, r);
+
+    const many = offices.length > 6;
+    const nearby = retailers.length ? 'within walking distance of the stores that carry you' : 'with a code for your online store';
+    const headline = `${units == null ? `<mark class="dd-ph">[N]</mark>` : units} units into ${want} New York offices in one week, ${nearby}, with photos, feedback and a report.`;
+
+    const rosterRow = (o, k) => `<tr><td><b>${String.fromCharCode(65 + k)}</b></td><td>${show(o.neighborhood, '[NEIGHBORHOOD]')}</td><td>${show(o.industry, '[INDUSTRY]')}</td><td${o.headcount_band && !DD.isPlaceholder(o.headcount_band) ? ' class="nowrap"' : ''}>${o.headcount_band && !DD.isPlaceholder(o.headcount_band) ? DD.escape(({ '40-75': '40 to 75', '76-150': '76 to 150', '151-250': '151 to 250', 'under-40': 'under 40', '251-500': '251 to 500' })[o.headcount_band] || o.headcount_band) : '<mark class="dd-ph">[HEADCOUNT BAND]</mark>'}</td><td class="r num">${show(o.planned_units, '[N]')}</td></tr>`;
+    const head = '<colgroup><col style="width:.44in"><col style="width:1.12in"><col><col style="width:.78in"><col style="width:.45in"></colgroup><thead><tr><th>Office</th><th>Neighborhood</th><th>Industry</th><th>Tuesday headcount</th><th class="r">Units</th></tr></thead>';
+    const unitsTxt = units == null ? '<mark class="dd-ph">[N]</mark>' : units;
+    const rosterNote = '<p class="note roster-note">Company names are shared after you sign. Each office approves your brand by reply before the drop, and any office may say no.</p>';
+    const roster = `<table class="t ro">${head}
+      <tbody>${offices.map(rosterRow).join('')}<tr class="total"><td colspan="4">All ${want} offices</td><td class="r num">${unitsTxt}</td></tr></tbody></table>${rosterNote}`;
+    // the same roster across the full width, in two halves (used when that balances the page)
+    const half = Math.ceil(offices.length / 2);
+    const roster2 = `<div class="rs2-g"><table class="t ro">${head}<tbody>${offices.slice(0, half).map((o, k) => rosterRow(o, k)).join('')}</tbody></table>
+      <table class="t ro">${head}<tbody>${offices.slice(half).map((o, k) => rosterRow(o, k + half)).join('')}</tbody></table></div>
+      <p class="note rs2-total"><b>All ${want} offices: ${unitsTxt} units.</b> Company names are shared after you sign; each office approves your brand by reply before the drop and may say no.</p>`;
+    // nine or more offices: three narrow tables, with the neighborhoods listed once underneath
+    const third = Math.ceil(offices.length / 3);
+    const head3 = '<colgroup><col style="width:.44in"><col><col style="width:.7in"><col style="width:.36in"></colgroup><thead><tr><th>Office</th><th>Industry</th><th>Tuesday headcount</th><th class="r">Units</th></tr></thead>';
+    const row3 = (o, k) => `<tr><td><b>${String.fromCharCode(65 + k)}</b></td><td>${show(o.industry, '[INDUSTRY]')}</td><td${o.headcount_band && !DD.isPlaceholder(o.headcount_band) ? ' class="nowrap"' : ''}>${o.headcount_band && !DD.isPlaceholder(o.headcount_band) ? DD.escape(({ '40-75': '40 to 75', '76-150': '76 to 150', '151-250': '151 to 250', 'under-40': 'under 40', '251-500': '251 to 500' })[o.headcount_band] || o.headcount_band) : '<mark class="dd-ph">[HEADCOUNT BAND]</mark>'}</td><td class="r num">${show(o.planned_units, '[N]')}</td></tr>`;
+    const hoods = [];
+    offices.forEach((o, k) => { const h = String(o.neighborhood || '').trim() || '[NEIGHBORHOOD]'; let g = hoods.find((x) => x[0] === h); if (!g) hoods.push(g = [h, []]); g[1].push(String.fromCharCode(65 + k)); });
+    const roster3 = `<div class="rs3-g">${[0, 1, 2].map((t) => `<table class="t ro">${head3}<tbody>${offices.slice(t * third, (t + 1) * third).map((o, k) => row3(o, k + t * third)).join('')}</tbody></table>`).join('')}</div>
+      <p class="note rs2-total"><b>Neighborhoods:</b> ${hoods.map(([h, ls]) => `${DD.text(h)} ${ls.join(', ')}`).join(' · ')}. <b>All ${want} offices: ${unitsTxt} units.</b> Company names are shared after you sign; each office approves your brand by reply before the drop and may say no.</p>`;
+
+    const priceBox = tier === 'founding'
+      ? `<div class="price"><p class="kicker">Founding price</p><div class="ph"><span class="big">${X.usd(total)}</span><span class="per">${want} offices${extra ? ` (${P.offices} at ${X.usd(P.per)}, ${extra} extra at ${X.usd(PRICE.extra)})` : `, ${X.usd(P.per)} per office`}</span></div>
+          <ul class="plain"><li>Our first three brands only. Paid in full within five business days of our invoice, before you ship.</li><li>Your next two campaigns: ${X.usd(O.founding.per_office)} per office, up to ${O.founding.lock_max_offices} offices (more at ${X.usd(PRICE.extra)} each).</li><li>Any office not placed by the day after the drop is refunded (${X.usd(P.per)}).</li><li>If it runs as promised: a short written statement of your honest experience, and case-study rights.</li></ul><p class="note agr">The campaign agreement sets every term.</p></div>`
+      : `<div class="price"><p class="kicker">Standard price</p><div class="ph"><span class="big">${X.usd(total)}</span><span class="per">${want} offices, ${X.usd(P.per)} per office; extra offices ${X.usd(PRICE.extra)} each, same terms</span></div>
+          <ul class="plain"><li>${O.standard.deposit_pct}% (${X.usd(total * O.standard.deposit_pct / 100)}) on signing, by bank transfer within five business days of our invoice.</li><li>${100 - O.standard.deposit_pct}% on our placement confirmation: an email by the day after the drop listing each office where your product was placed, with its photo. Any office not placed by then comes off the invoice.</li></ul><p class="note agr">The campaign agreement sets every term.</p></div>`;
+
+    const mapSrc = DD.imgSrc(r.map_image);
+    // v1.3 (review round 2, R2-03, R2-07): one cell per store, "Name, street", so long real names
+    // (workstream B's median is 27 characters) do not wrap three columns; with a map, a # column
+    // ties each row to its numbered pin (B numbers pins in the order of the stores it is given).
+    const pin = (x, k) => String(x.map_number || '').trim() || String(k + 1);
+    // v1.4 (review round 3, R3-03): the name as printed. "Shown as" wins; otherwise a trailing
+    // bracket that only repeats the street or a store number ("(278 Park Avenue South)",
+    // "(store 540)") or a history note ("(formerly Garden of Eden)") is left off, because the
+    // street is printed beside the name. The distance gets a column as wide as its longest
+    // entry (fit() measures it), so "inside the cluster" stays on one line.
+    const storeName = (x) => {
+      const d = String(x.display_name || '').trim(); if (d) return d;
+      const s = String(x.retailer_name || '').trim();
+      const m = /^(.*\S)\s*\(([^()]*)\)$/.exec(s);
+      return m && !DD.isPlaceholder(s) && (/\d/.test(m[2]) || /^(?:formerly|store|now)\b/i.test(m[2].trim())) ? m[1] : s;
+    };
+    retailers.forEach((x, k) => { const dl = String(x.distance || '').trim(); if (dl.length > 22 && !DD.isPlaceholder(dl)) DD.warn(i, `Store ${k + 1}: the distance "${dl}" is long, so it wraps. A short form such as "3 blocks" or "in the cluster" keeps the row on one line.`); });
+    const storeList = retailers.length ? `<table class="t stores">${mapSrc ? '<colgroup><col style="width:.24in"><col><col class="dist" style="width:.92in"></colgroup>' : '<colgroup><col><col class="dist" style="width:.92in"></colgroup>'}<thead><tr>${mapSrc ? '<th class="r">#</th>' : ''}<th>Store</th><th>From the offices</th></tr></thead><tbody>${retailers.map((x, k) => `<tr>${mapSrc ? `<td class="r num"><b>${DD.text(pin(x, k))}</b></td>` : ''}<td><b>${show(storeName(x), '[RETAILER]')}</b>, ${String(x.street || '').length <= 28 ? `<span class="nowrap">${show(x.street, '[STREET]')}</span>` : show(x.street, '[STREET]')}</td><td class="dist"><span class="dv">${show(x.distance, '[DISTANCE]')}</span></td></tr>`).join('')}</tbody></table>` : '';
+    const mapHTML = DD.isPlaceholder(String(r.map_image || '')) ? `<div class="img-slot map"><span><b><mark class="dd-ph">[RETAILER MAP]</mark></b>From the cluster map: the cluster and your stores. No office pins before you sign</span></div>`
+      : mapSrc ? `<figure class="map-fig"><img class="map map-img" src="${DD.escape(mapSrc)}" alt="Map of the offices and stores">${r.map_caption ? `<figcaption>${DD.text(r.map_caption)}</figcaption>` : ''}</figure>` : '';
+    // the full-width version keeps its caption under the stores, so the map column stays short
+    const mapHTML2 = mapSrc ? `<img class="map map-img" src="${DD.escape(mapSrc)}" alt="Map of the offices and stores">` : mapHTML;
+    if (DD.isPlaceholder(String(r.map_image || ''))) DD.placeholder(i, 'map_image');
+    const online = site ? `<p class="note" style="margin-top:.05in">${retailers.length ? 'Or online: ' : 'Online: '}the card carries your code for <b>${DD.text(site)}</b>.</p>` : '';
+
+    const spec = `<ul class="plain">
+      <li>On the shelf within one business day of delivery, at eye level where the pantry allows, with a display card: your two sentences, your allergen statement word for word, and a QR code unique to each office. You approve the card text before we print.</li>
+      <li>Two photos per office: placement on day 1, a close shot on day 3 or 5. Top-ups from your reserve where an office runs out.</li>
+      <li>A three-question anonymous employee survey; each office commits to five or more responses.</li>
+      <li>${cat ? `No other ${DD.escape(cat)} brand in the same drop.` : 'No other brand in your category in the same drop (<mark class="dd-ph">[CATEGORY]</mark>).'}</li></ul>`;
+
+    const send = `<ul class="plain">
+      <li><b>Product:</b> one SKU, sealed and shelf-stable: ${units == null ? '<mark class="dd-ph">[N]</mark>' : units} units (each office's are in the roster, sized to its Tuesday headcount) plus ${reserve == null ? '<mark class="dd-ph">[N]</mark>' : reserve} reserve${units == null ? '' : `, ${units + reserve} in all`}, freight prepaid to one Manhattan address we send when you sign. Ship by ${shipLine}, each unit with 60 or more days of shelf life on arrival.</li>
+      <li><b>Certificate</b> of product liability insurance, $1M per occurrence or more, adding us as additional insured. Product ships only when we have it.</li>
+      <li><b>Ingredient and allergen sheet</b>, logo files, and two sentences for the card: who makes it and why.</li>
+      <li><b>A discount code</b> or landing page for the QR.</li></ul>`;
+
+    const MILESTONES = [
+      ['You ship (latest)', dt('DATE', c ? c.dates.ship_by : null)],
+      ['We receive and count', dt('DATE', c ? c.dates.receive : null)],
+      ['<b>Drop day</b> (day 1)', `<b>${dropTxt}</b>`],
+      ['Day-3 photo and top-ups', dt('DATE', c ? c.dates.day3 : null)],
+      ['Window and survey close', dt('DATE', c ? c.dates.close : null)],
+      ['One-page report', dt('DATE', c ? c.dates.report : null)],
+      ['20-minute debrief', dt('DATE', c ? c.dates.debrief : null)],
+      ['Code redemption check (day 30)', dt('DATE', c ? c.dates.redemption : null)],
+    ];
+    const timeline = `<table class="t dates"><tbody>${MILESTONES.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</tbody></table>`;
+    // the same dates as a full-width strip, two rows of four (used when that balances the page)
+    const timeline2 = `<div class="tl2">${MILESTONES.map(([a, b], k) => `<div class="tl2-c${k === 2 ? ' drop' : ''}"><span class="tl2-l">${a}</span><span class="tl2-d">${b}</span></div>`).join('')}</div>`;
+
+    const page1 = `<div class="page pr">
+      <div class="dd-sample-banner">Sample. Illustrative placeholders, not results.</div>
+      ${X.header({ kicker: 'Campaign proposal', meta: `For ${show(r.brand_name, '[BRAND]')}${r.prepared_for ? ', ' + DD.text(r.prepared_for) : ''} · ${show(r.proposal_date, '[PROPOSAL DATE]')}` })}
+      <div class="bd">
+        <h1 class="title">${headline}</h1>
+        <p class="lead">A ${tier} Office Placement Campaign for <b>${show(r.brand_name, '[BRAND]')}</b>, ${show(r.product_sku, '[PRODUCT AND PACK SIZE]')}: ${want} offices in Flatiron, NoMad and Union Square, five business days from <span class="nowrap">${dropTxt}</span> to <span class="nowrap">${dt('WINDOW CLOSES', c ? c.dates.close : null)}</span>.</p>
+        <section class="sec wide rs2" data-sec="roster2" style="display:none"><h2>The offices on this route</h2>${roster2}</section>
+        <section class="sec wide rs2" data-sec="roster3" style="display:none"><h2>The offices on this route</h2>${roster3}</section>
+        <section class="sec wide" data-sec="buy2" style="display:none"><h2>Where people can buy you nearby</h2><div class="buy2-g"><div class="buy2-map">${mapHTML2}</div><div class="buy2-t">${storeList}${online}${mapSrc && r.map_caption ? `<p class="note map-cap">${DD.text(r.map_caption)}</p>` : ''}</div></div></section>
+        <div class="cols">
+          <div class="col cl">
+            <section class="sec" data-sec="roster"><h2>The offices on this route</h2>${roster}</section>
+            <section class="sec" data-sec="buy"><h2>Where people can buy you nearby</h2>${mapHTML}${storeList}${online}</section>
+            <section class="sec" data-sec="send"><h2>What you send, and by when</h2>${send}</section>
+            <section class="sec" data-sec="terms"><p class="note terms">If plans change: cancel before ${dt('DATE', c ? c.dates.ship_by : null)} for a full refund less ${X.usd(O.cancel_fee_before_ship_by)}; from then on we keep ${O.cancel_kept_pct_after_ship_by}%, and from the drop day the full price is due. Product not here 3 business days before the drop moves it a week, free.</p></section>
+          </div>
+          <div class="col cr">
+            <section class="sec" data-sec="price">${priceBox}</section>
+            <section class="sec" data-sec="incl"><h2>What the campaign includes</h2>${spec}</section>
+            <section class="sec" data-sec="time"><h2>Timeline</h2>${timeline}</section>
+            <section class="sec wide" data-sec="time2" style="display:none"><h2>Timeline</h2>${timeline2}</section>
+          </div>
+        </div>
+        <section class="sec rep"><p><b class="runin">The report.</b> One page by ${dt('REPORT', c ? c.dates.report : null)}: each count by office (delivered, placed, depleted, responses, scans), three comments word for word, code redemptions, what we learned and our recommendation; a mock page is overleaf. <b>No sales guarantee:</b> each count stands alone, and sales caused by the campaign are not measured.</p></section>
+      </div>
+      ${X.footer(X.contact(' · ', ['FOUNDER_NAME', 'PHONE', 'EMAIL']), DD.text(DD.contact('POSTAL_ADDRESS')))}
+    </div>`;
+    sheet.innerHTML = page1 + DDReport.page(mockData(r, tier), { mock: true });
+  }
+
+  // Column arrangements. Every one is tried with its give-way (fit() below); of those that fit,
+  // the biggest map wins. None fits: the one that overflows least is shown and the page refuses,
+  // saying by how much and what to shorten. Sections never split.
+  const ARRANGE = [
+    { name: 'standard', top: [], L: ['roster', 'buy', 'send', 'terms'], R: ['price', 'incl', 'time'], bottom: [] },
+    { name: 'terms-right', top: [], L: ['roster', 'buy', 'send'], R: ['price', 'terms', 'incl', 'time'], bottom: [] },
+    { name: 'send-right', top: [], L: ['roster', 'buy'], R: ['price', 'incl', 'time', 'send', 'terms'], bottom: [] },
+    { name: 'wide-roster', top: ['roster2'], L: ['buy', 'send', 'terms'], R: ['price', 'incl', 'time'], bottom: [] },
+    { name: 'wide-roster-terms-right', top: ['roster2'], L: ['buy', 'send'], R: ['price', 'terms', 'incl', 'time'], bottom: [] },
+    { name: 'three-up-roster', top: ['roster3'], L: ['buy', 'send', 'terms'], R: ['price', 'incl', 'time'], bottom: [] },
+    { name: 'three-up-roster-terms-right', top: ['roster3'], L: ['buy', 'send'], R: ['price', 'terms', 'incl', 'time'], bottom: [] },
+    // (v1.4, review round 3: "map and stores under the timeline" was promised here in v1.3. Built
+    // and tried on 39 proposals in round 3, it never fit where another layout did not (0.24 to
+    // 1.2 in over), so it is not in the list. Nothing else moves the map under the timeline.)
+    // v1.3 (review round 2, R2-03): the map and its stores across the full width, map left and
+    // stores right, under the roster; what the campaign includes moves left to balance the columns
+    { name: 'three-up-roster-wide-buy', top: ['roster3', 'buy2'], L: ['send', 'incl'], R: ['price', 'time', 'terms'], bottom: [] },
+    { name: 'three-up-roster-wide-buy-incl-left', top: ['roster3', 'buy2'], L: ['send', 'incl', 'terms'], R: ['price', 'time'], bottom: [] },
+    { name: 'three-up-roster-wide-buy-price-left', top: ['roster3', 'buy2'], L: ['price', 'send'], R: ['incl', 'time', 'terms'], bottom: [] },
+    { name: 'wide-roster-wide-buy', top: ['roster2', 'buy2'], L: ['send', 'incl'], R: ['price', 'time', 'terms'], bottom: [] },
+    { name: 'wide-roster-wide-buy-price-left', top: ['roster2', 'buy2'], L: ['price', 'send'], R: ['incl', 'time', 'terms'], bottom: [] },
+    { name: 'wide-buy', top: ['buy2'], L: ['roster', 'send'], R: ['price', 'incl', 'time', 'terms'], bottom: [] },
+    { name: 'wide-timeline', top: [], L: ['roster', 'buy', 'send'], R: ['price', 'terms', 'incl'], bottom: ['time2'] },
+    { name: 'wide-roster-wide-timeline', top: ['roster2'], L: ['buy', 'send'], R: ['price', 'terms', 'incl'], bottom: ['time2'] },
+  ];
+  const ALL = ['roster', 'roster2', 'roster3', 'buy', 'buy2', 'send', 'terms', 'price', 'incl', 'time', 'time2'];
+  function arrange(p1, a) {
+    const sec = (k) => p1.querySelector(`[data-sec="${k}"]`);
+    const L = p1.querySelector('.col.cl'), R = p1.querySelector('.col.cr'), cols = p1.querySelector('.cols');
+    const used = [...a.top, ...a.L, ...a.R, ...a.bottom];
+    // v1.4 (R3-03): unused sections are parked outside the columns, so a hidden one never
+    // counts as a neighbour for ".sec + .sec" spacing (that made the result depend on the
+    // arrangement tried before, by up to 0.1 in)
+    let park = p1.querySelector('.dd-park');
+    if (!park) { park = document.createElement('div'); park.className = 'dd-park'; park.style.display = 'none'; p1.querySelector('.bd').appendChild(park); }
+    ALL.forEach((k) => { sec(k).style.display = used.includes(k) ? '' : 'none'; if (!used.includes(k)) park.appendChild(sec(k)); });
+    a.top.forEach((k) => cols.parentNode.insertBefore(sec(k), cols));
+    a.L.forEach((k) => L.appendChild(sec(k)));
+    a.R.forEach((k) => R.appendChild(sec(k)));
+    let after = cols;
+    a.bottom.forEach((k) => { after.parentNode.insertBefore(sec(k), after.nextSibling); after = sec(k); });
+    const bd = p1.querySelector('.bd');
+    return bd.scrollHeight - bd.clientHeight;
+  }
+
+  function fit(sheet, r, i) {
+    const p1 = sheet.querySelector('.page.pr');
+    if ((r.offices || []).length > 6) p1.classList.add('many');
+    // a real map: height from its own shape, up to 2.2 in, so a landscape map fills the column width
+    const mi = p1.querySelector('[data-sec="buy"] .map-img');   // the column copy is visible while measuring
+    let mapIn = 1.3;
+    if (mi && mi.naturalWidth) { mapIn = Math.min(2.2, (mi.clientWidth / 96) * mi.naturalHeight / mi.naturalWidth); mi.style.height = mapIn + 'in'; if (mi.naturalHeight > mi.naturalWidth) DD.warn(i, 'The map picture is taller than it is wide, so it prints small. Use a landscape map of the cluster (about 2.5 to 1) with this brand\'s stores marked and no office pins.'); }
+    // v1.4 (review round 3, R3-03): the distance column is as wide as its longest entry (0.8 to
+    // 1.45 in), measured once in the visible column copy, so "inside the cluster" is one line
+    const dvs = [...p1.querySelectorAll('[data-sec="buy"] table.stores td.dist .dv')];
+    if (dvs.length) {
+      const w = Math.max(...dvs.map((s) => s.getBoundingClientRect().width)) / 96 + 0.1;
+      p1.querySelectorAll('table.stores col.dist').forEach((c) => { c.style.width = Math.min(1.45, Math.max(0.8, w)) + 'in'; });
+      if (w > 1.45) p1.querySelectorAll('table.stores').forEach((t) => t.classList.add('dist-wrap'));
+    }
+    const nOff = (r.offices || []).length;
+    const options = ARRANGE.filter((a) => (!a.top.includes('roster2') || nOff >= 4) && (!a.top.includes('roster3') || nOff >= 9))
+      .filter((a) => !window.__DD_ARRANGE__ || a.name === window.__DD_ARRANGE__);   // test hook: look at one arrangement
+    // Give-way inside one arrangement: the map 1.3 (or its own height) down to 0.95 in, then body
+    // text 8.8 to 8.5 pt. Each arrangement is tried with its give-way, in order; the first that
+    // fits wins. Otherwise the one that overflows least is shown and the page refuses.
+    const map0 = mapIn;
+    let tight = false;
+    const bd = p1.querySelector('.bd');
+    const over = () => bd.scrollHeight - bd.clientHeight;
+    const aspect = mi && mi.naturalWidth ? mi.naturalWidth / mi.naturalHeight : 2.5;
+    const b2 = p1.querySelector('.buy2-map');
+    const setMap = () => { p1.querySelectorAll('.map').forEach((m) => { m.style.height = mapIn + 'in'; }); if (b2) b2.style.width = (b2.querySelector('.map-img') ? mapIn * aspect : 2.4) + 'in'; };
+    let compact = false;
+    // v1.3: text tightens before the map shrinks, so the map keeps its pins readable when it can
+    const steps = [
+      () => { if (!tight) { tight = true; p1.classList.add('tight'); return true; } },
+      () => { if (!compact) { compact = true; p1.classList.add('compact'); return true; } },
+      () => { if (mapIn > 0.95) { mapIn = Math.max(0.95, mapIn - 0.05); setMap(); return true; } },
+    ];
+    // store rows that wrap onto a second line (harder to match to the map's pins)
+    const wrapped = () => [...p1.querySelectorAll('table.stores')].filter((t) => t.offsetParent).reduce((n, t) => n + [...t.tBodies[0].rows].filter((tr) => tr.getBoundingClientRect().height > 0.2 * 96).length, 0);
+    const attempt = (a) => {
+      mapIn = map0; setMap(); tight = false; p1.classList.remove('tight'); compact = false; p1.classList.remove('compact');
+      arrange(p1, a);
+      let g = 0;
+      while (over() > 1 && g++ < 60) { if (!steps.some((st) => st())) break; }
+      return over();
+    };
+    // v1.3 (review round 2): every arrangement is tried, and of those that fit the page keeps the
+    // one with the biggest map (its pins must stay readable), then the fewest give-way steps and
+    // store rows on one line, then the earlier one in the list. None fits: the least overflow, and
+    // a refusal.
+    let chosen = null, best = null, bestScore = -Infinity;
+    const tried = [];
+    options.forEach((a, k) => {
+      const o = attempt(a);
+      tried.push({ name: a.name, over_in: Math.round(o / 96 * 100) / 100, map_in: Math.round(mapIn * 100) / 100 });
+      if (o <= 1) { const sc = mapIn - (tight ? 0.12 : 0) - (compact ? 0.12 : 0) - wrapped() * 0.04 - k * 0.001; if (sc > bestScore) { bestScore = sc; chosen = a; } }
+      else if (!best || o < best.o) best = { a, o };
+    });
+    if (!chosen) chosen = best.a;
+    attempt(chosen);
+    // v1.4 (R3-03): when nothing fits, say what to shorten
+    const hint = () => {
+      const rows = [...p1.querySelectorAll('table.stores')].filter((t) => t.offsetParent).flatMap((t) => [...t.tBodies[0].rows].map((tr, k) => tr.getBoundingClientRect().height > 0.2 * 96 ? k + 1 : null)).filter(Boolean);
+      const two = rows.length ? ` Store${rows.length > 1 ? 's' : ''} ${rows.length > 1 ? rows.slice(0, -1).join(', ') + ' and ' + rows[rows.length - 1] : rows[0]} run${rows.length > 1 ? '' : 's'} to two lines: give ${rows.length > 1 ? 'them' : 'it'} a shorter "Shown as" name or a shorter distance (for example "3 blocks").` : '';
+      return `Shorten a store's name or distance, or a line you added, or remove a store.${two}`;
+    };
+    X.fitPages(sheet, i, [], 'The proposal', [p1], hint);
+    DDReport.fit(sheet, i, sheet.querySelector('.page.rpt.mock'));
+    sheet.dataset.fit = JSON.stringify({ arrangement: chosen.name, map_in: Math.round(mapIn * 100) / 100, tight, compact, tried });
+  }
+
+  DD.init({
+    title: 'campaign proposal',
+    fields: FIELDS, render, fit, sheetClass: 'doc',
+    fileStem: (r) => 'proposal_' + (r.brand_name || 'brand'),
+    printLabel: 'Print or save as PDF',
+    printHelp: '<b>To make the PDF:</b> press the button, choose Destination "Save as PDF", Paper Letter, Scale 100, Margins Default, "Background graphics" on. Two pages: the proposal and the mock report page.'
+  });
+})();
+</script>
+</body>
+</html>
