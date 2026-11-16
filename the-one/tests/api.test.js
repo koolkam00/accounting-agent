@@ -17,7 +17,10 @@ let server;
 before(async () => {
   server = spawn(process.execPath, ['--no-warnings=ExperimentalWarning', 'server/index.js'], {
     cwd: ROOT,
-    env: { ...process.env, API_ONLY: '1', PORT: '0', DATA_DIR, OWNER_EMAIL: OWNER.email, OWNER_PASSWORD: OWNER.password, NOTIFY_WEBHOOK_URL: '' },
+    env: {
+      ...process.env, API_ONLY: '1', PORT: '0', DATA_DIR, OWNER_EMAIL: OWNER.email, OWNER_PASSWORD: OWNER.password, NOTIFY_WEBHOOK_URL: '',
+      ...(process.env.TEST_DATABASE_URL ? { DATABASE_URL: process.env.TEST_DATABASE_URL } : {}),
+    },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   base = await new Promise((resolve, reject) => {
@@ -202,15 +205,42 @@ test('a passed-on like still looks "sent" to the visitor', async () => {
   assert.equal((await lia.c('GET', '/api/session')).data.user.like.status, 'pending');
 });
 
-test('deleting an account needs the password and removes photos from disk', async () => {
+test('deleting an account needs the password and removes the photos too', async () => {
   const kim = await onboardedMember('Kim', 'kim@example.test');
-  const files = () => fs.readdirSync(path.join(DATA_DIR, 'uploads')).filter((f) => f.startsWith(kim.photoId));
-  assert.equal(files().length, 1);
+  await kim.c('POST', '/api/likes', { targetType: 'profile' });
+  const owner = client();
+  await owner('POST', '/api/auth/login', OWNER);
+  assert.equal((await owner('GET', `/api/photos/${kim.photoId}`)).status, 200);
   assert.equal((await kim.c('DELETE', '/api/me', { password: 'nope-nope' })).status, 401);
   assert.equal((await kim.c('DELETE', '/api/me', { password: 'correct horse battery' })).status, 200);
-  assert.equal(files().length, 0);
+  assert.equal((await owner('GET', `/api/photos/${kim.photoId}`)).status, 404, 'photo is gone');
+  const likes = await owner('GET', '/api/owner/likes');
+  assert.ok(!likes.data.likes.some((l) => l.member.name === 'Kim'), 'her like is gone');
   assert.equal((await kim.c('GET', '/api/session')).data.user, null);
   assert.equal((await client()('POST', '/api/auth/login', { email: 'kim@example.test', password: 'correct horse battery' })).status, 401);
+});
+
+test('photos come back byte-for-byte, and only the uploader and owner can see them', async () => {
+  const ana = await onboardedMember('Ana', 'ana@example.test');
+  const res = await ana.c('GET', `/api/photos/${ana.photoId}`);
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('content-type'), 'image/jpeg');
+  assert.equal(Buffer.from(res.data).toString('base64'), fakeJpeg.split(',')[1]);
+});
+
+test('the owner can change their login in the app, and it survives a restart of the same settings', async () => {
+  const owner = client();
+  assert.equal((await owner('POST', '/api/auth/login', OWNER)).status, 200);
+  assert.equal((await owner('PATCH', '/api/owner/account', { currentPassword: 'wrong-one!', email: 'new@example.test' })).status, 401);
+  const changed = await owner('PATCH', '/api/owner/account', { currentPassword: OWNER.password, email: 'Owner2@Example.test', newPassword: 'brand-new-pass-9' });
+  assert.equal(changed.status, 200);
+  assert.equal(changed.data.user.email, 'owner2@example.test');
+  assert.ok((await owner('GET', '/api/session')).data.user, 'still signed in on this device');
+  assert.equal((await client()('POST', '/api/auth/login', OWNER)).status, 401, 'old login no longer works');
+  const fresh = client();
+  assert.equal((await fresh('POST', '/api/auth/login', { email: 'owner2@example.test', password: 'brand-new-pass-9' })).status, 200);
+  // Put it back for the other tests.
+  assert.equal((await fresh('PATCH', '/api/owner/account', { currentPassword: 'brand-new-pass-9', email: OWNER.email, newPassword: OWNER.password })).status, 200);
 });
 
 test('logging out ends the session', async () => {

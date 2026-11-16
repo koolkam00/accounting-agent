@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Copy, Eye, Heart, ImagePlus, LogOut, MessageCircle, Pencil, Share, X } from 'lucide-react';
-import { Avatar, BackButton, Button, EmptyState, FloatingHearts, Moment, TopBar, useToast } from '../components/ui.jsx';
+import { useEffect, useState } from 'react';
+import { Copy, Eye, Heart, ImagePlus, KeyRound, LogOut, MessageCircle, Pencil, Share, X } from 'lucide-react';
+import { Avatar, BackButton, Button, EmptyState, FloatingHearts, Moment, Sheet, TopBar, useToast } from '../components/ui.jsx';
 import { LikedItem, ProfileView } from '../components/ProfileView.jsx';
 import { OwnerTabs } from '../components/Tabs.jsx';
 import { ConvoRow } from './Chat.jsx';
@@ -252,6 +252,7 @@ export function OwnerYou() {
   const { site, signOut } = useSession();
   const { data } = useResource('/owner/stats', { interval: 30_000 });
   const { copy, share, canShare } = useShare();
+  const [account, setAccount] = useState(false);
   const stats = data?.stats;
   const items = [['members', 'Sign-ups'], ['likes', 'Likes'], ['matches', 'Matches'], ['messages', 'Messages']];
   return (
@@ -299,11 +300,71 @@ export function OwnerYou() {
         </section>
 
         <section className="list-card" aria-label="Account">
+          <button type="button" className="list-row" onClick={() => setAccount(true)}><KeyRound aria-hidden="true" /> Login & password</button>
           <button type="button" className="list-row" onClick={signOut}><LogOut aria-hidden="true" /> Log out</button>
         </section>
       </main>
       <OwnerTabs active="you" />
+      <OwnerAccount open={account} onClose={() => setAccount(false)} />
     </div>
+  );
+}
+
+function OwnerAccount({ open, onClose }) {
+  const { user, setUser } = useSession();
+  const toast = useToast();
+  const [email, setEmail] = useState(user.email);
+  const [newPassword, setNewPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!open) return;
+    setEmail(user.email);
+    setNewPassword('');
+    setCurrentPassword('');
+    setError('');
+    setBusy(false);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      const res = await api('/owner/account', { method: 'PATCH', body: { email, newPassword, currentPassword } });
+      setUser((u) => ({ ...u, ...res.user }));
+      toast('Login updated');
+      onClose();
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Sheet open={open} onClose={onClose} label="Login and password">
+      <form onSubmit={submit}>
+        <h2 className="sheet-title">Login & password</h2>
+        <div className="form-stack">
+          <div>
+            <label className="field-label" htmlFor="oa-email">Email you sign in with</label>
+            <input id="oa-email" className="field" type="email" autoComplete="username" autoCapitalize="none" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </div>
+          <div>
+            <label className="field-label" htmlFor="oa-new">New password <span>optional</span></label>
+            <input id="oa-new" className="field" type="password" autoComplete="new-password" placeholder="At least 8 characters" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+          </div>
+          <div>
+            <label className="field-label" htmlFor="oa-current">Current password</label>
+            <input id="oa-current" className="field" type="password" autoComplete="current-password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
+          </div>
+        </div>
+        {error && <p className="form-error" role="alert">{error}</p>}
+        <Button type="submit" block loading={busy} disabled={!currentPassword} className="sheet-submit">Save</Button>
+      </form>
+    </Sheet>
   );
 }
 

@@ -8,7 +8,7 @@ function loadImage(src) {
 }
 
 /** Shrink a picked photo in the browser so uploads are fast and small. */
-export async function photoToDataUrl(file, { maxSize = 1440, quality = 0.86 } = {}) {
+export async function photoToDataUrl(file, { maxSize = 1280, quality = 0.84 } = {}) {
   if (!file.type.startsWith('image/')) throw new Error('That isn’t a photo.');
   const url = URL.createObjectURL(file);
   try {

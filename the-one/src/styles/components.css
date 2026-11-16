@@ -456,6 +456,7 @@
   color: var(--ink-2);
 }
 .sheet-actions { display: flex; gap: 10px; margin-top: 14px; }
+.sheet-submit { margin-top: 24px; }
 .dialog-title {
   font-family: var(--font-serif);
   font-size: 32px;

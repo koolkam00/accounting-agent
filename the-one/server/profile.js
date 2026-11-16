@@ -27,11 +27,15 @@ export function formatHeight(inches) {
 
 const str = (v, max) => String(v ?? '').trim().slice(0, max);
 
-/** Read profile.config.js and normalise it into the shape the client renders. */
+/** Read profile.config.js fresh from disk (used locally, so edits show up without a restart). */
 export async function loadOwnerProfile(rootDir) {
   const file = path.join(rootDir, 'profile.config.js');
   const mod = await import(`${pathToFileURL(file).href}?v=${Date.now()}`);
-  const cfg = mod.default ?? {};
+  return normalizeProfile(mod.default ?? {});
+}
+
+/** Normalise profile.config.js into the shape the client renders. */
+export function normalizeProfile(cfg = {}) {
 
   const photos = (Array.isArray(cfg.photos) ? cfg.photos : [])
     .map((p) => (typeof p === 'string' ? { src: p } : p))

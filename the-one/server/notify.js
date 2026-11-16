@@ -2,7 +2,7 @@
 // Set NOTIFY_WEBHOOK_URL to a Discord webhook, a Slack incoming webhook,
 // or an ntfy.sh topic URL (e.g. https://ntfy.sh/some-long-random-topic).
 
-export function notify(text, siteUrl) {
+export async function notify(text, siteUrl) {
   const url = process.env.NOTIFY_WEBHOOK_URL;
   if (!url) return;
   const full = siteUrl ? `${text}\n${siteUrl}` : text;
@@ -18,6 +18,9 @@ export function notify(text, siteUrl) {
     body = text;
     headers = { 'content-type': 'text/plain', ...(siteUrl ? { Click: siteUrl } : {}) };
   }
-  fetch(url, { method: 'POST', body, headers, signal: AbortSignal.timeout(5000) })
-    .catch((err) => console.warn('[notify] webhook failed:', err.message));
+  try {
+    await fetch(url, { method: 'POST', body, headers, signal: AbortSignal.timeout(2500) });
+  } catch (err) {
+    console.warn('[notify] webhook failed:', err.message);
+  }
 }

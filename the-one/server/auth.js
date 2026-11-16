@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { promisify } from 'node:util';
-import { newId, now } from './db.js';
+import { newId, now } from './util.js';
 
 const scrypt = promisify(crypto.scrypt);
 const SCRYPT = { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
@@ -17,14 +17,13 @@ export async function verifyPassword(password, stored) {
   const [alg, N, r, p, saltB64, hashB64] = String(stored).split('$');
   if (alg !== 'scrypt' || !saltB64 || !hashB64) return false;
   const expected = Buffer.from(hashB64, 'base64url');
-  const actual = await scrypt(password.normalize('NFKC'), Buffer.from(saltB64, 'base64url'), expected.length, {
+  const actual = await scrypt(String(password).normalize('NFKC'), Buffer.from(saltB64, 'base64url'), expected.length, {
     N: Number(N), r: Number(r), p: Number(p), maxmem: SCRYPT.maxmem,
   });
   return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
 }
 
-// A hash to compare against when the email doesn't exist, so response times
-// don't reveal which emails have accounts.
+// Compared against when an email has no account, so timing doesn't reveal which emails exist.
 let dummyHash;
 export async function dummyVerify(password) {
   dummyHash ??= await hashPassword('not-a-real-password');
@@ -32,26 +31,26 @@ export async function dummyVerify(password) {
   return false;
 }
 
-const sha256 = (s) => crypto.createHash('sha256').update(s).digest('base64url');
+export const tokenHash = (token) => crypto.createHash('sha256').update(String(token)).digest('base64url');
 
-export function createSession(db, userId) {
+export async function createSession(store, userId) {
   const token = crypto.randomBytes(32).toString('base64url');
   const t = now();
-  db.prepare('INSERT INTO sessions (token_hash, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)')
-    .run(sha256(token), userId, t, t + SESSION_DAYS * 86400_000);
+  await store.run('DELETE FROM sessions WHERE expires_at < ?', [t]);
+  await store.run('INSERT INTO sessions (token_hash, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)',
+    [tokenHash(token), userId, t, t + SESSION_DAYS * 86400_000]);
   return token;
 }
 
-export function destroySession(db, token) {
-  if (token) db.prepare('DELETE FROM sessions WHERE token_hash = ?').run(sha256(token));
+export async function destroySession(store, token) {
+  if (token) await store.run('DELETE FROM sessions WHERE token_hash = ?', [tokenHash(token)]);
 }
 
-export function userForToken(db, token) {
+export async function userForToken(store, token) {
   if (!token) return null;
-  const row = db.prepare(`
+  const row = await store.one(`
     SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id
-    WHERE s.token_hash = ? AND s.expires_at > ?
-  `).get(sha256(token), now());
+    WHERE s.token_hash = ? AND s.expires_at > ?`, [tokenHash(token), now()]);
   return row ?? null;
 }
 
@@ -68,9 +67,7 @@ export function parseCookies(header = '') {
 }
 
 export function sessionCookie(token, { secure }) {
-  const attrs = [
-    `${COOKIE_NAME}=${token}`, 'Path=/', 'HttpOnly', 'SameSite=Lax', `Max-Age=${SESSION_DAYS * 86400}`,
-  ];
+  const attrs = [`${COOKIE_NAME}=${token}`, 'Path=/', 'HttpOnly', 'SameSite=Lax', `Max-Age=${SESSION_DAYS * 86400}`];
   if (secure) attrs.push('Secure');
   return attrs.join('; ');
 }
@@ -79,30 +76,50 @@ export function clearCookie({ secure }) {
   return `${COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure ? '; Secure' : ''}`;
 }
 
-/** Create the owner account from env vars, or update its email/password if they changed. */
-export async function ensureOwner(db, { email, password }) {
-  const existing = db.prepare("SELECT * FROM users WHERE role = 'owner'").get();
-  if (!existing) {
-    db.prepare(`INSERT INTO users (id, email, password_hash, role, onboarded, created_at)
-                VALUES (?, ?, ?, 'owner', 1, ?)`).run(newId(), email, await hashPassword(password), now());
-    return;
+/**
+ * Make sure the owner account exists, using OWNER_EMAIL / OWNER_PASSWORD.
+ *
+ * The env values are applied when the owner is first created and again whenever
+ * they change (that's how you reset a forgotten password). If they haven't changed,
+ * a login you updated inside the app is left alone.
+ */
+export async function ensureOwner(store, { email, password }) {
+  const envEmail = String(email).trim().toLowerCase();
+  const owner = await store.one("SELECT * FROM users WHERE role = 'owner'");
+  const markerRow = await store.one("SELECT value FROM settings WHERE key = 'owner_env'");
+  let marker = null;
+  try { marker = markerRow ? JSON.parse(markerRow.value) : null; } catch { marker = null; }
+  if (owner && marker?.email === envEmail && await verifyPassword(password, marker.hash)) return { changed: false };
+
+  const hash = await hashPassword(password);
+  try {
+    await store.tx(async (q) => {
+      if (!owner) {
+        await q.run(`INSERT INTO users (id, email, password_hash, role, onboarded, created_at)
+                     VALUES (?, ?, ?, 'owner', 1, ?)`, [newId(), envEmail, hash, now()]);
+      } else {
+        await q.run('UPDATE users SET email = ?, password_hash = ? WHERE id = ?', [envEmail, hash, owner.id]);
+        await q.run('DELETE FROM sessions WHERE user_id = ?', [owner.id]);
+      }
+      await q.run(`INSERT INTO settings (key, value) VALUES ('owner_env', ?)
+                   ON CONFLICT (key) DO UPDATE SET value = excluded.value`, [JSON.stringify({ email: envEmail, hash })]);
+    });
+  } catch (err) {
+    // Two cold starts racing to create the owner: the loser can stop here.
+    const exists = await store.one("SELECT 1 AS ok FROM users WHERE role = 'owner'");
+    if (owner || !exists) throw err;
   }
-  const sameEmail = existing.email.toLowerCase() === email.toLowerCase();
-  const samePassword = await verifyPassword(password, existing.password_hash);
-  if (!sameEmail || !samePassword) {
-    db.prepare('UPDATE users SET email = ?, password_hash = ? WHERE id = ?')
-      .run(email, await hashPassword(password), existing.id);
-    db.prepare('DELETE FROM sessions WHERE user_id = ?').run(existing.id);
-  }
+  return { changed: true };
 }
 
 /** Tiny fixed-window rate limiter, keyed by whatever the caller chooses. */
 export function rateLimiter({ windowMs, max }) {
   const hits = new Map();
-  setInterval(() => {
+  const sweep = setInterval(() => {
     const t = Date.now();
     for (const [k, v] of hits) if (v.reset < t) hits.delete(k);
-  }, windowMs).unref();
+  }, windowMs);
+  sweep.unref?.();
   return (key) => {
     const t = Date.now();
     let entry = hits.get(key);
