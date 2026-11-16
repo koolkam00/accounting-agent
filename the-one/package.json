@@ -1,0 +1,28 @@
+{
+  "name": "the-one",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A personal dating site with exactly one profile on it: yours.",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "node --no-warnings=ExperimentalWarning server/index.js --dev",
+    "build": "vite build",
+    "start": "node --no-warnings=ExperimentalWarning server/index.js",
+    "test": "node --no-warnings=ExperimentalWarning --test tests/api.test.js",
+    "e2e": "node tests/e2e.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "5.3.0",
+    "@fontsource-variable/figtree": "5.3.0",
+    "@fontsource/instrument-serif": "5.3.0",
+    "@vitejs/plugin-react": "5.2.0",
+    "express": "5.3.0",
+    "lucide-react": "1.66.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "vite": "7.3.7"
+  }
+}

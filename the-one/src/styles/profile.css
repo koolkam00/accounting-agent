@@ -1,0 +1,247 @@
+/* ── Profile scroll ─────────────────────────────────────────────────────── */
+.profile { display: flex; flex-direction: column; gap: 12px; padding: 6px var(--gutter) 12px; }
+.card { position: relative; overflow: hidden; border-radius: var(--r-card); }
+
+.photo-card {
+  aspect-ratio: 4 / 5;
+  background: var(--bg-sunk);
+  box-shadow: var(--shadow-1);
+  isolation: isolate;
+}
+.photo-card img { width: 100%; height: 100%; object-fit: cover; -webkit-user-select: none; user-select: none; }
+.hero-card { aspect-ratio: 4 / 5.3; }
+.hero-meta {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 130px 90px 24px 22px;
+  background: linear-gradient(to top, rgba(18, 13, 10, 0.8) 0%, rgba(18, 13, 10, 0.38) 50%, rgba(18, 13, 10, 0) 100%);
+  color: #fff;
+}
+.hero-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 10px;
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+}
+.hero-age { font-size: 0.8em; font-weight: 400; letter-spacing: -0.035em; opacity: 0.92; }
+.hero-sub { margin-top: 10px; font-size: 15.5px; font-weight: 650; line-height: 1.35; color: rgba(255, 255, 255, 0.9); }
+.name-card { padding: 30px 22px 28px; background: var(--surface); box-shadow: var(--shadow-1); }
+.name-card .hero-sub { color: var(--ink-2); }
+
+.photo-caption {
+  position: absolute;
+  left: 14px;
+  bottom: 16px;
+  max-width: calc(100% - 100px);
+  padding: 9px 14px 10px;
+  border-radius: 16px 16px 16px 6px;
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: var(--ink);
+  font-size: 14.5px;
+  font-weight: 650;
+  line-height: 1.3;
+  box-shadow: var(--shadow-1);
+}
+
+/* Prompts */
+.prompt-card { padding: 26px 24px 28px; background: var(--tint-0); }
+.prompt-card:has(> .like-btn) { padding-bottom: 86px; }
+.tint-0 { background: var(--tint-0); }
+.tint-1 { background: var(--tint-1); }
+.tint-2 { background: var(--tint-2); }
+.tint-3 { background: var(--tint-3); }
+.prompt-q {
+  margin-bottom: 12px;
+  font-size: 14.5px;
+  font-weight: 750;
+  letter-spacing: -0.005em;
+  color: color-mix(in srgb, var(--ink) 64%, transparent);
+}
+.prompt-a {
+  font-family: var(--font-display);
+  font-size: 29px;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+/* Basics */
+.facts-card { padding: 22px 18px 20px; background: var(--surface); box-shadow: var(--shadow-1); }
+.card-kicker {
+  margin: 0 4px 14px;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.facts { display: flex; flex-wrap: wrap; gap: 8px; }
+.fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 15px 8px 12px;
+  border-radius: 999px;
+  background: var(--bg);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+.fact svg { flex: none; width: 18px; height: 18px; stroke-width: 2.1; color: var(--ink-2); }
+
+/* The like button */
+.like-btn {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--cherry);
+  color: #fff;
+  box-shadow: 0 12px 24px -10px rgba(196, 35, 59, 0.8), inset 0 -2px 0 rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s var(--spring), background-color 0.2s;
+}
+.like-btn:hover { background: var(--cherry-deep); }
+.like-btn:active { transform: scale(0.84); }
+.like-btn svg { width: 26px; height: 26px; transform: translateY(1px); }
+.like-btn.is-liked {
+  background: #fff;
+  color: var(--cherry);
+  box-shadow: var(--shadow-2);
+  animation: beat 1.8s ease-in-out 1;
+}
+
+/* End of profile */
+.profile-end { margin-top: 10px; padding: 34px 16px 24px; text-align: center; }
+.profile-end-kicker {
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.profile-end-title {
+  margin-top: 8px;
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+.profile-end-title em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.12em;
+  letter-spacing: -0.015em;
+  color: var(--cherry);
+}
+.profile-end-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
+.profile-end-note { margin-top: 12px; font-size: 16px; color: var(--ink-2); }
+
+/* Mini previews of a liked thing */
+.liked-item { flex: none; overflow: hidden; }
+.liked-photo { border-radius: 14px; background: var(--bg-sunk); }
+.liked-photo img { width: 100%; height: 100%; object-fit: cover; }
+.liked-xs.liked-photo { width: 44px; height: 54px; border-radius: 11px; }
+.liked-sm.liked-photo { width: 66px; height: 82px; border-radius: 13px; }
+.liked-md.liked-photo { width: 150px; height: 188px; border-radius: 18px; box-shadow: var(--shadow-1); }
+.liked-prompt { padding: 12px 14px 13px; border-radius: 14px; background: var(--tint-0); text-align: left; }
+.liked-prompt .prompt-q { margin-bottom: 4px; font-size: 12.5px; }
+.liked-prompt .prompt-a {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  font-size: 16.5px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.liked-sm.liked-prompt { width: 150px; }
+.liked-md.liked-prompt { width: 100%; max-width: 300px; padding: 16px 18px; border-radius: 18px; }
+.liked-md.liked-prompt .prompt-a { font-size: 20px; }
+.liked-xs.liked-prompt { position: relative; width: 48px; height: 54px; padding: 0; border-radius: 11px; }
+.liked-xs.liked-prompt > * { display: none; }
+.liked-xs.liked-prompt::before {
+  content: '\201C';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding-top: 14px;
+  font-family: var(--font-serif);
+  font-size: 46px;
+  line-height: 1;
+  color: var(--cherry);
+}
+
+/* ── Like sheet ─────────────────────────────────────────────────────────── */
+.like-stage { position: relative; display: flex; justify-content: center; padding: 4px 0 20px; }
+.like-polaroid {
+  --tilt: -3.5deg;
+  width: 170px;
+  padding: 8px 8px 30px;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 22px 40px -18px rgba(27, 22, 19, 0.55), 0 0 0 1px var(--line);
+  transform: rotate(var(--tilt));
+  animation: drop-in 0.6s var(--spring) both;
+}
+.like-polaroid img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 2px; background: var(--bg-sunk); }
+.like-polaroid-prompt {
+  --tilt: -2deg;
+  width: 262px;
+  padding: 18px 18px 22px;
+  border-radius: 20px;
+  background: var(--tint-0);
+  box-shadow: 0 22px 40px -22px rgba(27, 22, 19, 0.5);
+}
+.like-polaroid-prompt .prompt-q { margin-bottom: 6px; font-size: 13px; }
+.like-polaroid-prompt .prompt-a {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+  font-size: 19px;
+  line-height: 1.18;
+}
+.like-stage-heart {
+  position: absolute;
+  left: calc(50% + 58px);
+  bottom: 10px;
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--cherry);
+  color: #fff;
+  box-shadow: 0 0 0 4px #fff, 0 12px 22px -8px var(--cherry-glow);
+  animation: pop-in 0.5s 0.25s var(--spring) both;
+}
+.like-polaroid-prompt + .like-stage-heart { left: calc(50% + 104px); }
+.like-stage-heart svg { width: 24px; height: 24px; }
+@keyframes drop-in {
+  from { transform: translateY(-24px) rotate(-14deg); opacity: 0; }
+  to { transform: rotate(var(--tilt)); opacity: 1; }
+}
+.like-title { margin-bottom: 18px; text-align: center; }
+.like-sheet .field-wrap { margin-bottom: 18px; }
+.like-sheet .chips { margin-bottom: 22px; }
+.like-note { margin-top: 12px; font-size: 13.5px; font-weight: 650; text-align: center; color: var(--ink-3); }
