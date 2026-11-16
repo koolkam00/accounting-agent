@@ -118,7 +118,7 @@ export function PromptList({ prompts, onChange }) {
   return (
     <div className="prompt-list">
       {prompts.map((p, i) => (
-        <button type="button" className={`card prompt-card prompt-card-edit tint-${i % 4}`} key={p.question} onClick={() => setEditing({ index: i, ...p })}>
+        <button type="button" className={`card prompt-card prompt-card-edit tone-${i % 2 === 0 ? 'ink' : 'light'}`} key={p.question} onClick={() => setEditing({ index: i, ...p })}>
           <p className="prompt-q">{p.question}</p>
           <p className="prompt-a">{p.answer}</p>
           <span className="prompt-edit" aria-hidden="true"><Pencil /></span>

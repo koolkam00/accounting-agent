@@ -98,7 +98,7 @@ export function ProfileView({ profile, onLike, likedKey = null, canLike = false,
         if (b.kind === 'prompt') {
           const lp = likeProps('prompt', b.prompt.id, b.prompt, 'answer');
           return (
-            <article className={`card prompt-card tint-${b.tint % 4}`} key={b.prompt.id}>
+            <article className={`card prompt-card tone-${b.tint % 2 === 0 ? 'ink' : 'light'}`} key={b.prompt.id}>
               <p className="prompt-q">{b.prompt.question}</p>
               <p className="prompt-a">{b.prompt.answer}</p>
               {lp.show && <LikeButton {...lp} />}
