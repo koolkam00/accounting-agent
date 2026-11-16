@@ -20,36 +20,78 @@ function sslOptions() {
   return { ca, rejectUnauthorized: true };
 }
 
+/**
+ * Supabase runs its connection pooler on a few clusters (aws-0-…, aws-1-…).
+ * If the one in DATABASE_URL doesn't know this project, try its siblings.
+ */
+function poolerCandidates(connectionString) {
+  let url;
+  try { url = new URL(connectionString); } catch { return [connectionString]; }
+  const m = /^aws-(\d+)-(.+\.pooler\.supabase\.com)$/.exec(url.hostname);
+  if (!m) return [connectionString];
+  const others = ['0', '1', '2'].filter((n) => n !== m[1]).map((n) => {
+    const alt = new URL(connectionString);
+    alt.hostname = `aws-${n}-${m[2]}`;
+    return alt.toString();
+  });
+  return [connectionString, ...others];
+}
+
+const wrongCluster = (err) => /tenant or user not found/i.test(String(err?.message));
+
 /** Hosted storage: Postgres (e.g. Supabase). Same interface as the SQLite store. */
 export function openPgStore(url) {
   if (!url) throw new Error('DATABASE_URL is not set.');
-  // Strip libpq-style ssl params; TLS is configured explicitly below.
+  // TLS is configured explicitly, so drop libpq-style ssl params from the URL.
   const connectionString = url.replace(/([?&])sslmode=[^&]*&?/, '$1').replace(/[?&]$/, '');
-  const pool = new pg.Pool({
-    connectionString,
-    ssl: sslOptions(),
-    max: Number(process.env.PG_POOL_MAX) || 3,
-    idleTimeoutMillis: 10_000,
-    connectionTimeoutMillis: 10_000,
-  });
-  pool.on('error', (err) => console.error('[db] idle connection error:', err.message));
+  const candidates = poolerCandidates(connectionString);
+  let index = 0;
+
+  const makePool = (cs) => {
+    const p = new pg.Pool({
+      connectionString: cs,
+      ssl: sslOptions(),
+      max: Number(process.env.PG_POOL_MAX) || 3,
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 10_000,
+    });
+    p.on('error', (err) => console.error('[db] idle connection error:', err.message));
+    return p;
+  };
+  let pool = makePool(candidates[0]);
+
+  // Run fn(pool); if the pooler says this project lives elsewhere, move to the next host once.
+  const withPool = async (fn) => {
+    for (;;) {
+      try {
+        return await fn(pool);
+      } catch (err) {
+        if (!wrongCluster(err) || index >= candidates.length - 1) throw err;
+        const old = pool;
+        index += 1;
+        pool = makePool(candidates[index]);
+        old.end().catch(() => {});
+        console.warn(`[db] trying pooler host ${new URL(candidates[index]).hostname}`);
+      }
+    }
+  };
 
   // Our SQL uses "?" placeholders; Postgres wants $1, $2, ...
   const convert = (sql) => {
     let i = 0;
     return sql.replace(/\?/g, () => `$${++i}`);
   };
-  const wrap = (client) => ({
-    one: async (sql, params = []) => (await client.query(convert(sql), params)).rows[0],
-    all: async (sql, params = []) => (await client.query(convert(sql), params)).rows,
-    run: async (sql, params = []) => ({ changes: (await client.query(convert(sql), params)).rowCount ?? 0 }),
+  const wrap = (run) => ({
+    one: async (sql, params = []) => (await run((c) => c.query(convert(sql), params))).rows[0],
+    all: async (sql, params = []) => (await run((c) => c.query(convert(sql), params))).rows,
+    run: async (sql, params = []) => ({ changes: (await run((c) => c.query(convert(sql), params))).rowCount ?? 0 }),
   });
 
-  const tx = async (fn) => {
-    const client = await pool.connect();
+  const tx = (fn) => withPool(async (p) => {
+    const client = await p.connect();
     try {
       await client.query('BEGIN');
-      const out = await fn(wrap(client));
+      const out = await fn(wrap((use) => use(client)));
       await client.query('COMMIT');
       return out;
     } catch (err) {
@@ -58,7 +100,7 @@ export function openPgStore(url) {
     } finally {
       client.release();
     }
-  };
+  });
 
-  return { kind: 'pg', ...wrap(pool), tx, close: () => pool.end() };
+  return { kind: 'pg', ...wrap(withPool), tx, close: () => pool.end() };
 }

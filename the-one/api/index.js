@@ -1,5 +1,8 @@
 // Vercel entry point: the whole API runs as one serverless function.
-// Needs DATABASE_URL (Postgres), OWNER_EMAIL and OWNER_PASSWORD in the project's environment variables.
+// Environment variables (Vercel → Project → Settings → Environment Variables):
+//   DATABASE_URL    Postgres connection string (required)
+//   OWNER_EMAIL     your login email
+//   OWNER_PASSWORD  your login password, 8+ characters
 import { createApp } from '../server/app.js';
 import { ensureOwner } from '../server/auth.js';
 import { openPgStore } from '../server/store-pg.js';
@@ -10,16 +13,19 @@ const owner = normalizeProfile(profileConfig);
 const productionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
 const siteUrl = (process.env.SITE_URL || (productionUrl ? `https://${productionUrl}` : '')).replace(/\/+$/, '');
 
-let store;
 let ready;
 
 function init() {
   ready ??= (async () => {
+    const store = openPgStore(process.env.DATABASE_URL);
     const email = (process.env.OWNER_EMAIL || '').trim();
     const password = process.env.OWNER_PASSWORD || '';
-    if (!email || password.length < 8) throw new Error('Set OWNER_EMAIL and OWNER_PASSWORD (8+ characters).');
-    store ??= openPgStore(process.env.DATABASE_URL);
-    await ensureOwner(store, { email, password });
+    if (email && password.length >= 8) {
+      await ensureOwner(store, { email, password });
+    } else {
+      // Visitors can still use the site; you just can't sign in until these are set.
+      console.warn('[startup] OWNER_EMAIL / OWNER_PASSWORD (8+ chars) not set, so the owner login is disabled.');
+    }
     return createApp({
       store,
       getOwner: () => owner,
