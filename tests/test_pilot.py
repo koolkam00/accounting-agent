@@ -97,6 +97,36 @@ def test_csrf_failure_is_friendly(demo, token, fresh_session):
         assert db.execute("SELECT count(*) FROM reports").fetchone() == (0,)
 
 
+@pytest.mark.parametrize("invite", [None, "stale", "valid"])
+@pytest.mark.parametrize("endpoint", ["/reports", "/unlock"])
+def test_csrf_failure_respects_invite(tmp_path, invite, endpoint):
+    access_code = "test-invite-code"
+    app = pilot.create_app({
+        "TESTING": True,
+        "PILOT_MODE": "demo",
+        "PILOT_DB": str(tmp_path / "demo.db"),
+        "PILOT_ACCESS_CODE": access_code,
+    })
+    browser = app.test_client()
+    assert browser.get("/").status_code == 403
+    if invite == "valid":
+        assert browser.post("/unlock", data={"csrf": csrf(browser), "code": access_code}).status_code == 303
+    elif invite is not None:
+        with browser.session_transaction() as session:
+            session["access"] = invite
+    response = browser.post(endpoint, data={"csrf": "bad-token", "source": "sample", "code": access_code})
+    assert response.status_code == 400
+    assert (
+        b"Your session expired or the page was out of date. Please try again; no payment was taken."
+        in response.data
+    )
+    assert (b"Enter your invite code" in response.data) is (invite != "valid")
+    assert (b"Try the upload flow" in response.data) is (invite == "valid")
+    if invite != "valid":
+        assert browser.post("/unlock", data={"csrf": csrf(browser), "code": access_code}).status_code == 303
+        assert browser.get("/").status_code == 200
+
+
 def test_sample_upload_and_report_access(demo):
     browser = demo.test_client()
     assert b"Try the upload flow" in browser.get("/").data

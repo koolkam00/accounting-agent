@@ -163,10 +163,10 @@ def create_app(config: dict | None = None) -> Flask:
         if request.method == "POST" and not hmac.compare_digest(
             request.form.get("csrf", "").encode(), session["csrf"].encode()
         ):
-            return home_page(
-                "Your session expired or the page was out of date. Please try again; no payment was taken.",
-                400,
-            )
+            error = "Your session expired or the page was out of date. Please try again; no payment was taken."
+            if access and session.get("access") != access_tag:
+                return page("locked", error=error), 400
+            return home_page(error, 400)
         if access and request.endpoint != "unlock" and session.get("access") != access_tag:
             return render_template("pilot.html", screen="locked", mode=mode), 403
 
