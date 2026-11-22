@@ -141,6 +141,14 @@ def test_po_closed():
     assert any(check.detail == "PO is closed (status=CLOSED)" for check in checks)
 
 
+def test_unmatched_sku_exposure_wording():
+    inv, po, receipts, vendor = _fixture(qty="3")
+    inv.line_items[0].sku = "SKU-9"
+    _, exc, checks = match_invoice(inv, po, receipts, vendor, POLICY, False)
+    assert "SKU_NOT_FOUND" in exc
+    assert any(check.detail == "SKU-9: not on PO → $30.00 billed without a PO line" for check in checks)
+
+
 def test_split_sku_exposure_uses_weighted_invoice_price():
     inv, po, receipts, vendor = _fixture()
     inv.line_items.append(inv.line_items[0].model_copy(update={"unit_price": "20.00"}))

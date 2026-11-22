@@ -155,12 +155,27 @@ def test_sample_upload_and_report_access(demo):
     download = browser.get(f"{order}/download")
     assert download.headers["Cache-Control"] == "no-store"
     assert f"invoice-match-report-{order.split('/')[-1]}.json" in download.headers["Content-Disposition"]
-    assert b"Invoice total: USD $250.00" in response.data
+    assert b"Invoice total: 250.00 USD" in response.data
     report = download.json
     assert report["decision"] == "READY_FOR_DRAFT"
     assert report["proposed_journal"]["balanced"] is True
     assert not ({"DUPLICATE_INVOICE", "VENDOR_ACTIVE"} & {check["code"] for check in report["control_checks"]})
     assert other.get(f"{order}/download").status_code == 404
+
+
+@pytest.mark.parametrize("total,expected", [("250.00", "250.00"), (0, "0"), (None, "Unknown")])
+def test_invoice_total_currency_and_missing_value(demo, total, expected):
+    with demo.test_request_context():
+        rendered = pilot.render_template(
+            "pilot.html", screen="result", mode="demo", report_id="example",
+            report={
+                "decision": "HUMAN_REVIEW",
+                "extracted_invoice": {"invoice_total": total, "currency": "EUR"},
+                "display_checks": [], "exception_codes": [],
+            },
+        )
+    assert f"Invoice total: {expected} EUR" in rendered
+    assert "EUR $" not in rendered
 
 
 def test_review_and_non_fixture_upload(demo):

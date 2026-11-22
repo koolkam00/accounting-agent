@@ -130,7 +130,7 @@ def match_invoice(
             if li.sku not in po_by_sku:
                 exceptions.append("SKU_NOT_FOUND")
                 checks.append(
-                    ControlCheck(code="SKU", passed=False, detail=f"{li.sku}: not on PO → ${money(to_decimal(li.quantity) * to_decimal(li.unit_price))} not on PO")
+                    ControlCheck(code="SKU", passed=False, detail=f"{li.sku}: not on PO → ${money(to_decimal(li.quantity) * to_decimal(li.unit_price))} billed without a PO line")
                 )
                 continue
             po_line = po_by_sku[li.sku]
