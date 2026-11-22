@@ -164,6 +164,7 @@ class PolicyConfig(StrictModel):
 EXCEPTION_CODES = [
     "MISSING_INVOICE_NUMBER",
     "PO_NOT_FOUND",
+    "PO_CLOSED",
     "VENDOR_MISMATCH",
     "DUPLICATE_INVOICE",
     "CURRENCY_MISMATCH",

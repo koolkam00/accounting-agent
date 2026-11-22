@@ -46,12 +46,12 @@ def match_invoice(
 
     if po is None:
         exceptions.append("PO_NOT_FOUND")
-        checks.append(ControlCheck(code="PO_NOT_FOUND", passed=False, detail="PO not found or not open"))
+        checks.append(ControlCheck(code="PO_NOT_FOUND", passed=False, detail="PO not found"))
         # Still continue for other checks that don't need PO
     else:
         if po.status.upper() != "OPEN":
-            exceptions.append("PO_NOT_FOUND")
-            checks.append(ControlCheck(code="PO_STATUS", passed=False, detail=f"PO status={po.status}"))
+            exceptions.append("PO_CLOSED")
+            checks.append(ControlCheck(code="PO_STATUS", passed=False, detail=f"PO is closed (status={po.status})"))
         else:
             checks.append(ControlCheck(code="PO_STATUS", passed=True, detail="OPEN"))
 

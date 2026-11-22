@@ -132,6 +132,15 @@ def test_nonzero_tax():
     assert "NONZERO_TAX_REVIEW" in exc
 
 
+def test_po_closed():
+    inv, po, receipts, vendor = _fixture()
+    po.status = "CLOSED"
+    decision, exc, checks = match_invoice(inv, po, receipts, vendor, POLICY, False)
+    assert decision == WorkflowDecision.HUMAN_REVIEW
+    assert exc == ["PO_CLOSED"]
+    assert any(check.detail == "PO is closed (status=CLOSED)" for check in checks)
+
+
 def test_exceptions_sorted():
     inv, po, receipts, vendor = _fixture(price="12.00", recv="1", tax="1.00")
     _, exc, _ = match_invoice(inv, po, receipts, vendor, POLICY, True)

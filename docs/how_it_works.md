@@ -139,7 +139,8 @@ From `app/schemas.py` `EXCEPTION_CODES`. Any non-empty set forces `HUMAN_REVIEW`
 | `AMBIGUOUS_FIELD` | Model (or fixture) flagged two possible values |
 | `EVIDENCE_VALIDATION_FAILED` | Quote not found in canonical text |
 | `INVOICE_MATH_ERROR` | qty × price or totals do not add up |
-| `PO_NOT_FOUND` | Invoice PO id not in ERP, or PO not OPEN |
+| `PO_NOT_FOUND` | Invoice PO id not in ERP |
+| `PO_CLOSED` | Supplied PO is closed (not OPEN) |
 | `VENDOR_MISMATCH` / `VENDOR_INACTIVE` | Invoice vendor ≠ PO vendor |
 | `DUPLICATE_INVOICE` | Same vendor + invoice number already processed |
 | `CURRENCY_MISMATCH` | Invoice / PO / policy currency disagree |
