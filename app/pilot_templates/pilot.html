@@ -92,7 +92,7 @@
       <tbody>{% for line in report.proposed_journal.lines %}<tr><td>{{ line.account }}</td><td>{{ line.debit }}</td><td>{{ line.credit }}</td></tr>{% endfor %}</tbody></table></section>
     {% endif %}
     <section class="card"><h2>Matching checks</h2><dl class="checks">
-      {% for check in report.display_checks %}<div><dt>{{ 'Passed' if check.passed else 'Review' }} · {{ check.label }}</dt><dd>{{ check.detail }}</dd></div>{% endfor %}
+      {% for check in report.display_checks %}<div><dt>{{ 'Passed' if check.passed else 'Review' }} · {{ check.label }}</dt>{% if check.detail %}<dd>{{ check.detail }}</dd>{% endif %}</div>{% endfor %}
     </dl></section>
   {% endif %}
   </main>

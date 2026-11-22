@@ -14,7 +14,7 @@ def test_every_check_has_readable_success_and_failure(code, passed):
     report = {"control_checks": [{"code": code, "passed": passed, "detail": "ok"}]}
     check = present_checks(report, read_context(sample_context()))[0]
     assert check["label"] == CHECK_LABELS[code][0 if passed else 1]
-    assert check["detail"] not in {"ok", "OPEN", ""}
+    assert check["detail"] not in {"ok", "OPEN"}
     assert check["passed"] is passed
 
 
@@ -35,7 +35,7 @@ def test_empty_unknown_and_failure_details():
         {"code": "REQUIRED_FIELDS", "passed": False, "detail": "Missing: invoice_date"},
     ]}, context)
     assert checks[0]["detail"] == "NEW_CHECK: Unexpected amount: 12"
-    assert checks[1]["detail"] == "Additional check passed."
+    assert checks[1]["detail"] == ""
     assert checks[2]["detail"] == "Missing: invoice_date"
 
 
@@ -45,7 +45,7 @@ def test_legacy_report_without_context():
         {"code": "PO_STATUS", "passed": True, "detail": "OPEN"},
     ]})
     assert checks[0]["detail"] == "SKU-1: invoiced 3 received 0"
-    assert checks[1]["detail"] == "Purchase order is open."
+    assert checks[1]["detail"] == ""
 
 
 def test_real_values_and_review_explanation():

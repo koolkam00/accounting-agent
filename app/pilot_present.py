@@ -66,9 +66,9 @@ def present_checks(report, context=None):
             detail = re.sub(r"\btol=", "allowed difference ", detail)
             detail = detail.replace("PO status=", "Purchase order status: ")
             if detail.endswith(": ok"):
-                detail = detail[:-2] + label.lower() + "."
-        if detail in {"", "ok", "OPEN"}:
-            detail = label + "."
+                detail = detail[:-4] + "."
+        if detail in {"", "ok", "OPEN"} or detail == label.lower() + ".":
+            detail = ""
         elif code not in CHECK_LABELS:
             detail = f"{code}: {detail}"
         checks.append({"label": label, "detail": detail, "passed": passed})
