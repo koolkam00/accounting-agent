@@ -10,7 +10,7 @@
   <header><nav aria-label="Main"><a class="brand" href="{{ url_for('home') }}"><span class="brand-mark" aria-hidden="true">✓</span> Invoice Match</a>
     <span class="pill">{{ 'Public demo' if public_demo else 'Invite-only pilot' if mode == 'live' else 'Private preview' if mode == 'demo' else 'Stripe test mode' }}</span></nav></header>
   <main>
-  {% if error %}<p class="notice alert" role="alert">{{ error }}</p>{% endif %}
+  {% if error and (screen != 'home' or public_demo) %}<p class="notice alert" role="alert">{{ error }}</p>{% endif %}
   {% if screen == 'locked' %}
     <section class="card">
       <p class="eyebrow">Pilot access</p><h1>Enter your invite code</h1>
@@ -42,23 +42,54 @@
     <section class="card">
       <p class="eyebrow">Documents</p>
       <h2>{{ 'Upload your records' if mode == 'live' else 'Try the upload flow' }}</h2>
-      <p>{{ 'Use a text-based invoice PDF and the matching USD purchase order and receipts.' if mode == 'live' else 'Download the sample files and upload them below. Don’t upload real financial documents in this preview.' }}</p>
+      <p>{{ 'Use a text-based invoice PDF and the matching USD purchase order and receipts.' if mode == 'live' else 'This preview accepts only the provided sample PDF. Other invoices, including scanned PDFs, are not supported. No OCR is available. Don’t upload real financial documents.' }}</p>
       <div class="links">
         {% if mode != 'live' %}<a href="{{ url_for('sample', kind='invoice') }}">Sample invoice PDF</a>{% endif %}
         <a href="{{ url_for('sample', kind='context') }}">Example PO and receipts JSON</a>
       </div>
       <form class="uploads" method="post" enctype="multipart/form-data" action="{{ url_for('prepare') }}">
         <input type="hidden" name="csrf" value="{{ session.csrf }}">
+        {% if error %}<div class="notice alert" role="alert"><p>{{ error }}</p>
+          <p>No payment was taken. Choose both files again to retry.</p>
+          {% if mode != 'live' %}<a href="{{ url_for('sample', kind='invoice') }}">Download the supported sample PDF</a>{% endif %}
+        </div>{% endif %}
         <div class="field"><label for="invoice">Invoice PDF</label>
-        <span id="invoice-help">Text PDF, up to 5 MB and 12 pages.</span>
+        <span id="invoice-help">{{ 'Text PDF, up to 5 MB and 12 pages. No OCR.' if mode == 'live' else 'Provided sample PDF only, up to 5 MB. No other or scanned invoices; no OCR.' }}</span>
         <input type="file" id="invoice" name="invoice" accept=".pdf,application/pdf" aria-describedby="invoice-help" required></div>
         <div class="field"><label for="context">Purchase order and receipts</label>
         <span id="context-help">One JSON file, up to 128 KB.</span>
+        <p>This file tells us what you ordered and what actually arrived, so we can compare it with the invoice. Download the <a href="{{ url_for('sample', kind='context') }}">sample JSON template</a>; keep its field names and structure.</p>
+        <details><summary>JSON field-by-field guide</summary>
+          <dl>
+            <dt>purchase_order</dt><dd>One purchase order: po_id (PO number), vendor_id (supplier ID), vendor_name (supplier name), currency (USD), status (OPEN or CLOSED).</dd>
+            <dt>purchase_order.lines</dt><dd>Items ordered: line_number (row number), sku (unique item code), description (item name), quantity (units ordered), unit_price (price per unit), gl_account (nonblank ledger account).</dd>
+            <dt>receipts</dt><dd>List of receiving records: receipt_id (unique receiving record ID), po_id (the same PO number).</dd>
+            <dt>receipts[].lines</dt><dd>Items received: sku (item code), quantity_received (units that arrived). Use distinct SKUs within each receipt.</dd>
+            <dt>Numbers and limits</dt><dd>Use quoted nonnegative decimals for quantities and prices (up to 10 digits and 4 decimal places). Use a number for line_number. Supply 1–100 PO lines and 1–30 receipts with 1–100 lines each.</dd>
+          </dl>
+        </details>
         <input type="file" id="context" name="context" accept=".json,application/json" aria-describedby="context-help" required></div>
         <div class="actions"><button class="primary">Prepare report</button><p>{{ price }} USD per report · no subscription{% if mode != 'live' %} · no real charge in this preview{% endif %}</p></div>
       </form>
     </section>
     {% endif %}
+    <section class="card" id="report-history"><h2>Your reports in this browser</h2>
+      <p>Available for seven days. Keep this browser to return to paid and unpaid reports.</p>
+      {% for item in history %}<article>
+        <h3><a href="{{ url_for('view_order', report_id=item.id) }}">Invoice {{ item.document.extracted_invoice.invoice_number }}</a></h3>
+        <p>{{ item.document.extracted_invoice.vendor_name or 'Unknown vendor' }} · {{ 'Paid' if item.paid else 'Unpaid' }}{% if mode == 'demo' %} (simulated){% endif %} · Created {{ item.created_label }}</p>
+      </article>{% else %}<p>No reports yet.</p>{% endfor %}
+    </section>
+  {% elif screen == 'duplicate' %}
+    <section class="card"><h1>These documents already have a report.</h1>
+      <p>Invoice {{ previous.document.extracted_invoice.invoice_number }} · {{ previous.document.extracted_invoice.vendor_name }} · {{ 'Paid' if previous.paid else 'Unpaid' }}</p>
+      <p><a href="{{ url_for('view_order', report_id=previous.id) }}">Open the existing report</a> without creating another checkout.</p>
+      <p>Do you want a separate report and a new {{ price }} USD checkout for the same documents?{% if mode != 'live' %} No real charge in this preview.{% endif %}</p>
+      <form method="post" action="{{ url_for('copy_report', report_id=previous.id) }}">
+        <input type="hidden" name="csrf" value="{{ session.csrf }}">
+        <button>Create a separate {{ price }} report</button>
+      </form><a href="{{ url_for('home') }}">Back to documents and report history</a>
+    </section>
   {% elif screen == 'checkout' %}
     <section class="card">
       <p class="eyebrow">Report prepared</p>

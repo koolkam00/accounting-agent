@@ -11,7 +11,7 @@ import secrets
 import sqlite3
 import time
 from contextlib import closing
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -188,7 +188,17 @@ def create_app(config: dict | None = None) -> Flask:
         )
 
     def home_page(error=None, status=200):
-        return page("home", error=error), status
+        return page("home", error=error, history=report_history()), status
+
+    def report_history():
+        with connect() as db:
+            rows = db.execute(
+                "SELECT * FROM reports WHERE owner = ? AND mode = ? AND created > ? ORDER BY created DESC, rowid DESC",
+                (session["owner"], mode, now() - RETENTION),
+            ).fetchall()
+        return [dict(row, document=json.loads(row["report"]),
+                     created_label=datetime.fromtimestamp(row["created"], timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"))
+                for row in rows]
 
     @app.post("/unlock")
     def unlock():
@@ -223,6 +233,10 @@ def create_app(config: dict | None = None) -> Flask:
                 pdf = invoice.read(MAX_PDF_BYTES + 1)
                 context_data = context.read(MAX_CONTEXT_BYTES + 1)
             context = read_context(context_data)
+            fingerprint = hashlib.sha256(pdf + b"\0" + context.model_dump_json().encode()).hexdigest()
+            for previous in report_history():
+                if previous["document"].get("document_fingerprint") == fingerprint:
+                    return page("duplicate", previous=previous)
             if live:
                 with connect() as db, db:
                     purge(db)
@@ -234,6 +248,7 @@ def create_app(config: dict | None = None) -> Flask:
                     if not usage.rowcount:
                         return home_page("The pilot has reached today's report limit. Try again tomorrow.", 429)
             report = build_report(pdf, context, demo=not live)
+            report["document_fingerprint"] = fingerprint
         except (PilotInputError, PdfReadError, ValueError) as exc:
             error = str(exc) if isinstance(exc, PilotInputError) else "Could not read the files. Check the formats and try again."
             return home_page(error, 422)
@@ -249,6 +264,18 @@ def create_app(config: dict | None = None) -> Flask:
             )
         session["recent_report"] = report_id
         return redirect(url_for("view_order", report_id=report_id), 303)
+
+    @app.post("/reports/<report_id>/copy")
+    def copy_report(report_id):
+        row = get_report(report_id)
+        new_id = secrets.token_urlsafe(24)
+        with connect() as db, db:
+            db.execute(
+                "INSERT INTO reports (id, owner, mode, created, report) VALUES (?, ?, ?, ?, ?)",
+                (new_id, session["owner"], mode, now(), row["report"]),
+            )
+        session["recent_report"] = new_id
+        return redirect(url_for("view_order", report_id=new_id), 303)
 
     def get_report(report_id):
         with connect() as db:
