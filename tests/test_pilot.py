@@ -199,6 +199,55 @@ def test_po_with_blank_account_is_rejected(demo):
     assert b"Enter a GL account" in response.data
 
 
+def test_upload_guidance_and_inline_rejection(demo):
+    browser = demo.test_client()
+    home = browser.get("/")
+    for text in (b"only the provided sample PDF", b"No OCR", b"JSON field-by-field",
+                 b"quantity_received", b"gl_account", b"No reports yet."):
+        assert text in home.data
+    assert browser.get("/sample/context").json == json.loads(pilot.sample_context())
+    response = browser.post("/reports", data={
+        "csrf": csrf(browser),
+        "invoice": (io.BytesIO(b"%PDF- scanned invoice"), "scan.pdf"),
+        "context": (io.BytesIO(pilot.sample_context()), "context.json"),
+    })
+    assert response.status_code == 422
+    assert b'role="alert"' in response.data
+    assert b"only accepts the provided sample PDF" in response.data
+    assert b"Download the supported sample PDF" in response.data
+    assert b'name="invoice"' in response.data and b'name="context"' in response.data
+    assert b"No reports yet." in response.data
+
+
+def test_history_duplicate_confirmation(demo):
+    browser = demo.test_client()
+    browser.get("/")
+    first = sample_order(browser)
+    browser.post(f"{first}/checkout", data={"csrf": csrf(browser)})
+    duplicate = browser.post("/reports", data={"source": "sample", "csrf": csrf(browser)})
+    assert duplicate.status_code == 200
+    assert b"These documents already have a report" in duplicate.data
+    assert first.encode() in duplicate.data
+    assert b"new $5.00 USD checkout" in duplicate.data
+    with sqlite3.connect(demo.config["PILOT_DB"]) as db:
+        assert db.execute("SELECT count(*) FROM reports").fetchone()[0] == 1
+    assert browser.post(f"{first}/copy").status_code == 400
+    second = browser.post(f"{first}/copy", data={"csrf": csrf(browser)}).location
+    assert second != first
+    history = browser.get("/").data
+    assert first.encode() in history and second.encode() in history
+    assert b"Paid (simulated)" in history and b"Unpaid (simulated)" in history
+    assert b"Created " in history and b" UTC" in history
+    other = demo.test_client()
+    assert first.encode() not in other.get("/").data
+    assert other.post(f"{first}/copy", data={"csrf": csrf(other)}).status_code == 404
+    assert b"Documents match." in browser.get(first).data
+    with sqlite3.connect(demo.config["PILOT_DB"]) as db:
+        db.execute("UPDATE reports SET created = ?", (int(time.time()) - pilot.RETENTION - 1,))
+    assert b"No reports yet." in browser.get("/").data
+    assert browser.post(f"{first}/copy", data={"csrf": csrf(browser)}).status_code == 404
+
+
 def test_retention(demo):
     browser = demo.test_client()
     browser.get("/")
@@ -216,6 +265,7 @@ def test_public_demo_disables_uploads(tmp_path):
     browser = app.test_client()
     home = browser.get("/")
     assert b"Public demo" in home.data and b'type="file"' not in home.data
+    assert b'id="report-history"' not in home.data
     response = browser.post(
         "/reports",
         data={"csrf": csrf(browser), "invoice": (io.BytesIO(b"%PDF- private"), "invoice.pdf")},
@@ -238,8 +288,39 @@ def test_public_demo_reuses_sample_without_storing_reports(tmp_path):
     assert sample_order(first) == "/reports/sample"
     assert first.get("/reports/sample/download").status_code == 200
     assert second.get("/reports/sample/download").status_code == 403
+    assert first.post("/reports/sample/copy", data={"csrf": csrf(first)}).status_code == 404
     with sqlite3.connect(db_path) as db:
         assert db.execute("SELECT count(*) FROM reports").fetchone() == (0,)
+
+
+def test_live_report_copy_uses_daily_quota(tmp_path, monkeypatch):
+    monkeypatch.setenv("VLLM_BASE_URL", "http://localhost:8000/v1")
+    monkeypatch.setenv("MODEL_NAME", "test-model")
+    db_path = tmp_path / "live.db"
+    code = "test-only-access-code-for-invoice-match"
+    app = pilot.create_app({
+        "TESTING": True, "PILOT_MODE": "live", "PILOT_DB": str(db_path),
+        "PILOT_ACCESS_CODE": code, "PILOT_BASE_URL": "https://pilot.example.com",
+        "SECRET_KEY": "test-only-session-key-for-invoice-match",
+        "STRIPE_SECRET_KEY": "sk_live_example", "STRIPE_WEBHOOK_SECRET": "whsec_example",
+    })
+    browser = app.test_client()
+    browser.get("/")
+    assert browser.post("/unlock", data={"csrf": csrf(browser), "code": code}).status_code == 303
+    with browser.session_transaction() as session:
+        owner = session["owner"]
+    report = pilot.build_report(pilot.sample_pdf(), pilot.read_context(pilot.sample_context()), demo=True)
+    now = int(time.time())
+    with sqlite3.connect(db_path) as db:
+        db.execute("INSERT INTO pilot_usage VALUES (?, 24)", (now // 86400,))
+        db.execute(
+            "INSERT INTO reports (id, owner, mode, created, report) VALUES (?, ?, ?, ?, ?)",
+            ("example", owner, "live", now, json.dumps(report)),
+        )
+    assert browser.post("/reports/example/copy", data={"csrf": csrf(browser)}).status_code == 303
+    assert browser.post("/reports/example/copy", data={"csrf": csrf(browser)}).status_code == 429
+    with sqlite3.connect(db_path) as db:
+        assert db.execute("SELECT count(*) FROM reports").fetchone() == (2,)
 
 
 @pytest.fixture
