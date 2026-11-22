@@ -123,6 +123,7 @@ def match_invoice(
                 received[rl.sku] = received.get(rl.sku, Decimal("0")) + to_decimal(rl.quantity_received)
 
         qty_tol = to_decimal(policy.quantity_tolerance)
+        invoiced: dict[str, Decimal] = {}
 
         for li in invoice.line_items:
             if li.sku not in po_by_sku:
@@ -149,32 +150,34 @@ def match_invoice(
                     ControlCheck(code="PRICE", passed=True, detail=f"{li.sku}: within tolerance")
                 )
 
-            inv_qty = to_decimal(li.quantity)
-            po_qty = to_decimal(po_line.quantity)
+            invoiced[li.sku] = invoiced.get(li.sku, Decimal("0")) + to_decimal(li.quantity)
+
+        for sku, inv_qty in invoiced.items():
+            po_qty = to_decimal(po_by_sku[sku].quantity)
             if inv_qty > po_qty + qty_tol:
                 exceptions.append("QUANTITY_EXCEEDS_PO")
                 checks.append(
                     ControlCheck(
                         code="QTY_PO",
                         passed=False,
-                        detail=f"{li.sku}: inv={inv_qty} po={po_qty}",
+                        detail=f"{sku}: inv={inv_qty} po={po_qty}",
                     )
                 )
             else:
-                checks.append(ControlCheck(code="QTY_PO", passed=True, detail=f"{li.sku}: ok"))
+                checks.append(ControlCheck(code="QTY_PO", passed=True, detail=f"{sku}: ok"))
 
-            recv_qty = received.get(li.sku, Decimal("0"))
+            recv_qty = received.get(sku, Decimal("0"))
             if inv_qty > recv_qty + qty_tol:
                 exceptions.append("QUANTITY_EXCEEDS_RECEIPT")
                 checks.append(
                     ControlCheck(
                         code="QTY_RCV",
                         passed=False,
-                        detail=f"{li.sku}: inv={inv_qty} received={recv_qty}",
+                        detail=f"{sku}: inv={inv_qty} received={recv_qty}",
                     )
                 )
             else:
-                checks.append(ControlCheck(code="QTY_RCV", passed=True, detail=f"{li.sku}: ok"))
+                checks.append(ControlCheck(code="QTY_RCV", passed=True, detail=f"{sku}: ok"))
 
     exceptions = sorted(set(exceptions))
     decision = (
