@@ -1,3 +1,5 @@
+import pytest
+
 from app.matching import match_invoice
 from app.schemas import (
     ExtractedInvoice,
@@ -147,6 +149,17 @@ def test_unmatched_sku_exposure_wording():
     _, exc, checks = match_invoice(inv, po, receipts, vendor, POLICY, False)
     assert "SKU_NOT_FOUND" in exc
     assert any(check.detail == "SKU-9: not on PO → $30.00 billed without a PO line" for check in checks)
+
+
+@pytest.mark.parametrize("field,value", [("quantity", "unknown"), ("unit_price", "unknown"), ("quantity", "NaN"), ("unit_price", "Infinity")])
+def test_unmatched_sku_invalid_amount_remains_reviewable(field, value):
+    inv, po, receipts, vendor = _fixture()
+    inv.line_items[0].sku = "SKU-9"
+    setattr(inv.line_items[0], field, value)
+    decision, exc, checks = match_invoice(inv, po, receipts, vendor, POLICY, False)
+    assert decision == WorkflowDecision.HUMAN_REVIEW
+    assert "SKU_NOT_FOUND" in exc
+    assert any(check.detail == "SKU-9: not on PO" for check in checks)
 
 
 def test_split_sku_exposure_uses_weighted_invoice_price():

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from typing import Optional
 
 from app.schemas import (
@@ -129,8 +129,15 @@ def match_invoice(
         for li in invoice.line_items:
             if li.sku not in po_by_sku:
                 exceptions.append("SKU_NOT_FOUND")
+                detail = f"{li.sku}: not on PO"
+                try:
+                    amount = money(to_decimal(li.quantity) * to_decimal(li.unit_price))
+                    if amount.is_finite():
+                        detail += f" → ${amount} billed without a PO line"
+                except (InvalidOperation, ValueError, TypeError):
+                    pass
                 checks.append(
-                    ControlCheck(code="SKU", passed=False, detail=f"{li.sku}: not on PO → ${money(to_decimal(li.quantity) * to_decimal(li.unit_price))} billed without a PO line")
+                    ControlCheck(code="SKU", passed=False, detail=detail)
                 )
                 continue
             po_line = po_by_sku[li.sku]
