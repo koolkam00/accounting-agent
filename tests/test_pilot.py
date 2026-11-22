@@ -377,8 +377,8 @@ def test_exposure_in_ui_and_export(demo, po_price, direction):
     tolerance = "0.04" if direction == "over" else "0.06"
     assert report["extracted_invoice"]["invoice_total"] == "250.00"
     for detail in [
-        f"SKU-1001: qty 3, invoice $10.00 vs PO ${po_price} (tolerance ${tolerance}) → $6.00 {direction} PO",
-        "SKU-1001: invoiced 3, received 1 → 2 units / $20.00 not received",
+        f"SKU-1001: qty 3, invoice 10.00 USD vs PO {po_price} USD (tolerance {tolerance} USD) → 6.00 USD {direction} PO",
+        "SKU-1001: invoiced 3, received 1 → 2 units / 20.00 USD not received",
     ]:
         assert detail in result.get_data(as_text=True)
         assert any(check["detail"] == detail for check in report["control_checks"])

@@ -125,6 +125,9 @@ def match_invoice(
         qty_tol = to_decimal(policy.quantity_tolerance)
         charged: dict[str, Decimal] = {}
         charged_amount: dict[str, Decimal] = {}
+        currency = (invoice.currency or "").upper()
+        po_currency = po.currency.upper()
+        same_currency = bool(currency) and currency == po_currency
 
         for li in invoice.line_items:
             if li.sku not in po_by_sku:
@@ -132,8 +135,8 @@ def match_invoice(
                 detail = f"{li.sku}: not on PO"
                 try:
                     amount = money(to_decimal(li.quantity) * to_decimal(li.unit_price))
-                    if amount.is_finite():
-                        detail += f" → ${amount} billed without a PO line"
+                    if amount.is_finite() and same_currency:
+                        detail += f" → {amount} {currency} billed without a PO line"
                 except (InvalidOperation, ValueError, TypeError):
                     pass
                 checks.append(
@@ -145,13 +148,16 @@ def match_invoice(
             po_price = money(to_decimal(po_line.unit_price))
             tol = _price_tolerance(po_price, policy)
             if abs(inv_price - po_price) > tol:
-                exposure = (inv_price - po_price) * to_decimal(li.quantity)
+                detail = f"{li.sku}: qty {li.quantity}, invoice {inv_price} {currency} vs PO {po_price} {po_currency} (tolerance {tol} {po_currency})"
+                if same_currency:
+                    exposure = (inv_price - po_price) * to_decimal(li.quantity)
+                    detail += f" → {money(abs(exposure))} {currency} {'over' if exposure >= 0 else 'under'} PO"
                 exceptions.append("PRICE_VARIANCE")
                 checks.append(
                     ControlCheck(
                         code="PRICE",
                         passed=False,
-                        detail=f"{li.sku}: qty {li.quantity}, invoice ${inv_price} vs PO ${po_price} (tolerance ${tol}) → ${money(abs(exposure))} {'over' if exposure >= 0 else 'under'} PO",
+                        detail=detail,
                     )
                 )
             else:
@@ -169,11 +175,12 @@ def match_invoice(
             po_qty = to_decimal(po_by_sku[sku].quantity)
             if inv_qty > po_qty + qty_tol:
                 exceptions.append("QUANTITY_EXCEEDS_PO")
+                exposure_detail = f" / {money((inv_qty - po_qty) * inv_price)} {currency}" if same_currency else ""
                 checks.append(
                     ControlCheck(
                         code="QTY_PO",
                         passed=False,
-                        detail=f"{sku}: invoiced {inv_qty}, ordered {po_qty} → {inv_qty - po_qty} units / ${money((inv_qty - po_qty) * inv_price)} over PO quantity",
+                        detail=f"{sku}: invoiced {inv_qty}, ordered {po_qty} → {inv_qty - po_qty} units{exposure_detail} over PO quantity",
                     )
                 )
             else:
@@ -182,11 +189,12 @@ def match_invoice(
             recv_qty = received.get(sku, Decimal("0"))
             if inv_qty > recv_qty + qty_tol:
                 exceptions.append("QUANTITY_EXCEEDS_RECEIPT")
+                exposure_detail = f" / {money((inv_qty - recv_qty) * inv_price)} {currency}" if same_currency else ""
                 checks.append(
                     ControlCheck(
                         code="QTY_RCV",
                         passed=False,
-                        detail=f"{sku}: invoiced {inv_qty}, received {recv_qty} → {inv_qty - recv_qty} units / ${money((inv_qty - recv_qty) * inv_price)} not received",
+                        detail=f"{sku}: invoiced {inv_qty}, received {recv_qty} → {inv_qty - recv_qty} units{exposure_detail} not received",
                     )
                 )
             else:
