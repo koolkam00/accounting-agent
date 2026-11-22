@@ -78,6 +78,22 @@ def test_review_and_non_fixture_upload(demo):
     assert "QUANTITY_EXCEEDS_RECEIPT" in browser.get(f"{order}/download").json["exception_codes"]
 
 
+def test_po_with_blank_account_is_rejected(demo):
+    browser = demo.test_client()
+    context = json.loads(browser.get("/sample/context").data)
+    context["purchase_order"]["lines"][0]["gl_account"] = "  "
+    response = browser.post(
+        "/reports",
+        data={
+            "csrf": csrf(browser),
+            "invoice": (io.BytesIO(browser.get("/sample/invoice").data), "invoice.pdf"),
+            "context": (io.BytesIO(json.dumps(context).encode()), "context.json"),
+        },
+    )
+    assert response.status_code == 422
+    assert b"Enter a GL account" in response.data
+
+
 def test_retention(demo):
     browser = demo.test_client()
     browser.get("/")
