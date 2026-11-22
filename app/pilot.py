@@ -11,7 +11,7 @@ import secrets
 import sqlite3
 import time
 from contextlib import closing
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -87,6 +87,10 @@ def create_app(config: dict | None = None) -> Flask:
         raise ValueError("PILOT_PUBLIC_DEMO requires demo mode.")
     if public_demo:
         app.config["MAX_CONTENT_LENGTH"] = 8 * 1024
+    public_report = (
+        json.dumps(build_report(sample_pdf(), read_context(sample_context()), demo=True))
+        if public_demo else None
+    )
     app.config["SESSION_COOKIE_SECURE"] = (
         not demo or public_demo or os.getenv("PILOT_SECURE_COOKIE") == "1"
     )
@@ -146,6 +150,19 @@ def create_app(config: dict | None = None) -> Flask:
         db.execute("DELETE FROM reports WHERE created <= ?", (now() - RETENTION,))
         db.execute("DELETE FROM pilot_usage WHERE day < ?", (now() // 86400,))
 
+    report_limit = "The pilot has reached today's report limit. Try again tomorrow."
+
+    def reserve_report(db):
+        purge(db)
+        if not live:
+            return True
+        usage = db.execute(
+            "INSERT INTO pilot_usage VALUES (?, 1) ON CONFLICT(day) DO UPDATE "
+            "SET attempts = attempts + 1 WHERE attempts < 25",
+            (now() // 86400,),
+        )
+        return bool(usage.rowcount)
+
     @app.cli.command("purge-reports")
     def purge_reports():
         with connect() as db, db:
@@ -188,7 +205,22 @@ def create_app(config: dict | None = None) -> Flask:
         )
 
     def home_page(error=None, status=200):
-        return page("home", error=error), status
+        if access and session.get("access") != access_tag:
+            return page("locked", error=error), status
+        return page("home", error=error, history=report_history()), status
+
+    def report_history():
+        owner = session.get("owner")
+        if public_demo or not owner:
+            return []
+        with connect() as db:
+            rows = db.execute(
+                "SELECT * FROM reports WHERE owner = ? AND mode = ? AND created > ? ORDER BY created DESC, rowid DESC",
+                (owner, mode, now() - RETENTION),
+            ).fetchall()
+        return [dict(row, document=json.loads(row["report"]),
+                     created_label=datetime.fromtimestamp(row["created"], timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"))
+                for row in rows]
 
     @app.post("/unlock")
     def unlock():
@@ -211,8 +243,11 @@ def create_app(config: dict | None = None) -> Flask:
 
     @app.post("/reports")
     def prepare():
-        if public_demo and request.form.get("source") != "sample":
-            abort(415)
+        if public_demo:
+            if request.form.get("source") != "sample":
+                abort(415)
+            session["recent_report"] = "sample"
+            return redirect(url_for("view_order", report_id="sample"), 303)
         try:
             if not live and request.form.get("source") == "sample":
                 pdf, context_data = sample_pdf(), sample_context()
@@ -223,17 +258,20 @@ def create_app(config: dict | None = None) -> Flask:
                 pdf = invoice.read(MAX_PDF_BYTES + 1)
                 context_data = context.read(MAX_CONTEXT_BYTES + 1)
             context = read_context(context_data)
+            fingerprint = hashlib.sha256(pdf + b"\0" + context.model_dump_json().encode()).hexdigest()
+            for previous in sorted(report_history(), key=lambda item: item["paid"], reverse=True):
+                if (
+                    previous["document"].get("document_fingerprint") == fingerprint
+                    and (previous["paid"] or not checkout_expired(previous))
+                ):
+                    return page("duplicate", previous=previous)
             if live:
                 with connect() as db, db:
-                    purge(db)
-                    usage = db.execute(
-                        "INSERT INTO pilot_usage VALUES (?, 1) ON CONFLICT(day) DO UPDATE "
-                        "SET attempts = attempts + 1 WHERE attempts < 25",
-                        (now() // 86400,),
-                    )
-                    if not usage.rowcount:
-                        return home_page("The pilot has reached today's report limit. Try again tomorrow.", 429)
+                    available = reserve_report(db)
+                if not available:
+                    return home_page(report_limit, 429)
             report = build_report(pdf, context, demo=not live)
+            report["document_fingerprint"] = fingerprint
         except (PilotInputError, PdfReadError, ValueError) as exc:
             error = str(exc) if isinstance(exc, PilotInputError) else "Could not read the files. Check the formats and try again."
             return home_page(error, 422)
@@ -250,7 +288,29 @@ def create_app(config: dict | None = None) -> Flask:
         session["recent_report"] = report_id
         return redirect(url_for("view_order", report_id=report_id), 303)
 
+    @app.post("/reports/<report_id>/copy")
+    def copy_report(report_id):
+        if public_demo:
+            abort(404)
+        row = get_report(report_id)
+        new_id = secrets.token_urlsafe(24)
+        with connect() as db, db:
+            available = reserve_report(db)
+            if available:
+                db.execute(
+                    "INSERT INTO reports (id, owner, mode, created, report) VALUES (?, ?, ?, ?, ?)",
+                    (new_id, session["owner"], mode, now(), row["report"]),
+                )
+        if not available:
+            return home_page(report_limit, 429)
+        session["recent_report"] = new_id
+        return redirect(url_for("view_order", report_id=new_id), 303)
+
     def get_report(report_id):
+        if public_demo:
+            if report_id != "sample" or session.get("recent_report") != report_id:
+                abort(404)
+            return {"id": report_id, "report": public_report, "paid": session.get("public_report_paid", False)}
         with connect() as db:
             row = db.execute(
                 "SELECT * FROM reports WHERE id = ? AND owner = ? AND mode = ? AND created > ?",
@@ -278,6 +338,9 @@ def create_app(config: dict | None = None) -> Flask:
                 (payment["client_reference_id"], payment["id"], mode),
             )
 
+    def checkout_expired(row):
+        return not demo and now() >= row["created"] + CHECKOUT_WINDOW - (0 if row["checkout_id"] else 1810)
+
     def checkout_page(row, error=None):
         invoice = json.loads(row["report"])["extracted_invoice"]
         return page(
@@ -285,7 +348,7 @@ def create_app(config: dict | None = None) -> Flask:
             report_id=row["id"],
             invoice=invoice,
             error=error,
-            expired=not demo and now() >= row["created"] + CHECKOUT_WINDOW - (0 if row["checkout_id"] else 1810),
+            expired=checkout_expired(row),
         )
 
     @app.get("/reports/<report_id>")
@@ -311,13 +374,16 @@ def create_app(config: dict | None = None) -> Flask:
         order_path = url_for("view_order", report_id=report_id)
         if row["paid"]:
             return redirect(order_path, 303)
+        if public_demo:
+            session["public_report_paid"] = True
+            return redirect(order_path, 303)
         if demo:
             with connect() as db, db:
                 db.execute("UPDATE reports SET paid = 1 WHERE id = ? AND mode = 'demo'", (report_id,))
             return redirect(order_path, 303)
 
         expiration = row["created"] + CHECKOUT_WINDOW
-        if now() >= expiration - (0 if row["checkout_id"] else 1810):
+        if checkout_expired(row):
             return redirect(order_path, 303)
         try:
             if row["checkout_id"]:
