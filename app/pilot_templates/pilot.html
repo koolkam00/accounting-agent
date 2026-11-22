@@ -8,7 +8,7 @@
 </head>
 <body>
   <header><nav aria-label="Main"><a class="brand" href="{{ url_for('home') }}"><span class="brand-mark" aria-hidden="true">✓</span> Invoice Match</a>
-    <span class="pill">{{ 'Invite-only pilot' if mode == 'live' else 'Private preview' if mode == 'demo' else 'Stripe test mode' }}</span></nav></header>
+    <span class="pill">{{ 'Public demo' if public_demo else 'Invite-only pilot' if mode == 'live' else 'Private preview' if mode == 'demo' else 'Stripe test mode' }}</span></nav></header>
   <main>
   {% if error %}<p class="notice alert" role="alert">{{ error }}</p>{% endif %}
   {% if screen == 'locked' %}
@@ -30,13 +30,15 @@
     </section>
     {% if mode != 'live' %}
       <section class="card preview">
-        <div><h2>Try the sample</h2><p>Uses synthetic records. {{ 'No card, charge or model call.' if mode == 'demo' else 'Use a Stripe test card; there is no real charge.' }}</p></div>
+        <div><h2>Try the sample</h2><p>Uses synthetic records. {{ 'No card, charge or model call.' if mode == 'demo' else 'Use a Stripe test card; there is no real charge.' }}</p>
+        {% if public_demo %}<p>Real document uploads are disabled in this demo.</p>{% endif %}</div>
         <form method="post" action="{{ url_for('prepare') }}">
           <input type="hidden" name="csrf" value="{{ session.csrf }}">
           <button name="source" value="sample">Use sample documents</button>
         </form>
       </section>
     {% endif %}
+    {% if not public_demo %}
     <section class="card">
       <p class="eyebrow">Documents</p>
       <h2>{{ 'Upload your records' if mode == 'live' else 'Try the upload flow' }}</h2>
@@ -56,6 +58,7 @@
         <div class="actions"><button class="primary">Prepare report</button><p>{{ price }} USD per report · no subscription{% if mode != 'live' %} · no real charge in this preview{% endif %}</p></div>
       </form>
     </section>
+    {% endif %}
   {% elif screen == 'checkout' %}
     <section class="card">
       <p class="eyebrow">Report prepared</p>

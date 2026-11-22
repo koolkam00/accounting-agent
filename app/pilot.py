@@ -40,6 +40,7 @@ def create_app(config: dict | None = None) -> Flask:
     mode = os.getenv("PILOT_MODE", "demo")
     app.config.update(
         PILOT_MODE=mode,
+        PILOT_PUBLIC_DEMO=os.getenv("PILOT_PUBLIC_DEMO") == "1",
         SECRET_KEY=os.getenv("PILOT_SESSION_KEY"),
         PILOT_ACCESS_CODE=os.getenv("PILOT_ACCESS_CODE", ""),
         PILOT_BASE_URL=os.getenv("PILOT_BASE_URL", ""),
@@ -57,7 +58,14 @@ def create_app(config: dict | None = None) -> Flask:
     if mode not in {"demo", "stripe-test", "live"}:
         raise ValueError("PILOT_MODE must be demo, stripe-test or live.")
     demo, live = mode == "demo", mode == "live"
-    app.config["SESSION_COOKIE_SECURE"] = not demo or os.getenv("PILOT_SECURE_COOKIE") == "1"
+    public_demo = app.config["PILOT_PUBLIC_DEMO"]
+    if public_demo and not demo:
+        raise ValueError("PILOT_PUBLIC_DEMO requires demo mode.")
+    if public_demo:
+        app.config["MAX_CONTENT_LENGTH"] = 8 * 1024
+    app.config["SESSION_COOKIE_SECURE"] = (
+        not demo or public_demo or os.getenv("PILOT_SECURE_COOKIE") == "1"
+    )
     app.config["SESSION_COOKIE_NAME"] = f"invoice_pilot_{mode}"
     access = app.config["PILOT_ACCESS_CODE"].encode()
     base_url = app.config["PILOT_BASE_URL"].rstrip("/")
@@ -134,6 +142,8 @@ def create_app(config: dict | None = None) -> Flask:
     def protect():
         if request.endpoint in {"static", "webhook", None}:
             return
+        if public_demo and request.method == "POST" and request.mimetype != "application/x-www-form-urlencoded":
+            abort(415)
         if "owner" not in session:
             session.update(owner=secrets.token_urlsafe(24), csrf=secrets.token_urlsafe(32))
             session.permanent = True
@@ -142,10 +152,13 @@ def create_app(config: dict | None = None) -> Flask:
         ):
             abort(400)
         if access and request.endpoint != "unlock" and session.get("access") != access_tag:
-            return render_template("pilot.html", screen="locked", mode=mode), 403
+            return page("locked"), 403
 
     def page(screen, **kwargs):
-        return render_template("pilot.html", screen=screen, mode=mode, price=f"${PRICE / 100:.2f}", **kwargs)
+        return render_template(
+            "pilot.html", screen=screen, mode=mode, public_demo=public_demo,
+            price=f"${PRICE / 100:.2f}", **kwargs,
+        )
 
     def home_page(error=None, status=200):
         return page("home", error=error), status
@@ -171,6 +184,8 @@ def create_app(config: dict | None = None) -> Flask:
 
     @app.post("/reports")
     def prepare():
+        if public_demo and request.form.get("source") != "sample":
+            abort(415)
         try:
             if not live and request.form.get("source") == "sample":
                 pdf, context_data = sample_pdf(), sample_context()

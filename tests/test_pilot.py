@@ -106,6 +106,19 @@ def test_retention(demo):
         assert db.execute("SELECT count(*) FROM reports").fetchone() == (0,)
 
 
+def test_public_demo_disables_uploads(tmp_path):
+    app = pilot.create_app({"PILOT_PUBLIC_DEMO": True, "PILOT_DB": str(tmp_path / "public.db")})
+    browser = app.test_client()
+    home = browser.get("/")
+    assert b"Public demo" in home.data and b'type="file"' not in home.data
+    response = browser.post(
+        "/reports",
+        data={"csrf": csrf(browser), "invoice": (io.BytesIO(b"%PDF- private"), "invoice.pdf")},
+    )
+    assert response.status_code == 415
+    assert b"Simulate payment" in browser.get(sample_order(browser)).data
+
+
 @pytest.fixture
 def stripe_pilot(tmp_path, monkeypatch):
     access_code = "pilot-access-example-for-tests"
