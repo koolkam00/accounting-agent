@@ -15,6 +15,10 @@ Open the app at `http://127.0.0.1:8765`. Use the built-in sample or download and
 
 For a public synthetic demo, use `PILOT_MODE=demo PILOT_PUBLIC_DEMO=1` on an HTTPS host. It serves one reusable sample report without storing per-visitor reports. Uploads, Stripe and model calls are disabled. Keep its runtime data separate from the pilot.
 
+For stable, free hosting of the **sample walkthrough only**, select **GitHub Actions** in the repository's **Settings → Pages** and run **Publish Invoice Match demo** against `main`. The workflow publishes static pages, sample downloads and a precomputed report from the matcher. It has no runtime, uploads, accounts or payments. The simulated checkout illustrates the pilot flow; it does not restrict access to the public sample report.
+
+To build the same site locally into a new directory: `uv run --locked python -m scripts.export_invoice_match_demo /path/to/demo`.
+
 ## Stripe sandbox and invite-only production
 
 1. On a host with persistent storage, serve the app behind HTTPS using the Gunicorn command above, with the port/interface appropriate to the host. Forward the HTTPS origin to the app, preserve the webhook body, limit upload size and rate-limit access and report routes at the proxy. Use a runtime and data directory restricted to the app's service account; reports contain invoice data. Do not use a private Devin preview URL for Stripe webhooks.
