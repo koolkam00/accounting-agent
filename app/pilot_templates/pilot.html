@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Invoice Match</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='pilot.css') }}">
+</head>
+<body>
+  <header><nav aria-label="Main"><a class="brand" href="{{ url_for('home') }}"><span class="brand-mark" aria-hidden="true">✓</span> Invoice Match</a>
+    <span class="pill">{{ 'Invite-only pilot' if mode == 'live' else 'Private preview' if mode == 'demo' else 'Stripe test mode' }}</span></nav></header>
+  <main>
+  {% if error %}<p class="notice alert" role="alert">{{ error }}</p>{% endif %}
+  {% if screen == 'locked' %}
+    <section class="card">
+      <p class="eyebrow">Pilot access</p><h1>Enter your invite code</h1>
+      <form method="post" action="{{ url_for('unlock') }}" class="stack">
+        <input type="hidden" name="csrf" value="{{ session.csrf }}">
+        <label for="code">Invite code</label>
+        <input type="password" name="code" id="code" autocomplete="current-password" required>
+        <button>Open Invoice Match</button>
+      </form>
+    </section>
+  {% elif screen == 'home' %}
+    <section class="intro">
+      <p class="eyebrow">Three-way match for bookkeepers</p>
+      <h1>Check an invoice before you post it.</h1>
+      <p>Compare a vendor invoice with its purchase order and receiving records. Get a draft journal or see exactly what needs review.</p>
+      {% if session.recent_report %}<a href="{{ url_for('view_order', report_id=session.recent_report) }}">Open your latest report</a>{% endif %}
+    </section>
+    {% if mode != 'live' %}
+      <section class="card preview">
+        <div><h2>Try the sample</h2><p>Uses synthetic records. {{ 'No card, charge or model call.' if mode == 'demo' else 'Use a Stripe test card; there is no real charge.' }}</p></div>
+        <form method="post" action="{{ url_for('prepare') }}">
+          <input type="hidden" name="csrf" value="{{ session.csrf }}">
+          <button name="source" value="sample">Use sample documents</button>
+        </form>
+      </section>
+    {% endif %}
+    <section class="card">
+      <p class="eyebrow">Documents</p>
+      <h2>{{ 'Upload your records' if mode == 'live' else 'Try the upload flow' }}</h2>
+      <p>{{ 'Use a text-based invoice PDF and the matching USD purchase order and receipts.' if mode == 'live' else 'Download the sample files and upload them below. Don’t upload real financial documents in this preview.' }}</p>
+      <div class="links">
+        {% if mode != 'live' %}<a href="{{ url_for('sample', kind='invoice') }}">Sample invoice PDF</a>{% endif %}
+        <a href="{{ url_for('sample', kind='context') }}">Example PO and receipts JSON</a>
+      </div>
+      <form class="uploads" method="post" enctype="multipart/form-data" action="{{ url_for('prepare') }}">
+        <input type="hidden" name="csrf" value="{{ session.csrf }}">
+        <div class="field"><label for="invoice">Invoice PDF</label>
+        <span id="invoice-help">Text PDF, up to 5 MB and 12 pages.</span>
+        <input type="file" id="invoice" name="invoice" accept=".pdf,application/pdf" aria-describedby="invoice-help" required></div>
+        <div class="field"><label for="context">Purchase order and receipts</label>
+        <span id="context-help">One JSON file, up to 128 KB.</span>
+        <input type="file" id="context" name="context" accept=".json,application/json" aria-describedby="context-help" required></div>
+        <div class="actions"><button class="primary">Prepare report</button><p>{{ price }} USD per report · no subscription{% if mode != 'live' %} · no real charge in this preview{% endif %}</p></div>
+      </form>
+    </section>
+  {% elif screen == 'checkout' %}
+    <section class="card">
+      <p class="eyebrow">Report prepared</p>
+      <h1>{{ 'This checkout expired.' if expired else 'Unlock your match report.' }}</h1>
+      {% if expired %}<p>Prepare a fresh report to start a new checkout. If you already paid, refresh to check again.</p>
+      {% else %}
+        <p>Includes the match decision, exceptions, checks, and a draft journal when the records agree.</p>
+        <p class="total">{{ price }} <small>USD · one report</small></p>
+        <form method="post" action="{{ url_for('start_checkout', report_id=report_id) }}">
+          <input type="hidden" name="csrf" value="{{ session.csrf }}">
+          <button class="primary">{{ 'Simulate payment' if mode == 'demo' else 'Continue to Stripe' }}</button>
+        </form>
+        <p class="muted">{{ 'No card details, real charge or Stripe connection.' if mode == 'demo' else 'No real charges. Use a Stripe test card.' if mode == 'stripe-test' else 'Card payments are handled by Stripe. Keep this browser to access your report.' }}</p>
+      {% endif %}
+      <a href="{{ url_for('home') }}">Back to documents</a>
+    </section>
+  {% elif screen == 'result' %}
+    {% set matched = report.decision == 'READY_FOR_DRAFT' %}
+    <section class="card">
+      <p class="eyebrow">{{ 'Simulated payment' if mode == 'demo' else 'Test payment' if mode == 'stripe-test' else 'Payment' }} confirmed</p>
+      <h1>{{ 'Documents match.' if matched else 'Review needed.' }}</h1>
+      <p>Invoice {{ report.extracted_invoice.invoice_number }} · {{ report.extracted_invoice.vendor_name or 'Unknown vendor' }} · PO {{ report.extracted_invoice.po_number or 'not found' }}</p>
+      <div class="actions"><a class="button primary" href="{{ url_for('download', report_id=report_id) }}">Download report (JSON)</a><a href="{{ url_for('home') }}">Check another invoice</a></div>
+      <p class="muted">Download your report now. It’s available in this browser for up to seven days.</p>
+    </section>
+    {% if report.exception_codes %}
+      <section class="card"><h2>Exceptions</h2><ul>
+        {% for code in report.exception_codes %}<li>{{ code.replace('_', ' ').capitalize() }}</li>{% endfor %}
+      </ul></section>
+    {% endif %}
+    {% if report.proposed_journal %}
+      <section class="card"><h2>Draft journal <small>({{ report.proposed_journal.currency }})</small></h2>
+      <table><thead><tr><th scope="col">Account</th><th scope="col">Debit</th><th scope="col">Credit</th></tr></thead>
+      <tbody>{% for line in report.proposed_journal.lines %}<tr><td>{{ line.account }}</td><td>{{ line.debit }}</td><td>{{ line.credit }}</td></tr>{% endfor %}</tbody></table></section>
+    {% endif %}
+    <section class="card"><h2>Matching checks</h2><dl class="checks">
+      {% for check in report.control_checks %}<div><dt>{{ 'Passed' if check.passed else 'Review' }} · {{ check.code.replace('_', ' ').capitalize() }}</dt><dd>{{ check.detail }}</dd></div>{% endfor %}
+    </dl></section>
+  {% endif %}
+  </main>
+  <footer>Advisory only. No ledger posting, vendor payment, duplicate checks, or vendor master verification.</footer>
+</body>
+</html>

@@ -1,5 +1,7 @@
 # Deterministic AP three-way match
 
+**Invoice Match pilot:** a separate web flow for one invoice, a purchase order and receiving records, with a downloadable match report and optional Stripe Checkout. See [the pilot runbook](docs/invoice_match_pilot.md) to try the no-charge sample or configure the invite-only pilot.
+
 Prototype accounts-payable agent: a vendor invoice PDF goes in, a `READY_FOR_DRAFT` or `HUMAN_REVIEW` decision comes out, with a balanced journal proposal and an audit trail.
 
 The LLM only extracts JSON. Python does every match, Decimal calculation, and decision. That split is the product, not an implementation detail.

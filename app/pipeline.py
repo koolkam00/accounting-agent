@@ -92,6 +92,8 @@ class Pipeline:
         case_id: Optional[str] = None,
         mode: Mode = "evaluate",
         preseeded_extraction: Optional[ExtractedInvoice] = None,
+        max_pdf_pages: int | None = None,
+        max_pdf_chars: int | None = None,
     ) -> WorkflowResult:
         settings = self.settings
         messages: list[str] = []
@@ -101,7 +103,9 @@ class Pipeline:
         # INGEST
         self.audit.emit("STATE", {"state": PipelineState.INGEST.value}, case_id=case_id)
         pdf_hash = sha256_bytes(pdf_bytes)
-        extraction_pdf = extract_pdf_text(pdf_bytes)
+        extraction_pdf = extract_pdf_text(
+            pdf_bytes, max_pages=max_pdf_pages, max_chars=max_pdf_chars
+        )
         canonical = canonicalize_document(
             pdf_bytes, extraction_pdf.pages, ocr_required=extraction_pdf.ocr_required
         )
