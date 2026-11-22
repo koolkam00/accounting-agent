@@ -218,7 +218,7 @@ def create_app(config: dict | None = None) -> Flask:
         if public_demo:
             if request.form.get("source") != "sample":
                 abort(415)
-            session.update(recent_report="sample", public_report_paid=False)
+            session["recent_report"] = "sample"
             return redirect(url_for("view_order", report_id="sample"), 303)
         try:
             if not live and request.form.get("source") == "sample":

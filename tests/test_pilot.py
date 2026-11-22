@@ -235,6 +235,8 @@ def test_public_demo_reuses_sample_without_storing_reports(tmp_path):
         assert browser.get("/reports/sample/download").status_code == 403
     first.post("/reports/sample/checkout", data={"csrf": csrf(first)})
     assert first.get("/reports/sample/download").json["demo"] is True
+    assert sample_order(first) == "/reports/sample"
+    assert first.get("/reports/sample/download").status_code == 200
     assert second.get("/reports/sample/download").status_code == 403
     with sqlite3.connect(db_path) as db:
         assert db.execute("SELECT count(*) FROM reports").fetchone() == (0,)
