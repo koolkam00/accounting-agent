@@ -35,6 +35,29 @@ RETENTION = 7 * 24 * 60 * 60
 CHECKOUT_WINDOW = 2 * 60 * 60
 
 
+def _persisted_session_key(database: Path) -> str:
+    key_file = database.with_name(database.name + ".session-key")
+    try:
+        return key_file.read_text()
+    except FileNotFoundError:
+        pass
+    database.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    temporary = key_file.with_name(key_file.name + "." + secrets.token_hex(16))
+    fd = os.open(temporary, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    try:
+        with os.fdopen(fd, "w") as stream:
+            stream.write(secrets.token_hex(32))
+            stream.flush()
+            os.fsync(stream.fileno())
+        try:
+            os.link(temporary, key_file)
+        except FileExistsError:
+            pass
+    finally:
+        temporary.unlink()
+    return key_file.read_text()
+
+
 def create_app(config: dict | None = None) -> Flask:
     app = Flask(__name__, template_folder="pilot_templates", static_folder="pilot_static")
     mode = os.getenv("PILOT_MODE", "demo")
@@ -64,7 +87,7 @@ def create_app(config: dict | None = None) -> Flask:
     webhook_secret = app.config["STRIPE_WEBHOOK_SECRET"]
     checkout = None
     if demo:
-        app.secret_key = app.secret_key or secrets.token_hex(32)
+        app.secret_key = app.secret_key or _persisted_session_key(Path(app.config["PILOT_DB"]))
     else:
         key = app.config["STRIPE_SECRET_KEY"]
         key_mode = "live" if live else "test"
@@ -140,7 +163,10 @@ def create_app(config: dict | None = None) -> Flask:
         if request.method == "POST" and not hmac.compare_digest(
             request.form.get("csrf", "").encode(), session["csrf"].encode()
         ):
-            abort(400)
+            return home_page(
+                "Your session expired or the page was out of date. Please try again; no payment was taken.",
+                400,
+            )
         if access and request.endpoint != "unlock" and session.get("access") != access_tag:
             return render_template("pilot.html", screen="locked", mode=mode), 403
 

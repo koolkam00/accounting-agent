@@ -6,6 +6,7 @@ import io
 import json
 import sqlite3
 import time
+from concurrent.futures import ThreadPoolExecutor
 from types import SimpleNamespace
 
 import pytest
@@ -28,6 +29,72 @@ def sample_order(browser):
     response = browser.post("/reports", data={"source": "sample", "csrf": csrf(browser)})
     assert response.status_code == 303
     return response.location
+
+
+def test_demo_session_survives_app_restart(tmp_path, monkeypatch):
+    monkeypatch.delenv("PILOT_SESSION_KEY", raising=False)
+    config = {"TESTING": True, "PILOT_MODE": "demo", "PILOT_DB": str(tmp_path / "demo.db")}
+    first = pilot.create_app(config)
+    browser = first.test_client()
+    browser.get("/")
+    order = sample_order(browser)
+    token = csrf(browser)
+    second = pilot.create_app(config)
+    assert first.secret_key == second.secret_key
+    key_file = tmp_path / "demo.db.session-key"
+    assert key_file.read_text() == first.secret_key
+    assert len(first.secret_key) == 64
+    assert key_file.stat().st_mode & 0o777 == 0o600
+    restarted = second.test_client()
+    cookie_name = first.config["SESSION_COOKIE_NAME"]
+    restarted.set_cookie(cookie_name, browser.get_cookie(cookie_name).value)
+    assert b"Open your latest report" in restarted.get("/").data
+    assert restarted.get(order).status_code == 200
+    assert restarted.post(f"{order}/checkout", data={"csrf": token}).status_code == 303
+
+
+def test_concurrent_session_key_creation(tmp_path):
+    database = tmp_path / "data" / "demo.db"
+    with ThreadPoolExecutor(max_workers=8) as workers:
+        keys = list(workers.map(pilot._persisted_session_key, [database] * 16))
+    assert len(set(keys)) == 1
+    assert len(keys[0]) == 64
+    assert list(database.parent.iterdir()) == [database.with_name("demo.db.session-key")]
+
+
+@pytest.mark.parametrize("explicit", [False, True])
+def test_configured_session_key_wins(tmp_path, monkeypatch, explicit):
+    config = {"PILOT_MODE": "demo", "PILOT_DB": str(tmp_path / "demo.db")}
+    monkeypatch.delenv("PILOT_SESSION_KEY", raising=False)
+    pilot.create_app(config)
+    key_file = tmp_path / "demo.db.session-key"
+    generated = key_file.read_text()
+    monkeypatch.setenv("PILOT_SESSION_KEY", "environment-key")
+    if explicit:
+        config["SECRET_KEY"] = "explicit-key"
+    app = pilot.create_app(config)
+    assert app.secret_key == ("explicit-key" if explicit else "environment-key")
+    assert key_file.read_text() == generated
+
+
+@pytest.mark.parametrize("token", [None, "", "bad-token"])
+@pytest.mark.parametrize("fresh_session", [False, True])
+def test_csrf_failure_is_friendly(demo, token, fresh_session):
+    browser = demo.test_client()
+    if not fresh_session:
+        browser.get("/")
+    data = {"source": "sample"}
+    if token is not None:
+        data["csrf"] = token
+    response = browser.post("/reports", data=data)
+    assert response.status_code == 400
+    assert (
+        b"Your session expired or the page was out of date. Please try again; no payment was taken."
+        in response.data
+    )
+    assert b"Try the upload flow" in response.data
+    with sqlite3.connect(demo.config["PILOT_DB"]) as db:
+        assert db.execute("SELECT count(*) FROM reports").fetchone() == (0,)
 
 
 def test_sample_upload_and_report_access(demo):
