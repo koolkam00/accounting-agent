@@ -123,7 +123,7 @@ def match_invoice(
                 received[rl.sku] = received.get(rl.sku, Decimal("0")) + to_decimal(rl.quantity_received)
 
         qty_tol = to_decimal(policy.quantity_tolerance)
-        invoiced: dict[str, Decimal] = {}
+        charged: dict[str, Decimal] = {}
 
         for li in invoice.line_items:
             if li.sku not in po_by_sku:
@@ -150,9 +150,11 @@ def match_invoice(
                     ControlCheck(code="PRICE", passed=True, detail=f"{li.sku}: within tolerance")
                 )
 
-            invoiced[li.sku] = invoiced.get(li.sku, Decimal("0")) + to_decimal(li.quantity)
+            qty = to_decimal(li.quantity)
+            if qty >= 0:
+                charged[li.sku] = charged.get(li.sku, Decimal("0")) + qty
 
-        for sku, inv_qty in invoiced.items():
+        for sku, inv_qty in charged.items():
             po_qty = to_decimal(po_by_sku[sku].quantity)
             if inv_qty > po_qty + qty_tol:
                 exceptions.append("QUANTITY_EXCEEDS_PO")

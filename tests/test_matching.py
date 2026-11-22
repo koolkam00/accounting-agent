@@ -102,6 +102,18 @@ def test_split_sku_quantities_cannot_exceed_po_or_receipt():
     assert {check.detail for check in checks if not check.passed} == {"S1: inv=4 po=2", "S1: inv=4 received=2"}
 
 
+def test_quantity_credit_does_not_offset_charged_units():
+    inv, po, receipts, vendor = _fixture(qty="3")
+    inv.line_items.append(
+        inv.line_items[0].model_copy(update={"line_number": 2, "quantity": "-1", "line_total": "-10.00"})
+    )
+    inv.subtotal = inv.invoice_total = "20.00"
+    decision, exc, checks = match_invoice(inv, po, receipts, vendor, POLICY, False)
+    assert decision == WorkflowDecision.HUMAN_REVIEW
+    assert exc == ["QUANTITY_EXCEEDS_PO", "QUANTITY_EXCEEDS_RECEIPT"]
+    assert {check.detail for check in checks if not check.passed} == {"S1: inv=3 po=2", "S1: inv=3 received=2"}
+
+
 def test_duplicate():
     inv, po, receipts, vendor = _fixture()
     decision, exc, _ = match_invoice(inv, po, receipts, vendor, POLICY, True)
