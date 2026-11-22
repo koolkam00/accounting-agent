@@ -56,4 +56,8 @@ dt { font-weight: 650; }
 table { width: 100%; border-collapse: collapse; text-align: left; }
 th, td { border-bottom: 1px solid var(--border); padding: 8px 6px; }
 footer { padding-block: 0 28px; }
-@media (max-width: 560px) { .uploads { grid-template-columns: 1fr; } }
+@media (max-width: 560px) {
+  .uploads { grid-template-columns: 1fr; }
+  a { display: inline-flex; align-items: center; min-height: 44px; }
+  input[type=file], input::file-selector-button { min-height: 44px; }
+}
