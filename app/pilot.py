@@ -251,6 +251,16 @@ def create_app(config: dict | None = None) -> Flask:
                 (payment["client_reference_id"], payment["id"], mode),
             )
 
+    def checkout_page(row, error=None):
+        invoice = json.loads(row["report"])["extracted_invoice"]
+        return page(
+            "checkout",
+            report_id=row["id"],
+            invoice=invoice,
+            error=error,
+            expired=not demo and now() >= row["created"] + CHECKOUT_WINDOW - (0 if row["checkout_id"] else 1810),
+        )
+
     @app.get("/reports/<report_id>")
     def view_order(report_id):
         row = get_report(report_id)
@@ -263,12 +273,7 @@ def create_app(config: dict | None = None) -> Flask:
                 error = "Payment status is unavailable. Refresh this page shortly."
         if row["paid"]:
             return page("result", report_id=report_id, report=json.loads(row["report"]))
-        return page(
-            "checkout",
-            report_id=report_id,
-            error=error,
-            expired=not demo and now() >= row["created"] + CHECKOUT_WINDOW - (0 if row["checkout_id"] else 1810),
-        )
+        return checkout_page(row, error)
 
     @app.post("/reports/<report_id>/checkout")
     def start_checkout(report_id):
@@ -313,7 +318,7 @@ def create_app(config: dict | None = None) -> Flask:
                         (payment.id, report_id),
                     )
         except stripe.StripeError:
-            return page("checkout", report_id=report_id, error="Stripe is unavailable. Try again shortly."), 503
+            return checkout_page(row, "Stripe is unavailable. Try again shortly."), 503
         if payment.status != "open" or not payment.url:
             return redirect(order_path, 303)
         link = urlsplit(payment.url)

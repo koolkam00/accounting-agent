@@ -41,7 +41,9 @@ def test_sample_upload_and_report_access(demo):
             "context": (io.BytesIO(browser.get("/sample/context").data), "context.json"),
         },
     ).location
-    assert b"Simulate payment" in browser.get(order).data
+    checkout = browser.get(order).data
+    assert b"Simulate payment" in checkout and b"Invoice INV-2026001" in checkout
+    assert b"Documents match." not in checkout
     assert browser.get(f"{order}/download").status_code == 403
     assert browser.post(f"{order}/checkout").status_code == 400
     other = demo.test_client()

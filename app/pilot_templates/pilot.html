@@ -65,6 +65,7 @@
       <h1>{{ 'This checkout expired.' if expired else 'Unlock your match report.' }}</h1>
       {% if expired %}<p>Prepare a fresh report to start a new checkout. If you already paid, refresh to check again.</p>
       {% else %}
+        <p>Invoice {{ invoice.invoice_number }} · {{ invoice.vendor_name or 'Unknown vendor' }} · Invoice PO {{ invoice.po_number or 'not identified' }}</p>
         <p>Includes the match decision, exceptions, checks, and a draft journal when the records agree.</p>
         <p class="total">{{ price }} <small>USD · one report</small></p>
         <form method="post" action="{{ url_for('start_checkout', report_id=report_id) }}">
