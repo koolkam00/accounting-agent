@@ -84,6 +84,22 @@ def test_review_and_non_fixture_upload(demo):
     assert "QUANTITY_EXCEEDS_RECEIPT" in browser.get(f"{order}/download").json["exception_codes"]
 
 
+def test_po_with_blank_account_is_rejected(demo):
+    browser = demo.test_client()
+    context = json.loads(browser.get("/sample/context").data)
+    context["purchase_order"]["lines"][0]["gl_account"] = "  "
+    response = browser.post(
+        "/reports",
+        data={
+            "csrf": csrf(browser),
+            "invoice": (io.BytesIO(browser.get("/sample/invoice").data), "invoice.pdf"),
+            "context": (io.BytesIO(json.dumps(context).encode()), "context.json"),
+        },
+    )
+    assert response.status_code == 422
+    assert b"Enter a GL account" in response.data
+
+
 def test_retention(demo):
     browser = demo.test_client()
     browser.get("/")
@@ -166,12 +182,12 @@ def test_stripe_return_verifies_payment(stripe_pilot):
     assert checkout.options["idempotency_key"].endswith(order.split("/")[-1])
     assert browser.post(checkout_path, data=form).status_code == 303
     assert checkout.creations == 1
-    checkout.payment.update(status="complete", payment_status="paid", amount_total=499)
+    checkout.payment.update({"status": "complete", "payment_status": "paid", "amount_total": 499})
     assert b"Unlock your match report." in browser.get(order).data
     assert browser.get(f"{order}/download").status_code == 403
-    checkout.payment.update(amount_total=500, livemode=True)
+    checkout.payment.update({"amount_total": 500, "livemode": True})
     assert b"Unlock your match report." in browser.get(order).data
-    checkout.payment.update(livemode=False)
+    checkout.payment.update({"livemode": False})
     assert b"Test payment confirmed" in browser.get(order).data
     assert browser.get(f"{order}/download").status_code == 200
     assert browser.post(checkout_path, data=form).location == order

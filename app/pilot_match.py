@@ -93,6 +93,8 @@ def read_context(data: bytes) -> MatchContext:
         or len({line.sku for line in po.lines}) != len(po.lines)
     ):
         raise PilotInputError("Supply one USD PO with a vendor, a status and distinct SKUs.")
+    if any(not line.gl_account.strip() for line in po.lines):
+        raise PilotInputError("Enter a GL account for every purchase order line.")
     if (
         len({receipt.receipt_id for receipt in receipts}) != len(receipts)
         or any(
