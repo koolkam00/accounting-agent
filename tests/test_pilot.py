@@ -466,6 +466,35 @@ def test_stripe_return_verifies_payment(stripe_pilot):
     assert browser.post(checkout_path, data=form).location == order
 
 
+@pytest.mark.parametrize("checkout_started", [False, True])
+@pytest.mark.parametrize("paid", [False, True])
+def test_duplicate_report_handles_expired_checkout(stripe_pilot, checkout_started, paid):
+    app, browser, checkout, _ = stripe_pilot
+    previous = sample_order(browser)
+    if checkout_started:
+        browser.post(f"{previous}/checkout", data={"csrf": csrf(browser)})
+        if paid:
+            checkout.payment.update({"status": "complete", "payment_status": "paid"})
+            assert b"Test payment confirmed" in browser.get(previous).data
+    with sqlite3.connect(app.config["PILOT_DB"]) as db:
+        age = pilot.CHECKOUT_WINDOW if checkout_started else pilot.CHECKOUT_WINDOW - 1810
+        db.execute(
+            "UPDATE reports SET created = ?, paid = ? WHERE id = ?",
+            (int(time.time()) - age, paid, previous.split("/")[-1]),
+        )
+
+    response = browser.post("/reports", data={"source": "sample", "csrf": csrf(browser)})
+    if paid:
+        assert response.status_code == 200
+        assert b"These documents already have a report" in response.data
+        assert previous.encode() in response.data
+    else:
+        assert b"This checkout expired." in browser.get(previous).data
+        assert response.status_code == 303
+        assert response.location != previous
+        assert b"Unlock your match report." in browser.get(response.location).data
+
+
 def test_signed_webhook_unlocks_without_browser_return(stripe_pilot):
     app, browser, checkout, webhook_secret = stripe_pilot
     order = sample_order(browser)

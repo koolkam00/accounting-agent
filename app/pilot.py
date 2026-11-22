@@ -260,7 +260,10 @@ def create_app(config: dict | None = None) -> Flask:
             context = read_context(context_data)
             fingerprint = hashlib.sha256(pdf + b"\0" + context.model_dump_json().encode()).hexdigest()
             for previous in sorted(report_history(), key=lambda item: item["paid"], reverse=True):
-                if previous["document"].get("document_fingerprint") == fingerprint:
+                if (
+                    previous["document"].get("document_fingerprint") == fingerprint
+                    and (previous["paid"] or not checkout_expired(previous))
+                ):
                     return page("duplicate", previous=previous)
             if live:
                 with connect() as db, db:
@@ -335,6 +338,9 @@ def create_app(config: dict | None = None) -> Flask:
                 (payment["client_reference_id"], payment["id"], mode),
             )
 
+    def checkout_expired(row):
+        return not demo and now() >= row["created"] + CHECKOUT_WINDOW - (0 if row["checkout_id"] else 1810)
+
     def checkout_page(row, error=None):
         invoice = json.loads(row["report"])["extracted_invoice"]
         return page(
@@ -342,7 +348,7 @@ def create_app(config: dict | None = None) -> Flask:
             report_id=row["id"],
             invoice=invoice,
             error=error,
-            expired=not demo and now() >= row["created"] + CHECKOUT_WINDOW - (0 if row["checkout_id"] else 1810),
+            expired=checkout_expired(row),
         )
 
     @app.get("/reports/<report_id>")
@@ -377,7 +383,7 @@ def create_app(config: dict | None = None) -> Flask:
             return redirect(order_path, 303)
 
         expiration = row["created"] + CHECKOUT_WINDOW
-        if now() >= expiration - (0 if row["checkout_id"] else 1810):
+        if checkout_expired(row):
             return redirect(order_path, 303)
         try:
             if row["checkout_id"]:
