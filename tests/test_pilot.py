@@ -51,6 +51,10 @@ def test_sample_upload_and_report_access(demo):
     assert other.post(f"{order}/checkout", data={"csrf": csrf(other)}).status_code == 404
     response = browser.post(f"{order}/checkout", data={"csrf": csrf(browser)}, follow_redirects=True)
     assert b"Documents match." in response.data and b"Simulated payment confirmed" in response.data
+    assert b"Quantity within purchase order" in response.data
+    assert b"SKU-1001: within tolerance" in response.data
+    assert b"Purchase order is open" in response.data
+    assert b"Qty rcv" not in response.data
     download = browser.get(f"{order}/download")
     assert download.headers["Cache-Control"] == "no-store"
     report = download.json
@@ -77,6 +81,8 @@ def test_review_and_non_fixture_upload(demo):
     order = response.location
     result = browser.post(f"{order}/checkout", data={"csrf": csrf(browser)}, follow_redirects=True)
     assert b"Review needed." in result.data
+    assert b"Invoiced quantity exceeds the amount received" in result.data
+    assert b"SKU-1001: invoiced 3, received 0" in result.data
     assert "QUANTITY_EXCEEDS_RECEIPT" in browser.get(f"{order}/download").json["exception_codes"]
 
 

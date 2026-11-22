@@ -11,6 +11,7 @@ from pydantic import Field, ValidationError
 from app.adapters.base import ERPAdapter
 from app.llm_client import MockLLMClient, VLLMLLMClient
 from app.pipeline import Pipeline
+from app.pilot_present import present_checks
 from app.schemas import ExtractedInvoice, PurchaseOrder, Receipt, StrictModel, Vendor
 from app.settings import REPO_ROOT
 
@@ -138,4 +139,5 @@ def build_report(pdf: bytes, context: MatchContext, *, demo: bool) -> dict:
     ]
     report["scope"] = "Advisory match against supplied documents only; no duplicate or vendor-master checks, ledger posting or vendor payment."
     report["demo"] = demo
+    report["display_checks"] = present_checks(report, context)
     return report

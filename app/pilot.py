@@ -28,6 +28,7 @@ from app.pilot_match import (
     sample_context,
     sample_pdf,
 )
+from app.pilot_present import present_checks
 
 PRICE = 500
 CURRENCY = "usd"
@@ -272,7 +273,10 @@ def create_app(config: dict | None = None) -> Flask:
             except stripe.StripeError:
                 error = "Payment status is unavailable. Refresh this page shortly."
         if row["paid"]:
-            return page("result", report_id=report_id, report=json.loads(row["report"]))
+            report = json.loads(row["report"])
+            if "display_checks" not in report:
+                report["display_checks"] = present_checks(report)
+            return page("result", report_id=report_id, report=report)
         return checkout_page(row, error)
 
     @app.post("/reports/<report_id>/checkout")
