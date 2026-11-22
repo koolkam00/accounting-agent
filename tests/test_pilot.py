@@ -50,7 +50,7 @@ def test_sample_upload_and_report_access(demo):
     response = browser.post(f"{order}/checkout", data={"csrf": csrf(browser)}, follow_redirects=True)
     assert b"Documents match." in response.data and b"Simulated payment confirmed" in response.data
     assert b"Quantity within purchase order" in response.data
-    assert b"SKU-1001: invoiced 3, ordered 3" in response.data
+    assert b"SKU-1001: within tolerance" in response.data
     assert b"Purchase order is open" in response.data
     assert b"Qty rcv" not in response.data
     download = browser.get(f"{order}/download")

@@ -1,6 +1,5 @@
 """Bookkeeper-facing descriptions of the engine's matching checks."""
 
-from decimal import Decimal
 import re
 
 
@@ -27,12 +26,6 @@ CHECK_LABELS = {
 def present_checks(report, context=None):
     invoice = report.get("extracted_invoice") or {}
     po = context.purchase_order if context else None
-    po_lines = {line.sku: line for line in po.lines} if po else {}
-    invoice_lines = {line["sku"]: line for line in invoice.get("line_items", [])}
-    received = {}
-    for receipt in context.receipts if context else []:
-        for line in receipt.lines:
-            received[line.sku] = received.get(line.sku, Decimal(0)) + Decimal(line.quantity_received)
     checks = []
     for check in report.get("control_checks", []):
         code, passed = check["code"], check["passed"]
@@ -40,17 +33,15 @@ def present_checks(report, context=None):
         label = labels[0 if passed else 1]
         detail = check.get("detail", "")
         if code in {"PRICE", "QTY_PO", "QTY_RCV"}:
-            sku = detail.split(": ", 1)[0]
-            line, ordered = invoice_lines.get(sku), po_lines.get(sku)
-            if line and ordered:
-                if code == "PRICE":
-                    detail = f"{sku}: invoiced unit price {line['unit_price']}, purchase order unit price {ordered.unit_price} {po.currency}"
-                    if " tol=" in check.get("detail", ""):
-                        detail += f"; allowed difference {check['detail'].rsplit(' tol=', 1)[1]} {po.currency}"
-                elif code == "QTY_PO":
-                    detail = f"{sku}: invoiced {line['quantity']}, ordered {ordered.quantity}"
-                else:
-                    detail = f"{sku}: invoiced {line['quantity']}, received {received.get(sku, Decimal(0))}"
+            words = {
+                "inv": "invoiced unit price" if code == "PRICE" else "invoiced",
+                "po": "purchase order unit price" if code == "PRICE" else "ordered",
+                "received": "received", "tol": "allowed difference",
+            }
+            detail = re.sub(r"\b(inv|po|received|tol)=", lambda match: words[match[1]] + " ", detail)
+            detail = re.sub(r"(?<=\d) (?=(?:ordered|received|purchase order unit price|allowed difference) )", ", ", detail)
+            if detail.endswith(": ok"):
+                detail = detail[:-4] + ": within tolerance"
         elif code == "PO_STATUS" and po:
             detail = f"Purchase order {po.po_id} is {po.status.lower()}."
         elif code == "VENDOR_MATCH" and po:
