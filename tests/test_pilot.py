@@ -224,6 +224,22 @@ def test_public_demo_disables_uploads(tmp_path):
     assert b"Simulate payment" in browser.get(sample_order(browser)).data
 
 
+def test_public_demo_reuses_sample_without_storing_reports(tmp_path):
+    db_path = tmp_path / "public.db"
+    app = pilot.create_app({"PILOT_PUBLIC_DEMO": True, "PILOT_DB": str(db_path)})
+    first, second = app.test_client(), app.test_client()
+    for browser in (first, second):
+        browser.get("/")
+        assert sample_order(browser) == "/reports/sample"
+        assert sample_order(browser) == "/reports/sample"
+        assert browser.get("/reports/sample/download").status_code == 403
+    first.post("/reports/sample/checkout", data={"csrf": csrf(first)})
+    assert first.get("/reports/sample/download").json["demo"] is True
+    assert second.get("/reports/sample/download").status_code == 403
+    with sqlite3.connect(db_path) as db:
+        assert db.execute("SELECT count(*) FROM reports").fetchone() == (0,)
+
+
 @pytest.fixture
 def stripe_pilot(tmp_path, monkeypatch):
     access_code = "pilot-access-example-for-tests"

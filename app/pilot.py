@@ -87,6 +87,10 @@ def create_app(config: dict | None = None) -> Flask:
         raise ValueError("PILOT_PUBLIC_DEMO requires demo mode.")
     if public_demo:
         app.config["MAX_CONTENT_LENGTH"] = 8 * 1024
+    public_report = (
+        json.dumps(build_report(sample_pdf(), read_context(sample_context()), demo=True))
+        if public_demo else None
+    )
     app.config["SESSION_COOKIE_SECURE"] = (
         not demo or public_demo or os.getenv("PILOT_SECURE_COOKIE") == "1"
     )
@@ -211,8 +215,11 @@ def create_app(config: dict | None = None) -> Flask:
 
     @app.post("/reports")
     def prepare():
-        if public_demo and request.form.get("source") != "sample":
-            abort(415)
+        if public_demo:
+            if request.form.get("source") != "sample":
+                abort(415)
+            session.update(recent_report="sample", public_report_paid=False)
+            return redirect(url_for("view_order", report_id="sample"), 303)
         try:
             if not live and request.form.get("source") == "sample":
                 pdf, context_data = sample_pdf(), sample_context()
@@ -251,6 +258,10 @@ def create_app(config: dict | None = None) -> Flask:
         return redirect(url_for("view_order", report_id=report_id), 303)
 
     def get_report(report_id):
+        if public_demo:
+            if report_id != "sample" or session.get("recent_report") != report_id:
+                abort(404)
+            return {"id": report_id, "report": public_report, "paid": session.get("public_report_paid", False)}
         with connect() as db:
             row = db.execute(
                 "SELECT * FROM reports WHERE id = ? AND owner = ? AND mode = ? AND created > ?",
@@ -310,6 +321,9 @@ def create_app(config: dict | None = None) -> Flask:
         row = get_report(report_id)
         order_path = url_for("view_order", report_id=report_id)
         if row["paid"]:
+            return redirect(order_path, 303)
+        if public_demo:
+            session["public_report_paid"] = True
             return redirect(order_path, 303)
         if demo:
             with connect() as db, db:

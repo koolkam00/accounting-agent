@@ -13,7 +13,7 @@ uv run --frozen gunicorn --bind 127.0.0.1:8765 --timeout 60 'app.pilot:create_ap
 
 Open the app at `http://127.0.0.1:8765`. Use the built-in sample or download and upload both sample files, simulate payment, and download the report. The preview accepts only the provided invoice PDF, with preseeded extraction; it does not call Stripe or a model. To exercise the review outcome, reduce any received quantity in the sample JSON and upload it with the sample invoice. Do not upload real invoices to an evaluation or sandbox.
 
-For a public synthetic demo, use `PILOT_MODE=demo PILOT_PUBLIC_DEMO=1` on an HTTPS host. This keeps the built-in sample and simulated checkout but disables uploads, Stripe and model calls. Use a separate database from the pilot.
+For a public synthetic demo, use `PILOT_MODE=demo PILOT_PUBLIC_DEMO=1` on an HTTPS host. It serves one reusable sample report without storing per-visitor reports. Uploads, Stripe and model calls are disabled. Keep its runtime data separate from the pilot.
 
 ## Stripe sandbox and invite-only production
 
