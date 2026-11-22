@@ -248,6 +248,27 @@ def test_history_duplicate_confirmation(demo):
     assert browser.post(f"{first}/copy", data={"csrf": csrf(browser)}).status_code == 404
 
 
+def test_duplicate_prefers_most_recent_paid_report(demo):
+    browser = demo.test_client()
+    browser.get("/")
+    first = sample_order(browser)
+    second = browser.post(f"{first}/copy", data={"csrf": csrf(browser)}).location
+    third = browser.post(f"{first}/copy", data={"csrf": csrf(browser)}).location
+
+    def suggested_report():
+        response = browser.post("/reports", data={"source": "sample", "csrf": csrf(browser)})
+        assert response.status_code == 200
+        return response.data
+
+    assert third.encode() in suggested_report()
+    browser.post(f"{first}/checkout", data={"csrf": csrf(browser)})
+    assert first.encode() in suggested_report()
+    assert third.encode() not in suggested_report()
+    browser.post(f"{second}/checkout", data={"csrf": csrf(browser)})
+    assert second.encode() in suggested_report()
+    assert first.encode() not in suggested_report()
+
+
 def test_retention(demo):
     browser = demo.test_client()
     browser.get("/")

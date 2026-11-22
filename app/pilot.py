@@ -234,7 +234,7 @@ def create_app(config: dict | None = None) -> Flask:
                 context_data = context.read(MAX_CONTEXT_BYTES + 1)
             context = read_context(context_data)
             fingerprint = hashlib.sha256(pdf + b"\0" + context.model_dump_json().encode()).hexdigest()
-            for previous in report_history():
+            for previous in sorted(report_history(), key=lambda item: item["paid"], reverse=True):
                 if previous["document"].get("document_fingerprint") == fingerprint:
                     return page("duplicate", previous=previous)
             if live:
