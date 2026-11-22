@@ -11,6 +11,7 @@ COPY app ./app
 COPY config ./config
 COPY prompts ./prompts
 COPY scripts ./scripts
+COPY tests/fixtures/development/case_001 ./tests/fixtures/development/case_001
 RUN uv sync --frozen --python 3.12
 
 ENV DATABASE_URL=sqlite:////app/accounting_agent.db

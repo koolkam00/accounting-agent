@@ -201,13 +201,23 @@ class MockLLMClient(LLMClient):
 class VLLMLLMClient(LLMClient):
     """OpenAI-compatible client targeting pinned vLLM server."""
 
-    def __init__(self, temperature: Optional[float] = None) -> None:
+    def __init__(
+        self,
+        temperature: Optional[float] = None,
+        *,
+        timeout: float = 1200.0,
+        max_retries: int = 2,
+        max_output_tokens: int | None = None,
+    ) -> None:
         from openai import OpenAI
 
         s = get_settings()
         self.settings = s
         self._temperature_override = temperature
-        self.client = OpenAI(base_url=s.vllm_base_url, api_key=s.vllm_api_key, timeout=1200.0)
+        self._max_output_tokens = max_output_tokens
+        self.client = OpenAI(
+            base_url=s.vllm_base_url, api_key=s.vllm_api_key, timeout=timeout, max_retries=max_retries
+        )
         self.prompt = s.prompt_path.read_text(encoding="utf-8")
 
     def extract_invoice(
@@ -244,6 +254,8 @@ class VLLMLLMClient(LLMClient):
         }
         if extra_body:
             kwargs["extra_body"] = extra_body
+        if self._max_output_tokens is not None:
+            kwargs["max_completion_tokens"] = self._max_output_tokens
         resp = self.client.chat.completions.create(**kwargs)
         # Hash / parse the final channel only. Never use reasoning_content / traces.
         message = resp.choices[0].message
