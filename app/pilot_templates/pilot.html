@@ -120,7 +120,7 @@
     </section>
     {% if report.exception_codes %}
       <section class="card"><h2>Exceptions</h2><ul>
-        {% for code in report.exception_codes %}<li>{{ code.replace('_', ' ').capitalize() }}</li>{% endfor %}
+        {% for code in report.exception_codes %}<li>{{ 'PO is closed' if code == 'PO_CLOSED' else code.replace('_', ' ').capitalize() }}</li>{% endfor %}
       </ul></section>
     {% endif %}
     {% if report.proposed_journal %}

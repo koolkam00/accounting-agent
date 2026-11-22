@@ -322,6 +322,25 @@ def test_retention(demo):
         assert db.execute("SELECT count(*) FROM reports").fetchone() == (0,)
 
 
+def test_closed_po_reason(demo):
+    browser = demo.test_client()
+    context = json.loads(browser.get("/sample/context").data)
+    context["purchase_order"]["status"] = "CLOSED"
+    order = browser.post(
+        "/reports",
+        data={
+            "csrf": csrf(browser),
+            "invoice": (io.BytesIO(browser.get("/sample/invoice").data), "invoice.pdf"),
+            "context": (io.BytesIO(json.dumps(context).encode()), "context.json"),
+        },
+    ).location
+    result = browser.post(f"{order}/checkout", data={"csrf": csrf(browser)}, follow_redirects=True)
+    report = browser.get(f"{order}/download").json
+    assert report["decision"] == "HUMAN_REVIEW"
+    assert report["exception_codes"] == ["PO_CLOSED"]
+    assert b"PO is closed" in result.data
+
+
 def test_public_demo_disables_uploads(tmp_path):
     app = pilot.create_app({"PILOT_PUBLIC_DEMO": True, "PILOT_DB": str(tmp_path / "public.db")})
     browser = app.test_client()
