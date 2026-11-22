@@ -99,7 +99,7 @@ def test_split_sku_quantities_cannot_exceed_po_or_receipt():
     decision, exc, checks = match_invoice(inv, po, receipts, vendor, POLICY, False)
     assert decision == WorkflowDecision.HUMAN_REVIEW
     assert exc == ["QUANTITY_EXCEEDS_PO", "QUANTITY_EXCEEDS_RECEIPT"]
-    assert {check.detail for check in checks if not check.passed} == {"S1: inv=4 po=2", "S1: inv=4 received=2"}
+    assert {check.detail for check in checks if not check.passed} == {"S1: invoiced 4, ordered 2 → 2 units / $20.00 over PO quantity", "S1: invoiced 4, received 2 → 2 units / $20.00 not received"}
 
 
 def test_quantity_credit_does_not_offset_charged_units():
@@ -111,7 +111,7 @@ def test_quantity_credit_does_not_offset_charged_units():
     decision, exc, checks = match_invoice(inv, po, receipts, vendor, POLICY, False)
     assert decision == WorkflowDecision.HUMAN_REVIEW
     assert exc == ["QUANTITY_EXCEEDS_PO", "QUANTITY_EXCEEDS_RECEIPT"]
-    assert {check.detail for check in checks if not check.passed} == {"S1: inv=3 po=2", "S1: inv=3 received=2"}
+    assert {check.detail for check in checks if not check.passed} == {"S1: invoiced 3, ordered 2 → 1 units / $10.00 over PO quantity", "S1: invoiced 3, received 2 → 1 units / $10.00 not received"}
 
 
 def test_duplicate():
@@ -139,6 +139,26 @@ def test_po_closed():
     assert decision == WorkflowDecision.HUMAN_REVIEW
     assert exc == ["PO_CLOSED"]
     assert any(check.detail == "PO is closed (status=CLOSED)" for check in checks)
+
+
+def test_split_sku_exposure_uses_weighted_invoice_price():
+    inv, po, receipts, vendor = _fixture()
+    inv.line_items.append(inv.line_items[0].model_copy(update={"unit_price": "20.00"}))
+    _, _, checks = match_invoice(inv, po, receipts, vendor, POLICY, False)
+    assert any(check.detail == "S1: invoiced 4, received 2 → 2 units / $30.00 not received" for check in checks)
+
+
+def test_zero_quantity_has_no_shortage_exposure():
+    inv, po, receipts, vendor = _fixture(qty="0", recv="0")
+    decision, exc, _ = match_invoice(inv, po, receipts, vendor, POLICY, False)
+    assert decision == WorkflowDecision.READY_FOR_DRAFT
+    assert exc == []
+
+
+def test_price_credit_exposure_direction():
+    inv, po, receipts, vendor = _fixture(price="12.00", qty="-2")
+    _, _, checks = match_invoice(inv, po, receipts, vendor, POLICY, False)
+    assert any(check.detail == "S1: qty -2, invoice $12.00 vs PO $10.00 (tolerance $0.05) → $4.00 under PO" for check in checks)
 
 
 def test_exceptions_sorted():

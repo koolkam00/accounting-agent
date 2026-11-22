@@ -82,12 +82,14 @@
       <p class="eyebrow">{{ 'Simulated payment' if mode == 'demo' else 'Test payment' if mode == 'stripe-test' else 'Payment' }} confirmed</p>
       <h1>{{ 'Documents match.' if matched else 'Review needed.' }}</h1>
       <p>Invoice {{ report.extracted_invoice.invoice_number }} · {{ report.extracted_invoice.vendor_name or 'Unknown vendor' }} · PO {{ report.extracted_invoice.po_number or 'not found' }}</p>
+      <p>Invoice total: {{ report.extracted_invoice.currency or 'USD' }} ${{ report.extracted_invoice.invoice_total or 'Unknown' }}</p>
       <div class="actions"><a class="button primary" href="{{ url_for('download', report_id=report_id) }}">Download report (JSON)</a><a href="{{ url_for('home') }}">Check another invoice</a></div>
       <p class="muted">Download your report now. It’s available in this browser for up to seven days.</p>
     </section>
     {% if report.exception_codes %}
       <section class="card"><h2>Exceptions</h2><ul>
         {% for code in report.exception_codes %}<li>{{ 'PO is closed' if code == 'PO_CLOSED' else code.replace('_', ' ').capitalize() }}</li>{% endfor %}
+        {% for check in report.display_checks if not check.passed and check.detail %}<li>{{ check.detail }}</li>{% endfor %}
       </ul></section>
     {% endif %}
     {% if report.proposed_journal %}

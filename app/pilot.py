@@ -377,7 +377,7 @@ def create_app(config: dict | None = None) -> Flask:
             abort(403)
         return send_file(
             io.BytesIO(row["report"].encode()), mimetype="application/json",
-            download_name="invoice-match-report.json", as_attachment=True,
+            download_name=f"invoice-match-report-{report_id}.json", as_attachment=True,
         )
 
     @app.errorhandler(413)
