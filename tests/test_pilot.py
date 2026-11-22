@@ -269,6 +269,47 @@ def test_duplicate_prefers_most_recent_paid_report(demo):
     assert first.encode() not in suggested_report()
 
 
+@pytest.mark.parametrize("invite", ["valid", "missing", "revoked"])
+@pytest.mark.parametrize("oversized", [False, True])
+def test_history_requires_current_invite(tmp_path, invite, oversized):
+    config = {
+        "TESTING": True, "PILOT_MODE": "demo",
+        "PILOT_DB": str(tmp_path / "private.db"),
+        "PILOT_ACCESS_CODE": "original-invite", "SECRET_KEY": "stable-test-key",
+    }
+    app = pilot.create_app(config)
+    browser = app.test_client()
+    browser.get("/")
+    browser.post("/unlock", data={"csrf": csrf(browser), "code": "original-invite"})
+    order = sample_order(browser)
+    assert b"Northwind Office Supply LLC" in browser.get("/").data
+    if invite == "missing":
+        with browser.session_transaction() as session:
+            session.pop("access")
+    elif invite == "revoked":
+        config["PILOT_ACCESS_CODE"] = "replacement-invite"
+        restarted = pilot.create_app(config).test_client()
+        name = app.config["SESSION_COOKIE_NAME"]
+        restarted.set_cookie(name, browser.get_cookie(name).value)
+        browser = restarted
+    if oversized:
+        response = browser.post("/reports", data=b"x" * (app.config["MAX_CONTENT_LENGTH"] + 1),
+                                content_type="application/x-www-form-urlencoded")
+        assert response.status_code == 413
+    else:
+        response = browser.post("/reports", data={"csrf": "stale-token"})
+        assert response.status_code == 400
+    if invite == "valid":
+        assert b"Northwind Office Supply LLC" in response.data
+        assert order.encode() in response.data
+    else:
+        assert b"Enter your invite code" in response.data
+        assert b"INV-2026001" not in response.data
+        assert b"Northwind Office Supply LLC" not in response.data
+        assert order.encode() not in response.data
+        assert b"report-history" not in response.data
+
+
 def test_retention(demo):
     browser = demo.test_client()
     browser.get("/")

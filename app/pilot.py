@@ -188,6 +188,8 @@ def create_app(config: dict | None = None) -> Flask:
         )
 
     def home_page(error=None, status=200):
+        if access and session.get("access") != access_tag:
+            return page("locked", error=error), status
         return page("home", error=error, history=report_history()), status
 
     def report_history():
