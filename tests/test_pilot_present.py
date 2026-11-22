@@ -61,7 +61,7 @@ def test_real_values_and_review_explanation():
     data["receipts"][0]["lines"][0]["quantity_received"] = "0"
     report = build_report(sample_pdf(), read_context(json.dumps(data).encode()), demo=True)
     failed = [c for c in report["display_checks"] if not c["passed"]]
-    assert failed == [{"label": "Invoiced quantity exceeds the amount received", "detail": "SKU-1001: invoiced 3, received 0", "passed": False}]
+    assert failed == [{"label": "Invoiced quantity exceeds the amount received", "detail": "SKU-1001: invoiced 3, received 0 → 3 units / 30.00 USD not received", "passed": False}]
 
 
 @pytest.mark.parametrize("quantities", [("2", "2"), ("4", "-1")], ids=["split-sku", "offset-credit"])
@@ -80,9 +80,9 @@ def test_quantity_display_uses_engine_detail_for_multiple_lines(quantities):
     report["control_checks"] = [c.model_dump() for c in engine_checks if c.code in {"QTY_PO", "QTY_RCV"}]
     displayed = present_checks(report, context)
     for engine, shown in zip(report["control_checks"], displayed):
-        if "inv=" in engine["detail"]:
-            assert engine["detail"] in {"SKU-1001: inv=4 po=3", "SKU-1001: inv=4 received=3"}
-            assert shown["detail"] in {"SKU-1001: invoiced 4, ordered 3", "SKU-1001: invoiced 4, received 3"}
+        if not engine["passed"]:
+            assert engine["detail"] in {"SKU-1001: invoiced 4, ordered 3 → 1 units / 10.00 USD over PO quantity", "SKU-1001: invoiced 4, received 3 → 1 units / 10.00 USD not received"}
+            assert shown["detail"] == engine["detail"]
         else:
             assert engine["detail"] == "SKU-1001: ok"
             assert shown["detail"] == "SKU-1001: within tolerance"

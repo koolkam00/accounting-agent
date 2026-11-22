@@ -154,11 +154,28 @@ def test_sample_upload_and_report_access(demo):
     assert b"Qty rcv" not in response.data
     download = browser.get(f"{order}/download")
     assert download.headers["Cache-Control"] == "no-store"
+    assert f"invoice-match-report-{order.split('/')[-1]}.json" in download.headers["Content-Disposition"]
+    assert b"Invoice total: 250.00 USD" in response.data
     report = download.json
     assert report["decision"] == "READY_FOR_DRAFT"
     assert report["proposed_journal"]["balanced"] is True
     assert not ({"DUPLICATE_INVOICE", "VENDOR_ACTIVE"} & {check["code"] for check in report["control_checks"]})
     assert other.get(f"{order}/download").status_code == 404
+
+
+@pytest.mark.parametrize("total,expected", [("250.00", "250.00"), (0, "0"), (None, "Unknown")])
+def test_invoice_total_currency_and_missing_value(demo, total, expected):
+    with demo.test_request_context():
+        rendered = pilot.render_template(
+            "pilot.html", screen="result", mode="demo", report_id="example",
+            report={
+                "decision": "HUMAN_REVIEW",
+                "extracted_invoice": {"invoice_total": total, "currency": "EUR"},
+                "display_checks": [], "exception_codes": [],
+            },
+        )
+    assert f"Invoice total: {expected} EUR" in rendered
+    assert "EUR $" not in rendered
 
 
 def test_review_and_non_fixture_upload(demo):
@@ -339,6 +356,33 @@ def test_closed_po_reason(demo):
     assert report["decision"] == "HUMAN_REVIEW"
     assert report["exception_codes"] == ["PO_CLOSED"]
     assert b"PO is closed" in result.data
+
+
+@pytest.mark.parametrize("po_price,direction", [("8.00", "over"), ("12.00", "under")])
+def test_exposure_in_ui_and_export(demo, po_price, direction):
+    browser = demo.test_client()
+    context = json.loads(browser.get("/sample/context").data)
+    context["purchase_order"]["lines"][0]["unit_price"] = po_price
+    context["receipts"][0]["lines"][0]["quantity_received"] = "1"
+    order = browser.post(
+        "/reports",
+        data={
+            "csrf": csrf(browser),
+            "invoice": (io.BytesIO(browser.get("/sample/invoice").data), "invoice.pdf"),
+            "context": (io.BytesIO(json.dumps(context).encode()), "context.json"),
+        },
+    ).location
+    result = browser.post(f"{order}/checkout", data={"csrf": csrf(browser)}, follow_redirects=True)
+    report = browser.get(f"{order}/download").json
+    tolerance = "0.04" if direction == "over" else "0.06"
+    assert report["extracted_invoice"]["invoice_total"] == "250.00"
+    for detail in [
+        f"SKU-1001: qty 3, invoice 10.00 USD vs PO {po_price} USD (tolerance {tolerance} USD) → 6.00 USD {direction} PO",
+        "SKU-1001: invoiced 3, received 1 → 2 units / 20.00 USD not received",
+    ]:
+        assert detail in result.get_data(as_text=True)
+        assert any(check["detail"] == detail for check in report["control_checks"])
+        assert any(check["detail"] == detail for check in report["display_checks"])
 
 
 def test_public_demo_disables_uploads(tmp_path):

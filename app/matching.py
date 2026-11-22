@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from typing import Optional
 
 from app.schemas import (
@@ -124,12 +124,23 @@ def match_invoice(
 
         qty_tol = to_decimal(policy.quantity_tolerance)
         charged: dict[str, Decimal] = {}
+        charged_amount: dict[str, Decimal] = {}
+        currency = (invoice.currency or "").upper()
+        po_currency = po.currency.upper()
+        same_currency = bool(currency) and currency == po_currency
 
         for li in invoice.line_items:
             if li.sku not in po_by_sku:
                 exceptions.append("SKU_NOT_FOUND")
+                detail = f"{li.sku}: not on PO"
+                try:
+                    amount = money(to_decimal(li.quantity) * to_decimal(li.unit_price))
+                    if amount.is_finite() and same_currency:
+                        detail += f" → {amount} {currency} billed without a PO line"
+                except (InvalidOperation, ValueError, TypeError):
+                    pass
                 checks.append(
-                    ControlCheck(code="SKU", passed=False, detail=f"SKU {li.sku} not on PO")
+                    ControlCheck(code="SKU", passed=False, detail=detail)
                 )
                 continue
             po_line = po_by_sku[li.sku]
@@ -137,12 +148,16 @@ def match_invoice(
             po_price = money(to_decimal(po_line.unit_price))
             tol = _price_tolerance(po_price, policy)
             if abs(inv_price - po_price) > tol:
+                detail = f"{li.sku}: qty {li.quantity}, invoice {inv_price} {currency} vs PO {po_price} {po_currency} (tolerance {tol} {po_currency})"
+                if same_currency:
+                    exposure = (inv_price - po_price) * to_decimal(li.quantity)
+                    detail += f" → {money(abs(exposure))} {currency} {'over' if exposure >= 0 else 'under'} PO"
                 exceptions.append("PRICE_VARIANCE")
                 checks.append(
                     ControlCheck(
                         code="PRICE",
                         passed=False,
-                        detail=f"{li.sku}: inv={inv_price} po={po_price} tol={tol}",
+                        detail=detail,
                     )
                 )
             else:
@@ -153,16 +168,19 @@ def match_invoice(
             qty = to_decimal(li.quantity)
             if qty >= 0:
                 charged[li.sku] = charged.get(li.sku, Decimal("0")) + qty
+                charged_amount[li.sku] = charged_amount.get(li.sku, Decimal("0")) + qty * inv_price
 
         for sku, inv_qty in charged.items():
+            inv_price = charged_amount[sku] / inv_qty if inv_qty else Decimal("0")
             po_qty = to_decimal(po_by_sku[sku].quantity)
             if inv_qty > po_qty + qty_tol:
                 exceptions.append("QUANTITY_EXCEEDS_PO")
+                exposure_detail = f" / {money((inv_qty - po_qty) * inv_price)} {currency}" if same_currency else ""
                 checks.append(
                     ControlCheck(
                         code="QTY_PO",
                         passed=False,
-                        detail=f"{sku}: inv={inv_qty} po={po_qty}",
+                        detail=f"{sku}: invoiced {inv_qty}, ordered {po_qty} → {inv_qty - po_qty} units{exposure_detail} over PO quantity",
                     )
                 )
             else:
@@ -171,11 +189,12 @@ def match_invoice(
             recv_qty = received.get(sku, Decimal("0"))
             if inv_qty > recv_qty + qty_tol:
                 exceptions.append("QUANTITY_EXCEEDS_RECEIPT")
+                exposure_detail = f" / {money((inv_qty - recv_qty) * inv_price)} {currency}" if same_currency else ""
                 checks.append(
                     ControlCheck(
                         code="QTY_RCV",
                         passed=False,
-                        detail=f"{sku}: inv={inv_qty} received={recv_qty}",
+                        detail=f"{sku}: invoiced {inv_qty}, received {recv_qty} → {inv_qty - recv_qty} units{exposure_detail} not received",
                     )
                 )
             else:
